@@ -21,6 +21,8 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
@@ -3829,12 +3831,54 @@ public class Reflections {
             .map(it -> ReflectionUtils.getMethod(it, boolean.class, clazz$ResourceKey))
             .orElse(null);
 
-    public static final Class<?> clazz$CraftRecipe =
+    public static final Class<?> clazz$CraftRecipe = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleCBClass("inventory.CraftRecipe")
-            );
+            )
+    );
 
-    public static final Method method$CraftRecipe$toMinecraft = Optional.ofNullable(clazz$CraftRecipe)
+    public static final Method method$CraftRecipe$addToCraftingManager = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$CraftRecipe, new String[]{"addToCraftingManager"}
+            )
+    );
+
+    public static final Method method$CraftRecipe$toMinecraft = Optional.of(clazz$CraftRecipe)
             .map(it -> ReflectionUtils.getStaticMethod(it, clazz$ResourceKey, NamespacedKey.class))
             .orElse(null);
+
+    public static final Class<?> clazz$CraftShapedRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftShapedRecipe")
+            )
+    );
+
+    public static final Method method$CraftShapedRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftShapedRecipe, clazz$CraftShapedRecipe, ShapedRecipe.class
+            )
+    );
+
+    public static final Class<?> clazz$CraftShapelessRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftShapelessRecipe")
+            )
+    );
+
+    public static final Method method$CraftShapelessRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftShapelessRecipe, clazz$CraftShapelessRecipe, ShapelessRecipe.class
+            )
+    );
+
+    public static final Class<?> clazz$FeatureFlagSet = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.flag.FeatureFlagSet")
+            )
+    );
+
+    public static final Field field$RecipeManager$featureflagset =
+            ReflectionUtils.getDeclaredField(
+                    clazz$RecipeManager, clazz$FeatureFlagSet, 0
+            );
 }

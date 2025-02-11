@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.item.recipe.vanilla.impl.VanillaRecipeRea
 import net.momirealms.craftengine.core.item.recipe.vanilla.impl.VanillaRecipeReader1_20_5;
 import net.momirealms.craftengine.core.item.recipe.vanilla.impl.VanillaRecipeReader1_21_2;
 import net.momirealms.craftengine.core.pack.Pack;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -39,11 +40,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Reader;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class BukkitRecipeManager implements RecipeManager<ItemStack> {
-    private static final Map<Key, BiFunction<NamespacedKey, Recipe<ItemStack>, org.bukkit.inventory.Recipe>> BUKKIT_RECIPE_CONVERTORS = new HashMap<>();
+    private static final Map<Key, BiFunction<NamespacedKey, Recipe<ItemStack>, Object>> BUKKIT_RECIPE_CONVERTORS = new HashMap<>();
 
     static {
         BUKKIT_RECIPE_CONVERTORS.put(RecipeTypes.SHAPED, (key, recipe) -> {
@@ -59,7 +61,12 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             for (Map.Entry<Character, Ingredient<ItemStack>> entry : ceRecipe.pattern().ingredients().entrySet()) {
                 shapedRecipe.setIngredient(entry.getKey(), new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(entry.getValue())));
             }
-            return shapedRecipe;
+            try {
+                return Reflections.method$CraftShapedRecipe$fromBukkitRecipe.invoke(null, shapedRecipe);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to convert shaped recipe", e);
+                return null;
+            }
         });
         BUKKIT_RECIPE_CONVERTORS.put(RecipeTypes.SHAPELESS, (key, recipe) -> {
             CustomShapelessRecipe<ItemStack> ceRecipe = (CustomShapelessRecipe<ItemStack>) recipe;
@@ -73,7 +80,12 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             for (Ingredient<ItemStack> ingredient : ceRecipe.ingredients()) {
                 shapelessRecipe.addIngredient(new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ingredient)));
             }
-            return shapelessRecipe;
+            try {
+                return Reflections.method$CraftShapelessRecipe$fromBukkitRecipe.invoke(null, shapelessRecipe);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to convert shapeless recipe", e);
+                return null;
+            }
         });
     }
 
@@ -89,6 +101,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     // data pack recipe resource locations [minecraft:xxx]
     private final Set<Key> dataPackRecipes;
 
+    private Object stolenFeatureFlagSet;
+    private Object minecraftRecipeManager;
+
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
         this.recipeEventListener = new RecipeEventListener(plugin, this, plugin.itemManager());
@@ -103,6 +118,11 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             this.recipeReader = new VanillaRecipeReader1_20_5();
         } else {
             this.recipeReader = new VanillaRecipeReader1_20();
+        }
+        try {
+            this.minecraftRecipeManager = Reflections.method$MinecraftServer$getRecipeManager.invoke(Reflections.method$MinecraftServer$getServer.invoke(null));
+        } catch (ReflectiveOperationException e) {
+            plugin.logger().warn("Failed to get minecraft recipe manager", e);
         }
     }
 
@@ -120,6 +140,14 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     public void load() {
         if (!ConfigManager.enableRecipeSystem()) return;
         Bukkit.getPluginManager().registerEvents(this.recipeEventListener, this.plugin.bootstrap());
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            try {
+                this.stolenFeatureFlagSet = Reflections.field$RecipeManager$featureflagset.get(this.minecraftRecipeManager);
+                Reflections.field$RecipeManager$featureflagset.set(this.minecraftRecipeManager, null);
+            } catch (ReflectiveOperationException e) {
+                this.plugin.logger().warn("Failed to steal featureflagset", e);
+            }
+        }
     }
 
     @Override
@@ -130,15 +158,14 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.customRecipes.clear();
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             try {
-                Object recipeManager = Reflections.method$MinecraftServer$getRecipeManager.invoke(Reflections.method$MinecraftServer$getServer.invoke(null));
-                Object recipeMap = Reflections.field$RecipeManager$recipes.get(recipeManager);
+                Object recipeMap = Reflections.field$RecipeManager$recipes.get(this.minecraftRecipeManager);
                 for (NamespacedKey key : this.injectedDataPackRecipes) {
                     Reflections.method$RecipeMap$removeRecipe.invoke(recipeMap, Reflections.method$CraftRecipe$toMinecraft.invoke(null, key));
                 }
                 for (NamespacedKey key : this.registeredCustomRecipes) {
                     Reflections.method$RecipeMap$removeRecipe.invoke(recipeMap, Reflections.method$CraftRecipe$toMinecraft.invoke(null, key));
                 }
-                Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(recipeManager);
+                Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(this.minecraftRecipeManager);
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to unload custom recipes", e);
             }
@@ -162,11 +189,17 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             return;
         }
         Recipe<ItemStack> recipe = RecipeTypes.fromMap(section);
-        this.recipes.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         NamespacedKey key = NamespacedKey.fromString(id.toString());
-        Bukkit.addRecipe(BUKKIT_RECIPE_CONVERTORS.get(recipe.type()).apply(key, recipe));
-        this.registeredCustomRecipes.add(key);
-        this.customRecipes.add(id);
+        Object craftRecipe = BUKKIT_RECIPE_CONVERTORS.get(recipe.type()).apply(key, recipe);
+        try {
+            // to bypass paper's "resend"
+            Reflections.method$CraftRecipe$addToCraftingManager.invoke(craftRecipe);
+            this.registeredCustomRecipes.add(key);
+            this.customRecipes.add(id);
+            this.recipes.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
+        } catch (Exception e) {
+            plugin.logger().warn("Failed to add custom recipe " + id, e);
+        }
     }
 
     @Override
@@ -194,56 +227,92 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
     @Override
     public void delayedLoad() {
-        processVanillaRecipes();
+        this.processVanillaRecipes().thenRun(() -> {
+            if (VersionHelper.isVersionNewerThan1_21_2() && this.stolenFeatureFlagSet != null) {
+                try {
+                    Reflections.field$RecipeManager$featureflagset.set(this.minecraftRecipeManager, this.stolenFeatureFlagSet);
+                    this.stolenFeatureFlagSet = false;
+                } catch (ReflectiveOperationException e) {
+                    this.plugin.logger().warn("Failed to give featureflagset back", e);
+                }
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
-    private void processVanillaRecipes() {
+    private CompletableFuture<Void> processVanillaRecipes() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
         try {
-            Object fileToIdConverter = Reflections.method$FileToIdConverter$json.invoke(null, VersionHelper.isVersionNewerThan1_21() ? "recipe" : "recipes");
-            Object minecraftServer = Reflections.method$MinecraftServer$getServer.invoke(null);
-            Object packRepository = Reflections.method$MinecraftServer$getPackRepository.invoke(minecraftServer);
-            List<Object> selected = (List<Object>) Reflections.field$PackRepository$selected.get(packRepository);
-            List<Object> packResources = new ArrayList<>();
-            for (Object pack : selected) {
-                packResources.add(Reflections.method$Pack$open.invoke(pack));
-            }
-            List<org.bukkit.inventory.Recipe> bukkitRecipesToRegister = new ArrayList<>();
-            try (AutoCloseable resourceManager = (AutoCloseable) Reflections.constructor$MultiPackResourceManager.newInstance(Reflections.instance$PackType$SERVER_DATA, packResources)) {
-                Map<Object, Object> scannedResources = (Map<Object, Object>) Reflections.method$FileToIdConverter$listMatchingResources.invoke(fileToIdConverter, resourceManager);
-                for (Map.Entry<Object, Object> entry : scannedResources.entrySet()) {
-                    Key id = extractKeyFromResourceLocation(entry.getKey().toString());
-                    this.dataPackRecipes.add(id);
-                    // Maybe it's unregistered by other plugins
-                    if (Bukkit.getRecipe(new NamespacedKey(id.namespace(), id.value())) == null) {
-                        continue;
+            List<Object> bukkitRecipesToRegister = new ArrayList<>();
+            plugin.scheduler().async().execute(() -> {
+                try {
+                    Object fileToIdConverter = Reflections.method$FileToIdConverter$json.invoke(null, VersionHelper.isVersionNewerThan1_21() ? "recipe" : "recipes");
+                    Object minecraftServer = Reflections.method$MinecraftServer$getServer.invoke(null);
+                    Object packRepository = Reflections.method$MinecraftServer$getPackRepository.invoke(minecraftServer);
+                    List<Object> selected = (List<Object>) Reflections.field$PackRepository$selected.get(packRepository);
+                    List<Object> packResources = new ArrayList<>();
+                    for (Object pack : selected) {
+                        packResources.add(Reflections.method$Pack$open.invoke(pack));
                     }
-                    Reader reader = (Reader) Reflections.method$Resource$openAsReader.invoke(entry.getValue());
-                    JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-                    String type = jsonObject.get("type").getAsString();
-                    switch (type) {
-                        case "minecraft:crafting_shaped" -> {
-                            VanillaShapedRecipe recipe = this.recipeReader.readShaped(jsonObject);
-                            handleDataPackShapedRecipe(id, recipe, bukkitRecipesToRegister::add);
-                        }
-                        case "minecraft:crafting_shapeless" -> {
-                            VanillaShapelessRecipe recipe = this.recipeReader.readShapeless(jsonObject);
-                            handleDataPackShapelessRecipe(id, recipe, bukkitRecipesToRegister::add);
+                    try (AutoCloseable resourceManager = (AutoCloseable) Reflections.constructor$MultiPackResourceManager.newInstance(Reflections.instance$PackType$SERVER_DATA, packResources)) {
+                        Map<Object, Object> scannedResources = (Map<Object, Object>) Reflections.method$FileToIdConverter$listMatchingResources.invoke(fileToIdConverter, resourceManager);
+                        for (Map.Entry<Object, Object> entry : scannedResources.entrySet()) {
+                            Key id = extractKeyFromResourceLocation(entry.getKey().toString());
+                            this.dataPackRecipes.add(id);
+                            // Maybe it's unregistered by other plugins
+                            if (Bukkit.getRecipe(new NamespacedKey(id.namespace(), id.value())) == null) {
+                                continue;
+                            }
+                            Reader reader = (Reader) Reflections.method$Resource$openAsReader.invoke(entry.getValue());
+                            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+                            String type = jsonObject.get("type").getAsString();
+                            switch (type) {
+                                case "minecraft:crafting_shaped" -> {
+                                    VanillaShapedRecipe recipe = this.recipeReader.readShaped(jsonObject);
+                                    handleDataPackShapedRecipe(id, recipe, (shapedRecipe -> {
+                                        try {
+                                            bukkitRecipesToRegister.add(Reflections.method$CraftShapedRecipe$fromBukkitRecipe.invoke(null, shapedRecipe));
+                                        } catch (Exception e) {
+                                            CraftEngine.instance().logger().warn("Failed to convert shaped recipe", e);
+                                        }
+                                    }));
+                                }
+                                case "minecraft:crafting_shapeless" -> {
+                                    VanillaShapelessRecipe recipe = this.recipeReader.readShapeless(jsonObject);
+                                    handleDataPackShapelessRecipe(id, recipe, (shapelessRecipe -> {
+                                        try {
+                                            bukkitRecipesToRegister.add(Reflections.method$CraftShapelessRecipe$fromBukkitRecipe.invoke(null, shapelessRecipe));
+                                        } catch (Exception e) {
+                                            CraftEngine.instance().logger().warn("Failed to convert shapeless recipe", e);
+                                        }
+                                    }));
+                                }
+                            }
                         }
                     }
-                }
-            }
-            plugin.scheduler().sync().run(() -> {
-                for (org.bukkit.inventory.Recipe recipe : bukkitRecipesToRegister) {
-                    Bukkit.addRecipe(recipe);
+                } catch (Exception e) {
+                    plugin.logger().warn("Failed to read data pack recipes", e);
+                } finally {
+                    plugin.scheduler().sync().run(() -> {
+                        try {
+                            for (Object recipe : bukkitRecipesToRegister) {
+                                Reflections.method$CraftRecipe$addToCraftingManager.invoke(recipe);
+                            }
+                        } catch (Exception e) {
+                            CraftEngine.instance().logger().warn("Failed to register recipes", e);
+                        } finally {
+                            future.complete(null);
+                        }
+                    });
                 }
             });
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to inject vanilla recipes", e);
         }
+        return future;
     }
 
-    private void handleDataPackShapelessRecipe(Key id, VanillaShapelessRecipe recipe, Consumer<org.bukkit.inventory.Recipe> callback) {
+    private void handleDataPackShapelessRecipe(Key id, VanillaShapelessRecipe recipe, Consumer<org.bukkit.inventory.ShapelessRecipe> callback) {
         NamespacedKey key = new NamespacedKey("internal", id.value());
         ItemStack result = createResultStack(recipe.result());
         ShapelessRecipe shapelessRecipe = new ShapelessRecipe(key, result);
@@ -291,7 +360,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.addVanillaInternalRecipe(Key.of("internal", id.value()), ceRecipe);
     }
 
-    private void handleDataPackShapedRecipe(Key id, VanillaShapedRecipe recipe, Consumer<org.bukkit.inventory.Recipe> callback) {
+    private void handleDataPackShapedRecipe(Key id, VanillaShapedRecipe recipe, Consumer<org.bukkit.inventory.ShapedRecipe> callback) {
         NamespacedKey key = new NamespacedKey("internal", id.value());
         ItemStack result = createResultStack(recipe.result());
         ShapedRecipe shapedRecipe = new ShapedRecipe(key, result);
