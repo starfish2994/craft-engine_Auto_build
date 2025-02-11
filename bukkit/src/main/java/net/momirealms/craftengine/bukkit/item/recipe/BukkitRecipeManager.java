@@ -128,14 +128,30 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.recipes.clear();
         this.dataPackRecipes.clear();
         this.customRecipes.clear();
-        for (NamespacedKey key : this.injectedDataPackRecipes) {
-            Bukkit.removeRecipe(key);
-        }
-        this.injectedDataPackRecipes.clear();
-        for (NamespacedKey key : this.registeredCustomRecipes) {
-            Bukkit.removeRecipe(key);
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            try {
+                Object recipeManager = Reflections.method$MinecraftServer$getRecipeManager.invoke(Reflections.method$MinecraftServer$getServer.invoke(null));
+                Object recipeMap = Reflections.field$RecipeManager$recipes.get(recipeManager);
+                for (NamespacedKey key : this.injectedDataPackRecipes) {
+                    Reflections.method$RecipeMap$removeRecipe.invoke(recipeMap, Reflections.method$CraftRecipe$toMinecraft.invoke(null, key));
+                }
+                for (NamespacedKey key : this.registeredCustomRecipes) {
+                    Reflections.method$RecipeMap$removeRecipe.invoke(recipeMap, Reflections.method$CraftRecipe$toMinecraft.invoke(null, key));
+                }
+                Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(recipeManager);
+            } catch (ReflectiveOperationException e) {
+                plugin.logger().warn("Failed to unload custom recipes", e);
+            }
+        } else {
+            for (NamespacedKey key : this.injectedDataPackRecipes) {
+                Bukkit.removeRecipe(key);
+            }
+            for (NamespacedKey key : this.registeredCustomRecipes) {
+                Bukkit.removeRecipe(key);
+            }
         }
         this.registeredCustomRecipes.clear();
+        this.injectedDataPackRecipes.clear();
     }
 
     @Override

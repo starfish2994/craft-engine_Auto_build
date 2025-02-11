@@ -31,12 +31,10 @@ items:
     data:
       display-name: "<!i>Topaz"
     model:
-      type: "minecraft:model"
-      path: "minecraft:item/custom/topaz"
-      generation:
-        parent: "minecraft:item/generated"
-        textures:
-          "layer0": "minecraft:item/custom/topaz"
+      template: models:generated
+      arguments:
+        model_path: "minecraft:item/custom/topaz"
+        texture_path: "minecraft:item/custom/topaz"
 
 blocks:
   default:topaz_ore:

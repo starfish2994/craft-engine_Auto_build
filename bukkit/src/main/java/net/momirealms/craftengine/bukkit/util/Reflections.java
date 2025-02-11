@@ -10,6 +10,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
@@ -3796,4 +3797,44 @@ public class Reflections {
                     clazz$InventoryView, HumanEntity.class
             )
     );
+
+    public static final Class<?> clazz$RecipeManager = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeManager"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.CraftingManager")
+            )
+    );
+
+    public static final Method method$RecipeManager$finalizeRecipeLoading =
+            ReflectionUtils.getMethod(
+                    clazz$RecipeManager, new String[]{"finalizeRecipeLoading"}
+            );
+
+    public static final Method method$MinecraftServer$getRecipeManager = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$MinecraftServer, clazz$RecipeManager
+            )
+    );
+
+    public static final Class<?> clazz$RecipeMap =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeMap")
+            );
+
+    public static final Field field$RecipeManager$recipes = Optional.ofNullable(clazz$RecipeMap)
+            .map(it -> ReflectionUtils.getDeclaredField(clazz$RecipeManager, it, 0))
+            .orElse(null);
+
+    public static final Method method$RecipeMap$removeRecipe = Optional.ofNullable(clazz$RecipeMap)
+            .map(it -> ReflectionUtils.getMethod(it, boolean.class, clazz$ResourceKey))
+            .orElse(null);
+
+    public static final Class<?> clazz$CraftRecipe =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftRecipe")
+            );
+
+    public static final Method method$CraftRecipe$toMinecraft = Optional.ofNullable(clazz$CraftRecipe)
+            .map(it -> ReflectionUtils.getStaticMethod(it, clazz$ResourceKey, NamespacedKey.class))
+            .orElse(null);
 }
