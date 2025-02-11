@@ -1,0 +1,22 @@
+package net.momirealms.craftengine.core.item.modifier;
+
+import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
+
+public class CustomModelDataModifier<I> implements ItemModifier<I> {
+    private final int parameter;
+
+    public CustomModelDataModifier(int parameter) {
+        this.parameter = parameter;
+    }
+
+    @Override
+    public String name() {
+        return "custom-model-data";
+    }
+
+    @Override
+    public void apply(Item<I> item, Player player) {
+        item.customModelData(parameter);
+    }
+}

@@ -1,0 +1,90 @@
+# Do not modify this value
+config-version: '${config_version}'
+# Enables or disables debug mode
+debug: false
+# Enables or disables metrics collection via BStats
+metrics: true
+# Enables automatic update checks
+update-checker: true
+# Forces a specific locale (e.g., zh_cn)
+force-locale: ''
+
+resource-pack:
+  # Should those images in minecraft:default font also work in minecraft:uniform
+  override-uniform-font: true
+  protection:
+    break-zip-format: true
+    obfuscation: false
+  supported-version:
+    min: 1.20
+    max: LATEST
+
+block:
+  sound-system:
+    enable: true
+
+furniture:
+  # Should the plugin remove invalid furniture on chunk load
+  remove-invalid-furniture-on-chunk-load:
+    enable: false
+    # If you want to remove all invalid furniture, please set this list to empty, otherwise only furniture in the list will be removed.
+    list:
+      - "xxx:invalid_furniture"
+
+recipe:
+  enable: true
+
+performance:
+  # Maximum chain update depth when fixing client visuals
+  max-block-chain-update-limit: 64
+  light-system:
+    enable: true
+    # Turning this option on will reduce lighting system issues to some extent, but will increase server bandwidth consumption
+    force-update-light: false
+
+offset-characters:
+  font: minecraft:default
+  -1: '\uf800'
+  -2: '\uf801'
+  -3: '\uf802'
+  -4: '\uf803'
+  -5: '\uf804'
+  -6: '\uf805'
+  -7: '\uf806'
+  -8: '\uf807'
+  -9: '\uf808'
+  -10: '\uf809'
+  -11: '\uf80a'
+  -12: '\uf80b'
+  -13: '\uf80c'
+  -14: '\uf80d'
+  -15: '\uf80e'
+  -16: '\uf80f'
+  -24: '\uf810'
+  -32: '\uf811'
+  -48: '\uf812'
+  -64: '\uf813'
+  -128: '\uf814'
+  -256: '\uf815'
+  1: '\uf830'
+  2: '\uf831'
+  3: '\uf832'
+  4: '\uf833'
+  5: '\uf834'
+  6: '\uf835'
+  7: '\uf836'
+  8: '\uf837'
+  9: '\uf838'
+  10: '\uf839'
+  11: '\uf83a'
+  12: '\uf83b'
+  13: '\uf83c'
+  14: '\uf83d'
+  15: '\uf83e'
+  16: '\uf83f'
+  24: '\uf840'
+  32: '\uf841'
+  48: '\uf842'
+  64: '\uf843'
+  128: '\uf844'
+  256: '\uf845'

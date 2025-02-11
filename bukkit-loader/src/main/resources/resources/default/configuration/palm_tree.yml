@@ -1,0 +1,269 @@
+blocks:
+  default:palm_leaves:
+    behavior:
+      type: leaves_block
+    loot:
+      template: loot_table:leaves
+      arguments:
+        leaves: default:palm_leaves
+        sapling: default:palm_sapling
+    settings:
+      template: block_settings:leaves
+      overrides:
+        item: default:palm_leaves
+    states:
+      template: states:leaves
+      arguments:
+        default_state: oak_leaves[distance=1,persistent=false,waterlogged=false]
+        waterlogged_state: oak_leaves[distance=1,persistent=false,waterlogged=true]
+        model_path: "minecraft:block/custom/palm_leaves"
+        texture_path: "minecraft:block/custom/palm_leaves"
+        internal_id:
+          type: self_increase_int
+          from: 0
+          to: 27
+  default:palm_log:
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_log
+    settings:
+      template: block_settings:log
+      overrides:
+        item: default:palm_log
+    states:
+      template: states:log
+      arguments:
+        base_block: note_block
+        texture_top_path: minecraft:block/custom/palm_log_top
+        texture_side_path: minecraft:block/custom/palm_log
+        model_vertical_path: minecraft:block/custom/palm_log
+        model_horizontal_path: minecraft:block/custom/palm_log_horizontal
+        vanilla_id:
+          type: self_increase_int
+          from: 0
+          to: 2
+        internal_id:
+          type: self_increase_int
+          from: 0
+          to: 2
+  default:stripped_palm_log:
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_log
+    settings:
+      template: block_settings:log
+      overrides:
+        item: default:palm_log
+    states:
+      template: states:log
+      arguments:
+        base_block: note_block
+        texture_top_path: minecraft:block/custom/stripped_palm_log_top
+        texture_side_path: minecraft:block/custom/stripped_palm_log
+        model_vertical_path: minecraft:block/custom/stripped_palm_log
+        model_horizontal_path: minecraft:block/custom/stripped_palm_log_horizontal
+        vanilla_id:
+          type: self_increase_int
+          from: 3
+          to: 5
+        internal_id:
+          type: self_increase_int
+          from: 3
+          to: 5
+  default:palm_wood:
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_wood
+    settings:
+      template: block_settings:log
+      overrides:
+        item: default:palm_wood
+    states:
+      template: states:log
+      arguments:
+        base_block: note_block
+        texture_top_path: minecraft:block/custom/palm_log
+        texture_side_path: minecraft:block/custom/palm_log
+        model_vertical_path: minecraft:block/custom/palm_wood
+        model_horizontal_path: minecraft:block/custom/palm_wood_horizontal
+        vanilla_id:
+          type: self_increase_int
+          from: 6
+          to: 8
+        internal_id:
+          type: self_increase_int
+          from: 6
+          to: 8
+  default:stripped_palm_wood:
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_wood
+    settings:
+      template: block_settings:log
+      overrides:
+        item: default:palm_wood
+    states:
+      template: states:log
+      arguments:
+        base_block: note_block
+        texture_top_path: minecraft:block/custom/stripped_palm_log
+        texture_side_path: minecraft:block/custom/stripped_palm_log
+        model_vertical_path: minecraft:block/custom/stripped_palm_wood
+        model_horizontal_path: minecraft:block/custom/stripped_palm_wood_horizontal
+        vanilla_id:
+          type: self_increase_int
+          from: 9
+          to: 11
+        internal_id:
+          type: self_increase_int
+          from: 9
+          to: 11
+  default:palm_planks:
+    settings:
+      template: block_settings:planks
+      overrides:
+        item: default:palm_planks
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_planks
+    state:
+      id: 12
+      state: note_block:12
+      model:
+        path: "minecraft:block/custom/palm_planks"
+        generation:
+          parent: "minecraft:block/cube_all"
+          textures:
+            "all": "minecraft:block/custom/palm_planks"
+
+items:
+  default:palm_log:
+    material: paper
+    custom-model-data: 1000
+    tags:
+      - "default:palm_logs"
+      - "minecraft:logs"
+    data:
+      display-name: "<!i>Palm Log"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/palm_log"
+      generation:
+        parent: "minecraft:block/custom/palm_log"
+    behavior:
+      type: block_item
+      block: default:palm_log
+  default:stripped_palm_log:
+    material: paper
+    custom-model-data: 1001
+    tags:
+      - "default:palm_logs"
+      - "minecraft:logs"
+    data:
+      display-name: "<!i>Stripped Palm Log"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/stripped_palm_log"
+      generation:
+        parent: "minecraft:block/custom/stripped_palm_log"
+    behavior:
+      type: block_item
+      block: default:stripped_palm_log
+  default:palm_wood:
+    material: paper
+    custom-model-data: 1002
+    tags:
+      - "default:palm_logs"
+      - "minecraft:logs"
+    data:
+      display-name: "<!i>Palm Wood"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/palm_wood"
+      generation:
+        parent: "minecraft:block/custom/palm_wood"
+    behavior:
+      type: block_item
+      block: default:palm_wood
+  default:stripped_palm_wood:
+    material: paper
+    custom-model-data: 1003
+    tags:
+      - "default:palm_logs"
+      - "minecraft:logs"
+    data:
+      display-name: "<!i>Stripped Palm Wood"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/stripped_palm_wood"
+      generation:
+        parent: "minecraft:block/custom/stripped_palm_wood"
+    behavior:
+      type: block_item
+      block: default:stripped_palm_wood
+  default:palm_planks:
+    material: paper
+    custom-model-data: 1004
+    tags:
+      - "minecraft:planks"
+      - "minecraft:wooden_tool_materials"
+    data:
+      display-name: "<!i>Palm Planks"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/palm_planks"
+      generation:
+        parent: "minecraft:block/custom/palm_planks"
+    behavior:
+      type: block_item
+      block: default:palm_planks
+  default:palm_leaves:
+    material: oak_leaves
+    custom-model-data: 1000
+    data:
+      display-name: "<!i>Palm Leaves"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/palm_leaves"
+      generation:
+        parent: "minecraft:block/custom/palm_leaves"
+      tints:
+        - type: "minecraft:constant"
+          value: -12012264
+    behavior:
+      type: block_item
+      block: default:palm_leaves
+
+recipes:
+  default:palm_planks:
+    type: shapeless
+    ingredients:
+      A: "#default:palm_logs"
+    result:
+      id: default:palm_planks
+      count: 4
+  default:palm_wood:
+    type: shaped
+    pattern:
+      - "AA"
+      - "AA"
+    ingredients:
+      A: "default:palm_log"
+    result:
+      id: default:palm_wood
+      count: 3
+  default:stripped_palm_wood:
+    type: shaped
+    pattern:
+      - "AA"
+      - "AA"
+    ingredients:
+      A: "default:stripped_palm_log"
+    result:
+      id: default:stripped_palm_wood
+      count: 3

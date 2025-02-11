@@ -1,0 +1,54 @@
+#
+# Don't change this
+#
+config-version: "${config_version}"
+
+#
+# For safety reasons, editing this file requires a restart to apply
+#
+
+# A command to reload the plugin
+# Usage: [COMMAND]
+reload:
+  enable: true
+  permission: ce.command.reload
+  usage:
+    - /craftengine reload
+    - /ce reload
+
+get_item:
+  enable: true
+  permission: ce.command.get_item
+  usage:
+    - /craftengine item get
+    - /ce item get
+
+give_item:
+  enable: true
+  permission: ce.command.give_item
+  usage:
+    - /craftengine item give
+    - /ce item give
+
+setblock:
+  enable: true
+  permission: ce.command.setblock
+  usage:
+    - /craftengine setblock
+    - /ce setblock
+
+# A command to test some stuffs
+# Usage: [COMMAND]
+debug_state:
+  enable: true
+  permission: ce.command.debug.state
+  usage:
+    - /craftengine debug state
+    - /ce debug state
+
+debug_test:
+  enable: true
+  permission: ce.command.debug.test
+  usage:
+    - /craftengine debug test
+    - /ce debug test

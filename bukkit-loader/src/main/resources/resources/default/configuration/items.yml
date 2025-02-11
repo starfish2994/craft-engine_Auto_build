@@ -1,0 +1,25 @@
+items:
+  default:beginner_rod:
+    material: fishing_rod
+    custom-model-data: 1000
+    data:
+      display-name: "Beginner Rod"
+      lore:
+        - "This is the description"
+    model:
+      type: "minecraft:condition"
+      property: "minecraft:fishing_rod/cast"
+      on-false:
+        type: "minecraft:model"
+        path: "minecraft:item/custom/beginner_rod"
+        generation:
+          parent: "minecraft:item/fishing_rod"
+          textures:
+            "layer0": "minecraft:item/custom/beginner_rod"
+      on-true:
+        type: "minecraft:model"
+        path: "minecraft:item/custom/beginner_rod_cast"
+        generation:
+          parent: "minecraft:item/fishing_rod"
+          textures:
+            "layer0": "minecraft:item/custom/beginner_rod_cast"

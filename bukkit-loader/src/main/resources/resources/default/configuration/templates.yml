@@ -1,0 +1,393 @@
+# map-color: https://minecraft.wiki/w/Map_item_format
+templates:
+  # Block Settings
+  block_settings:surface_decoration:
+    hardness: 0
+    resistance: 0
+  block_settings:leaves:
+    hardness: 0.2
+    resistance: 0.2
+    push-reaction: DESTROY # NORMAL,DESTROY,BLOCK,IGNORE,PUSH_ONLY
+    replaceable: false
+    burnable: true
+    burn-chance: 30
+    fire-spread-chance: 100
+    is-redstone-conductor: false
+    is-suffocating: false
+    instrument: HARP
+    tags:
+      - minecraft:mineable/hoe
+      - minecraft:sword_efficient
+      - minecraft:leaves
+      - minecraft:replaceable_by_trees
+    sounds:
+      break: minecraft:block.grass.break
+      step: minecraft:block.grass.step
+      place: minecraft:block.grass.place
+      hit: minecraft:block.grass.hit
+      fall: minecraft:block.grass.fall
+  block_settings:log:
+    hardness: 2.0
+    resistance: 2.0
+    push-reaction: NORMAL
+    replaceable: false
+    burnable: true
+    burn-chance: 5
+    fire-spread-chance: 5
+    is-redstone-conductor: true
+    is-suffocating: true
+    instrument: BASS
+    can-occlude: true
+    tags:
+      - minecraft:mineable/axe
+      - minecraft:logs_that_burn
+      - minecraft:logs
+      - minecraft:completes_find_tree_tutorial
+    sounds:
+      break: minecraft:block.wood.break
+      step: minecraft:block.wood.step
+      place: minecraft:block.wood.place
+      hit: minecraft:block.wood.hit
+      fall: minecraft:block.wood.fall
+  block_settings:planks:
+    hardness: 2.0
+    resistance: 2.0
+    push-reaction: NORMAL
+    replaceable: false
+    burnable: true
+    burn-chance: 5
+    fire-spread-chance: 5
+    is-redstone-conductor: true
+    is-suffocating: true
+    instrument: BASS
+    can-occlude: true
+    tags:
+      - minecraft:mineable/axe
+    sounds:
+      break: minecraft:block.wood.break
+      step: minecraft:block.wood.step
+      place: minecraft:block.wood.place
+      hit: minecraft:block.wood.hit
+      fall: minecraft:block.wood.fall
+  block_settings:ore:
+    hardness: 4.5
+    resistance: 3.0
+    push-reaction: NORMAL
+    is-redstone-conductor: true
+    is-suffocating: true
+    instrument: BASEDRUM
+    can-occlude: true
+    map-color: 11
+    tags:
+      - minecraft:mineable/pickaxe
+    sounds:
+      break: minecraft:block.stone.break
+      step: minecraft:block.stone.step
+      place: minecraft:block.stone.place
+      hit: minecraft:block.stone.hit
+      fall: minecraft:block.stone.fall
+  block_settings:deepslate_ore:
+    hardness: 6
+    resistance: 3.0
+    push-reaction: NORMAL
+    is-redstone-conductor: true
+    is-suffocating: true
+    instrument: BASEDRUM
+    can-occlude: true
+    map-color: 59
+    tags:
+      - minecraft:mineable/pickaxe
+    sounds:
+      break: minecraft:block.deepslate.break
+      step: minecraft:block.deepslate.step
+      place: minecraft:block.deepslate.place
+      hit: minecraft:block.deepslate.hit
+      fall: minecraft:block.deepslate.fall
+
+  # Block States
+  states:log:
+    properties:
+      axis:
+        type: axis
+        default: y
+    appearances:
+      axisY:
+        state: "{base_block}:{vanilla_id}"
+        model:
+          path: "{model_vertical_path}"
+          generation:
+            parent: "minecraft:block/cube_column"
+            textures:
+              "end": "{texture_top_path}"
+              "side": "{texture_side_path}"
+      axisX:
+        state: "{base_block}:{vanilla_id}"
+        model:
+          x: 90
+          y: 90
+          path: "{model_horizontal_path}"
+          generation:
+            parent: "minecraft:block/cube_column_horizontal"
+            textures:
+              "end": "{texture_top_path}"
+              "side": "{texture_side_path}"
+      axisZ:
+        state: "{base_block}:{vanilla_id}"
+        model:
+          x: 90
+          path: "{model_horizontal_path}"
+          generation:
+            parent: "minecraft:block/cube_column_horizontal"
+            textures:
+              "end": "{texture_top_path}"
+              "side": "{texture_side_path}"
+    variants:
+      axis=x:
+        appearance: axisX
+        id: "{internal_id}"
+      axis=y:
+        appearance: axisY
+        id: "{internal_id}"
+      axis=z:
+        appearance: axisZ
+        id: "{internal_id}"
+  states:leaves:
+    properties:
+      waterlogged:
+        type: boolean
+        default: false
+      persistent:
+        type: boolean
+        default: true
+      distance:
+        type: int
+        default: 7
+        range: 1~7
+    appearances:
+      default:
+        state: "{default_state}"
+        model:
+          path: "{model_path}"
+          generation:
+            parent: "minecraft:block/leaves"
+            textures:
+              "all": "{texture_path}"
+      waterlogged:
+        state: "{waterlogged_state}"
+        model:
+          path: "{model_path}"
+    variants:
+      distance=1,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=2,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=3,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=4,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=5,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=6,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=7,persistent=false,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+        settings:
+          is-randomly-ticking: true
+      distance=1,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=2,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=3,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=4,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=5,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=6,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=7,persistent=true,waterlogged=false:
+        appearance: "default"
+        id: "{internal_id}"
+      distance=1,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=2,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=3,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=4,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=5,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=6,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=7,persistent=false,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+          is-randomly-ticking: true
+      distance=1,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=2,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=3,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=4,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=5,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=6,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+      distance=7,persistent=true,waterlogged=true:
+        appearance: "waterlogged"
+        id: "{internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+
+  # Loot Tables
+  loot_table:normal:
+    pools:
+      - rolls: 1
+        conditions:
+          - type: survives_explosion
+        entries:
+          - type: item
+            item: "{item}"
+  loot_table:ore:
+    pools:
+      - rolls: 1
+        conditions:
+          - type: survives_explosion
+        entries:
+          - type: alternatives
+            children:
+              - type: item
+                item: "{ore_block}"
+                conditions:
+                  - type: enchantment
+                    predicate: minecraft:silk_touch>=1
+          - type: item
+            item: "{ore_drop}"
+            functions:
+              - type: apply_bonus
+                enchantment: minecraft:fortune
+                formula: ore_drops
+              - type: explosion_decay
+  loot_table:leaves:
+    pools:
+      - rolls: 1
+        entries:
+          - type: alternatives
+            children:
+              - type: item
+                item: "{leaves}"
+                conditions:
+                  - type: any_of
+                    terms:
+                      - type: match_item
+                        id: minecraft:shears
+                      - type: enchantment
+                        predicate: minecraft:silk_touch>=1
+              - type: item
+                item: "{sapling}"
+                conditions:
+                  - type: survives_explosion
+                  - type: table_bonus
+                    enchantment: minecraft:fortune
+                    chances:
+                      - 0.05
+                      - 0.0625
+                      - 0.083333333
+                      - 0.1
+      - rolls: 1
+        conditions:
+          - type: inverted
+            term:
+              type: any_of
+              terms:
+                - type: match_item
+                  id: minecraft:shears
+                - type: enchantment
+                  predicate: minecraft:silk_touch>=1
+        entries:
+          - type: item
+            item: minecraft:stick
+            conditions:
+              - type: table_bonus
+                enchantment: minecraft:fortune
+                chances:
+                  - 0.02
+                  - 0.022222222
+                  - 0.025
+                  - 0.033333333
+                  - 0.1
+            functions:
+              - type: set_count
+                count:
+                  type: uniform
+                  min: 1
+                  max: 2
+              - type: explosion_decay
