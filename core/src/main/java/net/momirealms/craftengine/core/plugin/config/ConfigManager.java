@@ -15,8 +15,14 @@ import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,6 +37,10 @@ public class ConfigManager implements Reloadable {
             throw new IllegalStateException("Main config not loaded");
         }
         return config;
+    }
+
+    public static ConfigManager instance() {
+        return instance;
     }
 
     protected boolean debug;
@@ -57,7 +67,7 @@ public class ConfigManager implements Reloadable {
     @Override
     public void load() {
         configVersion = PluginProperties.getValue("config");
-        config = plugin.loadYamlConfig(
+        config = this.loadYamlConfig(
                 "config.yml",
                 GeneralSettings.builder()
                         .setRouteSeparator('.')
@@ -200,5 +210,55 @@ public class ConfigManager implements Reloadable {
 
     public static boolean enableRecipeSystem() {
         return instance.enableRecipeSystem;
+    }
+
+    public YamlDocument loadOrCreateYamlData(String fileName) {
+        File file = new File(this.plugin.dataFolderFile(), fileName);
+        if (!file.exists()) {
+            this.plugin.saveResource(fileName);
+        }
+        return this.loadYamlData(file);
+    }
+
+    public YamlDocument loadYamlConfig(String filePath, GeneralSettings generalSettings, LoaderSettings loaderSettings, DumperSettings dumperSettings, UpdaterSettings updaterSettings) {
+        try (InputStream inputStream = new FileInputStream(resolveConfig(filePath).toFile())) {
+            return YamlDocument.create(inputStream, this.plugin.resourceStream(filePath), generalSettings, loaderSettings, dumperSettings, updaterSettings);
+        } catch (IOException e) {
+            this.plugin.logger().severe("Failed to load config " + filePath, e);
+            return null;
+        }
+    }
+
+    public YamlDocument loadYamlData(File file) {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return YamlDocument.create(inputStream);
+        } catch (IOException e) {
+            this.plugin.logger().severe("Failed to load config " + file, e);
+            return null;
+        }
+    }
+
+    public Path resolveConfig(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
+        filePath = filePath.replace('\\', '/');
+        Path configFile = this.plugin.dataFolderPath().resolve(filePath);
+        // if the config doesn't exist, create it based on the template in the resources dir
+        if (!Files.exists(configFile)) {
+            try {
+                Files.createDirectories(configFile.getParent());
+            } catch (IOException ignored) {
+            }
+            try (InputStream is = this.plugin.resourceStream(filePath)) {
+                if (is == null) {
+                    throw new IllegalArgumentException("The embedded resource '" + filePath + "' cannot be found");
+                }
+                Files.copy(is, configFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return configFile;
     }
 }

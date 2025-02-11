@@ -95,7 +95,7 @@ public class PackManagerImpl implements PackManager {
                     String version = null;
                     String author = null;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
-                        YamlDocument metaYML = plugin.loadYamlData(metaFile.toFile());
+                        YamlDocument metaYML = ConfigManager.instance().loadYamlData(metaFile.toFile());
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
                         version = metaYML.getString("version");
@@ -353,7 +353,7 @@ public class PackManagerImpl implements PackManager {
     private void generateBlockOverrides(Path generatedPackPath) {
         File blockStatesFile = new File(plugin.dataFolderFile(), "blockstates.yml");
         if (!blockStatesFile.exists()) plugin.saveResource("blockstates.yml");
-        YamlDocument preset = plugin.loadYamlData(blockStatesFile);
+        YamlDocument preset = ConfigManager.instance().loadYamlData(blockStatesFile);
         for (Map.Entry<Key, Map<String, JsonElement>> entry : plugin.blockManager().blockOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedBlockPath = generatedPackPath

@@ -6,16 +6,12 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
-import net.momirealms.craftengine.core.loot.provider.FixedNumberProvider;
-import net.momirealms.craftengine.core.loot.provider.NumberProviderFactory;
-import net.momirealms.craftengine.core.loot.provider.UniformNumberProvider;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Collections;

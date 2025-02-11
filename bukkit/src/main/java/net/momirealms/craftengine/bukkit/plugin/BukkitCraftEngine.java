@@ -1,10 +1,5 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
-import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
-import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
-import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
@@ -43,7 +38,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -293,51 +287,6 @@ public class BukkitCraftEngine extends CraftEngine {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    @Override
-    public YamlDocument loadYamlConfig(String filePath, GeneralSettings generalSettings, LoaderSettings loaderSettings, DumperSettings dumperSettings, UpdaterSettings updaterSettings) {
-        try (InputStream inputStream = new FileInputStream(resolveConfig(filePath).toFile())) {
-            return YamlDocument.create(inputStream, resourceStream(filePath), generalSettings, loaderSettings, dumperSettings, updaterSettings);
-        } catch (IOException e) {
-            logger.severe("Failed to load config " + filePath, e);
-            return null;
-        }
-    }
-
-    @Override
-    public YamlDocument loadYamlData(File file) {
-        try (InputStream inputStream = new FileInputStream(file)) {
-            return YamlDocument.create(inputStream);
-        } catch (IOException e) {
-            logger.severe("Failed to load config " + file, e);
-            return null;
-        }
-    }
-
-    @Override
-    public Path resolveConfig(String filePath) {
-        if (filePath == null || filePath.isEmpty()) {
-            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
-        }
-        filePath = filePath.replace('\\', '/');
-        Path configFile = dataFolderPath().resolve(filePath);
-        // if the config doesn't exist, create it based on the template in the resources dir
-        if (!Files.exists(configFile)) {
-            try {
-                Files.createDirectories(configFile.getParent());
-            } catch (IOException ignored) {
-            }
-            try (InputStream is = resourceStream(filePath)) {
-                if (is == null) {
-                    throw new IllegalArgumentException("The embedded resource '" + filePath + "' cannot be found");
-                }
-                Files.copy(is, configFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return configFile;
     }
 
     public BukkitServerPlayer adapt(org.bukkit.entity.Player player) {
