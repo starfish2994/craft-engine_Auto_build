@@ -1,0 +1,2 @@
+![Code Size](https://img.shields.io/github/languages/code-size/Xiao-MoMi/craft-engine)
+[![Scc Count Badge](https://sloc.xyz/github/Xiao-MoMi/craft-engine/?category=codes)](https://github.com/Xiao-MoMi/craft-engine/)
