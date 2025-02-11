@@ -25,10 +25,9 @@ public class ItemUtils {
                     .get(nmsInventory$getInventory);
             Object nmsItemStack = Reflections.method$CraftItemStack$asNMSCopy
                     .invoke(null, itemStack);
-            nmsInventory$items.getClass()
-                    .getMethod("set", int.class, Object.class)
+            Reflections.method$NonNullList$set
                     .invoke(nmsInventory$items, slot, nmsItemStack);
-        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
             CraftEngine.instance().logger().warn("Failed to set item", e);
         }
     }

@@ -3916,4 +3916,19 @@ public class Reflections {
                     INVENTORY$ITEMS
             )
     );
+
+    public static final Class<?> clazz$NonNullList = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("core.NonNullList")
+            )
+    );
+
+    public static final Method method$NonNullList$set = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$NonNullList,
+                    Object.class,
+                    int.class,
+                    Object.class
+            )
+    );
 }
