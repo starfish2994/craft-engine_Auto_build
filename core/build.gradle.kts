@@ -13,7 +13,7 @@ dependencies {
     // JOML
     compileOnly("org.joml:joml:1.10.8")
     // YAML
-    implementation("dev.dejvokep:boosted-yaml:${rootProject.properties["boosted_yaml_version"]}")
+    implementation(files("libs/boosted-yaml-${rootProject.properties["boosted_yaml_version"]}.jar"))
     compileOnly("org.yaml:snakeyaml:${rootProject.properties["snake_yaml_version"]}")
     // NBT
     implementation("com.github.Xiao-MoMi:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
