@@ -329,13 +329,14 @@ templates:
                 conditions:
                   - type: enchantment
                     predicate: minecraft:silk_touch>=1
-          - type: item
-            item: "{ore_drop}"
-            functions:
-              - type: apply_bonus
-                enchantment: minecraft:fortune
-                formula: ore_drops
-              - type: explosion_decay
+              - type: item
+                item: "{ore_drop}"
+                functions:
+                  - type: apply_bonus
+                    enchantment: minecraft:fortune
+                    formula:
+                      type: ore_drops
+                  - type: explosion_decay
   loot_table:leaves:
     pools:
       - rolls: 1
