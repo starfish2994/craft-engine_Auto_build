@@ -44,9 +44,11 @@ blocks:
       template: loot_table:ore
       arguments:
         ore_drop: default:topaz
-        ore_block: default:deepslate_topaz_ore
+        ore_block: default:topaz_ore
     settings:
-      template: block_settings:ore
+      template:
+        - block_settings:ore
+        - block_settings:pickaxe_level_2
       overrides:
         item: default:topaz_ore
     state:
@@ -65,7 +67,9 @@ blocks:
         ore_drop: default:topaz
         ore_block: default:deepslate_topaz_ore
     settings:
-      template: block_settings:deepslate_ore
+      template:
+        - block_settings:ore
+        - block_settings:pickaxe_level_2
       overrides:
         item: default:deepslate_topaz_ore
     state:

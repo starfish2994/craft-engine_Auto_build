@@ -1,5 +1,6 @@
 # map-color: https://minecraft.wiki/w/Map_item_format
 templates:
+
   # Block Settings
   block_settings:surface_decoration:
     hardness: 0
@@ -26,6 +27,32 @@ templates:
       place: minecraft:block.grass.place
       hit: minecraft:block.grass.hit
       fall: minecraft:block.grass.fall
+
+  block_settings:pickaxe_level_1:
+    correct-tools:
+      - minecraft:wooden_pickaxe
+      - minecraft:stone_pickaxe
+      - minecraft:iron_pickaxe
+      - minecraft:golden_pickaxe
+      - minecraft:diamond_pickaxe
+      - minecraft:netherite_pickaxe
+  block_settings:pickaxe_level_2:
+    correct-tools:
+      - minecraft:stone_pickaxe
+      - minecraft:iron_pickaxe
+      - minecraft:golden_pickaxe
+      - minecraft:diamond_pickaxe
+      - minecraft:netherite_pickaxe
+  block_settings:pickaxe_level_3:
+    correct-tools:
+      - minecraft:iron_pickaxe
+      - minecraft:golden_pickaxe
+      - minecraft:diamond_pickaxe
+      - minecraft:netherite_pickaxe
+  block_settings:pickaxe_level_4:
+    correct-tools:
+      - minecraft:diamond_pickaxe
+      - minecraft:netherite_pickaxe
   block_settings:log:
     hardness: 2.0
     resistance: 2.0
