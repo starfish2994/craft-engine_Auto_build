@@ -1,10 +1,5 @@
 package net.momirealms.craftengine.core.plugin;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
-import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
-import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
-import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -42,10 +37,6 @@ public interface Plugin extends Reloadable {
 
     void saveResource(String filePath);
 
-    YamlDocument loadYamlConfig(String filePath, GeneralSettings generalSettings, LoaderSettings loaderSettings, DumperSettings dumperSettings, UpdaterSettings updaterSettings);
-
-    YamlDocument loadYamlData(File file);
-
     String pluginVersion();
 
     String serverVersion();
@@ -71,6 +62,4 @@ public interface Plugin extends Reloadable {
     boolean isPluginEnabled(String plugin);
 
     String parse(Player player, String text);
-
-    Path resolveConfig(String filePath);
 }

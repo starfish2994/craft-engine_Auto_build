@@ -12,6 +12,7 @@ import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.plugin.command.sender.Sender;
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.locale.CraftEngineCaptionFormatter;
 import net.momirealms.craftengine.core.plugin.locale.CraftEngineCaptionProvider;
 import net.momirealms.craftengine.core.util.ArrayUtils;
@@ -125,7 +126,7 @@ public abstract class AbstractCommandManager<C> implements CraftEngineCommandMan
 
     @Override
     public void registerDefaultFeatures() {
-        YamlDocument document = plugin.loadYamlConfig(commandsFile,
+        YamlDocument document = ConfigManager.instance().loadYamlConfig(commandsFile,
                 GeneralSettings.DEFAULT,
                 LoaderSettings
                     .builder()

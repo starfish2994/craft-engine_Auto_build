@@ -10,6 +10,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -149,7 +150,7 @@ public class TranslationManagerImpl implements TranslationManager {
         }
 
         Map<String, String> bundle = new HashMap<>();
-        YamlDocument document = plugin.loadYamlConfig("translations" + File.separator + translationFile.getFileName(),
+        YamlDocument document = ConfigManager.instance().loadYamlConfig("translations" + File.separator + translationFile.getFileName(),
                 GeneralSettings.DEFAULT,
                 LoaderSettings
                         .builder()

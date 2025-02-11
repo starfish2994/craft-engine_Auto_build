@@ -39,7 +39,7 @@ dependencies {
     compileOnly("org.incendo:cloud-minecraft-extras:${rootProject.properties["cloud_minecraft_extras_version"]}")
     compileOnly("org.incendo:cloud-paper:${rootProject.properties["cloud_paper_version"]}")
     // YAML
-    compileOnly("dev.dejvokep:boosted-yaml:${rootProject.properties["boosted_yaml_version"]}")
+    compileOnly(files("${rootProject.rootDir}/libs/boosted-yaml-${rootProject.properties["boosted_yaml_version"]}.jar"))
     // Item Tag
     implementation("com.saicone.rtag:rtag:${rootProject.properties["rtag_version"]}")
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")

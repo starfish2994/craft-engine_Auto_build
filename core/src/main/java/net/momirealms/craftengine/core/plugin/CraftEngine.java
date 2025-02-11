@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.plugin;
 
-import dev.dejvokep.boostedyaml.YamlDocument;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
 import net.momirealms.craftengine.core.font.FontManager;
@@ -28,7 +27,6 @@ import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.craftengine.core.world.WorldManager;
 import org.apache.logging.log4j.LogManager;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +64,7 @@ public abstract class CraftEngine implements Plugin {
         dependenciesToLoad.addAll(platformDependencies());
         this.dependencyManager.loadDependencies(dependenciesToLoad);
         this.translationManager = new TranslationManagerImpl(this);
+        this.configManager = new ConfigManager(this);
     }
 
     @Override
@@ -91,7 +90,6 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public void enable() {
         this.networkManager.enable();
-        this.configManager = new ConfigManager(this);
         this.packManager = new PackManagerImpl(this);
         this.fontManager = new FontManagerImpl(this);
         this.templateManager = new TemplateManagerImpl(this);
@@ -127,7 +125,6 @@ public abstract class CraftEngine implements Plugin {
 
     protected List<Dependency> commonDependencies() {
         return List.of(
-//                Dependencies.BOOSTED_YAML,
                 Dependencies.BSTATS_BASE,
                 Dependencies.CAFFEINE,
                 Dependencies.GEANTY_REF,
@@ -137,7 +134,8 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.COMMONS_IO,
                 Dependencies.ZSTD,
                 Dependencies.BYTE_BUDDY,
-                Dependencies.SNAKE_YAML
+                Dependencies.SNAKE_YAML,
+                Dependencies.BOOSTED_YAML
         );
     }
 
@@ -216,13 +214,5 @@ public abstract class CraftEngine implements Plugin {
             throw new IllegalStateException("CraftEngine has not been initialized");
         }
         return instance;
-    }
-
-    public YamlDocument loadOrCreateYamlData(String fileName) {
-        File file = new File(this.dataFolderFile(), fileName);
-        if (!file.exists()) {
-            this.saveResource(fileName);
-        }
-        return this.loadYamlData(file);
     }
 }
