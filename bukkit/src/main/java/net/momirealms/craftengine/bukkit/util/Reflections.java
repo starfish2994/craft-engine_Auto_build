@@ -2995,16 +2995,11 @@ public class Reflections {
 
     public static final Class<?> clazz$ItemEnchantments =
             ReflectionUtils.getClazz(
-                    "world.item.enchantment.ItemEnchantments"
+                    BukkitReflectionUtils.assembleMCClass( "world.item.enchantment.ItemEnchantments")
             );
 
-    public static final Class<?> clazz$Enchantment =
-            ReflectionUtils.getClazz(
-                    "world.item.enchantment.Enchantment"
-            );
-
-    public static final Method method$ItemEnchantments$entrySet = Optional.ofNullable(clazz$ItemEnchantments)
-            .map(it -> ReflectionUtils.getMethod(it, new String[] {"entrySet"}))
+    public static final Field field$ItemEnchantments$enchantments = Optional.ofNullable(clazz$ItemEnchantments)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, 0))
             .orElse(null);
 
     public static final Field field$Direction$data3d = requireNonNull(
