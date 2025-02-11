@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.generator.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -529,7 +530,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private void loadMappingsAndAdditionalBlocks() {
         this.plugin.logger().info("Loading mappings.yml.");
         File mappingFile = new File(plugin.dataFolderFile(), "mappings.yml");
-        YamlDocument mappings = plugin.loadOrCreateYamlData("mappings.yml");
+        YamlDocument mappings = ConfigManager.instance().loadOrCreateYamlData("mappings.yml");
         Map<String, String> blockStateMappings = loadBlockStateMappings(mappings);
         this.validateBlockStateMappings(mappingFile, blockStateMappings);
         Map<Integer, String> stateMap = new HashMap<>();
@@ -542,7 +543,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
         this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
         this.plugin.logger().info("Freed " + this.blockAppearanceMapper.size() + " block state appearances.");
-        YamlDocument additionalYaml = plugin.loadOrCreateYamlData("additional-real-blocks.yml");
+        YamlDocument additionalYaml = ConfigManager.instance().loadOrCreateYamlData("additional-real-blocks.yml");
         this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
     }
 
