@@ -44,7 +44,7 @@ blocks:
       template: loot_table:ore
       arguments:
         ore_drop: default:topaz
-        ore_block: default:deepslate_topaz_ore
+        ore_block: default:topaz_ore
     settings:
       template: block_settings:ore
       overrides:
