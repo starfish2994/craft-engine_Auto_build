@@ -19,10 +19,10 @@ public class ItemUtils {
 
     public static void setItem(PlayerInventory inventory, int slot, ItemStack itemStack) {
         try {
-            Object nmsInventory$getInventory = Reflections.method$CraftInventoryPlayer$getInventory
+            Object nmsInventory = Reflections.method$CraftInventoryPlayer$getInventory
                     .invoke(inventory);
             Object nmsInventory$items = Reflections.field$Inventory$items
-                    .get(nmsInventory$getInventory);
+                    .get(nmsInventory);
             Object nmsItemStack = Reflections.method$CraftItemStack$asNMSCopy
                     .invoke(null, itemStack);
             Reflections.method$NonNullList$set
