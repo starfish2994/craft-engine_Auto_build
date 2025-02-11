@@ -3902,14 +3902,6 @@ public class Reflections {
             )
     );
 
-    public static final Method method$CraftItemStack$asNMSCopy = requireNonNull(
-            ReflectionUtils.getStaticMethod(
-                    clazz$CraftItemStack,
-                    clazz$ItemStack,
-                    ItemStack.class
-            )
-    );
-
     public static final Field field$Inventory$items = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$Inventory,

@@ -23,7 +23,7 @@ public class ItemUtils {
                     .invoke(inventory);
             Object nmsInventory$items = Reflections.field$Inventory$items
                     .get(nmsInventory);
-            Object nmsItemStack = Reflections.method$CraftItemStack$asNMSCopy
+            Object nmsItemStack = Reflections.method$CraftItemStack$asNMSMirror
                     .invoke(null, itemStack);
             Reflections.method$NonNullList$set
                     .invoke(nmsInventory$items, slot, nmsItemStack);
