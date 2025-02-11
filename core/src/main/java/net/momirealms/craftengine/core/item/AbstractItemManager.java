@@ -54,10 +54,6 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             return new ItemNameModifier<>(name);
         }, "item-name");
         registerDataFunction((obj) -> {
-            String name = TypeUtils.checkType(obj, String.class);
-            return new ItemNameModifier<>(name);
-        }, "item-name");
-        registerDataFunction((obj) -> {
             @SuppressWarnings("unchecked")
             List<String> name = (List<String>) TypeUtils.checkType(obj, List.class);
             return new LoreModifier<>(name);
@@ -67,6 +63,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             return new TagsModifier<>(data);
         }, "tags", "tag", "nbt");
         if (VersionHelper.isVersionNewerThan1_20_5()) {
+            registerDataFunction((obj) -> {
+                String name = TypeUtils.checkType(obj, String.class);
+                return new ItemNameModifier<>(name);
+            }, "item-name");
             registerDataFunction((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new ComponentModifier<>(data);
