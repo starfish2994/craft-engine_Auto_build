@@ -36,6 +36,21 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
+    protected void itemName(ItemWrapper<ItemStack> item, String json) {
+        if (json != null) {
+            item.set(json, "item", "Name");
+        } else {
+            item.remove("item", "Name");
+        }
+    }
+
+    @Override
+    protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
+        if (!item.hasTag("item", "Name")) return Optional.empty();
+        return Optional.of(item.get("item", "Name"));
+    }
+
+    @Override
     protected void customModelData(ItemWrapper<ItemStack> item, Integer data) {
         if (data == null) {
             item.remove("CustomModelData");

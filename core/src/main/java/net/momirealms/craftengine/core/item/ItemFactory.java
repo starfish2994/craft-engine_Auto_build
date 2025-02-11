@@ -53,6 +53,10 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
 
     protected abstract Optional<String> displayName(ItemWrapper<I> item);
 
+    protected abstract void itemName(ItemWrapper<I> item, String json);
+
+    protected abstract Optional<String> itemName(ItemWrapper<I> item);
+
     protected abstract void skull(ItemWrapper<I> item, String skullData);
 
     protected abstract Optional<List<String>> lore(ItemWrapper<I> item);
