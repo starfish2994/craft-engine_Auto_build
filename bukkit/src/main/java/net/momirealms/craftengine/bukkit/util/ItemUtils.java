@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -20,19 +19,16 @@ public class ItemUtils {
 
     public static void setItem(PlayerInventory inventory, int slot, ItemStack itemStack) {
         try {
-            Object nmsInventory$getInventory = Reflections.clazz$CraftInventoryPlayer
-                    .getMethod("getInventory").invoke(inventory);
-            Object nmsInventory$items = Reflections.clazz$Inventory
-                    .getDeclaredField(VersionHelper.isMojmap() ? "items" : "i")
+            Object nmsInventory$getInventory = Reflections.method$CraftInventoryPlayer$getInventory
+                    .invoke(inventory);
+            Object nmsInventory$items = Reflections.field$Inventory$items
                     .get(nmsInventory$getInventory);
-            Object nmsItemStack = Reflections.clazz$CraftItemStack
-                    .getMethod("asNMSCopy", ItemStack.class)
+            Object nmsItemStack = Reflections.method$CraftItemStack$asNMSCopy
                     .invoke(null, itemStack);
             nmsInventory$items.getClass()
                     .getMethod("set", int.class, Object.class)
                     .invoke(nmsInventory$items, slot, nmsItemStack);
-        } catch (InvocationTargetException | IllegalAccessException |
-                 NoSuchMethodException | NoSuchFieldException e) {
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             CraftEngine.instance().logger().warn("Failed to set item", e);
         }
     }
