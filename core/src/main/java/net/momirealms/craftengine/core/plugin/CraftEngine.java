@@ -135,7 +135,10 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.ZSTD,
                 Dependencies.BYTE_BUDDY,
                 Dependencies.SNAKE_YAML,
-                Dependencies.BOOSTED_YAML
+                Dependencies.BOOSTED_YAML,
+                Dependencies.MINIMESSAGE,
+                Dependencies.TEXT_SERIALIZER_GSON,
+                Dependencies.TEXT_SERIALIZER_JSON
         );
     }
 
