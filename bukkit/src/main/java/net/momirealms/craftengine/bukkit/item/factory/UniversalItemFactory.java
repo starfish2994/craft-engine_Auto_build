@@ -37,17 +37,12 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void itemName(ItemWrapper<ItemStack> item, String json) {
-        if (json != null) {
-            item.set(json, "item", "Name");
-        } else {
-            item.remove("item", "Name");
-        }
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
     protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
-        if (!item.hasTag("item", "Name")) return Optional.empty();
-        return Optional.of(item.get("item", "Name"));
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
