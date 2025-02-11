@@ -26,6 +26,7 @@ public class BlockSettings {
     @Nullable
     Key itemId;
     Set<Key> tags = Set.of();
+    Set<Key> correctTools = Set.of();
 
     private BlockSettings() {}
 
@@ -146,6 +147,16 @@ public class BlockSettings {
 
     public Tristate isViewBlocking() {
         return isViewBlocking;
+    }
+
+    public boolean isCorrectTool(Key key) {
+        if (this.correctTools.isEmpty()) return true;
+        return this.correctTools.contains(key);
+    }
+
+    public BlockSettings correctTools(Set<Key> correctTools) {
+        this.correctTools = correctTools;
+        return this;
     }
 
     public BlockSettings burnChance(int burnChance) {
@@ -323,6 +334,10 @@ public class BlockSettings {
             registerFactory("can-occlude", (value -> {
                 boolean booleanValue = (boolean) value;
                 return settings -> settings.canOcclude(booleanValue);
+            }));
+            registerFactory("correct-tools", (value -> {
+                List<String> tools = MiscUtils.getAsStringList(value);
+                return settings -> settings.correctTools(tools.stream().map(Key::of).collect(Collectors.toSet()));
             }));
         }
 

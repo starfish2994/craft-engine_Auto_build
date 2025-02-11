@@ -33,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.world.GenericGameEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
@@ -118,11 +119,16 @@ public class BlockEventListener implements Listener {
                 }
 
                 BukkitServerPlayer serverPlayer = plugin.adapt(player);
+                Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                // do not drop if it's not the correct tool
+                if (!state.settings().isCorrectTool(itemInHand.id())) {
+                    return;
+                }
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder();
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.PLAYER, plugin.adapt(player));
-                builder.withParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                builder.withParameter(LootParameters.TOOL, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
