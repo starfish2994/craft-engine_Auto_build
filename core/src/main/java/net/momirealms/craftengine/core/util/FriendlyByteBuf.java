@@ -221,11 +221,11 @@ public class FriendlyByteBuf extends ByteBuf {
         return this.readLongArray(null);
     }
 
-    public long[] readLongArray(@Nullable long[] toArray) {
+    public long[] readLongArray(long @Nullable [] toArray) {
         return this.readLongArray(toArray, this.readableBytes() / 8);
     }
 
-    public long[] readLongArray(@Nullable long[] toArray, int maxSize) {
+    public long[] readLongArray(long @Nullable [] toArray, int maxSize) {
         int arraySize = this.readVarInt();
         if (toArray == null || toArray.length != arraySize) {
             if (arraySize > maxSize) {
