@@ -179,4 +179,25 @@ public class Dependencies {
             "snakeyaml",
             List.of(Relocation.of("snakeyaml", "org{}yaml{}snakeyaml"))
     );
+    public static final Dependency MINIMESSAGE = new Dependency(
+            "adventure-text-minimessage",
+            "net{}kyori",
+            "adventure-text-minimessage",
+            "adventure-text-minimessage",
+            List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
+    );
+    public static final Dependency TEXT_SERIALIZER_GSON = new Dependency(
+            "adventure-text-serializer-gson",
+            "net{}kyori",
+            "adventure-text-serializer-gson",
+            "adventure-text-serializer-gson",
+            List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
+    );
+    public static final Dependency TEXT_SERIALIZER_JSON = new Dependency(
+            "adventure-text-serializer-json",
+            "net{}kyori",
+            "adventure-text-serializer-json",
+            "adventure-text-serializer-json",
+            List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
+    );
 }
