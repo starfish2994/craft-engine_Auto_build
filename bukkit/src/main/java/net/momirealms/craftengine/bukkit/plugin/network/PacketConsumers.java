@@ -339,26 +339,26 @@ public class PacketConsumers {
                 if (sameItemSlot < 9) {
                     inventory.setHeldItemSlot(sameItemSlot);
                     ItemStack previousItem = inventory.getItem(slot - 36);
-                    BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, previousItem));
+                    BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, previousItem));
                 } else {
                     ItemStack sameItem = inventory.getItem(sameItemSlot);
                     int finalSameItemSlot = sameItemSlot;
                     BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> {
-                        inventory.setItem(finalSameItemSlot, new ItemStack(Material.AIR));
-                        inventory.setItem(slot - 36, sameItem);
+                        ItemUtils.setItem(inventory, finalSameItemSlot, new ItemStack(Material.AIR));
+                        ItemUtils.setItem(inventory, slot - 36, sameItem);
                     });
                 }
             } else {
                 if (item.getAmount() == 1) {
                     if (ItemUtils.isEmpty(inventory.getItem(slot - 36))) {
-                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
+                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, itemStack));
                         return;
                     }
                     if (emptySlot != -1) {
                         inventory.setHeldItemSlot(emptySlot);
-                        inventory.setItem(emptySlot, itemStack);
+                        ItemUtils.setItem(inventory, emptySlot, itemStack);
                     } else {
-                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
+                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, itemStack));
                     }
                 }
             }
@@ -395,9 +395,9 @@ public class PacketConsumers {
                     if (picked == null) return;
                     inventory.setHeldItemSlot(targetSlot);
                     ItemStack previous = inventory.getItem(targetSlot);
-                    inventory.setItem(targetSlot, picked.clone());
+                    ItemUtils.setItem(inventory, targetSlot, picked.clone());
                     if (previous != null) {
-                        inventory.setItem(matchingSlot, previous);
+                        ItemUtils.setItem(inventory, targetSlot, previous);
                     } else {
                         picked.setAmount(0);
                     }
@@ -405,13 +405,13 @@ public class PacketConsumers {
             } else if (player.getGameMode() == GameMode.CREATIVE) {
                 inventory.setHeldItemSlot(targetSlot);
                 ItemStack previous = inventory.getItem(targetSlot);
-                inventory.setItem(targetSlot, itemStack);
+                ItemUtils.setItem(inventory, targetSlot, itemStack);
                 if (previous != null) {
                     for (int j = 1; j <= 3; j++) {
                         for (int i = j * 9; i < j * 9 + 9; i++) {
                             ItemStack itemInSlot = inventory.getItem(i);
                             if (ItemUtils.isEmpty(itemInSlot)) {
-                                inventory.setItem(i, previous);
+                                ItemUtils.setItem(inventory, i, previous);
                                 return;
                             }
                         }
@@ -448,9 +448,9 @@ public class PacketConsumers {
                     if (picked == null) return;
                     inventory.setHeldItemSlot(targetSlot);
                     ItemStack previous = inventory.getItem(targetSlot);
-                    inventory.setItem(targetSlot, picked.clone());
+                    ItemUtils.setItem(inventory, targetSlot, picked.clone());
                     if (previous != null) {
-                        inventory.setItem(matchingSlot, previous);
+                        ItemUtils.setItem(inventory, matchingSlot, previous);
                     } else {
                         picked.setAmount(0);
                     }
@@ -458,13 +458,13 @@ public class PacketConsumers {
             } else if (player.getGameMode() == GameMode.CREATIVE) {
                 inventory.setHeldItemSlot(targetSlot);
                 ItemStack previous = inventory.getItem(targetSlot);
-                inventory.setItem(targetSlot, itemStack);
+                ItemUtils.setItem(inventory, targetSlot, itemStack);
                 if (previous != null) {
                     for (int j = 1; j <= 3; j++) {
                         for (int i = j * 9; i < j * 9 + 9; i++) {
                             ItemStack itemInSlot = inventory.getItem(i);
                             if (ItemUtils.isEmpty(itemInSlot)) {
-                                inventory.setItem(i, previous);
+                                ItemUtils.setItem(inventory, i, previous);
                                 return;
                             }
                         }

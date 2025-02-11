@@ -3881,4 +3881,17 @@ public class Reflections {
             ReflectionUtils.getDeclaredField(
                     clazz$RecipeManager, clazz$FeatureFlagSet, 0
             );
+
+    public static final Class<?> clazz$CraftInventoryPlayer = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryPlayer")
+            )
+    );
+
+    public static final Class<?> clazz$Inventory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.player.Inventory"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.player.PlayerInventory")
+            )
+    );
 }
