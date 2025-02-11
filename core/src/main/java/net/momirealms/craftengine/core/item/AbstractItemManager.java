@@ -50,6 +50,14 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             return new DisplayNameModifier<>(name);
         }, "name", "display-name", "custom-name");
         registerDataFunction((obj) -> {
+            String name = TypeUtils.checkType(obj, String.class);
+            return new ItemNameModifier<>(name);
+        }, "item-name");
+        registerDataFunction((obj) -> {
+            String name = TypeUtils.checkType(obj, String.class);
+            return new ItemNameModifier<>(name);
+        }, "item-name");
+        registerDataFunction((obj) -> {
             @SuppressWarnings("unchecked")
             List<String> name = (List<String>) TypeUtils.checkType(obj, List.class);
             return new LoreModifier<>(name);

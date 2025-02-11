@@ -82,6 +82,26 @@ public class ComponentItemFactory extends BukkitItemFactory {
     }
 
     @Override
+    protected void itemName(ItemWrapper<ItemStack> item, String json) {
+        if (json == null) {
+            item.removeComponent(ComponentKeys.ITEM_NAME);
+        } else {
+            item.setComponent(ComponentKeys.ITEM_NAME, json);
+        }
+    }
+
+    @Override
+    protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
+        if (!item.hasComponent(ComponentKeys.ITEM_NAME)) return Optional.empty();
+        return Optional.ofNullable(
+                (String) ComponentType.encodeJava(
+                        ComponentKeys.ITEM_NAME,
+                        item.getComponent(ComponentKeys.ITEM_NAME)
+                ).orElse(null)
+        );
+    }
+
+    @Override
     protected void skull(ItemWrapper<ItemStack> item, String skullData) {
         final Map<String, Object> profile = Map.of(
                 "properties", List.of(

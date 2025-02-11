@@ -85,6 +85,11 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
+    public Optional<String> itemName() {
+        return this.factory.itemName(this.item);
+    }
+
+    @Override
     public Item<I> lore(List<String> lore) {
         this.factory.lore(this.item, lore);
         return this;
@@ -109,6 +114,11 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public Item<I> displayName(String displayName) {
         this.factory.displayName(this.item, displayName);
+        return this;
+    }
+    @Override
+    public Item<I> itemName(String itemName) {
+        this.factory.itemName(this.item, itemName);
         return this;
     }
 

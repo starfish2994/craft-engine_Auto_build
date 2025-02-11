@@ -42,6 +42,10 @@ public interface Item<I> {
 
     Optional<String> displayName();
 
+    Item<I> itemName(String itemName);
+
+    Optional<String> itemName();
+
     Item<I> lore(List<String> lore);
 
     Optional<List<String>> lore();
