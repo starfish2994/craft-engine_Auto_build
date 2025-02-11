@@ -397,7 +397,7 @@ public class PacketConsumers {
                     ItemStack previous = inventory.getItem(targetSlot);
                     ItemUtils.setItem(inventory, targetSlot, picked.clone());
                     if (previous != null) {
-                        ItemUtils.setItem(inventory, targetSlot, previous);
+                        ItemUtils.setItem(inventory, matchingSlot, previous);
                     } else {
                         picked.setAmount(0);
                     }
