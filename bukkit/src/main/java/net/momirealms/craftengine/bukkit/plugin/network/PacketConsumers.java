@@ -339,26 +339,26 @@ public class PacketConsumers {
                 if (sameItemSlot < 9) {
                     inventory.setHeldItemSlot(sameItemSlot);
                     ItemStack previousItem = inventory.getItem(slot - 36);
-                    BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, previousItem));
+                    BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, previousItem));
                 } else {
                     ItemStack sameItem = inventory.getItem(sameItemSlot);
                     int finalSameItemSlot = sameItemSlot;
                     BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> {
-                        ItemUtils.setItem(inventory, finalSameItemSlot, new ItemStack(Material.AIR));
-                        ItemUtils.setItem(inventory, slot - 36, sameItem);
+                        inventory.setItem(finalSameItemSlot, new ItemStack(Material.AIR));
+                        inventory.setItem(slot - 36, sameItem);
                     });
                 }
             } else {
                 if (item.getAmount() == 1) {
                     if (ItemUtils.isEmpty(inventory.getItem(slot - 36))) {
-                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, itemStack));
+                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
                         return;
                     }
                     if (emptySlot != -1) {
                         inventory.setHeldItemSlot(emptySlot);
                         ItemUtils.setItem(inventory, emptySlot, itemStack);
                     } else {
-                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> ItemUtils.setItem(inventory, slot - 36, itemStack));
+                        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
                     }
                 }
             }
