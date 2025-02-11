@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
 import net.momirealms.craftengine.core.loot.condition.LootConditionFactory;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
+import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
 import net.momirealms.craftengine.core.loot.provider.NumberProviderFactory;
 import net.momirealms.craftengine.core.pack.model.ItemModelFactory;
@@ -38,4 +39,5 @@ public class Registries {
     public static final ResourceKey<Registry<ConditionPropertyFactory>> CONDITION_PROPERTY_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("condition_property_factory"));
     public static final ResourceKey<Registry<SelectPropertyFactory>> SELECT_PROPERTY_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("select_property_factory"));
     public static final ResourceKey<Registry<RecipeFactory<?>>> RECIPE_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_factory"));
+    public static final ResourceKey<Registry<ApplyBonusCountFunction.FormulaFactory>> FORMULA_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("formula_factory"));
 }

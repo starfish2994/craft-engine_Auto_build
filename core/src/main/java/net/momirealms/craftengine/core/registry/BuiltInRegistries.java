@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
 import net.momirealms.craftengine.core.loot.condition.LootConditionFactory;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
+import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
 import net.momirealms.craftengine.core.loot.provider.NumberProviderFactory;
 import net.momirealms.craftengine.core.pack.model.ItemModelFactory;
@@ -37,6 +38,7 @@ public class BuiltInRegistries {
     public static final Registry<ConditionPropertyFactory> CONDITION_PROPERTY_FACTORY = createRegistry(Registries.CONDITION_PROPERTY_FACTORY);
     public static final Registry<SelectPropertyFactory> SELECT_PROPERTY_FACTORY = createRegistry(Registries.SELECT_PROPERTY_FACTORY);
     public static final Registry<RecipeFactory<?>> RECIPE_FACTORY = createRegistry(Registries.RECIPE_FACTORY);
+    public static final Registry<ApplyBonusCountFunction.FormulaFactory> FORMULA_FACTORY = createRegistry(Registries.FORMULA_FACTORY);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);
