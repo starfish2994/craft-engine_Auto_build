@@ -232,6 +232,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 try {
                     Reflections.field$RecipeManager$featureflagset.set(this.minecraftRecipeManager, this.stolenFeatureFlagSet);
                     this.stolenFeatureFlagSet = false;
+                    Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(this.minecraftRecipeManager);
                 } catch (ReflectiveOperationException e) {
                     this.plugin.logger().warn("Failed to give featureflagset back", e);
                 }
