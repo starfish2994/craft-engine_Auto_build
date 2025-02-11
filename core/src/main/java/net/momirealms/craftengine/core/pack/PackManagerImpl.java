@@ -169,6 +169,7 @@ public class PackManagerImpl implements PackManager {
     }
 
     private void loadConfigs() {
+        long o1 = System.nanoTime();
         for (Pack pack : loadedPacks()) {
             List<Path> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
             for (Path path : files) {
@@ -190,9 +191,11 @@ public class PackManagerImpl implements PackManager {
                 }
             }
         }
+        long o2 = System.nanoTime();
+        this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
         for (Map.Entry<ConfigSectionParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
             ConfigSectionParser parser = entry.getKey();
-            this.plugin.logger().info("Loading config type: " + parser.sectionId());
+            long t1 = System.nanoTime();
             for (CachedConfig cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
@@ -211,6 +214,8 @@ public class PackManagerImpl implements PackManager {
                     }
                 }
             }
+            long t2 = System.nanoTime();
+            this.plugin.logger().info("Loaded config type: " + parser.sectionId() + ". Took " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
         }
     }
 
