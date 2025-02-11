@@ -356,7 +356,7 @@ public class PacketConsumers {
                     }
                     if (emptySlot != -1) {
                         inventory.setHeldItemSlot(emptySlot);
-                        ItemUtils.setItem(inventory, emptySlot, itemStack);
+                        inventory.setItem(emptySlot, itemStack);
                     } else {
                         BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
                     }
