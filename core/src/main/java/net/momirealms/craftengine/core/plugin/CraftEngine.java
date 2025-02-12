@@ -50,6 +50,7 @@ public abstract class CraftEngine implements Plugin {
     protected SenderFactory<? extends Plugin, ?> senderFactory;
     protected TemplateManager templateManager;
     protected PluginLogger logger;
+    private boolean isReloading;
 
     protected CraftEngine() {
         instance = this;
@@ -69,20 +70,29 @@ public abstract class CraftEngine implements Plugin {
 
     @Override
     public void reload() {
-        this.translationManager.reload();
-        this.configManager.reload();
-        this.templateManager.reload();
-        this.furnitureManager.reload();
-        this.fontManager.reload();
-        this.itemManager.reload();
-        this.recipeManager.reload();
-        this.blockManager.reload();
-        this.worldManager.reload();
-        this.packManager.reload();
-        this.blockManager.delayedLoad();
-        this.recipeManager.delayedLoad().thenRunAsync(() -> {
-            this.packManager.generateResourcePack();
-        }, this.scheduler.async());
+        if (this.isReloading) return;
+        this.isReloading = true;
+        try {
+            this.translationManager.reload();
+            this.configManager.reload();
+            this.templateManager.reload();
+            this.furnitureManager.reload();
+            this.fontManager.reload();
+            this.itemManager.reload();
+            this.recipeManager.reload();
+            this.blockManager.reload();
+            this.worldManager.reload();
+            this.packManager.reload();
+            this.blockManager.delayedLoad();
+        } finally {
+            this.recipeManager.delayedLoad().thenRunAsync(() -> {
+                try {
+                    this.packManager.generateResourcePack();
+                } finally {
+                    this.isReloading = false;
+                }
+            }, this.scheduler.async());
+        }
     }
 
     @Override
