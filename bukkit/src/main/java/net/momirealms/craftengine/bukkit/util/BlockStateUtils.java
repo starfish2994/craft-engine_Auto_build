@@ -46,8 +46,8 @@ public class BlockStateUtils {
 
     public static Key getRealBlockIdFromState(Object blockState) {
         String id = blockState.toString();
-        int first = id.indexOf(123);
-        int last = id.indexOf(125);
+        int first = id.indexOf('{');
+        int last = id.indexOf('}');
         if (first != -1 && last != -1 && last > first) {
             String blockId = id.substring(first + 1, last);
             return Key.of(blockId);
