@@ -222,6 +222,16 @@ items:
     behavior:
       type: block_item
       block: default:palm_planks
+  default:palm_sapling:
+    material: paper
+    custom-model-data: 1005
+    data:
+      display-name: "<!i>Palm Sapling"
+    model:
+      template: models:generated
+      arguments:
+        model_path: "minecraft:item/custom/palm_sapling"
+        texture_path: "minecraft:block/custom/palm_sapling"
   default:palm_leaves:
     material: oak_leaves
     custom-model-data: 1000
