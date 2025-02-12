@@ -17,16 +17,13 @@ public class ItemUtils {
         return item.getAmount() == 0;
     }
 
+    // 1.21.4+
     public static void setItem(PlayerInventory inventory, int slot, ItemStack itemStack) {
         try {
-            Object nmsInventory = Reflections.method$CraftInventoryPlayer$getInventory
-                    .invoke(inventory);
-            Object nmsInventory$items = Reflections.field$Inventory$items
-                    .get(nmsInventory);
-            Object nmsItemStack = Reflections.method$CraftItemStack$asNMSMirror
-                    .invoke(null, itemStack);
-            Reflections.method$NonNullList$set
-                    .invoke(nmsInventory$items, slot, nmsItemStack);
+            Object nmsInventory = Reflections.method$CraftInventoryPlayer$getInventory.invoke(inventory);
+            Object nmsInventory$items = Reflections.field$Inventory$items.get(nmsInventory);
+            Object nmsItemStack = Reflections.method$CraftItemStack$asNMSMirror.invoke(null, itemStack);
+            Reflections.method$NonNullList$set.invoke(nmsInventory$items, slot, nmsItemStack);
         } catch (InvocationTargetException | IllegalAccessException e) {
             CraftEngine.instance().logger().warn("Failed to set item", e);
         }
