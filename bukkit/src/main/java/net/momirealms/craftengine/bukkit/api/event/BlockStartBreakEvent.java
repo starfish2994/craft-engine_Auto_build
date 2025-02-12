@@ -32,6 +32,7 @@ public class BlockStartBreakEvent extends Event implements Cancellable {
         return location;
     }
 
+    @NotNull
     public Player optionalPlayer() {
         return optionalPlayer;
     }
@@ -48,7 +49,6 @@ public class BlockStartBreakEvent extends Event implements Cancellable {
         return handlerList;
     }
 
-    @Override
     public @NotNull HandlerList getHandlers() {
         return getHandlerList();
     }

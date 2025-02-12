@@ -105,7 +105,7 @@ public class BlockEventListener implements Listener {
             ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
             if (!state.isEmpty()) {
                 Location location = block.getLocation();
-                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(state, location, BreakReason.PLAYER_BREAK, event.getPlayer());
+                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(state, location, event.getPlayer());
                 boolean isCancelled = EventUtils.fireAndCheckCancel(customBreakEvent);
                 if (isCancelled) event.setCancelled(true);
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
