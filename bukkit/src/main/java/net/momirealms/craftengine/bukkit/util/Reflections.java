@@ -4050,4 +4050,28 @@ public class Reflections {
         }
         method$RecipeManager$byKey = requireNonNull(method$RecipeManager$byKey0);
     }
+
+    public static final Class<?> clazz$CraftServer = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("CraftServer")
+            )
+    );
+
+    public static final Class<?> clazz$DedicatedPlayerList = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.dedicated.DedicatedPlayerList")
+            )
+    );
+
+    public static final Field field$CraftServer$playerList = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftServer, clazz$DedicatedPlayerList, 0
+            )
+    );
+
+    public static final Method method$DedicatedPlayerList$reloadRecipes = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$DedicatedPlayerList, new String[] {"reloadRecipeData", "reloadRecipes"}
+            )
+    );
 }
