@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
+import net.momirealms.craftengine.bukkit.platform.BukkitPlatform;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
@@ -117,6 +118,7 @@ public class BukkitCraftEngine extends CraftEngine {
         }
         BukkitBlockBehaviors.init();
         BukkitItemBehaviors.init();
+        super.platform = new BukkitPlatform();
         super.senderFactory = new BukkitSenderFactory(this);
         super.itemManager = new BukkitItemManager(this);
         super.recipeManager = new BukkitRecipeManager(this);

@@ -4,10 +4,10 @@ import org.bukkit.event.Cancellable;
 
 import java.nio.file.Path;
 
-public class GenerateResourcePackStartEvent extends GenerateResourcePackEvent implements Cancellable {
+public class AsyncGenerateResourcePackStartEvent extends AsyncGenerateResourcePackEvent implements Cancellable {
     private boolean cancelled;
 
-    public GenerateResourcePackStartEvent(Path generatedPackPath, Path zipFile) {
+    public AsyncGenerateResourcePackStartEvent(Path generatedPackPath, Path zipFile) {
         super(generatedPackPath, zipFile);
     }
 

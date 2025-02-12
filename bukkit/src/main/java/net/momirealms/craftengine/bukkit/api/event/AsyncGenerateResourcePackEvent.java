@@ -6,12 +6,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
-public class GenerateResourcePackEvent extends Event {
+public class AsyncGenerateResourcePackEvent extends Event {
     private static final HandlerList handlerList = new HandlerList();
     private final Path generatedPackPath;
     private final Path zipFile;
 
-    public GenerateResourcePackEvent(Path generatedPackPath, Path zipFile) {
+    public AsyncGenerateResourcePackEvent(Path generatedPackPath, Path zipFile) {
+        super(true);
         this.generatedPackPath = generatedPackPath;
         this.zipFile = zipFile;
     }
