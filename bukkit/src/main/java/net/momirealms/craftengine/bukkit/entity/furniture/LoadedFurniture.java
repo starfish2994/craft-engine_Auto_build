@@ -285,7 +285,7 @@ public class LoadedFurniture {
         seatEntity.addPassenger(player);
     }
 
-    public Key getFurnitureId() {
+    public Key furnitureId() {
         return id;
     }
 }

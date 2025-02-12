@@ -241,16 +241,6 @@ public class PackManagerImpl implements PackManager {
                 .resolve("generated")
                 .resolve("resource_pack");
 
-        Path zipFile = plugin.dataFolderPath()
-                .resolve("generated")
-                .resolve("resource_pack.zip");
-
-        boolean isCancelled = platform.AsyncGenerateResourcePackStartEvent(generatedPackPath, zipFile);
-        if (isCancelled) {
-            plugin.logger().info("Resource pack generation cancelled by event");
-            return;
-        }
-
         try {
             org.apache.commons.io.FileUtils.deleteDirectory(generatedPackPath.toFile());
         } catch (IOException e) {
@@ -277,6 +267,10 @@ public class PackManagerImpl implements PackManager {
         this.generateItemModels(generatedPackPath, plugin.blockManager());
         this.generateSounds(generatedPackPath);
 
+        Path zipFile = plugin.dataFolderPath()
+                .resolve("generated")
+                .resolve("resource_pack.zip");
+
         try {
             ZipUtils.zipDirectory(generatedPackPath, zipFile);
         } catch (IOException e) {
@@ -286,7 +280,7 @@ public class PackManagerImpl implements PackManager {
         long end = System.currentTimeMillis();
         plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
 
-        platform.AsyncGenerateResourcePackEndEvent(generatedPackPath, zipFile);
+        platform.asyncGenerateResourcePackEvent(generatedPackPath, zipFile);
     }
 
     private void generateSounds(Path generatedPackPath) {

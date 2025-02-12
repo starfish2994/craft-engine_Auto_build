@@ -58,7 +58,15 @@ public class ItemEventListener implements Listener {
         if (interactionPoint == null) return;
         Player bukkitPlayer = event.getPlayer();
         Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
-        if (event.getHand() == EquipmentSlot.HAND) {
+        BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
+        InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        if (hand == InteractionHand.OFF_HAND) {
+            int currentTicks = player.gameTicks();
+            if (!player.updateLastSuccessfulInteractionTick(currentTicks)) {
+                event.setCancelled(true);
+                return;
+            }
+        } else {
             Key blockKey = BlockStateUtils.getRealBlockId(clickedBlock);
             if (blockKey.namespace().equals("craftengine")) {
                 int blockId = BlockStateUtils.blockDataToId(clickedBlock.getBlockData());
@@ -72,15 +80,6 @@ public class ItemEventListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-            }
-        }
-        BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
-        InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-        if (hand == InteractionHand.OFF_HAND) {
-            int currentTicks = player.gameTicks();
-            if (!player.updateLastSuccessfulInteractionTick(currentTicks)) {
-                event.setCancelled(true);
-                return;
             }
         }
 

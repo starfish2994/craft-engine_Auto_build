@@ -8,13 +8,13 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FurnitureEvent extends Event implements Cancellable {
+public abstract class FurnitureEvent extends Event implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();
     private boolean cancelled;
     private final LoadedFurniture furniture;
     private final Player player;
 
-    public FurnitureEvent(LoadedFurniture furniture, @NotNull Player player) {
+    public FurnitureEvent(@Nullable LoadedFurniture furniture, @NotNull Player player) {
         this.furniture = furniture;
         this.player = player;
     }

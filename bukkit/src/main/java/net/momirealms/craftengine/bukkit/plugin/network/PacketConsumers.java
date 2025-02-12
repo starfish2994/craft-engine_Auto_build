@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.momirealms.craftengine.bukkit.api.event.BlockStartBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
@@ -184,17 +183,6 @@ public class PacketConsumers {
                 Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
                 Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(serverLevel, blockPos);
                 int stateId = BlockStateUtils.blockStateToId(blockState);
-                BlockStartBreakEvent BlockStartBreakEvent = new BlockStartBreakEvent(
-                        stateId,
-                        new Location(world, pos.x(), pos.y(), pos.z()),
-                        platformPlayer
-                );
-                if (EventUtils.fireAndCheckCancel(BlockStartBreakEvent) && player.isCreativeMode()) {
-                    if (player.isMiningBlock()) {
-                        player.stopMiningBlock();
-                    }
-                    return;
-                }
                 // not a custom block
                 if (BlockStateUtils.isVanillaBlock(stateId)) {
                     if (ConfigManager.enableSoundSystem()) {

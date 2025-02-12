@@ -150,7 +150,10 @@ public class FurnitureItemBehavior extends ItemBehavior {
                 ),
                 (org.bukkit.entity.Player) player.platformPlayer()
         );
-        EventUtils.fireAndForget(furniturePlaceEndEvent);
+        if (EventUtils.fireAndCheckCancel(furniturePlaceEndEvent)) {
+            furnitureEntity.remove();
+            return InteractionResult.FAIL;
+        }
         return InteractionResult.SUCCESS;
     }
 
