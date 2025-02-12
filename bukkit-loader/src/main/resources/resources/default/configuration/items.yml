@@ -1,25 +1,29 @@
 items:
-  default:beginner_rod:
+  default:topaz_rod:
     material: fishing_rod
     custom-model-data: 1000
     data:
-      display-name: "Beginner Rod"
-      lore:
-        - "This is the description"
+      display-name: "<!i><#FF8C00>Topaz Rod"
     model:
-      type: "minecraft:condition"
-      property: "minecraft:fishing_rod/cast"
-      on-false:
-        type: "minecraft:model"
-        path: "minecraft:item/custom/beginner_rod"
-        generation:
-          parent: "minecraft:item/fishing_rod"
-          textures:
-            "layer0": "minecraft:item/custom/beginner_rod"
-      on-true:
-        type: "minecraft:model"
-        path: "minecraft:item/custom/beginner_rod_cast"
-        generation:
-          parent: "minecraft:item/fishing_rod"
-          textures:
-            "layer0": "minecraft:item/custom/beginner_rod_cast"
+      template: models:fishing_rod_2d
+      arguments:
+        rod_model: minecraft:item/custom/topaz_rod
+        rod_texture: minecraft:item/custom/topaz_rod
+        rod_cast_model: minecraft:item/custom/topaz_rod_cast
+        rod_cast_texture: minecraft:item/custom/topaz_rod_cast
+  default:topaz_bow:
+    material: bow
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00>Topaz Bow"
+    model:
+      template: models:bow_2d
+      arguments:
+        bow_model: minecraft:item/custom/topaz_bow
+        bow_texture: minecraft:item/custom/topaz_bow
+        bow_pulling_0_model: minecraft:item/custom/topaz_bow_pulling_0
+        bow_pulling_0_texture: minecraft:item/custom/topaz_bow_pulling_0
+        bow_pulling_1_model: minecraft:item/custom/topaz_bow_pulling_1
+        bow_pulling_1_texture: minecraft:item/custom/topaz_bow_pulling_1
+        bow_pulling_2_model: minecraft:item/custom/topaz_bow_pulling_2
+        bow_pulling_2_texture: minecraft:item/custom/topaz_bow_pulling_2

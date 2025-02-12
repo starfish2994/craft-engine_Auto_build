@@ -62,6 +62,7 @@ public class RangeDispatchItemModel implements ItemModel {
             jo.add("model", model.get());
             array.add(jo);
         }
+        json.add("entries", array);
         if (scale != 1) {
             json.addProperty("scale", scale);
         }

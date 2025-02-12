@@ -29,7 +29,7 @@ items:
     material: paper
     custom-model-data: 1012
     data:
-      display-name: "<!i>Topaz"
+      display-name: "<!i><#FF8C00>Topaz"
     model:
       template: models:generated
       arguments:
