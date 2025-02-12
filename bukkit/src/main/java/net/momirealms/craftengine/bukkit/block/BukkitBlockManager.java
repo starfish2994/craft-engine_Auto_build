@@ -248,7 +248,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         int vanillaStateCount;
         if (plugin.hasMod()) {
             try {
-                Class<?> modClass = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.CraftEnginePlugin");
+                Class<?> modClass = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
                 Field amountField = ReflectionUtils.getDeclaredField(modClass, "vanillaRegistrySize");
                 vanillaStateCount = (int) amountField.get(null);
             } catch (Exception e) {

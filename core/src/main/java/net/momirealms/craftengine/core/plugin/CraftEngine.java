@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class CraftEngine implements Plugin {
+    public static final String MOD_CLASS = "net.momirealms.craftengine.mod.CraftEnginePlugin";
     public static final String NAMESPACE = "craftengine";
     private static CraftEngine instance;
     protected DependencyManager dependencyManager;

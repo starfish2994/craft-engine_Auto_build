@@ -56,7 +56,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.classPathAppender = new ReflectionClassPathAppender(this);
         super.scheduler = new BukkitSchedulerAdapter(this);
         super.logger = new JavaPluginLogger(bootstrap.getLogger());
-        Class<?> modClass = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.CraftEnginePlugin");
+        Class<?> modClass = ReflectionUtils.getClazz(MOD_CLASS);
         if (modClass != null) {
             Field isSuccessfullyRegistered = ReflectionUtils.getDeclaredField(modClass, "isSuccessfullyRegistered");
             try {
