@@ -41,6 +41,7 @@ public class Reflections {
     }
 
     public static final Unsafe UNSAFE;
+    public static final String INVENTORY$ITEMS = VersionHelper.isMojmap() ? "items" : "i";
 
     static {
         try {
@@ -3881,4 +3882,45 @@ public class Reflections {
             ReflectionUtils.getDeclaredField(
                     clazz$RecipeManager, clazz$FeatureFlagSet, 0
             );
+
+    public static final Class<?> clazz$CraftInventoryPlayer = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryPlayer")
+            )
+    );
+
+    public static final Class<?> clazz$Inventory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.player.Inventory"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.player.PlayerInventory")
+            )
+    );
+    public static final Method method$CraftInventoryPlayer$getInventory = requireNonNull(
+            ReflectionUtils.getMethod(
+                clazz$CraftInventoryPlayer,
+                new String[]{ "getInventory" }
+            )
+    );
+
+    public static final Field field$Inventory$items = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$Inventory,
+                    INVENTORY$ITEMS
+            )
+    );
+
+    public static final Class<?> clazz$NonNullList = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("core.NonNullList")
+            )
+    );
+
+    public static final Method method$NonNullList$set = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$NonNullList,
+                    Object.class,
+                    int.class,
+                    Object.class
+            )
+    );
 }

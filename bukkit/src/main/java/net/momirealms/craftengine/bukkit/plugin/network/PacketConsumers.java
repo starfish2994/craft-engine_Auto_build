@@ -395,9 +395,9 @@ public class PacketConsumers {
                     if (picked == null) return;
                     inventory.setHeldItemSlot(targetSlot);
                     ItemStack previous = inventory.getItem(targetSlot);
-                    inventory.setItem(targetSlot, picked.clone());
+                    ItemUtils.setItem(inventory, targetSlot, picked.clone());
                     if (previous != null) {
-                        inventory.setItem(matchingSlot, previous);
+                        ItemUtils.setItem(inventory, matchingSlot, previous);
                     } else {
                         picked.setAmount(0);
                     }
@@ -405,13 +405,13 @@ public class PacketConsumers {
             } else if (player.getGameMode() == GameMode.CREATIVE) {
                 inventory.setHeldItemSlot(targetSlot);
                 ItemStack previous = inventory.getItem(targetSlot);
-                inventory.setItem(targetSlot, itemStack);
+                ItemUtils.setItem(inventory, targetSlot, itemStack);
                 if (previous != null) {
                     for (int j = 1; j <= 3; j++) {
                         for (int i = j * 9; i < j * 9 + 9; i++) {
                             ItemStack itemInSlot = inventory.getItem(i);
                             if (ItemUtils.isEmpty(itemInSlot)) {
-                                inventory.setItem(i, previous);
+                                ItemUtils.setItem(inventory, i, previous);
                                 return;
                             }
                         }
@@ -448,9 +448,9 @@ public class PacketConsumers {
                     if (picked == null) return;
                     inventory.setHeldItemSlot(targetSlot);
                     ItemStack previous = inventory.getItem(targetSlot);
-                    inventory.setItem(targetSlot, picked.clone());
+                    ItemUtils.setItem(inventory, targetSlot, picked.clone());
                     if (previous != null) {
-                        inventory.setItem(matchingSlot, previous);
+                        ItemUtils.setItem(inventory, matchingSlot, previous);
                     } else {
                         picked.setAmount(0);
                     }
@@ -458,13 +458,13 @@ public class PacketConsumers {
             } else if (player.getGameMode() == GameMode.CREATIVE) {
                 inventory.setHeldItemSlot(targetSlot);
                 ItemStack previous = inventory.getItem(targetSlot);
-                inventory.setItem(targetSlot, itemStack);
+                ItemUtils.setItem(inventory, targetSlot, itemStack);
                 if (previous != null) {
                     for (int j = 1; j <= 3; j++) {
                         for (int i = j * 9; i < j * 9 + 9; i++) {
                             ItemStack itemInSlot = inventory.getItem(i);
                             if (ItemUtils.isEmpty(itemInSlot)) {
-                                inventory.setItem(i, previous);
+                                ItemUtils.setItem(inventory, i, previous);
                                 return;
                             }
                         }

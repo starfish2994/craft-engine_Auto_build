@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
@@ -120,8 +121,14 @@ public class BlockEventListener implements Listener {
 
                 BukkitServerPlayer serverPlayer = plugin.adapt(player);
                 Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                Key itemId;
+                if (itemInHand == null) {
+                    itemId = Key.of("minecraft:air");
+                } else {
+                    itemId = itemInHand.id();
+                }
                 // do not drop if it's not the correct tool
-                if (!state.settings().isCorrectTool(itemInHand.id())) {
+                if (!state.settings().isCorrectTool(itemId)) {
                     return;
                 }
                 // drop items
