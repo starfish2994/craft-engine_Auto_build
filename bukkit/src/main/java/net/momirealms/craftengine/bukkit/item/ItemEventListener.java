@@ -58,7 +58,7 @@ public class ItemEventListener implements Listener {
         Block block = Objects.requireNonNull(event.getClickedBlock());
         Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
         int stateId = BlockStateUtils.blockStateToId(blockState);
-        if (!BlockStateUtils.isVanillaBlock(stateId)) {
+        if (BlockStateUtils.isVanillaBlock(stateId)) {
             return;
         }
 
@@ -123,35 +123,35 @@ public class ItemEventListener implements Listener {
             ) {
                 player.sendActionBar(Component.translatable("build.tooHigh").arguments(Component.text(maxY)).color(NamedTextColor.RED));
             }
-        } else {
+        } else if (material.isBlock()) {
             // vanilla item
-            if (material.isBlock()) {
-                // client won't have sounds if the fake block is interactable
-                Object blockState = BlockStateUtils.blockDataToBlockState(clickedBlock.getBlockData());
-                int stateId = BlockStateUtils.blockStateToId(blockState);
-                if (!BlockStateUtils.isVanillaBlock(stateId)) {
-                    ImmutableBlockState againCustomBlock = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
-                    if (!againCustomBlock.isEmpty()) {
-                        BlockPos pos = LocationUtils.toBlockPos(clickedBlock.getLocation());
-                        Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
-                        Direction direction = DirectionUtils.toDirection(event.getBlockFace());
-                        BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
-                        try {
-                            BlockData craftBlockData = (BlockData) Reflections.method$CraftBlockData$createData.invoke(null, againCustomBlock.vanillaBlockState().handle());
-                            if (InteractUtils.isInteractable(Key.of(clickedBlock.getType().getKey().asString()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
-                                if (!player.isSecondaryUseActive()) {
-                                    player.setResendSound();
-                                }
-                            } else {
-                                if (BlockStateUtils.isReplaceable(againCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againCustomBlock.vanillaBlockState().handle())) {
-                                    player.setResendSwing();
-                                }
-                            }
-                        } catch (ReflectiveOperationException e) {
-                            plugin.logger().warn("Failed to get CraftBlockData", e);
-                        }
+            // client won't have sounds if the fake block is interactable
+            Object blockState = BlockStateUtils.blockDataToBlockState(clickedBlock.getBlockData());
+            int stateId = BlockStateUtils.blockStateToId(blockState);
+            if (BlockStateUtils.isVanillaBlock(stateId)) {
+                return;
+            }
+            ImmutableBlockState againCustomBlock = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+            if (againCustomBlock.isEmpty()) {
+                return;
+            }
+            BlockPos pos = LocationUtils.toBlockPos(clickedBlock.getLocation());
+            Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
+            Direction direction = DirectionUtils.toDirection(event.getBlockFace());
+            BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
+            try {
+                BlockData craftBlockData = (BlockData) Reflections.method$CraftBlockData$createData.invoke(null, againCustomBlock.vanillaBlockState().handle());
+                if (InteractUtils.isInteractable(Key.of(clickedBlock.getType().getKey().asString()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
+                    if (!player.isSecondaryUseActive()) {
+                        player.setResendSound();
+                    }
+                } else {
+                    if (BlockStateUtils.isReplaceable(againCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againCustomBlock.vanillaBlockState().handle())) {
+                        player.setResendSwing();
                     }
                 }
+            } catch (ReflectiveOperationException e) {
+                plugin.logger().warn("Failed to get CraftBlockData", e);
             }
         }
     }
