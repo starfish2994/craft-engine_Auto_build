@@ -57,7 +57,6 @@ public class ItemEventListener implements Listener {
         Location interactionPoint = event.getInteractionPoint();
         if (interactionPoint == null) return;
         Player bukkitPlayer = event.getPlayer();
-        // TODO: 自定义方块交互事件
         Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
         if (event.getHand() == EquipmentSlot.HAND) {
             Key blockKey = BlockStateUtils.getRealBlockId(clickedBlock);
