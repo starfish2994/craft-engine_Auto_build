@@ -41,7 +41,6 @@ public class Reflections {
     }
 
     public static final Unsafe UNSAFE;
-    public static final String INVENTORY$ITEMS = VersionHelper.isMojmap() ? "items" : "i";
 
     static {
         try {
@@ -3895,17 +3894,10 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("world.entity.player.PlayerInventory")
             )
     );
+
     public static final Method method$CraftInventoryPlayer$getInventory = requireNonNull(
             ReflectionUtils.getMethod(
-                clazz$CraftInventoryPlayer,
-                new String[]{ "getInventory" }
-            )
-    );
-
-    public static final Field field$Inventory$items = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$Inventory,
-                    INVENTORY$ITEMS
+                    clazz$CraftInventoryPlayer, new String[]{ "getInventory" }
             )
     );
 
@@ -3915,12 +3907,15 @@ public class Reflections {
             )
     );
 
+    public static final Field field$Inventory$items = requireNonNull(
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$Inventory, clazz$NonNullList, 0
+            )
+    );
+
     public static final Method method$NonNullList$set = requireNonNull(
             ReflectionUtils.getMethod(
-                    clazz$NonNullList,
-                    Object.class,
-                    int.class,
-                    Object.class
+                    clazz$NonNullList, Object.class, int.class, Object.class
             )
     );
 }

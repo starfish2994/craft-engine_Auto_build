@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.util.Key;
 
 public class ItemKeys {
+    public static final Key AIR = Key.of("minecraft:air");
     public static final Key TRIDENT = Key.of("minecraft:trident");
     public static final Key SHIELD = Key.of("minecraft:shield");
     public static final Key BOW = Key.of("minecraft:bow");

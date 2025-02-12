@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.block.PushReaction;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.util.Key;
@@ -37,6 +38,7 @@ import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 
 // TODO interact waterlogged blocks
 public class BlockEventListener implements Listener {
@@ -121,12 +123,7 @@ public class BlockEventListener implements Listener {
 
                 BukkitServerPlayer serverPlayer = plugin.adapt(player);
                 Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
-                Key itemId;
-                if (itemInHand == null) {
-                    itemId = Key.of("minecraft:air");
-                } else {
-                    itemId = itemInHand.id();
-                }
+                Key itemId = Optional.ofNullable(itemInHand).map(Item::id).orElse(ItemKeys.AIR);
                 // do not drop if it's not the correct tool
                 if (!state.settings().isCorrectTool(itemId)) {
                     return;
