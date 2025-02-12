@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
+import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -56,6 +57,24 @@ public class ItemEventListener implements Listener {
         Location interactionPoint = event.getInteractionPoint();
         if (interactionPoint == null) return;
         Player bukkitPlayer = event.getPlayer();
+        // TODO: 自定义方块交互事件
+        Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
+        if (event.getHand() == EquipmentSlot.HAND) {
+            Key blockKey = BlockStateUtils.getRealBlockId(clickedBlock);
+            if (blockKey.namespace().equals("craftengine")) {
+                int blockId = BlockStateUtils.blockDataToId(clickedBlock.getBlockData());
+                ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(blockId);
+                CustomBlockInteractEvent customBlockInteractEvent = new CustomBlockInteractEvent(
+                        state,
+                        clickedBlock.getLocation(),
+                        bukkitPlayer
+                );
+                if (EventUtils.fireAndCheckCancel(customBlockInteractEvent)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
         BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (hand == InteractionHand.OFF_HAND) {
@@ -70,7 +89,6 @@ public class ItemEventListener implements Listener {
         if (itemInHand == null) return;
         Optional<CustomItem<ItemStack>> customItem = itemInHand.getCustomItem();
 
-        Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
         Material material = itemInHand.getItem().getType();
         // is custom item
         if (customItem.isPresent()) {
