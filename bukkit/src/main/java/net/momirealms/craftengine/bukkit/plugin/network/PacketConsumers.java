@@ -3,6 +3,8 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
@@ -552,12 +554,16 @@ public class PacketConsumers {
             BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                 if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
                     if (furniture.isValid()) {
+                        FurnitureBreakEvent furnitureBreakEvent = new FurnitureBreakEvent(furniture, serverPlayer.platformPlayer());
+                        if (EventUtils.fireAndCheckCancel(furnitureBreakEvent)) return;
                         furniture.onPlayerDestroy(serverPlayer);
                     }
                 } else if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
                     if (player.isSneaking()) {
                         return;
                     }
+                    FurnitureInteractEvent furnitureInteractEvent = new FurnitureInteractEvent(furniture, serverPlayer.platformPlayer());
+                    if (EventUtils.fireAndCheckCancel(furnitureInteractEvent)) return;
                     furniture.getAvailableSeat(entityId).ifPresent(seatPos -> {
                         if (furniture.occupySeat(seatPos)) {
                             furniture.mountSeat(Objects.requireNonNull(player.getPlayer()), seatPos);

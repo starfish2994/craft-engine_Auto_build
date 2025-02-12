@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.pack.PackManager;
 import net.momirealms.craftengine.core.pack.PackManagerImpl;
+import net.momirealms.craftengine.core.platform.Platform;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -34,6 +35,7 @@ public abstract class CraftEngine implements Plugin {
     public static final String MOD_CLASS = "net.momirealms.craftengine.mod.CraftEnginePlugin";
     public static final String NAMESPACE = "craftengine";
     private static CraftEngine instance;
+    protected Platform platform;
     protected DependencyManager dependencyManager;
     protected SchedulerAdapter<?> scheduler;
     protected NetworkManager networkManager;
@@ -99,7 +101,7 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public void enable() {
         this.networkManager.enable();
-        this.packManager = new PackManagerImpl(this);
+        this.packManager = new PackManagerImpl(this, this.platform);
         this.fontManager = new FontManagerImpl(this);
         this.templateManager = new TemplateManagerImpl(this);
         this.commandManager.registerDefaultFeatures();

@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.bukkit.item.behavior;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
+import net.momirealms.craftengine.bukkit.api.event.CustomBlockPlaceEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
@@ -69,6 +71,14 @@ public class BlockItemBehavior extends ItemBehavior {
 
         BlockPos pos = placeContext.getClickedPos();
         World world = (World) placeContext.getLevel().getHandle();
+        CustomBlockPlaceEvent customBlockPlaceEvent = new CustomBlockPlaceEvent(
+                blockStateToPlace,
+                new Location(world, pos.x(), pos.y(), pos.z()),
+                (org.bukkit.entity.Player) placeContext.getPlayer().platformPlayer()
+        );
+        if (EventUtils.fireAndCheckCancel(customBlockPlaceEvent)) {
+            return InteractionResult.FAIL;
+        }
         CraftEngineBlocks.place(new Location(world, pos.x(), pos.y(), pos.z()), blockStateToPlace, UpdateOption.UPDATE_ALL_IMMEDIATE);
 
         if (!player.isCreativeMode()) {

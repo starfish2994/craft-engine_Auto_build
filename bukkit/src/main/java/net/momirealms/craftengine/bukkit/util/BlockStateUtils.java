@@ -35,8 +35,17 @@ public class BlockStateUtils {
     public static Key getRealBlockId(Block block) {
         BlockData data = block.getBlockData();
         Object blockState = blockDataToBlockState(data);
+        return getRealBlockIdFromState(blockState);
+    }
+
+    public static Key getRealBlockIdFromStateId(int stateId) {
+        Object blockState = idToBlockState(stateId);
         Object owner = getBlockOwner(blockState);
-        String id = owner.toString();
+        return getRealBlockIdFromState(owner);
+    }
+
+    public static Key getRealBlockIdFromState(Object blockState) {
+        String id = blockState.toString();
         int first = id.indexOf('{');
         int last = id.indexOf('}');
         if (first != -1 && last != -1 && last > first) {

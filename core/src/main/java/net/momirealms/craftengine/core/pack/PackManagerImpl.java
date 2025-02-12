@@ -11,6 +11,7 @@ import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.pack.generator.ModelGeneration;
 import net.momirealms.craftengine.core.pack.generator.ModelGenerator;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
+import net.momirealms.craftengine.core.platform.Platform;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
@@ -35,12 +36,14 @@ public class PackManagerImpl implements PackManager {
     private static final String LEGACY_TEMPLATES = PluginProperties.getValue("legacy-templates").replace(".", "_");
     private static final String LATEST_TEMPLATES = PluginProperties.getValue("latest-templates").replace(".", "_");
     private final CraftEngine plugin;
+    private final Platform platform;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
 
-    public PackManagerImpl(CraftEngine plugin) {
+    public PackManagerImpl(CraftEngine plugin, Platform platform) {
         this.plugin = plugin;
+        this.platform = platform;
     }
 
     @Override
@@ -267,6 +270,7 @@ public class PackManagerImpl implements PackManager {
         Path zipFile = plugin.dataFolderPath()
                 .resolve("generated")
                 .resolve("resource_pack.zip");
+
         try {
             ZipUtils.zipDirectory(generatedPackPath, zipFile);
         } catch (IOException e) {
@@ -275,6 +279,8 @@ public class PackManagerImpl implements PackManager {
 
         long end = System.currentTimeMillis();
         plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
+
+        platform.asyncGenerateResourcePackEvent(generatedPackPath, zipFile);
     }
 
     private void generateSounds(Path generatedPackPath) {
