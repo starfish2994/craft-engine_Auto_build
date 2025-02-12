@@ -257,7 +257,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 }
 
                 // send to players
-
+                Reflections.method$DedicatedPlayerList$reloadRecipes.invoke(Reflections.field$CraftServer$playerList.get(Bukkit.getServer()));
 
                 // now we need to remove the fake `exact`
                 if (VersionHelper.isVersionNewerThan1_21_4()) {
