@@ -55,7 +55,7 @@ blocks:
     settings:
       template: block_settings:log
       overrides:
-        item: default:palm_log
+        item: default:stripped_palm_log
     states:
       template: states:log
       arguments:
@@ -105,7 +105,7 @@ blocks:
     settings:
       template: block_settings:log
       overrides:
-        item: default:palm_wood
+        item: default:stripped_palm_wood
     states:
       template: states:log
       arguments:
