@@ -10,19 +10,19 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class CustomBlockEvent  extends Event implements Cancellable {
+public class CustomBlockEvent extends Event implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();
     private boolean cancelled;
     private final CustomBlock block;
     private final ImmutableBlockState state;
     private final Location location;
-    private final Player optionalPlayer;
+    private final Player player;
 
-    public CustomBlockEvent(ImmutableBlockState state, Location location, Player optionalPlayer) {
+    public CustomBlockEvent(ImmutableBlockState state, Location location, @NotNull Player player) {
         this.block = state.owner().value();
         this.state = state;
         this.location = location;
-        this.optionalPlayer = optionalPlayer;
+        this.player = player;
     }
 
     public CustomBlock block() {
@@ -37,8 +37,8 @@ public class CustomBlockEvent  extends Event implements Cancellable {
         return this.location;
     }
 
-    public @NotNull Player optionalPlayer() {
-        return this.optionalPlayer;
+    public @NotNull Player player() {
+        return this.player;
     }
 
     public ImmutableBlockState state() {

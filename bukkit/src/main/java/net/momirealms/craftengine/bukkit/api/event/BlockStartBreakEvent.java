@@ -15,13 +15,13 @@ public class BlockStartBreakEvent extends Event implements Cancellable {
     private boolean cancelled;
     private final Key blockId;
     private final Location location;
-    private final Player optionalPlayer;
+    private final Player player;
 
-    public BlockStartBreakEvent(int stateId, Location location, Player optionalPlayer) {
+    public BlockStartBreakEvent(int stateId, Location location, Player player) {
         super(true);
         this.blockId = BlockStateUtils.getRealBlockIdFromStateId(stateId);
         this.location = location;
-        this.optionalPlayer = optionalPlayer;
+        this.player = player;
     }
 
     public BlockPos blockPos() {
@@ -32,9 +32,8 @@ public class BlockStartBreakEvent extends Event implements Cancellable {
         return location;
     }
 
-    @NotNull
-    public Player optionalPlayer() {
-        return optionalPlayer;
+    public @NotNull Player player() {
+        return player;
     }
 
     public Key blockId() {

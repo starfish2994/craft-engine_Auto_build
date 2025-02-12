@@ -5,8 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class CustomBlockBreakEvent extends CustomBlockEvent {
-    public CustomBlockBreakEvent(ImmutableBlockState state, Location location, Player optionalPlayer) {
-        super(state, location, optionalPlayer);
+    public CustomBlockBreakEvent(ImmutableBlockState state, Location location, Player player) {
+        super(state, location, player);
     }
 }
 

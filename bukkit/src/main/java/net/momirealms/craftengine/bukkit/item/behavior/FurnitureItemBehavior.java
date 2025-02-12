@@ -1,7 +1,11 @@
 package net.momirealms.craftengine.bukkit.item.behavior;
 
+import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEndEvent;
+import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
+import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.core.block.BlockSounds;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
@@ -16,6 +20,7 @@ import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +28,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -82,6 +88,13 @@ public class FurnitureItemBehavior extends ItemBehavior {
         if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
             return InteractionResult.FAIL;
         }
+        FurniturePlaceEvent furniturePlaceEvent = new FurniturePlaceEvent(
+                null,
+                (org.bukkit.entity.Player) player.platformPlayer()
+        );
+        if (EventUtils.fireAndCheckCancel(furniturePlaceEvent)) {
+            return InteractionResult.FAIL;
+        }
         if (!player.isCreativeMode()) {
             Item<?> item = context.getItem();
             item.count(item.count() - 1);
@@ -111,9 +124,9 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         // spawn entity and load
-        EntityUtils.spawnEntity(world, new Location(world, finalPlacePosition.x(), finalPlacePosition.y(), finalPlacePosition.z()), EntityType.ITEM_DISPLAY, entity -> {
+        Quaternionf quaternion = QuaternionUtils.toQuaternionf(0, Math.toRadians(furnitureYaw), 0);
+        Entity furnitureEntity = EntityUtils.spawnEntity(world, new Location(world, finalPlacePosition.x(), finalPlacePosition.y(), finalPlacePosition.z()), EntityType.ITEM_DISPLAY, entity -> {
             ItemDisplay display = (ItemDisplay) entity;
-            Quaternionf quaternion = QuaternionUtils.toQuaternionf(0, Math.toRadians(furnitureYaw), 0);
             display.setTransformation(
                     new Transformation(
                             new Vector3f(),
@@ -127,6 +140,17 @@ public class FurnitureItemBehavior extends ItemBehavior {
             BukkitFurnitureManager.instance().handleEntityLoadEarly(display);
         });
         context.getLevel().playBlockSound(clickedPosition, sounds.placeSound(), 1f, 1f);
+        FurniturePlaceEndEvent furniturePlaceEndEvent = new FurniturePlaceEndEvent(
+                new LoadedFurniture(id,
+                        furnitureEntity,
+                        this,
+                        anchorType,
+                        new Vector3d(finalPlacePosition.x(), finalPlacePosition.y(), finalPlacePosition.z()),
+                        quaternion
+                ),
+                (org.bukkit.entity.Player) player.platformPlayer()
+        );
+        EventUtils.fireAndForget(furniturePlaceEndEvent);
         return InteractionResult.SUCCESS;
     }
 

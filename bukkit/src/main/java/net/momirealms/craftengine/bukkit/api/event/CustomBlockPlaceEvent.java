@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class CustomBlockPlaceEvent extends CustomBlockEvent {
-    public CustomBlockPlaceEvent(ImmutableBlockState state, Location location, Player optionalPlayer) {
-        super(state, location, optionalPlayer);
+    public CustomBlockPlaceEvent(ImmutableBlockState state, Location location, Player player) {
+        super(state, location, player);
     }
 }
