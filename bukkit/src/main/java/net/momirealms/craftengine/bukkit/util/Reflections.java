@@ -3918,4 +3918,136 @@ public class Reflections {
                     clazz$NonNullList, Object.class, int.class, Object.class
             )
     );
+
+    public static final Class<?> clazz$Ingredient = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.Ingredient"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeItemStack")
+            )
+    );
+
+    // 1.20.1-1.21.1
+    public static final Field field$Ingredient$itemStacks1_20_1 =
+            ReflectionUtils.getDeclaredField(
+                    clazz$Ingredient, clazz$ItemStack.arrayType(), 0
+            );
+
+    // 1.21.2-1.21.3
+    public static final Field field$Ingredient$itemStacks1_21_2 =
+            ReflectionUtils.getDeclaredField(
+                    clazz$Ingredient, List.class, 1
+            );
+
+    // 1.21.4 paper
+    public static final Field field$Ingredient$itemStacks1_21_4 =
+            ReflectionUtils.getDeclaredField(
+                    clazz$Ingredient, Set.class, 0
+            );
+
+    // Since 1.21.2, exact has been removed
+    public static final Field field$Ingredient$exact =
+            ReflectionUtils.getDeclaredField(
+                    clazz$Ingredient, boolean.class, 0
+            );
+
+    public static final Class<?> clazz$ShapedRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.ShapedRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.ShapedRecipes")
+            )
+    );
+
+    // 1.20.3+
+    public static final Class<?> clazz$ShapedRecipePattern =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.ShapedRecipePattern")
+            );
+
+    // 1.20.1-1.20.2
+    public static final Field field$1_20_1$ShapedRecipe$recipeItems=
+            ReflectionUtils.getDeclaredField(
+                    clazz$ShapedRecipe, clazz$NonNullList, 0
+            );
+
+    // 1.20.3+
+    public static final Field field$1_20_3$ShapedRecipe$pattern=
+            ReflectionUtils.getDeclaredField(
+                    clazz$ShapedRecipe, clazz$ShapedRecipePattern, 0
+            );
+
+    // 1.20.3-1.21.1
+    public static final Field field$ShapedRecipePattern$ingredients1_20_3 = Optional.ofNullable(clazz$ShapedRecipePattern)
+            .map(it -> ReflectionUtils.getDeclaredField(it, clazz$NonNullList, 0))
+            .orElse(null);
+
+    // 1.21.2+
+    public static final Field field$ShapedRecipePattern$ingredients1_21_2 = Optional.ofNullable(clazz$ShapedRecipePattern)
+            .map(it -> ReflectionUtils.getDeclaredField(it, List.class, 0))
+            .orElse(null);
+
+    // 1.20.1-1.21.1
+    public static final Field field$Ingredient$values = ReflectionUtils.getInstanceDeclaredField(
+            clazz$Ingredient, 0
+    );
+
+    // 1.20.2+
+    public static final Class<?> clazz$RecipeHolder = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeHolder")
+    );
+
+    // 1.20.2+
+    public static final Field field$RecipeHolder$recipe = Optional.ofNullable(clazz$RecipeHolder)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 1))
+            .orElse(null);
+
+    public static final Class<?> clazz$ShapelessRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.ShapelessRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.ShapelessRecipes")
+            )
+    );
+
+    public static final Field field$ShapelessRecipe$ingredients =
+            Optional.ofNullable(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, List.class, 0))
+            .orElse(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, clazz$NonNullList, 0));
+
+    // require ResourceLocation for 1.20.1-1.21.1
+    // require ResourceKey for 1.21.2+
+    public static final Method method$RecipeManager$byKey;
+
+    static {
+        Method method$RecipeManager$byKey0 = null;
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            for (Method method : clazz$RecipeManager.getMethods()) {
+                if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceKey) {
+                    if (method.getReturnType() == Optional.class && method.getGenericReturnType() instanceof ParameterizedType type) {
+                        Type[] actualTypeArguments = type.getActualTypeArguments();
+                        if (actualTypeArguments.length == 1) {
+                            method$RecipeManager$byKey0 = method;
+                        }
+                    }
+                }
+            }
+        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+            for (Method method : clazz$RecipeManager.getMethods()) {
+                if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceLocation) {
+                    if (method.getReturnType() == Optional.class && method.getGenericReturnType() instanceof ParameterizedType type) {
+                        Type[] actualTypeArguments = type.getActualTypeArguments();
+                        if (actualTypeArguments.length == 1) {
+                            method$RecipeManager$byKey0 = method;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Method method : clazz$RecipeManager.getMethods()) {
+                if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceLocation) {
+                    if (method.getReturnType() == Optional.class) {
+                        method$RecipeManager$byKey0 = method;
+                    }
+                }
+            }
+        }
+        method$RecipeManager$byKey = requireNonNull(method$RecipeManager$byKey0);
+    }
 }

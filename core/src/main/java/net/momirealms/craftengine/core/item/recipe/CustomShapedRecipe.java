@@ -25,6 +25,10 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
         this.result = result;
     }
 
+    public ParsedPattern<T> parsedPattern() {
+        return parsedPattern;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public boolean matches(RecipeInput input) {
@@ -70,6 +74,10 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
             this.ingredientCount = (int) ingredients.stream().flatMap(Optional::stream).count();
             this.symmetrical = isSymmetrical(width, height, ingredients);
             this.ingredients = ingredients;
+        }
+
+        public List<Optional<Ingredient<T>>> ingredients() {
+            return ingredients;
         }
 
         public int width() {

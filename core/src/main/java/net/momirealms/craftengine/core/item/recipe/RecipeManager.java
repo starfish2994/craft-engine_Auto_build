@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface RecipeManager<T> extends Reloadable, ConfigSectionParser {
     String CONFIG_SECTION_NAME = "recipes";
@@ -25,7 +26,7 @@ public interface RecipeManager<T> extends Reloadable, ConfigSectionParser {
     @Nullable
     Recipe<T> getRecipe(Key type, RecipeInput input);
 
-    void delayedLoad();
+    CompletableFuture<Void> delayedLoad();
 
     default int loadingSequence() {
         return LoadingSequence.RECIPE;

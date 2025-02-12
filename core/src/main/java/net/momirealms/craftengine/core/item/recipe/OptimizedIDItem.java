@@ -27,4 +27,11 @@ public class OptimizedIDItem<T> {
     public boolean isEmpty() {
         return idHolder == null;
     }
+
+    @Override
+    public String toString() {
+        return "OptimizedIDItem{" +
+                "idHolder=" + idHolder +
+                '}';
+    }
 }

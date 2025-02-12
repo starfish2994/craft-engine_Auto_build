@@ -80,11 +80,9 @@ public abstract class CraftEngine implements Plugin {
         this.worldManager.reload();
         this.packManager.reload();
         this.blockManager.delayedLoad();
-        this.recipeManager.delayedLoad();
-
-        this.scheduler.async().execute(() -> {
+        this.recipeManager.delayedLoad().thenRunAsync(() -> {
             this.packManager.generateResourcePack();
-        });
+        }, this.scheduler.async());
     }
 
     @Override
