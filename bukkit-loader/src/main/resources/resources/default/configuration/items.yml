@@ -27,3 +27,23 @@ items:
         bow_pulling_1_texture: minecraft:item/custom/topaz_bow_pulling_1
         bow_pulling_2_model: minecraft:item/custom/topaz_bow_pulling_2
         bow_pulling_2_texture: minecraft:item/custom/topaz_bow_pulling_2
+  default:topaz_crossbow:
+    material: crossbow
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00>Topaz Crossbow"
+    model:
+      template: models:crossbow_2d
+      arguments:
+        crossbow_model: minecraft:item/custom/topaz_crossbow
+        crossbow_texture: minecraft:item/custom/topaz_crossbow
+        crossbow_pulling_0_model: minecraft:item/custom/topaz_crossbow_pulling_0
+        crossbow_pulling_0_texture: minecraft:item/custom/topaz_crossbow_pulling_0
+        crossbow_pulling_1_model: minecraft:item/custom/topaz_crossbow_pulling_1
+        crossbow_pulling_1_texture: minecraft:item/custom/topaz_crossbow_pulling_1
+        crossbow_pulling_2_model: minecraft:item/custom/topaz_crossbow_pulling_2
+        crossbow_pulling_2_texture: minecraft:item/custom/topaz_crossbow_pulling_2
+        crossbow_arrow_texture: minecraft:item/custom/topaz_crossbow_arrow
+        crossbow_arrow_model: minecraft:item/custom/topaz_crossbow_arrow
+        crossbow_firework_texture: minecraft:item/custom/topaz_crossbow_firework
+        crossbow_firework_model: minecraft:item/custom/topaz_crossbow_firework
