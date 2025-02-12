@@ -125,7 +125,7 @@ public class ConfigManager implements Reloadable {
         // recipe
         enableRecipeSystem = config.getBoolean("recipe.enable", true);
 
-        Class<?> modClazz = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.CraftEnginePlugin");
+        Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
             Method setMaxChainMethod = ReflectionUtils.getStaticMethod(modClazz, new String[] {"setMaxChainUpdate"}, void.class, int.class);
             try {
