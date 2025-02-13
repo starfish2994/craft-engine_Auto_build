@@ -245,11 +245,11 @@ templates:
     tags:
       - minecraft:mineable/pickaxe
     sounds:
-      break: minecraft:block.deepslate.break
+      break: minecraft:block.deepslate_tiles.break
       step: minecraft:block.deepslate.step
       place: minecraft:block.deepslate.place
-      hit: minecraft:block.deepslate.hit
-      fall: minecraft:block.deepslate.fall
+      hit: minecraft:block.deepslate_tiles.hit
+      fall: minecraft:block.deepslate_tiles.fall
 
   # Block States
   states:log:
