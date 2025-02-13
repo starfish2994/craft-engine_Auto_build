@@ -98,6 +98,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private final BukkitCraftEngine plugin;
     private final RecipeEventListener recipeEventListener;
     private final CrafterEventListener crafterEventListener;
+    private final PaperRecipeEventListener paperRecipeEventListener;
     private final Map<Key, List<Recipe<ItemStack>>> recipes;
     private final VanillaRecipeReader recipeReader;
     private final List<NamespacedKey> injectedDataPackRecipes;
@@ -122,6 +123,11 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             this.crafterEventListener = new CrafterEventListener(plugin, this, plugin.itemManager());
         } else {
             this.crafterEventListener = null;
+        }
+        if (VersionHelper.isPaper()) {
+            this.paperRecipeEventListener = new PaperRecipeEventListener();
+        } else {
+            this.paperRecipeEventListener = null;
         }
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             this.recipeReader = new VanillaRecipeReader1_21_2();
@@ -154,6 +160,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         if (this.crafterEventListener != null) {
             Bukkit.getPluginManager().registerEvents(this.crafterEventListener, this.plugin.bootstrap());
         }
+        if (this.paperRecipeEventListener != null) {
+            Bukkit.getPluginManager().registerEvents(this.paperRecipeEventListener, this.plugin.bootstrap());
+        }
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             try {
                 this.stolenFeatureFlagSet = Reflections.field$RecipeManager$featureflagset.get(minecraftRecipeManager);
@@ -169,6 +178,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         HandlerList.unregisterAll(this.recipeEventListener);
         if (this.crafterEventListener != null) {
             HandlerList.unregisterAll(this.crafterEventListener);
+        }
+        if (this.paperRecipeEventListener != null) {
+            HandlerList.unregisterAll(this.paperRecipeEventListener);
         }
         this.recipes.clear();
         this.dataPackRecipes.clear();

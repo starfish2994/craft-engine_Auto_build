@@ -13,9 +13,12 @@ import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.VersionHelper;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.*;
 
@@ -33,6 +36,19 @@ public class RecipeEventListener implements Listener {
         this.itemManager = itemManager;
         this.recipeManager = recipeManager;
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onClickCartographyTable(InventoryClickEvent event) {
+        if (VersionHelper.isPaper()) return;
+        if (!(event.getClickedInventory() instanceof CartographyInventory cartographyInventory)) {
+            return;
+        }
+        plugin.scheduler().sync().runDelayed(() -> {
+            if (ItemUtils.hasCustomItem(cartographyInventory.getContents())) {
+                cartographyInventory.setResult(new ItemStack(Material.AIR));
+            }
+        });
     }
 
     @EventHandler
@@ -56,7 +72,7 @@ public class RecipeEventListener implements Listener {
 
         // if the recipe is a vanilla one but not injected, custom items should never be ingredients
         if (this.recipeManager.isDataPackRecipe(recipeId) && !isCustom) {
-            if (hasCustomItem(ingredients)) {
+            if (ItemUtils.hasCustomItem(ingredients)) {
                 inventory.setResult(null);
             }
             return;
@@ -126,14 +142,5 @@ public class RecipeEventListener implements Listener {
         inventory.setResult(null);
     }
 
-    private boolean hasCustomItem(ItemStack[] stack) {
-        for (ItemStack itemStack : stack) {
-            if (!ItemUtils.isEmpty(itemStack)) {
-                if (this.itemManager.wrap(itemStack).customId().isPresent()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+
 }
