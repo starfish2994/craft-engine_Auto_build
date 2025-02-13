@@ -1,9 +1,7 @@
 package net.momirealms.craftengine.core.item.modifier;
 
-import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.util.YamlUtils;
 
 import java.util.Map;
 
@@ -12,10 +10,6 @@ public class ComponentModifier<I> implements ItemModifier<I> {
 
     public ComponentModifier(Map<String, Object> arguments) {
         this.arguments = arguments;
-    }
-
-    public ComponentModifier(Section section) {
-        this.arguments = YamlUtils.sectionToMap(section);
     }
 
     @Override
