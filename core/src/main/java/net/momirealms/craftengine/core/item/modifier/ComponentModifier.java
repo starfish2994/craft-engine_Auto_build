@@ -8,14 +8,14 @@ import net.momirealms.craftengine.core.util.YamlUtils;
 import java.util.Map;
 
 public class ComponentModifier<I> implements ItemModifier<I> {
-    private final Map<String, Object> parameters;
+    private final Map<String, Object> arguments;
 
-    public ComponentModifier(Map<String, Object> parameters) {
-        this.parameters = parameters;
+    public ComponentModifier(Map<String, Object> arguments) {
+        this.arguments = arguments;
     }
 
     public ComponentModifier(Section section) {
-        this.parameters = YamlUtils.sectionToMap(section);
+        this.arguments = YamlUtils.sectionToMap(section);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ComponentModifier<I> implements ItemModifier<I> {
 
     @Override
     public void apply(Item<I> item, Player player) {
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+        for (Map.Entry<String, Object> entry : arguments.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
             item.setComponent(key, value);
