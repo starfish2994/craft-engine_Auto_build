@@ -482,6 +482,11 @@ templates:
                     formula:
                       type: ore_drops
                   - type: explosion_decay
+                  - type: drop_exp
+                    count:
+                      type: uniform
+                      min: "{min_exp}"
+                      max: "{max_exp}"
   loot_table:leaves:
     pools:
       - rolls: 1

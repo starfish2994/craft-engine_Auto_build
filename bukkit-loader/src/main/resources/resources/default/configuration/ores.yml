@@ -43,6 +43,8 @@ blocks:
       arguments:
         ore_drop: default:topaz
         ore_block: default:topaz_ore
+        min_exp: 3
+        max_exp: 7
     settings:
       template:
         - block_settings:ore
@@ -64,6 +66,8 @@ blocks:
       arguments:
         ore_drop: default:topaz
         ore_block: default:deepslate_topaz_ore
+        min_exp: 3
+        max_exp: 7
     settings:
       template:
         - block_settings:ore
