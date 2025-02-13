@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item.recipe;
 
-import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
@@ -57,13 +56,11 @@ public class RecipeEventListener implements Listener {
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
-
-        if (!(recipe instanceof ComplexRecipe complexRecipe)) {
+        if (!(recipe instanceof ComplexRecipe))
             return;
-        }
-
-        if (ItemUtils.hasCustomItem(event.getInventory().getMatrix())) {
-            event.getInventory().setResult(null);
+        CraftingInventory inventory = event.getInventory();
+        if (ItemUtils.hasCustomItem(inventory.getMatrix())) {
+            inventory.setResult(null);
         }
     }
 
@@ -146,17 +143,28 @@ public class RecipeEventListener implements Listener {
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
             serverPlayer.setLastUsedRecipe(ceRecipe);
+            correctRecipeUsed(inventory, ceRecipe);
             return;
         }
         ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
             serverPlayer.setLastUsedRecipe(ceRecipe);
+            correctRecipeUsed(inventory, ceRecipe);
             return;
         }
         // clear result if not met
         inventory.setResult(null);
     }
 
-
+    private void correctRecipeUsed(CraftingInventory inventory, Recipe<ItemStack> recipe) {
+        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        if (holderOrRecipe == null) return;
+        try {
+            Object resultInventory = Reflections.field$CraftInventoryCrafting$resultInventory.get(inventory);
+            Reflections.field$ResultContainer$recipeUsed.set(resultInventory, holderOrRecipe);
+        } catch (ReflectiveOperationException e) {
+            plugin.logger().warn("Failed to correct used recipe", e);
+        }
+    }
 }

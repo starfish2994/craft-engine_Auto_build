@@ -50,6 +50,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private static final Map<Key, BiConsumer<NamespacedKey, Recipe<ItemStack>>> BUKKIT_RECIPE_REGISTER = new HashMap<>();
     private static Object minecraftRecipeManager;
     private static final List<Object> injectedIngredients = new ArrayList<>();
+    private static final IdentityHashMap<Recipe<ItemStack>, Object> recipeToMcRecipeHolder = new IdentityHashMap<>();
 
     static {
         BUKKIT_RECIPE_REGISTER.put(RecipeTypes.SHAPED, (key, recipe) -> {
@@ -203,6 +204,8 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
         this.registeredCustomRecipes.clear();
         this.injectedDataPackRecipes.clear();
+
+        recipeToMcRecipeHolder.clear();
     }
 
     private void unregisterRecipe(NamespacedKey key) throws ReflectiveOperationException {
@@ -552,6 +555,11 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 .toList();
 
         Object shapedRecipe = getNMSRecipe(id);
+        recipeToMcRecipeHolder.put(recipe, shapedRecipe);
+        if (VersionHelper.isVersionNewerThan1_20_2()) {
+            shapedRecipe = Reflections.field$RecipeHolder$recipe.get(shapedRecipe);
+        }
+
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             Reflections.field$ShapedRecipe$placementInfo.set(shapedRecipe, null);
         }
@@ -562,7 +570,13 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     @SuppressWarnings("unchecked")
     private static void injectShapelessRecipe(Key id, Recipe<ItemStack> recipe) throws ReflectiveOperationException {
         List<Ingredient<ItemStack>> actualIngredients = ((CustomShapelessRecipe<ItemStack>) recipe).ingredients();
+
         Object shapelessRecipe = getNMSRecipe(id);
+        recipeToMcRecipeHolder.put(recipe, shapelessRecipe);
+        if (VersionHelper.isVersionNewerThan1_20_2()) {
+            shapelessRecipe = Reflections.field$RecipeHolder$recipe.get(shapelessRecipe);
+        }
+
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             Reflections.field$ShapelessRecipe$placementInfo.set(shapelessRecipe, null);
         }
@@ -570,6 +584,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         injectIngredients(ingredients, actualIngredients);
     }
 
+    // recipe on 1.20.1 and holder on 1.20.2+
     private static Object getNMSRecipe(Key id) throws ReflectiveOperationException {
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             Object resourceKey = Reflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value()));
@@ -578,7 +593,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             if (optional.isEmpty()) {
                 throw new IllegalArgumentException("Recipe " + id + " not found");
             }
-            return Reflections.field$RecipeHolder$recipe.get(optional.get());
+            return optional.get();
         } else {
             Object resourceLocation = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, id.namespace(), id.value());
             @SuppressWarnings("unchecked")
@@ -586,7 +601,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             if (optional.isEmpty()) {
                 throw new IllegalArgumentException("Recipe " + id + " not found");
             }
-            return VersionHelper.isVersionNewerThan1_20_2() ? Reflections.field$RecipeHolder$recipe.get(optional.get()) : optional.get();
+            return optional.get();
         }
     }
 
@@ -611,5 +626,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             }
             injectedIngredients.add(ingredient);
         }
+    }
+
+    public Object getRecipeHolderByRecipe(Recipe<ItemStack> recipe) {
+        return recipeToMcRecipeHolder.get(recipe);
     }
 }
