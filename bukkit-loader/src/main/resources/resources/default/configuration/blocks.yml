@@ -47,3 +47,17 @@ blocks:
           textures:
             "end": "minecraft:block/custom/chinese_lantern_top"
             "side": "minecraft:block/custom/chinese_lantern"
+recipes:
+  default:chinese_lantern:
+    type: shaped
+    pattern:
+      - "ABA"
+      - "BCB"
+      - "ABA"
+    ingredients:
+      A: "#minecraft:planks"
+      B: "minecraft:stick"
+      C: "minecraft:torch"
+    result:
+      id: default:chinese_lantern
+      count: 1
