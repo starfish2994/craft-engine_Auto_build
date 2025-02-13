@@ -70,7 +70,7 @@ blocks:
         max_exp: 7
     settings:
       template:
-        - block_settings:ore
+        - block_settings:deepslate_ore
         - block_settings:pickaxe_level_2
       overrides:
         item: default:deepslate_topaz_ore
