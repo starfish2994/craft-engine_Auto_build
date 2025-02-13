@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item.recipe;
 
+import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
@@ -49,6 +50,21 @@ public class RecipeEventListener implements Listener {
                 cartographyInventory.setResult(new ItemStack(Material.AIR));
             }
         });
+    }
+
+    @EventHandler
+    public void onSpecialRecipe(PrepareItemCraftEvent event) {
+        org.bukkit.inventory.Recipe recipe = event.getRecipe();
+        if (recipe == null)
+            return;
+
+        if (!(recipe instanceof ComplexRecipe complexRecipe)) {
+            return;
+        }
+
+        if (ItemUtils.hasCustomItem(event.getInventory().getMatrix())) {
+            event.getInventory().setResult(null);
+        }
     }
 
     @EventHandler
