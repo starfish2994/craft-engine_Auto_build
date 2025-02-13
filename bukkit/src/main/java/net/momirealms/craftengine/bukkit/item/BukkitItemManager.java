@@ -6,10 +6,7 @@ import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.item.AbstractItemManager;
-import net.momirealms.craftengine.core.item.BuildableItem;
-import net.momirealms.craftengine.core.item.CustomItem;
-import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.CustomModelDataModifier;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
@@ -359,6 +356,20 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                         customModelData
                 );
             }
+            if (model.fallBack() != null) {
+                Map<String, Object> merged = mergePredicates(
+                        parentPredicates,
+                        predicateId,
+                        predicate.toLegacyValue(0f)
+                );
+                processModelRecursively(
+                        model.fallBack(),
+                        merged,
+                        resultList,
+                        materialId,
+                        customModelData
+                );
+            }
         }
     }
 
@@ -380,6 +391,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                             predicateId,
                             predicate.toLegacyValue(caseValue)
                     );
+                    // Additional check for crossbow
+                    if (materialId.equals(ItemKeys.CROSSBOW)) {
+                        merged = mergePredicates(
+                                merged,
+                                "charged",
+                                1
+                        );
+                    }
                     processModelRecursively(
                             entry.getValue(),
                             merged,
@@ -388,6 +407,21 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                             customModelData
                     );
                 }
+            }
+            // Additional check for crossbow
+            if (model.fallBack() != null && materialId.equals(ItemKeys.CROSSBOW)) {
+                Map<String, Object> merged = mergePredicates(
+                        parentPredicates,
+                        "charged",
+                        0
+                );
+                processModelRecursively(
+                        model.fallBack(),
+                        merged,
+                        resultList,
+                        materialId,
+                        customModelData
+                );
             }
         }
     }
@@ -398,6 +432,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             Number newValue
     ) {
         Map<String, Object> merged = new LinkedHashMap<>(existing);
+        if (newKey == null) return merged;
         merged.put(newKey, newValue);
         return merged;
     }
