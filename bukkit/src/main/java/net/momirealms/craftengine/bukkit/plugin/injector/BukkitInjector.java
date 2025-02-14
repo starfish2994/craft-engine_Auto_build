@@ -79,6 +79,7 @@ public class BukkitInjector {
     private static Class<?> clazz$InjectedCacheChecker;
     private static Field field$InjectedCacheChecker$recipeType;
     private static Field field$InjectedCacheChecker$lastRecipe;
+    private static Field field$InjectedCacheChecker$lastCustomRecipe;
 
     public static void init() {
         try {
@@ -87,6 +88,7 @@ public class BukkitInjector {
                     .implement(Reflections.clazz$RecipeManager$CachedCheck)
                     .defineField("recipeType", Reflections.clazz$RecipeType, Visibility.PUBLIC)
                     .defineField("lastRecipe", Object.class, Visibility.PUBLIC)
+                    .defineField("lastCustomRecipe", Key.class, Visibility.PUBLIC)
                     .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
                     .intercept(MethodDelegation.to(
                             VersionHelper.isVersionNewerThan1_21_2() ?
@@ -102,6 +104,7 @@ public class BukkitInjector {
                     .getLoaded();
             field$InjectedCacheChecker$recipeType = clazz$InjectedCacheChecker.getDeclaredField("recipeType");
             field$InjectedCacheChecker$lastRecipe = clazz$InjectedCacheChecker.getDeclaredField("lastRecipe");
+            field$InjectedCacheChecker$lastCustomRecipe = clazz$InjectedCacheChecker.getDeclaredField("lastCustomRecipe");
 
             // Paletted Container
             clazz$InjectedPalettedContainer = byteBuddy
@@ -336,20 +339,22 @@ public class BukkitInjector {
 
                 CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack> ceRecipe;
+                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
                 }
-
                 if (ceRecipe == null) {
                     return Optional.empty();
                 }
 
+                // Cache recipes, it might be incorrect on reloading
+                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
                 // It doesn't matter at all
                 field$InjectedCacheChecker$lastRecipe.set(thisObj, resourceLocation);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(pair.getSecond()));
@@ -392,20 +397,22 @@ public class BukkitInjector {
 
                 CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack> ceRecipe;
+                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
                 }
-
                 if (ceRecipe == null) {
                     return Optional.empty();
                 }
 
+                // Cache recipes, it might be incorrect on reloading
+                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
                 // It doesn't matter at all
                 field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
@@ -447,20 +454,22 @@ public class BukkitInjector {
 
                 CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack> ceRecipe;
+                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
                 }
-
                 if (ceRecipe == null) {
                     return Optional.empty();
                 }
 
+                // Cache recipes, it might be incorrect on reloading
+                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
                 // It doesn't matter at all
                 field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
@@ -503,20 +512,22 @@ public class BukkitInjector {
 
                 CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack> ceRecipe;
+                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+                    ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
                 }
-
                 if (ceRecipe == null) {
                     return Optional.empty();
                 }
 
+                // Cache recipes, it might be incorrect on reloading
+                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
                 // It doesn't matter at all
                 field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));

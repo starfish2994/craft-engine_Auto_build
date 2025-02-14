@@ -262,6 +262,8 @@ items:
 recipes:
   default:palm_planks:
     type: shapeless
+    category: building
+    group: planks
     ingredients:
       A: "#default:palm_logs"
     result:
@@ -269,6 +271,8 @@ recipes:
       count: 4
   default:palm_wood:
     type: shaped
+    category: building
+    group: bark
     pattern:
       - "AA"
       - "AA"
@@ -279,6 +283,8 @@ recipes:
       count: 3
   default:stripped_palm_wood:
     type: shaped
+    category: building
+    group: bark
     pattern:
       - "AA"
       - "AA"

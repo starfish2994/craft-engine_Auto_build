@@ -158,27 +158,19 @@ public class RecipeEventListener implements Listener {
         }
 
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
-        // though it might be inaccurate after reloading
-        // but it's worthy to cache
-        Recipe<ItemStack> lastRecipe = serverPlayer.lastUsedRecipe();
-        if (lastRecipe != null && (lastRecipe.type() == RecipeTypes.SHAPELESS || lastRecipe.type() == RecipeTypes.SHAPED )) {
-            if (lastRecipe.matches(input)) {
-                inventory.setResult(lastRecipe.getResult(serverPlayer));
-                return;
-            }
-        }
+        Key lastRecipe = serverPlayer.lastUsedRecipe();
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPELESS, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPELESS, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
-            serverPlayer.setLastUsedRecipe(ceRecipe);
+            serverPlayer.setLastUsedRecipe(ceRecipe.id());
             correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }
-        ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input);
+        ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
-            serverPlayer.setLastUsedRecipe(ceRecipe);
+            serverPlayer.setLastUsedRecipe(ceRecipe.id());
             correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }

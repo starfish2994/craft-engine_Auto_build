@@ -88,7 +88,7 @@ recipes:
   default:topaz_from_smelting_topaz_ore:
     type: smelting
     experience: 1.0
-    categroy: MISC
+    category: misc
     group: topaz
     time: 200
     ingredient: "default:topaz_ore"
@@ -98,7 +98,7 @@ recipes:
   default:topaz_from_smelting_deepslate_topaz_ore:
     type: smelting
     experience: 1.0
-    categroy: MISC
+    category: misc
     group: topaz
     time: 200
     ingredient: "default:deepslate_topaz_ore"
@@ -108,7 +108,7 @@ recipes:
   default:topaz_from_blasting_topaz_ore:
     type: blasting
     experience: 1.0
-    categroy: MISC
+    category: misc
     group: topaz
     time: 100
     ingredient: "default:topaz_ore"
@@ -118,7 +118,7 @@ recipes:
   default:topaz_from_blasting_deepslate_topaz_ore:
     type: blasting
     experience: 1.0
-    categroy: MISC
+    category: misc
     group: topaz
     time: 100
     ingredient: "default:deepslate_topaz_ore"

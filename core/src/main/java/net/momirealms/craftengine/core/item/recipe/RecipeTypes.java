@@ -33,7 +33,7 @@ public class RecipeTypes {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Recipe<T> fromMap(Map<String, Object> map) {
+    public static <T> Recipe<T> fromMap(Key id, Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
             throw new NullPointerException("recipe type cannot be null");
@@ -43,6 +43,6 @@ public class RecipeTypes {
         if (factory == null) {
             throw new IllegalArgumentException("Unknown recipe type: " + type);
         }
-        return factory.create(map);
+        return factory.create(id, map);
     }
 }

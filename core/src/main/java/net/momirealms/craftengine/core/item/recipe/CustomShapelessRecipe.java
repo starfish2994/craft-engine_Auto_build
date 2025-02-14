@@ -18,8 +18,8 @@ public class CustomShapelessRecipe<T> extends CraftingTableRecipe<T> {
     private final PlacementInfo<T> placementInfo;
     private final CustomRecipeResult<T> result;
 
-    public CustomShapelessRecipe(CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
-        super(category, group);
+    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
+        super(id, category, group);
         this.ingredients = ingredients;
         this.result = result;
         this.placementInfo = PlacementInfo.create(ingredients);
@@ -63,7 +63,7 @@ public class CustomShapelessRecipe<T> extends CraftingTableRecipe<T> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
-        public Recipe<A> create(Map<String, Object> arguments) {
+        public Recipe<A> create(Key id, Map<String, Object> arguments) {
             Map<String, Object> ingredientMap = MiscUtils.castToMap(arguments.get("ingredients"), true);
             if (ingredientMap == null) {
                 throw new IllegalArgumentException("ingredients cannot be empty");
@@ -84,6 +84,7 @@ public class CustomShapelessRecipe<T> extends CraftingTableRecipe<T> {
                 ingredients.add(Ingredient.of(holders));
             }
             return new CustomShapelessRecipe(
+                    id,
                     recipeCategory,
                     group,
                     ingredients,

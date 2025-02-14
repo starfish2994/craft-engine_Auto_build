@@ -18,8 +18,8 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
     private final Pattern<T> pattern;
     private final CustomRecipeResult<T> result;
 
-    public CustomShapedRecipe(CraftingRecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
-        super(category, group);
+    public CustomShapedRecipe(Key id, CraftingRecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
+        super(id, category, group);
         this.pattern = pattern;
         this.parsedPattern = pattern.parse();
         this.result = result;
@@ -140,7 +140,7 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
-        public Recipe<A> create(Map<String, Object> arguments) {
+        public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> pattern = MiscUtils.getAsStringList(arguments.get("pattern"));
             if (pattern.isEmpty()) {
                 throw new IllegalArgumentException("pattern cannot be empty");
@@ -173,6 +173,7 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
                 ingredients.put(ch, Ingredient.of(holders));
             }
             return new CustomShapedRecipe(
+                    id,
                     recipeCategory,
                     group,
                     new Pattern<>(pattern.toArray(new String[0]), ingredients),

@@ -12,8 +12,8 @@ import java.util.*;
 public class CustomSmokingRecipe<T> extends CookingRecipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
 
-    public CustomSmokingRecipe(CookingRecipeCategory category, String group, Ingredient<T> ingredient, int cookingTime, float experience, CustomRecipeResult<T> result) {
-        super(category, group, ingredient, cookingTime, experience, result);
+    public CustomSmokingRecipe(Key id, CookingRecipeCategory category, String group, Ingredient<T> ingredient, int cookingTime, float experience, CustomRecipeResult<T> result) {
+        super(id, category, group, ingredient, cookingTime, experience, result);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class CustomSmokingRecipe<T> extends CookingRecipe<T> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
-        public Recipe<CustomSmokingRecipe<A>> create(Map<String, Object> arguments) {
+        public Recipe<CustomSmokingRecipe<A>> create(Key id, Map<String, Object> arguments) {
             CookingRecipeCategory recipeCategory = arguments.containsKey("category") ? CookingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             int cookingTime = MiscUtils.getAsInt(arguments.getOrDefault("time", 80));
@@ -40,6 +40,7 @@ public class CustomSmokingRecipe<T> extends CookingRecipe<T> {
                 }
             }
             return new CustomSmokingRecipe(
+                    id,
                     recipeCategory,
                     group,
                     Ingredient.of(holders),

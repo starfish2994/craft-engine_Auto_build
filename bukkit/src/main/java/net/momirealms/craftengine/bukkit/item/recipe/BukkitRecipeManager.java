@@ -24,7 +24,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.util.HexaFunction;
+import net.momirealms.craftengine.core.util.HeptaFunction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.PentaFunction;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -190,9 +190,6 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private final VanillaRecipeReader recipeReader;
     private final List<NamespacedKey> injectedDataPackRecipes;
     private final List<NamespacedKey> registeredCustomRecipes;
-    // [internal:xxx]   +   [custom:custom]
-    // includes injected vanilla recipes and custom recipes
-    private final Set<Key> customRecipes;
     // data pack recipe resource locations [minecraft:xxx]
     private final Set<Key> dataPackRecipes;
 
@@ -206,7 +203,6 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.injectedDataPackRecipes = new ArrayList<>();
         this.registeredCustomRecipes = new ArrayList<>();
         this.dataPackRecipes = new HashSet<>();
-        this.customRecipes = new HashSet<>();
         this.recipeEventListener = new RecipeEventListener(plugin, this, plugin.itemManager());
         if (VersionHelper.isVersionNewerThan1_21()) {
             this.crafterEventListener = new CrafterEventListener(plugin, this, plugin.itemManager());
@@ -239,7 +235,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
     @Override
     public boolean isCustomRecipe(Key key) {
-        return this.customRecipes.contains(key);
+        return this.byId.containsKey(key);
     }
 
     @Override
@@ -279,7 +275,6 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.recipes.clear();
         this.byId.clear();
         this.dataPackRecipes.clear();
-        this.customRecipes.clear();
 
         try {
             // do not unregister them
@@ -314,17 +309,17 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     @Override
     public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
         if (!ConfigManager.enableRecipeSystem()) return;
-        if (this.customRecipes.contains(id)) {
+        if (this.byId.containsKey(id)) {
             this.plugin.logger().warn(path, "Duplicated recipe " + id);
             return;
         }
-        Recipe<ItemStack> recipe = RecipeTypes.fromMap(section);
+        Recipe<ItemStack> recipe = RecipeTypes.fromMap(id, section);
         NamespacedKey key = NamespacedKey.fromString(id.toString());
         BUKKIT_RECIPE_REGISTER.get(recipe.type()).accept(key, recipe);
         try {
             this.registeredCustomRecipes.add(key);
-            this.customRecipes.add(id);
             this.recipes.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
+            this.byId.put(id, recipe);
         } catch (Exception e) {
             plugin.logger().warn("Failed to add custom recipe " + id, e);
         }
@@ -337,8 +332,8 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
     // example: stone button
     public void addVanillaInternalRecipe(Key id, Recipe<ItemStack> recipe) {
-        this.customRecipes.add(id);
         this.recipes.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
+        this.byId.put(id, recipe);
     }
 
     @Nullable
@@ -357,20 +352,13 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     @Nullable
     @Override
     public Recipe<ItemStack> getRecipe(Key type, RecipeInput input, Key lastRecipe) {
-        List<Recipe<ItemStack>> recipes = this.recipes.get(type);
-        if (recipes == null) return null;
         if (lastRecipe != null) {
             Recipe<ItemStack> last = byId.get(lastRecipe);
             if (last != null && last.matches(input)) {
                 return last;
             }
-            for (Recipe<ItemStack> recipe : recipes) {
-                if (recipe.matches(input)) {
-                    return recipe;
-                }
-            }
         }
-        return null;
+        return getRecipe(type, input);
     }
 
     @Override
@@ -524,6 +512,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         }
 
         CustomShapelessRecipe<ItemStack> ceRecipe = new CustomShapelessRecipe<>(
+                id,
                 recipe.category(),
                 recipe.group(),
                 ingredientList,
@@ -581,6 +570,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         }
 
         CustomShapedRecipe<ItemStack> ceRecipe = new CustomShapedRecipe<>(
+                id,
                 recipe.category(),
                 recipe.group(),
                 new CustomShapedRecipe.Pattern<>(recipe.pattern(), ingredients),
@@ -604,7 +594,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private void handleDataPackCookingRecipe(Key id,
                                              VanillaCookingRecipe recipe,
                                              PentaFunction<NamespacedKey, ItemStack, RecipeChoice, Float, Integer, org.bukkit.inventory.CookingRecipe<?>> constructor1,
-                                             HexaFunction<CookingRecipeCategory, String, Ingredient<ItemStack>, Integer, Float, CustomRecipeResult<ItemStack>, CookingRecipe<ItemStack>> constructor2,
+                                             HeptaFunction<Key, CookingRecipeCategory, String, Ingredient<ItemStack>, Integer, Float, CustomRecipeResult<ItemStack>, CookingRecipe<ItemStack>> constructor2,
                                              Method fromBukkitRecipeMethod,
                                              Consumer<Runnable> callback) {
         NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
@@ -638,6 +628,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         }
 
         CookingRecipe<ItemStack> ceRecipe = constructor2.apply(
+                id,
                 recipe.category(),
                 recipe.group(),
                 Ingredient.of(holders),
