@@ -154,6 +154,7 @@ items:
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
+      - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Palm Log"
     model:
@@ -170,6 +171,7 @@ items:
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
+      - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Stripped Palm Log"
     model:
@@ -186,6 +188,7 @@ items:
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
+      - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Palm Wood"
     model:
@@ -202,6 +205,7 @@ items:
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
+      - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Stripped Palm Wood"
     model:

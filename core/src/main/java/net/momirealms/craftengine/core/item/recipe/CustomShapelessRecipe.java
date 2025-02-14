@@ -18,7 +18,7 @@ public class CustomShapelessRecipe<T> extends CraftingTableRecipe<T> {
     private final PlacementInfo<T> placementInfo;
     private final CustomRecipeResult<T> result;
 
-    public CustomShapelessRecipe(RecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
+    public CustomShapelessRecipe(CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
         super(category, group);
         this.ingredients = ingredients;
         this.result = result;
@@ -68,7 +68,7 @@ public class CustomShapelessRecipe<T> extends CraftingTableRecipe<T> {
             if (ingredientMap == null) {
                 throw new IllegalArgumentException("ingredients cannot be empty");
             }
-            RecipeCategory recipeCategory = arguments.containsKey("category") ? RecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
+            CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             List<Ingredient<A>> ingredients = new ArrayList<>();
             for (Map.Entry<String, Object> entry : ingredientMap.entrySet()) {

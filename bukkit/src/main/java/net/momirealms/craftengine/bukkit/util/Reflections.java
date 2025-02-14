@@ -20,9 +20,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.*;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
@@ -4173,4 +4171,77 @@ public class Reflections {
             ReflectionUtils.getMethod(
                     clazz$ItemStack, void.class, int.class, clazz$LivingEntity, clazz$EquipmentSlot
             );
+
+    // for 1.20.1-1.21.1
+    public static final Class<?> clazz$AbstractCookingRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.AbstractCookingRecipe")
+            )
+    );
+
+    // for 1.20.1-1.21.1
+    public static final Field field$AbstractCookingRecipe$input =
+            ReflectionUtils.getDeclaredField(
+                    clazz$AbstractCookingRecipe, clazz$Ingredient, 0
+            );
+
+    // for 1.21.2+
+    public static final Class<?> clazz$SingleItemRecipe =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.SingleItemRecipe")
+            );
+
+    // for 1.21.2+
+    public static final Field field$SingleItemRecipe$input =
+            Optional.ofNullable(clazz$SingleItemRecipe)
+                    .map(it -> ReflectionUtils.getDeclaredField(it, clazz$Ingredient, 0))
+                    .orElse(null);
+
+    public static final Class<?> clazz$CraftFurnaceRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftFurnaceRecipe")
+            )
+    );
+
+    public static final Method method$CraftFurnaceRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftFurnaceRecipe, clazz$CraftFurnaceRecipe, FurnaceRecipe.class
+            )
+    );
+
+    public static final Class<?> clazz$CraftBlastingRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftBlastingRecipe")
+            )
+    );
+
+    public static final Method method$CraftBlastingRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftBlastingRecipe, clazz$CraftBlastingRecipe, BlastingRecipe.class
+            )
+    );
+
+    public static final Class<?> clazz$CraftSmokingRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftSmokingRecipe")
+            )
+    );
+
+    public static final Method method$CraftSmokingRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftSmokingRecipe, clazz$CraftSmokingRecipe, SmokingRecipe.class
+            )
+    );
+
+    public static final Class<?> clazz$CraftCampfireRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftCampfireRecipe")
+            )
+    );
+
+    public static final Method method$CraftCampfireRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftCampfireRecipe, clazz$CraftCampfireRecipe, CampfireRecipe.class
+            )
+    );
 }

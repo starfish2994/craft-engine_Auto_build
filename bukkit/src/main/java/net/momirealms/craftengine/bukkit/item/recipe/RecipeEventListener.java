@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemManager;
+import net.momirealms.craftengine.core.item.recipe.CookingInput;
 import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
@@ -14,12 +15,15 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.block.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.*;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.*;
 
 import java.util.ArrayList;
@@ -38,7 +42,7 @@ public class RecipeEventListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onClickCartographyTable(InventoryClickEvent event) {
         if (VersionHelper.isPaper()) return;
         if (!(event.getClickedInventory() instanceof CartographyInventory cartographyInventory)) {
@@ -51,7 +55,14 @@ public class RecipeEventListener implements Listener {
         });
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
+    public void onChunkLoad(ChunkLoadEvent event) {
+        for (BlockState state : event.getChunk().getTileEntities()) {
+
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onSpecialRecipe(PrepareItemCraftEvent event) {
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
@@ -64,8 +75,8 @@ public class RecipeEventListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onCrafting(PrepareItemCraftEvent event) {
+    @EventHandler(ignoreCancelled = true)
+    public void onCraftingRecipe(PrepareItemCraftEvent event) {
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
@@ -143,21 +154,21 @@ public class RecipeEventListener implements Listener {
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
             serverPlayer.setLastUsedRecipe(ceRecipe);
-            correctRecipeUsed(inventory, ceRecipe);
+            correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }
         ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.getResult(serverPlayer));
             serverPlayer.setLastUsedRecipe(ceRecipe);
-            correctRecipeUsed(inventory, ceRecipe);
+            correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }
         // clear result if not met
         inventory.setResult(null);
     }
 
-    private void correctRecipeUsed(CraftingInventory inventory, Recipe<ItemStack> recipe) {
+    private void correctCraftingRecipeUsed(CraftingInventory inventory, Recipe<ItemStack> recipe) {
         Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
         if (holderOrRecipe == null) return;
         try {
@@ -166,5 +177,111 @@ public class RecipeEventListener implements Listener {
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to correct used recipe", e);
         }
+    }
+
+    // TODO find a lighter way
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceBurn(FurnaceBurnEvent event) {
+        if (!(event.getBlock().getState() instanceof Furnace furnace)) {
+            return;
+        }
+        FurnaceInventory inventory = furnace.getInventory();
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceStartSmelt(FurnaceStartSmeltEvent event) {
+        CookingRecipe<?> recipe = event.getRecipe();
+
+        Key recipeId = Key.of(recipe.getKey().namespace(), recipe.getKey().value());
+        boolean isCustom = this.recipeManager.isCustomRecipe(recipeId);
+        ItemStack sourceItem = event.getSource();
+
+        if (this.recipeManager.isDataPackRecipe(recipeId) && !isCustom) {
+            if (ItemUtils.isCustomItem(sourceItem)) {
+                event.setTotalCookTime(Integer.MAX_VALUE);
+            }
+            return;
+        }
+
+        if (!isCustom) {
+            return;
+        }
+
+        Item<ItemStack> wrappedItem = this.itemManager.wrap(sourceItem);
+        Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+        if (idHolder.isEmpty()) {
+            event.setTotalCookTime(Integer.MAX_VALUE);
+            return;
+        }
+
+        CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), event.getSource()));
+        net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack> ceRecipe;
+        if (recipe instanceof FurnaceRecipe) {
+            ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+        } else if (recipe instanceof SmokingRecipe) {
+            ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+        } else if (recipe instanceof BlastingRecipe) {
+            ceRecipe = (net.momirealms.craftengine.core.item.recipe.CookingRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+        } else {
+            event.setTotalCookTime(Integer.MAX_VALUE);
+            return;
+        }
+
+        if (ceRecipe == null) {
+            event.setTotalCookTime(Integer.MAX_VALUE);
+            return;
+        }
+
+        event.setTotalCookTime(ceRecipe.cookingTime());
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceSmelt(FurnaceSmeltEvent event) {
+        CookingRecipe<?> recipe = event.getRecipe();
+        if (recipe == null) return;
+
+        Key recipeId = Key.of(recipe.getKey().namespace(), recipe.getKey().value());
+        boolean isCustom = this.recipeManager.isCustomRecipe(recipeId);
+
+        if (this.recipeManager.isDataPackRecipe(recipeId) && !isCustom) {
+            if (ItemUtils.isCustomItem(event.getSource())) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+
+        if (!isCustom) {
+            return;
+        }
+
+        Item<ItemStack> wrappedItem = this.itemManager.wrap(event.getSource());
+        Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+        if (idHolder.isEmpty()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), event.getSource()));
+        if (recipe instanceof FurnaceRecipe furnaceRecipe) {
+            Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SMELTING, input);
+            if (ceRecipe != null) {
+                event.setResult(ceRecipe.getResult(null));
+                return;
+            }
+        } else if (recipe instanceof SmokingRecipe smokingRecipe) {
+            Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SMOKING, input);
+            if (ceRecipe != null) {
+                event.setResult(ceRecipe.getResult(null));
+                return;
+            }
+        } else if (recipe instanceof BlastingRecipe blastingRecipe) {
+            Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.BLASTING, input);
+            if (ceRecipe != null) {
+                event.setResult(ceRecipe.getResult(null));
+                return;
+            }
+        }
+
+        event.setCancelled(true);
     }
 }

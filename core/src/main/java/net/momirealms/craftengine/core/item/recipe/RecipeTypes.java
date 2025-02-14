@@ -12,10 +12,18 @@ import java.util.Map;
 public class RecipeTypes {
     public static final Key SHAPED = Key.of("minecraft:shaped");
     public static final Key SHAPELESS = Key.of("minecraft:shapeless");
+    public static final Key SMELTING = Key.of("minecraft:smelting");
+    public static final Key BLASTING = Key.of("minecraft:blasting");
+    public static final Key SMOKING = Key.of("minecraft:smoking");
+    public static final Key CAMPFIRE_COOKING = Key.of("minecraft:campfire_cooking");
 
     static {
         register(SHAPED, CustomShapedRecipe.FACTORY);
         register(SHAPELESS, CustomShapelessRecipe.FACTORY);
+        register(SMELTING, CustomSmeltingRecipe.FACTORY);
+        register(SMOKING, CustomSmokingRecipe.FACTORY);
+        register(BLASTING, CustomBlastingRecipe.FACTORY);
+        register(CAMPFIRE_COOKING, CustomCampfireRecipe.FACTORY);
     }
 
     public static <T> void register(Key key, RecipeFactory<T> factory) {

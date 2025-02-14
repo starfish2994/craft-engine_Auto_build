@@ -18,7 +18,7 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
     private final Pattern<T> pattern;
     private final CustomRecipeResult<T> result;
 
-    public CustomShapedRecipe(RecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
+    public CustomShapedRecipe(CraftingRecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
         super(category, group);
         this.pattern = pattern;
         this.parsedPattern = pattern.parse();
@@ -152,7 +152,7 @@ public class CustomShapedRecipe<T> extends CraftingTableRecipe<T> {
             if (ingredientMap == null) {
                 throw new IllegalArgumentException("ingredients cannot be empty");
             }
-            RecipeCategory recipeCategory = arguments.containsKey("category") ? RecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
+            CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             Map<Character, Ingredient<A>> ingredients = new HashMap<>();
             for (Map.Entry<String, Object> entry : ingredientMap.entrySet()) {
