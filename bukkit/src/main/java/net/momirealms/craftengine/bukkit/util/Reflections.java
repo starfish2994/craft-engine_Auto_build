@@ -4167,4 +4167,10 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("world.entity.EntityLiving")
             )
     );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$hurtAndBreak =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, void.class, int.class, clazz$LivingEntity, clazz$EquipmentSlot
+            );
 }

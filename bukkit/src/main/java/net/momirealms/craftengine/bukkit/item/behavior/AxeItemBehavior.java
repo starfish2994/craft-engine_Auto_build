@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -83,8 +84,19 @@ public class AxeItemBehavior extends ItemBehavior {
         Material material = MaterialUtils.getMaterial(item.vanillaId());
         bukkitPlayer.setStatistic(Statistic.USE_ITEM, material, bukkitPlayer.getStatistic(Statistic.USE_ITEM, material) + 1);
 
-        ItemStack itemStack = (ItemStack) item.getItem();
-        itemStack.damage(1, bukkitPlayer);
+        if (VersionHelper.isVersionNewerThan1_20_5()) {
+            Object itemStack = item.getLiteralObject();
+            Object serverPlayer = player.serverPlayer();
+            Object equipmentSlot = context.getHand() == InteractionHand.MAIN_HAND ? Reflections.instance$EquipmentSlot$MAINHAND : Reflections.instance$EquipmentSlot$OFFHAND;
+            try {
+                Reflections.method$ItemStack$hurtAndBreak.invoke(itemStack, 1, serverPlayer, equipmentSlot);
+            } catch (ReflectiveOperationException e) {
+                CraftEngine.instance().logger().warn("Failed to hurt itemStack", e);
+            }
+        } else {
+            ItemStack itemStack = (ItemStack) item.getItem();
+            itemStack.damage(1, bukkitPlayer);
+        }
         return InteractionResult.SUCCESS;
     }
 
