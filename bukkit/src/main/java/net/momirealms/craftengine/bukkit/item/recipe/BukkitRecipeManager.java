@@ -51,6 +51,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private static Object minecraftRecipeManager;
     private static final List<Object> injectedIngredients = new ArrayList<>();
     private static final IdentityHashMap<Recipe<ItemStack>, Object> recipeToMcRecipeHolder = new IdentityHashMap<>();
+    private static BukkitRecipeManager instance;
 
     static {
         BUKKIT_RECIPE_REGISTER.put(RecipeTypes.SHAPED, (key, recipe) -> {
@@ -185,6 +186,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private final CrafterEventListener crafterEventListener;
     private final PaperRecipeEventListener paperRecipeEventListener;
     private final Map<Key, List<Recipe<ItemStack>>> recipes;
+    private final Map<Key, Recipe<ItemStack>> byId;
     private final VanillaRecipeReader recipeReader;
     private final List<NamespacedKey> injectedDataPackRecipes;
     private final List<NamespacedKey> registeredCustomRecipes;
@@ -197,8 +199,10 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private Object stolenFeatureFlagSet;
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
+        instance = this;
         this.plugin = plugin;
         this.recipes = new HashMap<>();
+        this.byId = new HashMap<>();
         this.injectedDataPackRecipes = new ArrayList<>();
         this.registeredCustomRecipes = new ArrayList<>();
         this.dataPackRecipes = new HashSet<>();
@@ -239,6 +243,11 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     }
 
     @Override
+    public Optional<Recipe<ItemStack>> getRecipeById(Key key) {
+        return Optional.ofNullable(this.byId.get(key));
+    }
+
+    @Override
     public void load() {
         if (!ConfigManager.enableRecipeSystem()) return;
         Bukkit.getPluginManager().registerEvents(this.recipeEventListener, this.plugin.bootstrap());
@@ -268,6 +277,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             HandlerList.unregisterAll(this.paperRecipeEventListener);
         }
         this.recipes.clear();
+        this.byId.clear();
         this.dataPackRecipes.clear();
         this.customRecipes.clear();
 
@@ -325,6 +335,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         return this.recipes.getOrDefault(type, List.of());
     }
 
+    // example: stone button
     public void addVanillaInternalRecipe(Key id, Recipe<ItemStack> recipe) {
         this.customRecipes.add(id);
         this.recipes.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
@@ -338,6 +349,25 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         for (Recipe<ItemStack> recipe : recipes) {
             if (recipe.matches(input)) {
                 return recipe;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Recipe<ItemStack> getRecipe(Key type, RecipeInput input, Key lastRecipe) {
+        List<Recipe<ItemStack>> recipes = this.recipes.get(type);
+        if (recipes == null) return null;
+        if (lastRecipe != null) {
+            Recipe<ItemStack> last = byId.get(lastRecipe);
+            if (last != null && last.matches(input)) {
+                return last;
+            }
+            for (Recipe<ItemStack> recipe : recipes) {
+                if (recipe.matches(input)) {
+                    return recipe;
+                }
             }
         }
         return null;
@@ -806,5 +836,13 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
     public Object getRecipeHolderByRecipe(Recipe<ItemStack> recipe) {
         return recipeToMcRecipeHolder.get(recipe);
+    }
+
+    public static Object minecraftRecipeManager() {
+        return minecraftRecipeManager;
+    }
+
+    public static BukkitRecipeManager instance() {
+        return instance;
     }
 }

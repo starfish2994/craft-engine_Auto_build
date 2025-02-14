@@ -20,7 +20,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
                 readGroup(json),
                 readShapedIngredientMap(json.getAsJsonObject("key")),
                 readPattern(json),
-                readResult(json.getAsJsonObject("result"))
+                readCraftingResult(json.getAsJsonObject("result"))
         );
     }
 
@@ -30,7 +30,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
                 readCraftingCategory(json),
                 readGroup(json),
                 readShapelessIngredients(json.getAsJsonArray("ingredients")),
-                readResult(json.getAsJsonObject("result"))
+                readCraftingResult(json.getAsJsonObject("result"))
         );
     }
 
@@ -39,7 +39,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
         return new VanillaBlastingRecipe(
                 readCookingCategory(json),
                 readGroup(json),
-                readResult(json.getAsJsonObject("result")),
+                readCookingResult(json.get("result")),
                 readCookingIngredients(json.get("ingredient")),
                 readExperience(json),
                 readCookingTime(json)
@@ -51,7 +51,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
         return new VanillaSmeltingRecipe(
                 readCookingCategory(json),
                 readGroup(json),
-                readResult(json.getAsJsonObject("result")),
+                readCookingResult(json.get("result")),
                 readCookingIngredients(json.get("ingredient")),
                 readExperience(json),
                 readCookingTime(json)
@@ -63,7 +63,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
         return new VanillaSmokingRecipe(
                 readCookingCategory(json),
                 readGroup(json),
-                readResult(json.getAsJsonObject("result")),
+                readCookingResult(json.get("result")),
                 readCookingIngredients(json.get("ingredient")),
                 readExperience(json),
                 readCookingTime(json)
@@ -75,7 +75,7 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
         return new VanillaCampfireRecipe(
                 readCookingCategory(json),
                 readGroup(json),
-                readResult(json.getAsJsonObject("result")),
+                readCookingResult(json.get("result")),
                 readCookingIngredients(json.get("ingredient")),
                 readExperience(json),
                 readCookingTime(json)
@@ -99,7 +99,12 @@ public class VanillaRecipeReader1_20 extends AbstractRecipeReader {
     }
 
     @NotNull
-    protected RecipeResult readResult(JsonObject object) {
+    protected RecipeResult readCookingResult(JsonElement object) {
+        return new RecipeResult(object.getAsString(), 1, null);
+    }
+
+    @NotNull
+    protected RecipeResult readCraftingResult(JsonObject object) {
         String item = object.get("item").getAsString();
         int count = object.has("count") ? object.get("count").getAsInt() : 1;
         return new RecipeResult(item, count, null);
