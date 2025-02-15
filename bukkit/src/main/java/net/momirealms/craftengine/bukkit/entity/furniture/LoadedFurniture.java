@@ -4,7 +4,7 @@ import net.momirealms.craftengine.bukkit.entity.DisplayEntityData;
 import net.momirealms.craftengine.bukkit.entity.InteractionEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
-import net.momirealms.craftengine.bukkit.legacy.util.LegacyAttributeUtils;
+import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
