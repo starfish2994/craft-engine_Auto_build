@@ -27,9 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 
@@ -49,6 +47,207 @@ public class RecipeEventListener implements Listener {
         this.plugin = plugin;
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onClickInventoryWithFuel(InventoryClickEvent event) {
+        Inventory inventory = event.getInventory();
+        if (!(inventory instanceof FurnaceInventory furnaceInventory)) return;
+        ItemStack fuelStack = furnaceInventory.getFuel();
+        Inventory clickedInventory = event.getClickedInventory();
+
+        Player player = (Player) event.getWhoClicked();
+        if (clickedInventory == player.getInventory()) {
+            if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+                ItemStack item = event.getCurrentItem();
+                if (ItemUtils.isEmpty(item)) return;
+                if (fuelStack == null || fuelStack.getType() == Material.AIR) {
+                    Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(item);
+                    Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+                    if (idHolder.isEmpty()) return;
+
+                    CookingInput<ItemStack> input = new CookingInput<>(new OptimizedIDItem<>(idHolder.get(), item));
+                    Key recipeType;
+                    if (furnaceInventory.getType() == InventoryType.FURNACE) {
+                        recipeType = RecipeTypes.SMELTING;
+                    } else if (furnaceInventory.getType() == InventoryType.BLAST_FURNACE) {
+                        recipeType = RecipeTypes.BLASTING;
+                    } else {
+                        recipeType = RecipeTypes.SMOKING;
+                    }
+
+                    Recipe<ItemStack> ceRecipe = recipeManager.getRecipe(recipeType, input);
+                    // The item is an ingredient, we should never consider it as fuel firstly
+                    if (ceRecipe != null) return;
+
+                    int fuelTime = this.itemManager.fuelTime(item);
+                    if (fuelTime == 0) {
+                        if (ItemUtils.isCustomItem(item) && item.getType().isFuel()) {
+                            event.setCancelled(true);
+                            ItemStack smelting = furnaceInventory.getSmelting();
+                            if (ItemUtils.isEmpty(smelting)) {
+                                furnaceInventory.setSmelting(item.clone());
+                                item.setAmount(0);
+                            } else if (smelting.isSimilar(item)) {
+                                int maxStackSize = smelting.getMaxStackSize();
+                                int canGiveMaxCount = item.getAmount();
+                                if (maxStackSize > smelting.getAmount()) {
+                                    if (canGiveMaxCount + smelting.getAmount() >= maxStackSize) {
+                                        int givenCount = maxStackSize - smelting.getAmount();
+                                        smelting.setAmount(maxStackSize);
+                                        item.setAmount(item.getAmount() - givenCount);
+                                    } else {
+                                        smelting.setAmount(smelting.getAmount() + canGiveMaxCount);
+                                        item.setAmount(0);
+                                    }
+                                }
+                            }
+                            player.updateInventory();
+                        }
+                        return;
+                    }
+                    event.setCancelled(true);
+                    furnaceInventory.setFuel(item.clone());
+                    item.setAmount(0);
+                    player.updateInventory();
+                } else {
+                    if (fuelStack.isSimilar(item)) {
+                        event.setCancelled(true);
+                        int maxStackSize = fuelStack.getMaxStackSize();
+                        int canGiveMaxCount = item.getAmount();
+                        if (maxStackSize > fuelStack.getAmount()) {
+                            if (canGiveMaxCount + fuelStack.getAmount() >= maxStackSize) {
+                                int givenCount = maxStackSize - fuelStack.getAmount();
+                                fuelStack.setAmount(maxStackSize);
+                                item.setAmount(item.getAmount() - givenCount);
+                            } else {
+                                fuelStack.setAmount(fuelStack.getAmount() + canGiveMaxCount);
+                                item.setAmount(0);
+                            }
+                            player.updateInventory();
+                        }
+                    }
+                }
+            }
+        } else {
+            // click the furnace inventory
+            int slot = event.getSlot();
+            // click the fuel slot
+            if (slot != 1) {
+                return;
+            }
+            ClickType clickType = event.getClick();
+            switch (clickType) {
+                case SWAP_OFFHAND, NUMBER_KEY -> {
+                    ItemStack item;
+                    int hotBarSlot = event.getHotbarButton();
+                    if (clickType == ClickType.SWAP_OFFHAND) {
+                        item = player.getInventory().getItemInOffHand();
+                    } else {
+                        item = player.getInventory().getItem(hotBarSlot);
+                    }
+                    if (item == null) return;
+                    int fuelTime = this.plugin.itemManager().fuelTime(item);
+                    // only handle custom items
+                    if (fuelTime == 0) {
+                        if (ItemUtils.isCustomItem(item) && item.getType().isFuel()) {
+                            event.setCancelled(true);
+                        }
+                        return;
+                    }
+
+                    event.setCancelled(true);
+                    if (fuelStack == null || fuelStack.getType() == Material.AIR) {
+                        furnaceInventory.setFuel(item.clone());
+                        item.setAmount(0);
+                    } else {
+                        if (clickType == ClickType.SWAP_OFFHAND) {
+                            player.getInventory().setItemInOffHand(fuelStack);
+                        } else {
+                            player.getInventory().setItem(hotBarSlot, fuelStack);
+                        }
+                        furnaceInventory.setFuel(item.clone());
+                    }
+                    player.updateInventory();
+                }
+                case LEFT, RIGHT -> {
+                    ItemStack itemOnCursor = event.getCursor();
+                    // pick item
+                    if (ItemUtils.isEmpty(itemOnCursor)) return;
+                    int fuelTime = this.plugin.itemManager().fuelTime(itemOnCursor);
+                    // only handle custom items
+                    if (fuelTime == 0) {
+                        if (ItemUtils.isCustomItem(itemOnCursor) && itemOnCursor.getType().isFuel()) {
+                            event.setCancelled(true);
+                        }
+                        return;
+                    }
+
+                    event.setCancelled(true);
+                    // The slot is empty
+                    if (fuelStack == null || fuelStack.getType() == Material.AIR) {
+                        if (clickType == ClickType.LEFT) {
+                            furnaceInventory.setFuel(itemOnCursor.clone());
+                            itemOnCursor.setAmount(0);
+                            player.updateInventory();
+                        } else {
+                            ItemStack cloned = itemOnCursor.clone();
+                            cloned.setAmount(1);
+                            furnaceInventory.setFuel(cloned);
+                            itemOnCursor.setAmount(itemOnCursor.getAmount() - 1);
+                            player.updateInventory();
+                        }
+                    } else {
+                        boolean isSimilar = itemOnCursor.isSimilar(fuelStack);
+                        if (clickType == ClickType.LEFT) {
+                            if (isSimilar) {
+                                int maxStackSize = fuelStack.getMaxStackSize();
+                                int canGiveMaxCount = itemOnCursor.getAmount();
+                                if (maxStackSize > fuelStack.getAmount()) {
+                                    if (canGiveMaxCount + fuelStack.getAmount() >= maxStackSize) {
+                                        int givenCount = maxStackSize - fuelStack.getAmount();
+                                        fuelStack.setAmount(maxStackSize);
+                                        itemOnCursor.setAmount(itemOnCursor.getAmount() - givenCount);
+                                    } else {
+                                        fuelStack.setAmount(fuelStack.getAmount() + canGiveMaxCount);
+                                        itemOnCursor.setAmount(0);
+                                    }
+                                    player.updateInventory();
+                                }
+                            } else {
+                                // swap item
+                                event.setCursor(fuelStack);
+                                furnaceInventory.setFuel(itemOnCursor.clone());
+                                player.updateInventory();
+                            }
+                        } else {
+                            if (isSimilar) {
+                                int maxStackSize = fuelStack.getMaxStackSize();
+                                if (maxStackSize > fuelStack.getAmount()) {
+                                    fuelStack.setAmount(fuelStack.getAmount() + 1);
+                                    itemOnCursor.setAmount(itemOnCursor.getAmount() - 1);
+                                    player.updateInventory();
+                                }
+                            } else {
+                                // swap item
+                                event.setCursor(fuelStack);
+                                furnaceInventory.setFuel(itemOnCursor.clone());
+                                player.updateInventory();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onFurnaceBurn(FurnaceBurnEvent event) {
+        ItemStack fuel = event.getFuel();
+        int fuelTime = this.itemManager.fuelTime(fuel);
+        if (fuelTime != 0) {
+            event.setBurnTime(fuelTime);
+        }
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onFurnaceInventoryOpen(InventoryOpenEvent event) {
         if (!(event.getInventory() instanceof FurnaceInventory furnaceInventory)) {
@@ -59,7 +258,7 @@ public class RecipeEventListener implements Listener {
             Object blockEntity = Reflections.field$CraftBlockEntityState$tileEntity.get(furnace);
             BukkitInjector.injectCookingBlockEntity(blockEntity);
         } catch (Exception e) {
-            plugin.logger().warn("Failed to inject cooking block entity", e);
+            this.plugin.logger().warn("Failed to inject cooking block entity", e);
         }
     }
 

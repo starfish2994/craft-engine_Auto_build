@@ -151,6 +151,8 @@ items:
   default:palm_log:
     material: paper
     custom-model-data: 1000
+    settings:
+      fuel-time: 300
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
@@ -168,6 +170,8 @@ items:
   default:stripped_palm_log:
     material: paper
     custom-model-data: 1001
+    settings:
+      fuel-time: 300
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
@@ -185,6 +189,8 @@ items:
   default:palm_wood:
     material: paper
     custom-model-data: 1002
+    settings:
+      fuel-time: 300
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
@@ -202,6 +208,8 @@ items:
   default:stripped_palm_wood:
     material: paper
     custom-model-data: 1003
+    settings:
+      fuel-time: 300
     tags:
       - "default:palm_logs"
       - "minecraft:logs"
@@ -219,6 +227,8 @@ items:
   default:palm_planks:
     material: paper
     custom-model-data: 1004
+    settings:
+      fuel-time: 300
     tags:
       - "minecraft:planks"
       - "minecraft:wooden_tool_materials"
@@ -235,6 +245,8 @@ items:
   default:palm_sapling:
     material: paper
     custom-model-data: 1005
+    settings:
+      fuel-time: 100
     data:
       display-name: "<!i>Palm Sapling"
     model:
