@@ -1,6 +1,9 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
+import net.momirealms.craftengine.bukkit.item.behavior.BoneMealBehavior;
+import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
+import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
@@ -41,6 +44,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     static {
         registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.WOODEN_AXE, ItemKeys.STONE_AXE, ItemKeys.IRON_AXE, ItemKeys.GOLDEN_AXE, ItemKeys.DIAMOND_AXE, ItemKeys.NETHERITE_AXE);
+        registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKET, ItemKeys.COD_BUCKET, ItemKeys.SALMON_BUCKET, ItemKeys.TROPICAL_FISH_BUCKET, ItemKeys.TADPOLE_BUCKET, ItemKeys.PUFFERFISH_BUCKET, ItemKeys.AXOLOTL_BUCKET);
+        registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
+        registerVanillaItemExtraBehavior(BoneMealBehavior.INSTANCE, ItemKeys.BONE_MEAL);
     }
 
     private static void registerVanillaItemExtraBehavior(ItemBehavior behavior, Key... items) {
