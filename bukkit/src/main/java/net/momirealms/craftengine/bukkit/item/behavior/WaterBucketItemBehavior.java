@@ -43,11 +43,12 @@ public class WaterBucketItemBehavior extends ItemBehavior {
         Location location = new Location(world, pos.x(), pos.y(), pos.z());
 
         // TODO Refactor all of this because it's playing a trick with the server
-        block.setBlockData(BlockStateUtils.createBlockData(state.vanillaBlockState().handle()), false);
+        ImmutableBlockState nextState = state.with(waterlogged, true);
+        block.setBlockData(BlockStateUtils.createBlockData(nextState.vanillaBlockState().handle()), false);
         // actually we should broadcast this change
         context.getPlayer().sendPacket(BlockStateUtils.createBlockUpdatePacket(pos, state), true);
         BukkitCraftEngine.instance().scheduler().sync().runDelayed(() ->
-                CraftEngineBlocks.place(location, state.with(waterlogged, true), UpdateOption.UPDATE_ALL), world, location.getBlockX() >> 4, location.getBlockZ() >> 4);
+                CraftEngineBlocks.place(location, nextState, UpdateOption.UPDATE_ALL), world, location.getBlockX() >> 4, location.getBlockZ() >> 4);
 
         return InteractionResult.SUCCESS;
     }

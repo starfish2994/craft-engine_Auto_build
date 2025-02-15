@@ -43,8 +43,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private static final Map<Key, ItemBehavior> VANILLA_ITEM_EXTRA_BEHAVIORS = new HashMap<>();
 
     static {
-        registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.WOODEN_AXE, ItemKeys.STONE_AXE, ItemKeys.IRON_AXE, ItemKeys.GOLDEN_AXE, ItemKeys.DIAMOND_AXE, ItemKeys.NETHERITE_AXE);
-        registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKET, ItemKeys.COD_BUCKET, ItemKeys.SALMON_BUCKET, ItemKeys.TROPICAL_FISH_BUCKET, ItemKeys.TADPOLE_BUCKET, ItemKeys.PUFFERFISH_BUCKET, ItemKeys.AXOLOTL_BUCKET);
+        registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.AXES);
+        registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKETS);
         registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
         registerVanillaItemExtraBehavior(BoneMealBehavior.INSTANCE, ItemKeys.BONE_MEAL);
     }

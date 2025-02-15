@@ -26,4 +26,12 @@ public class ItemKeys {
     public static final Key AXOLOTL_BUCKET = Key.of("minecraft:axolotl_bucket");
     public static final Key BUCKET = Key.of("minecraft:bucket");
     public static final Key BONE_MEAL = Key.of("minecraft:bone_meal");
+
+    public static final Key[] AXES = new Key[] {
+            WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE
+    };
+
+    public static final Key[] WATER_BUCKETS = new Key[] {
+            WATER_BUCKET, COD_BUCKET, SALMON_BUCKET, TROPICAL_FISH_BUCKET, TADPOLE_BUCKET, PUFFERFISH_BUCKET, AXOLOTL_BUCKET
+    };
 }
