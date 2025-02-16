@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -28,6 +29,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -563,13 +565,25 @@ public class PacketConsumers {
                         CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
                     }
                 } else if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
-                    FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture);
+                    InteractionHand hand;
+                    Location interactionPoint;
+                    try {
+                        Object interactionHand = Reflections.field$ServerboundInteractPacket$InteractionAtLocationAction$hand.get(action);
+                        hand = interactionHand == Reflections.instance$InteractionHand$MAIN_HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                        Object vec3 = Reflections.field$ServerboundInteractPacket$InteractionAtLocationAction$location.get(action);
+                        double x = (double) Reflections.field$Vec3$x.get(vec3);
+                        double y = (double) Reflections.field$Vec3$y.get(vec3);
+                        double z = (double) Reflections.field$Vec3$z.get(vec3);
+                        interactionPoint = new Location(location.getWorld(), x, y, z);
+                    } catch (ReflectiveOperationException e) {
+                        throw new RuntimeException("Failed to get interaction hand from interact packet", e);
+                    }
+                    FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture, hand, interactionPoint);
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
-                    if (player.isSneaking()) {
+                    if (player.isSneaking())
                         return;
-                    }
                     furniture.getAvailableSeat(entityId).ifPresent(seatPos -> {
                         if (furniture.occupySeat(seatPos)) {
                             furniture.mountSeat(Objects.requireNonNull(player.getPlayer()), seatPos);
@@ -581,6 +595,11 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
         }
     };
+
+    private static @NotNull InteractionHand getInteractionHand(Object action) {
+
+        return hand;
+    }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
         try {

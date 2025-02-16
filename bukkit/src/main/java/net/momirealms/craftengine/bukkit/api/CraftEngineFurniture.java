@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.api;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.furniture.AnchorType;
@@ -41,13 +40,13 @@ public class CraftEngineFurniture {
     /**
      * Places furniture at the certain location
      *
+     * @param location    location
      * @param furnitureId furniture to place
-     * @param location location
-     * @param anchorType anchor type
+     * @param anchorType  anchor type
      * @return the loaded furniture
      */
     @Nullable
-    public static LoadedFurniture place(Key furnitureId, Location location, AnchorType anchorType) {
+    public static LoadedFurniture place(Location location, Key furnitureId, AnchorType anchorType) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
         return BukkitFurnitureManager.instance().place(furniture, location, anchorType, true);
@@ -56,27 +55,27 @@ public class CraftEngineFurniture {
     /**
      * Places furniture at the certain location
      *
-     * @param furniture furniture to place
-     * @param location location
+     * @param location   location
+     * @param furniture  furniture to place
      * @param anchorType anchor type
      * @return the loaded furniture
      */
     @NotNull
-    public static LoadedFurniture place(CustomFurniture furniture, Location location, AnchorType anchorType) {
+    public static LoadedFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType) {
         return BukkitFurnitureManager.instance().place(furniture, location, anchorType, true);
     }
 
     /**
      * Places furniture at the certain location
      *
+     * @param location    location
      * @param furnitureId furniture to place
-     * @param location location
-     * @param anchorType anchor type
-     * @param playSound whether to play place sounds
+     * @param anchorType  anchor type
+     * @param playSound   whether to play place sounds
      * @return the loaded furniture
      */
     @Nullable
-    public static LoadedFurniture place(Key furnitureId, Location location, AnchorType anchorType, boolean playSound) {
+    public static LoadedFurniture place(Location location, Key furnitureId, AnchorType anchorType, boolean playSound) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
         return BukkitFurnitureManager.instance().place(furniture, location, anchorType, playSound);
@@ -85,14 +84,14 @@ public class CraftEngineFurniture {
     /**
      * Places furniture at the certain location
      *
-     * @param furniture furniture to place
-     * @param location location
+     * @param location   location
+     * @param furniture  furniture to place
      * @param anchorType anchor type
-     * @param playSound whether to play place sounds
+     * @param playSound  whether to play place sounds
      * @return the loaded furniture
      */
     @NotNull
-    public static LoadedFurniture place(CustomFurniture furniture, Location location, AnchorType anchorType, boolean playSound) {
+    public static LoadedFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType, boolean playSound) {
         return BukkitFurnitureManager.instance().place(furniture, location, anchorType, playSound);
     }
 
@@ -116,6 +115,17 @@ public class CraftEngineFurniture {
     public static boolean isSeat(@NotNull Entity entity) {
         Integer baseEntityId = entity.getPersistentDataContainer().get(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER);
         return baseEntityId != null;
+    }
+
+    /**
+     * Gets the base furniture by the base entity
+     *
+     * @param baseEntity base entity
+     * @return the loaded furniture
+     */
+    @Nullable
+    public static LoadedFurniture getLoadedFurnitureByBaseEntity(@NotNull Entity baseEntity) {
+        return BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(baseEntity.getEntityId());
     }
 
     /**

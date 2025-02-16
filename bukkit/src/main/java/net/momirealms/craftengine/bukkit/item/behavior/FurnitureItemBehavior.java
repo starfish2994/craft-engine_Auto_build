@@ -4,6 +4,7 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptPlaceEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.core.block.BlockSounds;
@@ -80,6 +81,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         Vec3d clickedPosition = context.getClickLocation();
+
         // trigger event
         org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
         World world = (World) context.getLevel().getHandle();
@@ -103,7 +105,8 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         Location furnitureLocation = new Location(world, finalPlacePosition.x(), finalPlacePosition.y(), finalPlacePosition.z(), (float) furnitureYaw, 0);
-        FurnitureAttemptPlaceEvent attemptPlaceEvent = new FurnitureAttemptPlaceEvent(bukkitPlayer, this, anchorType,furnitureLocation.clone());
+        FurnitureAttemptPlaceEvent attemptPlaceEvent = new FurnitureAttemptPlaceEvent(bukkitPlayer, customFurniture, anchorType, furnitureLocation.clone(),
+                DirectionUtils.toBlockFace(clickedFace), context.getHand(), world.getBlockAt(context.getClickedPos().x(), context.getClickedPos().y(), context.getClickedPos().z()));
         if (EventUtils.fireAndCheckCancel(attemptPlaceEvent)) {
             return InteractionResult.FAIL;
         }
@@ -116,7 +119,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
         player.swingHand(context.getHand());
 
-        FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation);
+        FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation, context.getHand());
         EventUtils.fireAndForget(placeEvent);
         return InteractionResult.SUCCESS;
     }
