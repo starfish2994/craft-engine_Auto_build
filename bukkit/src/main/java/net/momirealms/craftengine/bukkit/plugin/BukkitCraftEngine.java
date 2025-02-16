@@ -133,7 +133,6 @@ public class BukkitCraftEngine extends CraftEngine {
         // tick task
         if (VersionHelper.isFolia()) {
             this.tickTask = this.scheduler().sync().runRepeating(() -> {
-                furnitureManager().tick();
                 for (BukkitServerPlayer serverPlayer : networkManager().onlineUsers()) {
                     org.bukkit.entity.Player player = serverPlayer.platformPlayer();
                     Location location = player.getLocation();
@@ -142,7 +141,6 @@ public class BukkitCraftEngine extends CraftEngine {
             }, 1, 1);
         } else {
             this.tickTask = this.scheduler().sync().runRepeating(() -> {
-                furnitureManager().tick();
                 for (BukkitServerPlayer serverPlayer : networkManager().onlineUsers()) {
                     serverPlayer.tick();
                 }
@@ -176,6 +174,8 @@ public class BukkitCraftEngine extends CraftEngine {
         this.packManager.registerConfigSectionParser(this.fontManager);
         // register item parser
         this.packManager.registerConfigSectionParser(this.itemManager);
+        // register furniture parser
+        this.packManager.registerConfigSectionParser(this.furnitureManager);
         // register block parser
         this.packManager.registerConfigSectionParser(this.blockManager);
         // register recipe parser

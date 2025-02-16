@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
@@ -433,7 +434,8 @@ public class PacketConsumers {
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
-            Key itemId = furniture.behavior().itemId();
+            Key itemId = furniture.furniture().settings().itemId();
+            if (itemId == null) return;
             ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, (BukkitServerPlayer) user);
             PlayerInventory inventory = player.getInventory();
             if (itemStack == null) {
@@ -550,7 +552,7 @@ public class PacketConsumers {
             if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
-            if (serverPlayer.isSpectatorMode()) return;
+            if (serverPlayer.isSpectatorMode() || serverPlayer.isAdventureMode()) return;
             BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                 if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
                     if (furniture.isValid()) {
@@ -558,7 +560,7 @@ public class PacketConsumers {
                         if (EventUtils.fireAndCheckCancel(breakEvent)) {
                             return;
                         }
-                        furniture.onPlayerDestroy(serverPlayer);
+                        CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
                     }
                 } else if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
                     FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture);

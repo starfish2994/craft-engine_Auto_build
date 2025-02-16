@@ -75,17 +75,17 @@ public class BlockItemBehavior extends ItemBehavior {
         Location placeLocation = new Location(world, pos.x(), pos.y(), pos.z());
 
         // trigger event
-        CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent((org.bukkit.entity.Player) player.platformPlayer(), placeLocation, blockStateToPlace);
+        CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent((org.bukkit.entity.Player) player.platformPlayer(), placeLocation.clone(), blockStateToPlace);
         if (EventUtils.fireAndCheckCancel(attemptPlaceEvent)) {
             return InteractionResult.FAIL;
         }
 
         // Todo #0
-        CraftEngineBlocks.place(placeLocation, blockStateToPlace, UpdateOption.UPDATE_ALL_IMMEDIATE);
+        CraftEngineBlocks.place(placeLocation, blockStateToPlace, UpdateOption.UPDATE_ALL_IMMEDIATE, false);
 
         // TODO Make place event cancellable. Needs to get the previous block state from #0
         // TODO Add Bukkit block argument
-        CustomBlockPlaceEvent placeEvent = new CustomBlockPlaceEvent((org.bukkit.entity.Player) player.platformPlayer(), placeLocation, blockStateToPlace);
+        CustomBlockPlaceEvent placeEvent = new CustomBlockPlaceEvent((org.bukkit.entity.Player) player.platformPlayer(), placeLocation.clone(), blockStateToPlace);
         EventUtils.fireAndForget(placeEvent);
 
         if (!player.isCreativeMode()) {
