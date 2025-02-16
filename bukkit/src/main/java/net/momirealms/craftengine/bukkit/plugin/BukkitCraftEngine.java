@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
 import net.momirealms.craftengine.bukkit.api.event.AsyncResourcePackGenerateEvent;
+import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
@@ -164,6 +165,13 @@ public class BukkitCraftEngine extends CraftEngine {
     public void disable() {
         super.disable();
         if (this.tickTask != null) this.tickTask.cancel();
+    }
+
+    @Override
+    public void reload() {
+        super.reload();
+        CraftEngineReloadEvent event = new CraftEngineReloadEvent(this);
+        EventUtils.fireAndForget(event);
     }
 
     @Override
