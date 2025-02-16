@@ -596,11 +596,6 @@ public class PacketConsumers {
         }
     };
 
-    private static @NotNull InteractionHand getInteractionHand(Object action) {
-
-        return hand;
-    }
-
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
         try {
             Object sound = Reflections.field$ClientboundSoundPacket$sound.get(packet);

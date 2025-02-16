@@ -50,7 +50,7 @@ public class CustomBlockBreakEvent extends PlayerEvent implements Cancellable {
     }
 
     @NotNull
-    public CustomBlock block() {
+    public CustomBlock customBlock() {
         return this.customBlock;
     }
 
