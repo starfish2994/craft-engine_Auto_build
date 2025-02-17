@@ -36,6 +36,7 @@ CraftEngine 提供了两种安装模式：标准安装和 Mod 模式。标准安
 2. 选择以下任一操作：
     - 将您的服务器 JAR 文件重命名为 `paper.jar`，**或**
     - 添加启动参数：`-Dignite.locator=paper -Dignite.paper.jar=./paper-xxx.jar`
+    - 示例：`java -Dignite.locator=paper -Dignite.paper.jar=./paper-1.21.4-164.jar -jar ignite.jar`
 3. 启动服务器以生成 `/mods` 目录。
 4. 将最新的 [mod.jar](https://github.com/Xiao-MoMi/craft-engine/releases) 放入 `/mods` 文件夹。
 5. 将插件的 JAR 文件放入 `/plugins` 文件夹进行安装。
