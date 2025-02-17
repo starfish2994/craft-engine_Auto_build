@@ -1,3 +1,12 @@
+<h2 align="center">
+  CraftEngine
+</h2>
+
+<p align="center">
+    <a target="_blank" href="/README.md">English</a>
+    <a target="_blank" href="/README_zh-CN.md">中文</a>
+</p>
+
 ## 📌 关于 CraftEngine
 CraftEngine 重新定义了 Minecraft 插件架构，作为下一代自定义内容实现的解决方案。其 JVM 级别的注入提供了前所未有的性能、稳定性和可扩展性。该框架提供了一个代码优先的 API，用于注册原生集成的方块行为和物品交互逻辑。
 
