@@ -33,7 +33,7 @@ CraftEngine offers two installation modes: Standard Installation and Mod Mode. A
 ### 🔧 Install Server Mod
 - Download the latest [ignite.jar](https://github.com/vectrix-space/ignite/releases) into your server's root directory
 - Either:
-    - Rename your server JAR to `paper.jar`, **or**
+    - Rename your server JAR to `paper.jar`
     - Add launch arguments: `-Dignite.locator=paper -Dignite.paper.jar=./paper-xxx.jar`
 - Start the server to generate the `/mods` directory
 - Place the latest [mod.jar](https://github.com/Xiao-MoMi/craft-engine/releases) in `/mods`
