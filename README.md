@@ -3,7 +3,7 @@
 </h2>
 
 <p align="center">
-    <a target="_blank" href="?tab=readme-ov-file">English</a>
+    <a target="_blank" href="/README.md">English</a>
     <a target="_blank" href="/README_zh-CN.md">中文</a>
 </p>
 
