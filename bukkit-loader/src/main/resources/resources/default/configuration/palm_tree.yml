@@ -153,10 +153,10 @@ items:
     custom-model-data: 1000
     settings:
       fuel-time: 300
-    tags:
-      - "default:palm_logs"
-      - "minecraft:logs"
-      - "minecraft:logs_that_burn"
+      tags:
+        - "default:palm_logs"
+        - "minecraft:logs"
+        - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Palm Log"
     model:
@@ -172,10 +172,10 @@ items:
     custom-model-data: 1001
     settings:
       fuel-time: 300
-    tags:
-      - "default:palm_logs"
-      - "minecraft:logs"
-      - "minecraft:logs_that_burn"
+      tags:
+        - "default:palm_logs"
+        - "minecraft:logs"
+        - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Stripped Palm Log"
     model:
@@ -191,10 +191,10 @@ items:
     custom-model-data: 1002
     settings:
       fuel-time: 300
-    tags:
-      - "default:palm_logs"
-      - "minecraft:logs"
-      - "minecraft:logs_that_burn"
+      tags:
+        - "default:palm_logs"
+        - "minecraft:logs"
+        - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Palm Wood"
     model:
@@ -210,10 +210,10 @@ items:
     custom-model-data: 1003
     settings:
       fuel-time: 300
-    tags:
-      - "default:palm_logs"
-      - "minecraft:logs"
-      - "minecraft:logs_that_burn"
+      tags:
+        - "default:palm_logs"
+        - "minecraft:logs"
+        - "minecraft:logs_that_burn"
     data:
       display-name: "<!i>Stripped Palm Wood"
     model:
@@ -229,9 +229,9 @@ items:
     custom-model-data: 1004
     settings:
       fuel-time: 300
-    tags:
-      - "minecraft:planks"
-      - "minecraft:wooden_tool_materials"
+      tags:
+        - "minecraft:planks"
+        - "minecraft:wooden_tool_materials"
     data:
       display-name: "<!i>Palm Planks"
     model:
