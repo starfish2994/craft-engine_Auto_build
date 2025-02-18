@@ -146,7 +146,47 @@ blocks:
           parent: "minecraft:block/cube_all"
           textures:
             "all": "minecraft:block/custom/palm_planks"
-
+  default:palm_sapling:
+    settings:
+      template: block_settings:sapling
+      overrides:
+        item: default:palm_sapling
+    behavior:
+      type: sapling_block
+      # This requires you to register a custom tree configuration with data pack
+      # To prevent errors, we use tree feature from vanilla here
+      feature: minecraft:fancy_oak
+      bone-meal-success-chance: 0.45
+    loot:
+      template: loot_table:normal
+      arguments:
+        item: default:palm_sapling
+    states:
+      properties:
+        stage:
+          type: int
+          default-value: 0
+          range: 0~1
+      appearances:
+        default:
+          state: oak_sapling:0
+          model:
+            path: "minecraft:block/custom/palm_sapling"
+            generation:
+              parent: "minecraft:block/cross"
+              textures:
+                "cross": "minecraft:block/custom/palm_sapling"
+      variants:
+        stage=0:
+          appearance: "default"
+          id: 0
+          settings:
+            is-randomly-ticking: true
+        stage=1:
+          appearance: "default"
+          id: 1
+          settings:
+            is-randomly-ticking: true
 items:
   default:palm_log:
     material: paper
@@ -254,6 +294,9 @@ items:
       arguments:
         model_path: "minecraft:item/custom/palm_sapling"
         texture_path: "minecraft:block/custom/palm_sapling"
+    behavior:
+      type: block_item
+      block: default:palm_sapling
   default:palm_leaves:
     material: oak_leaves
     custom-model-data: 1000
