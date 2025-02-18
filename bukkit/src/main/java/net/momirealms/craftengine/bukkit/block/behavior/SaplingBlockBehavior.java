@@ -93,17 +93,17 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
     }
 
     @Override
-    public boolean isBoneMealSuccess(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) {
         return RandomUtils.generateRandomDouble(0d, 1d) < this.boneMealSuccessChance;
     }
 
     @Override
-    public boolean isValidBoneMealTarget(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+    public boolean isValidBoneMealTarget(Object thisBlock, Object[] args) {
         return true;
     }
 
     @Override
-    public void performBoneMeal(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
         this.increaseStage(args[0], args[2], args[3], args[1]);
     }
 

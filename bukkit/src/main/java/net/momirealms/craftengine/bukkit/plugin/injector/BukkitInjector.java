@@ -777,10 +777,10 @@ public class BukkitInjector {
         public static final IsBoneMealSuccessInterceptor INSTANCE = new IsBoneMealSuccessInterceptor();
 
         @RuntimeType
-        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             try {
-                return holder.value().isBoneMealSuccess(thisObj, args, superMethod);
+                return holder.value().isBoneMealSuccess(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run isBoneMealSuccess", e);
                 return true;
@@ -792,10 +792,10 @@ public class BukkitInjector {
         public static final IsValidBoneMealTargetInterceptor INSTANCE = new IsValidBoneMealTargetInterceptor();
 
         @RuntimeType
-        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             try {
-                return holder.value().isValidBoneMealTarget(thisObj, args, superMethod);
+                return holder.value().isValidBoneMealTarget(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run isValidBoneMealTarget", e);
                 return true;
@@ -807,10 +807,10 @@ public class BukkitInjector {
         public static final PerformBoneMealInterceptor INSTANCE = new PerformBoneMealInterceptor();
 
         @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             try {
-                holder.value().performBoneMeal(thisObj, args, superMethod);
+                holder.value().performBoneMeal(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run performBoneMeal", e);
             }

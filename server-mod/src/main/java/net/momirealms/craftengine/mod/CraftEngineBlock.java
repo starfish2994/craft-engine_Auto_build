@@ -183,7 +183,7 @@ public class CraftEngineBlock extends Block implements BehaviorHolder, ShapeHold
     @Override
     public boolean isValidBonemealTarget(@NotNull LevelReader levelReader, @NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         try {
-            return behaviorHolder.value().isValidBoneMealTarget(this, new Object[]{levelReader, blockPos, blockState}, () -> false);
+            return behaviorHolder.value().isValidBoneMealTarget(this, new Object[]{levelReader, blockPos, blockState});
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -193,7 +193,7 @@ public class CraftEngineBlock extends Block implements BehaviorHolder, ShapeHold
     @Override
     public boolean isBonemealSuccess(@NotNull Level level, @NotNull RandomSource randomSource, @NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         try {
-            return behaviorHolder.value().isValidBoneMealTarget(this, new Object[]{level, randomSource, blockPos, blockState}, () -> false);
+            return behaviorHolder.value().isBoneMealSuccess(this, new Object[]{level, randomSource, blockPos, blockState});
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -203,7 +203,7 @@ public class CraftEngineBlock extends Block implements BehaviorHolder, ShapeHold
     @Override
     public void performBonemeal(@NotNull ServerLevel serverLevel, @NotNull RandomSource randomSource, @NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         try {
-            behaviorHolder.value().performBoneMeal(this, new Object[]{serverLevel, randomSource, blockPos, blockState}, () -> null);
+            behaviorHolder.value().performBoneMeal(this, new Object[]{serverLevel, randomSource, blockPos, blockState});
         } catch (Exception e) {
             e.printStackTrace();
         }

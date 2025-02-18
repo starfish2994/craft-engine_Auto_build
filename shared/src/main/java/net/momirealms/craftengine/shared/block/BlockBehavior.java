@@ -36,14 +36,14 @@ public abstract class BlockBehavior {
         superMethod.call();
     }
 
-    public boolean isValidBoneMealTarget(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public boolean isValidBoneMealTarget(Object thisBlock, Object[] args) throws Exception {
         return false;
     }
 
-    public boolean isBoneMealSuccess(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) throws Exception {
         return false;
     }
 
-    public void performBoneMeal(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
     }
 }
