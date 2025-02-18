@@ -158,7 +158,6 @@ public abstract class CustomBlock {
         }
         Property<?> directionProperty = this.variantProvider.getProperty("facing");
         if (directionProperty != null) {
-            System.out.println(directionProperty.getClass());
             if (directionProperty.valueClass() == HorizontalDirection.class) {
                 state = state.with((Property<HorizontalDirection>) directionProperty, context.getHorizontalDirection().opposite().toHorizontalDirection());
             } else if (directionProperty.valueClass() == Direction.class) {
