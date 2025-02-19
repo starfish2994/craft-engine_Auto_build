@@ -32,17 +32,14 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BlockEventListener implements Listener {
     private final BukkitCraftEngine plugin;
     private final boolean enableNoteBlockCheck;
     private final BukkitBlockManager manager;
-    private static final Set<Material> WATER_BUCKETS = Arrays.stream(ItemKeys.WATER_BUCKETS).map(it -> Registry.MATERIAL.get(new NamespacedKey(it.namespace(), it.value()))).collect(Collectors.toSet());
+//    private static final Set<Material> WATER_BUCKETS = Arrays.stream(ItemKeys.WATER_BUCKETS).map(it -> Registry.MATERIAL.get(new NamespacedKey(it.namespace(), it.value()))).collect(Collectors.toSet());
 
     public BlockEventListener(BukkitCraftEngine plugin, BukkitBlockManager manager, boolean enableNoteBlockCheck) {
         this.plugin = plugin;
@@ -68,7 +65,7 @@ public class BlockEventListener implements Listener {
                     try {
                         Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                         Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
-                        player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 1f);
+                        player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
                     } catch (ReflectiveOperationException e) {
                         this.plugin.logger().warn("Failed to get sound type", e);
                     }
@@ -84,7 +81,7 @@ public class BlockEventListener implements Listener {
                 Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                 Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
-                player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 1f);
+                player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
             } catch (ReflectiveOperationException e) {
                 this.plugin.logger().warn("Failed to get sound type", e);
             }

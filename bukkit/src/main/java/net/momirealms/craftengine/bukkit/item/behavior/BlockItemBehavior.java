@@ -97,7 +97,7 @@ public class BlockItemBehavior extends ItemBehavior {
         }
 
         player.swingHand(placeContext.getHand());
-        world.playSound(new Location(world, pos.x(), pos.y(), pos.z()), blockStateToPlace.sounds().placeSound().toString(), SoundCategory.BLOCKS, 1f, 1f);
+        world.playSound(new Location(world, pos.x(), pos.y(), pos.z()), blockStateToPlace.sounds().placeSound().toString(), SoundCategory.BLOCKS, 1f, 0.8f);
         world.sendGameEvent((org.bukkit.entity.Player) player.platformPlayer(), GameEvent.BLOCK_PLACE, new Vector(pos.x(), pos.y(), pos.z()));
         return InteractionResult.SUCCESS;
     }
