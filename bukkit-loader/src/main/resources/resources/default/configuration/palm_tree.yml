@@ -302,6 +302,11 @@ items:
     custom-model-data: 1000
     data:
       display-name: "<!i>Palm Leaves"
+      components:
+        minecraft:block_state:
+          distance: "1"
+          persistent: "false"
+          waterlogged: "false"
     model:
       type: "minecraft:model"
       path: "minecraft:item/custom/palm_leaves"
