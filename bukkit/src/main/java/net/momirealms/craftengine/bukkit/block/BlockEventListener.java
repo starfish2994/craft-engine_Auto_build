@@ -149,7 +149,7 @@ public class BlockEventListener implements Listener {
                 try {
                     Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                     Object breakSound = Reflections.field$SoundType$breakSound.get(soundType);
-                    block.getWorld().playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(breakSound).toString(), SoundCategory.BLOCKS, 1f, 1f);
+                    block.getWorld().playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(breakSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to get sound type", e);
                 }

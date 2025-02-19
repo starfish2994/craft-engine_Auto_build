@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.mod;
 
-import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
