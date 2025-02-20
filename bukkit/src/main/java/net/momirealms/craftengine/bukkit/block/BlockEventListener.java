@@ -119,7 +119,7 @@ public class BlockEventListener implements Listener {
                 }
                 // play sound
                 Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 1f);
+                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 0.8f);
 
                 Player player = event.getPlayer();
                 if (player.getGameMode() == GameMode.CREATIVE) {
@@ -211,7 +211,7 @@ public class BlockEventListener implements Listener {
                 for (Item<Object> item : blockState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
-                world.playBlockSound(vec3d, blockState.sounds().breakSound(),1f, 1f);
+                world.playBlockSound(vec3d, blockState.sounds().breakSound(),1f, 0.8f);
             }
         }
     }
@@ -243,7 +243,7 @@ public class BlockEventListener implements Listener {
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
-                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 1f);
+                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 0.8f);
             }
         }
     }
