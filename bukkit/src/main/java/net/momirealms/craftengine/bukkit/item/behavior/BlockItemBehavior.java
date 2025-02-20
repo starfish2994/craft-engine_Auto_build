@@ -19,8 +19,10 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -31,6 +33,7 @@ import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -147,13 +150,17 @@ public class BlockItemBehavior extends ItemBehavior {
 
     public static class Factory implements ItemBehaviorFactory {
         @Override
-        public ItemBehavior create(Key __, Map<String, Object> arguments) {
+        public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
                 throw new IllegalArgumentException("Missing required parameter 'block' for block_item behavior");
             }
-            Key blockId = Key.of(id.toString());
-            return new BlockItemBehavior(blockId);
+            if (id instanceof Map<?, ?> map) {
+                BukkitBlockManager.instance().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                return new BlockItemBehavior(key);
+            } else {
+                return new BlockItemBehavior(Key.of(id.toString()));
+            }
         }
     }
 }

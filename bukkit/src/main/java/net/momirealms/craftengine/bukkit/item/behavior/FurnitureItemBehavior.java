@@ -15,14 +15,17 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.Pair;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -119,12 +122,17 @@ public class FurnitureItemBehavior extends ItemBehavior {
     public static class Factory implements ItemBehaviorFactory {
 
         @Override
-        public ItemBehavior create(Key id, Map<String, Object> arguments) {
-            if (!arguments.containsKey("furniture")) {
-                throw new IllegalArgumentException("Missing furniture argument");
+        public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
+            Object id = arguments.get("furniture");
+            if (id == null) {
+                throw new IllegalArgumentException("Missing required parameter 'furniture' for furniture_item behavior");
             }
-            String furnitureId = arguments.get("furniture").toString();
-            return new FurnitureItemBehavior(Key.of(furnitureId));
+            if (id instanceof Map<?,?> map) {
+                BukkitFurnitureManager.instance().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                return new FurnitureItemBehavior(key);
+            } else {
+                return new FurnitureItemBehavior(Key.of(id.toString()));
+            }
         }
     }
 }
