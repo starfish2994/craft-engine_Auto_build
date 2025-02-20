@@ -60,6 +60,7 @@ public class ConfigManager implements Reloadable {
     protected boolean enableSoundSystem;
     protected boolean enableRecipeSystem;
     protected List<String> foldersToMerge;
+    protected boolean restoreVanillaBlocks;
 
     public ConfigManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -118,6 +119,7 @@ public class ConfigManager implements Reloadable {
         maxChainUpdate = config.getInt("performance.max-block-chain-update-limit", 64);
         forceUpdateLight = config.getBoolean("performance.light-system.force-update-light", false);
         enableLightSystem = config.getBoolean("performance.light-system.enable", true);
+        restoreVanillaBlocks = config.getBoolean("performance.chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
         // compatibility
         hasPAPI = plugin.isPluginEnabled("PlaceholderAPI");
         // furniture
@@ -127,6 +129,8 @@ public class ConfigManager implements Reloadable {
         enableSoundSystem = config.getBoolean("block.sound-system.enable", true);
         // recipe
         enableRecipeSystem = config.getBoolean("recipe.enable", true);
+
+
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -213,6 +217,10 @@ public class ConfigManager implements Reloadable {
 
     public static boolean enableRecipeSystem() {
         return instance.enableRecipeSystem;
+    }
+
+    public static boolean restoreVanillaBlocks() {
+        return instance.restoreVanillaBlocks;
     }
 
     public static List<String> foldersToMerge() {
