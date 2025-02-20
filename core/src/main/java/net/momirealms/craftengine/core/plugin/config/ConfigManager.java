@@ -95,6 +95,11 @@ public class ConfigManager implements Reloadable {
                         .setVersioning(new BasicVersioning("config-version"))
                         .build()
         );
+        try {
+            config.save(new File(plugin.dataFolderFile(), "config.yml"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         loadSettings();
     }
 
@@ -129,8 +134,6 @@ public class ConfigManager implements Reloadable {
         enableSoundSystem = config.getBoolean("block.sound-system.enable", true);
         // recipe
         enableRecipeSystem = config.getBoolean("recipe.enable", true);
-
-
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
