@@ -4596,4 +4596,13 @@ public class Reflections {
                     clazz$ServerLevel, void.class, clazz$Player, int.class, clazz$BlockPos, int.class
             )
     );
+
+    public static final Method method$PalettedContainer$getAndSet = Objects.requireNonNull(
+            ReflectionUtils.getMethod(
+                    Reflections.clazz$PalettedContainer,
+                    Object.class,
+                    new String[] {"a", "getAndSet"},
+                    int.class, int.class, int.class, Object.class
+            )
+    );
 }

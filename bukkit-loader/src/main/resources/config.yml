@@ -43,6 +43,9 @@ performance:
     enable: true
     # Turning this option on will reduce lighting system issues to some extent, but will increase server bandwidth consumption
     force-update-light: false
+  chunk-system:
+    #
+    disable-storage: false
 
 offset-characters:
   font: minecraft:default
