@@ -1,5 +1,5 @@
 # Don't change this
-config-version: "1"
+config-version: "2"
 
 exception.invalid_syntax: "<red>Sintaxis inválida. Sintaxis correcta: <white><arg:0></white></red>"
 exception.invalid_argument: "<red>Argumento no válido. Razón: <white><arg:0></white></red>"
@@ -38,4 +38,9 @@ argument.parse.failure.aggregate.missing: "<red>Componente Faltante '<arg:0>'</r
 argument.parse.failure.aggregate.failure: "<red>Componente Invalido '<arg:0>': <arg:1></red>"
 argument.parse.failure.either: "<red>No se ha podido resolver <arg:1> o <arg:2> de '<arg:0>'</red>"
 argument.parse.failure.namedtextcolor: "<red>'<arg:0>' no es un color de texto con nombre</red>"
-command.reload.success: "<white>Recargado. Tomó <green><arg:0></green> ms.</white>"
+command.reload.config.success: "<white>Recargado. Tomó <green><arg:0></green> ms.</white>"
+command.reload.config.failure: "<red>Error al recargar la configuración. Por favor, revisa el registro de la consola.</red>"
+command.reload.pack.success: "<white>Paquete de recursos recargado. Tomó <green><arg:0></green> ms.</white>"
+command.reload.pack.failure: "<red>Error al recargar el paquete de recursos. Por favor, revisa el registro de la consola.</red>"
+command.reload.all.success: "<white>Todo recargado. Tomó <green><arg:0></green> ms.</white>"
+command.reload.all.failure: "<red>Error al recargar. Por favor, revisa el registro de la consola.</red>"
