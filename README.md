@@ -31,7 +31,7 @@ CraftEngine redefines Minecraft plugin architecture as a next-generation solutio
 ## Installation
 
 ### 💻 Enviroment Requirements
-+ First, ensure that you are running a [Paper](https://papermc.io/) (or its fork) 1.20.1+ server. The plugin does not support Spigot and is unlikely to do so in the future. CraftEngine contains over 10,000 lines of code that are based on the Minecraft code of the Paper version server.
++ First, ensure that you are running a [Paper](https://papermc.io/) (or its fork) 1.20.1+ server. The plugin does not support Spigot and is unlikely to do so in the future.
 + Secondly, please use JDK 21 to run the server. I believe this is quite straightforward for you.
 
 ### 🔍 How to Install
