@@ -56,9 +56,9 @@ The plugin employs runtime bytecode generation to register custom blocks at the 
 
 🧱 Native Block Customization
 + Dynamically register blocks with complete control over
-+ Physics: hardness, flammability, light emission, and all standard properties supported by vanilla Minecraft
++ Physics: hardness, flammability, light emission, etc.
 + Custom Behaviors: Tree saplings, crops, falling blocks, and more via API
-+ Vanilla Compatibility: Full preservation of native block mechanics (e.g., note blocks, tripwires)
++ Vanilla Compatibility: Full preservation of vanilla block mechanism (e.g., note blocks, tripwires)
 
 📦 Data Pack Integration
 + Define custom ore veins
