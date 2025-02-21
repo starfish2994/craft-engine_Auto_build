@@ -36,14 +36,14 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, RTagIte
 
     @Override
     protected Key id(ItemWrapper<ItemStack> item) {
-        Object id = item.get("craftengine:id");
+        Object id = item.get("craftengine_id");
         if (id == null) return Key.of(item.getItem().getType().getKey().asString());
         return Key.of(id.toString());
     }
 
     @Override
     protected Optional<Key> customId(ItemWrapper<ItemStack> item) {
-        Object id = item.get("craftengine:id");
+        Object id = item.get("craftengine_id");
         if (id == null) return Optional.empty();
         return Optional.of(Key.of(id.toString()));
     }
