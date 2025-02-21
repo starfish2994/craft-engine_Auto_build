@@ -15,12 +15,12 @@
 </p>
 
 ## 📌 About CraftEngine
-CraftEngine redefines Minecraft plugin architecture as a next-generation solution for custom content implementation. Its JVM-level injection delivers unprecedented performance, stability, and extensibility. The framework provides a code-first API for registering natively integrated block behaviors and item interaction logic.
+CraftEngine redefines plugin architecture as a next-generation solution for custom content implementation. Its JVM-level injection delivers unprecedented performance, stability, and extensibility. The framework provides a code-first API for registering natively integrated block behaviors and item interaction logic.
 
 ## Build
+Getting the full jar is completely free, as long as you have a device with jdk21 installed. Follow the guide below to build it.
 
 ### 🐚 Command Line
-+ Install JDK 21.
 + Start terminal and change directory to the project folder.
 + Execute "./gradlew build" and get the artifact under /target folder.
 
@@ -110,7 +110,7 @@ If your PR is about a bug fix, it will most likely get merged. If you want to su
 3. Once done, submit a **pull request** for review. We appreciate your contributions!
 
 ### 💖 Support the Developer
-If you enjoy using CraftEngine, consider supporting the developer!
+If you enjoy using CraftEngine, consider supporting the developer! By supporting developers, you can get support from the development team.
 
 - **Polymart**: [None]
 - **BuiltByBit**: [None]
