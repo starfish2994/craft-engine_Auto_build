@@ -18,6 +18,6 @@ public class IdModifier<I> implements ItemModifier<I> {
 
     @Override
     public void apply(Item<I> item, Player player) {
-        item.setTag(argument.toString(), "craftengine_id");
+        item.setTag(argument.toString(), "craftengine:id");
     }
 }
