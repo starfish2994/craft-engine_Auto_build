@@ -31,7 +31,7 @@ Getting the full jar is completely free, as long as you have a device with jdk21
 ## Installation
 
 ### 💻 Enviroment Requirements
-+ First, ensure that you are running a [Paper](https://papermc.io/) (or its fork) 1.20.1+ server. The plugin does not support Spigot and is unlikely to do so in the future.
++ First, ensure that you are running a [Paper](https://papermc.io/)/[Folia](https://github.com/PaperMC/Folia) (or its fork) 1.20.1+ server. The plugin does not support Spigot and is unlikely to do so in the future.
 + Secondly, please use JDK 21 to run the server. I believe this is quite straightforward for you.
 
 ### 🔍 How to Install
