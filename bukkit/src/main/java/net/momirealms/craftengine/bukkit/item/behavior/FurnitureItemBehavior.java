@@ -44,13 +44,10 @@ public class FurnitureItemBehavior extends ItemBehavior {
 
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
-        return this.place(new BlockPlaceContext(context));
+        return this.place(context);
     }
 
-    public InteractionResult place(BlockPlaceContext context) {
-        if (!context.canPlace()) {
-            return InteractionResult.FAIL;
-        }
+    public InteractionResult place(UseOnContext context) {
         Optional<CustomFurniture> optionalCustomFurniture = BukkitFurnitureManager.instance().getFurniture(this.id);
         if (optionalCustomFurniture.isEmpty()) {
             CraftEngine.instance().logger().warn("Furniture " + this.id + " not found");
