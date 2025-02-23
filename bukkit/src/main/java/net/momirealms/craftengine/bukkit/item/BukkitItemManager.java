@@ -35,6 +35,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.type.Either;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,6 +70,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final Map<Key, Map<Integer, Key>> cmdConflictChecker;
     private final Map<Key, ItemModel> modernItemModels1_21_4;
     private final Map<Key, List<LegacyOverridesModel>> modernItemModels1_21_2;
+    // Cached command suggestions
+    private final List<Suggestion> cachedSuggestions = new ArrayList<>();
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -137,6 +140,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
+    public Collection<Suggestion> cachedSuggestions() {
+        return this.cachedSuggestions;
+    }
+
+    @Override
     public void load() {
         super.load();
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, plugin.bootstrap());
@@ -146,6 +154,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @Override
     public void unload() {
         super.unload();
+        this.cachedSuggestions.clear();
         this.legacyOverrides.clear();
         this.modernOverrides.clear();
         this.customItemTags.clear();
@@ -295,6 +304,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
         CustomItem<ItemStack> customItem = itemBuilder.build();
         this.customItems.put(id, customItem);
+        this.cachedSuggestions.add(Suggestion.suggestion(id.toString()));
 
         // regitser tags
         Set<Key> tags = customItem.settings().tags();
