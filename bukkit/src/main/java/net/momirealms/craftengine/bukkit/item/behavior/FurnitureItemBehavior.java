@@ -105,6 +105,10 @@ public class FurnitureItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
 
+        if (!BukkitCraftEngine.instance().antiGrief().canPlace(bukkitPlayer, furnitureLocation)) {
+            return InteractionResult.FAIL;
+        }
+
         FurnitureAttemptPlaceEvent attemptPlaceEvent = new FurnitureAttemptPlaceEvent(bukkitPlayer, customFurniture, anchorType, furnitureLocation.clone(),
                 DirectionUtils.toBlockFace(clickedFace), context.getHand(), world.getBlockAt(context.getClickedPos().x(), context.getClickedPos().y(), context.getClickedPos().z()));
         if (EventUtils.fireAndCheckCancel(attemptPlaceEvent)) {
@@ -112,15 +116,19 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         LoadedFurniture loadedFurniture = BukkitFurnitureManager.instance().place(customFurniture, furnitureLocation.clone(), anchorType, true);
+
+        FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation, context.getHand());
+        if (EventUtils.fireAndCheckCancel(placeEvent)) {
+            loadedFurniture.destroy();
+            return InteractionResult.FAIL;
+        }
+
         if (!player.isCreativeMode()) {
             Item<?> item = context.getItem();
             item.count(item.count() - 1);
             item.load();
         }
         player.swingHand(context.getHand());
-
-        FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation, context.getHand());
-        EventUtils.fireAndForget(placeEvent);
         return InteractionResult.SUCCESS;
     }
 
