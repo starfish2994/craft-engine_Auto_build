@@ -126,7 +126,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    compileOnly("net.momirealms:craft-engine-core:0.0.16")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.16")
+    compileOnly("net.momirealms:craft-engine-core:0.0.22")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.22")
 }
 ```
