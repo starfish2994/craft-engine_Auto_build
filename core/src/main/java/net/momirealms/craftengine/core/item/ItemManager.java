@@ -25,6 +25,10 @@ public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectio
 
     Map<Key, TreeMap<Integer, ItemModel>> modernItemOverrides();
 
+    Map<Key, ItemModel> modernItemModels1_21_4();
+
+    Map<Key, List<LegacyOverridesModel>> modernItemModels1_21_2();
+
     T buildCustomItemStack(Key id, @Nullable Player player);
 
     T buildItemStack(Key id, @Nullable Player player);
