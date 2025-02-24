@@ -36,6 +36,7 @@ public class BukkitCommandManager extends AbstractCommandManager<CommandSender> 
                 new DebugGetBlockInternalIdCommand(this, plugin),
                 new DebugAppearanceStateUsageCommand(this, plugin),
                 new DebugRealStateUsageCommand(this, plugin),
+                new DebugItemDataCommand(this, plugin),
                 new DebugSetBlockCommand(this, plugin)
         ));
         final LegacyPaperCommandManager<CommandSender> manager = (LegacyPaperCommandManager<CommandSender>) getCommandManager();

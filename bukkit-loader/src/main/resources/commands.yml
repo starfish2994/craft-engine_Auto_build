@@ -30,6 +30,13 @@ give_item:
     - /craftengine item give
     - /ce item give
 
+item_browser:
+  enable: true
+  permission: ce.command.item_browser
+  usage:
+    - /craftengine item browser
+    - /ce item browser
+
 # Debug commands
 debug_set_block:
   enable: true
@@ -65,6 +72,13 @@ debug_real_state_usage:
   usage:
     - /craftengine debug real-state-usage
     - /ce debug real-state-usage
+
+debug_item_data:
+  enable: true
+  permission: ce.command.debug.item_data
+  usage:
+    - /craftengine debug item-data
+    - /ce debug item-data
 
 debug_test:
   enable: true
