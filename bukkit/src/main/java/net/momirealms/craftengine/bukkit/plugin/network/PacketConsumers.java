@@ -443,7 +443,13 @@ public class PacketConsumers {
                     }
                 }, player.getWorld(), x >> 4, z >> 4);
             } else {
-                handlePickItemFromBlockPacketOnMainThread(player, pos);
+                BukkitCraftEngine.instance().scheduler().sync().run(() -> {
+                    try {
+                        handlePickItemFromBlockPacketOnMainThread(player, pos);
+                    } catch (Exception e) {
+                        CraftEngine.instance().logger().warn("Failed to handle ServerboundPickItemFromBlockPacket", e);
+                    }
+                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundPickItemFromBlockPacket", e);
@@ -455,9 +461,11 @@ public class PacketConsumers {
         Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(serverLevel, pos);
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null) return;
+        CraftEngine.instance().debug(state::toString);
         PlayerInventory inventory = player.getInventory();
         Key itemId = state.settings().itemId();
         if (itemId == null) return;
+        CraftEngine.instance().debug(itemId::toString);
         ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, BukkitCraftEngine.instance().adapt(player));
         if (itemStack == null) {
             CraftEngine.instance().logger().warn("Item: " + itemId + " is not a valid item");
@@ -483,6 +491,7 @@ public class PacketConsumers {
         } else if (player.getGameMode() == GameMode.CREATIVE) {
             inventory.setHeldItemSlot(targetSlot);
             ItemStack previous = inventory.getItem(targetSlot);
+            CraftEngine.instance().debug(() -> String.valueOf(targetSlot));
             ItemUtils.setItem(inventory, targetSlot, itemStack);
             if (previous != null) {
                 for (int j = 1; j <= 3; j++) {
