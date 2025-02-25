@@ -86,8 +86,9 @@ public class TemplateManagerImpl implements TemplateManager {
         List<String> templateIds = MiscUtils.getAsStringList(input.get("template"));
         List<Object> templateList = new ArrayList<>();
         for (String templateId : templateIds) {
-            Object template = Optional.ofNullable(templates.get(Key.of(templateId)))
-                    .orElseThrow(() -> new IllegalArgumentException("Template not found: " + templateId));
+            Object actualTemplate = templateId.contains("{") && templateId.contains("}") ? applyArgument(templateId, parentArguments) : templateId;
+            Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
+                    .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
             templateList.add(template);
         }
         Map<String, Supplier<Object>> arguments = getArguments(

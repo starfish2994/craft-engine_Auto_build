@@ -36,6 +36,13 @@ furniture:
 recipe:
   enable: true
 
+gui:
+  browser:
+    main:
+      title: "<shift:-10><image:default:item_browser>"
+      next-page: ""
+      previous-page: ""
+
 performance:
   # Maximum chain update depth when fixing client visuals
   max-block-chain-update-limit: 64

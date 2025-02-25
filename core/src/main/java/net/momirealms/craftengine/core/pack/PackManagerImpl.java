@@ -126,6 +126,8 @@ public class PackManagerImpl implements PackManager {
         plugin.saveResource("resources/default/resourcepack/pack.png");
         // templates
         plugin.saveResource("resources/default/configuration/templates.yml");
+        // categories
+        plugin.saveResource("resources/default/configuration/categories.yml");
         // offset
         plugin.saveResource("resources/internal/configuration/offset_chars.yml");
         plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/offset/space_split.png");
