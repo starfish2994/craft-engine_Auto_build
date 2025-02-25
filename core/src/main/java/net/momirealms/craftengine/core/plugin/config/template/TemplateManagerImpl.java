@@ -148,19 +148,19 @@ public class TemplateManagerImpl implements TemplateManager {
         while (matcher.find()) {
             String placeholder = matcher.group();
             Supplier<Object> replacer = arguments.get(placeholder);
-            if (replacer != null) {
-                if (first) {
-                    first = false;
-                    if (input.length() == placeholder.length()) {
-                        return replacer.get();
-                    } else {
-                        matcher.appendReplacement(result, replacer.get().toString());
-                    }
+            if (replacer == null) {
+                matcher.appendReplacement(result, placeholder);
+                continue;
+            }
+            if (first) {
+                first = false;
+                if (input.length() == placeholder.length()) {
+                    return replacer.get();
                 } else {
                     matcher.appendReplacement(result, replacer.get().toString());
                 }
             } else {
-                matcher.appendReplacement(result, placeholder);
+                matcher.appendReplacement(result, replacer.get().toString());
             }
         }
         matcher.appendTail(result);
