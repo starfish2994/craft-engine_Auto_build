@@ -22,4 +22,8 @@ public interface BuildableItem<I> {
     default I buildItemStack(Player player) {
         return this.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), 1);
     }
+
+    default I buildItemStack(Player player, int count) {
+        return this.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), count);
+    }
 }

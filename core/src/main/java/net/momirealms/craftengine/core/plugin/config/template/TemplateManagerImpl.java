@@ -63,7 +63,12 @@ public class TemplateManagerImpl implements TemplateManager {
                 } else if (template instanceof List<?> listTemplate) {
                     handleListTemplate(currentPath, castToList(listTemplate, false), overrides, arguments, result);
                 } else if (template instanceof String stringTemplate) {
-                    result.put(currentPath, applyArgument(stringTemplate, arguments));
+                    Object arg = applyArgument(stringTemplate, arguments);
+                    if (arg != null) {
+                        result.put(currentPath, arg);
+                    } else {
+                        result.remove(currentPath);
+                    }
                 } else {
                     result.put(currentPath, template);
                 }
@@ -76,7 +81,13 @@ public class TemplateManagerImpl implements TemplateManager {
 
             input.forEach((key, value) -> processValue(
                     value,
-                    processedValue -> innerResult.put(key, processedValue),
+                    processedValue -> {
+                        if (processedValue == null) {
+                            innerResult.remove(key);
+                        } else {
+                            innerResult.put(key, processedValue);
+                        }
+                    },
                     parentArguments
             ));
         }
@@ -87,14 +98,12 @@ public class TemplateManagerImpl implements TemplateManager {
         List<Object> templateList = new ArrayList<>();
         for (String templateId : templateIds) {
             Object actualTemplate = templateId.contains("{") && templateId.contains("}") ? applyArgument(templateId, parentArguments) : templateId;
+            if (actualTemplate == null) continue;
             Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
                     .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
             templateList.add(template);
         }
-        Map<String, Supplier<Object>> arguments = getArguments(
-                castToMap(input.getOrDefault("arguments", Collections.emptyMap()), false)
-        );
-        arguments.putAll(parentArguments);
+        Map<String, Supplier<Object>> arguments = getArguments(castToMap(input.getOrDefault("arguments", Collections.emptyMap()), false), parentArguments);
         return new TemplateProcessingResult(
                 templateList,
                 input.get("overrides"),
@@ -102,16 +111,28 @@ public class TemplateManagerImpl implements TemplateManager {
         );
     }
 
-    private Map<String, Supplier<Object>> getArguments(@NotNull Map<String, Object> argumentMap) {
+    private Map<String, Supplier<Object>> getArguments(@NotNull Map<String, Object> argumentMap, @NotNull Map<String, Supplier<Object>> parentArguments) {
         Map<String, Supplier<Object>> result = new HashMap<>();
         argumentMap.forEach((key, value) -> {
             String placeholder = "{" + key + "}";
             if (value instanceof Map<?, ?> nestedMap) {
-                result.put(placeholder, TemplateArguments.fromMap(castToMap(nestedMap, false)));
+                Map<String, Object> arguments = castToMap(nestedMap, false);
+                Map<String, Object> nestedResult = new LinkedHashMap<>();
+                applyTemplatesRecursive("", arguments, nestedResult, parentArguments);
+                result.put(placeholder, TemplateArguments.fromMap(nestedResult));
             } else if (value instanceof List<?> nestedList) {
-                result.put(placeholder, new ListTemplateArgument(castToList(nestedList, false)));
+                List<Object> arguments = castToList(nestedList, false);
+                List<Object> nestedResult = new ArrayList<>();
+                processList(arguments, nestedResult, parentArguments);
+                result.put(placeholder, new ListTemplateArgument(nestedResult));
             } else {
-                result.put(placeholder, value::toString);
+                if (value == null) {
+                    result.put(placeholder, () -> null);
+                } else {
+                    String valueStr = value.toString();
+                    Object applied = applyArgument(valueStr, parentArguments);
+                    result.put(placeholder, () -> applied);
+                }
             }
         });
         return result;
@@ -136,7 +157,7 @@ public class TemplateManagerImpl implements TemplateManager {
                     matcher.appendReplacement(result, replacer.get().toString());
                 }
             } else {
-                throw new IllegalArgumentException("Missing template argument: " + placeholder);
+                matcher.appendReplacement(result, placeholder);
             }
         }
         matcher.appendTail(result);
@@ -163,7 +184,11 @@ public class TemplateManagerImpl implements TemplateManager {
 
     private void processList(List<Object> inputList, List<Object> resultList, Map<String, Supplier<Object>> arguments) {
         for (Object item : inputList) {
-            processValue(item, resultList::add, arguments);
+            processValue(item, r -> {
+                if (r != null) {
+                    resultList.add(r);
+                }
+            }, arguments);
         }
     }
 

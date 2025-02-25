@@ -29,12 +29,14 @@ public class NamedArgumentTag implements TagResolver {
         if (!has(name)) {
             return null;
         }
+
         String argumentKey = arguments.popOr("No argument key provided").toString();
         ContextKey<String> key = ContextKey.of(Key.of(argumentKey));
         if (!this.contextHolder.has(key)) {
             throw ctx.newException("Invalid argument key", arguments);
         }
-        return Tag.inserting(AdventureHelper.miniMessage(this.contextHolder.getOrThrow(key)));
+
+        return Tag.inserting(AdventureHelper.miniMessage().deserialize(this.contextHolder.getOrThrow(key), ShiftTag.INSTANCE, ImageTag.INSTANCE));
     }
 
     @Override

@@ -216,7 +216,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @Override
     public Key customItemId(ItemStack itemStack) {
         Item<ItemStack> wrapped = wrap(itemStack);
-        if (!wrapped.hasTag("craftengine:id")) return null;
+        if (!wrapped.hasTag(IdModifier.CRAFT_ENGINE_ID)) return null;
         return wrapped.id();
     }
 

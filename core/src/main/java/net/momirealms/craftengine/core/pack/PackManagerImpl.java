@@ -118,9 +118,26 @@ public class PackManagerImpl implements PackManager {
     private void saveDefaultConfigs() {
         // internal
         plugin.saveResource("resources/internal/resourcepack/assets/minecraft/models/block/default_chorus_plant.json");
-        // pack info
-        plugin.saveResource("resources/default/pack.yml");
         plugin.saveResource("resources/internal/pack.yml");
+        // offset
+        plugin.saveResource("resources/internal/configuration/offset_chars.yml");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/offset/space_split.png");
+        // gui
+        plugin.saveResource("resources/internal/configuration/gui.yml");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/item_browser.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/blasting.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/smoking.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/smelting.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/campfire.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/cooking_recipe.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/gui/custom/crafting_recipe.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/item/custom/gui/next_page_0.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/item/custom/gui/next_page_1.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/item/custom/gui/previous_page_0.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/item/custom/gui/previous_page_1.png");
+        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/item/custom/gui/return.png");
+        // default pack
+        plugin.saveResource("resources/default/pack.yml");
         // pack meta
         plugin.saveResource("resources/default/resourcepack/pack.mcmeta");
         plugin.saveResource("resources/default/resourcepack/pack.png");
@@ -128,9 +145,6 @@ public class PackManagerImpl implements PackManager {
         plugin.saveResource("resources/default/configuration/templates.yml");
         // categories
         plugin.saveResource("resources/default/configuration/categories.yml");
-        // offset
-        plugin.saveResource("resources/internal/configuration/offset_chars.yml");
-        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/offset/space_split.png");
         // icons
         plugin.saveResource("resources/default/configuration/icons.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/font/image/icons.png");
