@@ -4619,13 +4619,15 @@ public class Reflections {
 
     public static final Class<?> clazz$ClientboundOpenScreenPacket = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundOpenScreenPacket")
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundOpenScreenPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutOpenWindow")
             )
     );
 
     public static final Class<?> clazz$MenuType = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.inventory.MenuType")
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.MenuType"),
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.Containers")
             )
     );
 
@@ -4637,9 +4639,8 @@ public class Reflections {
 
     public static final Class<?> clazz$AbstractContainerMenu = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass(
-                            "world.inventory.AbstractContainerMenu"
-                    )
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.AbstractContainerMenu"),
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.Container")
             )
     );
 
