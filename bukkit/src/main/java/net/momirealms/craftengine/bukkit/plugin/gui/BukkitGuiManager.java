@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.plugin.gui.AbstractGui;
 import net.momirealms.craftengine.core.plugin.gui.Gui;
 import net.momirealms.craftengine.core.plugin.gui.GuiManager;
 import net.momirealms.craftengine.core.plugin.gui.Inventory;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 
 public class BukkitGuiManager implements GuiManager, Listener {
     private final BukkitCraftEngine plugin;
+    private SchedulerTask timerTask;
 
     public BukkitGuiManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
@@ -24,11 +26,24 @@ public class BukkitGuiManager implements GuiManager, Listener {
     @Override
     public void unload() {
         HandlerList.unregisterAll(this);
+        if (this.timerTask != null && !this.timerTask.cancelled()) {
+            this.timerTask.cancel();
+        }
     }
 
     @Override
     public void load() {
         Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
+        this.timerTask = plugin.scheduler().sync().runRepeating(this::timerTask, 20, 20);
+    }
+
+    public void timerTask() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            org.bukkit.inventory.Inventory top = player.getOpenInventory().getTopInventory();
+            if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
+                holder.gui().onTimer();
+            }
+        }
     }
 
     @Override
