@@ -16,6 +16,7 @@ categories:
     priority: 2
     icon: default:topaz
     list:
+      - default:topaz
       - default:topaz_ore
       - default:deepslate_topaz_ore
       - default:topaz_axe

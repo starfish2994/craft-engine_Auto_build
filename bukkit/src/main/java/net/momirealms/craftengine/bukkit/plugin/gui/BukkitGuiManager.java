@@ -1,17 +1,20 @@
 package net.momirealms.craftengine.bukkit.plugin.gui;
 
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.core.plugin.gui.AbstractGui;
 import net.momirealms.craftengine.core.plugin.gui.Gui;
 import net.momirealms.craftengine.core.plugin.gui.GuiManager;
 import net.momirealms.craftengine.core.plugin.gui.Inventory;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 
@@ -39,7 +42,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
 
     public void timerTask() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            org.bukkit.inventory.Inventory top = player.getOpenInventory().getTopInventory();
+            org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
             if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
                 holder.gui().onTimer();
             }
@@ -75,6 +78,11 @@ public class BukkitGuiManager implements GuiManager, Listener {
         if (!(inventory.getHolder() instanceof CraftEngineInventoryHolder)) {
             return;
         }
-        event.setCancelled(true);
+        for (int raw : event.getRawSlots()) {
+            if (raw < inventory.getSize()) {
+                event.setCancelled(true);
+                return;
+            }
+        }
     }
 }

@@ -129,3 +129,12 @@ items:
       display-name: "<!i><#808080>Previous Recipe"
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
+  internal:get_item:
+    template: "internal:2d_icon"
+    arguments:
+      model_data: 1005
+      texture: get_item
+      name: "<!i><#DAA520>Get Item"
+      lore:
+        - "<!i><gray>Left Click to take one"
+        - "<!i><gray>Right Click to take a stack"

@@ -15,6 +15,8 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
     Key BUTTON_SOUND = Key.of("minecraft:ui.hud.bubble_pop");
     Key PAGE_SOUND = Key.of("minecraft:ui.loom.take_result");
     Key RETURN_SOUND = Key.of("minecraft:ui.button.click");
+    Key PICKUP_SOUND = Key.of("minecraft:entity.item.pickup");
+    String GET_ITEM_PERMISSION = "craftengine.browser.get_item";
 
     default String sectionId() {
         return CONFIG_SECTION_NAME;

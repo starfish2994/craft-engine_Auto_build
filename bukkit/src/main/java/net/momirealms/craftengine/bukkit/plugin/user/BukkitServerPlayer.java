@@ -192,6 +192,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void giveItem(Item<?> item) {
+        PlayerUtils.giveItem(platformPlayer(), (ItemStack) item.getItem(), item.count());
+    }
+
+    @Override
     public void sendPacket(Object packet, boolean immediately) {
         this.plugin.networkManager().sendPacket(this, packet, immediately);
     }

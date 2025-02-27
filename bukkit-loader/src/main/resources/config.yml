@@ -58,6 +58,7 @@ gui:
           not-available: "internal:previous_page_1"
         return: "internal:return"
     recipe:
+      get-item-icon: internal:get_item
       page-navigation:
         next:
           available: "internal:next_recipe_0"
