@@ -153,7 +153,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.CATEGORY_BACK)),
                 ((element, click) -> {
                     click.cancel();
-                    player.playSound(RETURN_SOUND);
+                    player.playSound(RETURN_SOUND, 0.25f, 1);
                     parentGui.open(player);
                 }))
         )
@@ -194,7 +194,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(it);
                 player.playSound(BUTTON_SOUND);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(click.clicker(), it, element.gui(), inRecipes, 0);
+                    openRecipePage(click.clicker(), it, element.gui(), inRecipes, 0, 0);
                 } else {
 
                 }
@@ -215,21 +215,22 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openRecipePage(Player player, Key result, Gui parentGui, List<Recipe<Object>> recipes, int index) {
+    public void openRecipePage(Player player, Key result, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         if (index >= recipes.size()) return;
+        if (depth > MAX_RECIPE_DEPTH) return;
         Recipe<Object> recipe = recipes.get(index);
         Key recipeType = recipe.type();
         if (recipeType == RecipeTypes.SHAPELESS || recipeType == RecipeTypes.SHAPED) {
-            openCraftingRecipePage(player, result, (CraftingTableRecipe<Object>) recipe, parentGui, recipes, index);
+            openCraftingRecipePage(player, result, (CraftingTableRecipe<Object>) recipe, parentGui, recipes, index, depth);
             return;
         }
         if (recipeType == RecipeTypes.BLASTING || recipeType == RecipeTypes.CAMPFIRE_COOKING || recipeType == RecipeTypes.SMOKING || recipeType == RecipeTypes.SMELTING) {
-            openCookingRecipePage(player, result, (CookingRecipe<Object>) recipe, parentGui, recipes, index);
+            openCookingRecipePage(player, result, (CookingRecipe<Object>) recipe, parentGui, recipes, index, depth);
             return;
         }
     }
 
-    public void openCookingRecipePage(Player player, Key result, CookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index) {
+    public void openCookingRecipePage(Player player, Key result, CookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
 
@@ -252,7 +253,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             List<Recipe<Object>> inRecipes = plugin.recipeManager().getRecipeByResult(e.item().id());
             if (!inRecipes.isEmpty()) {
                 player.playSound(BUTTON_SOUND);
-                openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0);
+                openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0, depth + 1);
             }
         }))
         .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
@@ -260,7 +261,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
                 ((element, click) -> {
                     click.cancel();
-                    player.playSound(RETURN_SOUND);
+                    player.playSound(RETURN_SOUND, 0.25f, 1);
                     parentGui.open(player);
                 }))
         )
@@ -273,8 +274,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + next)), (e, c) -> {
             c.cancel();
             if (index + 1 < recipes.size()) {
-                player.playSound(PAGE_SOUND);
-                openRecipePage(player, result, parentGui, recipes, index + 1);
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index + 1, depth);
             }
         }))
         .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
@@ -286,8 +287,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + previous)), (e, c) -> {
             c.cancel();
             if (index > 0) {
-                player.playSound(PAGE_SOUND);
-                openRecipePage(player, result, parentGui, recipes, index - 1);
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index - 1, depth);
             }
         }));
 
@@ -315,7 +316,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCraftingRecipePage(Player player, Key result, CraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index) {
+    public void openCraftingRecipePage(Player player, Key result, CraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
 
@@ -333,7 +334,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
                 ((element, click) -> {
                     click.cancel();
-                    player.playSound(RETURN_SOUND);
+                    player.playSound(RETURN_SOUND, 0.25f, 1);
                     parentGui.open(player);
                 }))
         )
@@ -346,8 +347,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + next)), (e, c) -> {
             c.cancel();
             if (index + 1 < recipes.size()) {
-                player.playSound(PAGE_SOUND);
-                openRecipePage(player, result, parentGui, recipes, index + 1);
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index + 1, depth);
             }
         }))
         .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
@@ -359,8 +360,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + previous)), (e, c) -> {
             c.cancel();
             if (index > 0) {
-                player.playSound(PAGE_SOUND);
-                openRecipePage(player, result, parentGui, recipes, index - 1);
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index - 1, depth);
             }
         }));
 
@@ -385,7 +386,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                 List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
                                 if (!inRecipes.isEmpty()) {
                                     player.playSound(BUTTON_SOUND);
-                                    openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0);
+                                    openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0, depth + 1);
                                 }
                             }));
                         }
@@ -410,7 +411,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                             List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
                             if (!inRecipes.isEmpty()) {
                                 player.playSound(BUTTON_SOUND);
-                                openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0);
+                                openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0, depth + 1);
                             }
                         }));
                     } else {

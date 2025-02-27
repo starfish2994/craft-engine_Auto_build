@@ -364,6 +364,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     public void addVanillaInternalRecipe(Key id, Recipe<ItemStack> recipe) {
         this.byType.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         this.byId.put(id, recipe);
+        this.byResult.computeIfAbsent(recipe.result().item().id(), k -> new ArrayList<>()).add(recipe);
     }
 
     @Nullable

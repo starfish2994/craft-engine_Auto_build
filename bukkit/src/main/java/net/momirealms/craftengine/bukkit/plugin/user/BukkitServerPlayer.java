@@ -187,8 +187,8 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void playSound(Key sound) {
-        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundCategory.MASTER, 1, 1);
+    public void playSound(Key sound, float volume, float pitch) {
+        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundCategory.MASTER, volume, pitch);
     }
 
     @Override

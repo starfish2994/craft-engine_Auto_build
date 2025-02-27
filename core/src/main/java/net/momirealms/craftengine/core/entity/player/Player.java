@@ -59,5 +59,9 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract String name();
 
-    public abstract void playSound(Key sound);
+    public void playSound(Key sound) {
+        playSound(sound, 1, 1);
+    }
+
+    public abstract void playSound(Key sound, float volume, float pitch);
 }

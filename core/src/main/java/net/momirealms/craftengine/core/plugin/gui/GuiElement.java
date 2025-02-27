@@ -171,7 +171,7 @@ public interface GuiElement {
                 }
             }
             if (changed) {
-                click.clicker().playSound(ItemBrowserManager.PAGE_SOUND);
+                click.clicker().playSound(ItemBrowserManager.PAGE_SOUND, 0.25f, 1);
                 notifyItemUpdate();
             }
         }
