@@ -68,7 +68,7 @@ gui:
           not-available: "internal:previous_recipe_1"
         return: "internal:return"
       none:
-        title: "<white><shift:-11><image:internal:none>"
+        title: "<white><shift:-11><image:internal:no_recipe>"
       blasting:
         title: "<white><shift:-11><image:internal:cooking_recipe><shift:-136><image:internal:blasting>"
       smelting:
@@ -79,6 +79,8 @@ gui:
         title: "<white><shift:-11><image:internal:cooking_recipe><shift:-136><image:internal:campfire>"
       crafting:
         title: "<white><shift:-11><image:internal:crafting_recipe>"
+      stonecutting:
+        title: "<white><shift:-11><image:internal:stonecutting_recipe>"
 
 performance:
   # Maximum chain update depth when fixing client visuals

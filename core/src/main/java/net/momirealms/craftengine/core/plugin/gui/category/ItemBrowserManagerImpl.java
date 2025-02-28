@@ -207,7 +207,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), it, e.gui(), inRecipes, 0, 0);
                 } else {
-
+                    openNoRecipePage(player, it, e.gui());
                 }
             });
         }).filter(Objects::nonNull).toList();
@@ -226,6 +226,56 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
+    public void openNoRecipePage(Player player, Key result, Gui parentGui) {
+        GuiLayout layout = new GuiLayout(
+                "         ",
+                "         ",
+                "    X    ",
+                "    ^    ",
+                "         ",
+                "    =    "
+        )
+        .addIngredient('X', GuiElement.constant(this.plugin.itemManager().createWrappedItem(result, player), (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+            }
+        }))
+        .addIngredient('^', player.hasPermission(GET_ITEM_PERMISSION) ? GuiElement.constant(this.plugin.itemManager().createWrappedItem(Constants.RECIPE_GET_ITEM, player), (e, c) -> {
+            c.cancel();
+            player.playSound(PICKUP_SOUND);
+            if (LEFT_CLICK.contains(c.type())) {
+                player.giveItem(this.plugin.itemManager().createWrappedItem(result, player));
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                player.giveItem(item.count(item.maxStackSize()));
+            }
+        }) : GuiElement.EMPTY)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+                        .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                ((element, click) -> {
+                    click.cancel();
+                    player.playSound(RETURN_SOUND, 0.25f, 1);
+                    parentGui.open(player);
+                }))
+        );
+
+        BasicGui.builder()
+                .layout(layout)
+                .inventoryClickConsumer(c -> {
+                    if (MOVE_TO_OTHER_INV.contains(c.type()) || DOUBLE_CLICK.contains(c.type())) {
+                        c.cancel();
+                    }
+                })
+                .build()
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_NONE_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .refresh()
+                .open(player);
+    }
+
     public void openRecipePage(Player player, Key result, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         if (index >= recipes.size()) return;
         if (depth > MAX_RECIPE_DEPTH) return;
@@ -239,6 +289,108 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             openCookingRecipePage(player, result, (CookingRecipe<Object>) recipe, parentGui, recipes, index, depth);
             return;
         }
+        if (recipeType == RecipeTypes.STONE_CUTTING) {
+            openStoneCuttingRecipePage(player, result, (CustomStoneCuttingRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            return;
+        }
+    }
+
+    public void openStoneCuttingRecipePage(Player player, Key result, CustomStoneCuttingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+        Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
+        Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
+
+        List<Item<?>> ingredients = new ArrayList<>();
+        net.momirealms.craftengine.core.item.recipe.Ingredient<Object> ingredient = recipe.ingredient();
+        for (Holder<Key> in : ingredient.items()) {
+            ingredients.add(this.plugin.itemManager().createWrappedItem(in.value(), player));
+        }
+        GuiLayout layout = new GuiLayout(
+                "         ",
+                "         ",
+                "  A   X  ",
+                "      ^  ",
+                "         ",
+                " <  =  > "
+        )
+        .addIngredient('X', GuiElement.constant(this.plugin.itemManager().createWrappedItem(result, player).count(recipe.result().count()), (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+            }
+        }))
+        .addIngredient('^', player.hasPermission(GET_ITEM_PERMISSION) ? GuiElement.constant(this.plugin.itemManager().createWrappedItem(Constants.RECIPE_GET_ITEM, player), (e, c) -> {
+            c.cancel();
+            player.playSound(PICKUP_SOUND);
+            if (LEFT_CLICK.contains(c.type())) {
+                player.giveItem(this.plugin.itemManager().createWrappedItem(result, player));
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                player.giveItem(item.count(item.maxStackSize()));
+            }
+        }) : GuiElement.EMPTY)
+        .addIngredient('A', GuiElement.recipeIngredient(ingredients, (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+                return;
+            }
+            List<Recipe<Object>> inRecipes = plugin.recipeManager().getRecipeByResult(e.item().id());
+            if (!inRecipes.isEmpty()) {
+                player.playSound(BUTTON_SOUND);
+                openRecipePage(player, e.item().id(), e.gui(), inRecipes, 0, depth + 1);
+            }
+        }))
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+                        .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                ((element, click) -> {
+                    click.cancel();
+                    player.playSound(RETURN_SOUND, 0.25f, 1);
+                    parentGui.open(player);
+                }))
+        )
+        .addIngredient('>', GuiElement.constant(this.plugin.itemManager()
+                .getCustomItem(next)
+                .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.builder()
+                        .withParameter(GuiParameters.CURRENT_PAGE, String.valueOf(index + 1))
+                        .withParameter(GuiParameters.MAX_PAGE, String.valueOf(recipes.size()))
+                        .build())))
+                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + next)), (e, c) -> {
+            c.cancel();
+            if (index + 1 < recipes.size()) {
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index + 1, depth);
+            }
+        }))
+        .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
+                .getCustomItem(previous)
+                .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.builder()
+                        .withParameter(GuiParameters.CURRENT_PAGE, String.valueOf(index + 1))
+                        .withParameter(GuiParameters.MAX_PAGE, String.valueOf(recipes.size()))
+                        .build())))
+                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + previous)), (e, c) -> {
+            c.cancel();
+            if (index > 0) {
+                player.playSound(PAGE_SOUND, 0.25f, 1);
+                openRecipePage(player, result, parentGui, recipes, index - 1, depth);
+            }
+        }));
+
+        BasicGui.builder()
+                .layout(layout)
+                .inventoryClickConsumer(c -> {
+                    if (MOVE_TO_OTHER_INV.contains(c.type()) || DOUBLE_CLICK.contains(c.type())) {
+                        c.cancel();
+                    }
+                })
+                .build()
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_STONECUTTING_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .refresh()
+                .open(player);
     }
 
     public void openCookingRecipePage(Player player, Key result, CookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
@@ -518,6 +670,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
         public static String RECIPE_SMOKING_TITLE;
         public static String RECIPE_CAMPFIRE_TITLE;
         public static String RECIPE_CRAFTING_TITLE;
+        public static String RECIPE_STONECUTTING_TITLE;
         public static Key RECIPE_BACK;
         public static Key RECIPE_NEXT_PAGE_AVAILABLE;
         public static Key RECIPE_NEXT_PAGE_BLOCK;
@@ -547,6 +700,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             RECIPE_SMOKING_TITLE = getOrThrow(section, "recipe.smoking.title");
             RECIPE_CAMPFIRE_TITLE = getOrThrow(section, "recipe.campfire.title");
             RECIPE_CRAFTING_TITLE = getOrThrow(section, "recipe.crafting.title");
+            RECIPE_STONECUTTING_TITLE = getOrThrow(section, "recipe.stonecutting.title");
             RECIPE_BACK = Key.of(getOrThrow(section, "recipe.page-navigation.return"));
             RECIPE_NEXT_PAGE_AVAILABLE = Key.of(getOrThrow(section, "recipe.page-navigation.next.available"));
             RECIPE_NEXT_PAGE_BLOCK = Key.of(getOrThrow(section, "recipe.page-navigation.next.not-available"));

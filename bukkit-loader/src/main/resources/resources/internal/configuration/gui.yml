@@ -47,6 +47,18 @@ images:
     font: minecraft:internal
     file: minecraft:font/gui/custom/campfire.png
     char: '\ub007'
+  internal:stonecutting_recipe:
+    height: 142
+    ascent: 20
+    font: minecraft:internal
+    file: minecraft:font/gui/custom/stonecutting_recipe.png
+    char: '\ub008'
+  internal:no_recipe:
+    height: 140
+    ascent: 18
+    font: minecraft:internal
+    file: minecraft:font/gui/custom/no_recipe.png
+    char: '\ub009'
 
 templates:
   internal:2d_icon:
