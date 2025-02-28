@@ -38,6 +38,11 @@ recipe:
 
 gui:
   browser:
+    sounds:
+      change-page: "minecraft:ui.loom.take_result"
+      return-page: "minecraft:ui.button.click"
+      pick-item: "minecraft:entity.item.pickup"
+      click-button: "minecraft:ui.hud.bubble_pop"
     main:
       title: "<white><shift:-11><image:internal:item_browser>"
       page-navigation:
@@ -59,6 +64,7 @@ gui:
         return: "internal:return"
     recipe:
       get-item-icon: internal:get_item
+      cooking-information-icon: internal:cooking_info
       page-navigation:
         next:
           available: "internal:next_recipe_0"

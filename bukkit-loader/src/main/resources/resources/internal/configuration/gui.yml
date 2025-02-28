@@ -150,3 +150,12 @@ items:
       lore:
         - "<!i><gray>Left Click to take one"
         - "<!i><gray>Right Click to take a stack"
+  internal:cooking_info:
+    template: "internal:2d_icon"
+    arguments:
+      model_data: 1006
+      texture: cooking_info
+      name: "<!i><#FF8C00>Cooking Information"
+      lore:
+        - "<!i><gray>Time: <arg:cooking_time>ticks"
+        - "<!i><gray>Experience: <arg:cooking_experience>"
