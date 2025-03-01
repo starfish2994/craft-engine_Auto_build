@@ -101,11 +101,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         };
         this.immediatePacketConsumer = (serverPlayer, packet) -> {
             try {
-                Reflections.method$Connection$sendPacketImmediate.invoke(
-                        Reflections.field$ServerCommonPacketListenerImpl$connection.get(
-                                Reflections.field$ServerPlayer$connection.get(serverPlayer)),
-                        packet, null, true
-                );
+                Reflections.method$Connection$sendPacketImmediate.invoke(Reflections.field$ServerCommonPacketListenerImpl$connection.get(Reflections.field$ServerPlayer$connection.get(serverPlayer)), packet, null, true);
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to invoke send packet", e);
             }
