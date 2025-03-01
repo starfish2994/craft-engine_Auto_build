@@ -196,7 +196,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 				);
 			} else {
 				packPacket = Reflections.constructor$ClientboundResourcePackPushPacket.newInstance(
-						url, sha1, ConfigManager.kickOnDeclined(), packPrompt
+						url, "", ConfigManager.kickOnDeclined(), packPrompt
 				);
 			}
 			if (user.decoderState() == ConnectionState.PLAY) {
