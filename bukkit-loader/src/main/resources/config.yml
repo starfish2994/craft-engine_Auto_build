@@ -32,6 +32,9 @@ resource-pack:
       ip: localhost
       port: 8163
       protocol: http
+      rate-limit:
+        max-requests: 3
+        reset-interval: 30 # seconds
     external-host:
       url: ""
       sha1: ""

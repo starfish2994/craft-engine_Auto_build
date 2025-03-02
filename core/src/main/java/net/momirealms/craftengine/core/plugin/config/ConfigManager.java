@@ -74,6 +74,8 @@ public class ConfigManager implements Reloadable {
     protected String packUrl;
     protected String packSha1;
     protected UUID packUUID;
+    protected int requestRate;
+    protected long requestInterval;
 
     public ConfigManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -145,6 +147,8 @@ public class ConfigManager implements Reloadable {
         String packUUIDStr = config.getString("resource-pack.send.external-host.uuid", "");
         packUUID = packUUIDStr.isEmpty() ? UUID.nameUUIDFromBytes(packUrl.getBytes(StandardCharsets.UTF_8)) : UUID.fromString(packUUIDStr);
         resourcePackPrompt = AdventureHelper.miniMessage(config.getString("resource-pack.send.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
+        requestInterval = config.getLong("resource-pack.send.self-host.rate-limit.reset-interval", 30L);
+        requestRate = config.getInt("resource-pack.send.self-host.rate-limit.max-requests", 3);
 
         // performance
         maxChainUpdate = config.getInt("performance.max-block-chain-update-limit", 64);
@@ -298,6 +302,14 @@ public class ConfigManager implements Reloadable {
 
     public static boolean sendPackOnReload() {
         return instance.sendPackOnReload;
+    }
+
+    public static int requestRate() {
+        return instance.requestRate;
+    }
+
+    public static long requestInterval() {
+        return instance.requestInterval;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {
