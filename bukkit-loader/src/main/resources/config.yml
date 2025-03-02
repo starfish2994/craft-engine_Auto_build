@@ -32,6 +32,7 @@ resource-pack:
       ip: localhost
       port: 8163
       protocol: http
+      deny-non-minecraft-request: true
       rate-limit:
         max-requests: 3
         reset-interval: 30 # seconds

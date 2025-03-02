@@ -30,6 +30,9 @@ public class ResourcePackHost {
     }
 
     public void enable(String ip, int port, Path resourcePackPath) {
+        if (isAlive() && ip.equals(this.ip) && port == this.port && resourcePackPath.equals(this.resourcePackPath)) {
+            return;
+        }
         if (server != null) {
             disable();
         }
@@ -74,6 +77,15 @@ public class ResourcePackHost {
     private class ResourcePackHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (ConfigManager.denyNonMinecraftRequest()) {
+                String userAgent = exchange.getRequestHeaders().getFirst("User-Agent");
+                if (userAgent == null || !userAgent.startsWith("Minecraft Java/")) {
+                    CraftEngine.instance().debug(() -> "Blocked non-Minecraft Java client. User-Agent: " + userAgent);
+                    sendError(exchange, 403);
+                    return;
+                }
+            }
+
             String clientIp = exchange.getRemoteAddress().getAddress().getHostAddress();
 
             IpAccessRecord record = ipAccessMap.compute(clientIp, (k, v) -> {
