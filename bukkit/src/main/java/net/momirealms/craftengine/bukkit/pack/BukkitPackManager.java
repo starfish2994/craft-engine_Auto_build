@@ -112,7 +112,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 	public void unload() {
 		super.unload();
 		HandlerList.unregisterAll(this);
-		if (VersionHelper.isVersionNewerThan1_20_2()) {
+		if (VersionHelper.isVersionNewerThan1_20_2() && this.previousHostMode != HostMode.NONE) {
 			resetResourcePackSettings();
 		}
 	}

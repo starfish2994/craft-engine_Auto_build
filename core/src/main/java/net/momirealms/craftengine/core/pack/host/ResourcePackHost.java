@@ -76,7 +76,6 @@ public class ResourcePackHost {
         public void handle(HttpExchange exchange) throws IOException {
             String clientIp = exchange.getRemoteAddress().getAddress().getHostAddress();
 
-            // 速率限制逻辑（可选启用）
             IpAccessRecord record = ipAccessMap.compute(clientIp, (k, v) -> {
                 long currentTime = System.currentTimeMillis();
                 if (v == null || currentTime - v.lastAccessTime > rateLimitInterval) {
@@ -89,7 +88,7 @@ public class ResourcePackHost {
 
             if (record.accessCount > rateLimit) {
                 CraftEngine.instance().debug(() -> "Rate limit exceeded for IP: " + clientIp);
-                sendError(exchange, 429); // 429 Too Many Requests
+                sendError(exchange, 429);
                 return;
             }
 
@@ -99,12 +98,10 @@ public class ResourcePackHost {
                 return;
             }
 
-            // 设置响应头
             exchange.getResponseHeaders().set("Content-Type", "application/zip");
             exchange.getResponseHeaders().set("Content-Length", String.valueOf(Files.size(resourcePackPath)));
             exchange.sendResponseHeaders(200, Files.size(resourcePackPath));
 
-            // 流式传输文件
             try (OutputStream os = exchange.getResponseBody()) {
                 Files.copy(resourcePackPath, os);
             } catch (IOException e) {
