@@ -63,6 +63,7 @@ public class ConfigManager implements Reloadable {
     protected boolean enableRecipeSystem;
     protected List<String> foldersToMerge;
 	protected boolean restoreVanillaBlocks;
+	protected boolean restoreCustomBlocks;
     protected HostMode hostMode;
     protected int hostPort;
     protected String hostIP;
@@ -155,6 +156,7 @@ public class ConfigManager implements Reloadable {
         forceUpdateLight = config.getBoolean("performance.light-system.force-update-light", false);
         enableLightSystem = config.getBoolean("performance.light-system.enable", true);
         restoreVanillaBlocks = config.getBoolean("performance.chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
+        restoreCustomBlocks = config.getBoolean("performance.chunk-system.restore-custom-blocks-on-chunk-load", true);
         // compatibility
         hasPAPI = plugin.isPluginEnabled("PlaceholderAPI");
         // furniture
@@ -253,7 +255,11 @@ public class ConfigManager implements Reloadable {
     }
 
     public static boolean restoreVanillaBlocks() {
-        return instance.restoreVanillaBlocks;
+        return instance.restoreVanillaBlocks && instance.restoreCustomBlocks;
+    }
+
+    public static boolean restoreCustomBlocks() {
+        return instance.restoreCustomBlocks;
     }
 
     public static List<String> foldersToMerge() {
