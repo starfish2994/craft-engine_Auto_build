@@ -78,5 +78,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new ComponentModifier<>(data);
             }, "components", "component");
         }
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            registerDataFunction((obj) -> {
+                String id = obj.toString();
+                return new TooltipStyleModifier<>(Key.of(id));
+            }, "tooltip-style");
+        }
     }
 }

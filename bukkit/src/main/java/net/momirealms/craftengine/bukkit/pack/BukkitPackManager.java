@@ -196,14 +196,14 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 				);
 			} else {
 				packPacket = Reflections.constructor$ClientboundResourcePackPushPacket.newInstance(
-						url, "", ConfigManager.kickOnDeclined(), packPrompt
+						url, sha1, ConfigManager.kickOnDeclined(), packPrompt
 				);
 			}
 			if (user.decoderState() == ConnectionState.PLAY) {
 				if (previousPack != null && VersionHelper.isVersionNewerThan1_20_3()) {
 					plugin.networkManager().sendPackets(user, List.of(Reflections.constructor$ClientboundResourcePackPopPacket.newInstance(Optional.of(previousPack)), packPacket));
 				} else {
-					user.sendPacket(packPacket, true);
+					user.sendPacket(packPacket, false);
 				}
 			} else {
 				user.nettyChannel().writeAndFlush(packPacket);
