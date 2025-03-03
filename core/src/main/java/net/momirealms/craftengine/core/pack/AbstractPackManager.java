@@ -140,6 +140,8 @@ public abstract class AbstractPackManager implements PackManager {
         // internal
         plugin.saveResource("resources/internal/resourcepack/assets/minecraft/models/block/default_chorus_plant.json");
         plugin.saveResource("resources/internal/pack.yml");
+        // i18n
+        plugin.saveResource("resources/internal/configuration/i18n.yml");
         // offset
         plugin.saveResource("resources/internal/configuration/offset_chars.yml");
         plugin.saveResource("resources/internal/resourcepack/assets/minecraft/textures/font/offset/space_split.png");
@@ -170,6 +172,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/pack.png");
         // templates
         plugin.saveResource("resources/default/configuration/templates.yml");
+        // i18n
+        plugin.saveResource("resources/default/configuration/i18n.yml");
         // categories
         plugin.saveResource("resources/default/configuration/categories.yml");
         // icons

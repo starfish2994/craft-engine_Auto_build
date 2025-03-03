@@ -115,7 +115,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 this.plugin.logger().warn("Can't not find item " + it.icon() + " for category icon");
                 return null;
             }
-            item.displayName(AdventureHelper.miniMessageToJson(it.displayName()));
+            item.displayName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
             item.lore(List.of());
             item.load();
             return new ItemWithAction(item, (element, click) -> {

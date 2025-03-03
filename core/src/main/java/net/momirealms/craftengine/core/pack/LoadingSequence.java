@@ -8,4 +8,5 @@ public class LoadingSequence {
     public static final int FONT = 40;
     public static final int RECIPE = 50;
     public static final int CATEGORY = 60;
+    public static final int TRANSLATION = 70;
 }
