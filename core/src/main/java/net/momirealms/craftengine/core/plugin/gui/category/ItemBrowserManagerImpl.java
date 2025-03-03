@@ -27,22 +27,26 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
     private static final Set<String> DOUBLE_CLICK = Set.of("DOUBLE_CLICK");
     private final CraftEngine plugin;
     private final Map<Key, Category> byId;
-    private final TreeSet<Category> ordered;
+    private final TreeSet<Category> categoryOnMainPage;
 
     public ItemBrowserManagerImpl(CraftEngine plugin) {
         this.plugin = plugin;
         this.byId = new HashMap<>();
-        this.ordered = new TreeSet<>();
+        this.categoryOnMainPage = new TreeSet<>();
     }
 
     @Override
     public void unload() {
         this.byId.clear();
-        this.ordered.clear();
+        this.categoryOnMainPage.clear();
     }
 
     public void delayedLoad() {
-        this.ordered.addAll(this.byId.values());
+        for (Category category : this.byId.values()) {
+            if (!category.hidden()) {
+                this.categoryOnMainPage.add(category);
+            }
+        }
         Constants.load();
     }
 
@@ -60,7 +64,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             icon = ItemKeys.STONE;
         }
         int priority = MiscUtils.getAsInt(section.getOrDefault("priority", 0));
-        Category category = new Category(id, name, icon, members.stream().map(Key::of).distinct().toList(), priority);
+        Category category = new Category(id, name, MiscUtils.getAsStringList(section.getOrDefault("lore", List.of())), icon, members.stream().distinct().toList(), priority, (boolean) section.getOrDefault("hidden", false));
         if (this.byId.containsKey(id)) {
             this.byId.get(id).merge(category);
         } else {
@@ -70,7 +74,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
 
     @Override
     public TreeSet<Category> categories() {
-        return ordered;
+        return categoryOnMainPage;
     }
 
     @Override
@@ -109,14 +113,14 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 }, false)
         );
 
-        List<ItemWithAction> iconList = this.ordered.stream().map(it -> {
+        List<ItemWithAction> iconList = this.categoryOnMainPage.stream().map(it -> {
             Item<?> item = this.plugin.itemManager().createWrappedItem(it.icon(), player);
             if (item == null) {
                 this.plugin.logger().warn("Can't not find item " + it.icon() + " for category icon");
                 return null;
             }
             item.displayName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
-            item.lore(List.of());
+            item.lore(it.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
             item.load();
             return new ItemWithAction(item, (element, click) -> {
                 click.cancel();
@@ -188,24 +192,44 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
         Category category = optionalCategory.get();
 
         List<ItemWithAction> itemList = category.members().stream().map(it -> {
-            Item<?> item = this.plugin.itemManager().createWrappedItem(it, player);
-            if (item == null) return null;
-            return new ItemWithAction(item, (e, c) -> {
-                c.cancel();
-                if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
-                    Item<?> newItem = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
-                    newItem.count(newItem.maxStackSize());
-                    c.setItemOnCursor(newItem);
-                    return;
+            if (it.charAt(0) == '#') {
+                String subCategoryId = it.substring(1);
+                Category subCategory = this.byId.get(Key.of(subCategoryId));
+                if (subCategory == null) return null;
+                Item<?> item = this.plugin.itemManager().createWrappedItem(subCategory.icon(), player);
+                if (item == null) {
+                    this.plugin.logger().warn("Can't not find item " + subCategory.icon() + " for category icon");
+                    return null;
                 }
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(it);
-                player.playSound(Constants.SOUND_CLICK_BUTTON);
-                if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), it, e.gui(), inRecipes, 0, 0);
-                } else {
-                    openNoRecipePage(player, it, e.gui());
-                }
-            });
+                item.displayName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+                item.lore(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
+                item.load();
+                return new ItemWithAction(item, (element, click) -> {
+                    click.cancel();
+                    player.playSound(Constants.SOUND_CLICK_BUTTON);
+                    openCategoryPage(click.clicker(), subCategory.id(), element.gui());
+                });
+            } else {
+                Key itemId = Key.of(it);
+                Item<?> item = this.plugin.itemManager().createWrappedItem(itemId, player);
+                if (item == null) return null;
+                return new ItemWithAction(item, (e, c) -> {
+                    c.cancel();
+                    if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                        Item<?> newItem = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
+                        newItem.count(newItem.maxStackSize());
+                        c.setItemOnCursor(newItem);
+                        return;
+                    }
+                    List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(itemId);
+                    player.playSound(Constants.SOUND_CLICK_BUTTON);
+                    if (!inRecipes.isEmpty()) {
+                        openRecipePage(c.clicker(), itemId, e.gui(), inRecipes, 0, 0);
+                    } else {
+                        openNoRecipePage(player, itemId, e.gui());
+                    }
+                });
+            }
         }).filter(Objects::nonNull).toList();
 
         PagedGui.builder()
