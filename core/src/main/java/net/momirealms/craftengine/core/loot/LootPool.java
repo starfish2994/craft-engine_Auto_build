@@ -8,7 +8,7 @@ import net.momirealms.craftengine.core.loot.entry.LootEntry;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainer;
 import net.momirealms.craftengine.core.loot.function.LootFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctions;
-import net.momirealms.craftengine.core.loot.provider.NumberProvider;
+import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.util.MCUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
