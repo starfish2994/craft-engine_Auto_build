@@ -1,5 +1,6 @@
 categories:
   default:default:
+    priority: 1
     name: "<!i><white><i18n:category.default.name></white>"
     lore:
       - "<!i><gray><i18n:category.default.lore>"
@@ -12,7 +13,6 @@ categories:
   default:palm_tree:
     name: "<!i><green><i18n:category.palm_tree></green>"
     hidden: true
-    priority: 1
     icon: default:palm_log
     list:
       - default:palm_sapling
