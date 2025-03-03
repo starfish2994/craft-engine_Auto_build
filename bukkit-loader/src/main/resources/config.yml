@@ -123,7 +123,7 @@ performance:
     restore-custom-blocks-on-chunk-load: true
 
 offset-characters:
-  font: minecraft:default
+  font: minecraft:offset_chars
   -1: '\uf800'
   -2: '\uf801'
   -3: '\uf802'

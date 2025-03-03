@@ -1,11 +1,13 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.BukkitCustomBlock;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.Sender;
@@ -47,8 +49,14 @@ public class DebugTargetBlockCommand extends BukkitCommandFeature<CommandSender>
                     Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
                     Sender sender = plugin().senderFactory().wrap(context.sender());
                     sender.sendMessage(Component.text(bData));
-                    Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(BlockStateUtils.blockStateToId(blockState));
+                    int id = BlockStateUtils.blockStateToId(blockState);
+
+                    Object holder = BukkitBlockManager.instance().getMinecraftBlockHolder(id);
                     if (holder != null) {
+                        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(id);
+                        if (immutableBlockState != null) {
+                            sender.sendMessage(Component.text(immutableBlockState.toString()));
+                        }
                         try {
                             @SuppressWarnings("unchecked")
                             Set<Object> tags = (Set<Object>) Reflections.field$Holder$Reference$tags.get(holder);

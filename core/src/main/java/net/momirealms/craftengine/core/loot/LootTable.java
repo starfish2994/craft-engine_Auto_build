@@ -71,10 +71,19 @@ public class LootTable<T> {
     }
 
     public void getRandomItems(LootContext context, Consumer<Item<T>> lootConsumer) {
-        this.getRandomItemsRaw(context, LootTable.createStackSplitter(lootConsumer));
+        this.getRandomItemsRaw(context, createFunctionApplier(createStackSplitter(lootConsumer), context));
     }
 
-    public static <T> Consumer<Item<T>> createStackSplitter(Consumer<Item<T>> consumer) {
+    private Consumer<Item<T>> createFunctionApplier(Consumer<Item<T>> lootConsumer, LootContext context) {
+        return (item -> {
+            for (LootFunction<T> function : this.functions) {
+                function.apply(item, context);
+            }
+            lootConsumer.accept(item);
+        });
+    }
+
+    private Consumer<Item<T>> createStackSplitter(Consumer<Item<T>> consumer) {
         return (item) -> {
             if (item.count() < item.maxStackSize()) {
                 consumer.accept(item);
