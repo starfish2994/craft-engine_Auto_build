@@ -302,11 +302,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
         Recipe<Object> recipe = recipes.get(index);
         Key recipeType = recipe.type();
         if (recipeType == RecipeTypes.SHAPELESS || recipeType == RecipeTypes.SHAPED) {
-            openCraftingRecipePage(player, result, (CraftingTableRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            openCraftingRecipePage(player, result, (CustomCraftingTableRecipe<Object>) recipe, parentGui, recipes, index, depth);
             return;
         }
         if (recipeType == RecipeTypes.BLASTING || recipeType == RecipeTypes.CAMPFIRE_COOKING || recipeType == RecipeTypes.SMOKING || recipeType == RecipeTypes.SMELTING) {
-            openCookingRecipePage(player, result, (CookingRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            openCookingRecipePage(player, result, (CustomCookingRecipe<Object>) recipe, parentGui, recipes, index, depth);
             return;
         }
         if (recipeType == RecipeTypes.STONE_CUTTING) {
@@ -413,7 +413,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCookingRecipePage(Player player, Key result, CookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openCookingRecipePage(Player player, Key result, CustomCookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
 
@@ -528,7 +528,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCraftingRecipePage(Player player, Key result, CraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openCraftingRecipePage(Player player, Key result, CustomCraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
 
