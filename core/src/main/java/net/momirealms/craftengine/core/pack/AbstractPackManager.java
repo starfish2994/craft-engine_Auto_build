@@ -13,6 +13,8 @@ import net.momirealms.craftengine.core.pack.generator.ModelGenerator;
 import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
+import net.momirealms.craftengine.core.pack.sound.SoundEvent;
+import net.momirealms.craftengine.core.pack.sound.SoundManagerImpl;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
@@ -355,7 +357,8 @@ public abstract class AbstractPackManager implements PackManager {
         this.generateBlockOverrides(generatedPackPath);
         this.generateItemModels(generatedPackPath, this.plugin.itemManager());
         this.generateItemModels(generatedPackPath, this.plugin.blockManager());
-        this.generateSounds(generatedPackPath);
+        this.generateOverrideSounds(generatedPackPath);
+        this.generateCustomSounds(generatedPackPath);
 
         Path zipFile = resourcePackPath();
         try {
@@ -386,7 +389,46 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void generateSounds(Path generatedPackPath) {
+    private void generateCustomSounds(Path generatedPackPath) {
+        SoundManagerImpl soundManager = (SoundManagerImpl) plugin.soundManager();
+        for (Map.Entry<String, List<SoundEvent>> entry : soundManager.soundsByNamespace().entrySet()) {
+            Path soundPath = generatedPackPath
+                    .resolve("assets")
+                    .resolve(entry.getKey())
+                    .resolve("sounds.json");
+
+            JsonObject soundJson;
+            if (Files.exists(soundPath)) {
+                try (BufferedReader reader = Files.newBufferedReader(soundPath)) {
+                    soundJson = JsonParser.parseReader(reader).getAsJsonObject();
+                } catch (IOException e) {
+                    plugin.logger().warn("Failed to load existing sounds.json", e);
+                    return;
+                }
+            } else {
+                soundJson = new JsonObject();
+            }
+
+            for (SoundEvent soundEvent : entry.getValue()) {
+                soundJson.add(soundEvent.id().value(), soundEvent.get());
+            }
+
+            try {
+                Files.createDirectories(soundPath.getParent());
+            } catch (IOException e) {
+                plugin.logger().severe("Error creating " + soundPath.toAbsolutePath());
+                return;
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(soundPath)) {
+                GsonHelper.get().toJson(soundJson, writer);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to generate sounds.json: " + soundPath.toAbsolutePath(), e);
+            }
+        }
+    }
+
+    private void generateOverrideSounds(Path generatedPackPath) {
         if (!ConfigManager.enableSoundSystem()) return;
 
         Path soundPath = generatedPackPath

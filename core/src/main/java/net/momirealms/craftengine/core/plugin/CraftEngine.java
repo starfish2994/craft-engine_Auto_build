@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.pack.PackManager;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.sound.SoundManager;
+import net.momirealms.craftengine.core.pack.sound.SoundManagerImpl;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -57,6 +59,7 @@ public abstract class CraftEngine implements Plugin {
     protected TemplateManager templateManager;
     protected ItemBrowserManager itemBrowserManager;
     protected GuiManager guiManager;
+    protected SoundManager soundManager;
     protected PluginLogger logger;
     protected Consumer<Supplier<String>> debugger = (s) -> {};
     private boolean isReloading;
@@ -88,6 +91,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.reload();
             this.fontManager.reload();
             this.itemManager.reload();
+            this.soundManager.reload();
             this.recipeManager.reload();
             this.itemBrowserManager.reload();
             this.blockManager.reload();
@@ -112,6 +116,7 @@ public abstract class CraftEngine implements Plugin {
         this.fontManager = new FontManagerImpl(this);
         this.templateManager = new TemplateManagerImpl(this);
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
+        this.soundManager = new SoundManagerImpl(this);
         this.commandManager.registerDefaultFeatures();
         // delay the reload so other plugins can register some parsers
         this.scheduler.sync().runDelayed(() -> {
@@ -138,6 +143,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.recipeManager != null) this.recipeManager.disable();
         if (this.itemBrowserManager != null) this.itemBrowserManager.disable();
         if (this.guiManager != null) this.guiManager.disable();
+        if (this.soundManager != null) this.soundManager.disable();
         if (this.scheduler != null) this.scheduler.shutdownScheduler();
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         ResourcePackHost.instance().disable();
@@ -261,6 +267,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public GuiManager guiManager() {
         return guiManager;
+    }
+
+    @Override
+    public SoundManager soundManager() {
+        return soundManager;
     }
 
     @Override

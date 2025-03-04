@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.pack.PackManager;
+import net.momirealms.craftengine.core.pack.sound.SoundManager;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
@@ -74,6 +75,8 @@ public interface Plugin extends Reloadable {
     ItemBrowserManager itemBrowserManager();
 
     GuiManager guiManager();
+
+    SoundManager soundManager();
 
     void debug(Supplier<String> message);
 
