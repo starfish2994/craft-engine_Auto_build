@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.pack.sound;
+package net.momirealms.craftengine.core.sound;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

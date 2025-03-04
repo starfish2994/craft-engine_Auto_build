@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.pack.sound;
+package net.momirealms.craftengine.core.sound;
 
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.plugin.Reloadable;
