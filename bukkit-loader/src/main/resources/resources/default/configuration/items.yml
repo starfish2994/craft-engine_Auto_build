@@ -16,7 +16,7 @@ items:
     material: bow
     custom-model-data: 1000
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
+      display-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
     model:
       template: models:bow_2d
