@@ -4854,4 +4854,10 @@ public class Reflections {
     public static final Field field$JukeboxSong$comparatorOutput = Optional.ofNullable(clazz$JukeboxSong)
             .map(it -> ReflectionUtils.getDeclaredField(it, int.class, 0))
             .orElse(null);
+
+    public static final Method method$FluidState$getType = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$FluidState, clazz$Fluid
+            )
+    );
 }

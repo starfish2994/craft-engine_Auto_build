@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.pack.PackManager;
-import net.momirealms.craftengine.core.sound.SoundManager;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
@@ -19,6 +18,7 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
+import net.momirealms.craftengine.core.sound.SoundManager;
 import net.momirealms.craftengine.core.sound.song.JukeboxSongManager;
 import net.momirealms.craftengine.core.world.WorldManager;
 

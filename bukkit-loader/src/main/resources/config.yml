@@ -40,6 +40,42 @@ resource-pack:
       url: ""
       sha1: ""
       uuid: ""
+  duplicated-files-handler:
+    - term:
+        type: path_pattern
+        pattern:
+          - "minecraft/items/" # 1.21.4+
+          - "minecraft/models/item/" # 1.20-1.21.3
+      operation:
+        type: json_object_merge
+    - term:
+        type: path_pattern
+        pattern:
+          - "minecraft/items/" # 1.21.4+
+          - "minecraft/models/item/" # 1.20-1.21.3
+      operation:
+        type: json_object_merge
+    - term:
+        type: exact_match
+        path: "pack.mcmeta"
+      operation:
+        type: keep_first
+        term:
+          type: path_pattern
+          pattern: "resources/default/resourcepack"
+    - term:
+        type: exact_match
+        path: "pack.png"
+      operation:
+        type: keep_first
+        term:
+          type: path_pattern
+          pattern: "resources/default/resourcepack"
+    - term:
+        type: filename
+        name: "sounds.json"
+      operation:
+        type: json_object_merge
 
 block:
   sound-system:
