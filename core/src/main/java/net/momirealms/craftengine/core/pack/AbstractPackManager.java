@@ -341,11 +341,13 @@ public abstract class AbstractPackManager implements PackManager {
             folders.addAll(loadedPacks().stream().map(Pack::resourcePackFolder).toList());
             folders.addAll(ConfigManager.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
 
-            List<List<Path>> duplicated = mergeFolder(folders, generatedPackPath);
+            List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);
             if (!duplicated.isEmpty()) {
-                for (List<Path> path : duplicated) {
-                    this.plugin.logger().warn("Duplicated files:");
-                    for (Path path0 : path) {
+                this.plugin.logger().severe("Duplicated files Found. Please resolve them through config.yml resource-pack.duplicated-files-handler.");
+                for (Pair<Path, List<Path>> path : duplicated) {
+                    this.plugin.logger().warn("");
+                    this.plugin.logger().warn("Target: " + path.left());
+                    for (Path path0 : path.right()) {
                         this.plugin.logger().warn(" - " + path0.toAbsolutePath());
                     }
                 }
@@ -896,7 +898,7 @@ public abstract class AbstractPackManager implements PackManager {
         return hexString.toString();
     }
 
-    private List<List<Path>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {
+    private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {
         Map<Path, List<Path>> conflictChecker = new HashMap<>();
         for (Path sourceFolder : sourceFolders) {
             if (Files.exists(sourceFolder)) {
@@ -905,7 +907,7 @@ public abstract class AbstractPackManager implements PackManager {
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         Path relative = sourceFolder.relativize(file);
                         Path targetPath = targetFolder.resolve(relative);
-                        List<Path> conflicts = conflictChecker.computeIfAbsent(targetPath, k -> new ArrayList<>());
+                        List<Path> conflicts = conflictChecker.computeIfAbsent(relative, k -> new ArrayList<>());
                         if (conflicts.isEmpty()) {
                             Files.createDirectories(targetPath.getParent());
                             Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -924,10 +926,10 @@ public abstract class AbstractPackManager implements PackManager {
                 });
             }
         }
-        List<List<Path>> conflicts = new ArrayList<>();
+        List<Pair<Path, List<Path>>> conflicts = new ArrayList<>();
         for (Map.Entry<Path, List<Path>> entry : conflictChecker.entrySet()) {
             if (entry.getValue().size() > 1) {
-                conflicts.add(entry.getValue());
+                conflicts.add(Pair.of(entry.getKey(), entry.getValue()));
             }
         }
         return conflicts;
