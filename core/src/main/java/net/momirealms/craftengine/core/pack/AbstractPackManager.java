@@ -8,6 +8,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
+import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
@@ -29,10 +30,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -342,7 +341,7 @@ public abstract class AbstractPackManager implements PackManager {
             folders.addAll(loadedPacks().stream().map(Pack::resourcePackFolder).toList());
             folders.addAll(ConfigManager.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
 
-            List<List<Path>> duplicated = FileUtils.mergeFolder(folders, generatedPackPath);
+            List<List<Path>> duplicated = mergeFolder(folders, generatedPackPath);
             if (!duplicated.isEmpty()) {
                 for (List<Path> path : duplicated) {
                     this.plugin.logger().warn("Duplicated files:");
@@ -895,5 +894,42 @@ public abstract class AbstractPackManager implements PackManager {
             hexString.append(String.format("%02x", b));
         }
         return hexString.toString();
+    }
+
+    private List<List<Path>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {
+        Map<Path, List<Path>> conflictChecker = new HashMap<>();
+        for (Path sourceFolder : sourceFolders) {
+            if (Files.exists(sourceFolder)) {
+                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Path relative = sourceFolder.relativize(file);
+                        Path targetPath = targetFolder.resolve(relative);
+                        List<Path> conflicts = conflictChecker.computeIfAbsent(targetPath, k -> new ArrayList<>());
+                        if (conflicts.isEmpty()) {
+                            Files.createDirectories(targetPath.getParent());
+                            Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                            conflicts.add(file);
+                        } else {
+                            for (ConditionalResolution resolution : ConfigManager.resolutions()) {
+                                if (resolution.matcher().test(relative)) {
+                                    resolution.resolution().run(targetPath, file);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            }
+                            conflicts.add(file);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+        List<List<Path>> conflicts = new ArrayList<>();
+        for (Map.Entry<Path, List<Path>> entry : conflictChecker.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                conflicts.add(entry.getValue());
+            }
+        }
+        return conflicts;
     }
 }
