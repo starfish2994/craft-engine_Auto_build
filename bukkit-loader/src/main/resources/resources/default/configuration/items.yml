@@ -1,0 +1,189 @@
+items:
+  default:topaz_rod:
+    material: fishing_rod
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
+      tooltip-style: minecraft:topaz
+    model:
+      template: models:fishing_rod_2d
+      arguments:
+        rod_model: minecraft:item/custom/topaz_rod
+        rod_texture: minecraft:item/custom/topaz_rod
+        rod_cast_model: minecraft:item/custom/topaz_rod_cast
+        rod_cast_texture: minecraft:item/custom/topaz_rod_cast
+  default:topaz_bow:
+    material: bow
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
+      tooltip-style: minecraft:topaz
+    model:
+      template: models:bow_2d
+      arguments:
+        bow_model: minecraft:item/custom/topaz_bow
+        bow_texture: minecraft:item/custom/topaz_bow
+        bow_pulling_0_model: minecraft:item/custom/topaz_bow_pulling_0
+        bow_pulling_0_texture: minecraft:item/custom/topaz_bow_pulling_0
+        bow_pulling_1_model: minecraft:item/custom/topaz_bow_pulling_1
+        bow_pulling_1_texture: minecraft:item/custom/topaz_bow_pulling_1
+        bow_pulling_2_model: minecraft:item/custom/topaz_bow_pulling_2
+        bow_pulling_2_texture: minecraft:item/custom/topaz_bow_pulling_2
+  default:topaz_crossbow:
+    material: crossbow
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
+      tooltip-style: minecraft:topaz
+    model:
+      template: models:crossbow_2d
+      arguments:
+        crossbow_model: minecraft:item/custom/topaz_crossbow
+        crossbow_texture: minecraft:item/custom/topaz_crossbow
+        crossbow_pulling_0_model: minecraft:item/custom/topaz_crossbow_pulling_0
+        crossbow_pulling_0_texture: minecraft:item/custom/topaz_crossbow_pulling_0
+        crossbow_pulling_1_model: minecraft:item/custom/topaz_crossbow_pulling_1
+        crossbow_pulling_1_texture: minecraft:item/custom/topaz_crossbow_pulling_1
+        crossbow_pulling_2_model: minecraft:item/custom/topaz_crossbow_pulling_2
+        crossbow_pulling_2_texture: minecraft:item/custom/topaz_crossbow_pulling_2
+        crossbow_arrow_texture: minecraft:item/custom/topaz_crossbow_arrow
+        crossbow_arrow_model: minecraft:item/custom/topaz_crossbow_arrow
+        crossbow_firework_texture: minecraft:item/custom/topaz_crossbow_firework
+        crossbow_firework_model: minecraft:item/custom/topaz_crossbow_firework
+  default:topaz_pickaxe:
+    material: golden_pickaxe
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
+      tooltip-style: minecraft:topaz
+      components:
+        minecraft:max_damage: 64
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/topaz_pickaxe
+      generation:
+        parent: "minecraft:item/handheld"
+        textures:
+          "layer0": "minecraft:item/custom/topaz_pickaxe"
+  default:topaz_axe:
+    material: golden_axe
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
+      tooltip-style: minecraft:topaz
+      components:
+        minecraft:max_damage: 64
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/topaz_axe
+      generation:
+        parent: "minecraft:item/handheld"
+        textures:
+          "layer0": "minecraft:item/custom/topaz_axe"
+  default:topaz_hoe:
+    material: golden_hoe
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
+      tooltip-style: minecraft:topaz
+      components:
+        minecraft:max_damage: 64
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/topaz_hoe
+      generation:
+        parent: "minecraft:item/handheld"
+        textures:
+          "layer0": "minecraft:item/custom/topaz_hoe"
+  default:topaz_shovel:
+    material: golden_shovel
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
+      tooltip-style: minecraft:topaz
+      components:
+        minecraft:max_damage: 64
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/topaz_shovel
+      generation:
+        parent: "minecraft:item/handheld"
+        textures:
+          "layer0": "minecraft:item/custom/topaz_shovel"
+  default:topaz_sword:
+    material: golden_sword
+    custom-model-data: 1000
+    data:
+      display-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
+      tooltip-style: minecraft:topaz
+      components:
+        minecraft:max_damage: 64
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/topaz_sword
+      generation:
+        parent: "minecraft:item/handheld"
+        textures:
+          "layer0": "minecraft:item/custom/topaz_sword"
+
+recipes:
+  default:topaz_shovel:
+    type: shaped
+    pattern:
+      - "A"
+      - "B"
+      - "B"
+    ingredients:
+      A: "default:topaz"
+      B: "minecraft:stick"
+    result:
+      id: default:topaz_shovel
+      count: 1
+  default:topaz_axe:
+    type: shaped
+    pattern:
+      - "AA"
+      - "AB"
+      - " B"
+    ingredients:
+      A: "default:topaz"
+      B: "minecraft:stick"
+    result:
+      id: default:topaz_axe
+      count: 1
+  default:topaz_sword:
+    type: shaped
+    pattern:
+      - "A"
+      - "A"
+      - "B"
+    ingredients:
+      A: "default:topaz"
+      B: "minecraft:stick"
+    result:
+      id: default:topaz_sword
+      count: 1
+  default:topaz_hoe:
+    type: shaped
+    pattern:
+      - "AA"
+      - " B"
+      - " B"
+    ingredients:
+      A: "default:topaz"
+      B: "minecraft:stick"
+    result:
+      id: default:topaz_hoe
+      count: 1
+  default:topaz_pickaxe:
+    type: shaped
+    pattern:
+      - "AAA"
+      - " B "
+      - " B "
+    ingredients:
+      A: "default:topaz"
+      B: "minecraft:stick"
+    result:
+      id: default:topaz_pickaxe
+      count: 1
