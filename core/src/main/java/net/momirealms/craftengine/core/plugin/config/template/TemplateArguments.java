@@ -14,6 +14,8 @@ public class TemplateArguments {
     public static final Key SELF_INCREASE_INT = Key.of("craftengine:self_increase_int");
     public static final Key MAP = Key.of("craftengine:map");
     public static final Key LIST = Key.of("craftengine:list");
+    public static final Key NULL = Key.of("craftengine:null");
+    public static final Key OBJECT = Key.of("craftengine:object"); // No Factory, internal use
 
     public static void register(Key key, TemplateArgumentFactory factory) {
         Holder.Reference<TemplateArgumentFactory> holder = ((WritableRegistry<TemplateArgumentFactory>) BuiltInRegistries.TEMPLATE_ARGUMENT_FACTORY)
@@ -26,6 +28,7 @@ public class TemplateArguments {
         register(SELF_INCREASE_INT, SelfIncreaseIntTemplateArgument.FACTORY);
         register(MAP, MapTemplateArgument.FACTORY);
         register(LIST, ListTemplateArgument.FACTORY);
+        register(NULL, NullTemplateArgument.FACTORY);
     }
 
     public static TemplateArgument fromMap(Map<String, Object> map) {

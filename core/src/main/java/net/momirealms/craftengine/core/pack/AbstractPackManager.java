@@ -322,13 +322,17 @@ public abstract class AbstractPackManager implements PackManager {
                     String key = configEntry.getKey();
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                            Map<String, Object> configSection1 = castToMap(configSection0, false);
-                            if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                parser.parseSection(cached.pack(), cached.filePath(), id, isTemplate ? configSection1 : plugin.templateManager().applyTemplates(configSection1));
-                            }
+                        if (isTemplate) {
+                            ((TemplateManager) parser).addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
                         } else {
-                            this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId() + "." + configEntry.getKey() + " - ");
+                            if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
+                                Map<String, Object> configSection1 = castToMap(configSection0, false);
+                                if ((boolean) configSection1.getOrDefault("enable", true)) {
+                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                                }
+                            } else {
+                                this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId() + "." + configEntry.getKey() + " - ");
+                            }
                         }
                     } catch (Exception e) {
                         this.plugin.logger().warn(cached.filePath(), "Error loading " + parser.sectionId() + "." + key, e);
