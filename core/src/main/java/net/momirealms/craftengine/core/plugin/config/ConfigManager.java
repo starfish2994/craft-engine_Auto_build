@@ -412,6 +412,10 @@ public class ConfigManager implements Reloadable {
         return instance.resource_pack$protection$crash_tools$method_3;
     }
 
+    public static boolean crashTool4() {
+        return false;
+    }
+
     public static boolean enableObfuscation() {
         return instance.resource_pack$protection$obfuscation$enable;
     }

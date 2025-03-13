@@ -41,9 +41,11 @@ CraftEngine offers two installation modes: Standard Installation and Mod Mode. A
 ### 🔧 Install Server Mod
 - Download the latest [ignite.jar](https://github.com/vectrix-space/ignite/releases) into your server's root directory
 - Either:
-    - Rename your server JAR to `paper.jar`
+    - Rename your server JAR to `paper.jar` and modify startup command to: `-jar ignite.jar`
 - Or:
-    - Add launch arguments: `-Dignite.locator=paper -Dignite.paper.jar=./paper-xxx.jar`
+    - Use advanced launch arguments 
+       - For paper/folia: `-Dignite.locator=paper -Dignite.paper.jar=./server-xxx.jar -jar ignite.jar` 
+       - For some special paper forks `-Dignite.locator=paper -Dignite.paper.target=cn.dreeam.leaper.QuantumLeaper -Dignite.paper.jar=./leaf-xxx.jar -jar ignite.jar`
 - Start the server to generate the `/mods` directory
 - Place the latest [mod.jar](https://github.com/Xiao-MoMi/craft-engine/releases) in `/mods`
 - Install the plugin by placing its JAR in `/plugins`
