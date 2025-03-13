@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.plugin.config.template;
 
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.PreConditions;
@@ -13,16 +14,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 
-import static net.momirealms.craftengine.core.util.MiscUtils.castToList;
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public class TemplateManagerImpl implements TemplateManager {
-    private static final String EMPTY = "";
     private static final String LEFT_BRACKET = "{";
     private static final String RIGHT_BRACKET = "}";
     private final CraftEngine plugin;
     private final Map<Key, Object> templates = new HashMap<>();
-    private final static Set<String> blacklistedKeys = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES));
+    private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES));
 
     public TemplateManagerImpl(CraftEngine plugin) {
         this.plugin = plugin;
@@ -34,114 +33,201 @@ public class TemplateManagerImpl implements TemplateManager {
     }
 
     @Override
-    public void parseSection(Pack pack,
-                             Path path,
-                             Key id,
-                             Map<String, Object> section) {
+    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+        addTemplate(pack, path, id, section);
+    }
+
+    @Override
+    public void addTemplate(Pack pack, Path path, Key id, Object obj) {
         if (PreConditions.runIfTrue(this.templates.containsKey(id), () -> this.plugin.logger().warn(path, "Template duplicates: " + id))) return;
-        this.templates.put(id, section);
+        this.templates.put(id, obj);
     }
 
     @Override
     public Map<String, Object> applyTemplates(Map<String, Object> input) {
         Objects.requireNonNull(input, "Input must not be null");
         Map<String, Object> result = new LinkedHashMap<>();
-        applyTemplatesRecursive(EMPTY, input, result, Collections.emptyMap());
-        return result;
-    }
-
-    private void applyTemplatesRecursive(String currentPath,
-                                         Map<String, Object> input,
-                                         Map<String, Object> result,
-                                         Map<String, Supplier<Object>> parentArguments) {
-        if (input.containsKey(TEMPLATE)) {
-            TemplateProcessingResult processingResult = processTemplates(input, parentArguments);
-            List<Object> templates = processingResult.templates();
-            Object overrides = processingResult.overrides();
-            Map<String, Supplier<Object>> arguments = mergeArguments(parentArguments, processingResult.arguments());
-
-            for (Object template : templates) {
-                if (template instanceof Map<?, ?> mapTemplate) {
-                    handleMapTemplate(currentPath, castToMap(mapTemplate, false), overrides, arguments, input, result);
-                } else if (template instanceof List<?> listTemplate) {
-                    handleListTemplate(currentPath, castToList(listTemplate, false), overrides, arguments, result);
-                } else if (template instanceof String stringTemplate) {
-                    Object arg = applyArgument(stringTemplate, arguments);
-                    if (arg != null) {
-                        result.put(currentPath, arg);
-                    } else {
-                        result.remove(currentPath);
-                    }
-                } else {
-                    result.put(currentPath, template);
-                }
-            }
-        } else {
-            Map<String, Object> innerResult = currentPath.isEmpty() ? result : new LinkedHashMap<>();
-            if (!currentPath.isEmpty()) {
-                result.put(currentPath, innerResult);
-            }
-
-            input.forEach((key, value) -> processValue(
-                    value,
-                    processedValue -> {
-                        if (processedValue == null) {
-                            innerResult.remove(key);
-                        } else {
-                            innerResult.put(key, processedValue);
-                        }
-                    },
-                    parentArguments
-            ));
-        }
-    }
-
-    private TemplateProcessingResult processTemplates(Map<String, Object> input, Map<String, Supplier<Object>> parentArguments) {
-        List<String> templateIds = MiscUtils.getAsStringList(input.get(TEMPLATE));
-        List<Object> templateList = new ArrayList<>();
-        for (String templateId : templateIds) {
-            Object actualTemplate = templateId.contains(LEFT_BRACKET) && templateId.contains(RIGHT_BRACKET) ? applyArgument(templateId, parentArguments) : templateId;
-            if (actualTemplate == null) continue;
-            Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
-                    .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
-            templateList.add(template);
-        }
-        Map<String, Supplier<Object>> arguments = getArguments(castToMap(input.getOrDefault(ARGUMENTS, Collections.emptyMap()), false), parentArguments);
-        return new TemplateProcessingResult(
-                templateList,
-                input.get(OVERRIDES),
-                arguments
-        );
-    }
-
-    private Map<String, Supplier<Object>> getArguments(@NotNull Map<String, Object> argumentMap, @NotNull Map<String, Supplier<Object>> parentArguments) {
-        Map<String, Supplier<Object>> result = new HashMap<>();
-        argumentMap.forEach((key, value) -> {
-            String placeholder = LEFT_BRACKET + key + RIGHT_BRACKET;
-            if (value instanceof Map<?, ?> nestedMap) {
-                Map<String, Object> arguments = castToMap(nestedMap, false);
-                Map<String, Object> nestedResult = new LinkedHashMap<>();
-                applyTemplatesRecursive(EMPTY, arguments, nestedResult, parentArguments);
-                result.put(placeholder, TemplateArguments.fromMap(nestedResult));
-            } else if (value instanceof List<?> nestedList) {
-                List<Object> arguments = castToList(nestedList, false);
-                List<Object> nestedResult = new ArrayList<>();
-                processList(arguments, nestedResult, parentArguments);
-                result.put(placeholder, new ListTemplateArgument(nestedResult));
+        processMap(input, Collections.emptyMap(), (obj) -> {
+            // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
+            // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
+            // items:
+            //   test:invalid: 111
+            if (obj instanceof Map<?,?> mapResult) {
+                result.putAll(MiscUtils.castToMap(mapResult, false));
             } else {
-                if (value == null) {
-                    result.put(placeholder, () -> null);
-                } else {
-                    String valueStr = value.toString();
-                    Object applied = applyArgument(valueStr, parentArguments);
-                    result.put(placeholder, () -> applied);
-                }
+                throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
             }
         });
         return result;
     }
 
-    private Object applyArgument(String input, Map<String, Supplier<Object>> arguments) {
+    // 对于处理map，只有input是已知map，而返回值可能并不是
+    private void processMap(Map<String, Object> input,
+                            Map<String, TemplateArgument> parentArguments,
+                            // 只有当前为模板的时候，才会调用callback
+                            Consumer<Object> processCallBack) {
+        // 传入的input是否含有template，这种情况下，返回值有可能是非map
+        if (input.containsKey(TEMPLATE)) {
+            TemplateProcessingResult processingResult = processTemplates(input, parentArguments);
+            List<Object> templates = processingResult.templates();
+            // 你敢保证template里没有template吗？
+            List<Object> processedTemplates = new ArrayList<>();
+            // 先递归处理后再合并
+            for (Object template : templates) {
+                processUnknownTypeMember(template, processingResult.arguments(), processedTemplates::add);
+            }
+
+            Object firstTemplate = processedTemplates.get(0);
+            // 对于map和list，应当对多模板合并
+            if (firstTemplate instanceof Map<?,?>) {
+                Map<String, Object> results = new LinkedHashMap<>();
+                // 仅仅合并list
+                for (Object processedTemplate : processedTemplates) {
+                    if (processedTemplate instanceof Map<?, ?> anotherMap) {
+                        results.putAll(MiscUtils.castToMap(anotherMap, false));
+                    }
+                }
+                results.putAll(processingResult.overrides());
+                processCallBack.accept(results);
+            } else if (firstTemplate instanceof List<?>) {
+                List<Object> results = new ArrayList<>();
+                // 仅仅合并list
+                for (Object processedTemplate : processedTemplates) {
+                    if (processedTemplate instanceof List<?> anotherList) {
+                        results.addAll(anotherList);
+                    }
+                }
+                processCallBack.accept(results);
+            } else {
+                // 其他情况下应当忽略其他的template
+                processCallBack.accept(firstTemplate);
+            }
+        } else {
+            // 如果不是模板，则返回值一定是map
+            // 依次处理map下的每个参数
+            Map<String, Object> result = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
+                processUnknownTypeMember(inputEntry.getValue(), parentArguments, (processed) -> result.put(inputEntry.getKey(), processed));
+            }
+            processCallBack.accept(result);
+        }
+    }
+
+    // 处理一个类型未知的值，本方法只管将member处理好后，传递回调用者
+    private void processUnknownTypeMember(Object member,
+                                          Map<String, TemplateArgument> parentArguments,
+                                          Consumer<Object> processCallback) {
+        if (member instanceof Map<?,?> innerMap) {
+            // map下面还是个map吗？这并不一定
+            // 比如
+            // a:
+            //   template: xxx
+            // 这时候a并不一定是map，最终类型取决于template，那么应当根据template的结果进行调整，所以我们继续交给上方方法处理
+            processMap(MiscUtils.castToMap(innerMap, false), parentArguments, processCallback);
+        } else if (member instanceof List<?> innerList) {
+            // map 下面是个list，那么对下面的每个成员再次处理
+            List<Object> result = new ArrayList<>();
+            for (Object item : innerList) {
+                // 处理完以后，加入到list内
+                processUnknownTypeMember(item, parentArguments, result::add);
+            }
+            processCallback.accept(result);
+        } else if (member instanceof String possibleArgument) {
+            // 如果是个string，其可能是 {xxx} 的参数，那么就尝试应用参数后再返回
+            processCallback.accept(applyArgument(possibleArgument, parentArguments));
+        } else {
+            // 对于其他值，直接处理
+            processCallback.accept(member);
+        }
+    }
+
+    private TemplateProcessingResult processTemplates(Map<String, Object> input,
+                                                      Map<String, TemplateArgument> parentArguments) {
+        // 先获取template节点下所有的模板
+        List<String> templateIds = MiscUtils.getAsStringList(input.get(TEMPLATE));
+        List<Object> templateList = new ArrayList<>();
+        for (String templateId : templateIds) {
+            // 如果模板id被用了参数，则应先应用参数后再查询模板
+            Object actualTemplate = templateId.contains(LEFT_BRACKET) && templateId.contains(RIGHT_BRACKET) ? applyArgument(templateId, parentArguments) : templateId;
+            if (actualTemplate == null) continue; // 忽略被null掉的模板
+            Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
+                    .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
+            templateList.add(template);
+        }
+        // 将本节点下的参数与父参数合并
+        Map<String, TemplateArgument> arguments = mergeArguments(
+                castToMap(input.getOrDefault(ARGUMENTS, Collections.emptyMap()), false),
+                parentArguments
+        );
+        // 对overrides参数应用 本节点 + 父节点 参数
+        Map<String, Object> overrides = new LinkedHashMap<>();
+        processMap(MiscUtils.castToMap(input.getOrDefault(OVERRIDES, Map.of()), false), arguments, (obj) -> {
+            // 如果overrides的下一级就是一个模板，则模板必须为map类型
+            if (obj instanceof Map<?,?> mapResult) {
+                overrides.putAll(MiscUtils.castToMap(mapResult, false));
+            } else {
+                throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+            }
+        });
+        // 会不会有一种可能，有笨比用户不会使用overrides，把模板和普通配置混合在了一起？再次遍历input后处理
+        for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
+            String inputKey = inputEntry.getKey();
+            if (NON_TEMPLATE_KEY.contains(inputKey)) continue;
+            // 处理那些overrides
+            processUnknownTypeMember(inputEntry.getValue(), arguments, (processed) -> overrides.put(inputKey, processed));
+        }
+        // 返回处理结果
+        return new TemplateProcessingResult(
+                templateList,
+                overrides,
+                arguments
+        );
+    }
+
+    // 合并参数
+    private Map<String, TemplateArgument> mergeArguments(@NotNull Map<String, Object> rawChildArguments,
+                                                         @NotNull Map<String, TemplateArgument> parentArguments) {
+        Map<String, TemplateArgument> result = new HashMap<>();
+        // 我们遍历一下当前节点下的所有参数，这些参数可能含有内嵌参数。所以需要对参数map先处理一次后再合并
+        // arguments:
+        //   argument_1: "{parent_argument}"
+        for (Map.Entry<String, Object> argumentEntry : rawChildArguments.entrySet()) {
+            // 获取最终的string形式参数
+            String placeholder = LEFT_BRACKET + argumentEntry.getKey() + RIGHT_BRACKET;
+            Object rawArgument = argumentEntry.getValue();
+            if (rawArgument instanceof Map<?,?> mapArgument) {
+                // 此参数是一个map，那么对map应用模板，然后再根据map是否含有type等参数，判别其是否为带名特殊参数
+                Map<String, Object> nestedResult = new LinkedHashMap<>();
+                processMap(MiscUtils.castToMap(mapArgument, false), parentArguments, (obj) -> {
+                    // 如果有人往arguments下塞了一个模板，则模板类型应为map
+                    if (obj instanceof Map<?,?> mapResult) {
+                        nestedResult.putAll(MiscUtils.castToMap(mapResult, false));
+                    } else {
+                        throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(mapArgument) + ". Template: " + GsonHelper.get().toJson(obj));
+                    }
+                });
+                result.put(placeholder, TemplateArguments.fromMap(nestedResult));
+            } else if (rawArgument instanceof List<?> listArgument) {
+                // 此参数是一个list，那么只需要应用模板即可
+                List<Object> nestedResult = new ArrayList<>();
+                for (Object item : listArgument) {
+                    processUnknownTypeMember(item, parentArguments, nestedResult::add);
+                }
+                result.put(placeholder, new ListTemplateArgument(nestedResult));
+            } else if (rawArgument == null) {
+                // 使用 null 覆写其父参数内容
+                result.put(placeholder, NullTemplateArgument.INSTANCE);
+            } else {
+                // 将参数字符串化后，应用参数再放入
+                Object applied = applyArgument(rawArgument.toString(), parentArguments);
+                result.put(placeholder, new ObjectTemplateArgument(applied));
+            }
+        }
+        return result;
+    }
+
+    // 将某个输入变成最终的结果，可以是string->string，也可以是string->map/list
+    private Object applyArgument(String input, Map<String, TemplateArgument> arguments) {
         StringBuilder result = new StringBuilder();
         Matcher matcher = PATTERN.matcher(input);
         boolean first = true;
@@ -167,77 +253,9 @@ public class TemplateManagerImpl implements TemplateManager {
         return result.toString();
     }
 
-    private void processValue(Object value,
-                              Consumer<Object> resultConsumer,
-                              Map<String, Supplier<Object>> arguments) {
-        if (value instanceof Map<?, ?> mapValue) {
-            Map<String, Object> nestedResult = new LinkedHashMap<>();
-            applyTemplatesRecursive(EMPTY, castToMap(mapValue, false), nestedResult, arguments);
-            resultConsumer.accept(nestedResult);
-        } else if (value instanceof List<?> listValue) {
-            List<Object> nestedList = new ArrayList<>();
-            processList(castToList(listValue, false), nestedList, arguments);
-            resultConsumer.accept(nestedList);
-        } else if (value instanceof String strValue) {
-            resultConsumer.accept(applyArgument(strValue, arguments));
-        } else {
-            resultConsumer.accept(value);
-        }
-    }
-
-    private void processList(List<Object> inputList, List<Object> resultList, Map<String, Supplier<Object>> arguments) {
-        for (Object item : inputList) {
-            processValue(item, r -> {
-                if (r != null) {
-                    resultList.add(r);
-                }
-            }, arguments);
-        }
-    }
-
-    private void handleMapTemplate(String currentPath,
-                                   Map<String, Object> template,
-                                   Object overrides,
-                                   Map<String, Supplier<Object>> arguments,
-                                   Map<String, Object> input,
-                                   Map<String, Object> result) {
-        Map<String, Object> merged = new LinkedHashMap<>(template);
-        if (overrides != null) {
-            merged.putAll(castToMap(overrides, false));
-        }
-        for (Map.Entry<String, Object> entry : input.entrySet()) {
-            if (!blacklistedKeys.contains(entry.getKey())) {
-                merged.put(entry.getKey(), entry.getValue());
-            }
-        }
-        applyTemplatesRecursive(currentPath, merged, result, arguments);
-    }
-
-    private void handleListTemplate(String currentPath,
-                                    List<Object> template,
-                                    Object overrides,
-                                    Map<String, Supplier<Object>> arguments,
-                                    Map<String, Object> result) {
-        List<Object> merged = (overrides instanceof List<?> overrideList && !overrideList.isEmpty())
-                ? castToList(overrideList, false)
-                : template;
-        List<Object> processedList = new ArrayList<>();
-        processList(merged, processedList, arguments);
-        result.put(currentPath, processedList);
-    }
-
     private record TemplateProcessingResult(
             List<Object> templates,
-            Object overrides,
-            Map<String, Supplier<Object>> arguments
+            Map<String, Object> overrides,
+            Map<String, TemplateArgument> arguments
     ) {}
-
-    private static Map<String, Supplier<Object>> mergeArguments(
-            Map<String, Supplier<Object>> parent,
-            Map<String, Supplier<Object>> child
-    ) {
-        Map<String, Supplier<Object>> merged = new HashMap<>(parent);
-        merged.putAll(child);
-        return merged;
-    }
 }

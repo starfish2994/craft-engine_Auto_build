@@ -26,11 +26,7 @@ resource-pack:
       method-1: false
       method-2: false
       method-3: false # Enable this would increase the resource pack size by 0.67MB
-    # Please note that the primary purpose of obfuscation is to
-    # unidirectionally transform your resource pack into a format with significantly
-    # reduced readability, making it nearly impossible for thieves to
-    # restore the original structure of the resource pack.
-    # However, there is no 100% guarantee that it will not be reverse engineered.
+    # Obfuscate your resource pack
     obfuscation:
       enable: false
       seed: 0 # 0 = random seed
