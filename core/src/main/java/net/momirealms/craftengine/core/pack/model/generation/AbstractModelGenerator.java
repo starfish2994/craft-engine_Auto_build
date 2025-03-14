@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.pack.model.generator;
+package net.momirealms.craftengine.core.pack.model.generation;
 
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;

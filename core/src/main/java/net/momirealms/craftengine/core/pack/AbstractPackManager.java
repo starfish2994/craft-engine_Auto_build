@@ -8,12 +8,14 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
+import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
-import net.momirealms.craftengine.core.pack.model.generator.ModelGeneration;
-import net.momirealms.craftengine.core.pack.model.generator.ModelGenerator;
+import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
+import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
@@ -237,6 +239,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_crossbow_pulling_1.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_crossbow_pulling_2.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_crossbow.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/entity/equipment/humanoid/topaz.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/entity/equipment/humanoid_leggings/topaz.png");
         for (String item : List.of("helmet", "chestplate", "leggings", "boots", "pickaxe", "axe", "sword", "hoe", "shovel")) {
             plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_" + item + ".png");
             plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_" + item + ".png.mcmeta");
@@ -403,6 +407,7 @@ public abstract class AbstractPackManager implements PackManager {
         this.generateOverrideSounds(generatedPackPath);
         this.generateCustomSounds(generatedPackPath);
         this.generateClientLang(generatedPackPath);
+        this.generateEquipments(generatedPackPath);
 
         Path zipFile = resourcePackPath();
         try {
@@ -430,6 +435,45 @@ public abstract class AbstractPackManager implements PackManager {
         } else {
             this.packHash = "";
             this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private void generateEquipments(Path generatedPackPath) {
+        for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
+            EquipmentData equipmentData = generator.modernData();
+            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.2f) {
+                Path equipmentPath = generatedPackPath
+                        .resolve("assets")
+                        .resolve(equipmentData.assetId().namespace())
+                        .resolve("equipment")
+                        .resolve(equipmentData.assetId().value() + ".json");
+
+                JsonObject equipmentJson = null;
+                if (Files.exists(equipmentPath)) {
+                    try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                        equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to load existing sounds.json", e);
+                        return;
+                    }
+                }
+                if (equipmentJson != null) {
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                } else {
+                    equipmentJson = generator.get();
+                }
+                try {
+                    Files.createDirectories(equipmentPath.getParent());
+                } catch (IOException e) {
+                    plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                    return;
+                }
+                try {
+                    GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+                } catch (IOException e) {
+                    this.plugin.logger().severe("Error writing equipment file", e);
+                }
+            }
         }
     }
 

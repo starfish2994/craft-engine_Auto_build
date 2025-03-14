@@ -12,10 +12,6 @@ forced-locale: ''
 resource-pack:
   # Should those images in minecraft:default font also work in minecraft:uniform
   override-uniform-font: true
-
-  # Do not use this feature for the moment as it's under development
-  # Do not use this feature for the moment as it's under development
-  # Do not use this feature for the moment as it's under development
   # Resource pack protection
   protection:
     # Warning: Do not attempt to unzip the resource pack with crash tools enabled.
