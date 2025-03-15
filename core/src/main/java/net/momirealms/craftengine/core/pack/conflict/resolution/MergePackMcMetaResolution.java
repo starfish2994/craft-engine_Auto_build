@@ -1,20 +1,17 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MergePackMcMetaResolution implements Resolution {
@@ -25,159 +22,94 @@ public class MergePackMcMetaResolution implements Resolution {
         this.description = description;
     }
 
-    @SuppressWarnings("unchecked")
-    public static void mergeMcmeta(Path existing, Path conflict, String customDescription) throws IOException {
-        Gson gson = GsonHelper.get();
-        Type dataType = new TypeToken<Map<String, Object>>() {}.getType();
+    public static void mergeMcmeta(Path existing, Path conflict, JsonObject customDescription) throws IOException {
+        // 读取并解析JSON文件
+        JsonObject existingJson = GsonHelper.readJsonFile(existing).getAsJsonObject();
+        JsonObject conflictJson = GsonHelper.readJsonFile(conflict).getAsJsonObject();
 
-        String jsonDescription = gson.fromJson(AdventureHelper.miniMessageToJson(customDescription), dataType);
+        // 合并根对象
+        JsonObject merged = GsonHelper.deepMerge(existingJson, conflictJson);
 
-        Map<String, Object> existingData = gson.fromJson(new FileReader(existing.toFile()), dataType);
-        Map<String, Object> conflictData = gson.fromJson(new FileReader(conflict.toFile()), dataType);
+        // 处理pack字段的特殊逻辑
+        processPackField(merged, existingJson, conflictJson, customDescription);
 
-        Map<String, Object> merged = (Map<String, Object>) mergeValues(existingData, conflictData);
-
-        processPackField(merged, existingData, conflictData, jsonDescription);
-
-        Object cleaned = cleanEmpty(merged);
-
-        try (FileWriter writer = new FileWriter(existing.toFile())) {
-            gson.toJson(cleaned, writer);
-        }
+        // 写回文件
+        GsonHelper.writeJsonFile(merged, existing);
     }
 
-    @SuppressWarnings("unchecked")
-    private static Object mergeValues(Object v1, Object v2) {
-        if (v1 instanceof Map && v2 instanceof Map) {
-            Map<String, Object> merged = new HashMap<>();
-            ((Map<String, Object>) v1).forEach((k, val) ->
-                    merged.put(k, ((Map<?, ?>) v2).containsKey(k) ? mergeValues(val, ((Map<?, ?>) v2).get(k)) : val));
-            ((Map<String, Object>) v2).forEach(merged::putIfAbsent);
-            return merged;
-        }
-        if (v1 instanceof List && v2 instanceof List) {
-            List<Object> mergedList = new ArrayList<>((List<?>) v2);
-            mergedList.addAll((List<?>) v1);
-            return mergedList;
-        }
-        return v2 != null ? v2 : v1;
-    }
+    private static void processPackField(JsonObject merged, JsonObject data1, JsonObject data2, JsonObject customDescription) {
+        JsonObject pack1 = data1.getAsJsonObject("pack");
+        JsonObject pack2 = data2.getAsJsonObject("pack");
 
-    @SuppressWarnings("unchecked")
-    private static Object cleanEmpty(Object data) {
-        if (data instanceof Map) {
-            Map<String, Object> map = new HashMap<>((Map<String, Object>) data);
-            map.values().removeIf(MergePackMcMetaResolution::isEmpty);
-            map.replaceAll((k, v) -> cleanEmpty(v));
-            return map.isEmpty() ? null : map;
-        }
-        if (data instanceof List) {
-            List<Object> list = new ArrayList<>((List<Object>) data);
-            list.removeIf(MergePackMcMetaResolution::isEmpty);
-            list.replaceAll(MergePackMcMetaResolution::cleanEmpty);
-            return list.isEmpty() ? null : list;
-        }
-        return data;
-    }
+        JsonObject mergedPack = new JsonObject();
 
-    private static boolean isEmpty(Object value) {
-        return value == null ||
-                (value instanceof Map && ((Map<?, ?>) value).isEmpty()) ||
-                (value instanceof List && ((List<?>) value).isEmpty()) ||
-                (value instanceof String && ((String) value).isEmpty());
-    }
+        // 合并pack_format
+        int packFormat1 = pack1 != null && pack1.has("pack_format") ? pack1.get("pack_format").getAsInt() : 0;
+        int packFormat2 = pack2 != null && pack2.has("pack_format") ? pack2.get("pack_format").getAsInt() : 0;
+        mergedPack.addProperty("pack_format", Math.max(packFormat1, packFormat2));
 
-    @SuppressWarnings("unchecked")
-    private static void processPackField(Map<String, Object> merged, Map<String, Object> data1, Map<String, Object> data2, Object customDescription) {
-        if (merged.containsKey("pack")) {
-            Map<String, Object> pack = (Map<String, Object>) merged.get("pack");
-
-            pack.put("pack_format", Math.max(
-                    getPackFormat(data1),
-                    getPackFormat(data2)
-            ));
-
-            processSupportedFormats(pack, data1, data2);
-
-            if (customDescription != null && !isEmpty(customDescription)) {
-                pack.put("description", customDescription);
-            }
-/*            else {
-                String desc1 = getDescription(data1);
-                String desc2 = getDescription(data2);
-                String mergedDesc = desc1.isEmpty() ? desc2 : desc2.isEmpty() ? desc1 : desc1 + "\n" + desc2;
-                if (!mergedDesc.isEmpty()) pack.put("description", mergedDesc);
-            }*/
-        }
-    }
-
-    private static int getPackFormat(Map<String, Object> data) {
-        if (data.containsKey("pack") && ((Map<?, ?>) data.get("pack")).containsKey("pack_format")) {
-            return ((Number) ((Map<?, ?>) data.get("pack")).get("pack_format")).intValue();
-        }
-        return 0;
-    }
-
-    private static void processSupportedFormats(Map<String, Object> pack, Map<String, Object> data1, Map<String, Object> data2) {
-        Object sf1 = getSupportedFormats(data1);
-        Object sf2 = getSupportedFormats(data2);
-
+        // 处理supported_formats
+        JsonElement sf1 = pack1 != null ? pack1.get("supported_formats") : null;
+        JsonElement sf2 = pack2 != null ? pack2.get("supported_formats") : null;
         if (sf1 != null || sf2 != null) {
-            Object mergedSf = mergeValues(sf1, sf2);
-            int[] minMax = parseSupportedFormats(mergedSf);
-            Map<String, Integer> supported = new HashMap<>();
-            supported.put("min_inclusive", minMax[0]);
-            supported.put("max_inclusive", minMax[1]);
-            pack.put("supported_formats", supported);
+            JsonElement mergedSf = mergeSupportedFormats(sf1, sf2);
+            mergedPack.add("supported_formats", mergedSf);
+        }
+
+        // 处理description
+        mergedPack.add("description", customDescription);
+        merged.add("pack", mergedPack);
+    }
+
+    private static JsonElement mergeSupportedFormats(JsonElement sf1, JsonElement sf2) {
+        final int[] min = {Integer.MAX_VALUE};
+        final int[] max = {Integer.MIN_VALUE};
+
+        parseSupportedFormats(sf1, (m, n) -> {
+            min[0] = Math.min(min[0], m);
+            max[0] = Math.max(max[0], n);
+        });
+
+        parseSupportedFormats(sf2, (m, n) -> {
+            min[0] = Math.min(min[0], m);
+            max[0] = Math.max(max[0], n);
+        });
+
+        JsonObject result = new JsonObject();
+        result.addProperty("min_inclusive", min[0]);
+        result.addProperty("max_inclusive", max[0]);
+        return result;
+    }
+
+    private static void parseSupportedFormats(JsonElement element, MinMaxConsumer consumer) {
+        if (element == null) return;
+
+        if (element.isJsonPrimitive()) {
+            int value = element.getAsInt();
+            consumer.accept(value, value);
+        } else if (element.isJsonArray()) {
+            JsonArray array = element.getAsJsonArray();
+            if (!array.isEmpty()) {
+                int first = array.get(0).getAsInt();
+                int last = array.get(array.size() - 1).getAsInt();
+                consumer.accept(first, last);
+            }
+        } else if (element.isJsonObject()) {
+            JsonObject obj = element.getAsJsonObject();
+            int m = obj.has("min_inclusive") ? obj.get("min_inclusive").getAsInt() : 0;
+            int n = obj.has("max_inclusive") ? obj.get("max_inclusive").getAsInt() : 0;
+            consumer.accept(m, n);
         }
     }
 
-    private static Object getSupportedFormats(Map<String, Object> data) {
-        if (data.containsKey("pack") && ((Map<?, ?>) data.get("pack")).containsKey("supported_formats")) {
-            return ((Map<?, ?>) data.get("pack")).get("supported_formats");
-        }
-        return null;
-    }
-
-    private static int[] parseSupportedFormats(Object supported) {
-        if (supported instanceof Number) {
-            int val = ((Number) supported).intValue();
-            return new int[]{val, val};
-        }
-        if (supported instanceof List<?> list) {
-            return new int[]{
-                    getNumberValue(list.getFirst()),
-                    getNumberValue(list.getLast())
-            };
-        }
-        if (supported instanceof Map<?, ?> map) {
-            return new int[]{
-                    getNumberValue(map.get("min_inclusive")),
-                    getNumberValue(map.get("max_inclusive"))
-            };
-        }
-        return new int[]{0, 0};
-    }
-
-    private static int getNumberValue(Object value) {
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        return 0;
-    }
-
-    private static String getDescription(Map<String, Object> data) {
-        if (data.containsKey("pack") && ((Map<?, ?>) data.get("pack")).containsKey("description")) {
-            Object desc = ((Map<?, ?>) data.get("pack")).get("description");
-            return desc instanceof String ? (String) desc : "";
-        }
-        return "";
+    private interface MinMaxConsumer {
+        void accept(int min, int max);
     }
 
     @Override
     public void run(Path existing, Path conflict) {
         try {
-            mergeMcmeta(existing, conflict, description);
+            mergeMcmeta(existing, conflict, JsonParser.parseString(AdventureHelper.miniMessageToJson(this.description)).getAsJsonObject());
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to merge pack.mcmeta when resolving file conflicts", e);
         }
