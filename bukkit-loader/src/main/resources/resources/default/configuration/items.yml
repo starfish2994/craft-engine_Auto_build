@@ -164,8 +164,8 @@ templates:
       equippable:
         slot: "{slot}"
         asset-id: topaz
-        humanoid: "minecraft:entity/equipment/humanoid/topaz"
-        humanoid-leggings: "minecraft:entity/equipment/humanoid_leggings/topaz"
+        humanoid: "minecraft:topaz"
+        humanoid-leggings: "minecraft:topaz"
 
 recipes:
   default:topaz_shovel:
