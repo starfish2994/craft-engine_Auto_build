@@ -13,8 +13,11 @@ public class LegacyInventoryUtils {
         return player.getOpenInventory().getTopInventory();
     }
 
-    public static void setRepairCost(AnvilInventory anvilInventory, int repairCost, int amount) {
+    public static void setRepairCost(AnvilInventory anvilInventory, int repairCost) {
         anvilInventory.setRepairCost(repairCost);
+    }
+
+    public static void setRepairCostAmount(AnvilInventory anvilInventory, int amount) {
         anvilInventory.setRepairCostAmount(amount);
     }
 
@@ -25,6 +28,10 @@ public class LegacyInventoryUtils {
 
     public static int getMaxRepairCost(AnvilInventory anvilInventory) {
         return anvilInventory.getMaximumRepairCost();
+    }
+
+    public static int getRepairCost(AnvilInventory anvilInventory) {
+        return anvilInventory.getRepairCost();
     }
 
     public static InventoryView getView(PrepareAnvilEvent event) {

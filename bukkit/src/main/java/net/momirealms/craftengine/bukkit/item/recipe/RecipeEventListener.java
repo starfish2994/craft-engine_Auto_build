@@ -21,10 +21,7 @@ import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.Pair;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -561,13 +558,16 @@ public class RecipeEventListener implements Listener {
 
         String renameText;
         int maxRepairCost;
+        int previousCost;
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             AnvilView anvilView = event.getView();
             renameText = anvilView.getRenameText();
             maxRepairCost = anvilView.getMaximumRepairCost();
+            previousCost = anvilView.getRepairCost();
         } else {
             renameText = LegacyInventoryUtils.getRenameText(inventory);
             maxRepairCost = LegacyInventoryUtils.getMaxRepairCost(inventory);
+            previousCost = LegacyInventoryUtils.getRepairCost(inventory);
         }
 
         int repairCost = actualConsumedAmount;
@@ -580,7 +580,6 @@ public class RecipeEventListener implements Listener {
                     repairCost += 1;
                 } else if (repairCost == 0) {
                     hasResult = false;
-                    System.out.println("1");
                 }
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to get hover name", e);
@@ -597,10 +596,30 @@ public class RecipeEventListener implements Listener {
 
         if (VersionHelper.isVersionNewerThan1_21()) {
             AnvilView anvilView = event.getView();
+            anvilView.setRepairCost(finalCost <= 1 ? 2 : finalCost - 1);
+        } else {
+            LegacyInventoryUtils.setRepairCost(inventory, finalCost <= 1 ? 2 : finalCost - 1);
+        }
+
+        try {
+            if (VersionHelper.isVersionNewerThan1_21()) {
+                Object anvilMenu = Reflections.field$CraftInventoryView$container.get(event.getView());
+                Reflections.method$AbstractContainerMenu$broadcastChanges.invoke(anvilMenu);
+            } else {
+                Object anvilMenu = Reflections.field$CraftInventoryAnvil$menu.get(inventory);
+                Reflections.method$AbstractContainerMenu$broadcastChanges.invoke(anvilMenu);
+            }
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to broadcast changes", e);
+        }
+
+        if (VersionHelper.isVersionNewerThan1_21()) {
+            AnvilView anvilView = event.getView();
             anvilView.setRepairCost(finalCost);
             anvilView.setRepairItemCountCost(actualConsumedAmount);
         } else {
-            LegacyInventoryUtils.setRepairCost(inventory, finalCost, actualRepairAmount);
+            LegacyInventoryUtils.setRepairCost(inventory, finalCost);
+            LegacyInventoryUtils.setRepairCostAmount(inventory, actualConsumedAmount);
         }
 
         Player player;

@@ -4728,6 +4728,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$AbstractContainerMenu$broadcastChanges = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AbstractContainerMenu, void.class, new String[]{ "broadcastChanges", "d" }
+            )
+    );
+
     public static final Class<?> clazz$CraftContainer = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleCBClass("inventory.CraftContainer")
@@ -4892,4 +4898,33 @@ public class Reflections {
                     clazz$CraftComplexRecipe, clazz$CustomRecipe, 0
             )
     );
+
+    public static final Class<?> clazz$CraftInventoryAnvil = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryAnvil")
+            )
+    );
+
+    public static final Class<?> clazz$AnvilMenu = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.AnvilMenu"),
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.ContainerAnvil")
+            )
+    );
+
+    // 1.21+
+    public static final Class<?> clazz$CraftInventoryView =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryView")
+            );
+
+    // 1.21+
+    public static final Field field$CraftInventoryView$container = Optional.ofNullable(clazz$CraftInventoryView)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 0)).orElse(null);
+
+    // 1.20-1.20.6
+    public static final Field field$CraftInventoryAnvil$menu =
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftInventoryAnvil, clazz$AnvilMenu, 0
+            );
 }
