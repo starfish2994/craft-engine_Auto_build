@@ -28,10 +28,12 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
     private final CraftEngine plugin;
     private final Map<Key, Category> byId;
     private final TreeSet<Category> categoryOnMainPage;
+    private final Map<Key, List<Key>> externalMembers;
 
     public ItemBrowserManagerImpl(CraftEngine plugin) {
         this.plugin = plugin;
         this.byId = new HashMap<>();
+        this.externalMembers = new HashMap<>();
         this.categoryOnMainPage = new TreeSet<>();
     }
 
@@ -42,12 +44,26 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
     }
 
     public void delayedLoad() {
+        for (Map.Entry<Key, List<Key>> entry : this.externalMembers.entrySet()) {
+            Key item = entry.getKey();
+            for (Key categoryId : entry.getValue()) {
+                Optional.ofNullable(this.byId.get(categoryId)).ifPresent(category -> {
+                    category.addMember(item.toString());
+                });
+            }
+        }
         for (Category category : this.byId.values()) {
             if (!category.hidden()) {
                 this.categoryOnMainPage.add(category);
             }
         }
         Constants.load();
+    }
+
+    @Override
+    public void addExternalCategoryMember(Key item, List<Key> category) {
+        List<Key> categories = this.externalMembers.computeIfAbsent(item, k -> new ArrayList<>());
+        categories.addAll(category);
     }
 
     @Override
