@@ -46,6 +46,7 @@ resource-pack:
           - minecraft:block/farmland
         bypass-models: []
         bypass-sounds: []
+        bypass-equipments: []
 
   supported-version:
     min: "1.20"
