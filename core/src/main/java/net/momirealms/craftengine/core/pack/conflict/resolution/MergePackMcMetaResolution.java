@@ -1,9 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;
@@ -21,94 +18,182 @@ public class MergePackMcMetaResolution implements Resolution {
         this.description = description;
     }
 
-    public static void mergeMcmeta(Path existing, Path conflict, JsonObject customDescription) throws IOException {
-        // 读取并解析JSON文件
-        JsonObject existingJson = GsonHelper.readJsonFile(existing).getAsJsonObject();
-        JsonObject conflictJson = GsonHelper.readJsonFile(conflict).getAsJsonObject();
+    private static class MinMax {
+        int min;
+        int max;
 
-        // 合并根对象
-        JsonObject merged = GsonHelper.deepMerge(existingJson, conflictJson);
-
-        // 处理pack字段的特殊逻辑
-        processPackField(merged, existingJson, conflictJson, customDescription);
-
-        // 写回文件
-        GsonHelper.writeJsonFile(merged, existing);
-    }
-
-    private static void processPackField(JsonObject merged, JsonObject data1, JsonObject data2, JsonObject customDescription) {
-        JsonObject pack1 = data1.getAsJsonObject("pack");
-        JsonObject pack2 = data2.getAsJsonObject("pack");
-
-        JsonObject mergedPack = new JsonObject();
-
-        // 合并pack_format
-        int packFormat1 = pack1 != null && pack1.has("pack_format") ? pack1.get("pack_format").getAsInt() : 0;
-        int packFormat2 = pack2 != null && pack2.has("pack_format") ? pack2.get("pack_format").getAsInt() : 0;
-        mergedPack.addProperty("pack_format", Math.max(packFormat1, packFormat2));
-
-        // 处理supported_formats
-        JsonElement sf1 = pack1 != null ? pack1.get("supported_formats") : null;
-        JsonElement sf2 = pack2 != null ? pack2.get("supported_formats") : null;
-        if (sf1 != null || sf2 != null) {
-            JsonElement mergedSf = mergeSupportedFormats(sf1, sf2);
-            mergedPack.add("supported_formats", mergedSf);
+        MinMax(int min, int max) {
+            this.min = min;
+            this.max = max;
         }
-
-        // 处理description
-        mergedPack.add("description", customDescription);
-        merged.add("pack", mergedPack);
     }
 
-    private static JsonElement mergeSupportedFormats(JsonElement sf1, JsonElement sf2) {
-        final int[] min = {Integer.MAX_VALUE};
-        final int[] max = {Integer.MIN_VALUE};
+    public static void mergeMcMeta(Path file1, Path file2, JsonObject customDescription) throws IOException {
+        JsonElement elem1 = GsonHelper.readJsonFile(file1);
+        JsonElement elem2 = GsonHelper.readJsonFile(file2);
 
-        parseSupportedFormats(sf1, (m, n) -> {
-            min[0] = Math.min(min[0], m);
-            max[0] = Math.max(max[0], n);
-        });
+        JsonObject merged = mergeValues(elem1.getAsJsonObject(), elem2.getAsJsonObject())
+                .getAsJsonObject();
 
-        parseSupportedFormats(sf2, (m, n) -> {
-            min[0] = Math.min(min[0], m);
-            max[0] = Math.max(max[0], n);
-        });
+        if (merged.has("pack")) {
+            JsonObject pack = merged.getAsJsonObject("pack");
 
-        JsonObject result = new JsonObject();
-        result.addProperty("min_inclusive", min[0]);
-        result.addProperty("max_inclusive", max[0]);
-        return result;
-    }
+            int pf1 = elem1.getAsJsonObject().getAsJsonObject("pack")
+                    .getAsJsonPrimitive("pack_format").getAsInt();
+            int pf2 = elem2.getAsJsonObject().getAsJsonObject("pack")
+                    .getAsJsonPrimitive("pack_format").getAsInt();
+            pack.addProperty("pack_format", Math.max(pf1, pf2));
 
-    private static void parseSupportedFormats(JsonElement element, MinMaxConsumer consumer) {
-        if (element == null) return;
+            JsonElement sf1 = elem1.getAsJsonObject().getAsJsonObject("pack")
+                    .get("supported_formats");
+            JsonElement sf2 = elem2.getAsJsonObject().getAsJsonObject("pack")
+                    .get("supported_formats");
 
-        if (element.isJsonPrimitive()) {
-            int value = element.getAsInt();
-            consumer.accept(value, value);
-        } else if (element.isJsonArray()) {
-            JsonArray array = element.getAsJsonArray();
-            if (!array.isEmpty()) {
-                int first = array.get(0).getAsInt();
-                int last = array.get(array.size() - 1).getAsInt();
-                consumer.accept(first, last);
+            if (sf1 != null || sf2 != null) {
+                MinMax mergedMinMax = getMergedMinMax(sf1, sf2, pf1, pf2);
+
+                JsonElement mergedSf = createSupportedFormatsElement(
+                        sf1 != null ? sf1 : sf2,
+                        mergedMinMax.min,
+                        mergedMinMax.max
+                );
+
+                pack.add("supported_formats", mergedSf);
             }
-        } else if (element.isJsonObject()) {
-            JsonObject obj = element.getAsJsonObject();
-            int m = obj.has("min_inclusive") ? obj.get("min_inclusive").getAsInt() : 0;
-            int n = obj.has("max_inclusive") ? obj.get("max_inclusive").getAsInt() : 0;
-            consumer.accept(m, n);
+
+            if (customDescription != null) {
+                pack.add("description", customDescription);
+            } else {
+                JsonPrimitive desc1 = elem1.getAsJsonObject().getAsJsonObject("pack")
+                        .getAsJsonPrimitive("description");
+                JsonPrimitive desc2 = elem2.getAsJsonObject().getAsJsonObject("pack")
+                        .getAsJsonPrimitive("description");
+
+                String mergedDesc = (desc1 != null ? desc1.getAsString() : "")
+                        + (desc1 != null && desc2 != null ? "\n" : "")
+                        + (desc2 != null ? desc2.getAsString() : "");
+
+                if (!mergedDesc.isEmpty()) {
+                    pack.addProperty("description", mergedDesc);
+                }
+            }
         }
+
+        GsonHelper.writeJsonFile(merged, file1);
     }
 
-    private interface MinMaxConsumer {
-        void accept(int min, int max);
+    private static MinMax getMergedMinMax(JsonElement sf1, JsonElement sf2, int pf1, int pf2) {
+        MinMax mm1 = parseSupportedFormats(sf1);
+        MinMax mm2 = parseSupportedFormats(sf2);
+
+        int finalMin = Math.min(mm1.min, mm2.min);
+        int finalMax = Math.max(mm1.max, mm2.max);
+        int pfMin = Math.min(pf1, pf2);
+        int pfMax = Math.max(pf1, pf2);
+        finalMin = Math.min(pfMin, finalMin);
+        finalMax = Math.max(pfMax, finalMax);
+
+        return new MinMax(finalMin, finalMax);
+    }
+
+    private static MinMax parseSupportedFormats(JsonElement supported) {
+        if (supported == null || supported.isJsonNull()) {
+            return new MinMax(Integer.MAX_VALUE, Integer.MIN_VALUE);
+        }
+
+        if (supported.isJsonPrimitive()) {
+            int value = supported.getAsInt();
+            return new MinMax(value, value);
+        }
+
+        if (supported.isJsonArray()) {
+            JsonArray arr = supported.getAsJsonArray();
+            int min = arr.get(0).getAsInt();
+            int max = arr.get(arr.size()-1).getAsInt();
+            return new MinMax(min, max);
+        }
+
+        JsonObject obj = supported.getAsJsonObject();
+        int min, max;
+
+        if (obj.has("min_inclusive")) {
+            min = obj.get("min_inclusive").getAsInt();
+        } else if (obj.has("max_inclusive")) {
+            min = obj.get("max_inclusive").getAsInt();
+        } else {
+            throw new IllegalArgumentException("Invalid supported_formats format");
+        }
+
+        if (obj.has("max_inclusive")) {
+            max = obj.get("max_inclusive").getAsInt();
+        } else {
+            max = min;
+        }
+
+        return new MinMax(min, max);
+    }
+
+    private static JsonElement createSupportedFormatsElement(
+            JsonElement originalFormat,
+            int min,
+            int max) {
+
+        if (originalFormat.isJsonPrimitive()) {
+            return new JsonPrimitive(Math.max(min, max));
+
+        } else if (originalFormat.isJsonArray()) {
+            JsonArray array = new JsonArray();
+            array.add(new JsonPrimitive(min));
+            array.add(new JsonPrimitive(max));
+            return array;
+
+        } else if (originalFormat.isJsonObject()) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("min_inclusive", min);
+            obj.addProperty("max_inclusive", max);
+            return obj;
+        }
+
+        return JsonNull.INSTANCE;
+    }
+
+    private static JsonElement mergeValues(JsonElement v1, JsonElement v2) {
+        if (v1.isJsonObject() && v2.isJsonObject()) {
+            JsonObject obj1 = v1.getAsJsonObject();
+            JsonObject obj2 = v2.getAsJsonObject();
+            JsonObject merged = new JsonObject();
+
+            for (String key : obj1.keySet()) {
+                if (obj2.has(key)) {
+                    merged.add(key, mergeValues(obj1.get(key), obj2.get(key)));
+                } else {
+                    merged.add(key, obj1.get(key));
+                }
+            }
+            for (String key : obj2.keySet()) {
+                if (!merged.has(key)) {
+                    merged.add(key, obj2.get(key));
+                }
+            }
+            return merged;
+        }
+
+        if (v1.isJsonArray() && v2.isJsonArray()) {
+            JsonArray arr1 = v1.getAsJsonArray();
+            JsonArray arr2 = v2.getAsJsonArray();
+            JsonArray merged = new JsonArray();
+            merged.addAll(arr2);
+            merged.addAll(arr1);
+            return merged;
+        }
+
+        return v2.isJsonNull() ? v1 : v2;
     }
 
     @Override
     public void run(Path existing, Path conflict) {
         try {
-            mergeMcmeta(existing, conflict, JsonParser.parseString(AdventureHelper.miniMessageToJson(this.description)).getAsJsonObject());
+            mergeMcMeta(existing, conflict, JsonParser.parseString(AdventureHelper.miniMessageToJson(this.description)).getAsJsonObject());
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to merge pack.mcmeta when resolving file conflicts", e);
         }
