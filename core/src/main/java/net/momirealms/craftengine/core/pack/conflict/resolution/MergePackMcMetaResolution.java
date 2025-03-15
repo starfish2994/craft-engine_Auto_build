@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
+import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,25 +25,19 @@ public class MergePackMcMetaResolution implements Resolution {
         this.description = description;
     }
 
-
-
-
     @SuppressWarnings("unchecked")
     public static void mergeMcmeta(Path existing, Path conflict, String customDescription) throws IOException {
-        Gson gson = new Gson();
+        Gson gson = GsonHelper.get();
+        Type dataType = new TypeToken<Map<String, Object>>() {}.getType();
 
-        Map<String, Object> existingData = gson.fromJson(new FileReader(existing.toFile()), new TypeToken<Map<String, Object>>() {}.getType());
-        Map<String, Object> conflictData = gson.fromJson(new FileReader(conflict.toFile()), new TypeToken<Map<String, Object>>() {}.getType());
+        String jsonDescription = gson.fromJson(AdventureHelper.miniMessageToJson(customDescription), dataType);
+
+        Map<String, Object> existingData = gson.fromJson(new FileReader(existing.toFile()), dataType);
+        Map<String, Object> conflictData = gson.fromJson(new FileReader(conflict.toFile()), dataType);
 
         Map<String, Object> merged = (Map<String, Object>) mergeValues(existingData, conflictData);
 
-        processPackField(
-                merged, existingData, conflictData,
-                gson.fromJson(
-                        AdventureHelper.miniMessageToJson(customDescription),
-                        new TypeToken<Map<String, Object>>() {}.getType()
-                )
-        );
+        processPackField(merged, existingData, conflictData, jsonDescription);
 
         Object cleaned = cleanEmpty(merged);
 
