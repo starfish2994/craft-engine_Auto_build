@@ -18,7 +18,6 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
@@ -46,8 +45,10 @@ import java.util.function.BiConsumer;
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public abstract class AbstractPackManager implements PackManager {
-    private static final String LEGACY_TEMPLATES = PluginProperties.getValue("legacy-templates").replace(".", "_");
-    private static final String LATEST_TEMPLATES = PluginProperties.getValue("latest-templates").replace(".", "_");
+    private static final Map<Key, JsonObject> PRESET_MODELS_ITEM = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
+
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
@@ -69,6 +70,46 @@ public abstract class AbstractPackManager implements PackManager {
             }
         } catch (IOException e) {
             this.plugin.logger().warn("Failed to create default configs folder", e);
+        }
+        this.initInternalData();
+    }
+
+    private void initInternalData() {
+        try (InputStream inputStream = this.plugin.resourceStream("internal/models/item/_all.json")) {
+            if (inputStream != null) {
+                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
+                    if (entry.getValue() instanceof JsonObject modelJson) {
+                        PRESET_MODELS_ITEM.put(Key.of(entry.getKey()), modelJson);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load internal/models/item", e);
+        }
+        try (InputStream inputStream = this.plugin.resourceStream("internal/models/block/_all.json")) {
+            if (inputStream != null) {
+                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
+                    if (entry.getValue() instanceof JsonObject modelJson) {
+                        PRESET_MODELS_BLOCK.put(Key.of(entry.getKey()), modelJson);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load internal/models/block", e);
+        }
+        try (InputStream inputStream = this.plugin.resourceStream("internal/items/_all.json")) {
+            if (inputStream != null) {
+                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
+                    if (entry.getValue() instanceof JsonObject modelJson) {
+                        PRESET_ITEMS.put(Key.of(entry.getKey()), modelJson);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load internal/items", e);
         }
     }
 
@@ -360,7 +401,9 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack) {
         if (entry.getValue() instanceof Map<?,?> typeSections0) {
-            String configType = entry.getKey();
+            String key = entry.getKey();
+            int hashIndex = key.indexOf('#');
+            String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
                     .ifPresent(parser -> {
                         this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
@@ -747,13 +790,8 @@ public abstract class AbstractPackManager implements PackManager {
             if (Files.exists(itemPath)) {
                 plugin.logger().warn("Failed to generate item model for [" + key + "] because " + itemPath.toAbsolutePath() + " already exists");
             } else {
-                try (InputStream inputStream = plugin.resourceStream("internal/templates_" + LEGACY_TEMPLATES + "/" + key.namespace() + "/items/" + key.value() + ".json")) {
-                    if (inputStream != null) {
-                        plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
-                        continue;
-                    }
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load item model", e);
+                if (PRESET_MODELS_ITEM.containsKey(key)) {
+                    plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
                     continue;
                 }
             }
@@ -787,13 +825,8 @@ public abstract class AbstractPackManager implements PackManager {
             if (Files.exists(itemPath)) {
                 plugin.logger().warn("Failed to generate item model for [" + key + "] because " + itemPath.toAbsolutePath() + " already exists");
             } else {
-                try (InputStream inputStream = plugin.resourceStream("internal/templates_" + LATEST_TEMPLATES + "/" + key.namespace() + "/items/" + key.value() + ".json")) {
-                    if (inputStream != null) {
-                        plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
-                        continue;
-                    }
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load item model", e);
+                if (PRESET_ITEMS.containsKey(key)) {
+                    plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
                     continue;
                 }
             }
@@ -828,18 +861,13 @@ public abstract class AbstractPackManager implements PackManager {
                 try {
                     originalItemModel = GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject();
                 } catch (IOException e) {
-                    plugin.logger().warn("Failed to load existing item model", e);
+                    plugin.logger().warn("Failed to load existing item model (modern)", e);
                     continue;
                 }
             } else {
-                try (InputStream inputStream = plugin.resourceStream("internal/templates_" + LATEST_TEMPLATES + "/" + key.namespace() + "/items/" + key.value() + ".json")) {
-                    if (inputStream == null) {
-                        plugin.logger().warn("Failed to use [" + key + "] for base model");
-                        continue;
-                    }
-                    originalItemModel = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load item model", e);
+                originalItemModel = PRESET_ITEMS.get(key);
+                if (originalItemModel == null) {
+                    plugin.logger().warn("Failed to load existing item model for [" + key + "] (modern)");
                     continue;
                 }
             }
@@ -894,23 +922,17 @@ public abstract class AbstractPackManager implements PackManager {
                 try (BufferedReader reader = Files.newBufferedReader(overridedItemPath)) {
                     originalItemModel = JsonParser.parseReader(reader).getAsJsonObject();
                 } catch (IOException e) {
-                    plugin.logger().warn("Failed to load existing item model", e);
+                    plugin.logger().warn("Failed to load existing item model (legacy)", e);
                     continue;
                 }
             } else {
-                try (InputStream inputStream = plugin.resourceStream("internal/templates_" + LEGACY_TEMPLATES + "/" + key.namespace() + "/items/" + key.value() + ".json")) {
-                    if (inputStream == null) {
-                        plugin.logger().warn("Failed to use [" + key + "] for base model");
-                        continue;
-                    }
-                    originalItemModel = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load item model", e);
-                    continue;
+                originalItemModel = PRESET_MODELS_ITEM.get(key);
+                if (originalItemModel == null) {
+                    originalItemModel = PRESET_MODELS_BLOCK.get(key);
                 }
             }
             if (originalItemModel == null) {
-                plugin.logger().warn("Failed to load item model for [" + key + "]");
+                plugin.logger().warn("Failed to load item model for [" + key + "] (legacy)");
                 continue;
             }
             JsonArray overrides;

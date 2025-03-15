@@ -167,7 +167,7 @@ templates:
         humanoid: "minecraft:topaz"
         humanoid-leggings: "minecraft:topaz"
 
-recipes:
+recipes#11:
   default:topaz_shovel:
     type: shaped
     pattern:

@@ -46,6 +46,7 @@ resource-pack:
           - minecraft:block/farmland
           - "@font_images"
           - "@legacy_unicode"
+          - "@vanilla_textures"
         bypass-models: []
         bypass-sounds: []
         bypass-equipments: []
