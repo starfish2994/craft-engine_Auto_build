@@ -450,10 +450,44 @@ public abstract class AbstractPackManager implements PackManager {
     private void generateEquipments(Path generatedPackPath) {
         for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
             EquipmentData equipmentData = generator.modernData();
-            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.2f) {
+            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.4f) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
                         .resolve(equipmentData.assetId().namespace())
+                        .resolve("equipment")
+                        .resolve(equipmentData.assetId().value() + ".json");
+
+                JsonObject equipmentJson = null;
+                if (Files.exists(equipmentPath)) {
+                    try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                        equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to load existing sounds.json", e);
+                        return;
+                    }
+                }
+                if (equipmentJson != null) {
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                } else {
+                    equipmentJson = generator.get();
+                }
+                try {
+                    Files.createDirectories(equipmentPath.getParent());
+                } catch (IOException e) {
+                    plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                    return;
+                }
+                try {
+                    GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+                } catch (IOException e) {
+                    this.plugin.logger().severe("Error writing equipment file", e);
+                }
+            }
+            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.2f && ConfigManager.packMinVersion() < 21.4f) {
+                Path equipmentPath = generatedPackPath
+                        .resolve("assets")
+                        .resolve(equipmentData.assetId().namespace())
+                        .resolve("models")
                         .resolve("equipment")
                         .resolve(equipmentData.assetId().value() + ".json");
 
