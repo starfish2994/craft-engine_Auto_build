@@ -45,8 +45,10 @@ import java.util.function.BiConsumer;
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public abstract class AbstractPackManager implements PackManager {
-    private static final Map<Key, JsonObject> PRESET_MODELS_ITEM = new HashMap<>();
-    private static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_MODERN_MODELS_ITEM = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_MODERN_MODELS_BLOCK = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
+    private static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_BLOCK = new HashMap<>();
     private static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
 
     private final CraftEngine plugin;
@@ -75,41 +77,25 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void initInternalData() {
-        try (InputStream inputStream = this.plugin.resourceStream("internal/models/item/_all.json")) {
+        loadInternalData("internal/models/item/legacy/_all.json", PRESET_LEGACY_MODELS_ITEM::put);
+        loadInternalData("internal/models/block/legacy/_all.json", PRESET_LEGACY_MODELS_BLOCK::put);
+        loadInternalData("internal/models/item/modern/_all.json", PRESET_MODERN_MODELS_ITEM::put);
+        loadInternalData("internal/models/block/modern/_all.json", PRESET_MODERN_MODELS_BLOCK::put);
+        loadInternalData("internal/items/_all.json", PRESET_ITEMS::put);
+    }
+
+    private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
             if (inputStream != null) {
                 JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
                 for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
                     if (entry.getValue() instanceof JsonObject modelJson) {
-                        PRESET_MODELS_ITEM.put(Key.of(entry.getKey()), modelJson);
+                        callback.accept(Key.of(entry.getKey()), modelJson);
                     }
                 }
             }
         } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load internal/models/item", e);
-        }
-        try (InputStream inputStream = this.plugin.resourceStream("internal/models/block/_all.json")) {
-            if (inputStream != null) {
-                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
-                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
-                    if (entry.getValue() instanceof JsonObject modelJson) {
-                        PRESET_MODELS_BLOCK.put(Key.of(entry.getKey()), modelJson);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load internal/models/block", e);
-        }
-        try (InputStream inputStream = this.plugin.resourceStream("internal/items/_all.json")) {
-            if (inputStream != null) {
-                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
-                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
-                    if (entry.getValue() instanceof JsonObject modelJson) {
-                        PRESET_ITEMS.put(Key.of(entry.getKey()), modelJson);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load internal/items", e);
+            this.plugin.logger().warn("Failed to load " + path, e);
         }
     }
 
@@ -790,7 +776,7 @@ public abstract class AbstractPackManager implements PackManager {
             if (Files.exists(itemPath)) {
                 plugin.logger().warn("Failed to generate item model for [" + key + "] because " + itemPath.toAbsolutePath() + " already exists");
             } else {
-                if (PRESET_MODELS_ITEM.containsKey(key)) {
+                if (PRESET_MODERN_MODELS_ITEM.containsKey(key) || PRESET_LEGACY_MODELS_ITEM.containsKey(key)) {
                     plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
                     continue;
                 }
@@ -926,10 +912,7 @@ public abstract class AbstractPackManager implements PackManager {
                     continue;
                 }
             } else {
-                originalItemModel = PRESET_MODELS_ITEM.get(key);
-                if (originalItemModel == null) {
-                    originalItemModel = PRESET_MODELS_BLOCK.get(key);
-                }
+                originalItemModel = PRESET_LEGACY_MODELS_ITEM.get(key);
             }
             if (originalItemModel == null) {
                 plugin.logger().warn("Failed to load item model for [" + key + "] (legacy)");
