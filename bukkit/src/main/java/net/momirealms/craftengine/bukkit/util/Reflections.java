@@ -4734,6 +4734,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$AbstractContainerMenu$broadcastFullState = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AbstractContainerMenu, void.class, new String[]{ "broadcastFullState", "e" }
+            )
+    );
+
     public static final Class<?> clazz$CraftContainer = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleCBClass("inventory.CraftContainer")

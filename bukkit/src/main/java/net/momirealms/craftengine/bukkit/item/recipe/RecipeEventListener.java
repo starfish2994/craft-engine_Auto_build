@@ -594,21 +594,15 @@ public class RecipeEventListener implements Listener {
 
         int finalCost = repairCost + repairPenalty;
 
-        if (VersionHelper.isVersionNewerThan1_21()) {
-            AnvilView anvilView = event.getView();
-            anvilView.setRepairCost(finalCost <= 1 ? 2 : finalCost - 1);
-        } else {
-            LegacyInventoryUtils.setRepairCost(inventory, finalCost <= 1 ? 2 : finalCost - 1);
-        }
-
+        // To fix some client side visual issues
         try {
+            Object anvilMenu;
             if (VersionHelper.isVersionNewerThan1_21()) {
-                Object anvilMenu = Reflections.field$CraftInventoryView$container.get(event.getView());
-                Reflections.method$AbstractContainerMenu$broadcastChanges.invoke(anvilMenu);
+                anvilMenu = Reflections.field$CraftInventoryView$container.get(event.getView());
             } else {
-                Object anvilMenu = Reflections.field$CraftInventoryAnvil$menu.get(inventory);
-                Reflections.method$AbstractContainerMenu$broadcastChanges.invoke(anvilMenu);
+                anvilMenu = Reflections.field$CraftInventoryAnvil$menu.get(inventory);
             }
+            Reflections.method$AbstractContainerMenu$broadcastFullState.invoke(anvilMenu);
         } catch (ReflectiveOperationException e) {
             this.plugin.logger().warn("Failed to broadcast changes", e);
         }
