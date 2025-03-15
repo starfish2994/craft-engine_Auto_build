@@ -1,9 +1,6 @@
 package net.momirealms.craftengine.core.pack;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.font.BitmapImage;
@@ -41,15 +38,18 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public abstract class AbstractPackManager implements PackManager {
-    private static final Map<Key, JsonObject> PRESET_MODERN_MODELS_ITEM = new HashMap<>();
-    private static final Map<Key, JsonObject> PRESET_MODERN_MODELS_BLOCK = new HashMap<>();
-    private static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
-    private static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_BLOCK = new HashMap<>();
-    private static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
+    public static final Map<Key, JsonObject> PRESET_MODERN_MODELS_ITEM = new HashMap<>();
+    public static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
+    public static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
+    public static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
+    public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
+    public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
+    public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
 
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
@@ -78,10 +78,13 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void initInternalData() {
         loadInternalData("internal/models/item/legacy/_all.json", PRESET_LEGACY_MODELS_ITEM::put);
-        loadInternalData("internal/models/block/legacy/_all.json", PRESET_LEGACY_MODELS_BLOCK::put);
         loadInternalData("internal/models/item/modern/_all.json", PRESET_MODERN_MODELS_ITEM::put);
-        loadInternalData("internal/models/block/modern/_all.json", PRESET_MODERN_MODELS_BLOCK::put);
+        loadInternalData("internal/models/block/_all.json", PRESET_MODELS_BLOCK::put);
         loadInternalData("internal/items/_all.json", PRESET_ITEMS::put);
+
+        loadInternalList("internal/textures/block/_list.json", VANILLA_BLOCK_TEXTURES::add);
+        loadInternalList("internal/textures/item/_list.json", VANILLA_ITEM_TEXTURES::add);
+        loadInternalList("internal/textures/font/_list.json", VANILLA_FONT_TEXTURES::add);
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -91,6 +94,22 @@ public abstract class AbstractPackManager implements PackManager {
                 for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
                     if (entry.getValue() instanceof JsonObject modelJson) {
                         callback.accept(Key.of(entry.getKey()), modelJson);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load " + path, e);
+        }
+    }
+
+    private void loadInternalList(String path, Consumer<Key> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+            if (inputStream != null) {
+                JsonObject listJson = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                JsonArray list = listJson.getAsJsonArray("files");
+                for (JsonElement element : list) {
+                    if (element instanceof JsonPrimitive primitive) {
+                        callback.accept(Key.of(FileUtils.pathWithoutExtension(primitive.getAsString())));
                     }
                 }
             }

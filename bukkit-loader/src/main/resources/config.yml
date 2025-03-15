@@ -43,10 +43,11 @@ resource-pack:
         # Sometimes, some vanilla files that have been overwritten might be mistakenly obfuscated.
         # Please add the ignored textures/models/sounds here.
         bypass-textures:
-          - minecraft:block/farmland
-          - "@font_images"
+          # - minecraft:block/farmland
           - "@legacy_unicode"
-          - "@vanilla_textures"
+          - "@vanilla_font_textures"
+          - "@vanilla_item_textures"
+          - "@vanilla_block_textures"
         bypass-models: []
         bypass-sounds: []
         bypass-equipments: []

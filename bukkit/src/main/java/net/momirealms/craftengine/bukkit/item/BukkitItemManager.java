@@ -270,6 +270,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             // TODO 1.20
         }
 
+        // add it to category
+        if (section.containsKey("category")) {
+            this.plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
+        }
+
         // model part, can be null
         // but if it exists, either custom model data or item model should be configured
         Map<String, Object> modelSection = MiscUtils.castToMap(section.get("model"), true);
