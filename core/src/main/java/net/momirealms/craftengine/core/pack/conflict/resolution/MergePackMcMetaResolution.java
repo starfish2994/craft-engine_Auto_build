@@ -9,7 +9,6 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
