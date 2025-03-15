@@ -44,6 +44,8 @@ resource-pack:
         # Please add the ignored textures/models/sounds here.
         bypass-textures:
           - minecraft:block/farmland
+          - "@font_images"
+          - "@legacy_unicode"
         bypass-models: []
         bypass-sounds: []
         bypass-equipments: []
