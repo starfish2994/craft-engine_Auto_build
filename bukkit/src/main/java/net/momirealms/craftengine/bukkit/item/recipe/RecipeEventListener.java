@@ -514,10 +514,9 @@ public class RecipeEventListener implements Listener {
         Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
 
         int maxDamage = wrappedFirst.maxDamage().orElse(0);
-        // not a repairable item
-        if (maxDamage == 0) return;
-
         int damage = wrappedFirst.damage().orElse(0);
+        // not a repairable item
+        if (damage == 0 || maxDamage == 0) return;
 
         Key firstId = wrappedFirst.id();
         Optional<CustomItem<ItemStack>> optionalCustomTool = wrappedFirst.getCustomItem();
@@ -554,7 +553,7 @@ public class RecipeEventListener implements Listener {
         boolean hasResult = true;
 
         int realDurabilityPerItem = (int) (repairItem.amount() + repairItem.percent() * maxDamage);
-        int consumeMaxAmount = damage == 0 ? 0 : damage / realDurabilityPerItem + 1;
+        int consumeMaxAmount = damage / realDurabilityPerItem + 1;
         int actualConsumedAmount = Math.min(consumeMaxAmount, wrappedSecond.count());
         int actualRepairAmount = actualConsumedAmount * realDurabilityPerItem;
         int damageAfter = Math.max(damage - actualRepairAmount, 0);
