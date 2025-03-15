@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.Pair;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import org.bukkit.Material;
@@ -438,18 +439,86 @@ public class RecipeEventListener implements Listener {
         }
     }
 
+    // only handle repair items for the moment
     @EventHandler(ignoreCancelled = true)
     public void onSpecialRecipe(PrepareItemCraftEvent event) {
         if (!ConfigManager.enableRecipeSystem()) return;
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
-        if (!(recipe instanceof ComplexRecipe))
+        if (!(recipe instanceof ComplexRecipe complexRecipe))
             return;
         CraftingInventory inventory = event.getInventory();
-        if (ItemUtils.hasCustomItem(inventory.getMatrix())) {
-            inventory.setResult(null);
+        boolean hasCustomItem = ItemUtils.hasCustomItem(inventory.getMatrix());
+        if (!hasCustomItem) {
+            return;
         }
+
+        if (!Reflections.clazz$CraftComplexRecipe.isInstance(complexRecipe)) {
+            inventory.setResult(null);
+            return;
+        }
+
+        try {
+            Object mcRecipe = Reflections.field$CraftComplexRecipe$recipe.get(complexRecipe);
+            if (!Reflections.clazz$RepairItemRecipe.isInstance(mcRecipe)) {
+                inventory.setResult(null);
+                return;
+            }
+
+            // repair item
+            ItemStack[] itemStacks = inventory.getMatrix();
+            Pair<ItemStack, ItemStack> onlyTwoItems = getTheOnlyTwoItem(itemStacks);
+            if (onlyTwoItems.left() == null || onlyTwoItems.right() == null) {
+                inventory.setResult(null);
+                return;
+            }
+
+            Item<ItemStack> left = plugin.itemManager().wrap(onlyTwoItems.left());
+            Item<ItemStack> right = plugin.itemManager().wrap(onlyTwoItems.right());
+            if (!left.id().equals(right.id())) {
+                inventory.setResult(null);
+                return;
+            }
+
+            int totalDamage = right.damage().orElse(0) + left.damage().orElse(0);
+            int totalMaxDamage = left.maxDamage().get() + right.maxDamage().get();
+            // should be impossible, but take care
+            if (totalDamage >= totalMaxDamage) {
+                inventory.setResult(null);
+                return;
+            }
+
+            Player player;
+            try {
+                player = (Player) Reflections.method$InventoryView$getPlayer.invoke(event.getView());
+            } catch (ReflectiveOperationException e) {
+                plugin.logger().warn("Failed to get inventory viewer", e);
+                return;
+            }
+
+            Item<ItemStack> newItem = plugin.itemManager().getCustomItem(left.id()).get().buildItem(ItemBuildContext.of(plugin.adapt(player), ContextHolder.EMPTY));
+            int remainingDurability = totalMaxDamage - totalDamage;
+            int newItemDamage = Math.max(0, newItem.maxDamage().get() - remainingDurability);
+            newItem.damage(newItemDamage);
+            inventory.setResult(newItem.load());
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to handle minecraft custom recipe", e);
+        }
+    }
+
+    private Pair<ItemStack, ItemStack> getTheOnlyTwoItem(ItemStack[] matrix) {
+        ItemStack first = null;
+        ItemStack second = null;
+        for (ItemStack itemStack : matrix) {
+            if (itemStack == null) continue;
+            if (first == null) {
+                first = itemStack;
+            } else if (second == null) {
+                second = itemStack;
+            }
+        }
+        return new Pair<>(first, second);
     }
 
     @EventHandler(ignoreCancelled = true)

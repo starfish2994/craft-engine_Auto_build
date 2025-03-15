@@ -4860,4 +4860,30 @@ public class Reflections {
                     clazz$FluidState, clazz$Fluid
             )
     );
+
+    public static final Class<?> clazz$CraftComplexRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftComplexRecipe")
+            )
+    );
+
+    public static final Class<?> clazz$CustomRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.CustomRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.IRecipeComplex")
+            )
+    );
+
+    public static final Class<?> clazz$RepairItemRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RepairItemRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeRepair")
+            )
+    );
+
+    public static final Field field$CraftComplexRecipe$recipe = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftComplexRecipe, clazz$CustomRecipe, 0
+            )
+    );
 }
