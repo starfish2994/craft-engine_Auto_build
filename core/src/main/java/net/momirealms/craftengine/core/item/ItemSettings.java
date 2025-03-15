@@ -16,6 +16,7 @@ public class ItemSettings {
     Set<Key> tags = Set.of();
     @Nullable
     EquipmentGeneration equipment;
+    boolean canRepair = true;
 
     private ItemSettings() {}
 
@@ -39,6 +40,7 @@ public class ItemSettings {
         newSettings.fuelTime = settings.fuelTime;
         newSettings.tags = settings.tags;
         newSettings.equipment = settings.equipment;
+        newSettings.canRepair = settings.canRepair;
         return newSettings;
     }
 
@@ -54,6 +56,10 @@ public class ItemSettings {
         return settings;
     }
 
+    public boolean canRepair() {
+        return canRepair;
+    }
+
     public int fuelTime() {
         return fuelTime;
     }
@@ -65,6 +71,11 @@ public class ItemSettings {
     @Nullable
     public EquipmentGeneration equipment() {
         return equipment;
+    }
+
+    public ItemSettings canRepair(boolean canRepair) {
+        this.canRepair = canRepair;
+        return this;
     }
 
     public ItemSettings fuelTime(int fuelTime) {
@@ -98,6 +109,10 @@ public class ItemSettings {
         private static final Map<String, ItemSettings.Modifier.Factory> FACTORIES = new HashMap<>();
 
         static {
+            registerFactory("repairable", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.canRepair(bool);
+            }));
             registerFactory("fuel-time", (value -> {
                 int intValue = MiscUtils.getAsInt(value);
                 return settings -> settings.fuelTime(intValue);

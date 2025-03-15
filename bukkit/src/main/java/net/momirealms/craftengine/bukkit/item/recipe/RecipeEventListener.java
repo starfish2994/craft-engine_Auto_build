@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemManager;
@@ -497,7 +498,19 @@ public class RecipeEventListener implements Listener {
                 return;
             }
 
-            Item<ItemStack> newItem = plugin.itemManager().getCustomItem(left.id()).get().buildItem(ItemBuildContext.of(plugin.adapt(player), ContextHolder.EMPTY));
+            Optional<CustomItem<ItemStack>> customItemOptional = plugin.itemManager().getCustomItem(left.id());
+            if (!customItemOptional.isPresent()) {
+                inventory.setResult(null);
+                return;
+            }
+
+            CustomItem<ItemStack> customItem = customItemOptional.get();
+            if (!customItem.settings().canRepair()) {
+                inventory.setResult(null);
+                return;
+            }
+
+            Item<ItemStack> newItem = customItem.buildItem(ItemBuildContext.of(plugin.adapt(player), ContextHolder.EMPTY));
             int remainingDurability = totalMaxDamage - totalDamage;
             int newItemDamage = Math.max(0, newItem.maxDamage().get() - remainingDurability);
             newItem.damage(newItemDamage);
