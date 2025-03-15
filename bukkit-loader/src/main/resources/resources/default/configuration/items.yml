@@ -2,8 +2,11 @@ items:
   default:topaz_rod:
     material: fishing_rod
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
       tooltip-style: minecraft:topaz
     model:
       template: models:fishing_rod_2d
@@ -15,8 +18,11 @@ items:
   default:topaz_bow:
     material: bow
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
     model:
       template: models:bow_2d
@@ -32,8 +38,11 @@ items:
   default:topaz_crossbow:
     material: crossbow
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
       tooltip-style: minecraft:topaz
     model:
       template: models:crossbow_2d
@@ -53,8 +62,11 @@ items:
   default:topaz_pickaxe:
     material: golden_pickaxe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -68,8 +80,11 @@ items:
   default:topaz_axe:
     material: golden_axe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -83,8 +98,11 @@ items:
   default:topaz_hoe:
     material: golden_hoe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -98,8 +116,11 @@ items:
   default:topaz_shovel:
     material: golden_shovel
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -113,8 +134,11 @@ items:
   default:topaz_sword:
     material: golden_sword
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -151,21 +175,126 @@ templates:
     material: "chainmail_{part}"
     custom-model-data: 1000
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_{part}>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_{part}>"
       tooltip-style: minecraft:topaz
-    model:
-      type: minecraft:model
-      path: "minecraft:item/custom/topaz_{part}"
-      generation:
-        parent: "minecraft:item/generated"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_{part}"
     settings:
+      tags:
+        - "topaz_tools"
       equippable:
         slot: "{slot}"
         asset-id: topaz
         humanoid: "minecraft:topaz"
         humanoid-leggings: "minecraft:topaz"
+    model:
+      type: minecraft:select
+      property: minecraft:trim_material
+      fallback:
+        type: minecraft:model
+        path: "minecraft:item/custom/topaz_{part}"
+        generation:
+          parent: "minecraft:item/generated"
+          textures:
+            "layer0": "minecraft:item/custom/topaz_{part}"
+      cases:
+        - when: minecraft:quartz
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_quartz_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_quartz"
+        - when: minecraft:iron
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_iron_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_iron"
+        - when: minecraft:netherite
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_netherite_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_netherite"
+        - when: minecraft:redstone
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_redstone_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_redstone"
+        - when: minecraft:copper
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_copper_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_copper"
+        - when: minecraft:gold
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_gold_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_gold"
+        - when: minecraft:emerald
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_emerald_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_emerald"
+        - when: minecraft:diamond
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_diamond_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_diamond"
+        - when: minecraft:lapis
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_lapis_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_lapis"
+        - when: minecraft:amethyst
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_amethyst_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_amethyst"
+        - when: minecraft:resin
+          model:
+            type: minecraft:model
+            path: "minecraft:item/custom/topaz_{part}_resin_trim"
+            generation:
+              parent: "minecraft:item/generated"
+              textures:
+                "layer0": "minecraft:item/custom/topaz_{part}"
+                "layer1": "minecraft:trims/items/{part}_trim_resin"
 
 recipes#11:
   default:topaz_shovel:

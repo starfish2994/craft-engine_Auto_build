@@ -135,7 +135,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 this.plugin.logger().warn("Can't not find item " + it.icon() + " for category icon");
                 return null;
             }
-            item.displayName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+            item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
             item.lore(it.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
             item.load();
             return new ItemWithAction(item, (element, click) -> {
@@ -217,7 +217,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     this.plugin.logger().warn("Can't not find item " + subCategory.icon() + " for category icon");
                     return null;
                 }
-                item.displayName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+                item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
                 item.lore(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
                 item.load();
                 return new ItemWithAction(item, (element, click) -> {

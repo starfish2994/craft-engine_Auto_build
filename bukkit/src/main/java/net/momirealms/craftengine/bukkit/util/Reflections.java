@@ -72,6 +72,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$Component$getString = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Component, String.class, new String[]{"getString", "a"}
+            )
+    );
+
     public static final Class<?> clazz$RandomSource = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("util.RandomSource")
@@ -4722,6 +4728,18 @@ public class Reflections {
             )
     );
 
+    public static final Method method$AbstractContainerMenu$broadcastChanges = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AbstractContainerMenu, void.class, new String[]{ "broadcastChanges", "d" }
+            )
+    );
+
+    public static final Method method$AbstractContainerMenu$broadcastFullState = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AbstractContainerMenu, void.class, new String[]{ "broadcastFullState", "e" }
+            )
+    );
+
     public static final Class<?> clazz$CraftContainer = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleCBClass("inventory.CraftContainer")
@@ -4860,4 +4878,59 @@ public class Reflections {
                     clazz$FluidState, clazz$Fluid
             )
     );
+
+    public static final Class<?> clazz$CraftComplexRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftComplexRecipe")
+            )
+    );
+
+    public static final Class<?> clazz$CustomRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.CustomRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.IRecipeComplex")
+            )
+    );
+
+    public static final Class<?> clazz$RepairItemRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RepairItemRecipe"),
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeRepair")
+            )
+    );
+
+    public static final Field field$CraftComplexRecipe$recipe = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftComplexRecipe, clazz$CustomRecipe, 0
+            )
+    );
+
+    public static final Class<?> clazz$CraftInventoryAnvil = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryAnvil")
+            )
+    );
+
+    public static final Class<?> clazz$AnvilMenu = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.AnvilMenu"),
+                    BukkitReflectionUtils.assembleMCClass("world.inventory.ContainerAnvil")
+            )
+    );
+
+    // 1.21+
+    public static final Class<?> clazz$CraftInventoryView =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryView")
+            );
+
+    // 1.21+
+    public static final Field field$CraftInventoryView$container = Optional.ofNullable(clazz$CraftInventoryView)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 0)).orElse(null);
+
+    // 1.20-1.20.6
+    public static final Field field$CraftInventoryAnvil$menu =
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftInventoryAnvil, clazz$AnvilMenu, 0
+            );
 }
