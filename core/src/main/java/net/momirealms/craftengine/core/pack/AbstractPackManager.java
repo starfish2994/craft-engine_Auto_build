@@ -61,6 +61,15 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin = plugin;
         this.eventDispatcher = eventDispatcher;
         this.zipGenerator = (p1, p2) -> {};
+        Path resourcesFolder = this.plugin.dataFolderPath().resolve("resources");
+        try {
+            if (Files.notExists(resourcesFolder)) {
+                Files.createDirectories(resourcesFolder);
+                this.saveDefaultConfigs();
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to create default configs folder", e);
+        }
     }
 
     @Override

@@ -101,12 +101,13 @@ public class MergePackMcMetaResolution implements Resolution {
 
             if (customDescription != null && !isEmpty(customDescription)) {
                 pack.put("description", customDescription);
-            } else {
+            }
+/*            else {
                 String desc1 = getDescription(data1);
                 String desc2 = getDescription(data2);
                 String mergedDesc = desc1.isEmpty() ? desc2 : desc2.isEmpty() ? desc1 : desc1 + "\n" + desc2;
                 if (!mergedDesc.isEmpty()) pack.put("description", mergedDesc);
-            }
+            }*/
         }
     }
 

@@ -53,6 +53,9 @@ resource-pack:
     max: LATEST
   merge-external-folders:
     - ModelEngine/resource pack
+    - CustomNameplates/ResourcePack
+    - BetterModel/build
+    - BetterHud/build
   send:
     send-on-join: true
     send-on-reload: true
@@ -93,10 +96,8 @@ resource-pack:
         type: exact
         path: "pack.mcmeta"
       resolution:
-        type: retain_matching
-        term:
-          type: contains
-          path: "resources/default/resourcepack/"
+        type: merge_pack_mcmeta
+        description: "<gray>CraftEngine ResourcePack"
     - term:
         type: exact
         path: "pack.png"
