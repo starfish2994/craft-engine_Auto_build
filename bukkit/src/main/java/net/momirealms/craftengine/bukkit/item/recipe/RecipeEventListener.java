@@ -6,17 +6,16 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.core.item.CustomItem;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.ItemManager;
+import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.recipe.CustomCampfireRecipe;
 import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -36,11 +35,13 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
+import org.bukkit.inventory.view.AnvilView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("DuplicatedCode")
 public class RecipeEventListener implements Listener {
     private static final OptimizedIDItem<ItemStack> EMPTY = new OptimizedIDItem<>(null, null);
     private final ItemManager<ItemStack> itemManager;
@@ -366,6 +367,7 @@ public class RecipeEventListener implements Listener {
     }
 
     // for 1.21.2+
+    @SuppressWarnings("UnstableApiUsage")
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(CampfireStartEvent event) {
         if (!ConfigManager.enableRecipeSystem()) return;
@@ -404,6 +406,8 @@ public class RecipeEventListener implements Listener {
         Material type = event.getBlock().getType();
         if (type != Material.CAMPFIRE && type != Material.SOUL_CAMPFIRE) return;
         CampfireRecipe recipe = (CampfireRecipe) event.getRecipe();
+        if (recipe == null) return;
+
         Key recipeId = new Key(recipe.getKey().namespace(), recipe.getKey().value());
 
         boolean isCustom = this.recipeManager.isCustomRecipe(recipeId);
@@ -432,7 +436,7 @@ public class RecipeEventListener implements Listener {
     // Paper only
     @EventHandler
     public void onPrepareResult(PrepareResultEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+//        if (!ConfigManager.enableRecipeSystem()) return;
         if (event.getInventory() instanceof CartographyInventory cartographyInventory) {
             if (ItemUtils.hasCustomItem(cartographyInventory.getStorageContents())) {
                 event.setResult(new ItemStack(Material.AIR));
@@ -440,10 +444,130 @@ public class RecipeEventListener implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void onAnvilCombineItems(PrepareAnvilEvent event) {
+        AnvilInventory inventory = event.getInventory();
+        ItemStack first = inventory.getFirstItem();
+        ItemStack second = inventory.getSecondItem();
+        if (first == null || second == null) return;
+        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
+        boolean firstCustom = wrappedFirst.isCustomItem();
+        Item<ItemStack> wrappedSecond = BukkitItemManager.instance().wrap(second);
+        boolean secondCustom = wrappedSecond.isCustomItem();
+        // both are vanilla items
+        if (!firstCustom && !secondCustom) {
+            return;
+        }
+
+        // one of them is vanilla item
+        if (!firstCustom || !secondCustom) {
+            // block "vanilla + custom" recipes
+            if (wrappedFirst.vanillaId().equals(wrappedSecond.vanillaId())) {
+                event.setResult(null);
+            }
+            return;
+        }
+
+        // both of them are custom items
+        // if the second is an enchanted book, then apply it
+        if (wrappedSecond.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
+            return;
+        }
+
+        // not the same item
+        if (!wrappedFirst.customId().equals(wrappedSecond.customId())) {
+            event.setResult(null);
+            return;
+        }
+
+        // can not repair
+        wrappedFirst.getCustomItem().ifPresent(it -> {
+            if (!it.settings().canRepair()) {
+                event.setResult(null);
+            }
+        });
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onAnvilRepairItems(PrepareAnvilEvent event) {
+        AnvilInventory inventory = event.getInventory();
+        ItemStack first = inventory.getFirstItem();
+        ItemStack second = inventory.getSecondItem();
+        if (first == null || second == null) return;
+
+        Item<ItemStack> wrappedSecond = BukkitItemManager.instance().wrap(second);
+        // if the second slot is not a custom item, ignore it
+        Optional<CustomItem<ItemStack>> customItemOptional = plugin.itemManager().getCustomItem(wrappedSecond.id());
+        if (customItemOptional.isEmpty()) {
+            return;
+        }
+
+        CustomItem<ItemStack> customItem = customItemOptional.get();
+        List<AnvilRepairItem> repairItems = customItem.settings().repairItems();
+        // if the second slot is not a repair item, ignore it
+        if (repairItems.isEmpty()) {
+            return;
+        }
+
+        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
+        int damage = wrappedFirst.damage().orElse(0);
+        int maxDamage = wrappedFirst.maxDamage().orElse(0);
+        // not a repairable item
+        if (maxDamage == 0 || damage == 0) return;
+
+        Key firstId = wrappedFirst.id();
+        Optional<CustomItem<ItemStack>> optionalCustomTool = wrappedFirst.getCustomItem();
+        // can not repair
+        if (optionalCustomTool.isPresent() && !optionalCustomTool.get().settings().canRepair()) {
+            return;
+        }
+
+        AnvilRepairItem repairItem = null;
+        for (AnvilRepairItem item : repairItems) {
+            for (String target : item.targets()) {
+                if (target.charAt(0) == '#') {
+                    Key tag = Key.of(target.substring(1));
+                    if (optionalCustomTool.isPresent() && optionalCustomTool.get().is(tag)) {
+                        repairItem = item;
+                        break;
+                    }
+                    if (wrappedFirst.is(tag)) {
+                        repairItem = item;
+                        break;
+                    }
+                } else if (target.equals(firstId.toString())) {
+                    repairItem = item;
+                    break;
+                }
+            }
+        }
+
+        // no repair item matching
+        if (repairItem == null) {
+            return;
+        }
+
+        int realDurabilityPerItem = (int) (repairItem.amount() + repairItem.percent() * maxDamage);
+        int consumeMaxAmount = damage / realDurabilityPerItem + 1;
+        int actualConsumedAmount = Math.min(consumeMaxAmount, wrappedSecond.count());
+        int actualRepairAmount = actualConsumedAmount * realDurabilityPerItem;
+        int damageAfter = Math.max(damage - actualRepairAmount, 0);
+        wrappedFirst.damage(damageAfter);
+        event.setResult(wrappedFirst.loadCopy());
+        if (VersionHelper.isVersionNewerThan1_21()) {
+            AnvilView anvilView = event.getView();
+            anvilView.setRepairCost(10);
+            anvilView.setRepairItemCountCost(actualConsumedAmount);
+        } else {
+            LegacyInventoryUtils.setRepairCost(inventory, 10, actualRepairAmount);
+        }
+    }
+
     // only handle repair items for the moment
     @EventHandler(ignoreCancelled = true)
     public void onSpecialRecipe(PrepareItemCraftEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+//        if (!ConfigManager.enableRecipeSystem()) return;
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
@@ -499,7 +623,7 @@ public class RecipeEventListener implements Listener {
             }
 
             Optional<CustomItem<ItemStack>> customItemOptional = plugin.itemManager().getCustomItem(left.id());
-            if (!customItemOptional.isPresent()) {
+            if (customItemOptional.isEmpty()) {
                 inventory.setResult(null);
                 return;
             }

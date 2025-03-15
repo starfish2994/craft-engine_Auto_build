@@ -17,13 +17,14 @@ public class ItemSettings {
     @Nullable
     EquipmentGeneration equipment;
     boolean canRepair = true;
+    List<AnvilRepairItem> anvilRepairItems = List.of();
 
     private ItemSettings() {}
 
     public <I> List<ItemModifier<I>> modifiers() {
         ArrayList<ItemModifier<I>> modifiers = new ArrayList<>();
         if (VersionHelper.isVersionNewerThan1_21_2() && this.equipment != null && this.equipment.modernData() != null) modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
-
+        // TODO 1.20
         return modifiers;
     }
 
@@ -41,6 +42,7 @@ public class ItemSettings {
         newSettings.tags = settings.tags;
         newSettings.equipment = settings.equipment;
         newSettings.canRepair = settings.canRepair;
+        newSettings.anvilRepairItems = settings.anvilRepairItems;
         return newSettings;
     }
 
@@ -68,9 +70,18 @@ public class ItemSettings {
         return tags;
     }
 
+    public List<AnvilRepairItem> repairItems() {
+        return anvilRepairItems;
+    }
+
     @Nullable
     public EquipmentGeneration equipment() {
         return equipment;
+    }
+
+    public ItemSettings repairItems(List<AnvilRepairItem> items) {
+        this.anvilRepairItems = items;
+        return this;
     }
 
     public ItemSettings canRepair(boolean canRepair) {
@@ -112,6 +123,17 @@ public class ItemSettings {
             registerFactory("repairable", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.canRepair(bool);
+            }));
+            registerFactory("anvil-repair-item", (value -> {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> materials = (List<Map<String, Object>>) value;
+                List<AnvilRepairItem> anvilRepairItemList = new ArrayList<>();
+                for (Map<String, Object> material : materials) {
+                    int amount = MiscUtils.getAsInt(material.getOrDefault("amount", 0));
+                    double percent = MiscUtils.getAsDouble(material.getOrDefault("percent", 0));
+                    anvilRepairItemList.add(new AnvilRepairItem(MiscUtils.getAsStringList(material.get("target")), amount, percent));
+                }
+                return settings -> settings.repairItems(anvilRepairItemList);
             }));
             registerFactory("fuel-time", (value -> {
                 int intValue = MiscUtils.getAsInt(value);

@@ -2,6 +2,9 @@ items:
   default:topaz_rod:
     material: fishing_rod
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
       tooltip-style: minecraft:topaz
@@ -15,6 +18,9 @@ items:
   default:topaz_bow:
     material: bow
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
@@ -32,6 +38,9 @@ items:
   default:topaz_crossbow:
     material: crossbow
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
       tooltip-style: minecraft:topaz
@@ -53,6 +62,9 @@ items:
   default:topaz_pickaxe:
     material: golden_pickaxe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
       tooltip-style: minecraft:topaz
@@ -68,6 +80,9 @@ items:
   default:topaz_axe:
     material: golden_axe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
       tooltip-style: minecraft:topaz
@@ -83,6 +98,9 @@ items:
   default:topaz_hoe:
     material: golden_hoe
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
       tooltip-style: minecraft:topaz
@@ -98,6 +116,9 @@ items:
   default:topaz_shovel:
     material: golden_shovel
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
       tooltip-style: minecraft:topaz
@@ -113,6 +134,9 @@ items:
   default:topaz_sword:
     material: golden_sword
     custom-model-data: 1000
+    settings:
+      tags:
+        - "topaz_tools"
     data:
       display-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
       tooltip-style: minecraft:topaz
@@ -154,6 +178,8 @@ templates:
       display-name: "<!i><#FF8C00><i18n:item.topaz_{part}>"
       tooltip-style: minecraft:topaz
     settings:
+      tags:
+        - "topaz_tools"
       equippable:
         slot: "{slot}"
         asset-id: topaz
