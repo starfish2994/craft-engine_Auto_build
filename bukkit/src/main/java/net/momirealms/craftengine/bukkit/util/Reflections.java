@@ -72,6 +72,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$Component$getString = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Component, String.class, new String[]{"getString", "a"}
+            )
+    );
+
     public static final Class<?> clazz$RandomSource = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("util.RandomSource")

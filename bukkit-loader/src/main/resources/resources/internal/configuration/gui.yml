@@ -65,7 +65,7 @@ templates:
     material: arrow
     custom-model-data: "{model_data}"
     data:
-      display-name: "{name}"
+      item-name: "{name}"
       lore: "{lore}"
     model:
       template: models:generated
@@ -117,28 +117,28 @@ items:
     material: arrow
     custom-model-data: 1000
     data:
-      display-name: "<!i><#FAFAD2><i18n:internal.next_recipe>"
+      item-name: "<!i><#FAFAD2><i18n:internal.next_recipe>"
       lore:
         - "<!i><#F5F5F5><arg:current_page>/<arg:max_page>"
   internal:next_recipe_1:
     material: arrow
     custom-model-data: 1001
     data:
-      display-name: "<!i><#808080><i18n:internal.next_recipe>"
+      item-name: "<!i><#808080><i18n:internal.next_recipe>"
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
   internal:previous_recipe_0:
     material: arrow
     custom-model-data: 1002
     data:
-      display-name: "<!i><#FAFAD2><i18n:internal.previous_recipe>"
+      item-name: "<!i><#FAFAD2><i18n:internal.previous_recipe>"
       lore:
         - "<!i><#F5F5F5><arg:current_page>/<arg:max_page>"
   internal:previous_recipe_1:
     material: arrow
     custom-model-data: 1003
     data:
-      display-name: "<!i><#808080><i18n:internal.previous_recipe>"
+      item-name: "<!i><#808080><i18n:internal.previous_recipe>"
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
   internal:get_item:

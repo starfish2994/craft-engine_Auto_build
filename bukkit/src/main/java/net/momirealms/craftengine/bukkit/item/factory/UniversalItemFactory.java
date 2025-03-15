@@ -23,7 +23,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected void displayName(ItemWrapper<ItemStack> item, String json) {
+    protected void customName(ItemWrapper<ItemStack> item, String json) {
         if (json != null) {
             item.set(json, "display", "Name");
         } else {
@@ -32,19 +32,19 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<String> displayName(ItemWrapper<ItemStack> item) {
+    protected Optional<String> customName(ItemWrapper<ItemStack> item) {
         if (!item.hasTag("display", "Name")) return Optional.empty();
         return Optional.of(item.get("display", "Name"));
     }
 
     @Override
     protected void itemName(ItemWrapper<ItemStack> item, String json) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+        customName(item, json);
     }
 
     @Override
     protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+        return customName(item);
     }
 
     @Override
@@ -217,5 +217,16 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void maxStackSize(ItemWrapper<ItemStack> item, Integer maxStackSize) {
+    }
+
+    @Override
+    protected void repairCost(ItemWrapper<ItemStack> item, Integer data) {
+        item.set(data, "RepairCost");
+    }
+
+    @Override
+    protected Optional<Integer> repairCost(ItemWrapper<ItemStack> item) {
+        if (!item.hasTag("RepairCost")) return Optional.empty();
+        return Optional.of(item.get("RepairCost"));
     }
 }

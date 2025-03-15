@@ -6,7 +6,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
       tooltip-style: minecraft:topaz
     model:
       template: models:fishing_rod_2d
@@ -22,7 +22,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
     model:
       template: models:bow_2d
@@ -42,7 +42,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
       tooltip-style: minecraft:topaz
     model:
       template: models:crossbow_2d
@@ -66,7 +66,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -84,7 +84,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -102,7 +102,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -120,7 +120,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -138,7 +138,7 @@ items:
       tags:
         - "topaz_tools"
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
@@ -175,7 +175,7 @@ templates:
     material: "chainmail_{part}"
     custom-model-data: 1000
     data:
-      display-name: "<!i><#FF8C00><i18n:item.topaz_{part}>"
+      item-name: "<!i><#FF8C00><i18n:item.topaz_{part}>"
       tooltip-style: minecraft:topaz
     settings:
       tags:

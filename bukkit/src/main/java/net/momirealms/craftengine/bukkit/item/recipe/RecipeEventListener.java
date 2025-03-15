@@ -1,10 +1,13 @@
 package net.momirealms.craftengine.bukkit.item.recipe;
 
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
+import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -15,10 +18,10 @@ import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
-import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.Pair;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -459,18 +462,16 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
-        // one of them is vanilla item
-        if (!firstCustom || !secondCustom) {
-            // block "vanilla + custom" recipes
-            if (wrappedFirst.vanillaId().equals(wrappedSecond.vanillaId())) {
-                event.setResult(null);
-            }
-            return;
-        }
-
         // both of them are custom items
         // if the second is an enchanted book, then apply it
         if (wrappedSecond.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
+            return;
+        }
+
+        // one of them is vanilla item
+        if (!firstCustom || !secondCustom) {
+            // block "vanilla + custom" recipes
+            event.setResult(null);
             return;
         }
 
@@ -511,10 +512,12 @@ public class RecipeEventListener implements Listener {
         }
 
         Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
-        int damage = wrappedFirst.damage().orElse(0);
+
         int maxDamage = wrappedFirst.maxDamage().orElse(0);
         // not a repairable item
-        if (maxDamage == 0 || damage == 0) return;
+        if (maxDamage == 0) return;
+
+        int damage = wrappedFirst.damage().orElse(0);
 
         Key firstId = wrappedFirst.id();
         Optional<CustomItem<ItemStack>> optionalCustomTool = wrappedFirst.getCustomItem();
@@ -548,20 +551,85 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
+        boolean hasResult = true;
+
         int realDurabilityPerItem = (int) (repairItem.amount() + repairItem.percent() * maxDamage);
-        int consumeMaxAmount = damage / realDurabilityPerItem + 1;
+        int consumeMaxAmount = damage == 0 ? 0 : damage / realDurabilityPerItem + 1;
         int actualConsumedAmount = Math.min(consumeMaxAmount, wrappedSecond.count());
         int actualRepairAmount = actualConsumedAmount * realDurabilityPerItem;
         int damageAfter = Math.max(damage - actualRepairAmount, 0);
         wrappedFirst.damage(damageAfter);
-        event.setResult(wrappedFirst.loadCopy());
+
+        String renameText;
+        int maxRepairCost;
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            AnvilView anvilView = event.getView();
+            renameText = anvilView.getRenameText();
+            maxRepairCost = anvilView.getMaximumRepairCost();
+        } else {
+            renameText = LegacyInventoryUtils.getRenameText(inventory);
+            maxRepairCost = LegacyInventoryUtils.getMaxRepairCost(inventory);
+        }
+
+        int repairCost = actualConsumedAmount;
+        int repairPenalty = wrappedFirst.repairCost().orElse(0) + wrappedSecond.repairCost().orElse(0);
+
+        if (renameText != null && !renameText.isBlank()) {
+            try {
+                if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
+                    wrappedFirst.customName(AdventureHelper.componentToJson(Component.text(renameText)));
+                    repairCost += 1;
+                } else if (repairCost == 0) {
+                    hasResult = false;
+                    System.out.println("1");
+                }
+            } catch (ReflectiveOperationException e) {
+                plugin.logger().warn("Failed to get hover name", e);
+            }
+        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentKeys.CUSTOM_NAME)) {
+            repairCost += 1;
+            wrappedFirst.customName(null);
+        } else if (!VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasTag("display", "Name")) {
+            repairCost += 1;
+            wrappedFirst.customName(null);
+        }
+
+        int finalCost = repairCost + repairPenalty;
+
         if (VersionHelper.isVersionNewerThan1_21()) {
             AnvilView anvilView = event.getView();
-            anvilView.setRepairCost(10);
+            anvilView.setRepairCost(finalCost);
             anvilView.setRepairItemCountCost(actualConsumedAmount);
         } else {
-            LegacyInventoryUtils.setRepairCost(inventory, 10, actualRepairAmount);
+            LegacyInventoryUtils.setRepairCost(inventory, finalCost, actualRepairAmount);
         }
+
+        Player player;
+        try {
+            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isVersionNewerThan1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
+        } catch (ReflectiveOperationException e) {
+            plugin.logger().warn("Failed to get inventory viewer", e);
+            return;
+        }
+
+        if (finalCost >= maxRepairCost && !plugin.adapt(player).canInstabuild()) {
+            hasResult = false;
+        }
+
+        if (hasResult) {
+            int afterPenalty = wrappedFirst.repairCost().orElse(0);
+            int anotherPenalty = wrappedSecond.repairCost().orElse(0);
+            if (afterPenalty < anotherPenalty) {
+                afterPenalty = anotherPenalty;
+            }
+            afterPenalty = calculateIncreasedRepairCost(afterPenalty);
+            wrappedFirst.repairCost(afterPenalty);
+            event.setResult(wrappedFirst.loadCopy());
+        }
+    }
+
+    public static int calculateIncreasedRepairCost(int cost) {
+        return (int) Math.min((long) cost * 2L + 1L, 2147483647L);
     }
 
     // only handle repair items for the moment

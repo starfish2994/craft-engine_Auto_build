@@ -62,7 +62,7 @@ public class ComponentItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected void displayName(ItemWrapper<ItemStack> item, String json) {
+    protected void customName(ItemWrapper<ItemStack> item, String json) {
         if (json == null) {
             item.removeComponent(ComponentKeys.CUSTOM_NAME);
         } else {
@@ -71,7 +71,7 @@ public class ComponentItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<String> displayName(ItemWrapper<ItemStack> item) {
+    protected Optional<String> customName(ItemWrapper<ItemStack> item) {
         if (!item.hasComponent(ComponentKeys.CUSTOM_NAME)) return Optional.empty();
         return Optional.ofNullable(
                 (String) ComponentType.encodeJava(
@@ -271,5 +271,20 @@ public class ComponentItemFactory extends BukkitItemFactory {
         } else {
             item.setComponent(ComponentKeys.MAX_STACK_SIZE, maxStackSize);
         }
+    }
+
+    @Override
+    protected void repairCost(ItemWrapper<ItemStack> item, Integer data) {
+        if (data == null) {
+            item.removeComponent(ComponentKeys.REPAIR_COST);
+        } else {
+            item.setComponent(ComponentKeys.REPAIR_COST, data);
+        }
+    }
+
+    @Override
+    protected Optional<Integer> repairCost(ItemWrapper<ItemStack> item) {
+        if (!item.hasComponent(ComponentKeys.REPAIR_COST)) return Optional.empty();
+        return Optional.ofNullable((Integer) ComponentType.encodeJava(ComponentKeys.REPAIR_COST, item.getComponent(ComponentKeys.REPAIR_COST)).orElse(null));
     }
 }

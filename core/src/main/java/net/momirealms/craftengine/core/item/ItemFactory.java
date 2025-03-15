@@ -49,9 +49,9 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
 
     protected abstract Optional<Integer> customModelData(ItemWrapper<I> item);
 
-    protected abstract void displayName(ItemWrapper<I> item, String json);
+    protected abstract void customName(ItemWrapper<I> item, String json);
 
-    protected abstract Optional<String> displayName(ItemWrapper<I> item);
+    protected abstract Optional<String> customName(ItemWrapper<I> item);
 
     protected abstract void itemName(ItemWrapper<I> item, String json);
 
@@ -104,4 +104,8 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
     protected abstract boolean is(ItemWrapper<I> item, Key itemTag);
 
     protected abstract boolean isBlockItem(ItemWrapper<I> item);
+
+    protected abstract void repairCost(ItemWrapper<I> item, Integer data);
+
+    protected abstract Optional<Integer> repairCost(ItemWrapper<I> item);
 }
