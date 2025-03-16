@@ -52,7 +52,7 @@ public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSe
                         if (!inRecipes.isEmpty()) {
                             plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                         } else {
-                            handleFeedback(context, MessageConstants.COMMAND_ITEM_USAGE_BROWSER_RECIPE_NO_FOUND);
+                            handleFeedback(context, MessageConstants.COMMAND_ITEM_USAGE_BROWSER_RECIPE_NOT_FOUND);
                         }
                     }
                 });

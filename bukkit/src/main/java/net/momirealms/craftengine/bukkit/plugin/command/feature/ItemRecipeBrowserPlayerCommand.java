@@ -5,7 +5,6 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
-import net.momirealms.craftengine.core.plugin.command.FlagKeys;
 import net.momirealms.craftengine.core.plugin.locale.MessageConstants;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.NamespacedKey;
@@ -48,7 +47,7 @@ public class ItemRecipeBrowserPlayerCommand extends BukkitCommandFeature<Command
                     if (!inRecipes.isEmpty()) {
                         plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                     } else {
-                        handleFeedback(context, MessageConstants.COMMAND_ITEM_RECIPE_BROWSER_RECIPE_NO_FOUND);
+                        handleFeedback(context, MessageConstants.COMMAND_ITEM_RECIPE_BROWSER_RECIPE_NOT_FOUND);
                     }
                 });
     }
