@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
+import net.momirealms.craftengine.core.plugin.command.FlagKeys;
 import net.momirealms.craftengine.core.plugin.locale.MessageConstants;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.NamespacedKey;
@@ -32,6 +33,7 @@ public class ItemRecipeBrowserCommand extends BukkitCommandFeature<CommandSender
     public Command.Builder<? extends CommandSender> assembleCommand(CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
+                .flag(FlagKeys.BROWSE_FLAG)
                 .required("id", NamespacedKeyParser.namespacedKeyComponent().suggestionProvider(new SuggestionProvider<>() {
                     @Override
                     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
@@ -46,6 +48,8 @@ public class ItemRecipeBrowserCommand extends BukkitCommandFeature<CommandSender
                     List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByResult(itemId);
                     if (!inRecipes.isEmpty()) {
                         plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0);
+                    } else if (context.flags().hasFlag(FlagKeys.BROWSE)) {
+                        plugin().itemBrowserManager().openNoRecipePage(serverPlayer, itemId, null, 0);
                     } else {
                         handleFeedback(context, MessageConstants.COMMAND_ITEM_RECIPE_BROWSER_RECIPE_NO_FOUND);
                     }
