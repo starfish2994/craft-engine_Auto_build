@@ -35,7 +35,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
 
     void open(Player player);
 
-    void openRecipePage(Player player, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth);
+    void openRecipePage(Player player, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage);
 
     void openNoRecipePage(Player player, Key result, Gui parentGui, int depth);
 

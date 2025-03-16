@@ -33,7 +33,6 @@ public class ItemRecipeBrowserPlayerCommand extends BukkitCommandFeature<Command
     public Command.Builder<? extends CommandSender> assembleCommand(CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
-                .flag(FlagKeys.BROWSE_FLAG)
                 .required("id", NamespacedKeyParser.namespacedKeyComponent().suggestionProvider(new SuggestionProvider<>() {
                     @Override
                     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
@@ -47,9 +46,7 @@ public class ItemRecipeBrowserPlayerCommand extends BukkitCommandFeature<Command
                     Key itemId = Key.of(namespacedKey.namespace(), namespacedKey.value());
                     List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByResult(itemId);
                     if (!inRecipes.isEmpty()) {
-                        plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0);
-                    } else if (context.flags().hasFlag(FlagKeys.BROWSE)) {
-                        plugin().itemBrowserManager().openNoRecipePage(serverPlayer, itemId, null, 0);
+                        plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                     } else {
                         handleFeedback(context, MessageConstants.COMMAND_ITEM_RECIPE_BROWSER_RECIPE_NO_FOUND);
                     }

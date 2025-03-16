@@ -50,7 +50,7 @@ public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSe
                         Key itemId = Key.of(namespacedKey.namespace(), namespacedKey.value());
                         List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByIngredient(itemId);
                         if (!inRecipes.isEmpty()) {
-                            plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0);
+                            plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                         } else {
                             handleFeedback(context, MessageConstants.COMMAND_ITEM_USAGE_BROWSER_RECIPE_NO_FOUND);
                         }

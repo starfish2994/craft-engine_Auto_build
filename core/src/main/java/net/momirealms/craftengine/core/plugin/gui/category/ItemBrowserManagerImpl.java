@@ -141,7 +141,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             return new ItemWithAction(item, (element, click) -> {
                 click.cancel();
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
-                openCategoryPage(click.clicker(), it.id(), element.gui());
+                openCategoryPage(click.clicker(), it.id(), element.gui(), true);
             });
         }).filter(Objects::nonNull).toList();
 
@@ -159,7 +159,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCategoryPage(Player player, Key categoryId, Gui parentGui) {
+    public void openCategoryPage(Player player, Key categoryId, Gui parentGui, boolean canOpenNoRecipePage) {
         GuiLayout layout = new GuiLayout(
                 "AAAAAAAAA",
                 "AAAAAAAAA",
@@ -227,7 +227,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return new ItemWithAction(item, (element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_CLICK_BUTTON);
-                    openCategoryPage(click.clicker(), subCategory.id(), element.gui());
+                    openCategoryPage(click.clicker(), subCategory.id(), element.gui(), canOpenNoRecipePage);
                 });
             } else {
                 Key itemId = Key.of(it);
@@ -245,7 +245,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(itemId);
                         player.playSound(Constants.SOUND_CLICK_BUTTON);
                         if (!inRecipes.isEmpty()) {
-                            openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                            openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                         } else {
                             openNoRecipePage(player, itemId, e.gui(), 0);
                         }
@@ -253,7 +253,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(itemId);
                         player.playSound(Constants.SOUND_CLICK_BUTTON);
                         if (!inRecipes.isEmpty()) {
-                            openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                            openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                         }
                     }
                 });
@@ -294,7 +294,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, depth + 1);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, depth + 1, true);
                 }
             }
         }))
@@ -336,26 +336,26 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
     }
 
     @Override
-    public void openRecipePage(Player player, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openRecipePage(Player player, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {
         if (index >= recipes.size()) return;
         if (depth > MAX_RECIPE_DEPTH) return;
         Recipe<Object> recipe = recipes.get(index);
         Key recipeType = recipe.type();
         if (recipeType == RecipeTypes.SHAPELESS || recipeType == RecipeTypes.SHAPED) {
-            openCraftingRecipePage(player, (CustomCraftingTableRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            openCraftingRecipePage(player, (CustomCraftingTableRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
             return;
         }
         if (recipeType == RecipeTypes.BLASTING || recipeType == RecipeTypes.CAMPFIRE_COOKING || recipeType == RecipeTypes.SMOKING || recipeType == RecipeTypes.SMELTING) {
-            openCookingRecipePage(player, (CustomCookingRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            openCookingRecipePage(player, (CustomCookingRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
             return;
         }
         if (recipeType == RecipeTypes.STONE_CUTTING) {
-            openStoneCuttingRecipePage(player, (CustomStoneCuttingRecipe<Object>) recipe, parentGui, recipes, index, depth);
+            openStoneCuttingRecipePage(player, (CustomStoneCuttingRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
             return;
         }
     }
 
-    public void openStoneCuttingRecipePage(Player player, CustomStoneCuttingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openStoneCuttingRecipePage(Player player, CustomStoneCuttingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
         Key result = recipe.result().item().id();
@@ -386,7 +386,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 } else {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
@@ -395,7 +395,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 }
             }
         }))
@@ -422,7 +422,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 } else {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
@@ -431,7 +431,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 }
             }
         }))
@@ -458,7 +458,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index + 1 < recipes.size()) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index + 1, depth);
+                openRecipePage(player, parentGui, recipes, index + 1, depth, canOpenNoRecipePage);
             }
         }))
         .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
@@ -471,7 +471,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index > 0) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index - 1, depth);
+                openRecipePage(player, parentGui, recipes, index - 1, depth, canOpenNoRecipePage);
             }
         }));
 
@@ -488,7 +488,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCookingRecipePage(Player player, CustomCookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openCookingRecipePage(Player player, CustomCookingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
         Key result = recipe.result().item().id();
@@ -519,7 +519,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 } else {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
@@ -528,7 +528,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 }
             }
         }))
@@ -561,7 +561,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 } else {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
@@ -570,7 +570,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 }
             }
         }))
@@ -597,7 +597,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index + 1 < recipes.size()) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index + 1, depth);
+                openRecipePage(player, parentGui, recipes, index + 1, depth, canOpenNoRecipePage);
             }
         }))
         .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
@@ -610,7 +610,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index > 0) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index - 1, depth);
+                openRecipePage(player, parentGui, recipes, index - 1, depth, canOpenNoRecipePage);
             }
         }));
 
@@ -638,7 +638,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
-    public void openCraftingRecipePage(Player player, CustomCraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
+    public void openCraftingRecipePage(Player player, CustomCraftingTableRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {
         Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
         Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
         Key result = recipe.result().item().id();
@@ -664,7 +664,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 } else {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
@@ -673,7 +673,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
-                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                 }
             }
         }))
@@ -710,7 +710,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index + 1 < recipes.size()) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index + 1, depth);
+                openRecipePage(player, parentGui, recipes, index + 1, depth, canOpenNoRecipePage);
             }
         }))
         .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
@@ -723,7 +723,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             c.cancel();
             if (index > 0) {
                 player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
-                openRecipePage(player, parentGui, recipes, index - 1, depth);
+                openRecipePage(player, parentGui, recipes, index - 1, depth, canOpenNoRecipePage);
             }
         }));
 
@@ -756,7 +756,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                     if (inRecipes == recipes) return;
                                     player.playSound(Constants.SOUND_CLICK_BUTTON);
                                     if (!inRecipes.isEmpty()) {
-                                        openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                                        openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                                     } else {
                                         openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                     }
@@ -765,7 +765,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                     if (inRecipes == recipes) return;
                                     player.playSound(Constants.SOUND_CLICK_BUTTON);
                                     if (!inRecipes.isEmpty()) {
-                                        openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                                        openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                                     }
                                 }
                             }));
@@ -799,7 +799,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                 if (inRecipes == recipes) return;
                                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                                 if (!inRecipes.isEmpty()) {
-                                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                                 } else {
                                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                 }
@@ -808,7 +808,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                 if (inRecipes == recipes) return;
                                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                                 if (!inRecipes.isEmpty()) {
-                                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0);
+                                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
                                 }
                             }
                         }));
