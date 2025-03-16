@@ -169,9 +169,9 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 " <  =  > "
         )
         .addIngredient('A', Ingredient.paged())
-        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.CATEGORY_BACK)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.CATEGORY_BACK : Constants.CATEGORY_EXIT)
                 .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
-                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.CATEGORY_BACK)),
+                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.CATEGORY_BACK : Constants.CATEGORY_EXIT))),
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
@@ -308,9 +308,9 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.giveItem(item.count(item.maxStackSize()));
             }
         }) : GuiElement.EMPTY)
-        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT)
                         .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
-                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT))),
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
@@ -435,9 +435,9 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 }
             }
         }))
-        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT)
                         .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
-                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT))),
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
@@ -574,9 +574,9 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 }
             }
         }))
-        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT)
                         .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
-                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT))),
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
@@ -687,9 +687,9 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.giveItem(item.count(item.maxStackSize()));
             }
         }) : GuiElement.EMPTY)
-        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(Constants.RECIPE_BACK)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT)
                         .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
-                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + Constants.RECIPE_BACK)),
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT))),
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);

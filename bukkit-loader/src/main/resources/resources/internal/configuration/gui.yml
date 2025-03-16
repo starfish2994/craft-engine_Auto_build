@@ -159,3 +159,10 @@ items:
       lore:
         - "<!i><gray><i18n:internal.cooking_info.0>"
         - "<!i><gray><i18n:internal.cooking_info.1>"
+  internal:exit:
+    template: "internal:2d_icon"
+    arguments:
+      model_data: 1007
+      texture: exit
+      name: "<!i><#DAA520><i18n:internal.exit>"
+      lore: null

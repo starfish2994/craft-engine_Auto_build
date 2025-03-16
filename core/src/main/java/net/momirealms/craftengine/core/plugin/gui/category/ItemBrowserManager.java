@@ -52,6 +52,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
 
         public static String CATEGORY_TITLE;
         public static Key CATEGORY_BACK;
+        public static Key CATEGORY_EXIT;
         public static Key CATEGORY_NEXT_PAGE_AVAILABLE;
         public static Key CATEGORY_NEXT_PAGE_BLOCK;
         public static Key CATEGORY_PREVIOUS_PAGE_AVAILABLE;
@@ -65,6 +66,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
         public static String RECIPE_CRAFTING_TITLE;
         public static String RECIPE_STONECUTTING_TITLE;
         public static Key RECIPE_BACK;
+        public static Key RECIPE_EXIT;
         public static Key RECIPE_NEXT_PAGE_AVAILABLE;
         public static Key RECIPE_NEXT_PAGE_BLOCK;
         public static Key RECIPE_PREVIOUS_PAGE_AVAILABLE;
@@ -88,6 +90,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
 
             CATEGORY_TITLE = getOrThrow(section, "category.title");
             CATEGORY_BACK = Key.of(getOrThrow(section, "category.page-navigation.return"));
+            CATEGORY_EXIT = Key.of(getOrThrow(section, "category.page-navigation.exit"));
             CATEGORY_NEXT_PAGE_AVAILABLE = Key.of(getOrThrow(section, "category.page-navigation.next.available"));
             CATEGORY_NEXT_PAGE_BLOCK = Key.of(getOrThrow(section, "category.page-navigation.next.not-available"));
             CATEGORY_PREVIOUS_PAGE_AVAILABLE = Key.of(getOrThrow(section, "category.page-navigation.previous.available"));
@@ -101,6 +104,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
             RECIPE_CRAFTING_TITLE = getOrThrow(section, "recipe.crafting.title");
             RECIPE_STONECUTTING_TITLE = getOrThrow(section, "recipe.stonecutting.title");
             RECIPE_BACK = Key.of(getOrThrow(section, "recipe.page-navigation.return"));
+            RECIPE_EXIT = Key.of(getOrThrow(section, "recipe.page-navigation.exit"));
             RECIPE_NEXT_PAGE_AVAILABLE = Key.of(getOrThrow(section, "recipe.page-navigation.next.available"));
             RECIPE_NEXT_PAGE_BLOCK = Key.of(getOrThrow(section, "recipe.page-navigation.next.not-available"));
             RECIPE_PREVIOUS_PAGE_AVAILABLE = Key.of(getOrThrow(section, "recipe.page-navigation.previous.available"));
