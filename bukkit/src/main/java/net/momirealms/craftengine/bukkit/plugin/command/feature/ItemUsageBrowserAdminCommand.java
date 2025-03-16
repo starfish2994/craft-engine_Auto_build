@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SelectorItemUsageBrowserCommand extends BukkitCommandFeature<CommandSender> {
+public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSender> {
 
-    public SelectorItemUsageBrowserCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public ItemUsageBrowserAdminCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -60,6 +60,6 @@ public class SelectorItemUsageBrowserCommand extends BukkitCommandFeature<Comman
 
     @Override
     public String getFeatureID() {
-        return "selector_item_usage_browser";
+        return "item_usage_browser_admin";
     }
 }

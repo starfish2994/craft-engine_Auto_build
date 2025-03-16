@@ -26,9 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SelectorItemRecipeBrowserCommand extends BukkitCommandFeature<CommandSender> {
+public class ItemRecipeBrowserAdminCommand extends BukkitCommandFeature<CommandSender> {
 
-    public SelectorItemRecipeBrowserCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public ItemRecipeBrowserAdminCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -64,6 +64,6 @@ public class SelectorItemRecipeBrowserCommand extends BukkitCommandFeature<Comma
 
     @Override
     public String getFeatureID() {
-        return "selector_item_recipe_browser";
+        return "item_recipe_browser_admin";
     }
 }

@@ -23,9 +23,9 @@ import org.incendo.cloud.suggestion.SuggestionProvider;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ItemRecipeBrowserCommand extends BukkitCommandFeature<CommandSender> {
+public class ItemRecipeBrowserPlayerCommand extends BukkitCommandFeature<CommandSender> {
 
-    public ItemRecipeBrowserCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public ItemRecipeBrowserPlayerCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -58,6 +58,6 @@ public class ItemRecipeBrowserCommand extends BukkitCommandFeature<CommandSender
 
     @Override
     public String getFeatureID() {
-        return "item_recipe_browser";
+        return "item_recipe_browser_player";
     }
 }

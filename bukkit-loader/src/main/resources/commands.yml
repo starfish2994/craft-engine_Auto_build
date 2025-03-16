@@ -38,28 +38,28 @@ item_browser:
     - /ce item browser
     - /ce
 
-item_recipe_browser:
+item_recipe_browser_player:
   enable: true
-  permission: ce.command.item_recipe_browser
+  permission: ce.command.player.item_recipe_browser
   usage:
     - /findrecipe by-result
 
-item_usage_browser:
+item_usage_browser_player:
   enable: true
-  permission: ce.command.item_usage_browser
+  permission: ce.command.player.item_usage_browser
   usage:
     - /findrecipe by-ingredient
 
-selector_item_recipe_browser:
+item_recipe_browser_admin:
   enable: true
-  permission: ce.command.selector_item_recipe_browser
+  permission: ce.command.admin.item_recipe_browser
   usage:
     - /craftengine recipe by-result
     - /ce recipe by-result
 
-selector_item_usage_browser:
+item_usage_browser_admin:
   enable: true
-  permission: ce.command.selector_item_usage_browser
+  permission: ce.command.admin.item_usage_browser
   usage:
     - /craftengine recipe by-ingredient
     - /ce recipe by-ingredient
