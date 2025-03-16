@@ -34,6 +34,8 @@ public class BukkitCommandManager extends AbstractCommandManager<CommandSender> 
                 new ItemBrowserCommand(this, plugin),
                 new ItemRecipeBrowserCommand(this, plugin),
                 new ItemUsageBrowserCommand(this, plugin),
+                new SelectorItemRecipeBrowserCommand(this, plugin),
+                new SelectorItemUsageBrowserCommand(this, plugin),
                 new TestCommand(this, plugin),
                 new DebugGetBlockStateRegistryIdCommand(this, plugin),
                 new DebugGetBlockInternalIdCommand(this, plugin),
