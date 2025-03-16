@@ -36,97 +36,76 @@ items:
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz>"
     model:
-      template: models:generated
+      template: "default:model/simplified_generated"
       arguments:
-        model_path: "minecraft:item/custom/topaz"
-        texture_path: "minecraft:item/custom/topaz"
+        path: "minecraft:item/custom/topaz"
 
 blocks:
   default:topaz_ore:
     loot:
-      template: loot_table:ore
+      template: "default:loot_table/ore"
       arguments:
         ore_drop: default:topaz
         ore_block: default:topaz_ore
         min_exp: 3
         max_exp: 7
     settings:
-      template:
-        - block_settings:ore
-        - block_settings:pickaxe_level_2
+      template: "default:settings/ore"
       overrides:
         item: default:topaz_ore
+      arguments:
+        break_power: 2
     state:
       id: 13
       state: note_block:13
       model:
-        path: "minecraft:block/custom/topaz_ore"
-        generation:
-          parent: "minecraft:block/cube_all"
-          textures:
-            "all": "minecraft:block/custom/topaz_ore"
+        template: "default:model/simplified_cube_all"
+        arguments:
+          path: "minecraft:block/custom/topaz_ore"
   default:deepslate_topaz_ore:
     loot:
-      template: loot_table:ore
+      template: "default:loot_table/ore"
       arguments:
         ore_drop: default:topaz
         ore_block: default:deepslate_topaz_ore
         min_exp: 3
         max_exp: 7
     settings:
-      template:
-        - block_settings:deepslate_ore
-        - block_settings:pickaxe_level_2
+      template: "default:settings/deepslate_ore"
       overrides:
         item: default:deepslate_topaz_ore
+      arguments:
+        break_power: 2
     state:
       id: 14
       state: note_block:14
       model:
-        path: "minecraft:block/custom/deepslate_topaz_ore"
-        generation:
-          parent: "minecraft:block/cube_all"
-          textures:
-            "all": "minecraft:block/custom/deepslate_topaz_ore"
+        template: "default:model/simplified_cube_all"
+        arguments:
+          path: "minecraft:block/custom/deepslate_topaz_ore"
 
 recipes:
   default:topaz_from_smelting_topaz_ore:
-    type: smelting
-    experience: 1.0
-    category: misc
-    group: topaz
-    time: 200
-    ingredient: "default:topaz_ore"
-    result:
-      id: default:topaz
-      count: 1
+    template: default:recipe/smelting_ore
+    arguments:
+      exp: 1.0
+      ingredient: "default:topaz_ore"
+      result: "default:topaz"
   default:topaz_from_smelting_deepslate_topaz_ore:
-    type: smelting
-    experience: 1.0
-    category: misc
-    group: topaz
-    time: 200
-    ingredient: "default:deepslate_topaz_ore"
-    result:
-      id: default:topaz
-      count: 1
+    template: default:recipe/smelting_ore
+    arguments:
+      exp: 1.0
+      ingredient: "default:deepslate_topaz_ore"
+      result: "default:topaz"
   default:topaz_from_blasting_topaz_ore:
-    type: blasting
-    experience: 1.0
-    category: misc
-    group: topaz
-    time: 100
-    ingredient: "default:topaz_ore"
-    result:
-      id: default:topaz
-      count: 1
+    template: default:recipe/blasting_ore
+    arguments:
+      exp: 1.0
+      ingredient: "default:topaz_ore"
+      result: "default:topaz"
   default:topaz_from_blasting_deepslate_topaz_ore:
-    type: blasting
-    experience: 1.0
-    category: misc
-    group: topaz
-    time: 100
-    ingredient: "default:deepslate_topaz_ore"
-    result:
-      id: default:topaz
-      count: 1
+    template: default:recipe/blasting_ore
+    arguments:
+      exp: 1.0
+      ingredient: "default:deepslate_topaz_ore"
+      result: "default:topaz"

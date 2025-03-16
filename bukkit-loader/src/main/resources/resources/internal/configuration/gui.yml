@@ -61,21 +61,20 @@ images:
     char: '\ub009'
 
 templates:
-  internal:2d_icon:
+  internal:icon/2d:
     material: arrow
     custom-model-data: "{model_data}"
     data:
       item-name: "{name}"
       lore: "{lore}"
     model:
-      template: models:generated
+      template: "default:model/simplified_generated"
       arguments:
-        model_path: "minecraft:item/custom/gui/{texture}"
-        texture_path: "minecraft:item/custom/gui/{texture}"
+        path: "minecraft:item/custom/gui/{texture}"
 
 items:
   internal:next_page_0:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1000
       texture: next_page_0
@@ -83,7 +82,7 @@ items:
       lore:
         - "<!i><#F5F5F5><arg:current_page>/<arg:max_page>"
   internal:next_page_1:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1001
       texture: next_page_1
@@ -91,7 +90,7 @@ items:
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
   internal:previous_page_0:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1002
       texture: previous_page_0
@@ -99,7 +98,7 @@ items:
       lore:
         - "<!i><#F5F5F5><arg:current_page>/<arg:max_page>"
   internal:previous_page_1:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1003
       texture: previous_page_1
@@ -107,7 +106,7 @@ items:
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
   internal:return:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1004
       texture: return
@@ -142,7 +141,7 @@ items:
       lore:
         - "<!i><#696969><arg:current_page>/<arg:max_page>"
   internal:get_item:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1005
       texture: get_item
@@ -151,7 +150,7 @@ items:
         - "<!i><gray><i18n:internal.get_item.0>"
         - "<!i><gray><i18n:internal.get_item.1>"
   internal:cooking_info:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1006
       texture: cooking_info
@@ -160,7 +159,7 @@ items:
         - "<!i><gray><i18n:internal.cooking_info.0>"
         - "<!i><gray><i18n:internal.cooking_info.1>"
   internal:exit:
-    template: "internal:2d_icon"
+    template: "internal:icon/2d"
     arguments:
       model_data: 1007
       texture: exit

@@ -9,12 +9,10 @@ items:
       item-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
       tooltip-style: minecraft:topaz
     model:
-      template: models:fishing_rod_2d
+      template: default:model/simplified_fishing_rod_2d
       arguments:
-        rod_model: minecraft:item/custom/topaz_rod
-        rod_texture: minecraft:item/custom/topaz_rod
-        rod_cast_model: minecraft:item/custom/topaz_rod_cast
-        rod_cast_texture: minecraft:item/custom/topaz_rod_cast
+        path: minecraft:item/custom/topaz_rod
+        cast_path: minecraft:item/custom/topaz_rod_cast
   default:topaz_bow:
     material: bow
     custom-model-data: 1000
@@ -25,16 +23,12 @@ items:
       item-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
     model:
-      template: models:bow_2d
+      template: default:model/simplified_bow_2d
       arguments:
-        bow_model: minecraft:item/custom/topaz_bow
-        bow_texture: minecraft:item/custom/topaz_bow
-        bow_pulling_0_model: minecraft:item/custom/topaz_bow_pulling_0
-        bow_pulling_0_texture: minecraft:item/custom/topaz_bow_pulling_0
-        bow_pulling_1_model: minecraft:item/custom/topaz_bow_pulling_1
-        bow_pulling_1_texture: minecraft:item/custom/topaz_bow_pulling_1
-        bow_pulling_2_model: minecraft:item/custom/topaz_bow_pulling_2
-        bow_pulling_2_texture: minecraft:item/custom/topaz_bow_pulling_2
+        path: minecraft:item/custom/topaz_bow
+        pulling_0_path: minecraft:item/custom/topaz_bow_pulling_0
+        pulling_1_path: minecraft:item/custom/topaz_bow_pulling_1
+        pulling_2_path: minecraft:item/custom/topaz_bow_pulling_2
   default:topaz_crossbow:
     material: crossbow
     custom-model-data: 1000
@@ -45,20 +39,14 @@ items:
       item-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
       tooltip-style: minecraft:topaz
     model:
-      template: models:crossbow_2d
+      template: default:model/simplified_crossbow_2d
       arguments:
-        crossbow_model: minecraft:item/custom/topaz_crossbow
-        crossbow_texture: minecraft:item/custom/topaz_crossbow
-        crossbow_pulling_0_model: minecraft:item/custom/topaz_crossbow_pulling_0
-        crossbow_pulling_0_texture: minecraft:item/custom/topaz_crossbow_pulling_0
-        crossbow_pulling_1_model: minecraft:item/custom/topaz_crossbow_pulling_1
-        crossbow_pulling_1_texture: minecraft:item/custom/topaz_crossbow_pulling_1
-        crossbow_pulling_2_model: minecraft:item/custom/topaz_crossbow_pulling_2
-        crossbow_pulling_2_texture: minecraft:item/custom/topaz_crossbow_pulling_2
-        crossbow_arrow_texture: minecraft:item/custom/topaz_crossbow_arrow
-        crossbow_arrow_model: minecraft:item/custom/topaz_crossbow_arrow
-        crossbow_firework_texture: minecraft:item/custom/topaz_crossbow_firework
-        crossbow_firework_model: minecraft:item/custom/topaz_crossbow_firework
+        path: minecraft:item/custom/topaz_crossbow
+        pulling_0_path: minecraft:item/custom/topaz_crossbow_pulling_0
+        pulling_1_path: minecraft:item/custom/topaz_crossbow_pulling_1
+        pulling_2_path: minecraft:item/custom/topaz_crossbow_pulling_2
+        arrow_path: minecraft:item/custom/topaz_crossbow_arrow
+        firework_path: minecraft:item/custom/topaz_crossbow_firework
   default:topaz_pickaxe:
     material: golden_pickaxe
     custom-model-data: 1000
@@ -71,12 +59,9 @@ items:
       components:
         minecraft:max_damage: 64
     model:
-      type: minecraft:model
-      path: minecraft:item/custom/topaz_pickaxe
-      generation:
-        parent: "minecraft:item/handheld"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_pickaxe"
+      template: default:model/simplified_handheld
+      arguments:
+        path: "minecraft:item/custom/topaz_pickaxe"
   default:topaz_axe:
     material: golden_axe
     custom-model-data: 1000
@@ -89,12 +74,9 @@ items:
       components:
         minecraft:max_damage: 64
     model:
-      type: minecraft:model
-      path: minecraft:item/custom/topaz_axe
-      generation:
-        parent: "minecraft:item/handheld"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_axe"
+      template: default:model/simplified_handheld
+      arguments:
+        path: "minecraft:item/custom/topaz_axe"
   default:topaz_hoe:
     material: golden_hoe
     custom-model-data: 1000
@@ -107,12 +89,9 @@ items:
       components:
         minecraft:max_damage: 64
     model:
-      type: minecraft:model
-      path: minecraft:item/custom/topaz_hoe
-      generation:
-        parent: "minecraft:item/handheld"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_hoe"
+      template: default:model/simplified_handheld
+      arguments:
+        path: "minecraft:item/custom/topaz_hoe"
   default:topaz_shovel:
     material: golden_shovel
     custom-model-data: 1000
@@ -125,12 +104,9 @@ items:
       components:
         minecraft:max_damage: 64
     model:
-      type: minecraft:model
-      path: minecraft:item/custom/topaz_shovel
-      generation:
-        parent: "minecraft:item/handheld"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_shovel"
+      template: default:model/simplified_handheld
+      arguments:
+        path: "minecraft:item/custom/topaz_shovel"
   default:topaz_sword:
     material: golden_sword
     custom-model-data: 1000
@@ -143,35 +119,32 @@ items:
       components:
         minecraft:max_damage: 64
     model:
-      type: minecraft:model
-      path: minecraft:item/custom/topaz_sword
-      generation:
-        parent: "minecraft:item/handheld"
-        textures:
-          "layer0": "minecraft:item/custom/topaz_sword"
+      template: default:model/simplified_handheld
+      arguments:
+        path: "minecraft:item/custom/topaz_sword"
   default:topaz_helmet:
-    template: default:topaz_armor
+    template: default:armor/topaz
     arguments:
       part: helmet
       slot: head
   default:topaz_chestplate:
-    template: default:topaz_armor
+    template: default:armor/topaz
     arguments:
       part: chestplate
       slot: chest
   default:topaz_leggings:
-    template: default:topaz_armor
+    template: default:armor/topaz
     arguments:
       part: leggings
       slot: legs
   default:topaz_boots:
-    template: default:topaz_armor
+    template: default:armor/topaz
     arguments:
       part: boots
       slot: feet
 
 templates:
-  default:topaz_armor:
+  default:armor/topaz:
     material: "chainmail_{part}"
     custom-model-data: 1000
     data:

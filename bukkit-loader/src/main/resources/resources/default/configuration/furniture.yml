@@ -42,7 +42,7 @@ items:
                 seats:
                   - 1,0,-0.1 0
         loot:
-          template: loot_table:normal
+          template: "default:loot_table/basic"
           arguments:
             item: default:bench
   default:table_lamp:
@@ -86,7 +86,7 @@ items:
                 height: 0.4
                 interactive: true
         loot:
-          template: loot_table:normal
+          template: "default:loot_table/basic"
           arguments:
             item: default:table_lamp
   default:wooden_chair:
@@ -123,6 +123,6 @@ items:
                 seats:
                   - 0,0,-0.1 0
         loot:
-          template: loot_table:normal
+          template: "default:loot_table/basic"
           arguments:
             item: default:wooden_chair
