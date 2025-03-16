@@ -16,4 +16,6 @@ public interface MessageConstants {
     TranslatableComponent.Builder COMMAND_ITEM_GIVE_SUCCESS_SINGLE = Component.translatable().key("command.item.give.success.single");
     TranslatableComponent.Builder COMMAND_ITEM_GIVE_SUCCESS_MULTIPLE = Component.translatable().key("command.item.give.success.multiple");
     TranslatableComponent.Builder COMMAND_ITEM_GIVE_FAILURE_NOT_EXIST = Component.translatable().key("command.item.give.failure.not_exist");
+    TranslatableComponent.Builder COMMAND_ITEM_RECIPE_BROWSER_RECIPE_NOT_FOUND = Component.translatable().key("command.item.recipe.browser.recipe.no_found");
+    TranslatableComponent.Builder COMMAND_ITEM_USAGE_BROWSER_RECIPE_NOT_FOUND = Component.translatable().key("command.item.usage.browser.recipe.no_found");
 }
