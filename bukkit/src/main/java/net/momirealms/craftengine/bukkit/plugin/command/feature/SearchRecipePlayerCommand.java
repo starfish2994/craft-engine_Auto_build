@@ -2,6 +2,8 @@ package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
@@ -22,9 +24,9 @@ import org.incendo.cloud.suggestion.SuggestionProvider;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ItemUsageBrowserPlayerCommand extends BukkitCommandFeature<CommandSender> {
+public class SearchRecipePlayerCommand extends BukkitCommandFeature<CommandSender> {
 
-    public ItemUsageBrowserPlayerCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public SearchRecipePlayerCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -32,28 +34,26 @@ public class ItemUsageBrowserPlayerCommand extends BukkitCommandFeature<CommandS
     public Command.Builder<? extends CommandSender> assembleCommand(CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
-                .required("id", NamespacedKeyParser.namespacedKeyComponent().suggestionProvider(new SuggestionProvider<>() {
-                    @Override
-                    public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
-                        return CompletableFuture.completedFuture(plugin().itemManager().cachedSuggestions());
-                    }
-                }))
                 .handler(context -> {
                     Player player = context.sender();
                     BukkitServerPlayer serverPlayer = plugin().adapt(player);
-                    NamespacedKey namespacedKey = context.get("id");
-                    Key itemId = Key.of(namespacedKey.namespace(), namespacedKey.value());
-                    List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByIngredient(itemId);
+                    Item<?> item = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                    if (item == null) {
+                        handleFeedback(context, MessageConstants.COMMAND_SEARCH_RECIPE_NO_ITEM);
+                        return;
+                    }
+                    Key itemId = item.id();
+                    List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByResult(itemId);
                     if (!inRecipes.isEmpty()) {
                         plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                     } else {
-                        handleFeedback(context, MessageConstants.COMMAND_ITEM_USAGE_BROWSER_RECIPE_NOT_FOUND);
+                        handleFeedback(context, MessageConstants.COMMAND_SEARCH_RECIPE_NOT_FOUND);
                     }
                 });
     }
 
     @Override
     public String getFeatureID() {
-        return "item_usage_browser_player";
+        return "search_recipe_player";
     }
 }

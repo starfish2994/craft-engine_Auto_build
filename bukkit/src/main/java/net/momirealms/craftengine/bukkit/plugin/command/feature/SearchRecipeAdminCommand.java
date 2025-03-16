@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSender> {
+public class SearchRecipeAdminCommand extends BukkitCommandFeature<CommandSender> {
 
-    public ItemUsageBrowserAdminCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public SearchRecipeAdminCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -44,15 +44,13 @@ public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSe
                 .handler(context -> {
                     MultiplePlayerSelector selector = context.get("player");
                     Collection<Player> players = selector.values();
+                    NamespacedKey namespacedKey = context.get("id");
                     for (Player player : players) {
                         BukkitServerPlayer serverPlayer = plugin().adapt(player);
-                        NamespacedKey namespacedKey = context.get("id");
                         Key itemId = Key.of(namespacedKey.namespace(), namespacedKey.value());
-                        List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByIngredient(itemId);
+                        List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByResult(itemId);
                         if (!inRecipes.isEmpty()) {
                             plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
-                        } else {
-                            handleFeedback(context, MessageConstants.COMMAND_ITEM_USAGE_BROWSER_RECIPE_NOT_FOUND);
                         }
                     }
                 });
@@ -60,6 +58,6 @@ public class ItemUsageBrowserAdminCommand extends BukkitCommandFeature<CommandSe
 
     @Override
     public String getFeatureID() {
-        return "item_usage_browser_admin";
+        return "search_recipe_admin";
     }
 }
