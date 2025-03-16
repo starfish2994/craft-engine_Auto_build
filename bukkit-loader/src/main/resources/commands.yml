@@ -42,15 +42,15 @@ item_recipe_browser:
   enable: true
   permission: ce.command.item_recipe_browser
   usage:
-    - /craftengine item recipe
-    - /ce item recipe
+    - /craftengine recipe by-result
+    - /ce recipe by-result
 
 item_usage_browser:
   enable: true
   permission: ce.command.item_usage_browser
   usage:
-    - /craftengine item usage
-    - /ce item usage
+    - /craftengine recipe by-ingredient
+    - /ce recipe by-ingredient
 
 # Debug commands
 debug_set_block:
