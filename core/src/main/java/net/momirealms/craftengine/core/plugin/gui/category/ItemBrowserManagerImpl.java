@@ -7,8 +7,8 @@ import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.gui.Ingredient;
 import net.momirealms.craftengine.core.plugin.gui.*;
+import net.momirealms.craftengine.core.plugin.gui.Ingredient;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
@@ -175,7 +175,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
-                    parentGui.open(player);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }))
         )
         .addIngredient('>', GuiElement.paged((element) -> {
@@ -270,6 +274,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
+    @Override
     public void openNoRecipePage(Player player, Key result, Gui parentGui, int depth) {
         GuiLayout layout = new GuiLayout(
                 "         ",
@@ -309,7 +314,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
-                    parentGui.open(player);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }))
         );
 
@@ -326,6 +335,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 .open(player);
     }
 
+    @Override
     public void openRecipePage(Player player, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth) {
         if (index >= recipes.size()) return;
         if (depth > MAX_RECIPE_DEPTH) return;
@@ -431,7 +441,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
-                    parentGui.open(player);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }))
         )
         .addIngredient('>', GuiElement.constant(this.plugin.itemManager()
@@ -566,7 +580,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
-                    parentGui.open(player);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }))
         )
         .addIngredient('>', GuiElement.constant(this.plugin.itemManager()
@@ -675,7 +693,11 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 ((element, click) -> {
                     click.cancel();
                     player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
-                    parentGui.open(player);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
                 }))
         )
         .addIngredient('>', GuiElement.constant(this.plugin.itemManager()

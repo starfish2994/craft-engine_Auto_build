@@ -38,6 +38,20 @@ item_browser:
     - /ce item browser
     - /ce
 
+item_recipe_browser:
+  enable: true
+  permission: ce.command.item_recipe_browser
+  usage:
+    - /craftengine item recipe
+    - /ce item recipe
+
+item_usage_browser:
+  enable: true
+  permission: ce.command.item_usage_browser
+  usage:
+    - /craftengine item usage
+    - /ce item usage
+
 # Debug commands
 debug_set_block:
   enable: true
