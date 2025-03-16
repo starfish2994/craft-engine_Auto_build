@@ -246,7 +246,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         player.playSound(Constants.SOUND_CLICK_BUTTON);
                         if (!inRecipes.isEmpty()) {
                             openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                        } else {
+                        } else if (canOpenNoRecipePage) {
                             openNoRecipePage(player, itemId, e.gui(), 0);
                         }
                     } else if (RIGHT_CLICK.contains(c.type())) {
@@ -387,7 +387,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                } else {
+                } else if (canOpenNoRecipePage) {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
@@ -423,7 +423,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                } else {
+                } else if (canOpenNoRecipePage) {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
@@ -520,7 +520,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                } else {
+                } else if (canOpenNoRecipePage) {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
@@ -562,7 +562,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                } else {
+                } else if (canOpenNoRecipePage) {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
@@ -665,7 +665,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                } else {
+                } else if (canOpenNoRecipePage) {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
@@ -757,7 +757,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                     player.playSound(Constants.SOUND_CLICK_BUTTON);
                                     if (!inRecipes.isEmpty()) {
                                         openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                                    } else {
+                                    } else if (canOpenNoRecipePage) {
                                         openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                     }
                                 } else if (RIGHT_CLICK.contains(c.type())) {
@@ -800,7 +800,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                                 if (!inRecipes.isEmpty()) {
                                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
-                                } else {
+                                } else if (canOpenNoRecipePage) {
                                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                 }
                             } else if (RIGHT_CLICK.contains(c.type())) {
