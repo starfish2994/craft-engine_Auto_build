@@ -17,6 +17,7 @@ public class RecipeTypes {
     public static final Key SMOKING = Key.of("minecraft:smoking");
     public static final Key CAMPFIRE_COOKING = Key.of("minecraft:campfire_cooking");
     public static final Key STONE_CUTTING = Key.of("minecraft:stone_cutting");
+    public static final Key SMITHING_TRANSFORM = Key.of("minecraft:smithing_transform");
 
     static {
         register(SHAPED, CustomShapedRecipe.FACTORY);

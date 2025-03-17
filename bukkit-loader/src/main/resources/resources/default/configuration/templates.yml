@@ -33,9 +33,31 @@ templates#models#block:
       textures:
         "end": "{end_texture}"
         "side": "{side_texture}"
+  # template: default:model/cube
+  # arguments:
+  #   model: model_path
+  #   particle_texture: particle_texture_path
+  #   down_texture: down_texture_path
+  #   up_texture: up_texture_path
+  #   north_texture: north_texture_path
+  #   east_texture: east_texture_path
+  #   south_texture: south_texture_path
+  #   west_texture: west_texture_path
+  default:model/cube:
+    path: "{model}"
+    generation:
+      parent: "minecraft:block/cube_column"
+      textures:
+        "particle": "minecraft:block/custom/block_particle"
+        "down": "minecraft:block/custom/block_down"
+        "up": "minecraft:block/custom/block_up"
+        "north": "minecraft:block/custom/block_north"
+        "east": "minecraft:block/custom/block_east"
+        "south": "minecraft:block/custom/block_south"
+        "west": "minecraft:block/custom/block_west"
 
 # 2D items
-templates#models#generated:
+templates#models#2d:
   # template: default:model/generated
   # arguments:
   #   model: model_path
