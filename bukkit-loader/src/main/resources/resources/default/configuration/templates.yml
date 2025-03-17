@@ -274,14 +274,14 @@ templates#models#crossbow:
         - when: arrow
           model:
             type: minecraft:model
-            path: "{arrow_path}"
+            path: "{arrow_model}"
         - when: rocket
           model:
             type: minecraft:model
             path: "{firework_model}"
       fallback:
         type: minecraft:model
-        path: "{path}"
+        path: "{model}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:crossbow/pull"
