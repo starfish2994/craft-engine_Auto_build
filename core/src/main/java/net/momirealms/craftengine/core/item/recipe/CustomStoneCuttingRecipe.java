@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CustomStoneCuttingRecipe<T> extends AbstractRecipe<T> {
+public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
     protected final Ingredient<T> ingredient;
 

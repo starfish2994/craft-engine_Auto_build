@@ -832,4 +832,11 @@ public class RecipeEventListener implements Listener {
             plugin.logger().warn("Failed to correct used recipe", e);
         }
     }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSmithingTransform(PrepareSmithingEvent event) {
+        SmithingInventory inventory = event.getInventory();
+        if (!(inventory.getRecipe() instanceof SmithingTransformRecipe recipe)) return;
+
+    }
 }

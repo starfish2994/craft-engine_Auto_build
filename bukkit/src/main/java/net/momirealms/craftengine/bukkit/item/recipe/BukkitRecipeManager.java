@@ -54,6 +54,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     private static BukkitRecipeManager instance;
 
     static {
+        BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SMITHING_TRANSFORM, (key, recipe) -> {
+
+        });
         BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SHAPED, (key, recipe) -> {
             CustomShapedRecipe<ItemStack> ceRecipe = (CustomShapedRecipe<ItemStack>) recipe;
             ShapedRecipe shapedRecipe = new ShapedRecipe(key, ceRecipe.result(ItemBuildContext.EMPTY));
