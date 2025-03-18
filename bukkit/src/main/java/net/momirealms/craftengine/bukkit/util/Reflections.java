@@ -4977,4 +4977,30 @@ public class Reflections {
                     clazz$CraftRecipe, clazz$Ingredient, RecipeChoice.class, boolean.class
             )
     );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$transmuteCopy = ReflectionUtils.getMethod(
+            clazz$ItemStack, clazz$ItemStack, clazz$ItemLike, int.class
+    );
+
+    // 1.20.5+
+    public static final Class<?> clazz$DataComponentPatch = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass("core.component.DataComponentPatch")
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$getComponentsPatch = Optional.ofNullable(clazz$DataComponentPatch)
+            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, it))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$ItemStack$applyComponents = Optional.ofNullable(clazz$DataComponentPatch)
+            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, void.class, it))
+            .orElse(null);
+
+    public static final Method method$ItemStack$getItem = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, clazz$Item
+            )
+    );
 }

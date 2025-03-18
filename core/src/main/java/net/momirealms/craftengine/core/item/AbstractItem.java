@@ -276,4 +276,10 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     public Object getLiteralObject() {
         return this.item.getLiteralObject();
     }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public Item<I> merge(Item<?> another) {
+        return new AbstractItem<>(this.factory, this.factory.merge(this.item, ((AbstractItem) another).item));
+    }
 }

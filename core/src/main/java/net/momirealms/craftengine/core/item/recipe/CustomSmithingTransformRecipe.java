@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe;
 
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -20,18 +22,21 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     private final Ingredient<T> base;
     private final Ingredient<T> template;
     private final Ingredient<T> addition;
+    private final List<ItemDataProcessor> processors;
 
     public CustomSmithingTransformRecipe(Key id,
                                          @Nullable Ingredient<T> addition,
                                          @Nullable Ingredient<T> base,
                                          @Nullable Ingredient<T> template,
-                                         CustomRecipeResult<T> result
+                                         CustomRecipeResult<T> result,
+                                         List<ItemDataProcessor> processors
     ) {
         this.id = id;
         this.result = result;
         this.base = base;
         this.template = template;
         this.addition = addition;
+        this.processors = processors;
     }
 
     @SuppressWarnings("unchecked")
@@ -82,6 +87,17 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         return result.buildItemStack(context);
     }
 
+    @SuppressWarnings("unchecked")
+    public T assemble(ItemBuildContext context, Item<T> base) {
+        T result = this.result(context);
+        Item<T> wrappedResult = (Item<T>) CraftEngine.instance().itemManager().wrap(result);
+        Item<T> finalResult = wrappedResult;
+        for (ItemDataProcessor processor : this.processors) {
+            finalResult = (Item<T>) processor.apply(base, wrappedResult);
+        }
+        return finalResult.getItem();
+    }
+
     @Override
     public CustomRecipeResult<T> result() {
         return this.result;
@@ -112,7 +128,8 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
             List<String> template = MiscUtils.getAsStringList(arguments.get("template"));
             return new CustomSmithingTransformRecipe<>(
                     id,
-                    toIngredient(addition), toIngredient(base), toIngredient(template), parseResult(arguments)
+                    toIngredient(addition), toIngredient(base), toIngredient(template), parseResult(arguments),
+                    List.of(new ItemDataProcessor[]{})
             );
         }
 
@@ -126,6 +143,19 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
                 }
             }
             return holders.isEmpty() ? null : Ingredient.of(holders);
+        }
+    }
+
+    @FunctionalInterface
+    public interface ItemDataProcessor extends BiFunction<Item<?>, Item<?>, Item<?>> {
+        MergeAllDataProcessor MERGE_ALL = new MergeAllDataProcessor();
+    }
+
+    public static class MergeAllDataProcessor implements ItemDataProcessor {
+
+        @Override
+        public Item<?> apply(Item<?> item1, Item<?> item2) {
+            return item1.merge(item2);
         }
     }
 }

@@ -1,8 +1,11 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import com.saicone.rtag.RtagItem;
+import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import net.momirealms.craftengine.bukkit.item.RTagItemWrapper;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -228,5 +231,12 @@ public class UniversalItemFactory extends BukkitItemFactory {
     protected Optional<Integer> repairCost(ItemWrapper<ItemStack> item) {
         if (!item.hasTag("RepairCost")) return Optional.empty();
         return Optional.of(item.get("RepairCost"));
+    }
+
+    @Override
+    protected ItemWrapper<ItemStack> merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
+        Object itemStack = ItemObject.copy(item2.getLiteralObject());
+        ItemObject.setCustomDataTag(itemStack, ItemObject.getCustomDataTag(item1.getLiteralObject()));
+        return new RTagItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack)), item2.count());
     }
 }
