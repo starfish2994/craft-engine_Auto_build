@@ -56,18 +56,18 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     static {
         BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SMITHING_TRANSFORM, (key, recipe) -> {
             CustomSmithingTransformRecipe<ItemStack> ceRecipe = (CustomSmithingTransformRecipe<ItemStack>) recipe;
-            SmithingTransformRecipe transformRecipe = new SmithingTransformRecipe(
-                    key, ceRecipe.result(ItemBuildContext.EMPTY),
-                    ingredientToBukkitRecipeChoice(ceRecipe.template()),
-                    ingredientToBukkitRecipeChoice(ceRecipe.base()),
-                    ingredientToBukkitRecipeChoice(ceRecipe.addition()),
-                    false
-            );
+            ceRecipe.addition();
+            // bukkit api doesn't allow empty material choices, that's why we do this
             try {
-                Object craftRecipe = Reflections.method$CraftSmithingTransformRecipe$fromBukkitRecipe.invoke(null, transformRecipe);
-                Reflections.method$CraftRecipe$addToCraftingManager.invoke(craftRecipe);
+                Object smithingRecipe = createMinecraftSmithingTransformRecipe(ceRecipe);
+                if (VersionHelper.isVersionNewerThan1_21_2()) {
+                    smithingRecipe = Reflections.constructor$RecipeHolder.newInstance(Reflections.method$CraftRecipe$toMinecraft.invoke(null, key), smithingRecipe);
+                } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+                    smithingRecipe = Reflections.constructor$RecipeHolder.newInstance(Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, key.namespace(), key.value()), smithingRecipe);
+                }
+                Reflections.method$RecipeManager$addRecipe.invoke(minecraftRecipeManager(), smithingRecipe);
             } catch (Exception e) {
-                CraftEngine.instance().logger().warn("Failed to convert smithing transform recipe", e);
+                CraftEngine.instance().logger().warn("Failed to convert transform recipe", e);
             }
         });
         BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SHAPED, (key, recipe) -> {
@@ -761,9 +761,9 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
         CustomSmithingTransformRecipe<ItemStack> ceRecipe = new CustomSmithingTransformRecipe<>(
                 id,
-                Ingredient.of(baseHolders),
-                Ingredient.of(templateHolders),
-                Ingredient.of(additionHolders),
+                baseHolders.isEmpty() ? null : Ingredient.of(baseHolders),
+                templateHolders.isEmpty() ? null : Ingredient.of(templateHolders),
+                additionHolders.isEmpty() ? null : Ingredient.of(additionHolders),
                 new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
         );
 
@@ -838,15 +838,11 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     }
 
     private static RecipeChoice ingredientToBukkitRecipeChoice(Ingredient<ItemStack> ingredient) {
-        if (ingredient == null) {
-            return EmptyRecipeChoice.INSTANCE;
-        } else {
-            Set<Material> materials = new HashSet<>();
-            for (Holder<Key> holder : ingredient.items()) {
-                materials.add(getMaterialById(holder.value()));
-            }
-            return new RecipeChoice.MaterialChoice(new ArrayList<>(materials));
+        Set<Material> materials = new HashSet<>();
+        for (Holder<Key> holder : ingredient.items()) {
+            materials.add(getMaterialById(holder.value()));
         }
+        return new RecipeChoice.MaterialChoice(new ArrayList<>(materials));
     }
 
     private static Material getMaterialById(Key key) {
@@ -963,6 +959,53 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 Reflections.field$Ingredient$itemStacks1_20_1.set(ingredient, itemStackArray);
             }
             injectedIngredients.add(ingredient);
+        }
+    }
+
+    // 1.20-1.21.2
+    private static Object toMinecraftIngredient(Ingredient<ItemStack> ingredient) throws ReflectiveOperationException  {
+        if (ingredient == null) {
+            return Reflections.method$CraftRecipe$toIngredient.invoke(null, null, true);
+        } else {
+            RecipeChoice choice = ingredientToBukkitRecipeChoice(ingredient);
+            return Reflections.method$CraftRecipe$toIngredient.invoke(null, choice, true);
+        }
+    }
+
+    // 1.21.2+
+    private static Optional<Object> toOptionalMinecraftIngredient(Ingredient<ItemStack> ingredient) throws ReflectiveOperationException {
+        if (ingredient == null) {
+            return Optional.empty();
+        } else {
+            RecipeChoice choice = ingredientToBukkitRecipeChoice(ingredient);
+            Object mcIngredient = Reflections.method$CraftRecipe$toIngredient.invoke(null, choice, true);
+            return Optional.of(mcIngredient);
+        }
+    }
+
+    private static Object createMinecraftSmithingTransformRecipe(CustomSmithingTransformRecipe<ItemStack> ceRecipe) throws ReflectiveOperationException {
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            return Reflections.constructor$SmithingTransformRecipe.newInstance(
+                    toOptionalMinecraftIngredient(ceRecipe.template()),
+                    toOptionalMinecraftIngredient(ceRecipe.base()),
+                    toOptionalMinecraftIngredient(ceRecipe.addition()),
+                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+            );
+        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+            return Reflections.constructor$SmithingTransformRecipe.newInstance(
+                    toMinecraftIngredient(ceRecipe.template()),
+                    toMinecraftIngredient(ceRecipe.base()),
+                    toMinecraftIngredient(ceRecipe.addition()),
+                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+            );
+        } else {
+            return Reflections.constructor$SmithingTransformRecipe.newInstance(
+                    Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, ceRecipe.id().namespace(), ceRecipe.id().value()),
+                    toMinecraftIngredient(ceRecipe.template()),
+                    toMinecraftIngredient(ceRecipe.base()),
+                    toMinecraftIngredient(ceRecipe.addition()),
+                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+            );
         }
     }
 

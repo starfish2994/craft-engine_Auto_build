@@ -125,7 +125,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
                     holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(() -> new IllegalArgumentException("Invalid vanilla/custom item: " + item)));
                 }
             }
-            return Ingredient.of(holders);
+            return holders.isEmpty() ? null : Ingredient.of(holders);
         }
     }
 }
