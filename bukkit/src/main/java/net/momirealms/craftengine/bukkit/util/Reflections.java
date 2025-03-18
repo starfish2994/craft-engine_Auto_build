@@ -4125,6 +4125,18 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$CraftSmithingTransformRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftSmithingTransformRecipe")
+            )
+    );
+
+    public static final Method method$CraftSmithingTransformRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftSmithingTransformRecipe, clazz$CraftSmithingTransformRecipe, SmithingTransformRecipe.class
+            )
+    );
+
     public static final Class<?> clazz$FeatureFlagSet = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.flag.FeatureFlagSet")

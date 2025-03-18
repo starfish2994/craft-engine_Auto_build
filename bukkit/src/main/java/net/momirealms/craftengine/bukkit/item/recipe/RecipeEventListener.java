@@ -838,5 +838,13 @@ public class RecipeEventListener implements Listener {
         SmithingInventory inventory = event.getInventory();
         if (!(inventory.getRecipe() instanceof SmithingTransformRecipe recipe)) return;
 
+        Key recipeId = Key.of(recipe.getKey().namespace(), recipe.getKey().value());
+        boolean isCustom = this.recipeManager.isCustomRecipe(recipeId);
+        // Maybe it's recipe from other plugins, then we ignore it
+        if (!isCustom) {
+            return;
+        }
+
+
     }
 }

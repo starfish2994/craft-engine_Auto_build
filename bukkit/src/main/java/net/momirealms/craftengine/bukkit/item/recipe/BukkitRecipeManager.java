@@ -55,7 +55,20 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
 
     static {
         BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SMITHING_TRANSFORM, (key, recipe) -> {
-
+            CustomSmithingTransformRecipe<ItemStack> ceRecipe = (CustomSmithingTransformRecipe<ItemStack>) recipe;
+            SmithingTransformRecipe transformRecipe = new SmithingTransformRecipe(
+                    key, ceRecipe.result(ItemBuildContext.EMPTY),
+                    ingredientToBukkitRecipeChoice(ceRecipe.template()),
+                    ingredientToBukkitRecipeChoice(ceRecipe.base()),
+                    ingredientToBukkitRecipeChoice(ceRecipe.addition()),
+                    false
+            );
+            try {
+                Object craftRecipe = Reflections.method$CraftSmithingTransformRecipe$fromBukkitRecipe.invoke(null, transformRecipe);
+                Reflections.method$CraftRecipe$addToCraftingManager.invoke(craftRecipe);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to convert smithing transform recipe", e);
+            }
         });
         BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.SHAPED, (key, recipe) -> {
             CustomShapedRecipe<ItemStack> ceRecipe = (CustomShapedRecipe<ItemStack>) recipe;
@@ -68,7 +81,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             }
             shapedRecipe.shape(ceRecipe.pattern().pattern());
             for (Map.Entry<Character, Ingredient<ItemStack>> entry : ceRecipe.pattern().ingredients().entrySet()) {
-                shapedRecipe.setIngredient(entry.getKey(), new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(entry.getValue())));
+                shapedRecipe.setIngredient(entry.getKey(), ingredientToBukkitRecipeChoice(entry.getValue()));
             }
             try {
                 Object craftRecipe = Reflections.method$CraftShapedRecipe$fromBukkitRecipe.invoke(null, shapedRecipe);
@@ -88,7 +101,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 shapelessRecipe.setCategory(CraftingBookCategory.valueOf(Objects.requireNonNull(ceRecipe.category()).name()));
             }
             for (Ingredient<ItemStack> ingredient : ceRecipe.ingredientsInUse()) {
-                shapelessRecipe.addIngredient(new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ingredient)));
+                shapelessRecipe.addIngredient(ingredientToBukkitRecipeChoice(ingredient));
             }
             try {
                 Object craftRecipe = Reflections.method$CraftShapelessRecipe$fromBukkitRecipe.invoke(null, shapelessRecipe);
@@ -102,7 +115,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             CustomSmeltingRecipe<ItemStack> ceRecipe = (CustomSmeltingRecipe<ItemStack>) recipe;
             FurnaceRecipe furnaceRecipe = new FurnaceRecipe(
                     key, ceRecipe.result(ItemBuildContext.EMPTY),
-                    new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ceRecipe.ingredient())),
+                    ingredientToBukkitRecipeChoice(ceRecipe.ingredient()),
                     ceRecipe.experience(), ceRecipe.cookingTime()
             );
             if (ceRecipe.group() != null) {
@@ -123,7 +136,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             CustomSmokingRecipe<ItemStack> ceRecipe = (CustomSmokingRecipe<ItemStack>) recipe;
             SmokingRecipe smokingRecipe = new SmokingRecipe(
                     key, ceRecipe.result(ItemBuildContext.EMPTY),
-                    new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ceRecipe.ingredient())),
+                    ingredientToBukkitRecipeChoice(ceRecipe.ingredient()),
                     ceRecipe.experience(), ceRecipe.cookingTime()
             );
             if (ceRecipe.group() != null) {
@@ -144,7 +157,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             CustomBlastingRecipe<ItemStack> ceRecipe = (CustomBlastingRecipe<ItemStack>) recipe;
             BlastingRecipe blastingRecipe = new BlastingRecipe(
                     key, ceRecipe.result(ItemBuildContext.EMPTY),
-                    new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ceRecipe.ingredient())),
+                    ingredientToBukkitRecipeChoice(ceRecipe.ingredient()),
                     ceRecipe.experience(), ceRecipe.cookingTime()
             );
             if (ceRecipe.group() != null) {
@@ -165,7 +178,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) recipe;
             CampfireRecipe campfireRecipe = new CampfireRecipe(
                     key, ceRecipe.result(ItemBuildContext.EMPTY),
-                    new RecipeChoice.MaterialChoice(ingredientToBukkitMaterials(ceRecipe.ingredient())),
+                    ingredientToBukkitRecipeChoice(ceRecipe.ingredient()),
                     ceRecipe.experience(), ceRecipe.cookingTime()
             );
             if (ceRecipe.group() != null) {
@@ -495,6 +508,10 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                                     VanillaStoneCuttingRecipe recipe = this.recipeReader.readStoneCutting(jsonObject);
                                     handleDataPackStoneCuttingRecipe(id, recipe);
                                 }
+                                case "minecraft:smithing_transform" -> {
+                                    VanillaSmithingTransformRecipe recipe = this.recipeReader.readSmithingTransform(jsonObject);
+                                    handleDataPackSmithingTransform(id, recipe, (injectLogics::add));
+                                }
                             }
                         }
                     }
@@ -518,6 +535,29 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
             this.plugin.logger().warn("Failed to inject vanilla recipes", e);
         }
         return future;
+    }
+
+    private boolean readVanillaIngredients(boolean hasCustomItemInTag, List<String> ingredients, Consumer<Material> materialConsumer, Consumer<Holder<Key>> holderConsumer) {
+        for (String item : ingredients) {
+            if (item.charAt(0) == '#') {
+                Key tag = Key.from(item.substring(1));
+                for (Material material : tagToMaterials(tag)) {
+                    materialConsumer.accept(material);
+                }
+                if (!hasCustomItemInTag) {
+                    if (!plugin.itemManager().tagToCustomItems(tag).isEmpty()) {
+                        hasCustomItemInTag = true;
+                    }
+                }
+                for (Holder<Key> holder : plugin.itemManager().tagToItems(tag)) {
+                    holderConsumer.accept(holder);
+                }
+            } else {
+                materialConsumer.accept(MaterialUtils.getMaterial(item));
+                holderConsumer.accept(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.from(item)).orElseThrow());
+            }
+        }
+        return hasCustomItemInTag;
     }
 
     private void handleDataPackShapelessRecipe(Key id, VanillaShapelessRecipe recipe, Consumer<Runnable> callback) {
@@ -669,22 +709,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         Set<Material> materials = new HashSet<>();
         Set<Holder<Key>> holders = new HashSet<>();
 
-        boolean hasCustomItemInTag = false;
-        for (String item : recipe.ingredient()) {
-            if (item.charAt(0) == '#') {
-                Key tag = Key.from(item.substring(1));
-                materials.addAll(tagToMaterials(tag));
-                if (!hasCustomItemInTag) {
-                    if (!plugin.itemManager().tagToCustomItems(tag).isEmpty()) {
-                        hasCustomItemInTag = true;
-                    }
-                }
-                holders.addAll(plugin.itemManager().tagToItems(tag));
-            } else {
-                materials.add(MaterialUtils.getMaterial(item));
-                holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.from(item)).orElseThrow());
-            }
-        }
+        boolean hasCustomItemInTag = readVanillaIngredients(false, recipe.ingredient(), materials::add, holders::add);
         org.bukkit.inventory.CookingRecipe<?> cookingRecipe = constructor1.apply(key, result, new RecipeChoice.MaterialChoice(new ArrayList<>(materials)), recipe.experience(), recipe.cookingTime());
         if (recipe.group() != null) {
             cookingRecipe.setGroup(recipe.group());
@@ -708,6 +733,52 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                     unregisterRecipe(key);
                     Reflections.method$CraftRecipe$addToCraftingManager.invoke(fromBukkitRecipeMethod.invoke(null, cookingRecipe));
                     injectCookingRecipe(id, ceRecipe);
+                } catch (Exception e) {
+                    CraftEngine.instance().logger().warn("Failed to convert smelting recipe", e);
+                }
+            });
+            this.injectedDataPackRecipes.add(key);
+        }
+        this.addInternalRecipe(id, ceRecipe);
+    }
+
+    private void handleDataPackSmithingTransform(Key id, VanillaSmithingTransformRecipe recipe, Consumer<Runnable> callback) {
+        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
+        ItemStack result = createResultStack(recipe.result());
+        boolean hasCustomItemInTag;
+
+        Set<Material> additionMaterials = new HashSet<>();
+        Set<Holder<Key>> additionHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(false, recipe.addition(), additionMaterials::add, additionHolders::add);
+
+        Set<Material> templateMaterials = new HashSet<>();
+        Set<Holder<Key>> templateHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(hasCustomItemInTag, recipe.template(), templateMaterials::add, templateHolders::add);
+
+        Set<Material> baseMaterials = new HashSet<>();
+        Set<Holder<Key>> baseHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(hasCustomItemInTag, recipe.base(), baseMaterials::add, baseHolders::add);
+
+        CustomSmithingTransformRecipe<ItemStack> ceRecipe = new CustomSmithingTransformRecipe<>(
+                id,
+                Ingredient.of(baseHolders),
+                Ingredient.of(templateHolders),
+                Ingredient.of(additionHolders),
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
+        );
+
+        SmithingTransformRecipe transformRecipe = new SmithingTransformRecipe(key, result,
+                new RecipeChoice.MaterialChoice(new ArrayList<>(templateMaterials)),
+                new RecipeChoice.MaterialChoice(new ArrayList<>(baseMaterials)),
+                new RecipeChoice.MaterialChoice(new ArrayList<>(additionMaterials)),
+                true
+        );
+
+        if (hasCustomItemInTag) {
+            callback.accept(() -> {
+                try {
+                    unregisterRecipe(key);
+                    Reflections.method$CraftRecipe$addToCraftingManager.invoke(Reflections.method$CraftSmithingTransformRecipe$fromBukkitRecipe.invoke(null, transformRecipe));
                 } catch (Exception e) {
                     CraftEngine.instance().logger().warn("Failed to convert smelting recipe", e);
                 }
@@ -766,12 +837,16 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         return Key.of(prefix, fileName);
     }
 
-    private static List<Material> ingredientToBukkitMaterials(Ingredient<ItemStack> ingredient) {
-        Set<Material> materials = new HashSet<>();
-        for (Holder<Key> holder : ingredient.items()) {
-            materials.add(getMaterialById(holder.value()));
+    private static RecipeChoice ingredientToBukkitRecipeChoice(Ingredient<ItemStack> ingredient) {
+        if (ingredient == null) {
+            return EmptyRecipeChoice.INSTANCE;
+        } else {
+            Set<Material> materials = new HashSet<>();
+            for (Holder<Key> holder : ingredient.items()) {
+                materials.add(getMaterialById(holder.value()));
+            }
+            return new RecipeChoice.MaterialChoice(new ArrayList<>(materials));
         }
-        return new ArrayList<>(materials);
     }
 
     private static Material getMaterialById(Key key) {
