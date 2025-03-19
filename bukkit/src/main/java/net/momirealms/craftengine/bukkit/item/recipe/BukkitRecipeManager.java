@@ -382,9 +382,13 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.byType.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         this.byId.put(id, recipe);
         this.byResult.computeIfAbsent(recipe.result().item().id(), k -> new ArrayList<>()).add(recipe);
+        HashSet<Key> usedKeys = new HashSet<>();
         for (Ingredient<ItemStack> ingredient : recipe.ingredientsInUse()) {
-            for (Holder<Key> holder : ingredient.items().stream().distinct().toList()) {
-                this.byIngredient.computeIfAbsent(holder.value(), k -> new ArrayList<>()).add(recipe);
+            for (Holder<Key> holder : ingredient.items()) {
+                Key key = holder.value();
+                if (usedKeys.add(key)) {
+                    this.byIngredient.computeIfAbsent(key, k -> new ArrayList<>()).add(recipe);
+                }
             }
         }
     }
