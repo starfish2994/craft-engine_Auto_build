@@ -25,9 +25,9 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     private final List<ItemDataProcessor> processors;
 
     public CustomSmithingTransformRecipe(Key id,
-                                         @Nullable Ingredient<T> addition,
                                          @Nullable Ingredient<T> base,
                                          @Nullable Ingredient<T> template,
+                                         @Nullable Ingredient<T> addition,
                                          CustomRecipeResult<T> result,
                                          List<ItemDataProcessor> processors
     ) {
@@ -50,12 +50,12 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
 
     private boolean checkIngredient(Ingredient<T> ingredient, OptimizedIDItem<T> item) {
         if (ingredient != null) {
-            if (item == null) {
+            if (item == null || item.isEmpty()) {
                 return false;
             }
             return ingredient.test(item);
         } else {
-            return item == null;
+            return item == null || item.isEmpty();
         }
     }
 
@@ -124,12 +124,12 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> base = MiscUtils.getAsStringList(arguments.get("base"));
-            List<String> addition = MiscUtils.getAsStringList(arguments.get("addition"));
-            List<String> template = MiscUtils.getAsStringList(arguments.get("template"));
+            List<String> addition = MiscUtils.getAsStringList(arguments.get("addition-input"));
+            List<String> template = MiscUtils.getAsStringList(arguments.get("template-type"));
             return new CustomSmithingTransformRecipe<>(
                     id,
-                    toIngredient(addition), toIngredient(base), toIngredient(template), parseResult(arguments),
-                    List.of(new ItemDataProcessor[]{})
+                    toIngredient(base), toIngredient(template),toIngredient(addition), parseResult(arguments),
+                    List.of(ItemDataProcessor.MERGE_ALL)
             );
         }
 

@@ -780,7 +780,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                     unregisterRecipe(key);
                     Reflections.method$CraftRecipe$addToCraftingManager.invoke(Reflections.method$CraftSmithingTransformRecipe$fromBukkitRecipe.invoke(null, transformRecipe));
                 } catch (Exception e) {
-                    CraftEngine.instance().logger().warn("Failed to convert smelting recipe", e);
+                    CraftEngine.instance().logger().warn("Failed to convert transform recipe", e);
                 }
             });
             this.injectedDataPackRecipes.add(key);

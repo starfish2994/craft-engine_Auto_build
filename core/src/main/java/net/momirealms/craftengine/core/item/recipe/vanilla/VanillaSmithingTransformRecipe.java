@@ -11,7 +11,7 @@ public class VanillaSmithingTransformRecipe implements VanillaRecipe {
     private final List<String> template;
     private final List<String> addition;
 
-    public VanillaSmithingTransformRecipe(List<String> addition, List<String> base, List<String> template, RecipeResult result) {
+    public VanillaSmithingTransformRecipe(List<String> base, List<String> template, List<String> addition, RecipeResult result) {
         this.result = result;
         this.base = base;
         this.template = template;

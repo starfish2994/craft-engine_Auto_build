@@ -143,6 +143,7 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
         this.factory.customName(this.item, displayName);
         return this;
     }
+
     @Override
     public Item<I> itemName(String itemName) {
         this.factory.itemName(this.item, itemName);

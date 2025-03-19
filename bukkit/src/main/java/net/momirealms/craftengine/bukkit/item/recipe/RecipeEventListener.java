@@ -11,12 +11,11 @@ import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.*;
-import net.momirealms.craftengine.core.item.recipe.CustomCampfireRecipe;
-import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
-import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
+import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -38,6 +37,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.view.AnvilView;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -845,6 +845,42 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
+        ItemStack base = inventory.getInputEquipment();
+        ItemStack template = inventory.getInputTemplate();
+        ItemStack addition = inventory.getInputMineral();
 
+        SmithingInput<ItemStack> input = new SmithingInput<>(
+                getOptimizedIDItem(base),
+                getOptimizedIDItem(template),
+                getOptimizedIDItem(addition)
+        );
+
+        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SMITHING_TRANSFORM, input);
+        if (ceRecipe == null) {
+            event.setResult(null);
+            return;
+        }
+
+        Player player;
+        try {
+            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(event.getView());
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to get inventory viewer", e);
+            return;
+        }
+
+        CustomSmithingTransformRecipe<ItemStack> transformRecipe = (CustomSmithingTransformRecipe<ItemStack>) ceRecipe;
+        ItemStack processed = transformRecipe.assemble(new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY), this.itemManager.wrap(base));
+        event.setResult(processed);
+    }
+
+    private OptimizedIDItem<ItemStack> getOptimizedIDItem(@Nullable ItemStack itemStack) {
+        if (ItemUtils.isEmpty(itemStack)) {
+            return EMPTY;
+        } else {
+            Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
+            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+            return idHolder.map(keyReference -> new OptimizedIDItem<>(keyReference, itemStack)).orElse(EMPTY);
+        }
     }
 }
