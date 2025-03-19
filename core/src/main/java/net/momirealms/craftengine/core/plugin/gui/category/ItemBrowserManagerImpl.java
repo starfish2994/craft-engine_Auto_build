@@ -349,10 +349,215 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             openCookingRecipePage(player, (CustomCookingRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
             return;
         }
-        if (recipeType == RecipeTypes.STONE_CUTTING) {
+        if (recipeType == RecipeTypes.STONECUTTING) {
             openStoneCuttingRecipePage(player, (CustomStoneCuttingRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
             return;
         }
+        if (recipeType == RecipeTypes.SMITHING_TRANSFORM) {
+            openSmithingTransformRecipePage(player, (CustomSmithingTransformRecipe<Object>) recipe, parentGui, recipes, index, depth, canOpenNoRecipePage);
+            return;
+        }
+    }
+
+    public void openSmithingTransformRecipePage(Player player, CustomSmithingTransformRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {
+        Key previous = index > 0 ? Constants.RECIPE_PREVIOUS_PAGE_AVAILABLE : Constants.RECIPE_PREVIOUS_PAGE_BLOCK;
+        Key next = index + 1 < recipes.size() ? Constants.RECIPE_NEXT_PAGE_AVAILABLE : Constants.RECIPE_NEXT_PAGE_BLOCK;
+        Key result = recipe.result().item().id();
+        GuiLayout layout = new GuiLayout(
+                "         ",
+                "         ",
+                " ABC  X  ",
+                "      ^  ",
+                "         ",
+                " <  =  > "
+        )
+        .addIngredient('X', GuiElement.constant(this.plugin.itemManager().createWrappedItem(result, player).count(recipe.result().count()), (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+                return;
+            }
+            if (LEFT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(result);
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                } else if (canOpenNoRecipePage) {
+                    openNoRecipePage(player, result, e.gui(), 0);
+                }
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                }
+            }
+        }))
+        .addIngredient('^', player.hasPermission(GET_ITEM_PERMISSION) ? GuiElement.constant(this.plugin.itemManager().createWrappedItem(Constants.RECIPE_GET_ITEM, player), (e, c) -> {
+            c.cancel();
+            player.playSound(Constants.SOUND_PICK_ITEM);
+            if (LEFT_CLICK.contains(c.type())) {
+                player.giveItem(this.plugin.itemManager().createWrappedItem(result, player));
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(result, player);
+                player.giveItem(item.count(item.maxStackSize()));
+            }
+        }) : GuiElement.EMPTY)
+        .addIngredient('=', GuiElement.constant(this.plugin.itemManager().getCustomItem(parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT)
+                        .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY)))
+                        .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + (parentGui != null ? Constants.RECIPE_BACK : Constants.RECIPE_EXIT))),
+                ((element, click) -> {
+                    click.cancel();
+                    player.playSound(Constants.SOUND_RETURN_PAGE, 0.25f, 1);
+                    if (parentGui != null) {
+                        parentGui.open(player);
+                    } else {
+                        player.closeInventory();
+                    }
+                }))
+        )
+        .addIngredient('>', GuiElement.constant(this.plugin.itemManager()
+                .getCustomItem(next)
+                .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.builder()
+                        .withParameter(GuiParameters.CURRENT_PAGE, String.valueOf(index + 1))
+                        .withParameter(GuiParameters.MAX_PAGE, String.valueOf(recipes.size()))
+                        .build())))
+                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + next)), (e, c) -> {
+            c.cancel();
+            if (index + 1 < recipes.size()) {
+                player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
+                openRecipePage(player, parentGui, recipes, index + 1, depth, canOpenNoRecipePage);
+            }
+        }))
+        .addIngredient('<', GuiElement.constant(this.plugin.itemManager()
+                .getCustomItem(previous)
+                .map(it -> it.buildItem(ItemBuildContext.of(player, ContextHolder.builder()
+                        .withParameter(GuiParameters.CURRENT_PAGE, String.valueOf(index + 1))
+                        .withParameter(GuiParameters.MAX_PAGE, String.valueOf(recipes.size()))
+                        .build())))
+                .orElseThrow(() -> new GuiElementMissingException("Can't find gui element " + previous)), (e, c) -> {
+            c.cancel();
+            if (index > 0) {
+                player.playSound(Constants.SOUND_CHANGE_PAGE, 0.25f, 1);
+                openRecipePage(player, parentGui, recipes, index - 1, depth, canOpenNoRecipePage);
+            }
+        }));
+
+
+        List<Item<?>> templates = new ArrayList<>();
+        Optional.ofNullable(recipe.template()).ifPresent(it -> {
+            for (Holder<Key> in : it.items()) {
+                templates.add(this.plugin.itemManager().createWrappedItem(in.value(), player));
+            }
+        });
+        layout.addIngredient('A', templates.isEmpty() ? GuiElement.EMPTY : GuiElement.recipeIngredient(templates, (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+                return;
+            }
+            if (LEFT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                } else if (canOpenNoRecipePage) {
+                    openNoRecipePage(player, e.item().id(), e.gui(), 0);
+                }
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                }
+            }
+        }));
+
+        List<Item<?>> bases = new ArrayList<>();
+        Optional.ofNullable(recipe.base()).ifPresent(it -> {
+            for (Holder<Key> in : it.items()) {
+                bases.add(this.plugin.itemManager().createWrappedItem(in.value(), player));
+            }
+        });
+        layout.addIngredient('B', bases.isEmpty() ? GuiElement.EMPTY : GuiElement.recipeIngredient(bases, (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+                return;
+            }
+            if (LEFT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                } else if (canOpenNoRecipePage) {
+                    openNoRecipePage(player, e.item().id(), e.gui(), 0);
+                }
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                }
+            }
+        }));
+
+        List<Item<?>> additions = new ArrayList<>();
+        Optional.ofNullable(recipe.addition()).ifPresent(it -> {
+            for (Holder<Key> in : it.items()) {
+                additions.add(this.plugin.itemManager().createWrappedItem(in.value(), player));
+            }
+        });
+        layout.addIngredient('C', additions.isEmpty() ? GuiElement.EMPTY : GuiElement.recipeIngredient(additions, (e, c) -> {
+            c.cancel();
+            if (MIDDLE_CLICK.contains(c.type()) && player.isCreativeMode() && player.hasPermission(GET_ITEM_PERMISSION) && c.itemOnCursor() == null) {
+                Item<?> item = this.plugin.itemManager().createWrappedItem(e.item().id(), player);
+                item.count(item.maxStackSize());
+                c.setItemOnCursor(item);
+                return;
+            }
+            if (LEFT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                } else if (canOpenNoRecipePage) {
+                    openNoRecipePage(player, e.item().id(), e.gui(), 0);
+                }
+            } else if (RIGHT_CLICK.contains(c.type())) {
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                if (inRecipes == recipes) return;
+                player.playSound(Constants.SOUND_CLICK_BUTTON);
+                if (!inRecipes.isEmpty()) {
+                    openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
+                }
+            }
+        }));
+
+        BasicGui.builder()
+                .layout(layout)
+                .inventoryClickConsumer(c -> {
+                    if (MOVE_TO_OTHER_INV.contains(c.type()) || DOUBLE_CLICK.contains(c.type())) {
+                        c.cancel();
+                    }
+                })
+                .build()
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_SMITHING_TRANSFORM_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .refresh()
+                .open(player);
     }
 
     public void openStoneCuttingRecipePage(Player player, CustomStoneCuttingRecipe<Object> recipe, Gui parentGui, List<Recipe<Object>> recipes, int index, int depth, boolean canOpenNoRecipePage) {

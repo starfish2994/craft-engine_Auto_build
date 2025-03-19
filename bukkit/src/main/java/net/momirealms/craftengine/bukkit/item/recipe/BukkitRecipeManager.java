@@ -195,7 +195,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 CraftEngine.instance().logger().warn("Failed to convert campfire recipe", e);
             }
         });
-        BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.STONE_CUTTING, (key, recipe) -> {
+        BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.STONECUTTING, (key, recipe) -> {
             CustomStoneCuttingRecipe<ItemStack> ceRecipe = (CustomStoneCuttingRecipe<ItemStack>) recipe;
             List<ItemStack> itemStacks = new ArrayList<>();
             for (Holder<Key> item : ceRecipe.ingredient().items()) {
@@ -383,7 +383,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.byId.put(id, recipe);
         this.byResult.computeIfAbsent(recipe.result().item().id(), k -> new ArrayList<>()).add(recipe);
         for (Ingredient<ItemStack> ingredient : recipe.ingredientsInUse()) {
-            for (Holder<Key> holder : ingredient.items()) {
+            for (Holder<Key> holder : ingredient.items().stream().distinct().toList()) {
                 this.byIngredient.computeIfAbsent(holder.value(), k -> new ArrayList<>()).add(recipe);
             }
         }

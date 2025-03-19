@@ -26,9 +26,9 @@ resource-pack:
     obfuscation:
       enable: false
       seed: 0 # 0 = random seed
-      fake-directory: true
-      escape-unicode: true
-      break-json: true
+      fake-directory: false
+      escape-unicode: false
+      break-json: false
       resource-location:
         enable: true
         random-namespace:
@@ -184,12 +184,14 @@ gui:
         title: "<white><shift:-11><image:internal:cooking_recipe><shift:-136><image:internal:smelting>"
       smoking:
         title: "<white><shift:-11><image:internal:cooking_recipe><shift:-136><image:internal:smoking>"
-      campfire:
+      campfire-cooking:
         title: "<white><shift:-11><image:internal:cooking_recipe><shift:-136><image:internal:campfire>"
       crafting:
         title: "<white><shift:-11><image:internal:crafting_recipe>"
       stonecutting:
         title: "<white><shift:-11><image:internal:stonecutting_recipe>"
+      smithing-transform:
+        title: "<white><shift:-11><image:internal:smithing_transform_recipe>"
 
 performance:
   # Maximum chain update depth when fixing client visuals

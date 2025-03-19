@@ -19,6 +19,6 @@ public class VanillaStoneCuttingRecipe extends VanillaGroupedRecipe {
 
     @Override
     public Key type() {
-        return RecipeTypes.STONE_CUTTING;
+        return RecipeTypes.STONECUTTING;
     }
 }

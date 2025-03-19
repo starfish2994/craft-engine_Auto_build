@@ -4414,6 +4414,18 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$CraftResultInventory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftResultInventory")
+            )
+    );
+
+    public static final Field field$CraftResultInventory$resultInventory = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftResultInventory, clazz$Container, 0
+            )
+    );
+
     // 1.20.5+
     public static final Method method$ItemStack$hurtAndBreak =
             ReflectionUtils.getMethod(

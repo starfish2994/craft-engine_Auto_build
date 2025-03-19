@@ -53,12 +53,18 @@ images:
     font: minecraft:internal
     file: minecraft:font/gui/custom/stonecutting_recipe.png
     char: '\ub008'
+  internal:smithing_transform_recipe:
+    height: 142
+    ascent: 20
+    font: minecraft:internal
+    file: minecraft:font/gui/custom/smithing_transform_recipe.png
+    char: '\ub009'
   internal:no_recipe:
     height: 140
     ascent: 18
     font: minecraft:internal
     file: minecraft:font/gui/custom/no_recipe.png
-    char: '\ub009'
+    char: '\ub00a'
 
 templates:
   internal:icon/2d:

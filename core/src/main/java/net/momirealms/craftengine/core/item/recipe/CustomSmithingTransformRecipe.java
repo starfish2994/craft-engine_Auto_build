@@ -124,7 +124,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> base = MiscUtils.getAsStringList(arguments.get("base"));
-            List<String> addition = MiscUtils.getAsStringList(arguments.get("addition-input"));
+            List<String> addition = MiscUtils.getAsStringList(arguments.get("addition"));
             List<String> template = MiscUtils.getAsStringList(arguments.get("template-type"));
             return new CustomSmithingTransformRecipe<>(
                     id,
