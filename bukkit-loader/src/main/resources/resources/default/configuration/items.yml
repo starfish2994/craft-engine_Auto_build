@@ -382,7 +382,7 @@ recipes#11:
       count: 1
   default:topaz_crossbow:
     type: smithing_transform
-    base: minecraft:bow
+    base: minecraft:crossbow
     addition: default:topaz
     template-type: default:topaz
     result:
