@@ -769,7 +769,8 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 templateHolders.isEmpty() ? null : Ingredient.of(templateHolders),
                 additionHolders.isEmpty() ? null : Ingredient.of(additionHolders),
                 new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count()),
-                List.of(CustomSmithingTransformRecipe.ItemDataProcessor.MERGE_ALL)
+                true,
+                List.of()
         );
 
         SmithingTransformRecipe transformRecipe = new SmithingTransformRecipe(key, result,

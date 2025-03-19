@@ -213,6 +213,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void maxStackSize(ItemWrapper<ItemStack> item, Integer maxStackSize) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
@@ -229,7 +230,9 @@ public class UniversalItemFactory extends BukkitItemFactory {
     @Override
     protected ItemWrapper<ItemStack> merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
         Object itemStack = ItemObject.copy(item2.getLiteralObject());
-        ItemObject.setCustomDataTag(itemStack, ItemObject.getCustomDataTag(item1.getLiteralObject()));
+        ItemObject.setCustomDataTag(itemStack, TagCompound.clone(ItemObject.getCustomDataTag(item1.getLiteralObject())));
+        // one more step than vanilla
+        TagCompound.merge(ItemObject.getCustomDataTag(itemStack), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
         return new RTagItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack)), item2.count());
     }
 }

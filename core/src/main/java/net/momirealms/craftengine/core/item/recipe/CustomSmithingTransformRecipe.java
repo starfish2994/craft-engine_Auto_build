@@ -7,13 +7,16 @@ import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
+import net.momirealms.craftengine.core.registry.Registries;
+import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.BiFunction;
 
 public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -22,6 +25,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     private final Ingredient<T> base;
     private final Ingredient<T> template;
     private final Ingredient<T> addition;
+    private final boolean mergeComponents;
     private final List<ItemDataProcessor> processors;
 
     public CustomSmithingTransformRecipe(Key id,
@@ -29,6 +33,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
                                          @Nullable Ingredient<T> template,
                                          @Nullable Ingredient<T> addition,
                                          CustomRecipeResult<T> result,
+                                         boolean mergeComponents,
                                          List<ItemDataProcessor> processors
     ) {
         this.id = id;
@@ -37,6 +42,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         this.template = template;
         this.addition = addition;
         this.processors = processors;
+        this.mergeComponents = mergeComponents;
     }
 
     @SuppressWarnings("unchecked")
@@ -79,12 +85,12 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
 
     @Override
     public Key id() {
-        return id;
+        return this.id;
     }
 
     @Override
     public T result(ItemBuildContext context) {
-        return result.buildItemStack(context);
+        return this.result.buildItemStack(context);
     }
 
     @SuppressWarnings("unchecked")
@@ -92,10 +98,13 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         T result = this.result(context);
         Item<T> wrappedResult = (Item<T>) CraftEngine.instance().itemManager().wrap(result);
         Item<T> finalResult = wrappedResult;
-        for (ItemDataProcessor processor : this.processors) {
-            finalResult = (Item<T>) processor.apply(base, wrappedResult);
+        if (this.mergeComponents) {
+            finalResult = base.merge(wrappedResult);
         }
-        return finalResult.getItem();
+        for (ItemDataProcessor processor : this.processors) {
+            processor.accept(base, wrappedResult, finalResult);
+        }
+        return finalResult.load();
     }
 
     @Override
@@ -105,7 +114,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
 
     @Nullable
     public Ingredient<T> base() {
-        return base;
+        return this.base;
     }
 
     @Nullable
@@ -126,10 +135,14 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
             List<String> base = MiscUtils.getAsStringList(arguments.get("base"));
             List<String> addition = MiscUtils.getAsStringList(arguments.get("addition"));
             List<String> template = MiscUtils.getAsStringList(arguments.get("template-type"));
+            boolean mergeComponents = (boolean) arguments.getOrDefault("merge-components", true);
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> processors = (List<Map<String, Object>>) arguments.getOrDefault("post-processors", List.of());
             return new CustomSmithingTransformRecipe<>(
                     id,
                     toIngredient(base), toIngredient(template),toIngredient(addition), parseResult(arguments),
-                    List.of(ItemDataProcessor.MERGE_ALL)
+                    mergeComponents,
+                    ItemDataProcessors.fromMapList(processors)
             );
         }
 
@@ -146,16 +159,42 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         }
     }
 
-    @FunctionalInterface
-    public interface ItemDataProcessor extends BiFunction<Item<?>, Item<?>, Item<?>> {
-        MergeAllDataProcessor MERGE_ALL = new MergeAllDataProcessor();
+    public static class ItemDataProcessors {
+
+        public static List<ItemDataProcessor> fromMapList(List<Map<String, Object>> mapList) {
+            if (mapList == null || mapList.isEmpty()) return List.of();
+            List<ItemDataProcessor> functions = new ArrayList<>();
+            for (Map<String, Object> map : mapList) {
+                functions.add(fromMap(map));
+            }
+            return functions;
+        }
+
+        public static ItemDataProcessor fromMap(Map<String, Object> map) {
+            String type = (String) map.get("type");
+            if (type == null) {
+                throw new NullPointerException("processor type cannot be null");
+            }
+            Key key = Key.withDefaultNamespace(type, "craftengine");
+            ItemDataProcessor.Factory factory = BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY.getValue(key);
+            if (factory == null) {
+                throw new IllegalArgumentException("Unknown processor type: " + type);
+            }
+            return factory.create(map);
+        }
+
+        public static void register(Key key, ItemDataProcessor.Factory factory) {
+            Holder.Reference<ItemDataProcessor.Factory> holder = ((WritableRegistry<ItemDataProcessor.Factory>) BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY)
+                    .registerForHolder(new ResourceKey<>(Registries.SMITHING_RESULT_PROCESSOR_FACTORY.location(), key));
+            holder.bindValue(factory);
+        }
     }
 
-    public static class MergeAllDataProcessor implements ItemDataProcessor {
+    @FunctionalInterface
+    public interface ItemDataProcessor extends TriConsumer<Item<?>, Item<?>, Item<?>> {
 
-        @Override
-        public Item<?> apply(Item<?> item1, Item<?> item2) {
-            return item1.merge(item2);
+        interface Factory {
+            ItemDataProcessor create(Map<String, Object> arguments);
         }
     }
 }
