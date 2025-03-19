@@ -28,6 +28,7 @@ resource-pack:
       seed: 0 # 0 = random seed
       fake-directory: true
       escape-unicode: true
+      break-json: true
       resource-location:
         enable: true
         random-namespace:
