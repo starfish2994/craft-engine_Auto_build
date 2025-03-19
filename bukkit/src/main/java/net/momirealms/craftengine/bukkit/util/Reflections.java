@@ -4125,6 +4125,18 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$CraftSmithingTransformRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftSmithingTransformRecipe")
+            )
+    );
+
+    public static final Method method$CraftSmithingTransformRecipe$fromBukkitRecipe = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftSmithingTransformRecipe, clazz$CraftSmithingTransformRecipe, SmithingTransformRecipe.class
+            )
+    );
+
     public static final Class<?> clazz$FeatureFlagSet = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.flag.FeatureFlagSet")
@@ -4254,6 +4266,12 @@ public class Reflections {
     public static final Class<?> clazz$RecipeHolder = ReflectionUtils.getClazz(
             BukkitReflectionUtils.assembleMCClass("world.item.crafting.RecipeHolder")
     );
+
+    // 1.20.2-1.21.1 resource location
+    // 1.21.2+ resource key
+    public static final Constructor<?> constructor$RecipeHolder = Optional.ofNullable(clazz$RecipeHolder)
+            .map(it -> ReflectionUtils.getConstructor(it, 0))
+            .orElse(null);
 
     // 1.20.2+
     public static final Field field$RecipeHolder$recipe = Optional.ofNullable(clazz$RecipeHolder)
@@ -4393,6 +4411,18 @@ public class Reflections {
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.entity.LivingEntity"),
                     BukkitReflectionUtils.assembleMCClass("world.entity.EntityLiving")
+            )
+    );
+
+    public static final Class<?> clazz$CraftResultInventory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("inventory.CraftResultInventory")
+            )
+    );
+
+    public static final Field field$CraftResultInventory$resultInventory = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftResultInventory, clazz$Container, 0
             )
     );
 
@@ -4933,4 +4963,56 @@ public class Reflections {
             ReflectionUtils.getDeclaredField(
                     clazz$CraftInventoryAnvil, clazz$AnvilMenu, 0
             );
+
+    public static final Class<?> clazz$SmithingTransformRecipe = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.SmithingTransformRecipe")
+            )
+    );
+
+    public static final Constructor<?> constructor$SmithingTransformRecipe = requireNonNull(
+            VersionHelper.isVersionNewerThan1_21_2() ?
+                   ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack) :
+                   VersionHelper.isVersionNewerThan1_20_2() ?
+                           ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack) :
+                           ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+    );
+
+    public static final Method method$RecipeManager$addRecipe = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
+                    ReflectionUtils.getMethod(clazz$RecipeManager, void.class, clazz$RecipeHolder) :
+                    ReflectionUtils.getMethod(clazz$RecipeManager, void.class, clazz$Recipe)
+    );
+
+    public static final Method method$CraftRecipe$toIngredient = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftRecipe, clazz$Ingredient, RecipeChoice.class, boolean.class
+            )
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$transmuteCopy = ReflectionUtils.getMethod(
+            clazz$ItemStack, clazz$ItemStack, clazz$ItemLike, int.class
+    );
+
+    // 1.20.5+
+    public static final Class<?> clazz$DataComponentPatch = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass("core.component.DataComponentPatch")
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$getComponentsPatch = Optional.ofNullable(clazz$DataComponentPatch)
+            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, it))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$ItemStack$applyComponents = Optional.ofNullable(clazz$DataComponentPatch)
+            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, void.class, it))
+            .orElse(null);
+
+    public static final Method method$ItemStack$getItem = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, clazz$Item
+            )
+    );
 }

@@ -33,9 +33,31 @@ templates#models#block:
       textures:
         "end": "{end_texture}"
         "side": "{side_texture}"
+  # template: default:model/cube
+  # arguments:
+  #   model: model_path
+  #   particle_texture: particle_texture_path
+  #   down_texture: down_texture_path
+  #   up_texture: up_texture_path
+  #   north_texture: north_texture_path
+  #   east_texture: east_texture_path
+  #   south_texture: south_texture_path
+  #   west_texture: west_texture_path
+  default:model/cube:
+    path: "{model}"
+    generation:
+      parent: "minecraft:block/cube_column"
+      textures:
+        "particle": "minecraft:block/custom/block_particle"
+        "down": "minecraft:block/custom/block_down"
+        "up": "minecraft:block/custom/block_up"
+        "north": "minecraft:block/custom/block_north"
+        "east": "minecraft:block/custom/block_east"
+        "south": "minecraft:block/custom/block_south"
+        "west": "minecraft:block/custom/block_west"
 
 # 2D items
-templates#models#generated:
+templates#models#2d:
   # template: default:model/generated
   # arguments:
   #   model: model_path
@@ -91,6 +113,22 @@ templates#models#generated:
       parent: "minecraft:item/handheld"
       textures:
         "layer0": "{path}"
+
+# shield
+templates#models#shield:
+  # template: default:model/shield_3d
+  # arguments:
+  #   model: shield_model_path
+  #   block_model: shield_block_model_path
+  default:model/shield_3d:
+    type: "minecraft:condition"
+    property: "minecraft:using_item"
+    on-false:
+      type: minecraft:model
+      path: "{model}"
+    on-true:
+      type: minecraft:model
+      path: "{block_model}"
 
 # fishing rods
 templates#models#fishing_rod:
@@ -258,14 +296,14 @@ templates#models#crossbow:
         - when: arrow
           model:
             type: minecraft:model
-            path: "{arrow_path}"
+            path: "{arrow_model}"
         - when: rocket
           model:
             type: minecraft:model
             path: "{firework_model}"
       fallback:
         type: minecraft:model
-        path: "{path}"
+        path: "{model}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:crossbow/pull"
@@ -305,7 +343,7 @@ templates#models#crossbow:
         - when: arrow
           model:
             type: minecraft:model
-            path: "{arrow_path}"
+            path: "{arrow_model}"
             generation:
               parent: "minecraft:item/crossbow_arrow"
               textures:
@@ -320,7 +358,7 @@ templates#models#crossbow:
                 "layer0": "{firework_texture}"
       fallback:
         type: minecraft:model
-        path: "{path}"
+        path: "{model}"
         generation:
           parent: "minecraft:item/crossbow"
           textures:
@@ -339,7 +377,7 @@ templates#models#crossbow:
           threshold: 0.58
         - model:
             type: minecraft:model
-            path: "{pulling_2_path}"
+            path: "{pulling_2_model}"
             generation:
               parent: "minecraft:item/crossbow_pulling_2"
               textures:
@@ -862,9 +900,9 @@ templates#recipes:
     category: building
     group: planks
     ingredients:
-      A: "#default:{tree_type}_logs"
+      A: "#default:{wood_type}_logs"
     result:
-      id: "default:{tree_type}_planks"
+      id: "default:{wood_type}_planks"
       count: 4
   default:recipe/log_2_wood:
     type: shaped
@@ -874,9 +912,9 @@ templates#recipes:
       - "AA"
       - "AA"
     ingredients:
-      A: "default:{tree_type}_log"
+      A: "default:{wood_type}_log"
     result:
-      id: "default:{tree_type}_wood"
+      id: "default:{wood_type}_wood"
       count: 3
   default:recipe/smelting_ore:
     type: smelting

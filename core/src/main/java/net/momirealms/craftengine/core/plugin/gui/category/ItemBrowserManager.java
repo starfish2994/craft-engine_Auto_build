@@ -65,6 +65,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
         public static String RECIPE_CAMPFIRE_TITLE;
         public static String RECIPE_CRAFTING_TITLE;
         public static String RECIPE_STONECUTTING_TITLE;
+        public static String RECIPE_SMITHING_TRANSFORM_TITLE;
         public static Key RECIPE_BACK;
         public static Key RECIPE_EXIT;
         public static Key RECIPE_NEXT_PAGE_AVAILABLE;
@@ -100,9 +101,10 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
             RECIPE_BLASTING_TITLE = getOrThrow(section, "recipe.blasting.title");
             RECIPE_SMELTING_TITLE = getOrThrow(section, "recipe.smelting.title");
             RECIPE_SMOKING_TITLE = getOrThrow(section, "recipe.smoking.title");
-            RECIPE_CAMPFIRE_TITLE = getOrThrow(section, "recipe.campfire.title");
+            RECIPE_CAMPFIRE_TITLE = getOrThrow(section, "recipe.campfire-cooking.title");
             RECIPE_CRAFTING_TITLE = getOrThrow(section, "recipe.crafting.title");
             RECIPE_STONECUTTING_TITLE = getOrThrow(section, "recipe.stonecutting.title");
+            RECIPE_SMITHING_TRANSFORM_TITLE = getOrThrow(section, "recipe.smithing-transform.title");
             RECIPE_BACK = Key.of(getOrThrow(section, "recipe.page-navigation.return"));
             RECIPE_EXIT = Key.of(getOrThrow(section, "recipe.page-navigation.exit"));
             RECIPE_NEXT_PAGE_AVAILABLE = Key.of(getOrThrow(section, "recipe.page-navigation.next.available"));

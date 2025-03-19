@@ -314,12 +314,12 @@ recipes:
   default:palm_planks:
     template: default:recipe/planks
     arguments:
-      tree_type: palm
+      wood_type: palm
   default:palm_wood:
     template: default:recipe/log_2_wood
     arguments:
-      tree_type: palm
+      wood_type: palm
   default:stripped_palm_wood:
     template: default:recipe/log_2_wood
     arguments:
-      tree_type: stripped_palm
+      wood_type: stripped_palm

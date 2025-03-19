@@ -116,4 +116,6 @@ public interface Item<I> {
     boolean is(Key itemTag);
 
     Object getLiteralObject();
+
+    Item<I> merge(Item<?> another);
 }

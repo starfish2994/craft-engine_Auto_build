@@ -85,8 +85,6 @@ public class BukkitInjector {
 
     public static void init() {
         try {
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-
             clazz$InjectedCacheChecker = byteBuddy
                     .subclass(Object.class, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .implement(Reflections.clazz$RecipeManager$CachedCheck)
@@ -349,7 +347,7 @@ public class BukkitInjector {
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
                 if (!isCustom) {
                     field$InjectedCacheChecker$lastRecipe.set(thisObj, resourceLocation);
-                    return optionalRecipe;
+                    return Optional.of(pair.getSecond());
                 }
 
                 Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);

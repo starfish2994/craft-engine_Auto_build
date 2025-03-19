@@ -143,6 +143,7 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
         this.factory.customName(this.item, displayName);
         return this;
     }
+
     @Override
     public Item<I> itemName(String itemName) {
         this.factory.itemName(this.item, itemName);
@@ -275,5 +276,11 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public Object getLiteralObject() {
         return this.item.getLiteralObject();
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public Item<I> merge(Item<?> another) {
+        return new AbstractItem<>(this.factory, this.factory.merge(this.item, ((AbstractItem) another).item));
     }
 }
