@@ -835,6 +835,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSmithingTransform(PrepareSmithingEvent event) {
+        if (!ConfigManager.enableRecipeSystem()) return;
         SmithingInventory inventory = event.getInventory();
         if (!(inventory.getRecipe() instanceof SmithingTransformRecipe recipe)) return;
 
@@ -872,6 +873,21 @@ public class RecipeEventListener implements Listener {
         CustomSmithingTransformRecipe<ItemStack> transformRecipe = (CustomSmithingTransformRecipe<ItemStack>) ceRecipe;
         ItemStack processed = transformRecipe.assemble(new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY), this.itemManager.wrap(base));
         event.setResult(processed);
+        correctSmithingRecipeUsed(inventory, ceRecipe);
+    }
+
+    private void correctSmithingRecipeUsed(SmithingInventory inventory, Recipe<ItemStack> recipe) {
+        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        if (holderOrRecipe == null) {
+            // it's a vanilla recipe but not injected
+            return;
+        }
+        try {
+            Object resultInventory = Reflections.field$CraftResultInventory$resultInventory.get(inventory);
+            Reflections.field$ResultContainer$recipeUsed.set(resultInventory, holderOrRecipe);
+        } catch (ReflectiveOperationException e) {
+            plugin.logger().warn("Failed to correct used recipe", e);
+        }
     }
 
     private OptimizedIDItem<ItemStack> getOptimizedIDItem(@Nullable ItemStack itemStack) {

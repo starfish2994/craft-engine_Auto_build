@@ -36,7 +36,7 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
 
     @Override
     public @NotNull Key type() {
-        return RecipeTypes.STONE_CUTTING;
+        return RecipeTypes.STONECUTTING;
     }
 
     public Ingredient<T> ingredient() {

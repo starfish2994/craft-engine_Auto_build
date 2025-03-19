@@ -195,7 +195,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 CraftEngine.instance().logger().warn("Failed to convert campfire recipe", e);
             }
         });
-        BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.STONE_CUTTING, (key, recipe) -> {
+        BUKKIT_RECIPE_FACTORIES.put(RecipeTypes.STONECUTTING, (key, recipe) -> {
             CustomStoneCuttingRecipe<ItemStack> ceRecipe = (CustomStoneCuttingRecipe<ItemStack>) recipe;
             List<ItemStack> itemStacks = new ArrayList<>();
             for (Holder<Key> item : ceRecipe.ingredient().items()) {
@@ -382,9 +382,13 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         this.byType.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         this.byId.put(id, recipe);
         this.byResult.computeIfAbsent(recipe.result().item().id(), k -> new ArrayList<>()).add(recipe);
+        HashSet<Key> usedKeys = new HashSet<>();
         for (Ingredient<ItemStack> ingredient : recipe.ingredientsInUse()) {
             for (Holder<Key> holder : ingredient.items()) {
-                this.byIngredient.computeIfAbsent(holder.value(), k -> new ArrayList<>()).add(recipe);
+                Key key = holder.value();
+                if (usedKeys.add(key)) {
+                    this.byIngredient.computeIfAbsent(key, k -> new ArrayList<>()).add(recipe);
+                }
             }
         }
     }
@@ -765,7 +769,8 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                 templateHolders.isEmpty() ? null : Ingredient.of(templateHolders),
                 additionHolders.isEmpty() ? null : Ingredient.of(additionHolders),
                 new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count()),
-                List.of(CustomSmithingTransformRecipe.ItemDataProcessor.MERGE_ALL)
+                true,
+                List.of()
         );
 
         SmithingTransformRecipe transformRecipe = new SmithingTransformRecipe(key, result,
