@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item;
 
-import com.saicone.rtag.data.ComponentType;
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BoneMealBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
