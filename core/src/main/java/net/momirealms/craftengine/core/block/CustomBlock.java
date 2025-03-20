@@ -21,14 +21,14 @@ import java.util.function.BiFunction;
 
 public abstract class CustomBlock {
     protected final Holder<CustomBlock> holder;
-    protected Key id;
-    protected ImmutableBlockState defaultState;
-    protected BlockStateVariantProvider variantProvider;
-    protected Map<String, Property<?>> properties;
-    protected BlockBehavior behavior;
+    protected final Key id;
+    protected final BlockStateVariantProvider variantProvider;
+    protected final Map<String, Property<?>> properties;
+    protected final BlockBehavior behavior;
+    protected final List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements;
+    protected final ImmutableBlockState defaultState;
     @Nullable
-    protected LootTable<?> lootTable;
-    protected List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements;
+    protected final LootTable<?> lootTable;
 
     public CustomBlock(
             @NotNull Key id,
@@ -47,7 +47,7 @@ public abstract class CustomBlock {
         this.properties = properties;
         this.placements = new ArrayList<>();
         this.variantProvider = new BlockStateVariantProvider(holder, ImmutableBlockState::new, properties);
-        this.setDefaultState(this.variantProvider.getDefaultState());
+        this.defaultState = this.variantProvider.getDefaultState();
         this.behavior = BlockBehaviors.fromMap(this, behaviorSettings);
         for (Map.Entry<String, VariantState> entry : variantMapper.entrySet()) {
             String nbtString = entry.getKey();
@@ -101,7 +101,7 @@ public abstract class CustomBlock {
 
     private List<ImmutableBlockState> getPossibleStates(CompoundTag nbt) {
         List<ImmutableBlockState> tempStates = new ArrayList<>();
-        tempStates.add(getDefaultState());
+        tempStates.add(defaultState());
         for (Property<?> property : variantProvider.getDefaultState().getProperties()) {
             Tag value = nbt.get(property.name());
             if (value != null) {
@@ -120,9 +120,9 @@ public abstract class CustomBlock {
     }
 
     public ImmutableBlockState getBlockState(CompoundTag nbt) {
-        ImmutableBlockState state = getDefaultState();
+        ImmutableBlockState state = defaultState();
         for (Map.Entry<String, Tag> entry : nbt.tags.entrySet()) {
-            Property<?> property = variantProvider.getProperty(entry.getKey());
+            Property<?> property = this.variantProvider.getProperty(entry.getKey());
             if (property != null) {
                 try {
                     state = ImmutableBlockState.with(state, property, property.unpack(entry.getValue()));
@@ -144,16 +144,12 @@ public abstract class CustomBlock {
         return this.properties.values();
     }
 
-    protected final void setDefaultState(ImmutableBlockState state) {
-        this.defaultState = state;
-    }
-
-    public final ImmutableBlockState getDefaultState() {
+    public final ImmutableBlockState defaultState() {
         return this.defaultState;
     }
 
     public ImmutableBlockState getStateForPlacement(BlockPlaceContext context) {
-        ImmutableBlockState state = getDefaultState();
+        ImmutableBlockState state = defaultState();
         for (BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState> placement : this.placements) {
             state = placement.apply(context, state);
         }
