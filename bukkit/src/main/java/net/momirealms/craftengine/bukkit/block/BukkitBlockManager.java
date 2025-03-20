@@ -165,8 +165,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public void initWorldEditHook() {
-        for (Key newBlockId : this.blockRegisterOrder) {
-            WorldEditHook.register(newBlockId);
+        try {
+            for (Key newBlockId : this.blockRegisterOrder) {
+                WorldEditHook.register(newBlockId);
+            }
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to initialize world edit hook", e);
         }
     }
 
