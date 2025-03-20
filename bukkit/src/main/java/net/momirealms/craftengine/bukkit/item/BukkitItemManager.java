@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import com.saicone.rtag.data.ComponentType;
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BoneMealBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
@@ -73,6 +74,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, plugin.bootstrap());
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, plugin.bootstrap());
+    }
+
+    @Override
+    public Object encodeJava(Key componentType, @Nullable Object component) {
+        return this.factory.encodeJava(componentType, component);
     }
 
     public static BukkitItemManager instance() {

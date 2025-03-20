@@ -49,9 +49,3 @@ blocks:
             parent: "minecraft:block/custom/fairy_flower_1"
             textures:
               "0": "minecraft:block/custom/fairy_flower_4"
-        - path: "minecraft:block/custom/fairy_flower_5"
-          weight: 1
-          generation:
-            parent: "minecraft:block/custom/fairy_flower_1"
-            textures:
-              "0": "minecraft:block/custom/fairy_flower_5"
