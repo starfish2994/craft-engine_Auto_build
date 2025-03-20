@@ -595,7 +595,7 @@ public class BukkitInjector {
                 int stateId = BlockStateUtils.blockStateToId(newState);
                 CESection section = holder.ceSection();
                 if (BlockStateUtils.isVanillaBlock(stateId)) {
-                    section.setBlockState(x, y, z, EmptyBlock.INSTANCE.getDefaultState());
+                    section.setBlockState(x, y, z, EmptyBlock.INSTANCE.defaultState());
                     if (ConfigManager.enableLightSystem() && ConfigManager.forceUpdateLight()) {
                         updateLightIfChanged(holder, previousState, newState, null, y, z, x);
                     }

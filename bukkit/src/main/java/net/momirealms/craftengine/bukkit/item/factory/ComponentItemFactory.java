@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +49,11 @@ public class ComponentItemFactory extends BukkitItemFactory {
                         item.getComponent(ComponentKeys.CUSTOM_MODEL_DATA)
                 ).orElse(null)
         );
+    }
+
+    @Override
+    public Object encodeJava(Key componentType, @Nullable Object component) {
+        return ComponentType.encodeJava(componentType, component).orElse(null);
     }
 
     @Override

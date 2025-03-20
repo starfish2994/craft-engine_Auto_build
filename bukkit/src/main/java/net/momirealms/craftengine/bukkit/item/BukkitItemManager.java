@@ -75,6 +75,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, plugin.bootstrap());
     }
 
+    @Override
+    public Object encodeJava(Key componentType, @Nullable Object component) {
+        return this.factory.encodeJava(componentType, component);
+    }
+
     public static BukkitItemManager instance() {
         return instance;
     }
