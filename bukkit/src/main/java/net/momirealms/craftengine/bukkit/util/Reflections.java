@@ -5033,13 +5033,15 @@ public class Reflections {
 
     public static final Class<?> clazz$BlockHitResult = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.phys.BlockHitResult")
+                    BukkitReflectionUtils.assembleMCClass("world.phys.BlockHitResult"),
+                    BukkitReflectionUtils.assembleMCClass("world.phys.MovingObjectPositionBlock")
             )
     );
 
     public static final Class<?> clazz$ClipContext$Fluid = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.level.ClipContext$Fluid")
+                    BukkitReflectionUtils.assembleMCClass("world.level.ClipContext$Fluid"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.RayTrace$FluidCollisionOption")
             )
     );
 
@@ -5102,7 +5104,8 @@ public class Reflections {
 
     public static final Class<?> clazz$HitResult = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.phys.HitResult")
+                    BukkitReflectionUtils.assembleMCClass("world.phys.HitResult"),
+                    BukkitReflectionUtils.assembleMCClass("world.phys.MovingObjectPosition")
             )
     );
 

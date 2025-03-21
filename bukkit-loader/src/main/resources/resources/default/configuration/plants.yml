@@ -39,7 +39,7 @@ blocks:
         item: default:fairy_flower
     state:
       id: 0
-      state: tripwire:0
+      state: sugar_cane:0
       models:
         - path: "minecraft:block/custom/fairy_flower_1"
           weight: 100
@@ -77,6 +77,6 @@ blocks:
         item: default:reed
     state:
       id: 1
-      state: tripwire:1
+      state: sugar_cane:1
       model:
         path: "minecraft:block/custom/reed"
