@@ -31,6 +31,7 @@ blocks:
         - default:sound/grass
       overrides:
         item: default:fairy_flower
+        push-reaction: DESTROY
     behavior:
       type: bush_block
     loot:
@@ -68,6 +69,7 @@ blocks:
         - default:sound/grass
       overrides:
         item: default:reed
+        push-reaction: DESTROY
     behavior:
       type: on_liquid_block
       liquid-type: water
