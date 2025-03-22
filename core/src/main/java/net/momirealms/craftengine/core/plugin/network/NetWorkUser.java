@@ -5,6 +5,9 @@ import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.List;
+import java.util.Map;
+
 public interface NetWorkUser {
     boolean isOnline();
 
@@ -31,4 +34,6 @@ public interface NetWorkUser {
     Object serverPlayer();
 
     Object platformPlayer();
+
+    Map<Integer, List<Integer>> furnitureView();
 }

@@ -33,9 +33,7 @@ import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -534,6 +532,7 @@ public class PacketConsumers {
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(entityId);
                 if (furniture != null) {
+                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
                     user.sendPacket(furniture.spawnPacket(), false);
                 }
             }
@@ -568,7 +567,7 @@ public class PacketConsumers {
         try {
             IntList intList = (IntList) Reflections.field$ClientboundRemoveEntitiesPacket$entityIds.get(packet);
             for (int i = 0, size = intList.size(); i < size; i++) {
-                int[] entities = BukkitFurnitureManager.instance().getSubEntityIdsByBaseEntityId(intList.getInt(i));
+                List<Integer> entities = user.furnitureView().remove(intList.getInt(i));
                 if (entities == null) continue;
                 for (int entityId : entities) {
                     intList.add(entityId);
