@@ -5201,4 +5201,68 @@ public class Reflections {
                     clazz$ServerboundSignUpdatePacket, String[].class, 0
             )
     );
+
+    public static final Class<?> clazz$ArgumentSignatures = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("commands.arguments.ArgumentSignatures")
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundChatCommandSignedPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundChatCommandSignedPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundChatCommandPacket")
+            )
+    );
+
+    public static final Field field$ServerboundChatCommandSignedPacket$command = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatCommandSignedPacket, String.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatCommandSignedPacket$timeStamp = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatCommandSignedPacket, Instant.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatCommandSignedPacket$salt = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatCommandSignedPacket, long.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatCommandSignedPacket$argumentSignatures = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatCommandSignedPacket, clazz$ArgumentSignatures, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatCommandSignedPacket$lastSeenMessages = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatCommandSignedPacket, clazz$LastSeenMessages$Update, 0
+            )
+    );
+
+    public static final Constructor<?> constructor$ServerboundChatCommandSignedPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ServerboundChatCommandSignedPacket, String.class, Instant.class, long.class, clazz$ArgumentSignatures, clazz$LastSeenMessages$Update
+            )
+    );
+
+    // 1.20.5+
+    public static final Class<?> clazz$ServerboundChatCommandPacket = VersionHelper.isVersionNewerThan1_20_5()
+            ? ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundChatCommandPacket"))
+            : null;
+
+    // 1.20.5+
+    public static final Field field$SServerboundChatCommandPacket$command = Optional.ofNullable(clazz$ServerboundChatCommandPacket)
+            .map(it -> ReflectionUtils.getDeclaredField(it, String.class, 0))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Constructor<?> constructor$ServerboundChatCommandPacket = Optional.ofNullable(clazz$ServerboundChatCommandPacket)
+            .map(it -> ReflectionUtils.getConstructor(it, String.class))
+            .orElse(null);
 }

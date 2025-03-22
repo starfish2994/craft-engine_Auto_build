@@ -128,6 +128,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         registerNMSPacketConsumer(PacketConsumers.CHAT, Reflections.clazz$ServerboundChatPacket);
         registerNMSPacketConsumer(PacketConsumers.RENAME_ITEM, Reflections.clazz$ServerboundRenameItemPacket);
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, Reflections.clazz$ServerboundSignUpdatePacket);
+        registerNMSPacketConsumer(PacketConsumers.COMMAND_SIGNED, Reflections.clazz$ServerboundChatCommandSignedPacket);
+        registerNMSPacketConsumer(PacketConsumers.COMMAND, Reflections.clazz$ServerboundChatCommandPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());

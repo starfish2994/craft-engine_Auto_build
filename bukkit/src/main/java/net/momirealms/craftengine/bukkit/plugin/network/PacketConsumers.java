@@ -732,6 +732,50 @@ public class PacketConsumers {
         }
     };
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> COMMAND_SIGNED = (user, event, packet) -> {
+        try {
+            String command = (String) Reflections.field$ServerboundChatCommandSignedPacket$command.get(packet);
+            ImageManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
+            runIfContainsIllegalCharacter(command, manager, (s) -> {
+                event.setCancelled(true);
+                try {
+                    Object newPacket = Reflections.constructor$ServerboundChatCommandSignedPacket.newInstance(
+                            s,
+                            Reflections.field$ServerboundChatCommandSignedPacket$timeStamp.get(packet),
+                            Reflections.field$ServerboundChatCommandSignedPacket$salt.get(packet),
+                            Reflections.field$ServerboundChatCommandSignedPacket$argumentSignatures.get(packet),
+                            Reflections.field$ServerboundChatCommandSignedPacket$lastSeenMessages.get(packet)
+                    );
+                    user.receivePacket(newPacket);
+                } catch (Exception e) {
+                    CraftEngine.instance().logger().warn("Failed to create replaced chat command signed packet", e);
+                }
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatCommandSignedPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> COMMAND = (user, event, packet) -> {
+        try {
+            String command = (String) Reflections.field$SServerboundChatCommandPacket$command.get(packet);
+            ImageManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
+            runIfContainsIllegalCharacter(command, manager, (s) -> {
+                event.setCancelled(true);
+                try {
+                    Object newPacket = Reflections.constructor$ServerboundChatCommandPacket.newInstance(s);
+                    user.receivePacket(newPacket);
+                } catch (Exception e) {
+                    CraftEngine.instance().logger().warn("Failed to create replaced chat command packet", e);
+                }
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatCommandPacket", e);
+        }
+    };
+
     private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
         char[] chars = string.toCharArray();
         int[] codepoints = CharacterUtils.charsToCodePoints(chars);
