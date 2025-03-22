@@ -270,15 +270,23 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
 
     public void receivePacket(@NotNull NetWorkUser player, Object packet) {
         Channel channel = player.nettyChannel();
-        List<String> handlerNames = channel.pipeline().names();
-        if (handlerNames.contains("decompress")) {
-            channel.pipeline().context("decompress").fireChannelRead(packet);
-        } else {
-            if (handlerNames.contains("decrypt")) {
-                channel.pipeline().context("decrypt").fireChannelRead(packet);
+        if (channel.isOpen()) {
+            List<String> handlerNames = channel.pipeline().names();
+            if (handlerNames.contains("via-encoder")) {
+                channel.pipeline().context("via-decoder").fireChannelRead(packet);
+            } else if (handlerNames.contains("ps_decoder_transformer")) {
+                channel.pipeline().context("ps_decoder_transformer").fireChannelRead(packet);
+            } else if (handlerNames.contains("decompress")) {
+                channel.pipeline().context("decompress").fireChannelRead(packet);
             } else {
-                channel.pipeline().context("splitter").fireChannelRead(packet);
+                if (handlerNames.contains("decrypt")) {
+                    channel.pipeline().context("decrypt").fireChannelRead(packet);
+                } else {
+                    channel.pipeline().context("splitter").fireChannelRead(packet);
+                }
             }
+        } else {
+            ((ByteBuf) packet).release();
         }
     }
 
