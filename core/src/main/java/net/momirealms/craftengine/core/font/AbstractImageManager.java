@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class ImageManagerImpl implements ImageManager {
+public abstract class AbstractImageManager implements ImageManager {
     private final CraftEngine plugin;
                 // namespace:font font
     private final HashMap<Key, Font> fonts = new HashMap<>();
@@ -22,7 +22,7 @@ public class ImageManagerImpl implements ImageManager {
 
     private OffsetFont offsetFont;
 
-    public ImageManagerImpl(CraftEngine plugin) {
+    public AbstractImageManager(CraftEngine plugin) {
         this.plugin = plugin;
     }
 

@@ -777,6 +777,7 @@ public class PacketConsumers {
     };
 
     private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
+        //noinspection DuplicatedCode
         char[] chars = string.toCharArray();
         int[] codepoints = CharacterUtils.charsToCodePoints(chars);
         int[] newCodepoints = new int[codepoints.length];

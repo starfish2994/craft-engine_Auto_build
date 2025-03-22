@@ -1,12 +1,14 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -5265,4 +5267,64 @@ public class Reflections {
     public static final Constructor<?> constructor$ServerboundChatCommandPacket = Optional.ofNullable(clazz$ServerboundChatCommandPacket)
             .map(it -> ReflectionUtils.getConstructor(it, String.class))
             .orElse(null);
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Field field$AsyncChatDecorateEvent$originalMessage = requireNonNull(
+            ReflectionUtils.getDeclaredField(AsyncChatDecorateEvent.class, "originalMessage")
+    );
+
+    public static final Class<?> clazz$ComponentSerializer = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "net{}kyori{}adventure{}text{}serializer{}ComponentSerializer".replace("{}", ".")
+            )
+    );
+
+    public static final Class<?> clazz$GsonComponentSerializer = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "net{}kyori{}adventure{}text{}serializer{}gson{}GsonComponentSerializer".replace("{}", ".")
+            )
+    );
+
+    public static final Class<?> clazz$GsonComponentSerializer$Builder = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "net{}kyori{}adventure{}text{}serializer{}gson{}GsonComponentSerializer$Builder".replace("{}", ".")
+            )
+    );
+
+    public static final Class<?> clazz$AdventureComponent = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "net{}kyori{}adventure{}text{}Component".replace("{}", ".")
+            )
+    );
+
+    public static final Method method$GsonComponentSerializer$builder = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$GsonComponentSerializer, clazz$GsonComponentSerializer$Builder
+            )
+    );
+
+    public static final Method method$GsonComponentSerializer$Builder$build = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$GsonComponentSerializer$Builder, clazz$GsonComponentSerializer
+            )
+    );
+
+    public static final Method method$GsonComponentSerializer$serializeToTree = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$GsonComponentSerializer, JsonElement.class, clazz$AdventureComponent
+            )
+    );
+
+    public static final Method method$ComponentSerializer$deserialize = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$ComponentSerializer, Object.class, Object.class
+            )
+    );
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Method method$AsyncChatDecorateEvent$result = requireNonNull(
+            ReflectionUtils.getMethod(
+                    AsyncChatDecorateEvent.class, void.class, clazz$AdventureComponent
+            )
+    );
 }
