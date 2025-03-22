@@ -3,6 +3,8 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
@@ -33,9 +35,8 @@ import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
@@ -670,17 +671,19 @@ public class PacketConsumers {
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
-                char[] chars = message.toCharArray();
                 try {
-                    int[] codepoints = CharacterUtils.charsToCodePoints(chars);
-                    for (int codepoint : codepoints) {
-                        if (manager.isIllegalCharacter(codepoint)) {
-                            event.setCancelled(true);
-                            return;
-                        }
-                    }
-                } catch (Exception ignore) {
-                }
+                    String str = replaceIllegalString(message, manager);
+                    if (message.equals(str)) return;
+                    event.setCancelled(true);
+                    Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
+                            str,
+                            Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
+                            Reflections.field$ServerboundChatPacket$salt.get(packet),
+                            Reflections.field$ServerboundChatPacket$signature.get(packet),
+                            Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
+                    );
+                    user.receivePacket(newPacket);
+                } catch (Exception ignore) {}
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
@@ -694,25 +697,49 @@ public class PacketConsumers {
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
-                char[] chars = message.toCharArray();
                 try {
-                    int[] codepoints = CharacterUtils.charsToCodePoints(chars);
-                    int[] newCodepoints = new int[codepoints.length];
-                    for (int i = 0; i < codepoints.length; i++) {
-                        int codepoint = codepoints[i];
-                        if (!manager.isIllegalCharacter(codepoint)) {
-                            newCodepoints[i] = codepoint;
-                        } else {
-                            newCodepoints[i] = '*';
-                        }
-                    }
-                    String str = new String(newCodepoints, 0, newCodepoints.length);
+                    String str = replaceIllegalString(message, manager);
                     Reflections.field$ServerboundRenameItemPacket$name.set(packet, str);
-                } catch (Exception ignore) {
-                }
+                } catch (Exception ignore) {}
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundRenameItemPacket", e);
         }
     };
+
+    // we handle it on packet level to prevent it from being captured by plugins
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
+        try {
+            String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
+            ImageManager manager = CraftEngine.instance().imageManager();
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                if (line != null && !line.isEmpty()) {
+                    if (!manager.isDefaultFontInUse()) return;
+                    try {
+                        String str = replaceIllegalString(line, manager);
+                        if (line.equals(str)) continue;
+                        lines[i] = str;
+                    } catch (Exception ignore){}
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundSignUpdatePacket", e);
+        }
+    };
+
+    private static String replaceIllegalString(String string, ImageManager manager) {
+        char[] chars = string.toCharArray();
+        int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+        int[] newCodepoints = new int[codepoints.length];
+        for (int i = 0; i < codepoints.length; i++) {
+            int codepoint = codepoints[i];
+            if (!manager.isIllegalCharacter(codepoint)) {
+                newCodepoints[i] = codepoint;
+            } else {
+                newCodepoints[i] = '*';
+            }
+        }
+        return new String(newCodepoints, 0, newCodepoints.length);
+    }
 }
