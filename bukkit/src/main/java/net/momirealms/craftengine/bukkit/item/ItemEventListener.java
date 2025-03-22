@@ -29,6 +29,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -157,8 +158,6 @@ public class ItemEventListener implements Listener {
             }
 
             for (ItemBehavior itemBehavior : optionalItemBehaviors.get()) {
-
-
                 InteractionResult result = itemBehavior.useOnBlock(new UseOnContext(player, hand, hitResult));
                 if (result == InteractionResult.SUCCESS_AND_CANCEL) {
                     event.setCancelled(true);

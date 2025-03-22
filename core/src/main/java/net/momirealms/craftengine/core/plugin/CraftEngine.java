@@ -106,6 +106,7 @@ public abstract class CraftEngine implements Plugin {
             this.blockManager.delayedLoad();
             this.itemBrowserManager.delayedLoad();
             this.soundManager.delayedLoad();
+            this.imageManager.delayedLoad();
             if (ConfigManager.debug()) {
                 this.debugger = (s) -> logger.info("[Debug] " + s.get());
             } else {

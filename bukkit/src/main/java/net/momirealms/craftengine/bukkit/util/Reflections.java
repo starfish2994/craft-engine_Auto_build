@@ -5114,4 +5114,30 @@ public class Reflections {
                     clazz$HitResult, clazz$Vec3, 0
             )
     );
+
+    public static final Class<?> clazz$ServerboundChatPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundChatPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInChat")
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$message = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, String.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundRenameItemPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundRenameItemPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInItemName")
+            )
+    );
+
+    public static final Field field$ServerboundRenameItemPacket$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundRenameItemPacket, String.class, 0
+            )
+    );
 }
