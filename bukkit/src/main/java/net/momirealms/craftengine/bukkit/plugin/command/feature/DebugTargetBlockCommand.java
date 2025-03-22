@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -50,6 +51,8 @@ public class DebugTargetBlockCommand extends BukkitCommandFeature<CommandSender>
                         if (immutableBlockState != null) {
                             sender.sendMessage(Component.text(immutableBlockState.toString()));
                         }
+                        ImmutableBlockState dataInCache = plugin().worldManager().getWorld(block.getWorld().getUID()).getBlockStateAtIfLoaded(LocationUtils.toBlockPos(block.getLocation()));
+                        sender.sendMessage(Component.text("cache-state: " + !dataInCache.isEmpty()));
                         try {
                             @SuppressWarnings("unchecked")
                             Set<Object> tags = (Set<Object>) Reflections.field$Holder$Reference$tags.get(holder);

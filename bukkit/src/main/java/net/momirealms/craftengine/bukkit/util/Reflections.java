@@ -7,6 +7,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
@@ -26,6 +27,7 @@ import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
 import java.lang.reflect.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -134,9 +136,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundSystemChatPacket = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$ClientboundSystemChatPacket, clazz$Component, boolean.class
-            )
+            ReflectionUtils.getConstructor(clazz$ClientboundSystemChatPacket, clazz$Component, boolean.class)
     );
 
     public static final Field field$ClientboundSystemChatPacket$overlay = requireNonNull(
@@ -187,6 +187,11 @@ public class Reflections {
     public static final Field field$ClientboundSystemChatPacket$component =
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundSystemChatPacket, clazz$Component, 0
+            );
+
+    public static final Field field$ClientboundSystemChatPacket$adventure$content =
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundSystemChatPacket, Component.class, 0
             );
 
     public static final Field field$ClientboundSystemChatPacket$text =
@@ -1452,6 +1457,12 @@ public class Reflections {
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("core.Direction"),
                     BukkitReflectionUtils.assembleMCClass("core.EnumDirection")
+            )
+    );
+
+    public static final Method method$Direction$ordinal = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Direction, new String[]{"ordinal"}
             )
     );
 
@@ -3326,6 +3337,7 @@ public class Reflections {
     public static final Object instance$Blocks$STONE;
     public static final Object instance$Blocks$STONE$defaultState;
     public static final Object instance$Blocks$FIRE;
+    public static final Object instance$Blocks$ICE;
 
     static {
         try {
@@ -3337,6 +3349,8 @@ public class Reflections {
             Object stone = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "stone");
             instance$Blocks$STONE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, stone);
             instance$Blocks$STONE$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$STONE);
+            Object ice = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "ice");
+            instance$Blocks$ICE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, ice);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -3862,11 +3876,17 @@ public class Reflections {
     );
 
     public static final Object instance$Fluids$WATER;
+    public static final Object instance$Fluids$LAVA;
+    public static final Object instance$Fluids$EMPTY;
 
     static {
         try {
             Object waterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water");
             instance$Fluids$WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, waterId);
+            Object lavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "lava");
+            instance$Fluids$LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, lavaId);
+            Object emptyId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "empty");
+            instance$Fluids$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, emptyId);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -5013,6 +5033,172 @@ public class Reflections {
     public static final Method method$ItemStack$getItem = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$ItemStack, clazz$Item
+            )
+    );
+
+    public static final Class<?> clazz$BlockHitResult = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.phys.BlockHitResult"),
+                    BukkitReflectionUtils.assembleMCClass("world.phys.MovingObjectPositionBlock")
+            )
+    );
+
+    public static final Class<?> clazz$ClipContext$Fluid = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.ClipContext$Fluid"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.RayTrace$FluidCollisionOption")
+            )
+    );
+
+    public static final Method method$ClipContext$Fluid$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$ClipContext$Fluid, clazz$ClipContext$Fluid.arrayType()
+            )
+    );
+
+    public static final Object instance$ClipContext$Fluid$NONE;
+    public static final Object instance$ClipContext$Fluid$SOURCE_ONLY;
+    public static final Object instance$ClipContext$Fluid$ANY;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$ClipContext$Fluid$values.invoke(null);
+            instance$ClipContext$Fluid$NONE = values[0];
+            instance$ClipContext$Fluid$SOURCE_ONLY = values[1];
+            instance$ClipContext$Fluid$ANY = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Method method$Item$getPlayerPOVHitResult = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$Item, clazz$BlockHitResult, clazz$Level, clazz$Player, clazz$ClipContext$Fluid
+            )
+    );
+
+    public static final Method method$BlockHitResult$withPosition = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockHitResult, clazz$BlockHitResult, clazz$BlockPos
+            )
+    );
+
+    public static final Field field$BlockHitResul$blockPos = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockHitResult, clazz$BlockPos, 0
+            )
+    );
+
+    public static final Field field$BlockHitResul$direction = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockHitResult, clazz$Direction, 0
+            )
+    );
+
+    public static final Field field$BlockHitResul$miss = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockHitResult, boolean.class, 0
+            )
+    );
+
+    public static final Field field$BlockHitResul$inside = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockHitResult, boolean.class, 1
+            )
+    );
+
+    public static final Class<?> clazz$HitResult = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.phys.HitResult"),
+                    BukkitReflectionUtils.assembleMCClass("world.phys.MovingObjectPosition")
+            )
+    );
+
+    public static final Field field$HitResult$location = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$HitResult, clazz$Vec3, 0
+            )
+    );
+
+    public static final Class<?> clazz$MessageSignature = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.chat.MessageSignature")
+            )
+    );
+
+    public static final Class<?> clazz$LastSeenMessages$Update = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.chat.LastSeenMessages$Update"),
+                    BukkitReflectionUtils.assembleMCClass("network.chat.LastSeenMessages$b")
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundChatPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundChatPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInChat")
+            )
+    );
+
+    public static final Constructor<?> constructor$ServerboundChatPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ServerboundChatPacket, String.class, Instant.class, long.class, clazz$MessageSignature, clazz$LastSeenMessages$Update
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$message = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, String.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$timeStamp = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, Instant.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$salt = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, long.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$signature = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, clazz$MessageSignature, 0
+            )
+    );
+
+    public static final Field field$ServerboundChatPacket$lastSeenMessages = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundChatPacket, clazz$LastSeenMessages$Update, 0
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundRenameItemPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundRenameItemPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInItemName")
+            )
+    );
+
+    public static final Field field$ServerboundRenameItemPacket$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundRenameItemPacket, String.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundSignUpdatePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundSignUpdatePacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInUpdateSign")
+            )
+    );
+
+    public static final Field field$ServerboundSignUpdatePacket$lines = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundSignUpdatePacket, String[].class, 0
             )
     );
 }
