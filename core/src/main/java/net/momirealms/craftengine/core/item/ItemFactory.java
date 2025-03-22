@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.Key;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,8 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
         Objects.requireNonNull(item, "item");
         return new AbstractItem<>(this, wrapInternal(item));
     }
+
+    public abstract Object encodeJava(Key componentType, @Nullable Object component);
 
     protected abstract ItemWrapper<I> wrapInternal(I item);
 

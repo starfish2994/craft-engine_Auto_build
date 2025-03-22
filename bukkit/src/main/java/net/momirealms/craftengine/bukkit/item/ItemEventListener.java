@@ -29,6 +29,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -193,7 +194,7 @@ public class ItemEventListener implements Listener {
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
             BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
             try {
-                BlockData craftBlockData = BlockStateUtils.createBlockData(againCustomBlock.vanillaBlockState().handle());
+                BlockData craftBlockData = BlockStateUtils.fromBlockData(againCustomBlock.vanillaBlockState().handle());
                 if (InteractUtils.isInteractable(Key.of(clickedBlock.getType().getKey().asString()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
                     if (!player.isSecondaryUseActive()) {
                         player.setResendSound();

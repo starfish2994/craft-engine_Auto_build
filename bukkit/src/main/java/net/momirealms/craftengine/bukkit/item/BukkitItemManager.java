@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
-import net.momirealms.craftengine.bukkit.item.behavior.BoneMealBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
@@ -50,7 +49,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.AXES);
         registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKETS);
         registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
-        registerVanillaItemExtraBehavior(BoneMealBehavior.INSTANCE, ItemKeys.BONE_MEAL);
     }
 
     private static BukkitItemManager instance;
@@ -73,6 +71,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, plugin.bootstrap());
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, plugin.bootstrap());
+    }
+
+    @Override
+    public Object encodeJava(Key componentType, @Nullable Object component) {
+        return this.factory.encodeJava(componentType, component);
     }
 
     public static BukkitItemManager instance() {

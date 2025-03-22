@@ -9,10 +9,7 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.ResourceKey;
-import net.momirealms.craftengine.core.util.TriConsumer;
+import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,6 +157,16 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
     }
 
     public static class ItemDataProcessors {
+        public static final Key KEEP_COMPONENTS = Key.of("craftengine:keep_components");
+        public static final Key KEEP_TAGS = Key.of("craftengine:keep_tags");
+
+        static {
+            if (VersionHelper.isVersionNewerThan1_20_5()) {
+                register(KEEP_COMPONENTS, KeepComponents.FACTORY);
+            } else {
+                register(KEEP_TAGS, KeepTags.FACTORY);
+            }
+        }
 
         public static List<ItemDataProcessor> fromMapList(List<Map<String, Object>> mapList) {
             if (mapList == null || mapList.isEmpty()) return List.of();
@@ -190,11 +197,78 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         }
     }
 
-    @FunctionalInterface
     public interface ItemDataProcessor extends TriConsumer<Item<?>, Item<?>, Item<?>> {
+
+        Key type();
 
         interface Factory {
             ItemDataProcessor create(Map<String, Object> arguments);
+        }
+    }
+
+    public static class KeepComponents implements ItemDataProcessor {
+        public static final Factory FACTORY = new Factory();
+        private final List<Key> components;
+
+        public KeepComponents(List<Key> components) {
+            this.components = components;
+        }
+
+        @Override
+        public void accept(Item<?> item1, Item<?> item2, Item<?> item3) {
+            for (Key component : this.components) {
+                Object componentObj = item1.getComponent(component.toString());
+                if (componentObj != null) {
+                    item3.setComponent(component.toString(), CraftEngine.instance().itemManager().encodeJava(component, componentObj));
+                }
+            }
+        }
+
+        @Override
+        public Key type() {
+            return ItemDataProcessors.KEEP_COMPONENTS;
+        }
+
+        public static class Factory implements ItemDataProcessor.Factory {
+
+            @Override
+            public ItemDataProcessor create(Map<String, Object> arguments) {
+                List<String> components = MiscUtils.getAsStringList(arguments.get("components"));
+                return new KeepComponents(components.stream().map(Key::of).toList());
+            }
+        }
+    }
+
+    public static class KeepTags implements ItemDataProcessor {
+        public static final Factory FACTORY = new Factory();
+        private final List<String[]> tags;
+
+        public KeepTags(List<String[]> tags) {
+            this.tags = tags;
+        }
+
+        @Override
+        public void accept(Item<?> item1, Item<?> item2, Item<?> item3) {
+            for (String[] tag : this.tags) {
+                Object tagObj = item1.getTag((Object[]) tag);
+                if (tagObj != null) {
+                    item3.setTag(tagObj, (Object[]) tag);
+                }
+            }
+        }
+
+        @Override
+        public Key type() {
+            return ItemDataProcessors.KEEP_TAGS;
+        }
+
+        public static class Factory implements ItemDataProcessor.Factory {
+
+            @Override
+            public ItemDataProcessor create(Map<String, Object> arguments) {
+                List<String> tags = MiscUtils.getAsStringList(arguments.get("tags"));
+                return new KeepTags(tags.stream().map(it -> it.split("\\.")).toList());
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.font.ImageManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -32,9 +33,7 @@ import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
@@ -344,7 +343,7 @@ public class PacketConsumers {
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
                     }
-                }, (World) player.level().getHandle(), (MCUtils.fastFloor(player.x())) >> 4, (MCUtils.fastFloor(player.z())) >> 4);
+                }, (World) player.level().platformWorld(), (MCUtils.fastFloor(player.x())) >> 4, (MCUtils.fastFloor(player.z())) >> 4);
             } else {
                 handleSetCreativeSlotPacketOnMainThread(player, packet);
             }
@@ -376,7 +375,7 @@ public class PacketConsumers {
         Key itemId = state.settings().itemId();
         // no item available
         if (itemId == null) return;
-        BlockData data = BlockStateUtils.createBlockData(state.vanillaBlockState().handle());
+        BlockData data = BlockStateUtils.fromBlockData(state.vanillaBlockState().handle());
         // compare item
         if (data == null || !data.getMaterial().equals(item.getType())) return;
         ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, player);
@@ -659,6 +658,59 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
+        }
+    };
+
+    // we handle it on packet level to prevent it from being captured by plugins (most are chat plugins)
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CHAT = (user, event, packet) -> {
+        try {
+            String message = (String) Reflections.field$ServerboundChatPacket$message.get(packet);
+            if (message != null && !message.isEmpty()) {
+                ImageManager manager = CraftEngine.instance().imageManager();
+                if (!manager.isDefaultFontInUse()) return;
+                char[] chars = message.toCharArray();
+                try {
+                    int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+                    for (int codepoint : codepoints) {
+                        if (manager.isIllegalCharacter(codepoint)) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                } catch (Exception ignore) {
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
+        }
+    };
+
+    // we handle it on packet level to prevent it from being captured by plugins
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
+        try {
+            String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
+            if (message != null && !message.isEmpty()) {
+                ImageManager manager = CraftEngine.instance().imageManager();
+                if (!manager.isDefaultFontInUse()) return;
+                char[] chars = message.toCharArray();
+                try {
+                    int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+                    int[] newCodepoints = new int[codepoints.length];
+                    for (int i = 0; i < codepoints.length; i++) {
+                        int codepoint = codepoints[i];
+                        if (!manager.isIllegalCharacter(codepoint)) {
+                            newCodepoints[i] = codepoint;
+                        } else {
+                            newCodepoints[i] = '*';
+                        }
+                    }
+                    String str = new String(newCodepoints, 0, newCodepoints.length);
+                    Reflections.field$ServerboundRenameItemPacket$name.set(packet, str);
+                } catch (Exception ignore) {
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundRenameItemPacket", e);
         }
     };
 }

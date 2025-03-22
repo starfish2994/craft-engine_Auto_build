@@ -15,6 +15,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -23,6 +24,11 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     public UniversalItemFactory(CraftEngine plugin) {
         super(plugin);
+    }
+
+    @Override
+    public Object encodeJava(Key componentType, @Nullable Object component) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
