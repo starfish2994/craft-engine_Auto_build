@@ -663,34 +663,6 @@ public class PacketConsumers {
         }
     };
 
-    // we handle it on packet level to prevent it from being captured by plugins (most are chat plugins)
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CHAT = (user, event, packet) -> {
-        try {
-            String message = (String) Reflections.field$ServerboundChatPacket$message.get(packet);
-            if (message != null && !message.isEmpty()) {
-                ImageManager manager = CraftEngine.instance().imageManager();
-                if (!manager.isDefaultFontInUse()) return;
-                runIfContainsIllegalCharacter(message, manager, (s) -> {
-                    event.setCancelled(true);
-                    try {
-                        Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
-                                s,
-                                Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
-                                Reflections.field$ServerboundChatPacket$salt.get(packet),
-                                Reflections.field$ServerboundChatPacket$signature.get(packet),
-                                Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
-                        );
-                        user.receivePacket(newPacket);
-                    } catch (Exception e) {
-                        CraftEngine.instance().logger().warn("Failed to create replaced chat packet", e);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
-        }
-    };
-
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
@@ -729,50 +701,6 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundSignUpdatePacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> COMMAND_SIGNED = (user, event, packet) -> {
-        try {
-            String command = (String) Reflections.field$ServerboundChatCommandSignedPacket$command.get(packet);
-            ImageManager manager = CraftEngine.instance().imageManager();
-            if (!manager.isDefaultFontInUse()) return;
-            runIfContainsIllegalCharacter(command, manager, (s) -> {
-                event.setCancelled(true);
-                try {
-                    Object newPacket = Reflections.constructor$ServerboundChatCommandSignedPacket.newInstance(
-                            s,
-                            Reflections.field$ServerboundChatCommandSignedPacket$timeStamp.get(packet),
-                            Reflections.field$ServerboundChatCommandSignedPacket$salt.get(packet),
-                            Reflections.field$ServerboundChatCommandSignedPacket$argumentSignatures.get(packet),
-                            Reflections.field$ServerboundChatCommandSignedPacket$lastSeenMessages.get(packet)
-                    );
-                    user.receivePacket(newPacket);
-                } catch (Exception e) {
-                    CraftEngine.instance().logger().warn("Failed to create replaced chat command signed packet", e);
-                }
-            });
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatCommandSignedPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> COMMAND = (user, event, packet) -> {
-        try {
-            String command = (String) Reflections.field$SServerboundChatCommandPacket$command.get(packet);
-            ImageManager manager = CraftEngine.instance().imageManager();
-            if (!manager.isDefaultFontInUse()) return;
-            runIfContainsIllegalCharacter(command, manager, (s) -> {
-                event.setCancelled(true);
-                try {
-                    Object newPacket = Reflections.constructor$ServerboundChatCommandPacket.newInstance(s);
-                    user.receivePacket(newPacket);
-                } catch (Exception e) {
-                    CraftEngine.instance().logger().warn("Failed to create replaced chat command packet", e);
-                }
-            });
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatCommandPacket", e);
         }
     };
 
