@@ -81,6 +81,7 @@ public class LoadedFurniture {
         for (int i = 0; i < interactionEntityIds.size(); ++i) {
             this.interactionEntityIds[i] = interactionEntityIds.get(i);
         }
+        this.resetSpawnPackets();
     }
 
     private void resetSpawnPackets() {
@@ -146,13 +147,6 @@ public class LoadedFurniture {
     public void teleport(@NotNull Location location) {
         if (location.equals(this.location)) return;
         this.location = location;
-    }
-
-    public Object spawnPacket() {
-        if (this.cachedSpawnPacket == null) {
-            this.resetSpawnPackets();
-        }
-        return this.cachedSpawnPacket;
     }
 
     @NotNull
@@ -285,5 +279,9 @@ public class LoadedFurniture {
                 });
         this.addSeatEntity(seatEntity);
         seatEntity.addPassenger(player);
+    }
+
+    public @NotNull Object spawnPacket() {
+        return cachedSpawnPacket;
     }
 }

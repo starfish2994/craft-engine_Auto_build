@@ -314,6 +314,7 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
+        // load previous changes on nms items
         item1.load();
         Object itemStack1 = item1.getLiteralObject();
         Object itemStack2 = item2.getLiteralObject();

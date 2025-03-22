@@ -136,9 +136,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundSystemChatPacket = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_4()
-                    ? ReflectionUtils.getConstructor(clazz$ClientboundSystemChatPacket, clazz$Component, boolean.class)
-                    : ReflectionUtils.getConstructor(clazz$ClientboundSystemChatPacket, Component.class, String.class, boolean.class)
+            ReflectionUtils.getConstructor(clazz$ClientboundSystemChatPacket, clazz$Component, boolean.class)
     );
 
     public static final Field field$ClientboundSystemChatPacket$overlay = requireNonNull(

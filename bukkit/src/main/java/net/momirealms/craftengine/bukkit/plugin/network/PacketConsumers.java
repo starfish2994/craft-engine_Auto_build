@@ -3,8 +3,6 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
@@ -35,9 +33,11 @@ import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class PacketConsumers {
     private static int[] mappings;
@@ -671,19 +671,21 @@ public class PacketConsumers {
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
-                try {
-                    String str = replaceIllegalString(message, manager);
-                    if (message.equals(str)) return;
+                runIfContainsIllegalCharacter(message, manager, (s) -> {
                     event.setCancelled(true);
-                    Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
-                            str,
-                            Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
-                            Reflections.field$ServerboundChatPacket$salt.get(packet),
-                            Reflections.field$ServerboundChatPacket$signature.get(packet),
-                            Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
-                    );
-                    user.receivePacket(newPacket);
-                } catch (Exception ignore) {}
+                    try {
+                        Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
+                                s,
+                                Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
+                                Reflections.field$ServerboundChatPacket$salt.get(packet),
+                                Reflections.field$ServerboundChatPacket$signature.get(packet),
+                                Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
+                        );
+                        user.receivePacket(newPacket);
+                    } catch (Exception e) {
+                        CraftEngine.instance().logger().warn("Failed to create replaced chat packet", e);
+                    }
+                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
@@ -697,10 +699,13 @@ public class PacketConsumers {
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
-                try {
-                    String str = replaceIllegalString(message, manager);
-                    Reflections.field$ServerboundRenameItemPacket$name.set(packet, str);
-                } catch (Exception ignore) {}
+                runIfContainsIllegalCharacter(message, manager, (s) -> {
+                    try {
+                        Reflections.field$ServerboundRenameItemPacket$name.set(packet, s);
+                    } catch (ReflectiveOperationException e) {
+                        CraftEngine.instance().logger().warn("Failed to replace chat", e);
+                    }
+                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundRenameItemPacket", e);
@@ -712,15 +717,15 @@ public class PacketConsumers {
         try {
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
             ImageManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (line != null && !line.isEmpty()) {
-                    if (!manager.isDefaultFontInUse()) return;
                     try {
-                        String str = replaceIllegalString(line, manager);
-                        if (line.equals(str)) continue;
-                        lines[i] = str;
-                    } catch (Exception ignore){}
+                        int lineIndex = i;
+                        runIfContainsIllegalCharacter(line, manager, (s) -> lines[lineIndex] = s);
+                    } catch (Exception ignore) {
+                    }
                 }
             }
         } catch (Exception e) {
@@ -728,18 +733,22 @@ public class PacketConsumers {
         }
     };
 
-    private static String replaceIllegalString(String string, ImageManager manager) {
+    private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
         char[] chars = string.toCharArray();
         int[] codepoints = CharacterUtils.charsToCodePoints(chars);
         int[] newCodepoints = new int[codepoints.length];
+        boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
             if (!manager.isIllegalCharacter(codepoint)) {
                 newCodepoints[i] = codepoint;
             } else {
                 newCodepoints[i] = '*';
+                hasIllegal = true;
             }
         }
-        return new String(newCodepoints, 0, newCodepoints.length);
+        if (hasIllegal) {
+            callback.accept(new String(newCodepoints, 0, newCodepoints.length));
+        }
     }
 }

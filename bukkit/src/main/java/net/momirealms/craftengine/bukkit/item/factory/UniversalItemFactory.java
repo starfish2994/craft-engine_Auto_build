@@ -244,6 +244,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
+        // load previous changes on nms items
         item1.load();
         TagCompound.merge(ItemObject.getCustomDataTag(item1.getLiteralObject()), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
     }
