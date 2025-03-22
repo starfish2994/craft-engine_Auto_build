@@ -57,6 +57,7 @@ public class BukkitCraftEngine extends CraftEngine {
     private final JavaPlugin bootstrap;
     private SchedulerTask tickTask;
     private boolean successfullyLoaded = false;
+    private boolean successfullyEnabled = false;
     private boolean requiresRestart = false;
     private boolean hasMod = false;
     private AntiGriefLib antiGrief;
@@ -104,6 +105,13 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void enable() {
+        if (successfullyEnabled) {
+            logger().severe(" ");
+            logger().severe("Please do not reload/restart plugins at runtime");
+            logger().severe(" ");
+            return;
+        }
+        this.successfullyEnabled = true;
         if (this.hasMod && this.requiresRestart) {
             logger().warn(" ");
             logger().warn(" ");
@@ -175,6 +183,12 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void disable() {
+        if (!Bukkit.getServer().isStopping()) {
+            logger().severe(" ");
+            logger().severe("Please do not disable plugins at runtime");
+            logger().severe(" ");
+            return;
+        }
         super.disable();
         if (this.tickTask != null) this.tickTask.cancel();
     }
