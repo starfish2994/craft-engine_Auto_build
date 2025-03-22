@@ -232,6 +232,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void receivePacket(Object packet) {
+        this.plugin.networkManager().receivePacket(this, packet);
+    }
+
+    @Override
     public ConnectionState decoderState() {
         return decoderState;
     }

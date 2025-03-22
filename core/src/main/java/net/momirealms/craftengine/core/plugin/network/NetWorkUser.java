@@ -16,6 +16,8 @@ public interface NetWorkUser {
 
     void sendPacket(Object packet, boolean immediately);
 
+    void receivePacket(Object packet);
+
     @ApiStatus.Internal
     ConnectionState decoderState();
 
