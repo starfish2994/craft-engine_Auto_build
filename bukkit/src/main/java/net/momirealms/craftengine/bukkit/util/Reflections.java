@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -5204,9 +5203,15 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$AdventureComponent = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "net{}kyori{}adventure{}text{}Component".replace("{}", ".")
+            )
+    );
+
     @SuppressWarnings("UnstableApiUsage")
     public static final Field field$AsyncChatDecorateEvent$originalMessage = requireNonNull(
-            ReflectionUtils.getDeclaredField(AsyncChatDecorateEvent.class, "originalMessage")
+            ReflectionUtils.getDeclaredField(AsyncChatDecorateEvent.class, clazz$AdventureComponent, 0)
     );
 
     public static final Class<?> clazz$ComponentSerializer = requireNonNull(
@@ -5227,12 +5232,6 @@ public class Reflections {
             )
     );
 
-    public static final Class<?> clazz$AdventureComponent = requireNonNull(
-            ReflectionUtils.getClazz(
-                    "net{}kyori{}adventure{}text{}Component".replace("{}", ".")
-            )
-    );
-
     public static final Method method$GsonComponentSerializer$builder = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$GsonComponentSerializer, clazz$GsonComponentSerializer$Builder
@@ -5245,15 +5244,15 @@ public class Reflections {
             )
     );
 
-    public static final Method method$GsonComponentSerializer$serializeToTree = requireNonNull(
+    public static final Method method$ComponentSerializer$serialize = requireNonNull(
             ReflectionUtils.getMethod(
-                    clazz$GsonComponentSerializer, JsonElement.class, clazz$AdventureComponent
+                    clazz$ComponentSerializer, Object.class, new String[] {"serialize"}, clazz$AdventureComponent
             )
     );
 
     public static final Method method$ComponentSerializer$deserialize = requireNonNull(
             ReflectionUtils.getMethod(
-                    clazz$ComponentSerializer, Object.class, Object.class
+                    clazz$ComponentSerializer, Object.class, new String[] {"deserialize"}, Object.class
             )
     );
 

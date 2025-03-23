@@ -1,20 +1,20 @@
 package net.momirealms.craftengine.bukkit.font;
 
-import com.google.gson.JsonElement;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractImageManager;
-import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Consumer;
 
 public class BukkitImageManager extends AbstractImageManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -42,52 +42,63 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
         HandlerList.unregisterAll(this);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChat(AsyncChatDecorateEvent event) {
         if (event.player() == null) return;
+        if (!this.isDefaultFontInUse()) return;
         this.processChatMessages(event);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChatCommand(AsyncChatCommandDecorateEvent event) {
         if (event.player() == null) return;
+        if (!this.isDefaultFontInUse()) return;
         this.processChatMessages(event);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        event.setMessage(processIllegalString(event.getMessage()));
+        if (!this.isDefaultFontInUse()) return;
+        runIfContainsIllegalCharacter(event.getMessage(), event::setMessage);
     }
 
     @SuppressWarnings("UnstableApiUsage")
     private void processChatMessages(AsyncChatDecorateEvent event) {
         try {
-            Object originalMessage = Reflections.clazz$AdventureComponent.cast(Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event));
-            JsonElement json = (JsonElement) Reflections.method$GsonComponentSerializer$serializeToTree.invoke(serializer, originalMessage);
-            String jsonMessage = AdventureHelper.jsonElementToStringJson(json);
-            if (!this.isDefaultFontInUse()) return;
-            String str = processIllegalString(jsonMessage);
-            Object component = Reflections.method$ComponentSerializer$deserialize.invoke(serializer, str);
-            Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+            Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
+            String jsonMessage = (String) Reflections.method$ComponentSerializer$serialize.invoke(serializer, originalMessage);
+            runIfContainsIllegalCharacter(jsonMessage, (json) -> {
+                try {
+                    Object component = Reflections.method$ComponentSerializer$deserialize.invoke(serializer, json);
+                    Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private String processIllegalString(String string) {
+    private void runIfContainsIllegalCharacter(String string, Consumer<String> callback) {
+        //noinspection DuplicatedCode
         char[] chars = string.toCharArray();
         int[] codepoints = CharacterUtils.charsToCodePoints(chars);
         int[] newCodepoints = new int[codepoints.length];
+        boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (!this.isIllegalCharacter(codepoint)) {
+            if (!isIllegalCharacter(codepoint)) {
                 newCodepoints[i] = codepoint;
             } else {
                 newCodepoints[i] = '*';
+                hasIllegal = true;
             }
         }
-        return new String(newCodepoints, 0, newCodepoints.length);
+        if (hasIllegal) {
+            callback.accept(new String(newCodepoints, 0, newCodepoints.length));
+        }
     }
 }
