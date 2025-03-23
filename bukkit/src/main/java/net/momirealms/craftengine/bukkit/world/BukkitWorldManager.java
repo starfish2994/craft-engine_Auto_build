@@ -217,7 +217,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                                 for (int z = 0; z < 16; z++) {
                                     for (int y = 0; y < 16; y++) {
                                         ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
-                                        if (customState != null && customState.vanillaBlockState() != null) {
+                                        if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
                                             Reflections.method$LevelChunkSection$setBlockState.invoke(section, x, y, z, customState.vanillaBlockState().handle(), false);
                                         }
                                     }
@@ -259,7 +259,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                                 for (int z = 0; z < 16; z++) {
                                     for (int y = 0; y < 16; y++) {
                                         ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
-                                        if (customState != null && customState.customBlockState() != null) {
+                                        if (!customState.isEmpty() && customState.customBlockState() != null) {
                                             Reflections.method$LevelChunkSection$setBlockState.invoke(section, x, y, z, customState.customBlockState().handle(), false);
                                         }
                                     }

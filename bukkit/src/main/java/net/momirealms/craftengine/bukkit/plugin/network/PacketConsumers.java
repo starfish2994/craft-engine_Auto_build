@@ -34,8 +34,6 @@ import org.bukkit.util.RayTraceResult;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -516,7 +514,7 @@ public class PacketConsumers {
         }
         assert Reflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
         Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                Reflections.field$ServerPlayer$connection.get(Reflections.method$CraftPlayer$getHandle.invoke(player)), Reflections.method$CraftItemStack$asNMSMirror.invoke(null, itemStack));
+                Reflections.field$ServerPlayer$connection.get(Reflections.method$CraftPlayer$getHandle.invoke(player)), Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack));
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {

@@ -863,7 +863,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         List<Object> itemStacks = new ArrayList<>();
         for (Holder<Key> holder : holders) {
             ItemStack itemStack = BukkitItemManager.instance().getBuildableItem(holder.value()).get().buildItemStack(ItemBuildContext.EMPTY, 1);
-            Object nmsStack = Reflections.method$CraftItemStack$asNMSMirror.invoke(null, itemStack);
+            Object nmsStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack);
             itemStacks.add(nmsStack);
         }
         return itemStacks;
@@ -994,14 +994,14 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                     toOptionalMinecraftIngredient(ceRecipe.template()),
                     toOptionalMinecraftIngredient(ceRecipe.base()),
                     toOptionalMinecraftIngredient(ceRecipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
             );
         } else if (VersionHelper.isVersionNewerThan1_20_2()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toMinecraftIngredient(ceRecipe.template()),
                     toMinecraftIngredient(ceRecipe.base()),
                     toMinecraftIngredient(ceRecipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
             );
         } else {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
@@ -1009,7 +1009,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
                     toMinecraftIngredient(ceRecipe.template()),
                     toMinecraftIngredient(ceRecipe.base()),
                     toMinecraftIngredient(ceRecipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSMirror.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
+                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, ceRecipe.result(ItemBuildContext.EMPTY))
             );
         }
     }

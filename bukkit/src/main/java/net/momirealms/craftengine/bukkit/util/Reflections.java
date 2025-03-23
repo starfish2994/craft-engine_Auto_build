@@ -1537,13 +1537,13 @@ public class Reflections {
 
     public static final Method method$CraftBlockData$createData = requireNonNull(
             ReflectionUtils.getStaticMethod(
-                    clazz$CraftBlockData, new String[]{"createData"}, clazz$CraftBlockData, clazz$BlockState
+                    clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"createData"}, clazz$BlockState
             )
     );
 
     public static final Method method$CraftBlockData$fromData = requireNonNull(
             ReflectionUtils.getStaticMethod(
-                    clazz$CraftBlockData, new String[]{"fromData"}, clazz$CraftBlockData, clazz$BlockState
+                    clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"fromData"}, clazz$BlockState
             )
     );
 
@@ -2227,6 +2227,12 @@ public class Reflections {
     public static final Field field$BlockStateBase$isViewBlocking = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$BlockStateBase, clazz$StatePredicate, 2
+            )
+    );
+
+    public static final Field field$BlockStateBase$fluidState = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, clazz$FluidState, 0
             )
     );
 
@@ -3162,6 +3168,20 @@ public class Reflections {
             )
     );
 
+    public static final Object instance$ItemStack$EMPTY;
+
+    static {
+        try {
+            instance$ItemStack$EMPTY = requireNonNull(
+                    ReflectionUtils.getDeclaredField(
+                            clazz$ItemStack, clazz$ItemStack, 0
+                    ).get(null)
+            );
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final Field field$ServerboundSetCreativeModeSlotPacket$itemStack = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundSetCreativeModeSlotPacket, clazz$ItemStack, 0
@@ -3176,13 +3196,13 @@ public class Reflections {
 
     public static final Method method$CraftItemStack$asCraftMirror = requireNonNull(
             ReflectionUtils.getStaticMethod(
-                    clazz$CraftItemStack, new String[]{"asCraftMirror"}, clazz$CraftItemStack, clazz$ItemStack
+                    clazz$CraftItemStack, clazz$CraftItemStack, new String[]{"asCraftMirror"}, clazz$ItemStack
             )
     );
 
-    public static final Method method$CraftItemStack$asNMSMirror = requireNonNull(
+    public static final Method method$CraftItemStack$asNMSCopy = requireNonNull(
             ReflectionUtils.getStaticMethod(
-                    clazz$CraftItemStack, new String[]{"asNMSCopy"}, clazz$ItemStack, ItemStack.class
+                    clazz$CraftItemStack, clazz$ItemStack, new String[]{"asNMSCopy"}, ItemStack.class
             )
     );
 
@@ -3652,6 +3672,7 @@ public class Reflections {
     );
 
     public static final Object instance$Items$AIR;
+    public static final Object instance$Items$WATER_BUCKET;
     public static final Object instance$ItemStack$Air;
 
     static {
@@ -3659,6 +3680,8 @@ public class Reflections {
             Object air = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "air");
             instance$Items$AIR = method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ITEM, air);
             instance$ItemStack$Air = constructor$ItemStack.newInstance(instance$Items$AIR);
+            Object waterBucket = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water_bucket");
+            instance$Items$WATER_BUCKET = method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ITEM, waterBucket);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -5293,4 +5316,59 @@ public class Reflections {
                     clazz$ServerboundEditBookPacket, int.class, List.class, Optional.class
             )
     );
+
+    public static final Class<?> clazz$SimpleWaterloggedBlock = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.SimpleWaterloggedBlock"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.IBlockWaterlogged")
+            )
+    );
+
+    public static final Method method$SimpleWaterloggedBlock$canPlaceLiquid = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
+                    ReflectionUtils.getMethod(
+                            clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid
+                    ) :
+                    ReflectionUtils.getMethod(
+                            clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid
+                    )
+    );
+
+    public static final Method method$SimpleWaterloggedBlock$placeLiquid = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$SimpleWaterloggedBlock, boolean.class, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState, clazz$FluidState
+            )
+    );
+
+    public static final Method method$SimpleWaterloggedBlock$pickupBlock = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
+                    ReflectionUtils.getMethod(
+                            clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState
+                    ) :
+                    ReflectionUtils.getMethod(
+                            clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState
+                    )
+    );
+
+    public static final Method method$Fluid$getTickDelay = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Fluid, int.class, clazz$LevelReader
+            )
+    );
+
+    public static final Method method$Fluid$defaultFluidState = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Fluid, clazz$FluidState, 0
+            )
+    );
+
+    public static final Object instance$Fluid$EMPTY$defaultState;
+
+    static {
+        try {
+            instance$Fluid$EMPTY$defaultState = method$Fluid$defaultFluidState.invoke(instance$Fluids$EMPTY);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

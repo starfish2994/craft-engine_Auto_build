@@ -321,7 +321,7 @@ public class ReflectionUtils {
     }
 
     @Nullable
-    public static Method getStaticMethod(final Class<?> clazz, String[] possibleNames, Class<?> returnType, final Class<?>... parameterTypes) {
+    public static Method getStaticMethod(final Class<?> clazz, Class<?> returnType, String[] possibleNames, final Class<?>... parameterTypes) {
         outer:
         for (Method method : clazz.getMethods()) {
             if (method.getParameterCount() != parameterTypes.length) {
