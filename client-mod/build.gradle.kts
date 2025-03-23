@@ -5,9 +5,9 @@ plugins {
 
 version = property("project_version")!!
 group = property("project_group")!!
-val project_version: String by project
-val latest_minecraft_version: String by project
-val loader_version: String by project
+val projectVersion: String by project
+val latestMinecraftVersion: String by project
+val loaderVersion: String by project
 
 base {
     archivesName.set("craft-engine-fabric-mod")
@@ -57,17 +57,17 @@ dependencies {
 }
 
 tasks.processResources {
-    inputs.property("version", project_version)
-    inputs.property("minecraft_version", latest_minecraft_version)
-    inputs.property("loader_version", loader_version)
+    inputs.property("version", projectVersion)
+    inputs.property("minecraft_version", latestMinecraftVersion)
+    inputs.property("loader_version", loaderVersion)
 
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
-            "version" to project_version,
-            "minecraft_version" to latest_minecraft_version,
-            "loader_version" to loader_version
+            "version" to projectVersion,
+            "minecraft_version" to latestMinecraftVersion,
+            "loader_version" to loaderVersion
         )
     }
 }
