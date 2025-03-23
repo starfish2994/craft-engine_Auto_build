@@ -50,6 +50,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unchecked")
 public class BukkitCraftEngine extends CraftEngine {
@@ -107,8 +108,13 @@ public class BukkitCraftEngine extends CraftEngine {
     public void enable() {
         if (successfullyEnabled) {
             logger().severe(" ");
-            logger().severe("Please do not reload/restart plugins at runtime");
             logger().severe(" ");
+            logger().severe(" ");
+            logger().severe("Please do not restart plugins at runtime.");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            Bukkit.getPluginManager().disablePlugin(this.bootstrap);
             return;
         }
         this.successfullyEnabled = true;
@@ -183,14 +189,18 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void disable() {
-        if (!Bukkit.getServer().isStopping()) {
-            logger().severe(" ");
-            logger().severe("Please do not disable plugins at runtime");
-            logger().severe(" ");
-            return;
-        }
         super.disable();
         if (this.tickTask != null) this.tickTask.cancel();
+        if (!Bukkit.getServer().isStopping()) {
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe("Please do not disable plugins at runtime.");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            Bukkit.getServer().shutdown();
+        }
     }
 
     @Override
