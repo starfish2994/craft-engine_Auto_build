@@ -12,6 +12,9 @@ forced-locale: ''
 resource-pack:
   # Should those images in minecraft:default font also work in minecraft:uniform
   override-uniform-font: true
+  # Generate assets for CraftEngine fabric mod
+  # Note: CraftEngine fabric mod is used for Axiom mod, most users do not need to install it
+  generate-mod-assets: false
   # Resource pack protection
   protection:
     # Warning: Do not attempt to unzip the resource pack with crash tools enabled.

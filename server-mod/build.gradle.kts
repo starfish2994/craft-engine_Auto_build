@@ -44,7 +44,7 @@ artifacts {
 tasks {
     shadowJar {
         archiveClassifier = ""
-        archiveFileName = "${rootProject.name}-bukkit-mod-${rootProject.properties["project_version"]}.jar"
+        archiveFileName = "${rootProject.name}-ignite-mod-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }
 }
