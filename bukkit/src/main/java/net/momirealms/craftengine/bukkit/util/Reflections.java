@@ -5262,4 +5262,35 @@ public class Reflections {
                     AsyncChatDecorateEvent.class, void.class, clazz$AdventureComponent
             )
     );
+
+    public static final Class<?> clazz$ServerboundEditBookPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundEditBookPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInBEdit")
+            )
+    );
+
+    public static final Field field$ServerboundEditBookPacket$slot = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundEditBookPacket, int.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundEditBookPacket$pages = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundEditBookPacket, List.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundEditBookPacket$title = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundEditBookPacket, Optional.class, 0
+            )
+    );
+
+    public static final Constructor<?> constructor$ServerboundEditBookPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ServerboundEditBookPacket, int.class, List.class, Optional.class
+            )
+    );
 }
