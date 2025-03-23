@@ -25,18 +25,12 @@ public class YamlUtils {
     private static final Yaml yaml = new Yaml();
     private static final RegistryWrapper<Block> registryWrapper = BuiltinRegistries.createWrapperLookup().getOrThrow(RegistryKeys.BLOCK);
 
-    /**
-     * 从指定路径加载 YAML 文件
-     */
     public static <T> T loadConfig(Path filePath) throws IOException {
         try (InputStream inputStream = Files.newInputStream(filePath)) {
             return yaml.load(inputStream);
         }
     }
 
-    /**
-     * 确保配置文件存在（不存在时从 JAR 内释放）
-     */
     public static void ensureConfigFile(String fileName) throws IOException {
         Path configDir = Path.of(CONFIG_DIR);
         if (!Files.exists(configDir)) {
@@ -91,22 +85,17 @@ public class YamlUtils {
             Map<Integer, Integer> stateIdMapper,
             Map<Identifier, Integer> blockUsageCounter
     ) {
-        // 1. 转换方块状态（更明确的变量名）
         final BlockState sourceState = createBlockData(entry.getKey());
         final BlockState targetState = createBlockData(entry.getValue());
 
-        // 2. 提前返回无效状态（合并校验逻辑）
         if (sourceState == null || targetState == null) {
             return;
         }
 
-        // 3. 获取状态ID（提取重复操作）
         final int sourceStateId = Block.STATE_IDS.getRawId(sourceState);
         final int targetStateId = Block.STATE_IDS.getRawId(targetState);
 
-        // 4. 记录映射关系（使用 putIfAbsent 避免覆盖）
         if (stateIdMapper.putIfAbsent(sourceStateId, targetStateId) == null) {
-            // 5. 统计方块使用次数（使用 computeIfAbsent 优化）
             final Block sourceBlock = sourceState.getBlock();
             final Identifier blockId = Registries.BLOCK.getId(sourceBlock);
             blockUsageCounter.merge(blockId, 1, Integer::sum);
