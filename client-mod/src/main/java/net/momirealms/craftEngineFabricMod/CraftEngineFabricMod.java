@@ -1,11 +1,6 @@
 package net.momirealms.craftEngineFabricMod;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.block.Block;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
 import net.momirealms.craftEngineFabricMod.util.RegisterBlocks;
 import net.momirealms.craftEngineFabricMod.util.YamlUtils;
 
@@ -27,17 +22,10 @@ public class CraftEngineFabricMod implements ModInitializer {
                 } else {
                     blockCount.put(blockName, 0);
                 }
-                RegisterBlocks.register(
-                        blockName + "_" + blockCount.get(blockName),
-                        Registries.BLOCK.get(keyOfBlock(blockName))
-                );
+                RegisterBlocks.register(blockName + "_" + blockCount.get(blockName));
             }
         });
         mappings.clear();
         blockCount.clear();
-    }
-
-    private static RegistryKey<Block> keyOfBlock(String name) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of("minecraft", name));
     }
 }
