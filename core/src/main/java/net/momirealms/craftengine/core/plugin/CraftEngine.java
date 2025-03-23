@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
 import net.momirealms.craftengine.core.font.ImageManager;
-import net.momirealms.craftengine.core.font.ImageManagerImpl;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
@@ -120,7 +119,6 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public void enable() {
         this.networkManager.enable();
-        this.imageManager = new ImageManagerImpl(this);
         this.templateManager = new TemplateManagerImpl(this);
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
         this.commandManager.registerDefaultFeatures();
@@ -135,6 +133,7 @@ public abstract class CraftEngine implements Plugin {
             this.worldManager.delayedInit();
             this.packManager.delayedInit();
             this.furnitureManager.delayedInit();
+            this.imageManager.delayedInit();
         });
     }
 

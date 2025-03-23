@@ -42,6 +42,7 @@ public class ConfigManager implements Reloadable {
     protected boolean checkUpdate;
     protected boolean metrics;
 
+    protected boolean resource_pack$generate_mod_assets;
     protected boolean resource_pack$override_uniform_font;
     protected List<ConditionalResolution> resource_pack$duplicated_files_handler;
     protected List<String> resource_pack$merge_external_folders;
@@ -67,7 +68,6 @@ public class ConfigManager implements Reloadable {
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_models;
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_sounds;
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_equipments;
-
 
     protected float resource_pack$supported_version$min;
     protected float resource_pack$supported_version$max;
@@ -174,6 +174,7 @@ public class ConfigManager implements Reloadable {
 
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
+        resource_pack$generate_mod_assets = config.getBoolean("resource-pack.generate-mod-assets", false);
         resource_pack$supported_version$min = getVersion(config.get("resource-pack.supported-version.min", "1.20").toString());
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
@@ -248,7 +249,7 @@ public class ConfigManager implements Reloadable {
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
-            Method setMaxChainMethod = ReflectionUtils.getStaticMethod(modClazz, new String[] {"setMaxChainUpdate"}, void.class, int.class);
+            Method setMaxChainMethod = ReflectionUtils.getStaticMethod(modClazz, void.class, new String[] {"setMaxChainUpdate"}, int.class);
             try {
                 assert setMaxChainMethod != null;
                 setMaxChainMethod.invoke(null, performance$max_block_chain_update_limit);
@@ -487,6 +488,10 @@ public class ConfigManager implements Reloadable {
 
     public static List<String> bypassEquipments() {
         return instance.resource_pack$protection$obfuscation$resource_location$bypass_equipments;
+    }
+
+    public static boolean generateModAssets() {
+        return instance.resource_pack$generate_mod_assets;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

@@ -183,6 +183,7 @@ public class BukkitInjector {
                     // should always implement this interface
                     .implement(Reflections.clazz$Fallable)
                     .implement(Reflections.clazz$BonemealableBlock)
+                    // TODO .implement(Reflections.clazz$SimpleWaterloggedBlock)
                     // internal interfaces
                     .implement(BehaviorHolder.class)
                     .implement(ShapeHolder.class)
@@ -208,6 +209,15 @@ public class BukkitInjector {
                     // performBoneMeal
                     .method(ElementMatchers.is(Reflections.method$BonemealableBlock$performBonemeal))
                     .intercept(MethodDelegation.to(PerformBoneMealInterceptor.INSTANCE))
+//                    // pickupBlock
+//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$pickupBlock))
+//                    .intercept(MethodDelegation.to(PickUpBlockInterceptor.INSTANCE))
+//                    // placeLiquid
+//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$placeLiquid))
+//                    .intercept(MethodDelegation.to(PlaceLiquidInterceptor.INSTANCE))
+//                    // canPlaceLiquid
+//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$canPlaceLiquid))
+//                    .intercept(MethodDelegation.to(CanPlaceLiquidInterceptor.INSTANCE))
                     // random tick
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$randomTick))
                     .intercept(MethodDelegation.to(RandomTickInterceptor.INSTANCE))
@@ -228,6 +238,15 @@ public class BukkitInjector {
                             .and(ElementMatchers.takesArgument(2, Reflections.clazz$FallingBlockEntity))
                     )
                     .intercept(MethodDelegation.to(OnBrokenAfterFallInterceptor.INSTANCE))
+                    // onLand
+                    .method(ElementMatchers.takesArguments(5)
+                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$Level))
+                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$BlockPos))
+                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$BlockState))
+                            .and(ElementMatchers.takesArgument(3, Reflections.clazz$BlockState))
+                            .and(ElementMatchers.takesArgument(4, Reflections.clazz$FallingBlockEntity))
+                    )
+                    .intercept(MethodDelegation.to(OnLandInterceptor.INSTANCE))
                     // canSurvive
                     .method(ElementMatchers.takesArguments(3)
                             .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState))
@@ -242,10 +261,11 @@ public class BukkitInjector {
                             .and(ElementMatchers.takesArgument(1, Reflections.clazz$LevelReader).or(ElementMatchers.takesArgument(1, Reflections.clazz$Direction)))
                             .and(ElementMatchers.named("updateShape").or(ElementMatchers.named("a"))))
                     .intercept(MethodDelegation.to(UpdateShapeInterceptor.INSTANCE))
-                    // getFluidState
-                    .method(ElementMatchers.returns(Reflections.clazz$FluidState)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState)))
-                    .intercept(MethodDelegation.to(FluidStateInterceptor.INSTANCE));
+//                    // getFluidState
+//                    .method(ElementMatchers.returns(Reflections.clazz$FluidState)
+//                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState)))
+//                    .intercept(MethodDelegation.to(FluidStateInterceptor.INSTANCE))
+                    ;
             clazz$CraftEngineBlock = builder.make().load(BukkitInjector.class.getClassLoader()).getLoaded();
 
             constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
@@ -602,8 +622,10 @@ public class BukkitInjector {
                 } else {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     section.setBlockState(x, y, z, immutableBlockState);
-                    if (ConfigManager.enableLightSystem()) {
-                        updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
+                    if (!immutableBlockState.isEmpty()) {
+                        if (ConfigManager.enableLightSystem()) {
+                            updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -638,20 +660,21 @@ public class BukkitInjector {
         return newBlockInstance;
     }
 
-    public static class FluidStateInterceptor {
-        public static final FluidStateInterceptor INSTANCE = new FluidStateInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().getFluidState(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run getFluidState", e);
-                return args[0];
-            }
-        }
-    }
+//
+//    public static class FluidStateInterceptor {
+//        public static final FluidStateInterceptor INSTANCE = new FluidStateInterceptor();
+//
+//        @RuntimeType
+//        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+//            try {
+//                return holder.value().getFluidState(thisObj, args, superMethod);
+//            } catch (Exception e) {
+//                CraftEngine.instance().logger().severe("Failed to run getFluidState", e);
+//                return args[0];
+//            }
+//        }
+//    }
 
     public static class UpdateShapeInterceptor {
         public static final UpdateShapeInterceptor INSTANCE = new UpdateShapeInterceptor();
@@ -754,14 +777,28 @@ public class BukkitInjector {
         }
     }
 
+    public static class OnLandInterceptor {
+        public static final OnLandInterceptor INSTANCE = new OnLandInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().onLand(thisObj, args);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run onLand", e);
+            }
+        }
+    }
+
     public static class OnBrokenAfterFallInterceptor {
         public static final OnBrokenAfterFallInterceptor INSTANCE = new OnBrokenAfterFallInterceptor();
 
         @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             try {
-                holder.value().onBrokenAfterFall(thisObj, args, superMethod);
+                holder.value().onBrokenAfterFall(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run onBrokenAfterFall", e);
             }
@@ -826,4 +863,46 @@ public class BukkitInjector {
             }
         }
     }
+//
+//    public static class PickUpBlockInterceptor {
+//        public static final PickUpBlockInterceptor INSTANCE = new PickUpBlockInterceptor();
+//
+//        @RuntimeType
+//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+//            try {
+//                holder.value().pickupBlock(thisObj, args, superMethod);
+//            } catch (Exception e) {
+//                CraftEngine.instance().logger().severe("Failed to run pickupBlock", e);
+//            }
+//        }
+//    }
+//
+//    public static class PlaceLiquidInterceptor {
+//        public static final PlaceLiquidInterceptor INSTANCE = new PlaceLiquidInterceptor();
+//
+//        @RuntimeType
+//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+//            try {
+//                holder.value().placeLiquid(thisObj, args, superMethod);
+//            } catch (Exception e) {
+//                CraftEngine.instance().logger().severe("Failed to run placeLiquid", e);
+//            }
+//        }
+//    }
+//
+//    public static class CanPlaceLiquidInterceptor {
+//        public static final CanPlaceLiquidInterceptor INSTANCE = new CanPlaceLiquidInterceptor();
+//
+//        @RuntimeType
+//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+//            try {
+//                holder.value().canPlaceLiquid(thisObj, args, superMethod);
+//            } catch (Exception e) {
+//                CraftEngine.instance().logger().severe("Failed to run canPlaceLiquid", e);
+//            }
+//        }
+//    }
 }

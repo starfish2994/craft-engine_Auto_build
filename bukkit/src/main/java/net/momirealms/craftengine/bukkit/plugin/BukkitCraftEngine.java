@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
+import net.momirealms.craftengine.bukkit.font.BukkitImageManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BukkitItemBehaviors;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
@@ -56,6 +57,7 @@ public class BukkitCraftEngine extends CraftEngine {
     private final JavaPlugin bootstrap;
     private SchedulerTask tickTask;
     private boolean successfullyLoaded = false;
+    private boolean successfullyEnabled = false;
     private boolean requiresRestart = false;
     private boolean hasMod = false;
     private AntiGriefLib antiGrief;
@@ -103,6 +105,18 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void enable() {
+        if (successfullyEnabled) {
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe("Please do not restart plugins at runtime.");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            Bukkit.getPluginManager().disablePlugin(this.bootstrap);
+            return;
+        }
+        this.successfullyEnabled = true;
         if (this.hasMod && this.requiresRestart) {
             logger().warn(" ");
             logger().warn(" ");
@@ -138,6 +152,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.worldManager = new BukkitWorldManager(this);
         super.soundManager = new BukkitSoundManager(this);
         super.vanillaLootManager = new BukkitVanillaLootManager(this);
+        this.imageManager = new BukkitImageManager(this);
         super.enable();
         // tick task
         if (VersionHelper.isFolia()) {
@@ -175,6 +190,16 @@ public class BukkitCraftEngine extends CraftEngine {
     public void disable() {
         super.disable();
         if (this.tickTask != null) this.tickTask.cancel();
+        if (!Bukkit.getServer().isStopping()) {
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe("Please do not disable plugins at runtime.");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            Bukkit.getServer().shutdown();
+        }
     }
 
     @Override

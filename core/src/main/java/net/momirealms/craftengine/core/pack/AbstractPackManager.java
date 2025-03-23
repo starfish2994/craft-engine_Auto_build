@@ -758,7 +758,32 @@ public abstract class AbstractPackManager implements PackManager {
             try (BufferedWriter writer = Files.newBufferedWriter(overridedBlockPath)) {
                 GsonHelper.get().toJson(stateJson, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to save item model for [" + key + "]");
+                plugin.logger().warn("Failed to create block states for [" + key + "]");
+            }
+        }
+
+        if (!ConfigManager.generateModAssets()) return;
+        for (Map.Entry<Key, JsonElement> entry : plugin.blockManager().modBlockStates().entrySet()) {
+            Key key = entry.getKey();
+            Path overridedBlockPath = generatedPackPath
+                    .resolve("assets")
+                    .resolve(key.namespace())
+                    .resolve("blockstates")
+                    .resolve(key.value() + ".json");
+            JsonObject stateJson = new JsonObject();
+            JsonObject variants = new JsonObject();
+            stateJson.add("variants", variants);
+            variants.add("", entry.getValue());
+            try {
+                Files.createDirectories(overridedBlockPath.getParent());
+            } catch (IOException e) {
+                plugin.logger().severe("Error creating " + overridedBlockPath.toAbsolutePath());
+                continue;
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(overridedBlockPath)) {
+                GsonHelper.get().toJson(stateJson, writer);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to create block states for [" + key + "]");
             }
         }
     }

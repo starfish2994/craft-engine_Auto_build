@@ -514,7 +514,7 @@ public class PacketConsumers {
         }
         assert Reflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
         Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                Reflections.field$ServerPlayer$connection.get(Reflections.method$CraftPlayer$getHandle.invoke(player)), Reflections.method$CraftItemStack$asNMSMirror.invoke(null, itemStack));
+                Reflections.field$ServerPlayer$connection.get(Reflections.method$CraftPlayer$getHandle.invoke(player)), Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack));
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
@@ -663,34 +663,6 @@ public class PacketConsumers {
         }
     };
 
-    // we handle it on packet level to prevent it from being captured by plugins (most are chat plugins)
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CHAT = (user, event, packet) -> {
-        try {
-            String message = (String) Reflections.field$ServerboundChatPacket$message.get(packet);
-            if (message != null && !message.isEmpty()) {
-                ImageManager manager = CraftEngine.instance().imageManager();
-                if (!manager.isDefaultFontInUse()) return;
-                runIfContainsIllegalCharacter(message, manager, (s) -> {
-                    event.setCancelled(true);
-                    try {
-                        Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
-                                s,
-                                Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
-                                Reflections.field$ServerboundChatPacket$salt.get(packet),
-                                Reflections.field$ServerboundChatPacket$signature.get(packet),
-                                Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
-                        );
-                        user.receivePacket(newPacket);
-                    } catch (Exception e) {
-                        CraftEngine.instance().logger().warn("Failed to create replaced chat packet", e);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
-        }
-    };
-
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
@@ -732,9 +704,80 @@ public class PacketConsumers {
         }
     };
 
+    // we handle it on packet level to prevent it from being captured by plugins
+    @SuppressWarnings("unchecked")
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
+        try {
+            ImageManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
+
+            boolean changed = false;
+
+            List<String> pages = (List<String>) Reflections.field$ServerboundEditBookPacket$pages.get(packet);
+            List<String> newPages = new ArrayList<>(pages.size());
+            Optional<String> title = (Optional<String>) Reflections.field$ServerboundEditBookPacket$title.get(packet);
+            Optional<String> newTitle;
+
+            if (title.isPresent()) {
+                String titleStr = title.get();
+                Pair<Boolean, String> result = processClientString(titleStr, manager);
+                newTitle = Optional.of(result.right());
+                if (result.left()) {
+                    changed = true;
+                }
+            } else {
+                newTitle = Optional.empty();
+            }
+
+            for (String page : pages) {
+                Pair<Boolean, String> result = processClientString(page, manager);
+                newPages.add(result.right());
+                if (result.left()) {
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                    event.setCancelled(true);
+                    Object newPacket = Reflections.constructor$ServerboundEditBookPacket.newInstance(
+                            Reflections.field$ServerboundEditBookPacket$slot.get(packet),
+                            newPages,
+                            newTitle
+                    );
+                    user.receivePacket(newPacket);
+                } else {
+                    Reflections.field$ServerboundEditBookPacket$pages.set(packet, newPages);
+                    Reflections.field$ServerboundEditBookPacket$title.set(packet, newTitle);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundEditBookPacket", e);
+        }
+    };
+
+    private static Pair<Boolean, String> processClientString(String original, ImageManager manager) {
+        if (original.isEmpty()) {
+            return Pair.of(false, original);
+        }
+        int[] codepoints = CharacterUtils.charsToCodePoints(original.toCharArray());
+        int[] newCodepoints = new int[codepoints.length];
+        boolean hasIllegal = false;
+        for (int i = 0; i < codepoints.length; i++) {
+            int codepoint = codepoints[i];
+            if (manager.isIllegalCharacter(codepoint)) {
+                newCodepoints[i] = '*';
+                hasIllegal = true;
+            } else {
+                newCodepoints[i] = codepoint;
+            }
+        }
+        return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
+    }
+
     private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
-        char[] chars = string.toCharArray();
-        int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+        if (string.isEmpty()) return;
+        int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
         int[] newCodepoints = new int[codepoints.length];
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {

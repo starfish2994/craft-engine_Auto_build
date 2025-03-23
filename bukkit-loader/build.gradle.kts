@@ -57,7 +57,7 @@ artifacts {
 
 tasks {
     shadowJar {
-        archiveFileName = "${rootProject.name}-bukkit-plugin-${rootProject.properties["project_version"]}.jar"
+        archiveFileName = "${rootProject.name}-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")
