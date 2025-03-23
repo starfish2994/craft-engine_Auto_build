@@ -1,10 +1,11 @@
 package net.momirealms.craftEngineFabricMod;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.util.Identifier;
 import net.momirealms.craftEngineFabricMod.util.RegisterBlocks;
 import net.momirealms.craftEngineFabricMod.util.YamlUtils;
 
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
 
 public class CraftEngineFabricMod implements ModInitializer {
@@ -12,20 +13,20 @@ public class CraftEngineFabricMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Map<String, String> mappings = YamlUtils.loadConfig();
-        Map<String, Integer> blockCount = new HashMap<>();
-        mappings.keySet().forEach(name -> {
-            String blockName = YamlUtils.split(name);
-            if (blockName != null) {
-                if (blockCount.containsKey(blockName)) {
-                    blockCount.put(blockName, blockCount.get(blockName) + 1);
-                } else {
-                    blockCount.put(blockName, 0);
+        try {
+            YamlUtils.ensureConfigFile("additional-real-blocks.yml");
+            YamlUtils.ensureConfigFile("mappings.yml");
+            Map<Identifier, Integer> map = YamlUtils.loadMappingsAndAdditionalBlocks();
+            System.out.println("Loaded " + map.size() + " additional real blocks.");
+            for (Map.Entry<Identifier, Integer> entry : map.entrySet()) {
+                Identifier replacedBlockId = entry.getKey();
+                for (int i = 0; i < entry.getValue(); i++) {
+                    RegisterBlocks.register(replacedBlockId.getPath() + "_" + i);
                 }
-                RegisterBlocks.register(blockName + "_" + blockCount.get(blockName));
             }
-        });
-        mappings.clear();
-        blockCount.clear();
+            System.out.println("Registered " + map.size() + " additional real blocks.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
