@@ -710,52 +710,76 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
-            List<String> pages = (List<String>) Reflections.field$ServerboundEditBookPacket$pages.get(packet);
-            Optional<String> title = (Optional<String>) Reflections.field$ServerboundEditBookPacket$title.get(packet);
             ImageManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
 
-            AtomicBoolean hasChange = new AtomicBoolean(false);
-            List<String> newPages = new ArrayList<>(pages.size());
-            Optional<String> newTitle = title.map(t -> processTitle(t, manager, hasChange));
-            pages.forEach(page -> newPages.add(processPage(page, manager, hasChange)));
+            boolean changed = false;
 
-            if (hasChange.get()) {
-                event.setCancelled(true);
-                Object newPacket = Reflections.constructor$ServerboundEditBookPacket.newInstance(
-                        Reflections.field$ServerboundEditBookPacket$slot.get(packet),
-                        newPages,
-                        newTitle
-                );
-                user.receivePacket(newPacket);
+            List<String> pages = (List<String>) Reflections.field$ServerboundEditBookPacket$pages.get(packet);
+            List<String> newPages = new ArrayList<>(pages.size());
+            Optional<String> title = (Optional<String>) Reflections.field$ServerboundEditBookPacket$title.get(packet);
+            Optional<String> newTitle;
+
+            if (title.isPresent()) {
+                String titleStr = title.get();
+                Pair<Boolean, String> result = processClientString(titleStr, manager);
+                newTitle = Optional.of(result.right());
+                if (result.left()) {
+                    changed = true;
+                }
+            } else {
+                newTitle = Optional.empty();
+            }
+
+            for (String page : pages) {
+                Pair<Boolean, String> result = processClientString(page, manager);
+                newPages.add(result.right());
+                if (result.left()) {
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                    event.setCancelled(true);
+                    Object newPacket = Reflections.constructor$ServerboundEditBookPacket.newInstance(
+                            Reflections.field$ServerboundEditBookPacket$slot.get(packet),
+                            newPages,
+                            newTitle
+                    );
+                    user.receivePacket(newPacket);
+                } else {
+                    Reflections.field$ServerboundEditBookPacket$pages.set(packet, newPages);
+                    Reflections.field$ServerboundEditBookPacket$title.set(packet, newTitle);
+                }
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundEditBookPacket", e);
         }
     };
 
-    private static String processTitle(String original, ImageManager manager, AtomicBoolean hasChange) {
-        AtomicReference<String> result = new AtomicReference<>(original);
-        runIfContainsIllegalCharacter(original, manager, modified -> {
-            result.set(modified);
-            hasChange.set(true);
-        });
-        return result.get();
-    }
-
-    private static String processPage(String original, ImageManager manager, AtomicBoolean hasChange) {
-        AtomicReference<String> result = new AtomicReference<>(original);
-        runIfContainsIllegalCharacter(original, manager, modified -> {
-            result.set(modified);
-            hasChange.set(true);
-        });
-        return result.get();
+    private static Pair<Boolean, String> processClientString(String original, ImageManager manager) {
+        if (original.isEmpty()) {
+            return Pair.of(false, original);
+        }
+        int[] codepoints = CharacterUtils.charsToCodePoints(original.toCharArray());
+        int[] newCodepoints = new int[codepoints.length];
+        boolean hasIllegal = false;
+        for (int i = 0; i < codepoints.length; i++) {
+            int codepoint = codepoints[i];
+            if (manager.isIllegalCharacter(codepoint)) {
+                newCodepoints[i] = '*';
+                hasIllegal = true;
+            } else {
+                newCodepoints[i] = codepoint;
+            }
+        }
+        return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
     }
 
     private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
-        //noinspection DuplicatedCode
-        char[] chars = string.toCharArray();
-        int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+        if (string.isEmpty()) return;
+        int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
         int[] newCodepoints = new int[codepoints.length];
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
