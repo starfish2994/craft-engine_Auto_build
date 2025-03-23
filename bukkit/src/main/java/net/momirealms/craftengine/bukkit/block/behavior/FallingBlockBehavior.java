@@ -77,7 +77,7 @@ public class FallingBlockBehavior extends BlockBehavior {
     }
 
     @Override
-    public void onBrokenAfterFall(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void onBrokenAfterFall(Object thisBlock, Object[] args) throws Exception {
         // Use EntityRemoveEvent for 1.20.3+
         if (VersionHelper.isVersionNewerThan1_20_3()) return;
         Object level = args[0];

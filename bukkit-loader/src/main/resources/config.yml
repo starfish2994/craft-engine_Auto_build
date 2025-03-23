@@ -100,7 +100,7 @@ resource-pack:
         path: "pack.mcmeta"
       resolution:
         type: merge_pack_mcmeta
-        description: "<gray>CraftEngine ResourcePack"
+        description: "<gray>CraftEngine ResourcePack</gray>"
     - term:
         type: exact
         path: "pack.png"

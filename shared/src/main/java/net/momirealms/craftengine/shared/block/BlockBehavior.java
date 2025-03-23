@@ -28,12 +28,10 @@ public abstract class BlockBehavior {
         return (boolean) superMethod.call();
     }
 
-    public void onBrokenAfterFall(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        superMethod.call();
+    public void onBrokenAfterFall(Object thisBlock, Object[] args) throws Exception {
     }
 
-    public void onLand(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        superMethod.call();
+    public void onLand(Object thisBlock, Object[] args) throws Exception {
     }
 
     public boolean isValidBoneMealTarget(Object thisBlock, Object[] args) throws Exception {
