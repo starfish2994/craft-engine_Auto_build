@@ -100,7 +100,7 @@ resource-pack:
         path: "pack.mcmeta"
       resolution:
         type: merge_pack_mcmeta
-        description: "<gray>CraftEngine ResourcePack"
+        description: "<gray>CraftEngine ResourcePack</gray>"
     - term:
         type: exact
         path: "pack.png"
@@ -211,7 +211,7 @@ performance:
     restore-custom-blocks-on-chunk-load: true
 
 offset-characters:
-  font: minecraft:offset_chars
+  font: minecraft:default
   -1: '\uf800'
   -2: '\uf801'
   -3: '\uf802'

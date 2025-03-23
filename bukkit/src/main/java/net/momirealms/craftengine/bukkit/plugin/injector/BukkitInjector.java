@@ -228,6 +228,15 @@ public class BukkitInjector {
                             .and(ElementMatchers.takesArgument(2, Reflections.clazz$FallingBlockEntity))
                     )
                     .intercept(MethodDelegation.to(OnBrokenAfterFallInterceptor.INSTANCE))
+                    // onLand
+                    .method(ElementMatchers.takesArguments(5)
+                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$Level))
+                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$BlockPos))
+                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$BlockState))
+                            .and(ElementMatchers.takesArgument(3, Reflections.clazz$BlockState))
+                            .and(ElementMatchers.takesArgument(4, Reflections.clazz$FallingBlockEntity))
+                    )
+                    .intercept(MethodDelegation.to(OnLandInterceptor.INSTANCE))
                     // canSurvive
                     .method(ElementMatchers.takesArguments(3)
                             .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState))
@@ -754,14 +763,28 @@ public class BukkitInjector {
         }
     }
 
+    public static class OnLandInterceptor {
+        public static final OnLandInterceptor INSTANCE = new OnLandInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().onLand(thisObj, args);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run onLand", e);
+            }
+        }
+    }
+
     public static class OnBrokenAfterFallInterceptor {
         public static final OnBrokenAfterFallInterceptor INSTANCE = new OnBrokenAfterFallInterceptor();
 
         @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             try {
-                holder.value().onBrokenAfterFall(thisObj, args, superMethod);
+                holder.value().onBrokenAfterFall(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run onBrokenAfterFall", e);
             }

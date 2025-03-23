@@ -107,10 +107,7 @@ public class CraftEngineBlock extends Block implements BehaviorHolder, ShapeHold
     @Override
     public void onBrokenAfterFall(@NotNull Level level, @NotNull BlockPos pos, @NotNull FallingBlockEntity fallingBlock) {
         try {
-            behaviorHolder.value().onBrokenAfterFall(this, new Object[]{level, pos, fallingBlock}, () -> {
-                Fallable.super.onBrokenAfterFall(level, pos, fallingBlock);
-                return null;
-            });
+            behaviorHolder.value().onBrokenAfterFall(this, new Object[]{level, pos, fallingBlock});
         } catch (Exception e) {
             e.printStackTrace();
             Fallable.super.onBrokenAfterFall(level, pos, fallingBlock);
@@ -205,6 +202,15 @@ public class CraftEngineBlock extends Block implements BehaviorHolder, ShapeHold
     public void performBonemeal(@NotNull ServerLevel serverLevel, @NotNull RandomSource randomSource, @NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         try {
             behaviorHolder.value().performBoneMeal(this, new Object[]{serverLevel, randomSource, blockPos, blockState});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onLand(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull BlockState replaceableState, @NotNull FallingBlockEntity fallingBlock) {
+        try {
+            behaviorHolder.value().onLand(this, new Object[]{level, pos, state, replaceableState, fallingBlock});
         } catch (Exception e) {
             e.printStackTrace();
         }

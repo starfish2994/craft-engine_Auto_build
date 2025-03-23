@@ -11,6 +11,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key STRIPPABLE_BLOCK = Key.from("craftengine:strippable_block");
     public static final Key SAPLING_BLOCK = Key.from("craftengine:sapling_block");
     public static final Key ON_LIQUID_BLOCK = Key.from("craftengine:on_liquid_block");
+    public static final Key CONCRETE_POWDER_BLOCK = Key.from("craftengine:concrete_powder_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
