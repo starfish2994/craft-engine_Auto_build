@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -47,14 +46,14 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
     @SuppressWarnings("UnstableApiUsage")
     public void onChat(AsyncChatDecorateEvent event) {
         if (event.player() == null) return;
-        this.ProcessChatMessages(event);
+        this.processChatMessages(event);
     }
 
     @EventHandler
     @SuppressWarnings("UnstableApiUsage")
     public void onChatCommand(AsyncChatCommandDecorateEvent event) {
         if (event.player() == null) return;
-        this.ProcessChatMessages(event);
+        this.processChatMessages(event);
     }
 
     @EventHandler
@@ -63,7 +62,7 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private void ProcessChatMessages(AsyncChatDecorateEvent event) {
+    private void processChatMessages(AsyncChatDecorateEvent event) {
         try {
             Object originalMessage = Reflections.clazz$AdventureComponent.cast(Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event));
             JsonElement json = (JsonElement) Reflections.method$GsonComponentSerializer$serializeToTree.invoke(serializer, originalMessage);

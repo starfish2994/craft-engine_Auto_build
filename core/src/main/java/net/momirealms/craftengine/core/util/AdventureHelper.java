@@ -194,11 +194,11 @@ public class AdventureHelper {
 
     /**
      * Converts a JsonElement to a JSON string.
-     * @param gson the JsonElement to convert
+     * @param jsonElement the JsonElement to convert
      * @return the JSON string representation
      */
-    public static String jsonElementToStringJson(JsonElement gson) {
-        return componentToJson(jsonElementToComponent(gson));
+    public static String jsonElementToStringJson(JsonElement jsonElement) {
+        return componentToJson(jsonElementToComponent(jsonElement));
     }
 
     /**
