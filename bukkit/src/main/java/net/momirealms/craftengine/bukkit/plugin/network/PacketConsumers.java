@@ -663,34 +663,6 @@ public class PacketConsumers {
         }
     };
 
-    // we handle it on packet level to prevent it from being captured by plugins (most are chat plugins)
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CHAT = (user, event, packet) -> {
-        try {
-            String message = (String) Reflections.field$ServerboundChatPacket$message.get(packet);
-            if (message != null && !message.isEmpty()) {
-                ImageManager manager = CraftEngine.instance().imageManager();
-                if (!manager.isDefaultFontInUse()) return;
-                runIfContainsIllegalCharacter(message, manager, (s) -> {
-                    event.setCancelled(true);
-                    try {
-                        Object newPacket = Reflections.constructor$ServerboundChatPacket.newInstance(
-                                s,
-                                Reflections.field$ServerboundChatPacket$timeStamp.get(packet),
-                                Reflections.field$ServerboundChatPacket$salt.get(packet),
-                                Reflections.field$ServerboundChatPacket$signature.get(packet),
-                                Reflections.field$ServerboundChatPacket$lastSeenMessages.get(packet)
-                        );
-                        user.receivePacket(newPacket);
-                    } catch (Exception e) {
-                        CraftEngine.instance().logger().warn("Failed to create replaced chat packet", e);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundChatPacket", e);
-        }
-    };
-
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
@@ -733,6 +705,7 @@ public class PacketConsumers {
     };
 
     private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
+        //noinspection DuplicatedCode
         char[] chars = string.toCharArray();
         int[] codepoints = CharacterUtils.charsToCodePoints(chars);
         int[] newCodepoints = new int[codepoints.length];
