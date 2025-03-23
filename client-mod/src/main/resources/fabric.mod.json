@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "craft-engine-fabric-mod",
+  "version": "${version}",
+
+  "name": "craft-engine-fabric-mod",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "GPL-3.0",
+  "icon": "assets/craft-engine-fabric-mod/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": ["net.momirealms.craftEngineFabricMod.client.CraftEngineFabricModClient"],
+    "main": ["net.momirealms.craftEngineFabricMod.CraftEngineFabricMod"]
+  },
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
