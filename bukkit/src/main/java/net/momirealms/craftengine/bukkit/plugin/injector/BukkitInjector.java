@@ -622,8 +622,10 @@ public class BukkitInjector {
                 } else {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     section.setBlockState(x, y, z, immutableBlockState);
-                    if (ConfigManager.enableLightSystem()) {
-                        updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
+                    if (!immutableBlockState.isEmpty()) {
+                        if (ConfigManager.enableLightSystem()) {
+                            updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
+                        }
                     }
                 }
             } catch (Exception e) {
