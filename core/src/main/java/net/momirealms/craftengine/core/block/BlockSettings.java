@@ -15,6 +15,7 @@ public class BlockSettings {
     float hardness = 2f;
     float resistance = 2f;
     boolean canOcclude;
+    boolean fluidState;
     Tristate isRedstoneConductor = Tristate.UNDEFINED;
     Tristate isSuffocating = Tristate.UNDEFINED;
     Tristate isViewBlocking = Tristate.UNDEFINED;
@@ -75,6 +76,7 @@ public class BlockSettings {
         newSettings.isSuffocating = settings.isSuffocating;
         newSettings.isViewBlocking = settings.isViewBlocking;
         newSettings.correctTools = settings.correctTools;
+        newSettings.fluidState = settings.fluidState;
         return newSettings;
     }
 
@@ -92,6 +94,10 @@ public class BlockSettings {
 
     public float resistance() {
         return resistance;
+    }
+
+    public boolean fluidState() {
+        return fluidState;
     }
 
     public boolean isRandomlyTicking() {
@@ -250,6 +256,11 @@ public class BlockSettings {
         return this;
     }
 
+    public BlockSettings fluidState(boolean state) {
+        this.fluidState = state;
+        return this;
+    }
+
     public interface Modifier {
 
         void apply(BlockSettings settings);
@@ -331,6 +342,10 @@ public class BlockSettings {
             registerFactory("sounds", (value -> {
                 Map<String, Object> soundMap = MiscUtils.castToMap(value, false);
                 return settings -> settings.sounds(BlockSounds.fromMap(soundMap));
+            }));
+            registerFactory("fluid-state", (value -> {
+                String state = (String) value;
+                return settings -> settings.fluidState(state.equals("water"));
             }));
             registerFactory("can-occlude", (value -> {
                 boolean booleanValue = (boolean) value;

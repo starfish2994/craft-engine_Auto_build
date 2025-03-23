@@ -332,41 +332,4 @@ public class BlockEventListener implements Listener {
             }
         }
     }
-
-    // TODO Is there a way to deceive the server?
-//    @SuppressWarnings("unchecked")
-//    @EventHandler(ignoreCancelled = true)
-//    public void onDispenserWork(BlockDispenseEvent event) {
-//        ItemStack itemStack = event.getItem();
-//        Material type = itemStack.getType();
-//        Block block = event.getBlock();
-//        if (type == Material.BUCKET) {
-//            if (block.getBlockData() instanceof Dispenser dispenser) {
-//                Block against = block.getRelative(dispenser.getFacing());
-//                ImmutableBlockState state = this.manager.getImmutableBlockState(BlockStateUtils.blockDataToId(against.getBlockData()));
-//                if (state != null && !state.isEmpty()) {
-//                    Location location = against.getLocation();
-//                    CustomBlock customBlock = state.owner().value();
-//                    Property<Boolean> waterlogged = (Property<Boolean>) customBlock.getProperty("waterlogged");
-//                    if (waterlogged == null) return;
-//                    if (!state.get(waterlogged)) return;
-//                    ImmutableBlockState nextState = state.with(waterlogged, false);
-//                    CraftEngineBlocks.place(location, nextState, UpdateOption.UPDATE_ALL);
-//                }
-//            }
-//        } else if (WATER_BUCKETS.contains(type)) {
-//            if (block.getBlockData() instanceof Dispenser dispenser) {
-//                Block against = block.getRelative(dispenser.getFacing());
-//                ImmutableBlockState state = this.manager.getImmutableBlockState(BlockStateUtils.blockDataToId(against.getBlockData()));
-//                if (state != null && !state.isEmpty()) {
-//                    Location location = against.getLocation();
-//                    CustomBlock customBlock = state.owner().value();
-//                    Property<Boolean> waterlogged = (Property<Boolean>) customBlock.getProperty("waterlogged");
-//                    if (waterlogged == null) return;
-//                    ImmutableBlockState nextState = state.with(waterlogged, true);
-//                    CraftEngineBlocks.place(location, nextState, UpdateOption.UPDATE_ALL);
-//                }
-//            }
-//        }
-//    }
 }

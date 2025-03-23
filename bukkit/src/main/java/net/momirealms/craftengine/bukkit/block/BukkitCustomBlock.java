@@ -103,6 +103,12 @@ public class BukkitCustomBlock extends CustomBlock {
                 Reflections.field$BlockBehaviour$soundType.set(mcBlock, SoundUtils.toSoundType(settings.sounds()));
                 // init cache
                 Reflections.method$BlockStateBase$initCache.invoke(mcBlockState);
+                // set fluid later
+                if (settings.fluidState()) {
+                    Reflections.field$BlockStateBase$fluidState.set(mcBlockState, Reflections.method$FlowingFluid$getSource.invoke(Reflections.instance$Fluids$WATER, false));
+                } else {
+                    Reflections.field$BlockStateBase$fluidState.set(mcBlockState, Reflections.instance$Fluid$EMPTY$defaultState);
+                }
                 // set random tick later
                 BlockStateUtils.setIsRandomlyTicking(mcBlockState, settings.isRandomlyTicking());
                 // bind tags

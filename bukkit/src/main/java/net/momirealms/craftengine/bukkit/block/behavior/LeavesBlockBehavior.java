@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class LeavesBlockBehavior extends BlockBehavior {
+public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private static final Object LOG_TAG = BlockTags.getOrCreate(Key.of("minecraft", "logs"));
     private final int maxDistance;
@@ -39,6 +39,7 @@ public class LeavesBlockBehavior extends BlockBehavior {
     private final Property<Boolean> waterloggedProperty;
 
     public LeavesBlockBehavior(int maxDistance, Property<Integer> distanceProperty, Property<Boolean> persistentProperty, @Nullable Property<Boolean> waterloggedProperty) {
+        super(waterloggedProperty);
         this.maxDistance = maxDistance;
         this.distanceProperty = distanceProperty;
         this.persistentProperty = persistentProperty;
@@ -182,14 +183,5 @@ public class LeavesBlockBehavior extends BlockBehavior {
             int actual = distance.possibleValues().get(distance.possibleValues().size() - 1);
             return new LeavesBlockBehavior(actual, distance, persistent, waterlogged);
         }
-    }
-
-    @Override
-    public Object getFluidState(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object blockState = args[0];
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (state == null || state.isEmpty() || waterloggedProperty == null) return super.getFluidState(thisBlock, args, superMethod);
-        boolean waterlogged = state.get(waterloggedProperty);
-        return waterlogged ? Reflections.method$FlowingFluid$getSource.invoke(Reflections.instance$Fluids$WATER, false) : super.getFluidState(thisBlock, args, superMethod);
     }
 }

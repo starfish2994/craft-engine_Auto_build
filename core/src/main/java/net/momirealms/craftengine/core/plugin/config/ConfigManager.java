@@ -249,7 +249,7 @@ public class ConfigManager implements Reloadable {
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
-            Method setMaxChainMethod = ReflectionUtils.getStaticMethod(modClazz, new String[] {"setMaxChainUpdate"}, void.class, int.class);
+            Method setMaxChainMethod = ReflectionUtils.getStaticMethod(modClazz, void.class, new String[] {"setMaxChainUpdate"}, int.class);
             try {
                 assert setMaxChainMethod != null;
                 setMaxChainMethod.invoke(null, performance$max_block_chain_update_limit);
