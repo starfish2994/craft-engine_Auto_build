@@ -1,4 +1,4 @@
-package net.momirealms.craftEngine.fabric.util;
+package net.momirealms.craftengine.fabric.util;
 
 import com.mojang.brigadier.StringReader;
 import net.minecraft.block.Block;

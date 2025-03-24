@@ -19,9 +19,9 @@
 
   "environment": "client",
   "entrypoints": {
-    "client": ["net.momirealms.craftEngineFabricMod.client.CraftEngineFabricModClient"],
-    "main": ["net.momirealms.craftEngineFabricMod.CraftEngineFabricMod"],
-    "modmenu": ["net.momirealms.craftEngineFabricMod.client.config.ModMenuIntegration"]
+    "client": ["net.momirealms.craftengine.fabric.client.CraftEngineFabricModClient"],
+    "main": ["net.momirealms.craftengine.fabric.CraftEngineFabricMod"],
+    "modmenu": ["net.momirealms.craftengine.fabric.client.config.ModMenuIntegration"]
   },
 
   "depends": {

@@ -1,4 +1,4 @@
-package net.momirealms.craftEngine.fabric.util;
+package net.momirealms.craftengine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -7,7 +7,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import net.momirealms.craftEngine.fabric.CraftEngineFabricMod;
+import net.momirealms.craftengine.fabric.CraftEngineFabricMod;
 
 import java.util.function.Function;
 

@@ -1,4 +1,4 @@
-package net.momirealms.craftEngine.fabric.util;
+package net.momirealms.craftengine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
