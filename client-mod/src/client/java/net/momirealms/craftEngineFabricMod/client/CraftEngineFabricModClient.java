@@ -7,6 +7,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.momirealms.craftEngineFabricMod.client.network.CraftEnginePayload;
+import net.momirealms.craftEngineFabricMod.client.util.BlockUtils;
 
 public class CraftEngineFabricModClient implements ClientModInitializer {
     public static final String MOD_ID = "craftengine";
@@ -17,7 +18,10 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
         Registries.BLOCK.forEach(block -> {
             Identifier id = Registries.BLOCK.getId(block);
             if (id.getNamespace().equals(CraftEngineFabricModClient.MOD_ID)) {
-                BlockRenderLayerMap.INSTANCE.putBlock(block, RenderLayer.getTranslucent());
+                BlockRenderLayerMap.INSTANCE.putBlock(block, RenderLayer.getCutoutMipped());
+                if (id.getPath().contains("leaves")) {
+                    BlockUtils.registerColor(block);
+                }
             }
         });
     }
