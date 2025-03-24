@@ -95,6 +95,7 @@ public class ConfigManager implements Reloadable {
     protected int performance$max_block_chain_update_limit;
     protected boolean performance$chunk_system$restore_vanilla_blocks_on_chunk_unload;
     protected boolean performance$chunk_system$restore_custom_blocks_on_chunk_load;
+    protected boolean performance$chunk_system$sync_custom_blocks_on_chunk_load;
 
     protected boolean furniture$remove_invalid_furniture_on_chunk_load$enable;
     protected Set<String> furniture$remove_invalid_furniture_on_chunk_load$list;
@@ -236,6 +237,7 @@ public class ConfigManager implements Reloadable {
         performance$light_system$enable = config.getBoolean("performance.light-system.enable", true);
         performance$chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("performance.chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
         performance$chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.restore-custom-blocks-on-chunk-load", true);
+        performance$chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.sync-custom-blocks-on-chunk-load", false);
 
         // furniture
         furniture$remove_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.remove-invalid-furniture-on-chunk-load.enable", false);
@@ -340,6 +342,10 @@ public class ConfigManager implements Reloadable {
 
     public static boolean restoreCustomBlocks() {
         return instance.performance$chunk_system$restore_custom_blocks_on_chunk_load;
+    }
+
+    public static boolean syncCustomBlocks() {
+        return instance.performance$chunk_system$sync_custom_blocks_on_chunk_load;
     }
 
     public static List<String> foldersToMerge() {
