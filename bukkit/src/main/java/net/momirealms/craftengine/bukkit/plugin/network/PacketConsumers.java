@@ -56,8 +56,9 @@ public class PacketConsumers {
     }
 
     public static int remap(int stateId, NetWorkUser user) {
-        if (user.usingClientMod() && !BlockStateUtils.isVanillaBlock(stateId)) return stateId;
-        return mappings[stateId];
+        int remapId = mappings[stateId];
+        if (user.usingClientMod() && BlockStateUtils.isVanillaBlock(remapId)) return stateId;
+        return remapId;
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
