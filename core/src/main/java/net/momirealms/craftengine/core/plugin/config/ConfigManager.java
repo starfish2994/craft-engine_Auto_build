@@ -105,6 +105,12 @@ public class ConfigManager implements Reloadable {
 
     protected boolean item$non_italic_tag;
 
+    protected boolean image$illegal_characters_filter$command;
+    protected boolean image$illegal_characters_filter$chat;
+    protected boolean image$illegal_characters_filter$anvil;
+    protected boolean image$illegal_characters_filter$sign;
+    protected boolean image$illegal_characters_filter$book;
+
     public ConfigManager(CraftEngine plugin) {
         this.plugin = plugin;
         this.configVersion = PluginProperties.getValue("config");
@@ -248,6 +254,13 @@ public class ConfigManager implements Reloadable {
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
+
+        // image
+        image$illegal_characters_filter$anvil = config.getBoolean("image.illegal-characters-filter.anvil", true);
+        image$illegal_characters_filter$book = config.getBoolean("image.illegal-characters-filter.book", true);
+        image$illegal_characters_filter$chat = config.getBoolean("image.illegal-characters-filter.chat", true);
+        image$illegal_characters_filter$command = config.getBoolean("image.illegal-characters-filter.command", true);
+        image$illegal_characters_filter$sign = config.getBoolean("image.illegal-characters-filter.sign", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -498,6 +511,26 @@ public class ConfigManager implements Reloadable {
 
     public static boolean generateModAssets() {
         return instance.resource_pack$generate_mod_assets;
+    }
+
+    public static boolean filterChat() {
+        return instance().image$illegal_characters_filter$chat;
+    }
+
+    public static boolean filterAnvil() {
+        return instance().image$illegal_characters_filter$anvil;
+    }
+
+    public static boolean filterCommand() {
+        return instance().image$illegal_characters_filter$command;
+    }
+
+    public static boolean filterBook() {
+        return instance().image$illegal_characters_filter$book;
+    }
+
+    public static boolean filterSign() {
+        return instance().image$illegal_characters_filter$sign;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

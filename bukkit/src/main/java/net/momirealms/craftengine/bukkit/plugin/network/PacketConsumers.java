@@ -730,10 +730,15 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterAnvil()) return;
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
+                // check bypass
+                if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_ANVIL)) {
+                    return;
+                }
                 runIfContainsIllegalCharacter(message, manager, (s) -> {
                     try {
                         Reflections.field$ServerboundRenameItemPacket$name.set(packet, s);
@@ -750,9 +755,14 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterSign()) return;
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
             ImageManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
+            // check bypass
+            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_SIGN)) {
+                return;
+            }
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (line != null && !line.isEmpty()) {
@@ -772,8 +782,13 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterBook()) return;
             ImageManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
+            // check bypass
+            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_BOOK)) {
+                return;
+            }
 
             boolean changed = false;
 

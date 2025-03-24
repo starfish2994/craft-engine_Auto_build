@@ -5,8 +5,11 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractImageManager;
+import net.momirealms.craftengine.core.font.ImageManager;
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -45,27 +48,35 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChat(AsyncChatDecorateEvent event) {
-        if (event.player() == null) return;
-        if (!this.isDefaultFontInUse()) return;
-        this.processChatMessages(event);
+        if (!ConfigManager.filterChat()) return;
+        this.processChatEvent(event);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChatCommand(AsyncChatCommandDecorateEvent event) {
-        if (event.player() == null) return;
-        if (!this.isDefaultFontInUse()) return;
-        this.processChatMessages(event);
+        if (!ConfigManager.filterChat()) return;
+        this.processChatEvent(event);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
+        if (!ConfigManager.filterCommand()) return;
         if (!this.isDefaultFontInUse()) return;
+        if (event.getPlayer().hasPermission(ImageManager.BYPASS_COMMAND)) {
+            return;
+        }
         runIfContainsIllegalCharacter(event.getMessage(), event::setMessage);
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private void processChatMessages(AsyncChatDecorateEvent event) {
+    private void processChatEvent(AsyncChatDecorateEvent event) {
+        Player player = event.player();
+        if (player == null) return;
+        if (!this.isDefaultFontInUse()) return;
+        if (player.hasPermission(ImageManager.BYPASS_CHAT)) {
+            return;
+        }
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
             String jsonMessage = (String) Reflections.method$ComponentSerializer$serialize.invoke(serializer, originalMessage);
