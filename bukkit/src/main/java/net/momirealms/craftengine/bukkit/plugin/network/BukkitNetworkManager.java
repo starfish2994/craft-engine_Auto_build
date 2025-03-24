@@ -26,6 +26,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -156,6 +157,15 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         if (user == null) return;
         handleDisconnection(channel);
         this.onlineUsers.remove(player.getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
+        Player player = event.getPlayer();
+        NetWorkUser user = getUser(player);
+        if (user != null) {
+            user.setUsingClientMod(true);
+        }
     }
 
     @Override

@@ -55,7 +55,8 @@ public class PacketConsumers {
         BIOME_LIST = new IntIdentityList(RegistryUtils.currentBiomeRegistrySize());
     }
 
-    public static int remap(int stateId) {
+    public static int remap(int stateId, NetWorkUser user) {
+        if (user.usingClientMod() && !BlockStateUtils.isVanillaBlock(stateId)) return stateId;
         return mappings[stateId];
     }
 
@@ -74,11 +75,11 @@ public class PacketConsumers {
                     PalettedContainer<Integer> container = mcSection.blockStateContainer();
                     Palette<Integer> palette = container.data().palette();
                     if (palette.canRemap()) {
-                        palette.remap(PacketConsumers::remap);
+                        palette.remap(stateId -> remap(stateId, user));
                     } else {
                         for (int j = 0; j < 4096; j ++) {
                             int state = container.get(j);
-                            int newState = remap(state);
+                            int newState = remap(state, user);
                             if (newState != state) {
                                 container.set(j, newState);
                             }
@@ -105,7 +106,7 @@ public class PacketConsumers {
             for (int i = 0; i < blocks; i++) {
                 long k = buf.readVarLong();
                 positions[i] = (short) ((int) (k & 4095L));
-                states[i] = remap((int) (k >>> 12));
+                states[i] = remap((int) (k >>> 12), user);
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -125,7 +126,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             BlockPos pos = buf.readBlockPos(buf);
             int before = buf.readVarInt();
-            int state = remap(before);
+            int state = remap(before, user);
             if (state == before) {
                 return;
             }
@@ -147,7 +148,7 @@ public class PacketConsumers {
             BlockPos blockPos = buf.readBlockPos(buf);
             int state = buf.readInt();
             boolean global = buf.readBoolean();
-            int newState = remap(state);
+            int newState = remap(state, user);
             if (newState == state) {
                 return;
             }
@@ -181,7 +182,7 @@ public class PacketConsumers {
             if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = Reflections.field$BlockParticleOption$blockState.get(option);
             int id = BlockStateUtils.blockStateToId(blockState);
-            int remapped = remap(id);
+            int remapped = remap(id, user);
             if (remapped == id) return;
             Reflections.field$BlockParticleOption$blockState.set(option, BlockStateUtils.idToBlockState(remapped));
             event.setChanged(true);
@@ -523,7 +524,7 @@ public class PacketConsumers {
             // Falling blocks
             if (entityType == Reflections.instance$EntityType$FALLING_BLOCK) {
                 int data = Reflections.field$ClientboundAddEntityPacket$data.getInt(packet);
-                int remapped = remap(data);
+                int remapped = remap(data, user);
                 if (remapped != data) {
                     Reflections.field$ClientboundAddEntityPacket$data.set(packet, remapped);
                 }

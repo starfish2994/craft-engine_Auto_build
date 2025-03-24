@@ -102,7 +102,7 @@ public class YamlUtils {
         }
     }
 
-    private static BlockState createBlockData(String blockState) {
+    public static BlockState createBlockData(String blockState) {
         try {
             StringReader reader = new StringReader(blockState);
             BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(registryWrapper, reader, true);
