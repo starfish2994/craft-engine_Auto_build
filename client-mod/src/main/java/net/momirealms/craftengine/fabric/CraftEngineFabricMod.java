@@ -4,11 +4,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
+import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.util.BlockUtils;
 import net.momirealms.craftengine.fabric.util.LoggerFilter;
 import net.momirealms.craftengine.fabric.util.RegisterBlocks;
 import net.momirealms.craftengine.fabric.util.YamlUtils;
-import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 

@@ -56,5 +56,6 @@ categories:
     icon: default:chinese_lantern
     list:
       - default:chinese_lantern
+      - default:netherite_anvil
       - default:fairy_flower
       - default:reed

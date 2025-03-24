@@ -1,7 +1,7 @@
 items:
   default:fairy_flower:
     material: paper
-    custom-model-data: 3001
+    custom-model-data: 4000
     data:
       item-name: "<!i><i18n:item.fairy_flower>"
     model:
@@ -13,7 +13,7 @@ items:
       block: default:fairy_flower
   default:reed:
     material: paper
-    custom-model-data: 3002
+    custom-model-data: 4001
     data:
       item-name: "<!i><i18n:item.reed>"
     model:

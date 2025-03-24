@@ -707,6 +707,19 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$SynchedEntityData = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.syncher.SynchedEntityData"),
+                    BukkitReflectionUtils.assembleMCClass("network.syncher.DataWatcher")
+            )
+    );
+
+    public static final Method method$SynchedEntityData$get = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$SynchedEntityData, Object.class, clazz$EntityDataAccessor
+            )
+    );
+
     public static final Class<?> clazz$SynchedEntityData$DataValue = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.syncher.SynchedEntityData$DataValue"),
@@ -5426,6 +5439,36 @@ public class Reflections {
     public static final Field field$LinearPalette$values = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$LinearPalette, Object.class.arrayType(), 0
+            )
+    );
+
+    public static final Object instance$Entity$DATA_SILENT;
+
+    static {
+        int i = 0;
+        Field targetField = null;
+        for (Field field : clazz$Entity.getDeclaredFields()) {
+            Type fieldType = field.getGenericType();
+            if (field.getType() == clazz$EntityDataAccessor && fieldType instanceof ParameterizedType paramType) {
+                if (paramType.getActualTypeArguments()[0] == Boolean.class) {
+                    i++;
+                    if (i == 2) {
+                        targetField = field;
+                        break;
+                    }
+                }
+            }
+        }
+        try {
+            instance$Entity$DATA_SILENT = ReflectionUtils.setAccessible(requireNonNull(targetField)).get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Field field$Entity$entityData = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$Entity, clazz$SynchedEntityData, 0
             )
     );
 }

@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
@@ -99,6 +100,23 @@ public class FallingBlockBehavior extends BlockBehavior {
         builder.withParameter(LootParameters.WORLD, world);
         for (Item<Object> item : immutableBlockState.getDrops(builder, world)) {
             world.dropItemNaturally(vec3d, item);
+        }
+    }
+
+    @Override
+    public void onLand(Object thisBlock, Object[] args) throws Exception {
+        Object fallingBlock = args[4];
+        Object entityData = Reflections.field$Entity$entityData.get(fallingBlock);
+        boolean isSilent = (boolean) Reflections.method$SynchedEntityData$get.invoke(entityData, Reflections.instance$Entity$DATA_SILENT);
+        if (!isSilent) {
+            Object blockState = args[2];
+            int stateId = BlockStateUtils.blockStateToId(blockState);
+            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+            if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
+            Object level = args[0];
+            Object pos = args[1];
+            net.momirealms.craftengine.core.world.World world = new BukkitWorld((World) Reflections.method$Level$getCraftWorld.invoke(level));
+            world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.sounds().landSound());
         }
     }
 

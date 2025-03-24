@@ -121,7 +121,7 @@ public class BlockEventListener implements Listener {
                 }
                 // play sound
                 Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 0.8f);
+                world.playBlockSound(vec3d, state.sounds().breakSound());
                 if (player.getGameMode() == GameMode.CREATIVE) {
                     return;
                 }
@@ -226,7 +226,7 @@ public class BlockEventListener implements Listener {
         int stateId = BlockStateUtils.blockStateToId(blockState);
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
             ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
-            player.playSound(playerLocation, state.sounds().stepSound().toString(), SoundCategory.BLOCKS, 0.15f, 1f);
+            player.playSound(playerLocation, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume(), state.sounds().stepSound().pitch());
         } else if (ConfigManager.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
             if (manager.isBlockSoundRemoved(ownerBlock)) {
@@ -268,7 +268,7 @@ public class BlockEventListener implements Listener {
                 for (Item<Object> item : blockState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
-                world.playBlockSound(vec3d, blockState.sounds().breakSound(),1f, 0.8f);
+                world.playBlockSound(vec3d, blockState.sounds().breakSound());
             }
         }
     }
@@ -300,7 +300,7 @@ public class BlockEventListener implements Listener {
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
-                world.playBlockSound(vec3d, state.sounds().breakSound(), 1f, 0.8f);
+                world.playBlockSound(vec3d, state.sounds().breakSound());
             }
         }
     }

@@ -1,4 +1,8 @@
 ########################################################################################################################################################################################################################
+# Anvil Block
+minecraft:anvil[facing=north]: minecraft:anvil[facing=south]
+minecraft:anvil[facing=east]: minecraft:anvil[facing=west]
+########################################################################################################################################################################################################################
 # Sapling Block
 minecraft:oak_sapling[stage=1]: minecraft:oak_sapling[stage=0]
 minecraft:birch_sapling[stage=1]: minecraft:birch_sapling[stage=0]
