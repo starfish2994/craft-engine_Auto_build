@@ -37,7 +37,7 @@ public interface NetWorkUser {
 
     Map<Integer, List<Integer>> furnitureView();
 
-    boolean usingClientMod();
+    boolean clientModEnabled();
 
-    void setUsingClientMod(boolean usingClientMod);
+    void setClientModState(boolean enable);
 }

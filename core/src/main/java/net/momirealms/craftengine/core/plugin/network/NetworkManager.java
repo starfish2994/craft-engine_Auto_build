@@ -6,6 +6,8 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import java.util.Collection;
 
 public interface NetworkManager {
+    String MOD_CHANNEL = "craftengine:payload";
+
     void setUser(Channel channel, NetWorkUser user);
 
     NetWorkUser getUser(Channel channel);

@@ -69,37 +69,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
         try {
-            if (!user.usingClientMod()) {
-                BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
-                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
-                ByteBuf buf = Unpooled.copiedBuffer(buffer);
-                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
-                FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
-                for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                    try {
-                        MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
-                        mcSection.readPacket(friendlyByteBuf);
-                        PalettedContainer<Integer> container = mcSection.blockStateContainer();
-                        Palette<Integer> palette = container.data().palette();
-                        if (palette.canRemap()) {
-                            palette.remap(PacketConsumers::remap);
-                        } else {
-                            for (int j = 0; j < 4096; j++) {
-                                int state = container.get(j);
-                                int newState = remap(state);
-                                if (newState != state) {
-                                    container.set(j, newState);
-                                }
-                            }
-                        }
-                        mcSection.writePacket(newBuf);
-                    } catch (Exception e) {
-                        break;
-                    }
-                }
-                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
-            } else {
+            if (user.clientModEnabled()) {
                 BukkitServerPlayer player = (BukkitServerPlayer) user;
                 Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
                 byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
@@ -129,6 +99,36 @@ public class PacketConsumers {
                     }
                 }
                 Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
+            } else {
+                BukkitServerPlayer player = (BukkitServerPlayer) user;
+                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
+                ByteBuf buf = Unpooled.copiedBuffer(buffer);
+                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
+                FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
+                for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
+                    try {
+                        MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
+                        mcSection.readPacket(friendlyByteBuf);
+                        PalettedContainer<Integer> container = mcSection.blockStateContainer();
+                        Palette<Integer> palette = container.data().palette();
+                        if (palette.canRemap()) {
+                            palette.remap(PacketConsumers::remap);
+                        } else {
+                            for (int j = 0; j < 4096; j++) {
+                                int state = container.get(j);
+                                int newState = remap(state);
+                                if (newState != state) {
+                                    container.set(j, newState);
+                                }
+                            }
+                        }
+                        mcSection.writePacket(newBuf);
+                    } catch (Exception e) {
+                        break;
+                    }
+                }
+                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelChunkWithLightPacket", e);
@@ -137,7 +137,7 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SECTION_BLOCK_UPDATE = (user, event) -> {
         try {
-            if (!user.usingClientMod()) {
+            if (user.clientModEnabled()) {
                 FriendlyByteBuf buf = event.getBuffer();
                 long pos = buf.readLong();
                 int blocks = buf.readVarInt();
@@ -146,7 +146,7 @@ public class PacketConsumers {
                 for (int i = 0; i < blocks; i++) {
                     long k = buf.readVarLong();
                     positions[i] = (short) ((int) (k & 4095L));
-                    states[i] = remap((int) (k >>> 12));
+                    states[i] = remapMOD((int) (k >>> 12));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -165,7 +165,7 @@ public class PacketConsumers {
                 for (int i = 0; i < blocks; i++) {
                     long k = buf.readVarLong();
                     positions[i] = (short) ((int) (k & 4095L));
-                    states[i] = remapMOD((int) (k >>> 12));
+                    states[i] = remap((int) (k >>> 12));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -186,7 +186,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             BlockPos pos = buf.readBlockPos(buf);
             int before = buf.readVarInt();
-            if (user.usingClientMod() && !BlockStateUtils.isVanillaBlock(before)) {
+            if (user.clientModEnabled() && !BlockStateUtils.isVanillaBlock(before)) {
                 return;
             }
             int state = remap(before);

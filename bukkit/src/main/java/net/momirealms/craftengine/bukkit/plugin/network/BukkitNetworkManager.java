@@ -161,16 +161,17 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         this.onlineUsers.remove(player.getUniqueId());
     }
 
+    // for mod
     @EventHandler
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
-        if (!event.getChannel().equals("craftengine:payload")) return;
+        if (!event.getChannel().equals(MOD_CHANNEL)) return;
         Player player = event.getPlayer();
         NetWorkUser user = getUser(player);
         if (user == null) return;
-        user.setUsingClientMod(true);
+        user.setClientModState(true);
         int blockRegistrySize = RegistryUtils.currentBlockRegistrySize();
         byte[] payload = ("cp:" + blockRegistrySize).getBytes(StandardCharsets.UTF_8);
-        player.sendPluginMessage(plugin.bootstrap(), "craftengine:payload", payload);
+        player.sendPluginMessage(plugin.bootstrap(), MOD_CHANNEL, payload);
     }
 
     @Override
