@@ -722,6 +722,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             if (plugin.hasMod()) {
                 newRealBlock = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
                 newBlockState = getOnlyBlockState(newRealBlock);
+
                 @SuppressWarnings("unchecked")
                 Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder0.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
                 blockHolder = optionalHolder.get();

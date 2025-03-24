@@ -2225,6 +2225,25 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$BlockStateBase$Cache = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.BlockBehaviour$BlockStateBase$Cache"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.BlockBase$BlockData$Cache")
+            )
+    );
+
+    public static final Field field$BlockStateBase$cache = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, clazz$BlockStateBase$Cache, 0
+            )
+    );
+
+    // 1.20-1.21.1
+    public static final Field field$BlockStateBase$Cache$lightBlock =
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$BlockStateBase$Cache, int.class, 0
+            );
+
     public static final Method method$BlockStateBase$initCache = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$BlockStateBase, void.class, new String[] { "initCache", "a" }
@@ -2308,6 +2327,12 @@ public class Reflections {
                     clazz$BlockStateBase, int.class, 0
             )
     );
+
+    // 1.21.2+
+    public static final Field field$BlockStateBase$lightBlock =
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$BlockStateBase, int.class, 1
+            );
 
     public static final Class<?> clazz$AABB = requireNonNull(
             ReflectionUtils.getClazz(

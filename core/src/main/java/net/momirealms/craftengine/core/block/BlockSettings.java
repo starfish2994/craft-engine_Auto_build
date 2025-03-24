@@ -11,6 +11,7 @@ public class BlockSettings {
     boolean burnable;
     int burnChance;
     int fireSpreadChance;
+    int blockLight = -1; // TODO investigate how starlight works
     boolean replaceable;
     float hardness = 2f;
     float resistance = 2f;
@@ -77,6 +78,7 @@ public class BlockSettings {
         newSettings.isViewBlocking = settings.isViewBlocking;
         newSettings.correctTools = settings.correctTools;
         newSettings.fluidState = settings.fluidState;
+        newSettings.blockLight = settings.blockLight;
         return newSettings;
     }
 
@@ -154,6 +156,10 @@ public class BlockSettings {
 
     public Tristate isViewBlocking() {
         return isViewBlocking;
+    }
+
+    public int blockLight() {
+        return blockLight;
     }
 
     public boolean isCorrectTool(Key key) {
@@ -236,6 +242,11 @@ public class BlockSettings {
         return this;
     }
 
+    public BlockSettings blockLight(int intValue) {
+        this.blockLight = intValue;
+        return this;
+    }
+
     public BlockSettings isRedstoneConductor(boolean isRedstoneConductor) {
         this.isRedstoneConductor = isRedstoneConductor ? Tristate.TRUE : Tristate.FALSE;
         return this;
@@ -278,6 +289,10 @@ public class BlockSettings {
             registerFactory("luminance", (value -> {
                 int intValue = MiscUtils.getAsInt(value);
                 return settings -> settings.luminance(intValue);
+            }));
+            registerFactory("block-light", (value -> {
+                int intValue = MiscUtils.getAsInt(value);
+                return settings -> settings.blockLight(intValue);
             }));
             registerFactory("hardness", (value -> {
                 float floatValue = MiscUtils.getAsFloat(value);
