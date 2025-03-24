@@ -39,6 +39,7 @@ import java.util.function.Consumer;
 
 public class PacketConsumers {
     private static int[] mappings;
+    private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
 
@@ -51,12 +52,26 @@ public class PacketConsumers {
         for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
             mappings[entry.getKey()] = entry.getValue();
         }
+        mappingsMOD = new int[registrySize];
+        Arrays.fill(mappingsMOD, -1);
+        for (int i = 0; i < registrySize; i++) {
+            mappingsMOD[i] = i;
+        }
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (BlockStateUtils.isVanillaBlock(entry.getKey())) {
+                mappingsMOD[entry.getKey()] = entry.getValue();
+            }
+        }
         BLOCK_LIST = new IntIdentityList(registrySize);
         BIOME_LIST = new IntIdentityList(RegistryUtils.currentBiomeRegistrySize());
     }
 
     public static int remap(int stateId) {
         return mappings[stateId];
+    }
+
+    public static int remapMOD(int stateId) {
+        return mappingsMOD[stateId];
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
@@ -105,11 +120,11 @@ public class PacketConsumers {
                         PalettedContainer<Integer> container = mcSection.blockStateContainer();
                         Palette<Integer> palette = container.data().palette();
                         if (palette.canRemap()) {
-                            palette.remap(state -> BlockStateUtils.isVanillaBlock(state) ? remap(state) : state);
+                            palette.remap(PacketConsumers::remapMOD);
                         } else {
                             for (int j = 0; j < 4096; j++) {
                                 int state = container.get(j);
-                                int newState = BlockStateUtils.isVanillaBlock(state) ? remap(state) : state;
+                                int newState = remapMOD(state);
                                 if (newState != state) {
                                     container.set(j, newState);
                                 }
@@ -157,8 +172,7 @@ public class PacketConsumers {
                 for (int i = 0; i < blocks; i++) {
                     long k = buf.readVarLong();
                     positions[i] = (short) ((int) (k & 4095L));
-                    int stateId = (int) (k >>> 12);
-                    states[i] = BlockStateUtils.isVanillaBlock(stateId) ? remap(stateId) : stateId;
+                    states[i] = remapMOD((int) (k >>> 12));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
