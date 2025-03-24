@@ -1,14 +1,14 @@
-package net.momirealms.craftEngineFabricMod;
+package net.momirealms.craftEngine.fabric;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
-import net.momirealms.craftEngineFabricMod.client.config.ModConfig;
-import net.momirealms.craftEngineFabricMod.util.BlockUtils;
-import net.momirealms.craftEngineFabricMod.util.LoggerFilter;
-import net.momirealms.craftEngineFabricMod.util.RegisterBlocks;
-import net.momirealms.craftEngineFabricMod.util.YamlUtils;
+import net.momirealms.craftEngine.fabric.util.BlockUtils;
+import net.momirealms.craftEngine.fabric.util.LoggerFilter;
+import net.momirealms.craftEngine.fabric.util.RegisterBlocks;
+import net.momirealms.craftEngine.fabric.util.YamlUtils;
+import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 

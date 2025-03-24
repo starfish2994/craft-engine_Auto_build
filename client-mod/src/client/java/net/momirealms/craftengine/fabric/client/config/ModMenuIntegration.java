@@ -1,4 +1,4 @@
-package net.momirealms.craftEngineFabricMod.client.config;
+package net.momirealms.craftengine.fabric.client.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;

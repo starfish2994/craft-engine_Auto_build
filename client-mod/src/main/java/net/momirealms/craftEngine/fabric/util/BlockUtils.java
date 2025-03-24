@@ -1,4 +1,4 @@
-package net.momirealms.craftEngineFabricMod.util;
+package net.momirealms.craftEngine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+
 import static java.util.Objects.requireNonNull;
 
 public class BlockUtils {

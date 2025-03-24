@@ -1,4 +1,4 @@
-package net.momirealms.craftEngineFabricMod.util;
+package net.momirealms.craftEngine.fabric.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;

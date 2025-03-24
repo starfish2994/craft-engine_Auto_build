@@ -1,4 +1,4 @@
-package net.momirealms.craftEngineFabricMod.client.network;
+package net.momirealms.craftengine.fabric.client.network;
 
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;

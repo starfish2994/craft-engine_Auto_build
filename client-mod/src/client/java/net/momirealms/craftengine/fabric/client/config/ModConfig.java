@@ -1,4 +1,4 @@
-package net.momirealms.craftEngineFabricMod.client.config;
+package net.momirealms.craftengine.fabric.client.config;
 
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
