@@ -121,7 +121,9 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
                 throw new IllegalArgumentException("stage property not set for sapling");
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
-            if (arguments.containsKey("tags")) {
+            if (arguments.containsKey("bottom-block-tags")) {
+                return new SaplingBlockBehavior(Key.of(feature), stageProperty, MiscUtils.getAsStringList(arguments.get("bottom-block-tags")).stream().map(it -> BlockTags.getOrCreate(Key.of(it))).toList(), boneMealSuccessChance);
+            } else if (arguments.containsKey("tags")) {
                 return new SaplingBlockBehavior(Key.of(feature), stageProperty, MiscUtils.getAsStringList(arguments.get("tags")).stream().map(it -> BlockTags.getOrCreate(Key.of(it))).toList(), boneMealSuccessChance);
             } else {
                 return new SaplingBlockBehavior(Key.of(feature), stageProperty, List.of(DIRT_TAG, FARMLAND), boneMealSuccessChance);
