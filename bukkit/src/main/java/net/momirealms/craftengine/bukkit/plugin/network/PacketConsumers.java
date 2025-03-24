@@ -57,7 +57,8 @@ public class PacketConsumers {
 
     public static int remap(int stateId, NetWorkUser user) {
         int remapId = mappings[stateId];
-        if (user.usingClientMod() && BlockStateUtils.isVanillaBlock(remapId)) return stateId;
+        if (remapId == stateId) return stateId;
+        if (user.usingClientMod() && !BlockStateUtils.isVanillaBlock(stateId)) return stateId;
         return remapId;
     }
 
