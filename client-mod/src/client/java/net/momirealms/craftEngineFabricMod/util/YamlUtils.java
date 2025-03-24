@@ -52,32 +52,24 @@ public class YamlUtils {
     public static Map<Identifier, Integer> loadMappingsAndAdditionalBlocks() throws IOException {
         Path mappingPath = Path.of(CONFIG_DIR + "mappings.yml");
         Path additionalYamlPath = Path.of(CONFIG_DIR + "additional-real-blocks.yml");
-        System.out.println("Loading mappings.yml and additional-real-blocks.yml...");
         Map<String, String> blockStateMappings = loadConfig(mappingPath);
-        System.out.println("Loaded " + blockStateMappings.size() + " block state mappings.");
         validateBlockStateMappings(blockStateMappings);
-        System.out.println("Validated block state mappings.");
         Map<Identifier, Integer> blockTypeCounter = new LinkedHashMap<>();
         Map<Integer, Integer> appearanceMapper = new HashMap<>();
-        System.out.println("Processing block state mappings...");
         for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
             processBlockStateMapping(entry, appearanceMapper, blockTypeCounter);
         }
-        System.out.println("Processed " + blockTypeCounter.size() + " block state mappings.");
         Map<String, Integer> additionalYaml = loadConfig(additionalYamlPath);
-        System.out.println("Loaded " + additionalYaml.size() + " additional real blocks.");
         return buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
     }
 
 
     private static void validateBlockStateMappings(Map<String, String> blockStateMappings) {
         Map<String, String> temp = new HashMap<>(blockStateMappings);
-        System.out.println("Validating block state mappings...");
         for (Map.Entry<String, String> entry : temp.entrySet()) {
             String state = entry.getValue();
             blockStateMappings.remove(state);
         }
-        System.out.println("Validated " + blockStateMappings.size() + " block state mappings.");
     }
 
     private static void processBlockStateMapping(
@@ -114,14 +106,12 @@ public class YamlUtils {
 
     private static LinkedHashMap<Identifier, Integer> buildRegisteredRealBlockSlots(Map<Identifier, Integer> counter, Map<String, Integer> additionalYaml) {
         LinkedHashMap<Identifier, Integer> map = new LinkedHashMap<>();
-        System.out.println("Building registered real block slots...");
         for (Map.Entry<Identifier, Integer> entry : counter.entrySet()) {
             String id = entry.getKey().toString();
             Integer additionalStates = additionalYaml.get(id);
             int internalIds = entry.getValue() + (additionalStates != null ? additionalStates : 0);
             map.put(entry.getKey(), internalIds);
         }
-        System.out.println("Built " + map.size() + " registered real block slots.");
         return map;
     }
 }

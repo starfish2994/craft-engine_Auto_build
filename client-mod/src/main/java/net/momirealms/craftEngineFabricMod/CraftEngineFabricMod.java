@@ -33,7 +33,6 @@ public class CraftEngineFabricMod implements ModInitializer {
             YamlUtils.ensureConfigFile("mappings.yml");
             YamlUtils.ensureConfigFile("config.yml");
             Map<Identifier, Integer> map = YamlUtils.loadMappingsAndAdditionalBlocks();
-            System.out.println("Loaded " + map.size() + " additional real blocks.");
             for (Map.Entry<Identifier, Integer> entry : map.entrySet()) {
                 Identifier replacedBlockId = entry.getKey();
                 for (int i = 0; i < entry.getValue(); i++) {
@@ -44,7 +43,6 @@ public class CraftEngineFabricMod implements ModInitializer {
                     );
                 }
             }
-            System.out.println("Registered " + map.size() + " additional real blocks.");
         } catch (IOException e) {
             e.printStackTrace();
         }
