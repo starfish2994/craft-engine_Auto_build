@@ -3,7 +3,6 @@ package net.momirealms.craftengine.fabric.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -16,15 +15,12 @@ import net.minecraft.network.DisconnectionInfo;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.crash.CrashReport;
 import net.minecraft.world.biome.FoliageColors;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.client.network.CraftEnginePayload;
 
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Optional;
 
 public class CraftEngineFabricModClient implements ClientModInitializer {
