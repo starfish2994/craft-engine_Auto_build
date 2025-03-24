@@ -101,6 +101,11 @@ public class FallingBlockBehavior extends BlockBehavior {
         for (Item<Object> item : immutableBlockState.getDrops(builder, world)) {
             world.dropItemNaturally(vec3d, item);
         }
+        Object entityData = Reflections.field$Entity$entityData.get(fallingBlockEntity);
+        boolean isSilent = (boolean) Reflections.method$SynchedEntityData$get.invoke(entityData, Reflections.instance$Entity$DATA_SILENT);
+        if (!isSilent) {
+            world.playBlockSound(vec3d, immutableBlockState.sounds().destroySound());
+        }
     }
 
     @Override

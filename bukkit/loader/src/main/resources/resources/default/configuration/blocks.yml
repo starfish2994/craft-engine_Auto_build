@@ -72,6 +72,7 @@ items:
               hit: minecraft:block.anvil.hit
               fall: minecraft:block.anvil.fall
               land: minecraft:block.anvil.land
+              destroy: minecraft:block.anvil.destroy
             item: default:netherite_anvil
             map-color: 29
             hardness: 10.0

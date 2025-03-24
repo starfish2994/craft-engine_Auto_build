@@ -126,7 +126,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
             item.load();
         }
 
-        furnitureLocation.getWorld().playSound(furnitureLocation, customFurniture.settings().sounds().placeSound().toString(), SoundCategory.BLOCKS,1f, 1f);
+        context.getLevel().playBlockSound(finalPlacePosition, customFurniture.settings().sounds().placeSound());
         player.swingHand(context.getHand());
         return InteractionResult.SUCCESS;
     }

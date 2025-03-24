@@ -14,7 +14,7 @@ public class BlockSounds {
     Break 1 0.8
      */
     public static final SoundData EMPTY_SOUND = new SoundData(Key.of("minecraft:intentionally_empty"), 1, 1);
-    public static final BlockSounds EMPTY = new BlockSounds(EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND);
+    public static final BlockSounds EMPTY = new BlockSounds(EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND, EMPTY_SOUND);
 
     private final SoundData breakSound;
     private final SoundData stepSound;
@@ -22,14 +22,16 @@ public class BlockSounds {
     private final SoundData hitSound;
     private final SoundData fallSound;
     private final SoundData landSound;
+    private final SoundData destroySound;
 
-    public BlockSounds(SoundData breakSound, SoundData stepSound, SoundData placeSound, SoundData hitSound, SoundData fallSound, SoundData landSound) {
+    public BlockSounds(SoundData breakSound, SoundData stepSound, SoundData placeSound, SoundData hitSound, SoundData fallSound, SoundData landSound, SoundData destroySound) {
         this.breakSound = breakSound;
         this.stepSound = stepSound;
         this.placeSound = placeSound;
         this.hitSound = hitSound;
         this.fallSound = fallSound;
         this.landSound = landSound;
+        this.destroySound = destroySound;
     }
 
     public static BlockSounds fromMap(Map<String, Object> map) {
@@ -40,8 +42,13 @@ public class BlockSounds {
                 SoundData.create(map.getOrDefault("place", "minecraft:intentionally_empty"), 0f, 0.8f), // todo 0?
                 SoundData.create(map.getOrDefault("hit", "minecraft:intentionally_empty"), 0.5f, 0.5f),
                 SoundData.create(map.getOrDefault("fall", "minecraft:intentionally_empty"), 0.5f, 0.75f),
-                SoundData.create(map.getOrDefault("land", "minecraft:intentionally_empty"), 0.3f, 1f)
+                SoundData.create(map.getOrDefault("land", "minecraft:intentionally_empty"), 0.3f, 1f),
+                SoundData.create(map.getOrDefault("destroy", "minecraft:intentionally_empty"), 1f, 1f)
         );
+    }
+
+    public SoundData destroySound() {
+        return destroySound;
     }
 
     public SoundData breakSound() {

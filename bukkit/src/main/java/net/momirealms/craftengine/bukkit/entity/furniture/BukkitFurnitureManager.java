@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -60,7 +61,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
             handleEntityLoadEarly(display);
         });
         if (playSound) {
-            location.getWorld().playSound(location, furniture.settings().sounds().placeSound().toString(), SoundCategory.BLOCKS,1f, 1f);
+            SoundData data = furniture.settings().sounds().placeSound();
+            location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
         }
         return getLoadedFurnitureByBaseEntityId(furnitureEntity.getEntityId());
     }
