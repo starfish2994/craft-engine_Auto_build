@@ -161,11 +161,11 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
 
     @EventHandler
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
+        if (!event.getChannel().equals("craftengine:payload")) return;
         Player player = event.getPlayer();
         NetWorkUser user = getUser(player);
-        if (user != null) {
-            user.setUsingClientMod(true);
-        }
+        if (user == null) return;
+        user.setUsingClientMod(true);
     }
 
     @Override

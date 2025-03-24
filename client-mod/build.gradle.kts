@@ -19,6 +19,8 @@ sourceSets {
         runtimeClasspath += sourceSets.main.get().runtimeClasspath
     }
     main {
+        compileClasspath += sourceSets["client"].output
+        runtimeClasspath += sourceSets["client"].output
         output.dir(sourceSets["client"].output)
     }
 }

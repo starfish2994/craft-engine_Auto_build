@@ -13,7 +13,7 @@ public class BlockUtils {
                     if (world != null && pos != null) {
                         return BiomeColors.getFoliageColor(world, pos);
                     }
-                    return FoliageColors.DEFAULT; // 默认颜色
+                    return FoliageColors.DEFAULT;
                 },
                 block
         );
