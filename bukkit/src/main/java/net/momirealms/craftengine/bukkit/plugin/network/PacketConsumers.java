@@ -45,19 +45,12 @@ public class PacketConsumers {
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
-        Arrays.fill(mappings, -1);
         for (int i = 0; i < registrySize; i++) {
             mappings[i] = i;
         }
+        mappingsMOD = Arrays.copyOf(mappings, registrySize);
         for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
             mappings[entry.getKey()] = entry.getValue();
-        }
-        mappingsMOD = new int[registrySize];
-        Arrays.fill(mappingsMOD, -1);
-        for (int i = 0; i < registrySize; i++) {
-            mappingsMOD[i] = i;
-        }
-        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
             if (BlockStateUtils.isVanillaBlock(entry.getKey())) {
                 mappingsMOD[entry.getKey()] = entry.getValue();
             }
