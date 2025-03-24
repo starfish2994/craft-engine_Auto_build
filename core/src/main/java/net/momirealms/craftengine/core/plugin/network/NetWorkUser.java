@@ -36,4 +36,8 @@ public interface NetWorkUser {
     Object platformPlayer();
 
     Map<Integer, List<Integer>> furnitureView();
+
+    boolean usingClientMod();
+
+    void setUsingClientMod(boolean usingClientMod);
 }

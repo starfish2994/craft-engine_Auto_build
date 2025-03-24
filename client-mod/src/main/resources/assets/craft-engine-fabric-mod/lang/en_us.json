@@ -1,0 +1,8 @@
+{
+  "title.craftengine.config": "CraftEngine Settings",
+  "category.craftengine.general": "General",
+  "option.craftengine.enable_network": "Enable custom blocks in server",
+  "tooltip.craftengine.enable_network": "You need to re-enter the server to take effect",
+  "disconnect.craftengine.block_registry_mismatch": "Block registry size mismatch!",
+  "disconnect.craftengine.title": "CraftEngine Connection Error"
+}

@@ -63,6 +63,8 @@ public class BukkitServerPlayer extends Player {
 
     private Key lastUsedRecipe = null;
 
+    private boolean usingClientMod = false;
+
     private Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
@@ -615,5 +617,13 @@ public class BukkitServerPlayer extends Player {
 
     public void setLastUsedRecipe(Key lastUsedRecipe) {
         this.lastUsedRecipe = lastUsedRecipe;
+    }
+
+    public boolean usingClientMod() {
+        return this.usingClientMod;
+    }
+
+    public void setUsingClientMod(boolean usingClientMod) {
+        this.usingClientMod = usingClientMod;
     }
 }
