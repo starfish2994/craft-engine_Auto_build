@@ -3,6 +3,7 @@ package net.momirealms.craftengine.fabric.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -13,6 +14,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.crash.CrashReport;
 import net.minecraft.world.biome.FoliageColors;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.client.network.CraftEnginePayload;
@@ -40,21 +42,17 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
                 return;
             }
             ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {
-                try {
-                    byte[] data = payload.data();
-                    String decoded = new String(data, StandardCharsets.UTF_8);
-                    if (decoded.startsWith("cp:")) {
-                        int blockRegistrySize = Integer.parseInt(decoded.substring(3));
-                        if (Block.STATE_IDS.size() != blockRegistrySize) {
-                            client.disconnect(new DisconnectedScreen(
-                                    client.currentScreen,
-                                    Text.translatable("disconnect.craftengine.title"),
-                                    Text.translatable("disconnect.craftengine.block_registry_mismatch"))
-                            );
-                        }
+                byte[] data = payload.data();
+                String decoded = new String(data, StandardCharsets.UTF_8);
+                if (decoded.startsWith("cp:")) {
+                    int blockRegistrySize = Integer.parseInt(decoded.substring(3));
+                    if (Block.STATE_IDS.size() != blockRegistrySize) {
+                        client.disconnect(new DisconnectedScreen(
+                                client.currentScreen,
+                                Text.translatable("disconnect.craftengine.title"),
+                                Text.translatable("disconnect.craftengine.block_registry_mismatch", Block.STATE_IDS.size(), blockRegistrySize))
+                        );
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             });
         });

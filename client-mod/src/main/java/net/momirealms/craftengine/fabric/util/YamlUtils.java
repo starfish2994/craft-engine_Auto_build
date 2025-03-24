@@ -9,8 +9,10 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -21,23 +23,25 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class YamlUtils {
-    public static final String CONFIG_DIR = "config/craft-engine-fabric-mod/";
-    private static final Yaml yaml = new Yaml();
+    public static final Path CONFIG_DIR = Path.of("config/craft-engine-fabric-mod/");
     private static final RegistryWrapper<Block> registryWrapper = BuiltinRegistries.createWrapperLookup().getOrThrow(RegistryKeys.BLOCK);
 
     public static <T> T loadConfig(Path filePath) throws IOException {
+        if (!Files.exists(filePath)) {
+            throw new FileNotFoundException(filePath.toString());
+        }
         try (InputStream inputStream = Files.newInputStream(filePath)) {
+            Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
             return yaml.load(inputStream);
         }
     }
 
-    public static void ensureConfigFile(String fileName) throws IOException {
-        Path configDir = Path.of(CONFIG_DIR);
-        if (!Files.exists(configDir)) {
-            Files.createDirectories(configDir);
+    public static void saveDefaultResource(String fileName) throws IOException {
+        if (!Files.exists(CONFIG_DIR)) {
+            Files.createDirectories(CONFIG_DIR);
         }
 
-        Path targetPath = configDir.resolve(fileName);
+        Path targetPath = CONFIG_DIR.resolve(fileName);
         if (Files.exists(targetPath)) return;
         String resourcePath = "assets/craft-engine-fabric-mod/config/" + fileName;
         try (InputStream inputStream = YamlUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
@@ -48,10 +52,9 @@ public class YamlUtils {
         }
     }
 
-
     public static Map<Identifier, Integer> loadMappingsAndAdditionalBlocks() throws IOException {
-        Path mappingPath = Path.of(CONFIG_DIR + "mappings.yml");
-        Path additionalYamlPath = Path.of(CONFIG_DIR + "additional-real-blocks.yml");
+        Path mappingPath = CONFIG_DIR.resolve("mappings.yml");
+        Path additionalYamlPath = CONFIG_DIR.resolve("additional-real-blocks.yml");
         Map<String, String> blockStateMappings = loadConfig(mappingPath);
         validateBlockStateMappings(blockStateMappings);
         Map<Identifier, Integer> blockTypeCounter = new LinkedHashMap<>();
@@ -62,7 +65,6 @@ public class YamlUtils {
         Map<String, Integer> additionalYaml = loadConfig(additionalYamlPath);
         return buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
     }
-
 
     private static void validateBlockStateMappings(Map<String, String> blockStateMappings) {
         Map<String, String> temp = new HashMap<>(blockStateMappings);

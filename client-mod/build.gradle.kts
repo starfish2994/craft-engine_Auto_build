@@ -104,5 +104,6 @@ java {
 }
 
 tasks.build {
+    dependsOn(tasks.clean)
     dependsOn(tasks.shadowJar)
 }

@@ -26,12 +26,10 @@ public class CraftEngineFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         loadConfig();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::saveConfig));
         LoggerFilter.filter();
         try {
-            YamlUtils.ensureConfigFile("additional-real-blocks.yml");
-            YamlUtils.ensureConfigFile("mappings.yml");
-            YamlUtils.ensureConfigFile("config.yml");
+            YamlUtils.saveDefaultResource("additional-real-blocks.yml");
+            YamlUtils.saveDefaultResource("mappings.yml");
             Map<Identifier, Integer> map = YamlUtils.loadMappingsAndAdditionalBlocks();
             for (Map.Entry<Identifier, Integer> entry : map.entrySet()) {
                 Identifier replacedBlockId = entry.getKey();
@@ -46,15 +44,15 @@ public class CraftEngineFabricMod implements ModInitializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(this::saveConfig));
     }
 
     @SuppressWarnings("unchecked")
     private void loadConfig() {
         if (!Files.exists(CONFIG_PATH)) {
-            saveConfig();
+            ModConfig.enableNetwork = true;
             return;
         }
-
         try (InputStream inputStream = Files.newInputStream(CONFIG_PATH)) {
             Yaml yaml = new Yaml();
             var config = yaml.loadAs(inputStream, java.util.Map.class);
@@ -68,10 +66,8 @@ public class CraftEngineFabricMod implements ModInitializer {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
-
         var data = new java.util.HashMap<String, Object>();
         data.put("enable-network", ModConfig.enableNetwork);
-
         try (Writer writer = Files.newBufferedWriter(CONFIG_PATH)) {
             yaml.dump(data, writer);
         } catch (IOException e) {
