@@ -31,10 +31,6 @@ public class YamlUtils {
         }
     }
 
-    public static void saveConfig(Map<?,?> config, Path filePath) throws IOException {
-        Files.writeString(filePath, yaml.dump(config));
-    }
-
     public static void ensureConfigFile(String fileName) throws IOException {
         Path configDir = Path.of(CONFIG_DIR);
         if (!Files.exists(configDir)) {

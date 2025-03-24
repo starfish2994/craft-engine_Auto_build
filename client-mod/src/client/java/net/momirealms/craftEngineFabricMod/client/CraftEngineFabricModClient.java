@@ -5,18 +5,17 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.Block;
+import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.momirealms.craftEngineFabricMod.client.config.ModConfig;
 import net.momirealms.craftEngineFabricMod.client.network.CraftEnginePayload;
 import net.momirealms.craftEngineFabricMod.client.util.BlockUtils;
-import net.momirealms.craftEngineFabricMod.util.YamlUtils;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 public class CraftEngineFabricModClient implements ClientModInitializer {
     public static final String MOD_ID = "craftengine";
@@ -38,7 +37,24 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
                 ClientPlayNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID.id());
                 return;
             }
-            ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {});
+            ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {
+                try {
+                    byte[] data = payload.data();
+                    String decoded = new String(data, StandardCharsets.UTF_8);
+                    if (decoded.startsWith("cp:")) {
+                        int blockRegistrySize = Integer.parseInt(decoded.substring(3));
+                        if (Block.STATE_IDS.size() != blockRegistrySize) {
+                            client.disconnect(new DisconnectedScreen(
+                                    client.currentScreen,
+                                    Text.translatable("disconnect.craftengine.title"),
+                                    Text.translatable("disconnect.craftengine.block_registry_mismatch"))
+                            );
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
         });
     }
 }
