@@ -1823,6 +1823,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$LevelChunkSection$getBlockState = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class
+            )
+    );
+
     public static final Class<?> clazz$StatePredicate = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.level.block.state.BlockBehaviour$StatePredicate"),
@@ -5371,4 +5377,55 @@ public class Reflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$SingleValuePalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.SingleValuePalette")
+            )
+    );
+
+    public static final Field field$SingleValuePalette$value = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$SingleValuePalette, Object.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$HashMapPalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.HashMapPalette"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.DataPaletteHash")
+            )
+    );
+
+    public static final Class<?> clazz$CrudeIncrementalIntIdentityHashBiMap = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("util.CrudeIncrementalIntIdentityHashBiMap"),
+                    BukkitReflectionUtils.assembleMCClass("util.RegistryID")
+            )
+    );
+
+    public static final Field field$CrudeIncrementalIntIdentityHashBiMap$keys = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CrudeIncrementalIntIdentityHashBiMap, Object.class.arrayType(), 0
+            )
+    );
+
+    public static final Field field$HashMapPalette$values = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$HashMapPalette, clazz$CrudeIncrementalIntIdentityHashBiMap, 0
+            )
+    );
+
+    public static final Class<?> clazz$LinearPalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.LinearPalette"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.DataPaletteLinear")
+            )
+    );
+
+    public static final Field field$LinearPalette$values = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$LinearPalette, Object.class.arrayType(), 0
+            )
+    );
 }

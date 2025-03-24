@@ -210,6 +210,10 @@ performance:
     # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
     # While this can improve performance, custom blocks will turn into air if the plugin is uninstalled.
     restore-vanilla-blocks-on-chunk-unload: true
+    # When you edit a map locally using CraftEngine fabric mod, the custom block data is not immediately synchronized with the
+    # server's CraftEngine internal data. Enabling this option will synchronize the data when the chunk is loaded.
+    # (This option only slightly impacts performance, which has been fully optimized, so you don't need to worry too much.)
+    sync-custom-blocks-on-chunk-load: false
     # If you disable this, it's a must to disable the above option.
     restore-custom-blocks-on-chunk-load: true
 
