@@ -39,17 +39,21 @@ import java.util.function.Consumer;
 
 public class PacketConsumers {
     private static int[] mappings;
+    private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
-        Arrays.fill(mappings, -1);
         for (int i = 0; i < registrySize; i++) {
             mappings[i] = i;
         }
+        mappingsMOD = Arrays.copyOf(mappings, registrySize);
         for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
             mappings[entry.getKey()] = entry.getValue();
+            if (BlockStateUtils.isVanillaBlock(entry.getKey())) {
+                mappingsMOD[entry.getKey()] = entry.getValue();
+            }
         }
         BLOCK_LIST = new IntIdentityList(registrySize);
         BIOME_LIST = new IntIdentityList(RegistryUtils.currentBiomeRegistrySize());
@@ -59,37 +63,73 @@ public class PacketConsumers {
         return mappings[stateId];
     }
 
+    public static int remapMOD(int stateId) {
+        return mappingsMOD[stateId];
+    }
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
         try {
-            BukkitServerPlayer player = (BukkitServerPlayer) user;
-            Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
-            byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
-            ByteBuf buf = Unpooled.copiedBuffer(buffer);
-            FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
-            FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
-            for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                try {
-                    MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
-                    mcSection.readPacket(friendlyByteBuf);
-                    PalettedContainer<Integer> container = mcSection.blockStateContainer();
-                    Palette<Integer> palette = container.data().palette();
-                    if (palette.canRemap()) {
-                        palette.remap(PacketConsumers::remap);
-                    } else {
-                        for (int j = 0; j < 4096; j ++) {
-                            int state = container.get(j);
-                            int newState = remap(state);
-                            if (newState != state) {
-                                container.set(j, newState);
+            if (user.clientModEnabled()) {
+                BukkitServerPlayer player = (BukkitServerPlayer) user;
+                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
+                ByteBuf buf = Unpooled.copiedBuffer(buffer);
+                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
+                FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
+                for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
+                    try {
+                        MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
+                        mcSection.readPacket(friendlyByteBuf);
+                        PalettedContainer<Integer> container = mcSection.blockStateContainer();
+                        Palette<Integer> palette = container.data().palette();
+                        if (palette.canRemap()) {
+                            palette.remap(PacketConsumers::remapMOD);
+                        } else {
+                            for (int j = 0; j < 4096; j++) {
+                                int state = container.get(j);
+                                int newState = remapMOD(state);
+                                if (newState != state) {
+                                    container.set(j, newState);
+                                }
                             }
                         }
+                        mcSection.writePacket(newBuf);
+                    } catch (Exception e) {
+                        break;
                     }
-                    mcSection.writePacket(newBuf);
-                } catch (Exception e) {
-                    break;
                 }
+                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
+            } else {
+                BukkitServerPlayer player = (BukkitServerPlayer) user;
+                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
+                ByteBuf buf = Unpooled.copiedBuffer(buffer);
+                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
+                FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
+                for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
+                    try {
+                        MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
+                        mcSection.readPacket(friendlyByteBuf);
+                        PalettedContainer<Integer> container = mcSection.blockStateContainer();
+                        Palette<Integer> palette = container.data().palette();
+                        if (palette.canRemap()) {
+                            palette.remap(PacketConsumers::remap);
+                        } else {
+                            for (int j = 0; j < 4096; j++) {
+                                int state = container.get(j);
+                                int newState = remap(state);
+                                if (newState != state) {
+                                    container.set(j, newState);
+                                }
+                            }
+                        }
+                        mcSection.writePacket(newBuf);
+                    } catch (Exception e) {
+                        break;
+                    }
+                }
+                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
             }
-            Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelChunkWithLightPacket", e);
         }
@@ -97,24 +137,45 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SECTION_BLOCK_UPDATE = (user, event) -> {
         try {
-            FriendlyByteBuf buf = event.getBuffer();
-            long pos = buf.readLong();
-            int blocks = buf.readVarInt();
-            short[] positions = new short[blocks];
-            int[] states = new int[blocks];
-            for (int i = 0; i < blocks; i++) {
-                long k = buf.readVarLong();
-                positions[i] = (short) ((int) (k & 4095L));
-                states[i] = remap((int) (k >>> 12));
+            if (user.clientModEnabled()) {
+                FriendlyByteBuf buf = event.getBuffer();
+                long pos = buf.readLong();
+                int blocks = buf.readVarInt();
+                short[] positions = new short[blocks];
+                int[] states = new int[blocks];
+                for (int i = 0; i < blocks; i++) {
+                    long k = buf.readVarLong();
+                    positions[i] = (short) ((int) (k & 4095L));
+                    states[i] = remapMOD((int) (k >>> 12));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeLong(pos);
+                buf.writeVarInt(blocks);
+                for (int i = 0; i < blocks; i++) {
+                    buf.writeVarLong((long) states[i] << 12 | positions[i]);
+                }
+                event.setChanged(true);
+            } else {
+                FriendlyByteBuf buf = event.getBuffer();
+                long pos = buf.readLong();
+                int blocks = buf.readVarInt();
+                short[] positions = new short[blocks];
+                int[] states = new int[blocks];
+                for (int i = 0; i < blocks; i++) {
+                    long k = buf.readVarLong();
+                    positions[i] = (short) ((int) (k & 4095L));
+                    states[i] = remap((int) (k >>> 12));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeLong(pos);
+                buf.writeVarInt(blocks);
+                for (int i = 0; i < blocks; i++) {
+                    buf.writeVarLong((long) states[i] << 12 | positions[i]);
+                }
+                event.setChanged(true);
             }
-            buf.clear();
-            buf.writeVarInt(event.packetID());
-            buf.writeLong(pos);
-            buf.writeVarInt(blocks);
-            for (int i = 0; i < blocks; i ++) {
-                buf.writeVarLong((long) states[i] << 12 | positions[i]);
-            }
-            event.setChanged(true);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSectionBlocksUpdatePacket", e);
         }
@@ -125,6 +186,9 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             BlockPos pos = buf.readBlockPos(buf);
             int before = buf.readVarInt();
+            if (user.clientModEnabled() && !BlockStateUtils.isVanillaBlock(before)) {
+                return;
+            }
             int state = remap(before);
             if (state == before) {
                 return;
@@ -666,10 +730,15 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterAnvil()) return;
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
                 ImageManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
+                // check bypass
+                if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_ANVIL)) {
+                    return;
+                }
                 runIfContainsIllegalCharacter(message, manager, (s) -> {
                     try {
                         Reflections.field$ServerboundRenameItemPacket$name.set(packet, s);
@@ -686,9 +755,14 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterSign()) return;
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
             ImageManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
+            // check bypass
+            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_SIGN)) {
+                return;
+            }
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (line != null && !line.isEmpty()) {
@@ -708,8 +782,13 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
+            if (!ConfigManager.filterBook()) return;
             ImageManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
+            // check bypass
+            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_BOOK)) {
+                return;
+            }
 
             boolean changed = false;
 

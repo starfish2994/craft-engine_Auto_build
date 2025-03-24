@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.impl.*;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.util.RegistryUtils;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
@@ -25,10 +26,13 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -158,6 +162,19 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         this.onlineUsers.remove(player.getUniqueId());
     }
 
+    // for mod
+    @EventHandler
+    public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
+        if (!event.getChannel().equals(MOD_CHANNEL)) return;
+        Player player = event.getPlayer();
+        NetWorkUser user = getUser(player);
+        if (user == null) return;
+        user.setClientModState(true);
+        int blockRegistrySize = RegistryUtils.currentBlockRegistrySize();
+        byte[] payload = ("cp:" + blockRegistrySize).getBytes(StandardCharsets.UTF_8);
+        player.sendPluginMessage(plugin.bootstrap(), MOD_CHANNEL, payload);
+    }
+
     @Override
     public Collection<BukkitServerPlayer> onlineUsers() {
         return onlineUsers.values();
@@ -167,6 +184,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
     public void init() {
         if (init) return;
         try {
+            plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(plugin.bootstrap(), "craftengine:payload");
             Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
             Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
             @SuppressWarnings("unchecked")

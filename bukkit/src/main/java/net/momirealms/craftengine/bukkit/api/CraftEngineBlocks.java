@@ -115,7 +115,7 @@ public final class CraftEngineBlocks {
             if (success) {
                 Reflections.method$BlockStateBase$onPlace.invoke(blockState, worldServer, blockPos, oldBlockState, true);
                 if (playSound) {
-                    location.getWorld().playSound(location, block.sounds().placeSound().toString(), SoundCategory.BLOCKS, 1, 0.8f);
+                    location.getWorld().playSound(location, block.sounds().placeSound().toString(), SoundCategory.BLOCKS, block.sounds().placeSound().volume(), block.sounds().placeSound().pitch());
                 }
             }
         } catch (ReflectiveOperationException e) {
@@ -185,7 +185,7 @@ public final class CraftEngineBlocks {
             }
         }
         if (playSound) {
-            world.playBlockSound(vec3d, state.sounds().breakSound(), 1, 0.8f);
+            world.playBlockSound(vec3d, state.sounds().breakSound());
         }
         if (sendParticles) {
             // TODO Particles

@@ -95,6 +95,7 @@ public class ConfigManager implements Reloadable {
     protected int performance$max_block_chain_update_limit;
     protected boolean performance$chunk_system$restore_vanilla_blocks_on_chunk_unload;
     protected boolean performance$chunk_system$restore_custom_blocks_on_chunk_load;
+    protected boolean performance$chunk_system$sync_custom_blocks_on_chunk_load;
 
     protected boolean furniture$remove_invalid_furniture_on_chunk_load$enable;
     protected Set<String> furniture$remove_invalid_furniture_on_chunk_load$list;
@@ -103,6 +104,12 @@ public class ConfigManager implements Reloadable {
     protected boolean recipe$enable;
 
     protected boolean item$non_italic_tag;
+
+    protected boolean image$illegal_characters_filter$command;
+    protected boolean image$illegal_characters_filter$chat;
+    protected boolean image$illegal_characters_filter$anvil;
+    protected boolean image$illegal_characters_filter$sign;
+    protected boolean image$illegal_characters_filter$book;
 
     public ConfigManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -236,6 +243,7 @@ public class ConfigManager implements Reloadable {
         performance$light_system$enable = config.getBoolean("performance.light-system.enable", true);
         performance$chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("performance.chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
         performance$chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.restore-custom-blocks-on-chunk-load", true);
+        performance$chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.sync-custom-blocks-on-chunk-load", false);
 
         // furniture
         furniture$remove_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.remove-invalid-furniture-on-chunk-load.enable", false);
@@ -246,6 +254,13 @@ public class ConfigManager implements Reloadable {
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
+
+        // image
+        image$illegal_characters_filter$anvil = config.getBoolean("image.illegal-characters-filter.anvil", true);
+        image$illegal_characters_filter$book = config.getBoolean("image.illegal-characters-filter.book", true);
+        image$illegal_characters_filter$chat = config.getBoolean("image.illegal-characters-filter.chat", true);
+        image$illegal_characters_filter$command = config.getBoolean("image.illegal-characters-filter.command", true);
+        image$illegal_characters_filter$sign = config.getBoolean("image.illegal-characters-filter.sign", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -340,6 +355,10 @@ public class ConfigManager implements Reloadable {
 
     public static boolean restoreCustomBlocks() {
         return instance.performance$chunk_system$restore_custom_blocks_on_chunk_load;
+    }
+
+    public static boolean syncCustomBlocks() {
+        return instance.performance$chunk_system$sync_custom_blocks_on_chunk_load;
     }
 
     public static List<String> foldersToMerge() {
@@ -492,6 +511,26 @@ public class ConfigManager implements Reloadable {
 
     public static boolean generateModAssets() {
         return instance.resource_pack$generate_mod_assets;
+    }
+
+    public static boolean filterChat() {
+        return instance().image$illegal_characters_filter$chat;
+    }
+
+    public static boolean filterAnvil() {
+        return instance().image$illegal_characters_filter$anvil;
+    }
+
+    public static boolean filterCommand() {
+        return instance().image$illegal_characters_filter$command;
+    }
+
+    public static boolean filterBook() {
+        return instance().image$illegal_characters_filter$book;
+    }
+
+    public static boolean filterSign() {
+        return instance().image$illegal_characters_filter$sign;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

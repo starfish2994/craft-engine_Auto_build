@@ -707,6 +707,19 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$SynchedEntityData = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.syncher.SynchedEntityData"),
+                    BukkitReflectionUtils.assembleMCClass("network.syncher.DataWatcher")
+            )
+    );
+
+    public static final Method method$SynchedEntityData$get = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$SynchedEntityData, Object.class, clazz$EntityDataAccessor
+            )
+    );
+
     public static final Class<?> clazz$SynchedEntityData$DataValue = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.syncher.SynchedEntityData$DataValue"),
@@ -1820,6 +1833,12 @@ public class Reflections {
     public static final Method method$LevelChunkSection$setBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class, clazz$BlockState, boolean.class
+            )
+    );
+
+    public static final Method method$LevelChunkSection$getBlockState = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class
             )
     );
 
@@ -5371,4 +5390,85 @@ public class Reflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$SingleValuePalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.SingleValuePalette")
+            )
+    );
+
+    public static final Field field$SingleValuePalette$value = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$SingleValuePalette, Object.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$HashMapPalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.HashMapPalette"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.DataPaletteHash")
+            )
+    );
+
+    public static final Class<?> clazz$CrudeIncrementalIntIdentityHashBiMap = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("util.CrudeIncrementalIntIdentityHashBiMap"),
+                    BukkitReflectionUtils.assembleMCClass("util.RegistryID")
+            )
+    );
+
+    public static final Field field$CrudeIncrementalIntIdentityHashBiMap$keys = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CrudeIncrementalIntIdentityHashBiMap, Object.class.arrayType(), 0
+            )
+    );
+
+    public static final Field field$HashMapPalette$values = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$HashMapPalette, clazz$CrudeIncrementalIntIdentityHashBiMap, 0
+            )
+    );
+
+    public static final Class<?> clazz$LinearPalette = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.LinearPalette"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.chunk.DataPaletteLinear")
+            )
+    );
+
+    public static final Field field$LinearPalette$values = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$LinearPalette, Object.class.arrayType(), 0
+            )
+    );
+
+    public static final Object instance$Entity$DATA_SILENT;
+
+    static {
+        int i = 0;
+        Field targetField = null;
+        for (Field field : clazz$Entity.getDeclaredFields()) {
+            Type fieldType = field.getGenericType();
+            if (field.getType() == clazz$EntityDataAccessor && fieldType instanceof ParameterizedType paramType) {
+                if (paramType.getActualTypeArguments()[0] == Boolean.class) {
+                    i++;
+                    if (i == 2) {
+                        targetField = field;
+                        break;
+                    }
+                }
+            }
+        }
+        try {
+            instance$Entity$DATA_SILENT = ReflectionUtils.setAccessible(requireNonNull(targetField)).get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Field field$Entity$entityData = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$Entity, clazz$SynchedEntityData, 0
+            )
+    );
 }
