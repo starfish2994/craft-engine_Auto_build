@@ -8,6 +8,8 @@ group = property("project_group")!!
 val project_version: String by project
 val latest_minecraft_version: String by project
 val loader_version: String by project
+var modmenu_version = property("modmenu_version")
+var cloth_version = property("cloth_version")
 
 base {
     archivesName.set("craft-engine-fabric-mod")
@@ -50,11 +52,18 @@ loom {
     }
 }
 
+repositories {
+    maven("https://maven.shedaniel.me/")
+    maven("https://maven.terraformersmc.com/releases/")
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${property("latest_minecraft_version")}")
     mappings("net.fabricmc:yarn:${property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_version")}")
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${property("cloth_version")}")
+    modApi("com.terraformersmc:modmenu:${property("modmenu_version")}")
     add("shadow", "org.yaml:snakeyaml:2.4")
 }
 
@@ -69,7 +78,9 @@ tasks.processResources {
         expand(
             "version" to project_version,
             "minecraft_version" to latest_minecraft_version,
-            "loader_version" to loader_version
+            "loader_version" to loader_version,
+            "modmenu_version" to modmenu_version,
+            "cloth_version" to cloth_version
         )
     }
 }

@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class YamlUtils {
-    private static final String CONFIG_DIR = "config/craft-engine-fabric-mod/";
+    public static final String CONFIG_DIR = "config/craft-engine-fabric-mod/";
     private static final Yaml yaml = new Yaml();
     private static final RegistryWrapper<Block> registryWrapper = BuiltinRegistries.createWrapperLookup().getOrThrow(RegistryKeys.BLOCK);
 
@@ -29,6 +29,10 @@ public class YamlUtils {
         try (InputStream inputStream = Files.newInputStream(filePath)) {
             return yaml.load(inputStream);
         }
+    }
+
+    public static void saveConfig(Map<?,?> config, Path filePath) throws IOException {
+        Files.writeString(filePath, yaml.dump(config));
     }
 
     public static void ensureConfigFile(String fileName) throws IOException {

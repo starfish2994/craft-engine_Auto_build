@@ -1,0 +1,6 @@
+{
+  "title.craftengine.config": "CraftEngine设置",
+  "category.craftengine.general": "通用",
+  "option.craftengine.enable_network": "启用服务器内自定义方块",
+  "tooltip.craftengine.enable_network": "需要重新进入服务器即可生效"
+}
