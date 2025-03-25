@@ -315,7 +315,6 @@ public class PacketConsumers {
                             itemStack, blockInWorld
                     )) {
                         player.abortMiningBlock();
-                        player.stopMiningBlock();
                         return;
                     }
                 } else {
@@ -324,7 +323,6 @@ public class PacketConsumers {
                             itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
                     )) {
                         player.abortMiningBlock();
-                        player.stopMiningBlock();
                         return;
                     }
                 }
