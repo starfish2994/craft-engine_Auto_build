@@ -17,6 +17,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.FoliageColors;
+import net.momirealms.craftengine.fabric.client.blocks.CustomBlock;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.client.network.CraftEnginePayload;
 
@@ -38,8 +39,10 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
     public static void registerRenderLayer() {
         Registries.BLOCK.forEach(block -> {
             Identifier id = Registries.BLOCK.getId(block);
-            if (id.getNamespace().equals(CraftEngineFabricModClient.MOD_ID)) {
-                BlockRenderLayerMap.INSTANCE.putBlock(block, RenderLayer.getCutoutMipped());
+            if (block instanceof CustomBlock customBlock) {
+                if (customBlock.isTransparent()) {
+                    BlockRenderLayerMap.INSTANCE.putBlock(customBlock, RenderLayer.getCutoutMipped());
+                }
                 if (id.getPath().contains("leaves")) {
                     registerColor(block);
                 }

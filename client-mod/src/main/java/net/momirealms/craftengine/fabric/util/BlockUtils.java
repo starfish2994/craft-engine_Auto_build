@@ -3,10 +3,10 @@ package net.momirealms.craftengine.fabric.util;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.TransparentBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,5 +63,14 @@ public class BlockUtils {
         } catch (Throwable ignored) {
             return VoxelShapes.fullCube();
         }
+    }
+
+    public static boolean isTransparent(BlockState state) {
+        if (state == null) return true;
+        Block block = state.getBlock();
+        if (block instanceof TransparentBlock) {
+            return true;
+        }
+        return !state.isOpaque();
     }
 }

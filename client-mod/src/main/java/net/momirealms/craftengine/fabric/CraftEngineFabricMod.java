@@ -40,7 +40,8 @@ public class CraftEngineFabricMod implements ModInitializer {
                     RegisterBlocks.register(
                             replacedBlockId.getPath() + "_" + i,
                             BlockUtils.canPassThrough(blockState),
-                            BlockUtils.getShape(blockState)
+                            BlockUtils.getShape(blockState),
+                            BlockUtils.isTransparent(blockState)
                     );
                 }
             }
