@@ -2,14 +2,15 @@ package net.momirealms.craftengine.fabric.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.color.world.BiomeColors;
-import net.minecraft.client.gui.screen.DisconnectedScreen;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.network.DisconnectionInfo;
 import net.minecraft.registry.Registries;
@@ -29,6 +30,17 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         PayloadTypeRegistry.playS2C().register(CraftEnginePayload.ID, CraftEnginePayload.CODEC);
+        registerRenderLayer();
+        ClientPlayConnectionEvents.INIT.register((handler, client) -> {
+            if (ModConfig.enableNetwork) {
+                registerChannel(handler, client);
+            } else {
+                ClientPlayNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID.id());
+            }
+        });
+    }
+
+    public static void registerRenderLayer() {
         Registries.BLOCK.forEach(block -> {
             Identifier id = Registries.BLOCK.getId(block);
             if (id.getNamespace().equals(CraftEngineFabricModClient.MOD_ID)) {
@@ -37,36 +49,6 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
                     registerColor(block);
                 }
             }
-        });
-        ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (!ModConfig.enableNetwork) {
-                ClientPlayNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID.id());
-                return;
-            }
-            ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {
-                byte[] data = payload.data();
-                String decoded = new String(data, StandardCharsets.UTF_8);
-                if (decoded.startsWith("cp:")) {
-                    int blockRegistrySize = Integer.parseInt(decoded.substring(3));
-                    if (Block.STATE_IDS.size() != blockRegistrySize) {
-                        if (client.player != null) {
-                            client.player.networkHandler.getConnection().disconnect(
-                                    new DisconnectionInfo(
-                                            Text.translatable("disconnect.craftengine.block_registry_mismatch", Block.STATE_IDS.size(), blockRegistrySize),
-                                            Optional.of(FabricLoader.getInstance().getConfigDir().resolve("craft-engine-fabric-mod/mappings.yml")),
-                                            Optional.of(URI.create("https://github.com/Xiao-MoMi/craft-engine"))
-                                    )
-                                );
-                        } else {
-                            client.disconnect(new DisconnectedScreen(
-                                    client.currentScreen,
-                                    Text.translatable("disconnect.craftengine.title"),
-                                    Text.translatable("disconnect.craftengine.block_registry_mismatch", Block.STATE_IDS.size(), blockRegistrySize))
-                            );
-                        }
-                    }
-                }
-            });
         });
     }
 
@@ -80,5 +62,24 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
                 },
                 block
         );
+    }
+
+    private static void registerChannel(ClientPlayNetworkHandler handler, MinecraftClient client) {
+        ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {
+            byte[] data = payload.data();
+            String decoded = new String(data, StandardCharsets.UTF_8);
+            if (decoded.startsWith("cp:")) {
+                int blockRegistrySize = Integer.parseInt(decoded.substring(3));
+                if (Block.STATE_IDS.size() != blockRegistrySize) {
+                    handler.getConnection().disconnect(
+                            new DisconnectionInfo(
+                                    Text.translatable("disconnect.craftengine.block_registry_mismatch", Block.STATE_IDS.size(), blockRegistrySize),
+                                    Optional.of(FabricLoader.getInstance().getConfigDir().resolve("craft-engine-fabric-mod/mappings.yml")),
+                                    Optional.of(URI.create("https://github.com/Xiao-MoMi/craft-engine"))
+                            )
+                    );
+                }
+            }
+        });
     }
 }
