@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import net.momirealms.craftengine.bukkit.block.worldedit.WorldEditHook;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
@@ -84,6 +85,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private final Map<Key, JsonElement> modBlockStates = new HashMap<>();
     // Cached command suggestions
     private final List<Suggestion> cachedSuggestions = new ArrayList<>();
+    // Cached Namespace
+    private final Set<String> cachedNamespaces = new HashSet<>();
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
@@ -235,6 +238,22 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (String state : states) {
             this.cachedSuggestions.add(Suggestion.suggestion(state));
         }
+        this.cachedNamespaces.clear();
+        initCachedNamespaces();
+    }
+
+    private void initCachedNamespaces() {
+        for (Suggestion suggestion : this.cachedSuggestions) {
+            String id = suggestion.suggestion();
+            int index = id.indexOf(':');
+            if (index != -1) {
+                cachedNamespaces.add(id.substring(0, index));
+            }
+        }
+    }
+
+    public Collection<String> cachedNamespaces() {
+        return Collections.unmodifiableSet(cachedNamespaces);
     }
 
     public ImmutableMap<Key, List<Integer>> blockAppearanceArranger() {
