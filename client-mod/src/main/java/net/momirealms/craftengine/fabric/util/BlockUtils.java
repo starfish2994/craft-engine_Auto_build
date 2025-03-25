@@ -1,7 +1,12 @@
 package net.momirealms.craftengine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +46,22 @@ public class BlockUtils {
             return !collidable;
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access 'collidable' field", e);
+        }
+    }
+
+
+    public static VoxelShape getShape(BlockState state) {
+        if (state == null) return VoxelShapes.fullCube();
+        Block block = state.getBlock();
+        VoxelShape combinedShape = VoxelShapes.empty();
+        try {
+            for (BlockState possibleState : block.getStateManager().getStates()) {
+                VoxelShape currentShape = possibleState.getOutlineShape(null, BlockPos.ORIGIN);
+                combinedShape = VoxelShapes.union(combinedShape, currentShape);
+            }
+            return combinedShape.isEmpty() ? VoxelShapes.fullCube() : combinedShape;
+        } catch (Throwable ignored) {
+            return VoxelShapes.fullCube();
         }
     }
 }
