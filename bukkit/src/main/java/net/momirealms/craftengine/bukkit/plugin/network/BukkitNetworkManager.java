@@ -176,7 +176,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         int blockRegistrySize = RegistryUtils.currentBlockRegistrySize();
         byte[] payload = ("cp:" + blockRegistrySize).getBytes(StandardCharsets.UTF_8);
         player.sendPluginMessage(plugin.bootstrap(), MOD_CHANNEL, payload);
-        plugin.scheduler().async().execute(() -> sendClientModPlayerChunk(player, user));
+        plugin.scheduler().executeAsync(() -> sendClientModPlayerChunk(player, user));
     }
 
     private void sendClientModPlayerChunk(Player player, NetWorkUser user) {
