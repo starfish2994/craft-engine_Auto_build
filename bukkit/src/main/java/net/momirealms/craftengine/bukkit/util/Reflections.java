@@ -5502,4 +5502,30 @@ public class Reflections {
                     clazz$ClientboundLevelChunkWithLightPacket, clazz$LevelChunk, clazz$LevelLightEngine, BitSet.class, BitSet.class
             )
     );
+
+    public static final Class<?> clazz$BlockInWorld = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.BlockInWorld"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.ShapeDetectorBlock")
+            )
+    );
+
+    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$BlockInWorld, 0
+            )
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
+            );
+
+    // 1.20 ~ 1.20.4
+    // instance$BuiltInRegistries$BLOCK
+    public static final Method method$ItemStack$canDestroy =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
+            );
 }

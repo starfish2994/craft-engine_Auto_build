@@ -286,7 +286,6 @@ public class PacketConsumers {
     };
 
     private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
-
         Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
@@ -305,6 +304,28 @@ public class PacketConsumers {
                     player.stopMiningBlock();
                 }
                 return;
+            }
+            if (player.isAdventureMode()) {
+                Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, player.platformPlayer().getInventory().getItemInMainHand());
+                Object blockPos = Reflections.constructor$BlockPos.newInstance(pos.x(), pos.y(), pos.z());
+                Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
+                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
+                            && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
+                            itemStack, blockInWorld
+                    )) {
+                        player.stopMiningBlock();
+                        return;
+                    }
+                } else {
+                    if (Reflections.method$ItemStack$canDestroy != null
+                            && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
+                            itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
+                    )) {
+                        player.stopMiningBlock();
+                        return;
+                    }
+                }
             }
             player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
         } else if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$ABORT_DESTROY_BLOCK) {
