@@ -365,6 +365,13 @@ public class BukkitServerPlayer extends Player {
         setIsDestroyingBlock(false, false);
     }
 
+    @Override
+    public void preventMiningBlock() {
+        setCanBreakBlock(false);
+        setIsDestroyingBlock(false, false);
+        abortMiningBlock();
+    }
+
     private void resetEffect(Object mobEffect) throws ReflectiveOperationException {
         Object effectInstance = Reflections.method$ServerPlayer$getEffect.invoke(serverPlayer(), mobEffect);
         Object packet;

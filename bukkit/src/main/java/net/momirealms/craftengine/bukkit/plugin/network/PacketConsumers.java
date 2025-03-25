@@ -314,7 +314,7 @@ public class PacketConsumers {
                             && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
                             itemStack, blockInWorld
                     )) {
-                        player.abortMiningBlock();
+                        player.preventMiningBlock();
                         return;
                     }
                 } else {
@@ -322,7 +322,7 @@ public class PacketConsumers {
                             && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
                             itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
                     )) {
-                        player.abortMiningBlock();
+                        player.preventMiningBlock();
                         return;
                     }
                 }
