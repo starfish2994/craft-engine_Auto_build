@@ -598,6 +598,9 @@ public class PacketConsumers {
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
                     user.sendPacket(furniture.spawnPacket(), false);
+                    if (ConfigManager.hideBaseEntity()) {
+                        event.setCancelled(true);
+                    }
                 }
             }
         } catch (Exception e) {
