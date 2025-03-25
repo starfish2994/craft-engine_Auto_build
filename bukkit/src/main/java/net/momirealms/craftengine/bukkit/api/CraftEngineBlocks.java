@@ -178,7 +178,7 @@ public final class CraftEngineBlocks {
             BukkitServerPlayer serverPlayer = BukkitCraftEngine.instance().adapt(player);
             if (player != null) {
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                builder.withParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
             }
             for (Item<?> item : state.getDrops(builder, world)) {
                 world.dropItemNaturally(vec3d, item);

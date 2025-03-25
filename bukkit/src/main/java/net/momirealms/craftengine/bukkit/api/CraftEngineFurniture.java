@@ -246,7 +246,7 @@ public class CraftEngineFurniture {
             builder.withParameter(LootParameters.WORLD, world);
             if (player != null) {
                 builder.withParameter(LootParameters.PLAYER, player);
-                builder.withParameter(LootParameters.TOOL, player.getItemInHand(InteractionHand.MAIN_HAND));
+                builder.withOptionalParameter(LootParameters.TOOL, player.getItemInHand(InteractionHand.MAIN_HAND));
             }
             List<Item<ItemStack>> items = lootTable.getRandomItems(builder.build(), world);
             for (Item<ItemStack> item : items) {

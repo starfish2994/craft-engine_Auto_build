@@ -134,6 +134,7 @@ public abstract class CraftEngine implements Plugin {
             this.packManager.delayedInit();
             this.furnitureManager.delayedInit();
             this.imageManager.delayedInit();
+            this.vanillaLootManager.delayedInit();
         });
     }
 
@@ -153,6 +154,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.itemBrowserManager != null) this.itemBrowserManager.disable();
         if (this.guiManager != null) this.guiManager.disable();
         if (this.soundManager != null) this.soundManager.disable();
+        if (this.vanillaLootManager != null) this.vanillaLootManager.disable();
         if (this.scheduler != null) this.scheduler.shutdownScheduler();
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         ResourcePackHost.instance().disable();
