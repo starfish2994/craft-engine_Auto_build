@@ -5496,4 +5496,10 @@ public class Reflections {
                     clazz$Entity, clazz$SynchedEntityData, 0
             )
     );
+
+    public static final Constructor<?> constructor$ClientboundLevelChunkWithLightPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundLevelChunkWithLightPacket, clazz$LevelChunk, clazz$LevelLightEngine, BitSet.class, BitSet.class
+            )
+    );
 }

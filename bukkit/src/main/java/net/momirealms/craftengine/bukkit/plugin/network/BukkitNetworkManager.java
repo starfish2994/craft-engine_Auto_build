@@ -19,7 +19,9 @@ import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.ListMonitor;
 import net.momirealms.craftengine.core.util.TriConsumer;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.world.ChunkPos;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,6 +33,7 @@ import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -172,6 +175,34 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         int blockRegistrySize = RegistryUtils.currentBlockRegistrySize();
         byte[] payload = ("cp:" + blockRegistrySize).getBytes(StandardCharsets.UTF_8);
         player.sendPluginMessage(plugin.bootstrap(), MOD_CHANNEL, payload);
+        sendClientModPlayerChunk(player, user);
+    }
+
+    private static void sendClientModPlayerChunk(Player player, NetWorkUser user) {
+        try {
+            Chunk centerChunk = player.getLocation().getChunk();
+            int centerX = centerChunk.getX();
+            int centerZ = centerChunk.getZ();
+            for (int xOffset = -1; xOffset <= 1; xOffset++) {
+                for (int zOffset = -1; zOffset <= 1; zOffset++) {
+                    int targetX = centerX + xOffset;
+                    int targetZ = centerZ + zOffset;
+                    Chunk chunk = centerChunk.getWorld().getChunkAt(targetX, targetZ);
+                    Object worldServer = Reflections.field$CraftChunk$worldServer.get(chunk);
+                    Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(worldServer);
+                    Object levelChunk = Reflections.method$ServerChunkCache$getChunkAtIfLoadedMainThread.invoke(chunkSource, chunk.getX(), chunk.getZ());
+                    if (levelChunk == null) continue;
+                    long chunkKey = ChunkPos.asLong(chunk.getX(), chunk.getZ());
+                    Object chunkHolder = Reflections.method$ServerChunkCache$getVisibleChunkIfPresent.invoke(chunkSource, chunkKey);
+                    if (chunkHolder == null) continue;
+                    Object lightEngine = Reflections.field$ChunkHolder$lightEngine.get(chunkHolder);
+                    Object packet = Reflections.constructor$ClientboundLevelChunkWithLightPacket.newInstance(levelChunk, lightEngine, null, null);
+                    user.sendPacket(packet, false);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to send chunk correction packet", e);
+        }
     }
 
     @Override
