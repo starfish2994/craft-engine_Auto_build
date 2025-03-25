@@ -138,7 +138,7 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(LootParameters.WORLD, world);
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                builder.withParameter(LootParameters.TOOL, itemInHand);
+                builder.withOptionalParameter(LootParameters.TOOL, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
@@ -159,7 +159,7 @@ public class BlockEventListener implements Listener {
                     builder.withParameter(LootParameters.WORLD, world);
                     builder.withParameter(LootParameters.LOCATION, vec3d);
                     builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                    builder.withParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                    builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
                         for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
