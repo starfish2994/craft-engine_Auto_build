@@ -163,7 +163,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
     }
 
     // for mod
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
         if (!event.getChannel().equals(MOD_CHANNEL)) return;
         Player player = event.getPlayer();

@@ -4,6 +4,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.util.BlockUtils;
 import net.momirealms.craftengine.fabric.util.LoggerFilter;
@@ -37,7 +39,8 @@ public class CraftEngineFabricMod implements ModInitializer {
                     BlockState blockState = YamlUtils.createBlockData("minecraft:" + replacedBlockId.getPath());
                     RegisterBlocks.register(
                             replacedBlockId.getPath() + "_" + i,
-                            BlockUtils.canPassThrough(blockState)
+                            BlockUtils.canPassThrough(blockState),
+                            BlockUtils.getShape(blockState)
                     );
                 }
             }
