@@ -74,9 +74,16 @@ templates:
       item-name: "{name}"
       lore: "{lore}"
     model:
-      template: "default:model/simplified_generated"
+      template: "internal:model/simplified_generated"
       arguments:
         path: "minecraft:item/custom/gui/{texture}"
+  internal:model/simplified_generated:
+    type: "minecraft:model"
+    path: "{path}"
+    generation:
+      parent: "minecraft:item/generated"
+      textures:
+        "layer0": "{path}"
 
 items:
   internal:next_page_0:
