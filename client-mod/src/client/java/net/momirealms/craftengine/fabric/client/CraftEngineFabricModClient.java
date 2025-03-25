@@ -30,14 +30,9 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         PayloadTypeRegistry.playS2C().register(CraftEnginePayload.ID, CraftEnginePayload.CODEC);
+        initChannel(MinecraftClient.getInstance().getNetworkHandler());
         registerRenderLayer();
-        ClientPlayConnectionEvents.INIT.register((handler, client) -> {
-            if (ModConfig.enableNetwork) {
-                registerChannel(handler, client);
-            } else {
-                ClientPlayNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID.id());
-            }
-        });
+        ClientPlayConnectionEvents.INIT.register((handler, client) -> initChannel(handler));
     }
 
     public static void registerRenderLayer() {
@@ -64,7 +59,15 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
         );
     }
 
-    private static void registerChannel(ClientPlayNetworkHandler handler, MinecraftClient client) {
+    private static void initChannel(ClientPlayNetworkHandler handler) {
+        if (ModConfig.enableNetwork) {
+            registerChannel(handler);
+        } else {
+            ClientPlayNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID.id());
+        }
+    }
+
+    private static void registerChannel(ClientPlayNetworkHandler handler) {
         ClientPlayNetworking.registerGlobalReceiver(CraftEnginePayload.ID, (payload, context) -> {
             byte[] data = payload.data();
             String decoded = new String(data, StandardCharsets.UTF_8);
