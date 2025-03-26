@@ -12,7 +12,6 @@ items#misc:
     behavior:
       type: block_item
       block:
-        name: "i18n:item.chinese_lantern"
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -54,7 +53,6 @@ items#misc:
     behavior:
       type: block_item
       block:
-        name: "i18n:item.netherite_anvil"
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -208,15 +206,6 @@ recipes#misc:
     result:
       id: default:chinese_lantern
       count: 1
-  default:paper_from_reed:
-    type: shaped
-    pattern:
-      - "AAA"
-    ingredients:
-      A: "default:reed"
-    result:
-      id: minecraft:paper
-      count: 3
   default:netherite_anvil:
     type: shaped
     pattern:

@@ -29,6 +29,7 @@ public class BlockSettings {
     Key itemId;
     Set<Key> tags = Set.of();
     Set<Key> correctTools = Set.of();
+    String name;
 
     private BlockSettings() {}
 
@@ -79,6 +80,7 @@ public class BlockSettings {
         newSettings.correctTools = settings.correctTools;
         newSettings.fluidState = settings.fluidState;
         newSettings.blockLight = settings.blockLight;
+        newSettings.name = settings.name;
         return newSettings;
     }
 
@@ -120,6 +122,10 @@ public class BlockSettings {
 
     public boolean canOcclude() {
         return canOcclude;
+    }
+
+    public String name() {
+        return name;
     }
 
     public MapColor mapColor() {
@@ -174,6 +180,11 @@ public class BlockSettings {
 
     public BlockSettings burnChance(int burnChance) {
         this.burnChance = burnChance;
+        return this;
+    }
+
+    public BlockSettings name(String name) {
+        this.name = name;
         return this;
     }
 
@@ -369,6 +380,10 @@ public class BlockSettings {
             registerFactory("correct-tools", (value -> {
                 List<String> tools = MiscUtils.getAsStringList(value);
                 return settings -> settings.correctTools(tools.stream().map(Key::of).collect(Collectors.toSet()));
+            }));
+            registerFactory("name", (value -> {
+                String name = value.toString();
+                return settings -> settings.name(name);
             }));
         }
 

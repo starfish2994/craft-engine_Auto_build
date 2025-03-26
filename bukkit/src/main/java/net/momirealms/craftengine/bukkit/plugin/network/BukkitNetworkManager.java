@@ -162,7 +162,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     @Override
     public Collection<BukkitServerPlayer> onlineUsers() {
-        return onlineUsers.values();
+        return new ArrayList<>(this.onlineUsers.values());
     }
 
     @Override
@@ -173,22 +173,22 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     public void init() {
         if (init) return;
         try {
-            plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(plugin.bootstrap(), MOD_CHANNEL, this);
-            plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(plugin.bootstrap(), MOD_CHANNEL);
+            this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
+            this.plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL);
             Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
             Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
             @SuppressWarnings("unchecked")
             List<ChannelFuture> channels = (List<ChannelFuture>) Reflections.field$ServerConnectionListener$channels.get(serverConnection);
             ListMonitor<ChannelFuture> monitor = new ListMonitor<>(channels, (future) -> {
-                if (!active) return;
+                if (!this.active) return;
                 Channel channel = future.channel();
                 injectServerChannel(channel);
-                injectedChannels.add(channel);
+                this.injectedChannels.add(channel);
             }, (object) -> {});
             Reflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
-            init = true;
+            this.init = true;
         } catch (ReflectiveOperationException e) {
-            plugin.logger().warn("Failed to init server connection", e);
+            this.plugin.logger().warn("Failed to init server connection", e);
         }
     }
 
@@ -516,7 +516,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
     }
 
-    public class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
+    public static class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
         private final NetWorkUser player;
 
         public PluginChannelDecoder(NetWorkUser player) {

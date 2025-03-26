@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-import java.util.Map;
 
 public interface TranslationManager extends Reloadable, ConfigSectionParser {
     String CONFIG_SECTION_NAME = "i18n";
@@ -27,8 +26,6 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
 
     String miniMessageTranslation(String key, @Nullable Locale locale);
 
-    String translateI18NTag(String i18nId);
-
     default Component render(Component component) {
         return render(component, null);
     }
@@ -39,8 +36,6 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
         return locale == null || locale.isEmpty() ? null : Translator.parseLocale(locale);
     }
 
-    Map<Locale, I18NData> i18nData();
-
     @Override
     default int loadingSequence() {
         return LoadingSequence.TRANSLATION;
@@ -50,5 +45,4 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
     default String sectionId() {
         return CONFIG_SECTION_NAME;
     }
-
 }

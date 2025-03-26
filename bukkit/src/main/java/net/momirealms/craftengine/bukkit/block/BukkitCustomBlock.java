@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.Tristate;
@@ -137,25 +136,5 @@ public class BukkitCustomBlock extends CustomBlock {
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init block settings", e);
         }
-    }
-
-    public void addBlockName(String lang, String blockName) {
-        I18NData i18nData = new I18NData();
-        for (ImmutableBlockState state : this.variantProvider().states()) {
-            try {
-                Object blockState = state.customBlockState().handle();
-                Object block = Reflections.method$BlockStateBase$getBlock.invoke(blockState);
-                String translationKey = (String) Reflections.method$BlockBehaviour$getDescriptionId.invoke(block);
-                i18nData.addTranslation(translationKey, blockName);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().warn("Failed to get the " + state.owner().value().id() + " translationKey");
-            }
-        }
-        this.addBlockName(lang, i18nData);
-    }
-
-    public void addBlockName(String blockName) {
-        if (blockName == null) return;
-        addBlockName("en_us", blockName);
     }
 }
