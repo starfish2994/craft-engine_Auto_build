@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class BushBlockBehavior extends BlockBehavior {
+public class BushBlockBehavior extends AbstractBlockBehavior {
     public static final Factory FACTORY = new Factory();
     protected static final Object DIRT_TAG = BlockTags.getOrCreate(Key.of("minecraft", "dirt"));
     protected static final Object FARMLAND = BlockTags.getOrCreate(Key.of("minecraft", "farmland"));

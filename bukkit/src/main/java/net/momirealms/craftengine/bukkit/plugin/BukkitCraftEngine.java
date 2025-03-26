@@ -4,7 +4,6 @@ import net.momirealms.antigrieflib.AntiGriefLib;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
-import net.momirealms.craftengine.bukkit.block.worldedit.WorldEditCommandHelper;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.font.BukkitImageManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;

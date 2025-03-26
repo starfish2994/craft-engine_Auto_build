@@ -1488,16 +1488,35 @@ public class Reflections {
 
     public static final Object instance$Direction$DOWN;
     public static final Object instance$Direction$UP;
+    public static final Object instance$Direction$NORTH;
+    public static final Object instance$Direction$SOUTH;
+    public static final Object instance$Direction$WEST;
+    public static final Object instance$Direction$EAST;
     public static final Object[] instance$Directions;
+    private static final Map<Object, Object> oppositeDirections = new HashMap<>();
 
     static {
         try {
             instance$Directions = (Object[]) method$Direction$values.invoke(null);
             instance$Direction$DOWN = instance$Directions[0];
             instance$Direction$UP = instance$Directions[1];
+            instance$Direction$NORTH = instance$Directions[2];
+            instance$Direction$SOUTH = instance$Directions[3];
+            instance$Direction$WEST = instance$Directions[4];
+            instance$Direction$EAST = instance$Directions[5];
+            oppositeDirections.put(instance$Direction$DOWN, instance$Direction$UP);
+            oppositeDirections.put(instance$Direction$UP, instance$Direction$DOWN);
+            oppositeDirections.put(instance$Direction$NORTH, instance$Direction$SOUTH);
+            oppositeDirections.put(instance$Direction$SOUTH, instance$Direction$NORTH);
+            oppositeDirections.put(instance$Direction$WEST, instance$Direction$EAST);
+            oppositeDirections.put(instance$Direction$EAST, instance$Direction$WEST);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Object getOppositeDirection(Object direction) {
+        return oppositeDirections.get(direction);
     }
 
     public static final Class<?> clazz$CraftBlock = requireNonNull(
@@ -1533,6 +1552,12 @@ public class Reflections {
     public static final Method method$CraftBlockStates$getBlockState = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockStates, clazz$CraftBlockState, clazz$LevelAccessor, clazz$BlockPos
+            )
+    );
+
+    public static final Method method$CraftBlockState$getHandle = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$CraftBlockState, clazz$BlockState
             )
     );
 
@@ -3452,6 +3477,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$BlockPos$mutable = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockPos, clazz$MutableBlockPos
+            )
+    );
+
     public static final Class<?> clazz$LeavesBlock = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.level.block.LeavesBlock"),
@@ -3944,15 +3975,21 @@ public class Reflections {
     );
 
     public static final Object instance$Fluids$WATER;
+    public static final Object instance$Fluids$FLOWING_WATER;
     public static final Object instance$Fluids$LAVA;
+    public static final Object instance$Fluids$FLOWING_LAVA;
     public static final Object instance$Fluids$EMPTY;
 
     static {
         try {
             Object waterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water");
             instance$Fluids$WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, waterId);
+            Object flowingWaterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_water");
+            instance$Fluids$FLOWING_WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingWaterId);
             Object lavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "lava");
             instance$Fluids$LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, lavaId);
+            Object flowingLavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_lava");
+            instance$Fluids$FLOWING_LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingLavaId);
             Object emptyId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "empty");
             instance$Fluids$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, emptyId);
         } catch (ReflectiveOperationException e) {
@@ -5494,6 +5531,45 @@ public class Reflections {
     public static final Field field$Entity$entityData = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$Entity, clazz$SynchedEntityData, 0
+            )
+    );
+
+    public static final Class<?> clazz$SupportType = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.SupportType")
+            )
+    );
+
+    public static final Method method$SupportType$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$SupportType, clazz$SupportType.arrayType()
+            )
+    );
+
+    public static final Object instance$SupportType$FULL;
+    public static final Object instance$SupportType$CENTER;
+    public static final Object instance$SupportType$RIGID;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$SupportType$values.invoke(null);
+            instance$SupportType$FULL = values[0];
+            instance$SupportType$CENTER = values[1];
+            instance$SupportType$RIGID = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Method method$BlockStateBase$isFaceSturdy = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$Direction, clazz$SupportType
+            )
+    );
+
+    public static final Method method$CraftEventFactory$handleBlockFormEvent = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftEventFactory, boolean.class, new String[] { "handleBlockFormEvent" }, clazz$Level, clazz$BlockPos, clazz$BlockState, int.class
             )
     );
 }
