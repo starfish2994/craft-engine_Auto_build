@@ -5545,7 +5545,8 @@ public class Reflections {
 
     public static final Class<?> clazz$SupportType = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.level.block.SupportType")
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.SupportType"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.EnumBlockSupport")
             )
     );
 

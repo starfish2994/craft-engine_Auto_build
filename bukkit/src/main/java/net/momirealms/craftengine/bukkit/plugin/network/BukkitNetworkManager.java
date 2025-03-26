@@ -6,6 +6,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.impl.*;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -56,6 +57,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private final Map<ChannelPipeline, BukkitServerPlayer> users = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitServerPlayer> onlineUsers = new ConcurrentHashMap<>();
     private final HashSet<Channel> injectedChannels = new HashSet<>();
+    private BukkitServerPlayer[] onlineUserArray = new BukkitServerPlayer[0];
 
     private final PacketIds packetIds;
 
@@ -147,6 +149,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         if (user != null) {
             user.setPlayer(player);
             this.onlineUsers.put(player.getUniqueId(), user);
+            this.resetUserArray();
         }
     }
 
@@ -158,11 +161,16 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         if (user == null) return;
         handleDisconnection(channel);
         this.onlineUsers.remove(player.getUniqueId());
+        this.resetUserArray();
+    }
+
+    private void resetUserArray() {
+        this.onlineUserArray = this.onlineUsers.values().toArray(new BukkitServerPlayer[0]);
     }
 
     @Override
-    public Collection<BukkitServerPlayer> onlineUsers() {
-        return new ArrayList<>(this.onlineUsers.values());
+    public BukkitServerPlayer[] onlineUsers() {
+        return this.onlineUserArray;
     }
 
     @Override
