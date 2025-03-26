@@ -42,6 +42,7 @@ items:
 
 blocks:
   default:topaz_ore:
+    name: "i18n:item.topaz_ore"
     loot:
       template: "default:loot_table/ore"
       arguments:
@@ -63,6 +64,7 @@ blocks:
         arguments:
           path: "minecraft:block/custom/topaz_ore"
   default:deepslate_topaz_ore:
+    name: "i18n:item.deepslate_topaz_ore"
     loot:
       template: "default:loot_table/ore"
       arguments:
