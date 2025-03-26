@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.plugin.logger.filter;
 
 
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Node;
@@ -15,6 +16,10 @@ public class DisconnectLogFilter extends AbstractFilter {
 
     @Override
     public Result filter(LogEvent event) {
+        if (!ConfigManager.filterConfigurationPhaseDisconnect()) {
+            return Result.NEUTRAL;
+        }
+
         if (!event.getLoggerName().equals(TARGET_LOGGER)) {
             return Result.NEUTRAL;
         }

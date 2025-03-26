@@ -41,6 +41,7 @@ public class ConfigManager implements Reloadable {
     protected boolean debug;
     protected boolean checkUpdate;
     protected boolean metrics;
+    protected boolean filterConfigurationPhaseDisconnect;
 
     protected boolean resource_pack$generate_mod_assets;
     protected boolean resource_pack$override_uniform_font;
@@ -181,6 +182,7 @@ public class ConfigManager implements Reloadable {
         debug = config.getBoolean("debug", false);
         metrics = config.getBoolean("metrics", false);
         checkUpdate = config.getBoolean("update-checker", false);
+        filterConfigurationPhaseDisconnect = config.getBoolean("filter-configuration-phase-disconnect", false);
 
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
@@ -307,6 +309,10 @@ public class ConfigManager implements Reloadable {
 
     public static boolean metrics() {
         return instance.metrics;
+    }
+
+    public static boolean filterConfigurationPhaseDisconnect() {
+        return instance.filterConfigurationPhaseDisconnect;
     }
 
     public static boolean resourcePack$overrideUniform() {
