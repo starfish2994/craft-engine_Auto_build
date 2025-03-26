@@ -3,6 +3,7 @@ package net.momirealms.craftengine.fabric;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -41,7 +42,8 @@ public class CraftEngineFabricMod implements ModInitializer {
                             replacedBlockId.getPath() + "_" + i,
                             BlockUtils.canPassThrough(blockState),
                             BlockUtils.getShape(blockState),
-                            BlockUtils.isTransparent(blockState)
+                            BlockUtils.isTransparent(blockState),
+                            BlockUtils.canPush(blockState)
                     );
                 }
             }

@@ -4,6 +4,7 @@ import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TransparentBlock;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -72,5 +73,12 @@ public class BlockUtils {
             return true;
         }
         return !state.isOpaque();
+    }
+
+    public static int canPush(BlockState state) {
+        if (state == null) return 0;
+        if (state.getPistonBehavior() == PistonBehavior.NORMAL) return 1;
+        if (state.getPistonBehavior() == PistonBehavior.PUSH_ONLY) return 2;
+        return 0;
     }
 }

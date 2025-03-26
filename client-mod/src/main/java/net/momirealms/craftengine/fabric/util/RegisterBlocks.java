@@ -2,6 +2,7 @@ package net.momirealms.craftengine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -16,8 +17,14 @@ import java.util.function.Function;
 
 public class RegisterBlocks {
     @SuppressWarnings("UnusedReturnValue")
-    public static Block register(String name, boolean canPassThrough, VoxelShape outlineShape, boolean isTransparent) {
-        AbstractBlock.Settings settings = Block.Settings.create().nonOpaque().strength(-1.0F, 3600000.0F);
+    public static Block register(String name, boolean canPassThrough,
+                                 VoxelShape outlineShape, boolean isTransparent,
+                                 int canPush) {
+        AbstractBlock.Settings settings = Block.Settings.create()
+                .nonOpaque()
+                .strength(canPush != 0 ? 3600000.0F : -1.0F, 3600000.0F);
+        if (canPush == 1) settings.pistonBehavior(PistonBehavior.NORMAL);
+        if (canPush == 2) settings.pistonBehavior(PistonBehavior.PUSH_ONLY);
         VoxelShape collisionShape;
         if (canPassThrough) {
             collisionShape = VoxelShapes.empty();
