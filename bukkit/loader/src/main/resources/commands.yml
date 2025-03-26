@@ -77,6 +77,13 @@ debug_set_block:
     - /craftengine debug setblock
     - /ce debug setblock
 
+debug_spawn_furniture:
+  enable: true
+  permission: ce.command.debug.spawn_furniture
+  usage:
+    - /craftengine debug spawn-furniture
+    - /ce debug spawn-furniture
+
 debug_get_block_state_registry_id:
   enable: true
   permission: ce.command.debug.get_block_state_registry_id

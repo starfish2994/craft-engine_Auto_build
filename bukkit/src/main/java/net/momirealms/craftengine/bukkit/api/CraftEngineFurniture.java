@@ -42,6 +42,20 @@ public class CraftEngineFurniture {
      *
      * @param location    location
      * @param furnitureId furniture to place
+     * @return the loaded furniture
+     */
+    @Nullable
+    public static LoadedFurniture place(Location location, Key furnitureId) {
+        CustomFurniture furniture = byId(furnitureId);
+        if (furniture == null) return null;
+        return place(location, furnitureId, furniture.getAnyPlacement());
+    }
+
+    /**
+     * Places furniture at the certain location
+     *
+     * @param location    location
+     * @param furnitureId furniture to place
      * @param anchorType  anchor type
      * @return the loaded furniture
      */

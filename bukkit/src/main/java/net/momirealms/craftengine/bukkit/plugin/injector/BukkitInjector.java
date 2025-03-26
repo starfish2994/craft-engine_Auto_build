@@ -589,16 +589,6 @@ public class BukkitInjector {
         }
     }
 
-    public static class PalettedContainerMethodInterceptor {
-        public static final PalettedContainerMethodInterceptor INSTANCE = new PalettedContainerMethodInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @Origin Method method) throws Throwable {
-            InjectedPalettedContainerHolder holder = (InjectedPalettedContainerHolder) thisObj;
-            return method.invoke(holder.target(), args);
-        }
-    }
-
     public static class GetAndSetInterceptor {
         public static final GetAndSetInterceptor INSTANCE = new GetAndSetInterceptor();
 
