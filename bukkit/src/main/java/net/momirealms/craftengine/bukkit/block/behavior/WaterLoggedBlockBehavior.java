@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class WaterLoggedBlockBehavior extends BlockBehavior {
+public class WaterLoggedBlockBehavior extends AbstractBlockBehavior {
     public static final Factory FACTORY = new Factory();
     @Nullable
     private final Property<Boolean> waterloggedProperty;

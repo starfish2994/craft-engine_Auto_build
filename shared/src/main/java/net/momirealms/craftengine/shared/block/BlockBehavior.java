@@ -41,10 +41,6 @@ public abstract class BlockBehavior {
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
     }
 
-    public Object updateStateForPlacement(Object context, Object state) {
-        return state;
-    }
-
 //
 //    public Object getFluidState(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
 //        return superMethod.call();

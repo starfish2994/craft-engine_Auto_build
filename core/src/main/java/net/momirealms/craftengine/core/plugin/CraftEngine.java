@@ -105,6 +105,7 @@ public abstract class CraftEngine implements Plugin {
             // load at last
             this.guiManager.reload();
             this.blockManager.delayedLoad();
+            this.furnitureManager.delayedLoad();
             this.itemBrowserManager.delayedLoad();
             this.soundManager.delayedLoad();
             this.imageManager.delayedLoad();

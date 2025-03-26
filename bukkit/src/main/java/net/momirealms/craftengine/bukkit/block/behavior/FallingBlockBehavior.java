@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
@@ -20,7 +21,7 @@ import org.bukkit.World;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class FallingBlockBehavior extends BlockBehavior {
+public class FallingBlockBehavior extends AbstractBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final float hurtAmount;
     private final int maxHurt;

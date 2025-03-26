@@ -308,10 +308,10 @@ public class BlockEventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPhysics(BlockPhysicsEvent event) {
         if (!this.enableNoteBlockCheck) return;
-        Block block = event.getBlock();
         // for vanilla blocks
-        if (block.getBlockData() instanceof NoteBlock) {
+        if (event.getChangedType() == Material.NOTE_BLOCK) {
             try {
+                Block block = event.getBlock();
                 World world = block.getWorld();
                 Location location = block.getLocation();
                 Block sourceBlock = event.getSourceBlock();

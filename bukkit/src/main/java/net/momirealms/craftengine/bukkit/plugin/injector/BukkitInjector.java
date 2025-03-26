@@ -49,7 +49,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -586,16 +585,6 @@ public class BukkitInjector {
             } else {
                 return Optional.empty();
             }
-        }
-    }
-
-    public static class PalettedContainerMethodInterceptor {
-        public static final PalettedContainerMethodInterceptor INSTANCE = new PalettedContainerMethodInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @Origin Method method) throws Throwable {
-            InjectedPalettedContainerHolder holder = (InjectedPalettedContainerHolder) thisObj;
-            return method.invoke(holder.target(), args);
         }
     }
 

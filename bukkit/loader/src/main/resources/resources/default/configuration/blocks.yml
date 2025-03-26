@@ -114,6 +114,86 @@ items#misc:
             facing_clockwise=south:
               appearance: axisZ
               id: 3
+  default:gunpowder_block:
+    material: paper
+    custom-model-data: 3002
+    data:
+      item-name: "<!i><i18n:item.gunpowder_block>"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/gunpowder_block"
+      generation:
+        parent: "minecraft:block/custom/gunpowder_block"
+    behavior:
+      type: block_item
+      block:
+        behavior:
+          type: concrete_powder_block
+          solid-block: default:solid_gunpowder_block
+        loot:
+          template: "default:loot_table/basic"
+          arguments:
+            item: default:gunpowder_block
+        settings:
+          template:
+            - default:sound/sand
+          overrides:
+            hardness: 0.5
+            resistance: 0.5
+            replaceable: false
+            is-redstone-conductor: true
+            is-suffocating: true
+            instrument: SNARE
+            map-color: 45
+            item: default:gunpowder_block
+        state:
+          id: 16
+          state: note_block:16
+          model:
+            path: "minecraft:block/custom/gunpowder_block"
+            generation:
+              parent: "minecraft:block/cube_all"
+              textures:
+                "all": "minecraft:block/custom/gunpowder_block"
+  default:solid_gunpowder_block:
+    material: paper
+    custom-model-data: 3003
+    data:
+      item-name: "<!i><i18n:item.solid_gunpowder_block>"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/solid_gunpowder_block"
+      generation:
+        parent: "minecraft:block/custom/solid_gunpowder_block"
+    behavior:
+      type: block_item
+      block:
+        loot:
+          template: "default:loot_table/basic"
+          arguments:
+            item: default:solid_gunpowder_block
+        settings:
+          template:
+            - default:sound/sand
+            - default:pickaxe_power/level_1
+          overrides:
+            hardness: 1.8
+            resistance: 1.8
+            replaceable: false
+            is-redstone-conductor: true
+            is-suffocating: true
+            instrument: BASEDRUM
+            map-color: 45
+            item: default:solid_gunpowder_block
+        state:
+          id: 17
+          state: note_block:17
+          model:
+            path: "minecraft:block/custom/solid_gunpowder_block"
+            generation:
+              parent: "minecraft:block/cube_all"
+              textures:
+                "all": "minecraft:block/custom/solid_gunpowder_block"
 recipes#misc:
   default:chinese_lantern:
     type: shaped
@@ -148,4 +228,22 @@ recipes#misc:
       B: "minecraft:netherite_ingot"
     result:
       id: default:netherite_anvil
+      count: 1
+  default:gunpowder_from_block:
+    type: shapeless
+    ingredients:
+      A: "default:gunpowder_block"
+    result:
+      id: minecraft:gunpowder
+      count: 9
+  default:gunpowder_block:
+    type: shaped
+    pattern:
+      - "AAA"
+      - "AAA"
+      - "AAA"
+    ingredients:
+      A: "minecraft:gunpowder"
+    result:
+      id: default:gunpowder_block
       count: 1
