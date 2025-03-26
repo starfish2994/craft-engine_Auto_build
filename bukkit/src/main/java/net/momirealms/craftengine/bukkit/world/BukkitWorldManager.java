@@ -253,7 +253,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                     Object section = sections[i];
                     if (ConfigManager.syncCustomBlocks()) {
                         Object statesContainer = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
-                        Object data = Reflections.field$PalettedContainer$data.get(statesContainer);
+                        Object data = Reflections.varHandle$PalettedContainer$data.get(statesContainer);
                         Object palette = Reflections.field$PalettedContainer$Data$palette.get(data);
                         boolean requiresSync = false;
                         if (Reflections.clazz$SingleValuePalette.isInstance(palette)) {

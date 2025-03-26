@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.time.Instant;
 import java.util.*;
@@ -1677,6 +1678,10 @@ public class Reflections {
             ReflectionUtils.getDeclaredField(
                     clazz$PalettedContainer, clazz$PalettedContainer$Data, 0
             )
+    );
+
+    public static final VarHandle varHandle$PalettedContainer$data = requireNonNull(
+            ReflectionUtils.findVarHandle(field$PalettedContainer$data)
     );
 
     public static final Field field$PalettedContainer$Data$storage = requireNonNull(

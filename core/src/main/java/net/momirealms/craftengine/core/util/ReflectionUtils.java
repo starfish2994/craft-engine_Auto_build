@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -465,6 +466,24 @@ public class ReflectionUtils {
         } catch (IllegalAccessException e) {
             method.setAccessible(true);
             return LOOKUP.unreflect(method);
+        }
+    }
+
+    public static VarHandle findVarHandle(Class<?> clazz, String name, Class<?> type) {
+        try {
+            return MethodHandles.privateLookupIn(clazz, LOOKUP)
+                    .findVarHandle(clazz, name, type);
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    public static VarHandle findVarHandle(Field field) {
+        try {
+            return MethodHandles.privateLookupIn(field.getDeclaringClass(), LOOKUP)
+                    .findVarHandle(field.getDeclaringClass(), field.getName(), field.getType());
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            return null;
         }
     }
 }

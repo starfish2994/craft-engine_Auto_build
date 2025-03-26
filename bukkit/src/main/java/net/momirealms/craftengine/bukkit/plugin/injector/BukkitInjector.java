@@ -9,7 +9,10 @@ import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.implementation.bind.annotation.*;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
+import net.bytebuddy.implementation.bind.annotation.SuperCall;
+import net.bytebuddy.implementation.bind.annotation.This;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockShape;
@@ -48,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -61,6 +65,8 @@ public class BukkitInjector {
     private static final BukkitBlockShape STONE_SHAPE = new BukkitBlockShape(Reflections.instance$Blocks$STONE$defaultState);
 
     private static Class<?> clazz$InjectedPalettedContainer;
+
+    private static VarHandle varHandle$InjectedPalettedContainer$target;
 
     private static Class<?> clazz$OptimizedItemDisplay;
     private static Constructor<?> constructor$OptimizedItemDisplay;
@@ -83,10 +89,10 @@ public class BukkitInjector {
                     .subclass(Reflections.clazz$PalettedContainer)
                     .name("net.minecraft.world.level.chunk.InjectedPalettedContainer")
                     .implement(InjectedPalettedContainerHolder.class)
-                    .defineField("target", Object.class, Visibility.PUBLIC)
-                    .defineField("cesection", CESection.class, Visibility.PUBLIC)
-                    .defineField("ceworld", CEWorld.class, Visibility.PUBLIC)
-                    .defineField("cepos", SectionPos.class, Visibility.PUBLIC)
+                    .defineField("target", Reflections.clazz$PalettedContainer, Visibility.PRIVATE)
+                    .defineField("cesection", CESection.class, Visibility.PRIVATE)
+                    .defineField("ceworld", CEWorld.class, Visibility.PRIVATE)
+                    .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
                     .method(ElementMatchers.any()
                             .and(ElementMatchers.not(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet)))
                             .and(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
@@ -105,6 +111,9 @@ public class BukkitInjector {
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
+
+            varHandle$InjectedPalettedContainer$target = Objects.requireNonNull(ReflectionUtils.findVarHandle(clazz$InjectedPalettedContainer, "target", Reflections.clazz$PalettedContainer));
+
             // State Predicate
             DynamicType.Unloaded<?> alwaysTrue = byteBuddy
                     .subclass(Reflections.clazz$StatePredicate)
@@ -311,11 +320,11 @@ public class BukkitInjector {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!clazz$InjectedPalettedContainer.isInstance(container)) {
                 InjectedPalettedContainerHolder injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
-                injectedObject.target(container);
+                varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
                 injectedObject.ceSection(ceSection);
                 injectedObject.ceWorld(ceWorld);
                 injectedObject.cePos(pos);
-                Reflections.field$PalettedContainer$data.set(injectedObject, Reflections.field$PalettedContainer$data.get(container));
+                Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
                 Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
             }
         } catch (Exception e) {

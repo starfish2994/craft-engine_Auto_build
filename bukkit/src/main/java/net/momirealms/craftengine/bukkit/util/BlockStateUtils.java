@@ -11,7 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.block.BlockPhysicsEvent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.IdentityHashMap;
 import java.util.List;
 
