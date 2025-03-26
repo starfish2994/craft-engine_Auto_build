@@ -5540,4 +5540,62 @@ public class Reflections {
                     ? ReflectionUtils.getMethod(clazz$BlockBehaviour, String.class)
                     : ReflectionUtils.getMethod(clazz$Block, String.class)
     );
+
+    public static final Class<?> clazz$ServerboundCustomPayloadPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundCustomPayloadPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInCustomPayload")
+            )
+    );
+
+    // 1.20.2+
+    public static final Class<?> clazz$CustomPacketPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload")
+            );
+
+    // 1.20.5+
+    public static final Class<?> clazz$CustomPacketPayload$Type =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload$Type")
+            );
+
+    // 1.20.2+
+    public static final Field field$ServerboundCustomPayloadPacket$payload = Optional.ofNullable(clazz$CustomPacketPayload)
+            .map(it -> ReflectionUtils.getDeclaredField(clazz$ServerboundCustomPayloadPacket, it, 0))
+            .orElse(null);
+
+    // 1.20.2+
+    public static final Class<?> clazz$DiscardedPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.DiscardedPayload")
+            );
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$type = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(clazz$CustomPacketPayload, it))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$Type$id = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(it, clazz$ResourceLocation))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$DiscardedPayload$data = Optional.ofNullable(clazz$DiscardedPayload)
+            .map(it -> ReflectionUtils.getMethod(it, ByteBuf.class))
+            .orElse(null);
+
+    public static final Class<?> clazz$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ClientboundDisconnectPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutKickDisconnect")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundDisconnectPacket, clazz$Component
+            )
+    );
 }

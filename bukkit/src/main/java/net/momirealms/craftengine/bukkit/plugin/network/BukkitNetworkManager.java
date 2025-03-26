@@ -10,7 +10,6 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.impl.*;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.bukkit.util.RegistryUtils;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
@@ -19,10 +18,7 @@ import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.ListMonitor;
 import net.momirealms.craftengine.core.util.TriConsumer;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.world.ChunkPos;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,17 +26,15 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRegisterChannelEvent;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-public class BukkitNetworkManager implements NetworkManager, Listener {
+public class BukkitNetworkManager implements NetworkManager, Listener, PluginMessageListener {
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> nmsPacketFunctions = new HashMap<>();
     private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> byteBufPacketFunctions = new HashMap<>();
@@ -135,6 +129,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         registerNMSPacketConsumer(PacketConsumers.RENAME_ITEM, Reflections.clazz$ServerboundRenameItemPacket);
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, Reflections.clazz$ServerboundSignUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
+        registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
@@ -165,61 +160,21 @@ public class BukkitNetworkManager implements NetworkManager, Listener {
         this.onlineUsers.remove(player.getUniqueId());
     }
 
-    // for mod
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerRegisterChannel(PlayerRegisterChannelEvent event) {
-        if (!event.getChannel().equals(MOD_CHANNEL)) return;
-        Player player = event.getPlayer();
-        NetWorkUser user = getUser(player);
-        if (user == null) return;
-        user.setClientModState(true);
-        int blockRegistrySize = RegistryUtils.currentBlockRegistrySize();
-        byte[] payload = ("cp:" + blockRegistrySize).getBytes(StandardCharsets.UTF_8);
-        player.sendPluginMessage(plugin.bootstrap(), MOD_CHANNEL, payload);
-        plugin.scheduler().executeAsync(() -> sendClientModPlayerChunk(player, user));
-    }
-
-    private void sendClientModPlayerChunk(Player player, NetWorkUser user) {
-        try {
-            Chunk centerChunk = player.getLocation().getChunk();
-            World world = centerChunk.getWorld();
-            int centerX = centerChunk.getX();
-            int centerZ = centerChunk.getZ();
-            List<Object> packets = new ArrayList<>();
-            for (int xOffset = -1; xOffset <= 1; xOffset++) {
-                for (int zOffset = -1; zOffset <= 1; zOffset++) {
-                    int targetX = centerX + xOffset;
-                    int targetZ = centerZ + zOffset;
-                    if (!world.isChunkLoaded(targetX, targetZ)) continue;
-                    Chunk chunk = world.getChunkAt(targetX, targetZ);
-                    Object worldServer = Reflections.field$CraftChunk$worldServer.get(chunk);
-                    Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(worldServer);
-                    Object levelChunk = Reflections.method$ServerChunkCache$getChunkAtIfLoadedMainThread.invoke(chunkSource, targetX, targetZ);
-                    if (levelChunk == null) continue;
-                    long chunkKey = ChunkPos.asLong(targetX, targetZ);
-                    Object chunkHolder = Reflections.method$ServerChunkCache$getVisibleChunkIfPresent.invoke(chunkSource, chunkKey);
-                    if (chunkHolder == null) continue;
-                    Object lightEngine = Reflections.field$ChunkHolder$lightEngine.get(chunkHolder);
-                    Object packet = Reflections.constructor$ClientboundLevelChunkWithLightPacket.newInstance(levelChunk, lightEngine, null, null);
-                    packets.add(packet);
-                }
-            }
-            sendPackets(user, packets);
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to send chunk correction packet", e);
-        }
-    }
-
     @Override
     public Collection<BukkitServerPlayer> onlineUsers() {
         return onlineUsers.values();
     }
 
     @Override
+    // 保留仅注册入频道用
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {}
+
+    @Override
     public void init() {
         if (init) return;
         try {
-            plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(plugin.bootstrap(), "craftengine:payload");
+            plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(plugin.bootstrap(), MOD_CHANNEL, this);
+            plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(plugin.bootstrap(), MOD_CHANNEL);
             Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
             Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
             @SuppressWarnings("unchecked")
