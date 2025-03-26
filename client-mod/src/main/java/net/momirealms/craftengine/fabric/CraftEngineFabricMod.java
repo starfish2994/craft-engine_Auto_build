@@ -37,7 +37,10 @@ public class CraftEngineFabricMod implements ModInitializer {
                     BlockState blockState = YamlUtils.createBlockData("minecraft:" + replacedBlockId.getPath());
                     RegisterBlocks.register(
                             replacedBlockId.getPath() + "_" + i,
-                            BlockUtils.canPassThrough(blockState)
+                            BlockUtils.canPassThrough(blockState),
+                            BlockUtils.getShape(blockState),
+                            BlockUtils.isTransparent(blockState),
+                            BlockUtils.canPush(blockState)
                     );
                 }
             }

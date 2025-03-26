@@ -22,6 +22,8 @@ dependencies {
     // NBT
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
+    // NMS
+    compileOnly("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
     // Placeholder
     compileOnly("me.clip:placeholderapi:${rootProject.properties["placeholder_api_version"]}")
     // Platform
@@ -58,6 +60,8 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.19")
     // Data Fixer Upper
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
+    // BStats
+    compileOnly("org.bstats:bstats-bukkit:${rootProject.properties["bstats_version"]}")
 }
 
 java {

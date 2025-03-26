@@ -41,6 +41,7 @@ public class ConfigManager implements Reloadable {
     protected boolean debug;
     protected boolean checkUpdate;
     protected boolean metrics;
+    protected boolean filterConfigurationPhaseDisconnect;
 
     protected boolean resource_pack$generate_mod_assets;
     protected boolean resource_pack$override_uniform_font;
@@ -90,15 +91,18 @@ public class ConfigManager implements Reloadable {
     protected String resource_pack$external_host$sha1;
     protected UUID resource_pack$external_host$uuid;
 
-    protected boolean performance$light_system$force_update_light;
-    protected boolean performance$light_system$enable;
     protected int performance$max_block_chain_update_limit;
-    protected boolean performance$chunk_system$restore_vanilla_blocks_on_chunk_unload;
-    protected boolean performance$chunk_system$restore_custom_blocks_on_chunk_load;
-    protected boolean performance$chunk_system$sync_custom_blocks_on_chunk_load;
+
+    protected boolean light_system$force_update_light;
+    protected boolean light_system$enable;
+
+    protected boolean chunk_system$restore_vanilla_blocks_on_chunk_unload;
+    protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
+    protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
 
     protected boolean furniture$remove_invalid_furniture_on_chunk_load$enable;
     protected Set<String> furniture$remove_invalid_furniture_on_chunk_load$list;
+    protected boolean furniture$hide_base_entity;
 
     protected boolean block$sound_system$enable;
     protected boolean recipe$enable;
@@ -178,6 +182,7 @@ public class ConfigManager implements Reloadable {
         debug = config.getBoolean("debug", false);
         metrics = config.getBoolean("metrics", false);
         checkUpdate = config.getBoolean("update-checker", false);
+        filterConfigurationPhaseDisconnect = config.getBoolean("filter-configuration-phase-disconnect", false);
 
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
@@ -239,15 +244,20 @@ public class ConfigManager implements Reloadable {
 
         // performance
         performance$max_block_chain_update_limit = config.getInt("performance.max-block-chain-update-limit", 64);
-        performance$light_system$force_update_light = config.getBoolean("performance.light-system.force-update-light", false);
-        performance$light_system$enable = config.getBoolean("performance.light-system.enable", true);
-        performance$chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("performance.chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
-        performance$chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.restore-custom-blocks-on-chunk-load", true);
-        performance$chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("performance.chunk-system.sync-custom-blocks-on-chunk-load", false);
+
+        // light
+        light_system$force_update_light = config.getBoolean("light-system.force-update-light", false);
+        light_system$enable = config.getBoolean("light-system.enable", true);
+
+        // chunk
+        chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
+        chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.restore-custom-blocks-on-chunk-load", true);
+        chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
 
         // furniture
         furniture$remove_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.remove-invalid-furniture-on-chunk-load.enable", false);
         furniture$remove_invalid_furniture_on_chunk_load$list = new HashSet<>(config.getStringList("furniture.remove-invalid-furniture-on-chunk-load.list"));
+        furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -301,6 +311,10 @@ public class ConfigManager implements Reloadable {
         return instance.metrics;
     }
 
+    public static boolean filterConfigurationPhaseDisconnect() {
+        return instance.filterConfigurationPhaseDisconnect;
+    }
+
     public static boolean resourcePack$overrideUniform() {
         return instance.resource_pack$override_uniform_font;
     }
@@ -318,11 +332,11 @@ public class ConfigManager implements Reloadable {
     }
 
     public static boolean forceUpdateLight() {
-        return instance.performance$light_system$force_update_light;
+        return instance.light_system$force_update_light;
     }
 
     public static boolean enableLightSystem() {
-        return instance.performance$light_system$enable;
+        return instance.light_system$enable;
     }
 
     public static float packMinVersion() {
@@ -346,7 +360,7 @@ public class ConfigManager implements Reloadable {
     }
 
     public static boolean restoreVanillaBlocks() {
-        return instance.performance$chunk_system$restore_vanilla_blocks_on_chunk_unload && instance.performance$chunk_system$restore_custom_blocks_on_chunk_load;
+        return instance.chunk_system$restore_vanilla_blocks_on_chunk_unload && instance.chunk_system$restore_custom_blocks_on_chunk_load;
     }
 
     public static boolean denyNonMinecraftRequest() {
@@ -354,11 +368,11 @@ public class ConfigManager implements Reloadable {
     }
 
     public static boolean restoreCustomBlocks() {
-        return instance.performance$chunk_system$restore_custom_blocks_on_chunk_load;
+        return instance.chunk_system$restore_custom_blocks_on_chunk_load;
     }
 
     public static boolean syncCustomBlocks() {
-        return instance.performance$chunk_system$sync_custom_blocks_on_chunk_load;
+        return instance.chunk_system$sync_custom_blocks_on_chunk_load;
     }
 
     public static List<String> foldersToMerge() {
@@ -531,6 +545,10 @@ public class ConfigManager implements Reloadable {
 
     public static boolean filterSign() {
         return instance().image$illegal_characters_filter$sign;
+    }
+
+    public static boolean hideBaseEntity() {
+        return instance().furniture$hide_base_entity;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

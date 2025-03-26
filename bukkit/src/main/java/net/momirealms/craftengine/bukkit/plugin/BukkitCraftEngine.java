@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.item.behavior.BukkitItemBehaviors;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.loot.BukkitVanillaLootManager;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
+import net.momirealms.craftengine.bukkit.plugin.bstats.CraftEngineMetrics;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
@@ -142,6 +143,7 @@ public class BukkitCraftEngine extends CraftEngine {
         }
         BukkitBlockBehaviors.init();
         BukkitItemBehaviors.init();
+        CraftEngineMetrics.init(this);
         super.packManager = new BukkitPackManager(this);
         super.senderFactory = new BukkitSenderFactory(this);
         super.itemManager = new BukkitItemManager(this);
@@ -177,12 +179,6 @@ public class BukkitCraftEngine extends CraftEngine {
             new ShiftExpansion(this).register();
             new ImageExpansion(this).register();
             this.hasPlaceholderAPI = true;
-        }
-        // WorldEdit
-        if (this.isPluginEnabled("FastAsyncWorldEdit")) {
-            this.blockManager().initFastAsyncWorldEditHook();
-        } else if (this.isPluginEnabled("WorldEdit")) {
-            this.blockManager().initWorldEditHook();
         }
     }
 

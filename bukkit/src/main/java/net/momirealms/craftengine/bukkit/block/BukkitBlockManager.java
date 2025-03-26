@@ -7,6 +7,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import net.momirealms.craftengine.bukkit.block.worldedit.WorldEditBlockRegister;
+import net.momirealms.craftengine.bukkit.block.worldedit.WorldEditCommandHelper;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
@@ -84,9 +86,13 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private final Map<Key, JsonElement> modBlockStates = new HashMap<>();
     // Cached command suggestions
     private final List<Suggestion> cachedSuggestions = new ArrayList<>();
+    // Cached Namespace
+    private final Set<String> namespacesInUse = new HashSet<>();
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
+
+    private WorldEditCommandHelper weCommandHelper;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -125,6 +131,19 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (this.fallingBlockRemoveListener != null) {
             Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, plugin.bootstrap());
         }
+        boolean hasWE = false;
+        // WorldEdit
+        if (this.plugin.isPluginEnabled("FastAsyncWorldEdit")) {
+            this.initFastAsyncWorldEditHook();
+            hasWE = true;
+        } else if (this.plugin.isPluginEnabled("WorldEdit")) {
+            this.initWorldEditHook();
+            hasWE = true;
+        }
+        if (hasWE) {
+            this.weCommandHelper = new WorldEditCommandHelper(this.plugin, this);
+            this.weCommandHelper.enable();
+        }
     }
 
     @Override
@@ -145,6 +164,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.unload();
         HandlerList.unregisterAll(this.blockEventListener);
         if (this.fallingBlockRemoveListener != null) HandlerList.unregisterAll(this.fallingBlockRemoveListener);
+        if (this.weCommandHelper != null) this.weCommandHelper.disable();
     }
 
     @Override
@@ -172,7 +192,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     public void initWorldEditHook() {
         try {
             for (Key newBlockId : this.blockRegisterOrder) {
-                WorldEditHook.register(newBlockId);
+                WorldEditBlockRegister.register(newBlockId);
             }
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to initialize world edit hook", e);
@@ -225,9 +245,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
     @Override
     public void initSuggestions() {
         this.cachedSuggestions.clear();
+        this.namespacesInUse.clear();
         Set<String> states = new HashSet<>();
         for (CustomBlock block : this.id2CraftEngineBlocks.values()) {
             states.add(block.id().toString());
+            this.namespacesInUse.add(block.id().namespace());
             for (ImmutableBlockState state : block.variantProvider().states()) {
                 states.add(state.toString());
             }
@@ -235,6 +257,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (String state : states) {
             this.cachedSuggestions.add(Suggestion.suggestion(state));
         }
+    }
+
+    public Set<String> namespacesInUse() {
+        return Collections.unmodifiableSet(namespacesInUse);
     }
 
     public ImmutableMap<Key, List<Integer>> blockAppearanceArranger() {
@@ -426,7 +452,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         // create block
         Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
 
-        CustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+        BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
 
         // bind appearance
         bindAppearance(block);
@@ -722,6 +748,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             if (plugin.hasMod()) {
                 newRealBlock = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
                 newBlockState = getOnlyBlockState(newRealBlock);
+
                 @SuppressWarnings("unchecked")
                 Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder0.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
                 blockHolder = optionalHolder.get();
@@ -751,7 +778,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             builder2.put(stateId, blockHolder);
             stateIds.add(stateId);
 
-            deceiveBukkit(newRealBlock, clientSideBlockType);
+            deceiveBukkit(newRealBlock, clientSideBlockType, isNoteBlock);
             order.add(realBlockKey);
             counter++;
         }
@@ -791,9 +818,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return states.get(0);
     }
 
-    private void deceiveBukkit(Object newBlock, Key replacedBlock) throws IllegalAccessException {
+    private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock) throws IllegalAccessException {
         @SuppressWarnings("unchecked")
         Map<Object, Material> magicMap = (Map<Object, Material>) Reflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
-        magicMap.put(newBlock, org.bukkit.Registry.MATERIAL.get(Objects.requireNonNull(NamespacedKey.fromString(replacedBlock.toString()))));
+        magicMap.put(newBlock, isNoteBlock ? Material.STONE : org.bukkit.Registry.MATERIAL.get(new NamespacedKey(replacedBlock.namespace(), replacedBlock.value())));
     }
 }

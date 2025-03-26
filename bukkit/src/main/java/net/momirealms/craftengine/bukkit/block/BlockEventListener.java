@@ -23,7 +23,6 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -138,7 +137,7 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(LootParameters.WORLD, world);
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                builder.withParameter(LootParameters.TOOL, itemInHand);
+                builder.withOptionalParameter(LootParameters.TOOL, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
@@ -159,7 +158,7 @@ public class BlockEventListener implements Listener {
                     builder.withParameter(LootParameters.WORLD, world);
                     builder.withParameter(LootParameters.LOCATION, vec3d);
                     builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                    builder.withParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                    builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
                         for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
@@ -308,10 +307,10 @@ public class BlockEventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPhysics(BlockPhysicsEvent event) {
         if (!this.enableNoteBlockCheck) return;
-        Block block = event.getBlock();
         // for vanilla blocks
-        if (block.getBlockData() instanceof NoteBlock) {
+        if (event.getChangedType() == Material.NOTE_BLOCK) {
             try {
+                Block block = event.getBlock();
                 World world = block.getWorld();
                 Location location = block.getLocation();
                 Block sourceBlock = event.getSourceBlock();

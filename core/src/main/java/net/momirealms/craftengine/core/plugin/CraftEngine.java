@@ -24,6 +24,7 @@ import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImp
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManagerImpl;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
+import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.plugin.logger.filter.LogFilter;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
@@ -72,6 +73,7 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public void load() {
         ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
+        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
         this.dependencyManager = new DependencyManagerImpl(this);
         ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
         dependenciesToLoad.addAll(commonDependencies());
@@ -103,6 +105,7 @@ public abstract class CraftEngine implements Plugin {
             // load at last
             this.guiManager.reload();
             this.blockManager.delayedLoad();
+            this.furnitureManager.delayedLoad();
             this.itemBrowserManager.delayedLoad();
             this.soundManager.delayedLoad();
             this.imageManager.delayedLoad();
@@ -134,6 +137,7 @@ public abstract class CraftEngine implements Plugin {
             this.packManager.delayedInit();
             this.furnitureManager.delayedInit();
             this.imageManager.delayedInit();
+            this.vanillaLootManager.delayedInit();
         });
     }
 
@@ -153,6 +157,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.itemBrowserManager != null) this.itemBrowserManager.disable();
         if (this.guiManager != null) this.guiManager.disable();
         if (this.soundManager != null) this.soundManager.disable();
+        if (this.vanillaLootManager != null) this.vanillaLootManager.disable();
         if (this.scheduler != null) this.scheduler.shutdownScheduler();
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         ResourcePackHost.instance().disable();

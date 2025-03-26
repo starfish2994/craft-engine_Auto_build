@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.time.Instant;
 import java.util.*;
@@ -1488,16 +1489,35 @@ public class Reflections {
 
     public static final Object instance$Direction$DOWN;
     public static final Object instance$Direction$UP;
+    public static final Object instance$Direction$NORTH;
+    public static final Object instance$Direction$SOUTH;
+    public static final Object instance$Direction$WEST;
+    public static final Object instance$Direction$EAST;
     public static final Object[] instance$Directions;
+    private static final Map<Object, Object> oppositeDirections = new HashMap<>();
 
     static {
         try {
             instance$Directions = (Object[]) method$Direction$values.invoke(null);
             instance$Direction$DOWN = instance$Directions[0];
             instance$Direction$UP = instance$Directions[1];
+            instance$Direction$NORTH = instance$Directions[2];
+            instance$Direction$SOUTH = instance$Directions[3];
+            instance$Direction$WEST = instance$Directions[4];
+            instance$Direction$EAST = instance$Directions[5];
+            oppositeDirections.put(instance$Direction$DOWN, instance$Direction$UP);
+            oppositeDirections.put(instance$Direction$UP, instance$Direction$DOWN);
+            oppositeDirections.put(instance$Direction$NORTH, instance$Direction$SOUTH);
+            oppositeDirections.put(instance$Direction$SOUTH, instance$Direction$NORTH);
+            oppositeDirections.put(instance$Direction$WEST, instance$Direction$EAST);
+            oppositeDirections.put(instance$Direction$EAST, instance$Direction$WEST);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Object getOppositeDirection(Object direction) {
+        return oppositeDirections.get(direction);
     }
 
     public static final Class<?> clazz$CraftBlock = requireNonNull(
@@ -1524,15 +1544,21 @@ public class Reflections {
             )
     );
 
-    public static final Method method$CraftBlock$at = requireNonNull(
-            ReflectionUtils.getStaticMethod(
-                    clazz$CraftBlock, clazz$CraftBlock, clazz$LevelAccessor, clazz$BlockPos
-            )
-    );
+//    public static final Method method$CraftBlock$at = requireNonNull(
+//            ReflectionUtils.getStaticMethod(
+//                    clazz$CraftBlock, clazz$CraftBlock, clazz$LevelAccessor, clazz$BlockPos
+//            )
+//    );
 
     public static final Method method$CraftBlockStates$getBlockState = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockStates, clazz$CraftBlockState, clazz$LevelAccessor, clazz$BlockPos
+            )
+    );
+
+    public static final Method method$CraftBlockState$getHandle = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$CraftBlockState, clazz$BlockState
             )
     );
 
@@ -1548,12 +1574,14 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$CraftBlockData$createData = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"createData"}, clazz$BlockState
             )
     );
 
+    @Deprecated
     public static final Method method$CraftBlockData$fromData = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"fromData"}, clazz$BlockState
@@ -1650,6 +1678,10 @@ public class Reflections {
             ReflectionUtils.getDeclaredField(
                     clazz$PalettedContainer, clazz$PalettedContainer$Data, 0
             )
+    );
+
+    public static final VarHandle varHandle$PalettedContainer$data = requireNonNull(
+            ReflectionUtils.findVarHandle(field$PalettedContainer$data)
     );
 
     public static final Field field$PalettedContainer$Data$storage = requireNonNull(
@@ -1776,11 +1808,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$ServerChunkCache$getChunkAtIfLoadedMainThread = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$ServerChunkCache, clazz$LevelChunk, int.class, int.class
-            )
-    );
+//    public static final Method method$ServerChunkCache$getChunkAtIfLoadedMainThread = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$ServerChunkCache, clazz$LevelChunk, int.class, int.class
+//            )
+//    );
 
     public static final Field field$ChunkAccess$sections = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -1809,33 +1841,35 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ChunkAccess$blockEntities;
+//    public static final Field field$ChunkAccess$blockEntities;
+//
+//    static {
+//        Field targetField = null;
+//        for (Field field : clazz$ChunkAccess.getDeclaredFields()) {
+//            if (Map.class.isAssignableFrom(field.getType())) {
+//                Type genericType = field.getGenericType();
+//                if (genericType instanceof ParameterizedType parameterizedType) {
+//                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+//                    if (actualTypeArguments.length == 2 &&
+//                            actualTypeArguments[0].equals(clazz$BlockPos) &&
+//                            actualTypeArguments[1].equals(clazz$BlockEntity)) {
+//                        field.setAccessible(true);
+//                        targetField = field;
+//                    }
+//                }
+//            }
+//        }
+//        field$ChunkAccess$blockEntities = targetField;
+//    }
 
-    static {
-        Field targetField = null;
-        for (Field field : clazz$ChunkAccess.getDeclaredFields()) {
-            if (Map.class.isAssignableFrom(field.getType())) {
-                Type genericType = field.getGenericType();
-                if (genericType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    if (actualTypeArguments.length == 2 &&
-                            actualTypeArguments[0].equals(clazz$BlockPos) &&
-                            actualTypeArguments[1].equals(clazz$BlockEntity)) {
-                        field.setAccessible(true);
-                        targetField = field;
-                    }
-                }
-            }
-        }
-        field$ChunkAccess$blockEntities = targetField;
-    }
-
+    @Deprecated
     public static final Method method$LevelChunkSection$setBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class, clazz$BlockState, boolean.class
             )
     );
 
+    @Deprecated
     public static final Method method$LevelChunkSection$getBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class
@@ -2225,6 +2259,25 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$BlockStateBase$Cache = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.BlockBehaviour$BlockStateBase$Cache"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.BlockBase$BlockData$Cache")
+            )
+    );
+
+    public static final Field field$BlockStateBase$cache = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, clazz$BlockStateBase$Cache, 0
+            )
+    );
+
+    // 1.20-1.21.1
+    public static final Field field$BlockStateBase$Cache$lightBlock =
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$BlockStateBase$Cache, int.class, 0
+            );
+
     public static final Method method$BlockStateBase$initCache = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$BlockStateBase, void.class, new String[] { "initCache", "a" }
@@ -2308,6 +2361,12 @@ public class Reflections {
                     clazz$BlockStateBase, int.class, 0
             )
     );
+
+    // 1.21.2+
+    public static final Field field$BlockStateBase$lightBlock =
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$BlockStateBase, int.class, 1
+            );
 
     public static final Class<?> clazz$AABB = requireNonNull(
             ReflectionUtils.getClazz(
@@ -3427,6 +3486,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$BlockPos$mutable = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockPos, clazz$MutableBlockPos
+            )
+    );
+
     public static final Class<?> clazz$LeavesBlock = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.level.block.LeavesBlock"),
@@ -3919,15 +3984,21 @@ public class Reflections {
     );
 
     public static final Object instance$Fluids$WATER;
+    public static final Object instance$Fluids$FLOWING_WATER;
     public static final Object instance$Fluids$LAVA;
+    public static final Object instance$Fluids$FLOWING_LAVA;
     public static final Object instance$Fluids$EMPTY;
 
     static {
         try {
             Object waterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water");
             instance$Fluids$WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, waterId);
+            Object flowingWaterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_water");
+            instance$Fluids$FLOWING_WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingWaterId);
             Object lavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "lava");
             instance$Fluids$LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, lavaId);
+            Object flowingLavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_lava");
+            instance$Fluids$FLOWING_LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingLavaId);
             Object emptyId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "empty");
             instance$Fluids$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, emptyId);
         } catch (ReflectiveOperationException e) {
@@ -4581,11 +4652,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$AbstractFurnaceBlockEntity$recipeType = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$AbstractFurnaceBlockEntity, clazz$RecipeType, 0
-            )
-    );
+//    public static final Field field$AbstractFurnaceBlockEntity$recipeType = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$AbstractFurnaceBlockEntity, clazz$RecipeType, 0
+//            )
+//    );
 
     public static final Field field$AbstractFurnaceBlockEntity$quickCheck = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -5469,6 +5540,148 @@ public class Reflections {
     public static final Field field$Entity$entityData = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$Entity, clazz$SynchedEntityData, 0
+            )
+    );
+
+    public static final Class<?> clazz$SupportType = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.SupportType"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.EnumBlockSupport")
+            )
+    );
+
+    public static final Method method$SupportType$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$SupportType, clazz$SupportType.arrayType()
+            )
+    );
+
+    public static final Object instance$SupportType$FULL;
+    public static final Object instance$SupportType$CENTER;
+    public static final Object instance$SupportType$RIGID;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$SupportType$values.invoke(null);
+            instance$SupportType$FULL = values[0];
+            instance$SupportType$CENTER = values[1];
+            instance$SupportType$RIGID = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Method method$BlockStateBase$isFaceSturdy = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$Direction, clazz$SupportType
+            )
+    );
+
+    public static final Method method$CraftEventFactory$handleBlockFormEvent = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftEventFactory, boolean.class, new String[] { "handleBlockFormEvent" }, clazz$Level, clazz$BlockPos, clazz$BlockState, int.class
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundLevelChunkWithLightPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundLevelChunkWithLightPacket, clazz$LevelChunk, clazz$LevelLightEngine, BitSet.class, BitSet.class
+            )
+    );
+
+    public static final Class<?> clazz$BlockInWorld = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.BlockInWorld"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.ShapeDetectorBlock")
+            )
+    );
+
+    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$BlockInWorld, 0
+            )
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
+            );
+
+    // 1.20 ~ 1.20.4
+    // instance$BuiltInRegistries$BLOCK
+    public static final Method method$ItemStack$canDestroy =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
+            );
+
+    public static final Method method$BlockStateBase$getBlock = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, clazz$Block
+            )
+    );
+
+    public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
+            VersionHelper.isVersionNewerThan1_21_2()
+                    ? ReflectionUtils.getMethod(clazz$BlockBehaviour, String.class)
+                    : ReflectionUtils.getMethod(clazz$Block, String.class)
+    );
+
+    public static final Class<?> clazz$ServerboundCustomPayloadPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundCustomPayloadPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInCustomPayload")
+            )
+    );
+
+    // 1.20.2+
+    public static final Class<?> clazz$CustomPacketPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload")
+            );
+
+    // 1.20.5+
+    public static final Class<?> clazz$CustomPacketPayload$Type =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload$Type")
+            );
+
+    // 1.20.2+
+    public static final Field field$ServerboundCustomPayloadPacket$payload = Optional.ofNullable(clazz$CustomPacketPayload)
+            .map(it -> ReflectionUtils.getDeclaredField(clazz$ServerboundCustomPayloadPacket, it, 0))
+            .orElse(null);
+
+    // 1.20.2+
+    public static final Class<?> clazz$DiscardedPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.DiscardedPayload")
+            );
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$type = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(clazz$CustomPacketPayload, it))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$Type$id = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(it, clazz$ResourceLocation))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$DiscardedPayload$data = Optional.ofNullable(clazz$DiscardedPayload)
+            .map(it -> ReflectionUtils.getMethod(it, ByteBuf.class))
+            .orElse(null);
+
+    public static final Class<?> clazz$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ClientboundDisconnectPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutKickDisconnect")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundDisconnectPacket, clazz$Component
             )
     );
 }

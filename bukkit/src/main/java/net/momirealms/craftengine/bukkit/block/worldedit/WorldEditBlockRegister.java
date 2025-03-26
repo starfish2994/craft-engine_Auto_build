@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.block;
+package net.momirealms.craftengine.bukkit.block.worldedit;
 
 import com.sk89q.worldedit.bukkit.BukkitBlockRegistry;
 import com.sk89q.worldedit.util.concurrency.LazyReference;
@@ -9,7 +9,7 @@ import org.bukkit.Material;
 
 import java.lang.reflect.Field;
 
-public class WorldEditHook {
+public class WorldEditBlockRegister {
     private static final Field field$BlockType$blockMaterial;
 
     static {

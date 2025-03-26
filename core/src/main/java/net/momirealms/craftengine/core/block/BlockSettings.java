@@ -11,6 +11,7 @@ public class BlockSettings {
     boolean burnable;
     int burnChance;
     int fireSpreadChance;
+    int blockLight = -1; // TODO investigate how starlight works
     boolean replaceable;
     float hardness = 2f;
     float resistance = 2f;
@@ -28,6 +29,7 @@ public class BlockSettings {
     Key itemId;
     Set<Key> tags = Set.of();
     Set<Key> correctTools = Set.of();
+    String name;
 
     private BlockSettings() {}
 
@@ -77,6 +79,8 @@ public class BlockSettings {
         newSettings.isViewBlocking = settings.isViewBlocking;
         newSettings.correctTools = settings.correctTools;
         newSettings.fluidState = settings.fluidState;
+        newSettings.blockLight = settings.blockLight;
+        newSettings.name = settings.name;
         return newSettings;
     }
 
@@ -120,6 +124,10 @@ public class BlockSettings {
         return canOcclude;
     }
 
+    public String name() {
+        return name;
+    }
+
     public MapColor mapColor() {
         return mapColor;
     }
@@ -156,6 +164,10 @@ public class BlockSettings {
         return isViewBlocking;
     }
 
+    public int blockLight() {
+        return blockLight;
+    }
+
     public boolean isCorrectTool(Key key) {
         if (this.correctTools.isEmpty()) return true;
         return this.correctTools.contains(key);
@@ -168,6 +180,11 @@ public class BlockSettings {
 
     public BlockSettings burnChance(int burnChance) {
         this.burnChance = burnChance;
+        return this;
+    }
+
+    public BlockSettings name(String name) {
+        this.name = name;
         return this;
     }
 
@@ -236,6 +253,11 @@ public class BlockSettings {
         return this;
     }
 
+    public BlockSettings blockLight(int intValue) {
+        this.blockLight = intValue;
+        return this;
+    }
+
     public BlockSettings isRedstoneConductor(boolean isRedstoneConductor) {
         this.isRedstoneConductor = isRedstoneConductor ? Tristate.TRUE : Tristate.FALSE;
         return this;
@@ -278,6 +300,10 @@ public class BlockSettings {
             registerFactory("luminance", (value -> {
                 int intValue = MiscUtils.getAsInt(value);
                 return settings -> settings.luminance(intValue);
+            }));
+            registerFactory("block-light", (value -> {
+                int intValue = MiscUtils.getAsInt(value);
+                return settings -> settings.blockLight(intValue);
             }));
             registerFactory("hardness", (value -> {
                 float floatValue = MiscUtils.getAsFloat(value);
@@ -354,6 +380,10 @@ public class BlockSettings {
             registerFactory("correct-tools", (value -> {
                 List<String> tools = MiscUtils.getAsStringList(value);
                 return settings -> settings.correctTools(tools.stream().map(Key::of).collect(Collectors.toSet()));
+            }));
+            registerFactory("name", (value -> {
+                String name = value.toString();
+                return settings -> settings.name(name);
             }));
         }
 
