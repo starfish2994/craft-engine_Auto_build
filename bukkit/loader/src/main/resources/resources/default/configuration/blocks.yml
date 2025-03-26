@@ -227,3 +227,21 @@ recipes#misc:
     result:
       id: default:netherite_anvil
       count: 1
+  default:gunpowder_from_block:
+    type: shapeless
+    ingredients:
+      A: "default:gunpowder_block"
+    result:
+      id: minecraft:gunpowder
+      count: 9
+  default:gunpowder_block:
+    type: shaped
+    pattern:
+      - "AAA"
+      - "AAA"
+      - "AAA"
+    ingredients:
+      A: "minecraft:gunpowder"
+    result:
+      id: default:gunpowder_block
+      count: 1
