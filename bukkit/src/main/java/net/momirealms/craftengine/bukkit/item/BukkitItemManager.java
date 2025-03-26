@@ -112,16 +112,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    public void load() {
-        super.load();
-    }
-
-    @Override
-    public void unload() {
-        super.unload();
-    }
-
-    @Override
     public void disable() {
         this.unload();
         HandlerList.unregisterAll(this.itemEventListener);
