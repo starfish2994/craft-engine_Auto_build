@@ -5528,4 +5528,16 @@ public class Reflections {
             ReflectionUtils.getMethod(
                     clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
             );
+
+    public static final Method method$BlockStateBase$getBlock = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, clazz$Block
+            )
+    );
+
+    public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
+            VersionHelper.isVersionNewerThan1_21_2()
+                    ? ReflectionUtils.getMethod(clazz$BlockBehaviour, String.class)
+                    : ReflectionUtils.getMethod(clazz$Block, String.class)
+    );
 }
