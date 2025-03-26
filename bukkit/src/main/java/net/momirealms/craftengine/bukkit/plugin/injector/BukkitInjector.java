@@ -61,10 +61,6 @@ public class BukkitInjector {
     private static final BukkitBlockShape STONE_SHAPE = new BukkitBlockShape(Reflections.instance$Blocks$STONE$defaultState);
 
     private static Class<?> clazz$InjectedPalettedContainer;
-    private static Field field$InjectedPalettedContainer$target;
-    private static Field field$InjectedPalettedContainer$section;
-    private static Field field$InjectedPalettedContainer$world;
-    private static Field field$InjectedPalettedContainer$pos;
 
     private static Class<?> clazz$OptimizedItemDisplay;
     private static Constructor<?> constructor$OptimizedItemDisplay;
@@ -79,44 +75,18 @@ public class BukkitInjector {
     private static Field field$CraftEngineBlock$isNoteBlock;
 
     private static Class<?> clazz$InjectedCacheChecker;
-    private static Field field$InjectedCacheChecker$recipeType;
-    private static Field field$InjectedCacheChecker$lastRecipe;
-    private static Field field$InjectedCacheChecker$lastCustomRecipe;
 
     public static void init() {
         try {
-            clazz$InjectedCacheChecker = byteBuddy
-                    .subclass(Object.class, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
-                    .implement(Reflections.clazz$RecipeManager$CachedCheck)
-                    .defineField("recipeType", Reflections.clazz$RecipeType, Visibility.PUBLIC)
-                    .defineField("lastRecipe", Object.class, Visibility.PUBLIC)
-                    .defineField("lastCustomRecipe", Key.class, Visibility.PUBLIC)
-                    .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
-                    .intercept(MethodDelegation.to(
-                            VersionHelper.isVersionNewerThan1_21_2() ?
-                                    GetRecipeForMethodInterceptor1_21_2.INSTANCE :
-                                    (VersionHelper.isVersionNewerThan1_21() ?
-                                            GetRecipeForMethodInterceptor1_21.INSTANCE :
-                                            VersionHelper.isVersionNewerThan1_20_5() ?
-                                                    GetRecipeForMethodInterceptor1_20_5.INSTANCE :
-                                                    GetRecipeForMethodInterceptor1_20.INSTANCE)
-                    ))
-                    .make()
-                    .load(BukkitInjector.class.getClassLoader())
-                    .getLoaded();
-            field$InjectedCacheChecker$recipeType = clazz$InjectedCacheChecker.getDeclaredField("recipeType");
-            field$InjectedCacheChecker$lastRecipe = clazz$InjectedCacheChecker.getDeclaredField("lastRecipe");
-            field$InjectedCacheChecker$lastCustomRecipe = clazz$InjectedCacheChecker.getDeclaredField("lastCustomRecipe");
-
             // Paletted Container
             clazz$InjectedPalettedContainer = byteBuddy
                     .subclass(Reflections.clazz$PalettedContainer)
                     .name("net.minecraft.world.level.chunk.InjectedPalettedContainer")
                     .implement(InjectedPalettedContainerHolder.class)
-                    .defineField("target", Reflections.clazz$PalettedContainer, Visibility.PRIVATE)
-                    .defineField("cesection", CESection.class, Visibility.PRIVATE)
-                    .defineField("ceworld", CEWorld.class, Visibility.PRIVATE)
-                    .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
+                    .defineField("target", Object.class, Visibility.PUBLIC)
+                    .defineField("cesection", CESection.class, Visibility.PUBLIC)
+                    .defineField("ceworld", CEWorld.class, Visibility.PUBLIC)
+                    .defineField("cepos", SectionPos.class, Visibility.PUBLIC)
                     .method(ElementMatchers.any()
                             .and(ElementMatchers.not(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet)))
                             .and(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
@@ -135,10 +105,6 @@ public class BukkitInjector {
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
-            field$InjectedPalettedContainer$target = ReflectionUtils.getDeclaredField(clazz$InjectedPalettedContainer, "target");
-            field$InjectedPalettedContainer$section = ReflectionUtils.getDeclaredField(clazz$InjectedPalettedContainer, "cesection");
-            field$InjectedPalettedContainer$world = ReflectionUtils.getDeclaredField(clazz$InjectedPalettedContainer, "ceworld");
-            field$InjectedPalettedContainer$pos = ReflectionUtils.getDeclaredField(clazz$InjectedPalettedContainer, "cepos");
             // State Predicate
             DynamicType.Unloaded<?> alwaysTrue = byteBuddy
                     .subclass(Reflections.clazz$StatePredicate)
@@ -275,6 +241,36 @@ public class BukkitInjector {
             field$CraftEngineBlock$behavior = clazz$CraftEngineBlock.getField("behaviorHolder");
             field$CraftEngineBlock$shape = clazz$CraftEngineBlock.getField("shapeHolder");
             field$CraftEngineBlock$isNoteBlock = clazz$CraftEngineBlock.getField("isClientSideNoteBlock");
+
+            clazz$InjectedCacheChecker = byteBuddy
+                    .subclass(Object.class, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
+                    .name("net.momirealms.craftengine.bukkit.entity.InjectedCacheChecker")
+                    .implement(Reflections.clazz$RecipeManager$CachedCheck)
+                    .implement(InjectedCacheCheck.class)
+                    .defineField("recipeType", Object.class, Visibility.PUBLIC)
+                    .method(ElementMatchers.named("recipeType"))
+                    .intercept(FieldAccessor.ofField("recipeType"))
+                    .defineField("lastRecipe", Object.class, Visibility.PUBLIC)
+                    .method(ElementMatchers.named("lastRecipe"))
+                    .intercept(FieldAccessor.ofField("lastRecipe"))
+                    .method(ElementMatchers.named("setLastRecipe"))
+                    .intercept(FieldAccessor.ofField("lastRecipe"))
+                    .defineField("lastCustomRecipe", Key.class, Visibility.PUBLIC)
+                    .method(ElementMatchers.named("lastCustomRecipe"))
+                    .intercept(FieldAccessor.ofField("lastCustomRecipe"))
+                    .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
+                    .intercept(MethodDelegation.to(
+                            VersionHelper.isVersionNewerThan1_21_2() ?
+                                    GetRecipeForMethodInterceptor1_21_2.INSTANCE :
+                                    (VersionHelper.isVersionNewerThan1_21() ?
+                                            GetRecipeForMethodInterceptor1_21.INSTANCE :
+                                            VersionHelper.isVersionNewerThan1_20_5() ?
+                                                    GetRecipeForMethodInterceptor1_20_5.INSTANCE :
+                                                    GetRecipeForMethodInterceptor1_20.INSTANCE)
+                    ))
+                    .make()
+                    .load(BukkitInjector.class.getClassLoader())
+                    .getLoaded();
         } catch (Throwable e) {
             CraftEngine.instance().logger().severe("Failed to init injector", e);
         }
@@ -284,15 +280,15 @@ public class BukkitInjector {
         if (Reflections.clazz$AbstractFurnaceBlockEntity.isInstance(entity)) {
             Object quickCheck = Reflections.field$AbstractFurnaceBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
-            Object recipeType = Reflections.field$AbstractFurnaceBlockEntity$recipeType.get(entity);
-            Object injectedChecker = Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
-            field$InjectedCacheChecker$recipeType.set(injectedChecker, recipeType);
+            Object recipeType = FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$recipeType(entity);
+            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
+            injectedChecker.recipeType(recipeType);
             Reflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
         } else if (!VersionHelper.isVersionNewerThan1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
             Object quickCheck = Reflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
-            Object injectedChecker = Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
-            field$InjectedCacheChecker$recipeType.set(injectedChecker, Reflections.instance$RecipeType$CAMPFIRE_COOKING);
+            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
+            injectedChecker.recipeType(Reflections.instance$RecipeType$CAMPFIRE_COOKING);
             Reflections.field$CampfireBlockEntity$quickCheck.set(entity, injectedChecker);
         }
     }
@@ -312,13 +308,13 @@ public class BukkitInjector {
 
     public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
         try {
-            Object container = Reflections.field$LevelChunkSection$states.get(targetSection);
+            Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!clazz$InjectedPalettedContainer.isInstance(container)) {
-                Object injectedObject = Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
-                field$InjectedPalettedContainer$target.set(injectedObject, container);
-                field$InjectedPalettedContainer$section.set(injectedObject, ceSection);
-                field$InjectedPalettedContainer$world.set(injectedObject, ceWorld);
-                field$InjectedPalettedContainer$pos.set(injectedObject, pos);
+                InjectedPalettedContainerHolder injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
+                injectedObject.target(container);
+                injectedObject.ceSection(ceSection);
+                injectedObject.ceWorld(ceWorld);
+                injectedObject.cePos(pos);
                 Reflections.field$PalettedContainer$data.set(injectedObject, Reflections.field$PalettedContainer$data.get(container));
                 Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
             }
@@ -329,9 +325,9 @@ public class BukkitInjector {
 
     public static void uninjectLevelChunkSection(Object section) {
         try {
-            Object states = Reflections.field$LevelChunkSection$states.get(section);
-            if (clazz$InjectedPalettedContainer.isInstance(states)) {
-                Reflections.field$LevelChunkSection$states.set(section, field$InjectedPalettedContainer$target.get(states));
+            Object states = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
+            if (states instanceof InjectedPalettedContainerHolder holder) {
+                Reflections.field$LevelChunkSection$states.set(section, holder.target());
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
@@ -345,8 +341,9 @@ public class BukkitInjector {
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
             Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
-            Object type = field$InjectedCacheChecker$recipeType.get(thisObj);
-            Object lastRecipe = field$InjectedCacheChecker$lastRecipe.get(thisObj);
+            InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
+            Object type = injectedCacheCheck.recipeType();
+            Object lastRecipe = injectedCacheCheck.lastRecipe();
             Optional<Pair<Object, Object>> optionalRecipe = (Optional<Pair<Object, Object>>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Pair<Object, Object> pair = optionalRecipe.get();
@@ -361,12 +358,12 @@ public class BukkitInjector {
                 } else {
                     items = (List<Object>) Reflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
                 }
-                itemStack = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, items.get(0));
+                itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
                 if (!isCustom) {
-                    field$InjectedCacheChecker$lastRecipe.set(thisObj, resourceLocation);
+                    injectedCacheCheck.lastRecipe(resourceLocation);
                     return Optional.of(pair.getSecond());
                 }
 
@@ -378,7 +375,7 @@ public class BukkitInjector {
 
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
+                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
@@ -395,9 +392,9 @@ public class BukkitInjector {
                 }
 
                 // Cache recipes, it might be incorrect on reloading
-                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
+                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
-                field$InjectedCacheChecker$lastRecipe.set(thisObj, resourceLocation);
+                injectedCacheCheck.lastRecipe(resourceLocation);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(pair.getSecond()));
             } else {
                 return Optional.empty();
@@ -412,12 +409,13 @@ public class BukkitInjector {
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
             Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
-            Object type = field$InjectedCacheChecker$recipeType.get(thisObj);
-            Object lastRecipe = field$InjectedCacheChecker$lastRecipe.get(thisObj);
+            InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
+            Object type = injectedCacheCheck.recipeType();
+            Object lastRecipe = injectedCacheCheck.lastRecipe();
             Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
-                Object id = Reflections.field$RecipeHolder$id.get(holder);
+                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
                 Key recipeId = Key.of(id.toString());
                 BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
 
@@ -428,12 +426,12 @@ public class BukkitInjector {
                 } else {
                     items = (List<Object>) Reflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
                 }
-                itemStack = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, items.get(0));
+                itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
                 if (!isCustom) {
-                    field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                    injectedCacheCheck.lastRecipe(id);
                     return optionalRecipe;
                 }
 
@@ -445,7 +443,7 @@ public class BukkitInjector {
 
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
+                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
@@ -462,9 +460,9 @@ public class BukkitInjector {
                 }
 
                 // Cache recipes, it might be incorrect on reloading
-                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
+                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
-                field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                injectedCacheCheck.lastRecipe(id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();
@@ -479,20 +477,21 @@ public class BukkitInjector {
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
             Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
-            Object type = field$InjectedCacheChecker$recipeType.get(thisObj);
-            Object lastRecipe = field$InjectedCacheChecker$lastRecipe.get(thisObj);
+            InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
+            Object type = injectedCacheCheck.recipeType();
+            Object lastRecipe = injectedCacheCheck.lastRecipe();
             Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
-                Object id = Reflections.field$RecipeHolder$id.get(holder);
+                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
                 Key recipeId = Key.of(id.toString());
                 BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, Reflections.field$SingleRecipeInput$item.get(args[0]));
+                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$SingleRecipeInput$item.get(args[0]));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
                 if (!isCustom) {
-                    field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                    injectedCacheCheck.lastRecipe(id);
                     return optionalRecipe;
                 }
 
@@ -504,7 +503,7 @@ public class BukkitInjector {
 
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
+                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
@@ -521,9 +520,9 @@ public class BukkitInjector {
                 }
 
                 // Cache recipes, it might be incorrect on reloading
-                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
+                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
-                field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                injectedCacheCheck.lastRecipe(id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();
@@ -538,21 +537,22 @@ public class BukkitInjector {
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
             Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
-            Object type = field$InjectedCacheChecker$recipeType.get(thisObj);
-            Object lastRecipe = field$InjectedCacheChecker$lastRecipe.get(thisObj);
+            InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
+            Object type = injectedCacheCheck.recipeType();
+            Object lastRecipe = injectedCacheCheck.lastRecipe();
             Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor1.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
-                Object id = Reflections.field$RecipeHolder$id.get(holder);
-                Object resourceLocation = Reflections.field$ResourceKey$location.get(id);
+                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
+                Object resourceLocation = FastNMS.INSTANCE.field$ResourceKey$location(id);
                 Key recipeId = Key.of(resourceLocation.toString());
                 BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, Reflections.field$SingleRecipeInput$item.get(args[0]));
+                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$SingleRecipeInput$item.get(args[0]));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
                 if (!isCustom) {
-                    field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                    injectedCacheCheck.lastRecipe(id);
                     return optionalRecipe;
                 }
 
@@ -564,7 +564,7 @@ public class BukkitInjector {
 
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = (Key) field$InjectedCacheChecker$lastCustomRecipe.get(thisObj);
+                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
@@ -579,9 +579,9 @@ public class BukkitInjector {
                 }
 
                 // Cache recipes, it might be incorrect on reloading
-                field$InjectedCacheChecker$lastCustomRecipe.set(thisObj, ceRecipe.id());
+                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
-                field$InjectedCacheChecker$lastRecipe.set(thisObj, id);
+                injectedCacheCheck.lastRecipe(id);
                 return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();

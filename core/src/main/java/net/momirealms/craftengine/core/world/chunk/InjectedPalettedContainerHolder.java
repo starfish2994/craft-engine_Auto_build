@@ -7,9 +7,17 @@ public interface InjectedPalettedContainerHolder {
 
     Object target();
 
+    void target(Object target);
+
     CESection ceSection();
+
+    void ceSection(CESection section);
 
     CEWorld ceWorld();
 
+    void ceWorld(CEWorld world);
+
     SectionPos cePos();
+
+    void cePos(SectionPos pos);
 }

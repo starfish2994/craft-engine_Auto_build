@@ -240,6 +240,6 @@ public final class CraftEngineBlocks {
      */
     @NotNull
     public static BlockData createBukkitBlockData(@NotNull ImmutableBlockState blockState) {
-        return BlockStateUtils.createBlockData(blockState.customBlockState().handle());
+        return BlockStateUtils.fromBlockData(blockState.customBlockState().handle());
     }
 }

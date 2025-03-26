@@ -4,6 +4,7 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockAttemptPlaceEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockPlaceEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -158,8 +159,8 @@ public class BlockItemBehavior extends ItemBehavior {
             Object world = Reflections.field$CraftWorld$ServerLevel.get(context.getLevel().platformWorld());
             boolean defaultReturn = ((!this.checkStatePlacement() || (boolean) Reflections.method$BlockStateBase$canSurvive.invoke(blockState, world, blockPos))
                     && (boolean) Reflections.method$ServerLevel$checkEntityCollision.invoke(world, blockState, player, voxelShape, blockPos, true));
-            Block block = (Block) Reflections.method$CraftBlock$at.invoke(null, world, blockPos);
-            BlockData blockData = (BlockData) Reflections.method$CraftBlockData$fromData.invoke(null, blockState);
+            Block block = FastNMS.INSTANCE.method$CraftBlock$at(world, blockPos);
+            BlockData blockData = FastNMS.INSTANCE.method$CraftBlockData$fromData(blockState);
             BlockCanBuildEvent canBuildEvent = new BlockCanBuildEvent(block, (org.bukkit.entity.Player) context.getPlayer().platformPlayer(), blockData, defaultReturn, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
             Bukkit.getPluginManager().callEvent(canBuildEvent);
             return canBuildEvent.isBuildable();

@@ -1543,11 +1543,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$CraftBlock$at = requireNonNull(
-            ReflectionUtils.getStaticMethod(
-                    clazz$CraftBlock, clazz$CraftBlock, clazz$LevelAccessor, clazz$BlockPos
-            )
-    );
+//    public static final Method method$CraftBlock$at = requireNonNull(
+//            ReflectionUtils.getStaticMethod(
+//                    clazz$CraftBlock, clazz$CraftBlock, clazz$LevelAccessor, clazz$BlockPos
+//            )
+//    );
 
     public static final Method method$CraftBlockStates$getBlockState = requireNonNull(
             ReflectionUtils.getStaticMethod(
@@ -1573,12 +1573,14 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$CraftBlockData$createData = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"createData"}, clazz$BlockState
             )
     );
 
+    @Deprecated
     public static final Method method$CraftBlockData$fromData = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftBlockData, clazz$CraftBlockData, new String[]{"fromData"}, clazz$BlockState
@@ -1801,11 +1803,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$ServerChunkCache$getChunkAtIfLoadedMainThread = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$ServerChunkCache, clazz$LevelChunk, int.class, int.class
-            )
-    );
+//    public static final Method method$ServerChunkCache$getChunkAtIfLoadedMainThread = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$ServerChunkCache, clazz$LevelChunk, int.class, int.class
+//            )
+//    );
 
     public static final Field field$ChunkAccess$sections = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -1834,33 +1836,35 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ChunkAccess$blockEntities;
+//    public static final Field field$ChunkAccess$blockEntities;
+//
+//    static {
+//        Field targetField = null;
+//        for (Field field : clazz$ChunkAccess.getDeclaredFields()) {
+//            if (Map.class.isAssignableFrom(field.getType())) {
+//                Type genericType = field.getGenericType();
+//                if (genericType instanceof ParameterizedType parameterizedType) {
+//                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+//                    if (actualTypeArguments.length == 2 &&
+//                            actualTypeArguments[0].equals(clazz$BlockPos) &&
+//                            actualTypeArguments[1].equals(clazz$BlockEntity)) {
+//                        field.setAccessible(true);
+//                        targetField = field;
+//                    }
+//                }
+//            }
+//        }
+//        field$ChunkAccess$blockEntities = targetField;
+//    }
 
-    static {
-        Field targetField = null;
-        for (Field field : clazz$ChunkAccess.getDeclaredFields()) {
-            if (Map.class.isAssignableFrom(field.getType())) {
-                Type genericType = field.getGenericType();
-                if (genericType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    if (actualTypeArguments.length == 2 &&
-                            actualTypeArguments[0].equals(clazz$BlockPos) &&
-                            actualTypeArguments[1].equals(clazz$BlockEntity)) {
-                        field.setAccessible(true);
-                        targetField = field;
-                    }
-                }
-            }
-        }
-        field$ChunkAccess$blockEntities = targetField;
-    }
-
+    @Deprecated
     public static final Method method$LevelChunkSection$setBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class, clazz$BlockState, boolean.class
             )
     );
 
+    @Deprecated
     public static final Method method$LevelChunkSection$getBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class
@@ -4643,11 +4647,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$AbstractFurnaceBlockEntity$recipeType = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$AbstractFurnaceBlockEntity, clazz$RecipeType, 0
-            )
-    );
+//    public static final Field field$AbstractFurnaceBlockEntity$recipeType = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$AbstractFurnaceBlockEntity, clazz$RecipeType, 0
+//            )
+//    );
 
     public static final Field field$AbstractFurnaceBlockEntity$quickCheck = requireNonNull(
             ReflectionUtils.getDeclaredField(
