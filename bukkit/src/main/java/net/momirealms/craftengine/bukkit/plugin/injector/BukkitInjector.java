@@ -15,6 +15,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockShape;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -592,13 +593,13 @@ public class BukkitInjector {
         public static final GetAndSetInterceptor INSTANCE = new GetAndSetInterceptor();
 
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @Origin MethodHandle method) throws Throwable {
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             InjectedPalettedContainerHolder holder = (InjectedPalettedContainerHolder) thisObj;
             Object targetStates = holder.target();
             int x = (int) args[0];
             int y = (int) args[1];
             int z = (int) args[2];
-            Object previousState = method.invoke(targetStates, x, y, z, args[3]);
+            Object previousState = FastNMS.INSTANCE.method$PalettedContainer$getAndSet(targetStates, x, y, z, args[3]);
             try {
                 Object newState = args[3];
                 int stateId = BlockStateUtils.blockStateToId(newState);
