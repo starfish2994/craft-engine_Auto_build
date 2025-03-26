@@ -778,7 +778,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             builder2.put(stateId, blockHolder);
             stateIds.add(stateId);
 
-            deceiveBukkit(newRealBlock, clientSideBlockType);
+            deceiveBukkit(newRealBlock, clientSideBlockType, isNoteBlock);
             order.add(realBlockKey);
             counter++;
         }
@@ -818,9 +818,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return states.get(0);
     }
 
-    private void deceiveBukkit(Object newBlock, Key replacedBlock) throws IllegalAccessException {
+    private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock) throws IllegalAccessException {
         @SuppressWarnings("unchecked")
         Map<Object, Material> magicMap = (Map<Object, Material>) Reflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
-        magicMap.put(newBlock, org.bukkit.Registry.MATERIAL.get(Objects.requireNonNull(NamespacedKey.fromString(replacedBlock.toString()))));
+        magicMap.put(newBlock, isNoteBlock ? Material.STONE : org.bukkit.Registry.MATERIAL.get(new NamespacedKey(replacedBlock.namespace(), replacedBlock.value())));
     }
 }

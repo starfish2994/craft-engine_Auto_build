@@ -18,7 +18,7 @@ public class WaterLoggedBlockBehavior extends AbstractBlockBehavior {
         this.waterloggedProperty = waterloggedProperty;
     }
 
-    // TODO create real waterlogged blocks
+    // TODO create real waterlogged blocks, needs to have real waterlogged property
 //    @Override
 //    public Object pickupBlock(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
 //        if (this.waterloggedProperty == null) return Reflections.instance$ItemStack$EMPTY;
@@ -40,7 +40,6 @@ public class WaterLoggedBlockBehavior extends AbstractBlockBehavior {
 //                Reflections.method$LevelWriter$setBlock.invoke(world, pos, immutableBlockState.with(this.waterloggedProperty, false).customBlockState().handle(), 3);
 //                // TODO check can survive
 //                Object itemStack = Reflections.constructor$ItemStack.newInstance(Reflections.instance$Items$WATER_BUCKET);
-//                System.out.println(itemStack);
 //                return itemStack;
 //            }
 //        }

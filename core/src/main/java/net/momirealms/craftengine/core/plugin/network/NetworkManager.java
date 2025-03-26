@@ -16,7 +16,7 @@ public interface NetworkManager {
 
     Channel getChannel(Player player);
 
-    Collection<? extends NetWorkUser> onlineUsers();
+    NetWorkUser[] onlineUsers();
 
     void init();
 
