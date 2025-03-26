@@ -3,6 +3,7 @@ package net.momirealms.craftengine.fabric;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.util.Identifier;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.util.BlockUtils;
@@ -38,7 +39,9 @@ public class CraftEngineFabricMod implements ModInitializer {
                     RegisterBlocks.register(
                             replacedBlockId.getPath() + "_" + i,
                             BlockUtils.canPassThrough(blockState),
-                            BlockUtils.getShape(blockState)
+                            BlockUtils.getShape(blockState),
+                            BlockUtils.isTransparent(blockState),
+                            BlockUtils.canPush(blockState)
                     );
                 }
             }

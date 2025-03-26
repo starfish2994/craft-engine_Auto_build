@@ -452,7 +452,18 @@ public class BukkitBlockManager extends AbstractBlockManager {
         // create block
         Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
 
-        CustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+        BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+        // read block name
+        String blockName = (String) section.getOrDefault("name", null);
+        if (blockName != null && blockName.startsWith("i18n:")) {
+            plugin.translationManager().i18nData().forEach((locale, i18nData) -> {
+                        plugin.debug(() -> "locale: " + toMinecraftLocale(locale) + ": " + i18nData.translate(blockName.substring(5)));
+                        block.addBlockName(toMinecraftLocale(locale), i18nData.translate(blockName.substring(5)));
+                    }
+            );
+        } else {
+            block.addBlockName(blockName);
+        }
 
         // bind appearance
         bindAppearance(block);
@@ -465,6 +476,18 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 this.modBlockStates.put(realBlockId, this.tempVanillaBlockStateModels.get(state.vanillaBlockState().registryId()));
             }
         }
+    }
+
+    public static String toMinecraftLocale(Locale locale) {
+        String language = locale.getLanguage().toLowerCase();
+        String country = locale.getCountry().toLowerCase();
+        if ("en".equals(language) && country.isEmpty()) {
+            return "en_us";
+        }
+        if (country.isEmpty()) {
+            return language;
+        }
+        return language + "_" + country;
     }
 
     private void bindAppearance(CustomBlock block) {

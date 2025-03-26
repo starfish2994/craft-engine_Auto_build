@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
@@ -14,10 +15,7 @@ import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public abstract class CustomBlock {
@@ -30,6 +28,8 @@ public abstract class CustomBlock {
     protected final ImmutableBlockState defaultState;
     @Nullable
     protected final LootTable<?> lootTable;
+    private Map<String, I18NData> blockName = new HashMap<>();
+
 
     public CustomBlock(
             @NotNull Key id,
@@ -158,5 +158,20 @@ public abstract class CustomBlock {
             state = blockBehavior.updateStateForPlacement(context, state);
         }
         return state;
+    }
+
+    public Map<String, I18NData> blockName() {
+        return blockName;
+    }
+
+    public void addBlockName(String lang, I18NData i18NData) {
+        if (this.blockName == null) {
+            this.blockName = new HashMap<>();
+        }
+        this.blockName.put(lang, i18NData);
+    }
+
+    public void setBlockName(Map<String, I18NData> blockName) {
+        this.blockName = blockName;
     }
 }

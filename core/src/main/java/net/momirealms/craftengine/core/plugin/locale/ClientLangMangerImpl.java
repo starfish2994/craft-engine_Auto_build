@@ -67,6 +67,12 @@ public class ClientLangMangerImpl implements ClientLangManager {
 
     @Override
     public Map<String, I18NData> langData() {
+        this.plugin.blockManager().blocks().forEach((key, block) -> {
+            Map<String, I18NData> blockName = block.blockName();
+            if (blockName != null) {
+                I18NData.merge(i18nData, blockName);
+            }
+        });
         return Collections.unmodifiableMap(i18nData);
     }
 }

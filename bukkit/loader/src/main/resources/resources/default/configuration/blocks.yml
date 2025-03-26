@@ -12,6 +12,7 @@ items#misc:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.chinese_lantern"
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -53,6 +54,7 @@ items#misc:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.netherite_anvil"
         loot:
           template: "default:loot_table/basic"
           arguments:

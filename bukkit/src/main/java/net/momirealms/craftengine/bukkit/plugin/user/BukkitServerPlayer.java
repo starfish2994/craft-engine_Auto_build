@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.PackedBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
@@ -310,7 +311,8 @@ public class BukkitServerPlayer extends Player {
         if (custom && getDestroyProgress(state, pos) >= 1f) {
             assert immutableBlockState != null;
             // not an instant break on client side
-            if (getDestroyProgress(immutableBlockState.vanillaBlockState().handle(), pos) < 1f) {
+            PackedBlockState vanillaBlockState = immutableBlockState.vanillaBlockState();
+            if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
                 try {
                     Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(this.destroyedState), false);
                     sendPacket(levelEventPacket, false);
@@ -363,6 +365,13 @@ public class BukkitServerPlayer extends Player {
     public void stopMiningBlock() {
         setCanBreakBlock(true);
         setIsDestroyingBlock(false, false);
+    }
+
+    @Override
+    public void preventMiningBlock() {
+        setCanBreakBlock(false);
+        setIsDestroyingBlock(false, false);
+        abortMiningBlock();
     }
 
     private void resetEffect(Object mobEffect) throws ReflectiveOperationException {

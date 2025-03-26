@@ -3,6 +3,8 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslationArgument;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
@@ -19,6 +21,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
+import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.chunk.Palette;
@@ -33,6 +36,7 @@ import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -286,7 +290,6 @@ public class PacketConsumers {
     };
 
     private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
-
         Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
@@ -305,6 +308,28 @@ public class PacketConsumers {
                     player.stopMiningBlock();
                 }
                 return;
+            }
+            if (player.isAdventureMode()) {
+                Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, player.platformPlayer().getInventory().getItemInMainHand());
+                Object blockPos = Reflections.constructor$BlockPos.newInstance(pos.x(), pos.y(), pos.z());
+                Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
+                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
+                            && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
+                            itemStack, blockInWorld
+                    )) {
+                        player.preventMiningBlock();
+                        return;
+                    }
+                } else {
+                    if (Reflections.method$ItemStack$canDestroy != null
+                            && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
+                            itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
+                    )) {
+                        player.preventMiningBlock();
+                        return;
+                    }
+                }
             }
             player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
         } else if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$ABORT_DESTROY_BLOCK) {
@@ -875,4 +900,43 @@ public class PacketConsumers {
             callback.accept(new String(newCodepoints, 0, newCodepoints.length));
         }
     }
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isVersionNewerThan1_20_5()) return;
+            Object payload = Reflections.field$ServerboundCustomPayloadPacket$payload.get(packet);
+            if (payload.getClass().equals(Reflections.clazz$DiscardedPayload)) {
+                Object type = Reflections.method$CustomPacketPayload$type.invoke(payload);
+                Object id = Reflections.method$CustomPacketPayload$Type$id.invoke(type);
+                String channel = id.toString();
+                if (!channel.equals(NetworkManager.MOD_CHANNEL)) return;
+                ByteBuf buf = (ByteBuf) Reflections.method$DiscardedPayload$data.invoke(payload);
+                byte[] data = new byte[buf.readableBytes()];
+                buf.readBytes(data);
+                String decodeData = new String(data, StandardCharsets.UTF_8);
+                if (!decodeData.endsWith("init")) return;
+                int firstColon = decodeData.indexOf(':');
+                if (firstColon == -1) return;
+                int secondColon = decodeData.indexOf(':', firstColon + 1);
+                if (secondColon == -1) return;
+                int clientBlockRegistrySize = Integer.parseInt(decodeData.substring(firstColon + 1, secondColon));
+                int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
+                if (clientBlockRegistrySize != serverBlockRegistrySize) {
+                    Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
+                            ComponentUtils.adventureToMinecraft(
+                                    Component.translatable(
+                                            "disconnect.craftengine.block_registry_mismatch",
+                                            TranslationArgument.numeric(clientBlockRegistrySize),
+                                            TranslationArgument.numeric(serverBlockRegistrySize)
+                                    )
+                            )
+                    );
+                    user.nettyChannel().writeAndFlush(kickPacket);
+                    user.nettyChannel().disconnect();
+                }
+                user.setClientModState(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
+        }
+    };
 }

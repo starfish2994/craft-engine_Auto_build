@@ -2,25 +2,29 @@ package net.momirealms.craftengine.fabric.util;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.momirealms.craftengine.fabric.CraftEngineFabricMod;
+import net.momirealms.craftengine.fabric.client.blocks.CustomBlock;
 
 import java.util.function.Function;
 
 public class RegisterBlocks {
     @SuppressWarnings("UnusedReturnValue")
-    public static Block register(String name, boolean canPassThrough, VoxelShape outlineShape) {
-        AbstractBlock.Settings settings = Block.Settings.create().nonOpaque().strength(-1.0F, 3600000.0F);
+    public static Block register(String name, boolean canPassThrough,
+                                 VoxelShape outlineShape, boolean isTransparent,
+                                 int canPush) {
+        AbstractBlock.Settings settings = Block.Settings.create()
+                .nonOpaque()
+                .strength(canPush != 0 ? 3600000.0F : -1.0F, 3600000.0F);
+        if (canPush == 1) settings.pistonBehavior(PistonBehavior.NORMAL);
+        if (canPush == 2) settings.pistonBehavior(PistonBehavior.PUSH_ONLY);
         VoxelShape collisionShape;
         if (canPassThrough) {
             collisionShape = VoxelShapes.empty();
@@ -28,7 +32,7 @@ public class RegisterBlocks {
         } else {
             collisionShape = outlineShape;
         }
-        return register(name, (settingsParam) -> new CustomBlock(settingsParam, outlineShape, collisionShape), settings);
+        return register(name, (settingsParam) -> new CustomBlock(settingsParam, outlineShape, collisionShape, isTransparent), settings);
     }
 
     public static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings) {
@@ -44,23 +48,3 @@ public class RegisterBlocks {
 
 }
 
-class CustomBlock extends Block {
-    private final VoxelShape outlineShape;
-    private final VoxelShape collisionShape;
-
-    public CustomBlock(Settings settings, VoxelShape outlineShape, VoxelShape collisionShape) {
-        super(settings);
-        this.outlineShape = outlineShape;
-        this.collisionShape = collisionShape;
-    }
-
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return this.outlineShape;
-    }
-
-    @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return this.collisionShape;
-    }
-}

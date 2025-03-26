@@ -18,6 +18,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.palm_log"
         behavior:
           type: strippable_block
           stripped: default:stripped_palm_log
@@ -64,6 +65,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.stripped_palm_log"
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -107,6 +109,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.palm_wood"
         behavior:
           type: strippable_block
           stripped: default:stripped_palm_wood
@@ -153,6 +156,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.stripped_palm_wood"
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -195,6 +199,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.palm_planks"
         settings:
           template: "default:settings/planks"
           overrides:
@@ -225,6 +230,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.palm_sapling"
         settings:
           template: "default:settings/sapling"
           overrides:
@@ -287,6 +293,7 @@ items:
     behavior:
       type: block_item
       block:
+        name: "i18n:item.palm_leaves"
         behavior:
           type: leaves_block
         loot:

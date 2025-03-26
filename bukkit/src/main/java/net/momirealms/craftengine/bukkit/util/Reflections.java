@@ -5572,4 +5572,106 @@ public class Reflections {
                     clazz$CraftEventFactory, boolean.class, new String[] { "handleBlockFormEvent" }, clazz$Level, clazz$BlockPos, clazz$BlockState, int.class
             )
     );
+
+    public static final Constructor<?> constructor$ClientboundLevelChunkWithLightPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundLevelChunkWithLightPacket, clazz$LevelChunk, clazz$LevelLightEngine, BitSet.class, BitSet.class
+            )
+    );
+
+    public static final Class<?> clazz$BlockInWorld = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.BlockInWorld"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.state.pattern.ShapeDetectorBlock")
+            )
+    );
+
+    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$BlockInWorld, 0
+            )
+    );
+
+    // 1.20.5+
+    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
+            );
+
+    // 1.20 ~ 1.20.4
+    // instance$BuiltInRegistries$BLOCK
+    public static final Method method$ItemStack$canDestroy =
+            ReflectionUtils.getMethod(
+                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
+            );
+
+    public static final Method method$BlockStateBase$getBlock = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, clazz$Block
+            )
+    );
+
+    public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
+            VersionHelper.isVersionNewerThan1_21_2()
+                    ? ReflectionUtils.getMethod(clazz$BlockBehaviour, String.class)
+                    : ReflectionUtils.getMethod(clazz$Block, String.class)
+    );
+
+    public static final Class<?> clazz$ServerboundCustomPayloadPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundCustomPayloadPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInCustomPayload")
+            )
+    );
+
+    // 1.20.2+
+    public static final Class<?> clazz$CustomPacketPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload")
+            );
+
+    // 1.20.5+
+    public static final Class<?> clazz$CustomPacketPayload$Type =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.CustomPacketPayload$Type")
+            );
+
+    // 1.20.2+
+    public static final Field field$ServerboundCustomPayloadPacket$payload = Optional.ofNullable(clazz$CustomPacketPayload)
+            .map(it -> ReflectionUtils.getDeclaredField(clazz$ServerboundCustomPayloadPacket, it, 0))
+            .orElse(null);
+
+    // 1.20.2+
+    public static final Class<?> clazz$DiscardedPayload =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.custom.DiscardedPayload")
+            );
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$type = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(clazz$CustomPacketPayload, it))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$CustomPacketPayload$Type$id = Optional.ofNullable(clazz$CustomPacketPayload$Type)
+            .map(it -> ReflectionUtils.getMethod(it, clazz$ResourceLocation))
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Method method$DiscardedPayload$data = Optional.ofNullable(clazz$DiscardedPayload)
+            .map(it -> ReflectionUtils.getMethod(it, ByteBuf.class))
+            .orElse(null);
+
+    public static final Class<?> clazz$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ClientboundDisconnectPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutKickDisconnect")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundDisconnectPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundDisconnectPacket, clazz$Component
+            )
+    );
 }

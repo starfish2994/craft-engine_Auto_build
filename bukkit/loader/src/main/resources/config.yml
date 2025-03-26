@@ -8,6 +8,8 @@ metrics: true
 update-checker: true
 # Forces a specific locale (e.g., zh_cn)
 forced-locale: ''
+# Filter configuration phase player disconnection logs
+filter-configuration-phase-disconnect: false
 
 resource-pack:
   # Should those images in minecraft:default font also work in minecraft:uniform

@@ -277,4 +277,9 @@ public class TranslationManagerImpl implements TranslationManager {
             return newFileContents;
         }
     }
+
+    @Override
+    public Map<Locale, I18NData> i18nData() {
+        return Collections.unmodifiableMap(this.i18nData);
+    }
 }
