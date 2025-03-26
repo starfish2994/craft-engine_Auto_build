@@ -169,7 +169,7 @@ items#misc:
         loot:
           template: "default:loot_table/basic"
           arguments:
-            item: default:gunpowder_block
+            item: default:solid_gunpowder_block
         settings:
           template:
             - default:sound/sand
