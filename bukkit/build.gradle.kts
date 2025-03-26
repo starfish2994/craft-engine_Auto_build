@@ -60,6 +60,8 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.19")
     // Data Fixer Upper
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
+    // BStats
+    compileOnly("org.bstats:bstats-bukkit:${rootProject.properties["bstats_version"]}")
 }
 
 java {
