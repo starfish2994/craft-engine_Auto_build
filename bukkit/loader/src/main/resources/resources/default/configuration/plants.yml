@@ -25,6 +25,7 @@ items:
       block: default:reed
 blocks:
   default:fairy_flower:
+    name: "i18n:item.fairy_flower"
     settings:
       template:
         - default:hardness/none
@@ -64,6 +65,7 @@ blocks:
               "0": "minecraft:block/custom/fairy_flower_4"
   default:reed:
     settings:
+      name: "i18n:item.reed"
       template:
         - default:hardness/none
         - default:sound/grass
