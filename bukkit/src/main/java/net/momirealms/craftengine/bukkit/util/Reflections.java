@@ -1263,9 +1263,18 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$Team$Visibility = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.scores.Team$Visibility"),
+                    BukkitReflectionUtils.assembleMCClass("world.scores.ScoreboardTeamBase$EnumTeamPush")
+            )
+    );
+
     public static final Field field$ClientboundSetPlayerTeamPacket$Parameters$nametagVisibility = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
-                    clazz$ClientboundSetPlayerTeamPacket$Parameters, String.class, 0
+                    clazz$ClientboundSetPlayerTeamPacket$Parameters,
+                    VersionHelper.isVersionNewerThan1_21_5() ? clazz$Team$Visibility : String.class,
+                    0
             )
     );
 
@@ -2660,11 +2669,30 @@ public class Reflections {
             )
     );
 
-    public static final Method method$ChunkHolder$getPlayers = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$ChunkHolder, List.class, boolean.class
+    public static final Class<?> clazz$ChunkHolder$PlayerProvider = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.level.ChunkHolder$PlayerProvider"),
+                    BukkitReflectionUtils.assembleMCClass("server.level.PlayerChunk$d")
             )
     );
+
+    public static final Field field$ChunkHolder$playerProvider = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ChunkHolder, clazz$ChunkHolder$PlayerProvider, 0
+            )
+    );
+
+    public static final Method method$ChunkHolder$PlayerProvider$getPlayers = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$ChunkHolder$PlayerProvider, List.class, clazz$ChunkPos, boolean.class
+            )
+    );
+
+    // 1.20 ~ 1.21.4
+    public static final Method method$ChunkHolder$getPlayers =
+            ReflectionUtils.getMethod(
+                    clazz$ChunkHolder, List.class, boolean.class
+            );
 
     public static final Field field$ChunkHolder$lightEngine = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -3923,9 +3951,9 @@ public class Reflections {
     );
 
     public static final Method method$CraftEventFactory$callBlockPlaceEvent = requireNonNull(
-            ReflectionUtils.getStaticMethod(
-                    clazz$CraftEventFactory, BlockPlaceEvent.class, clazz$ServerLevel, clazz$Player, clazz$InteractionHand, BlockState.class, int.class, int.class, int.class
-            )
+            VersionHelper.isVersionNewerThan1_21_5()
+                    ? ReflectionUtils.getStaticMethod(clazz$CraftEventFactory, BlockPlaceEvent.class, clazz$ServerLevel, clazz$Player, clazz$InteractionHand, BlockState.class, clazz$BlockPos)
+                    : ReflectionUtils.getStaticMethod(clazz$CraftEventFactory, BlockPlaceEvent.class, clazz$ServerLevel, clazz$Player, clazz$InteractionHand, BlockState.class, int.class, int.class, int.class)
     );
 
     public static final Class<?> clazz$Abilities = requireNonNull(
@@ -4816,9 +4844,9 @@ public class Reflections {
     );
 
     public static final Method method$ServerLevel$levelEvent = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$ServerLevel, void.class, clazz$Player, int.class, clazz$BlockPos, int.class
-            )
+            VersionHelper.isVersionNewerThan1_21_5()
+                    ? ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Entity, int.class, clazz$BlockPos, int.class)
+                    : ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Player, int.class, clazz$BlockPos, int.class)
     );
 
     public static final Method method$PalettedContainer$getAndSet = Objects.requireNonNull(
@@ -5104,12 +5132,24 @@ public class Reflections {
             )
     );
 
+    // 1.21.5+
+    public static final Class<?> clazz$TransmuteResult =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.item.crafting.TransmuteResult")
+            );
+
+    public static final Constructor<?> constructor$TransmuteResult = Optional.ofNullable(clazz$TransmuteResult)
+            .map(it -> ReflectionUtils.getConstructor(it, clazz$Item))
+            .orElse(null);
+
     public static final Constructor<?> constructor$SmithingTransformRecipe = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_2() ?
-                   ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack) :
-                   VersionHelper.isVersionNewerThan1_20_2() ?
-                           ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack) :
-                           ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+            VersionHelper.isVersionNewerThan1_21_5()
+                    ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, clazz$Ingredient, Optional.class, clazz$TransmuteResult)
+                    : VersionHelper.isVersionNewerThan1_21_2()
+                        ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack)
+                        : VersionHelper.isVersionNewerThan1_20_2()
+                            ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+                            : ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
     );
 
     public static final Method method$RecipeManager$addRecipe = requireNonNull(
@@ -5415,13 +5455,11 @@ public class Reflections {
     );
 
     public static final Method method$SimpleWaterloggedBlock$canPlaceLiquid = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
-                    ReflectionUtils.getMethod(
-                            clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid
-                    ) :
-                    ReflectionUtils.getMethod(
-                            clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid
-                    )
+            VersionHelper.isVersionNewerThan1_21_5()
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LivingEntity, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
+                    : VersionHelper.isVersionNewerThan1_20_2()
+                        ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
+                        : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
     );
 
     public static final Method method$SimpleWaterloggedBlock$placeLiquid = requireNonNull(
@@ -5431,13 +5469,11 @@ public class Reflections {
     );
 
     public static final Method method$SimpleWaterloggedBlock$pickupBlock = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
-                    ReflectionUtils.getMethod(
-                            clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState
-                    ) :
-                    ReflectionUtils.getMethod(
-                            clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState
-                    )
+            VersionHelper.isVersionNewerThan1_21_5()
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LivingEntity, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
+                    : VersionHelper.isVersionNewerThan1_20_2()
+                        ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
+                        : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
     );
 
     public static final Method method$Fluid$getTickDelay = requireNonNull(
