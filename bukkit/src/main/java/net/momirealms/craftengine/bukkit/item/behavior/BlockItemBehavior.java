@@ -40,7 +40,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
