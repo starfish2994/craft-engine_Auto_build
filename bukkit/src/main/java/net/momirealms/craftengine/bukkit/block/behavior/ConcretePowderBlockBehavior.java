@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -65,7 +66,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         Object level = context.getLevel().serverWorld();
         Object blockPos = LocationUtils.toBlockPos(context.getClickedPos());
         try {
-            Object previousState = Reflections.method$BlockGetter$getBlockState.invoke(level, blockPos);
+            Object previousState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos);
             if (!shouldSolidify(level, blockPos, previousState)) {
                 return super.updateStateForPlacement(context, state);
             } else {
@@ -137,10 +138,10 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         int j = Direction.values().length;
         for (int k = 0; k < j; k++) {
             Object direction = Reflections.instance$Directions[k];
-            Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(level, mutablePos);
+            Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, mutablePos);
             if (direction != Reflections.instance$Direction$DOWN || canSolidify(blockState)) {
                 Reflections.method$MutableBlockPos$setWithOffset.invoke(mutablePos, pos, direction);
-                blockState = Reflections.method$BlockGetter$getBlockState.invoke(level, mutablePos);
+                blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, mutablePos);
                 if (canSolidify(blockState) && !(boolean) Reflections.method$BlockStateBase$isFaceSturdy.invoke(blockState, level, pos, Reflections.getOppositeDirection(direction), Reflections.instance$SupportType$FULL)) {
                     flag = true;
                     break;

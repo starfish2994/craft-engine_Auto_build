@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.api;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -108,9 +109,9 @@ public final class CraftEngineBlocks {
         boolean success;
         try {
             Object worldServer = Reflections.field$CraftWorld$ServerLevel.get(location.getWorld());
-            Object blockPos = Reflections.constructor$BlockPos.newInstance(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+            Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
             Object blockState = block.customBlockState().handle();
-            Object oldBlockState = Reflections.method$BlockGetter$getBlockState.invoke(worldServer, blockPos);
+            Object oldBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
             success = (boolean) Reflections.method$LevelWriter$setBlock.invoke(worldServer, blockPos, blockState, option.flags());
             if (success) {
                 Reflections.method$BlockStateBase$onPlace.invoke(blockState, worldServer, blockPos, oldBlockState, true);

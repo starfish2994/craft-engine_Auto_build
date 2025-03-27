@@ -318,7 +318,7 @@ public class BlockEventListener implements Listener {
                 if (direction == BlockFace.UP || direction == BlockFace.DOWN) {
                     Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
                     Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(serverLevel);
-                    Object blockPos = Reflections.constructor$BlockPos.newInstance(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                    Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
                     Reflections.method$ServerChunkCache$blockChanged.invoke(chunkSource, blockPos);
                     if (direction == BlockFace.UP) {
                         NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$UP, blockPos, 0);

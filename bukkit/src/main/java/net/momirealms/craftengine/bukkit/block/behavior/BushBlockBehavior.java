@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.BlockTags;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -64,7 +65,7 @@ public class BushBlockBehavior extends AbstractBlockBehavior {
                 ContextHolder.Builder builder = ContextHolder.builder();
                 BlockPos pos = LocationUtils.fromBlockPos(blockPos);
                 Vec3d vec3d = Vec3d.atCenterOf(pos);
-                net.momirealms.craftengine.core.world.World world = new BukkitWorld((World) Reflections.method$Level$getCraftWorld.invoke(level));
+                net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.WORLD, world);
                 for (Item<Object> item : previousState.getDrops(builder, world)) {
@@ -120,11 +121,11 @@ public class BushBlockBehavior extends AbstractBlockBehavior {
     }
 
     protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws ReflectiveOperationException {
-        int y = Reflections.field$Vec3i$y.getInt(blockPos);
-        int x = Reflections.field$Vec3i$x.getInt(blockPos);
-        int z = Reflections.field$Vec3i$z.getInt(blockPos);
-        Object belowPos = Reflections.constructor$BlockPos.newInstance(x, y - 1, z);
-        Object belowState = Reflections.method$BlockGetter$getBlockState.invoke(world, belowPos);
+        int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
+        int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
+        int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
+        Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y - 1, z);
+        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
         return mayPlaceOn(belowState, world, belowPos);
     }
 

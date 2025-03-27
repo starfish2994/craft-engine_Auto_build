@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.FeatureUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -48,10 +49,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         Object world = args[1];
         Object blockPos = args[2];
         Object blockState = args[0];
-        int x = (int) Reflections.field$Vec3i$x.get(blockPos);
-        int y = (int) Reflections.field$Vec3i$y.get(blockPos);
-        int z = (int) Reflections.field$Vec3i$z.get(blockPos);
-        Object aboveBlockPos = LocationUtils.toBlockPos(x, y + 1, z);
+        Object aboveBlockPos = LocationUtils.above(blockPos);
         if ((int) Reflections.method$LevelReader$getMaxLocalRawBrightness.invoke(world, aboveBlockPos) >= 9 && (float) Reflections.method$RandomSource$nextFloat.invoke(args[3]) < (1.0f / 7.0f)) {
             increaseStage(world, blockPos, blockState, args[3]);
         }
@@ -63,10 +61,10 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         int currentStage = immutableBlockState.get(this.stageProperty);
         if (currentStage != this.stageProperty.possibleValues().get(this.stageProperty.possibleValues().size() - 1)) {
             ImmutableBlockState nextStage = immutableBlockState.cycle(this.stageProperty);
-            World bukkitWorld = (World) Reflections.method$Level$getCraftWorld.invoke(world);
-            int x = (int) Reflections.field$Vec3i$x.get(blockPos);
-            int y = (int) Reflections.field$Vec3i$y.get(blockPos);
-            int z = (int) Reflections.field$Vec3i$z.get(blockPos);
+            World bukkitWorld = FastNMS.INSTANCE.method$Level$getCraftWorld(world);
+            int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
+            int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
+            int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
             CraftEngineBlocks.place(new Location(bukkitWorld, x, y, z), nextStage, UpdateOption.UPDATE_NONE, false);
         } else {
             generateTree(world, blockPos, blockState, randomSource);
@@ -88,7 +86,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         Object legacyState = Reflections.method$FluidState$createLegacyBlock.invoke(fluidState);
         Reflections.method$Level$setBlock.invoke(world, blockPos, legacyState, UpdateOption.UPDATE_NONE.flags());
         if ((boolean) Reflections.method$ConfiguredFeature$place.invoke(configuredFeature, world, chunkGenerator, randomSource, blockPos)) {
-            if (Reflections.method$BlockGetter$getBlockState.invoke(world, blockPos) == legacyState) {
+            if (FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, blockPos) == legacyState) {
                 Reflections.method$ServerLevel$sendBlockUpdated.invoke(world, blockPos, blockState, legacyState, 2);
             }
         } else {

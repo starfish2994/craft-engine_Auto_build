@@ -6,6 +6,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.impl.*;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -253,7 +254,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             return (Channel) Reflections.field$Channel.get(
                     Reflections.field$NetworkManager.get(
                             Reflections.field$ServerPlayer$connection.get(
-                                    Reflections.method$CraftPlayer$getHandle.invoke(player)
+                                    FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)
                             )
                     )
             );
@@ -264,7 +265,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public void sendPacket(@NotNull Player player, @NotNull Object packet) {
         try {
-            Object serverPlayer = Reflections.method$CraftPlayer$getHandle.invoke(player);
+            Object serverPlayer = FastNMS.INSTANCE.method$CraftPlayer$getHandle(player);
             this.immediatePacketConsumer.accept(serverPlayer, packet);
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to send packet", e);
