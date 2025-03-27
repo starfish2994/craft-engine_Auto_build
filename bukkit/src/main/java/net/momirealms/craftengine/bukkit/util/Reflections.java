@@ -5710,7 +5710,6 @@ public class Reflections {
             .orElse(null);
 
     // 1.21.4#222+
-    // 我tm服了这个 sb paper 你 tmd 乱改签名干什么有病啊
     public static final Method method$DiscardedPayload$dataByteArray = Optional.ofNullable(method$DiscardedPayload$data)
             .map(m -> (Method) null)
             .orElseGet(() -> Optional.ofNullable(clazz$DiscardedPayload)
