@@ -5667,10 +5667,19 @@ public class Reflections {
             .map(it -> ReflectionUtils.getMethod(it, clazz$ResourceLocation))
             .orElse(null);
 
-    // 1.20.5+
+    // 1.20.5~1.21.4#221
     public static final Method method$DiscardedPayload$data = Optional.ofNullable(clazz$DiscardedPayload)
             .map(it -> ReflectionUtils.getMethod(it, ByteBuf.class))
             .orElse(null);
+
+    // 1.21.4#222+
+    // 我tm服了这个 sb paper 你 tmd 乱改签名干什么有病啊
+    public static final Method method$DiscardedPayload$dataByteArray = Optional.ofNullable(method$DiscardedPayload$data)
+            .map(m -> (Method) null)
+            .orElseGet(() -> Optional.ofNullable(clazz$DiscardedPayload)
+                    .map(clazz -> ReflectionUtils.getMethod(clazz, byte[].class))
+                    .orElse(null)
+            );
 
     public static final Class<?> clazz$ClientboundDisconnectPacket = requireNonNull(
             ReflectionUtils.getClazz(
