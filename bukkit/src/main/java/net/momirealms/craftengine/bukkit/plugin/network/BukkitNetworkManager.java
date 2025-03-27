@@ -72,7 +72,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isVersionNewerThan1_21_5()) {
+            this.packetIds = new PacketIds1_21_5();
+        } else if (VersionHelper.isVersionNewerThan1_21_2()) {
             this.packetIds = new PacketIds1_21_2();
         } else if (VersionHelper.isVersionNewerThan1_20_5()) {
             this.packetIds = new PacketIds1_20_5();
