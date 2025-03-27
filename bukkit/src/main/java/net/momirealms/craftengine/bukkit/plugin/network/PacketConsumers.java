@@ -906,9 +906,14 @@ public class PacketConsumers {
                 Object id = Reflections.method$CustomPacketPayload$Type$id.invoke(type);
                 String channel = id.toString();
                 if (!channel.equals(NetworkManager.MOD_CHANNEL)) return;
-                ByteBuf buf = (ByteBuf) Reflections.method$DiscardedPayload$data.invoke(payload);
-                byte[] data = new byte[buf.readableBytes()];
-                buf.readBytes(data);
+                byte[] data;
+                if (Reflections.method$DiscardedPayload$data != null) {
+                    ByteBuf buf = (ByteBuf) Reflections.method$DiscardedPayload$data.invoke(payload);
+                    data = new byte[buf.readableBytes()];
+                    buf.readBytes(data);
+                } else {
+                    data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
+                }
                 String decodeData = new String(data, StandardCharsets.UTF_8);
                 if (!decodeData.endsWith("init")) return;
                 int firstColon = decodeData.indexOf(':');
