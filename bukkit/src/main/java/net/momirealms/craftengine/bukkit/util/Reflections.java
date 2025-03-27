@@ -5732,6 +5732,10 @@ public class Reflections {
     );
 
     public static final Method method$CraftEventFactory$handleBlockGrowEvent = requireNonNull(
+            VersionHelper.isVersionNewerThan1_21_5() ?
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftEventFactory, boolean.class, clazz$Level, clazz$BlockPos, clazz$BlockState, int.class
+            ) :
             ReflectionUtils.getStaticMethod(
                     clazz$CraftEventFactory, boolean.class, clazz$Level, clazz$BlockPos, clazz$BlockState
             )

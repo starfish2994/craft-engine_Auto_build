@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 import com.sk89q.worldedit.blocks.Blocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -120,7 +121,11 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
                 int age = currentState.get(ageProperty);
                 if (age >= this.ageProperty.max || RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
                     Object abovePos = LocationUtils.above(blockPos);
-                    Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, customBlock.defaultState().customBlockState().handle());
+                    if (VersionHelper.isVersionNewerThan1_21_5()) {
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                    } else {
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, customBlock.defaultState().customBlockState().handle());
+                    }
                     Reflections.method$Level$setBlock.invoke(level, blockPos, currentState.with(this.ageProperty, this.ageProperty.min).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
                 } else if (RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
                     Reflections.method$Level$setBlock.invoke(level, blockPos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
