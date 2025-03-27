@@ -32,12 +32,14 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
     private final Key feature;
     private final Property<Integer> stageProperty;
     private final double boneMealSuccessChance;
+    private final float growSpeed;
 
-    public SaplingBlockBehavior(Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance) {
+    public SaplingBlockBehavior(Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance, float growSpeed) {
         super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
         this.feature = feature;
         this.stageProperty = stageProperty;
         this.boneMealSuccessChance = boneMealSuccessChance;
+        this.growSpeed = growSpeed;
     }
 
     public Key treeFeature() {
@@ -50,7 +52,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         Object blockPos = args[2];
         Object blockState = args[0];
         Object aboveBlockPos = LocationUtils.above(blockPos);
-        if ((int) Reflections.method$LevelReader$getMaxLocalRawBrightness.invoke(world, aboveBlockPos) >= 9 && (float) Reflections.method$RandomSource$nextFloat.invoke(args[3]) < (1.0f / 7.0f)) {
+        if ((int) Reflections.method$LevelReader$getMaxLocalRawBrightness.invoke(world, aboveBlockPos) >= 9 && (float) RandomUtils.generateRandomFloat(0, 1) < growSpeed) {
             increaseStage(world, blockPos, blockState, args[3]);
         }
     }
@@ -125,7 +127,8 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
-            return new SaplingBlockBehavior(Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance);
+            return new SaplingBlockBehavior(Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
+                    MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0)));
         }
     }
 }

@@ -5685,4 +5685,10 @@ public class Reflections {
                     clazz$ClientboundDisconnectPacket, clazz$Component
             )
     );
+
+    public static final Method method$CraftEventFactory$handleBlockGrowEvent = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$CraftEventFactory, boolean.class, clazz$Level, clazz$BlockPos, clazz$BlockState
+            )
+    );
 }

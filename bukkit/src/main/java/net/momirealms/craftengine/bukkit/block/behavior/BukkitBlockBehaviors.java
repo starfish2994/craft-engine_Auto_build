@@ -14,6 +14,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key ON_LIQUID_BLOCK = Key.from("craftengine:on_liquid_block");
     public static final Key WATERLOGGED_BLOCK = Key.from("craftengine:waterlogged_block");
     public static final Key CONCRETE_POWDER_BLOCK = Key.from("craftengine:concrete_powder_block");
+    public static final Key SUGARCANE_BLOCK = Key.from("craftengine:sugar_cane_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
@@ -26,5 +27,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(ON_LIQUID_BLOCK, OnLiquidBlockBehavior.FACTORY);
         register(WATERLOGGED_BLOCK, WaterLoggedBlockBehavior.FACTORY);
         register(CONCRETE_POWDER_BLOCK, ConcretePowderBlockBehavior.FACTORY);
+        register(SUGARCANE_BLOCK, SugarCaneBlockBehavior.FACTORY);
     }
 }
