@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
@@ -75,11 +76,7 @@ public class BukkitServerPlayer extends Player {
 
     public void setPlayer(org.bukkit.entity.Player player) {
         playerRef = new WeakReference<>(player);
-        try {
-            serverPlayerRef = new WeakReference<>(Reflections.method$CraftPlayer$getHandle.invoke(player));
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
+        serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
     }
 
     @Override
@@ -298,7 +295,7 @@ public class BukkitServerPlayer extends Player {
     public float getDestroyProgress(Object blockState, BlockPos pos) {
         try {
             Object serverPlayer = serverPlayer();
-            Object blockPos = Reflections.constructor$BlockPos.newInstance(pos.x(), pos.y(), pos.z());
+            Object blockPos = LocationUtils.toBlockPos(pos.x(), pos.y(), pos.z());
             return (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(blockState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos);
         } catch (ReflectiveOperationException e) {
             this.plugin.logger().warn("Failed to get destroy progress for player " + platformPlayer().getName());

@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
@@ -268,11 +269,7 @@ public class PacketConsumers {
             Player platformPlayer = player.platformPlayer();
             World world = platformPlayer.getWorld();
             Object blockPos = Reflections.field$ServerboundPlayerActionPacket$pos.get(packet);
-            BlockPos pos = new BlockPos(
-                    (int) Reflections.field$Vec3i$x.get(blockPos),
-                    (int) Reflections.field$Vec3i$y.get(blockPos),
-                    (int) Reflections.field$Vec3i$z.get(blockPos)
-            );
+            BlockPos pos = LocationUtils.fromBlockPos(blockPos);
             if (VersionHelper.isFolia()) {
                 BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                     try {
@@ -293,7 +290,7 @@ public class PacketConsumers {
         Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
-            Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(serverLevel, LocationUtils.toBlockPos(pos));
+            Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, LocationUtils.toBlockPos(pos));
             int stateId = BlockStateUtils.blockStateToId(blockState);
             // not a custom block
             if (BlockStateUtils.isVanillaBlock(stateId)) {
@@ -311,7 +308,7 @@ public class PacketConsumers {
             }
             if (player.isAdventureMode()) {
                 Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, player.platformPlayer().getInventory().getItemInMainHand());
-                Object blockPos = Reflections.constructor$BlockPos.newInstance(pos.x(), pos.y(), pos.z());
+                Object blockPos = LocationUtils.toBlockPos(pos);
                 Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
                 if (VersionHelper.isVersionNewerThan1_20_5()) {
                     if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
@@ -523,8 +520,8 @@ public class PacketConsumers {
             if (player == null) return;
             Object pos = Reflections.field$ServerboundPickItemFromBlockPacket$pos.get(packet);
             if (VersionHelper.isFolia()) {
-                int x = (int) Reflections.field$Vec3i$x.get(pos);
-                int z = (int) Reflections.field$Vec3i$z.get(pos);
+                int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
+                int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
                 BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                     try {
                         handlePickItemFromBlockPacketOnMainThread(player, pos);
@@ -548,7 +545,7 @@ public class PacketConsumers {
 
     private static void handlePickItemFromBlockPacketOnMainThread(Player player, Object pos) throws Exception {
         Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(player.getWorld());
-        Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(serverLevel, pos);
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, pos);
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null) return;
         Key itemId = state.settings().itemId();
@@ -603,7 +600,7 @@ public class PacketConsumers {
         }
         assert Reflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
         Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                Reflections.field$ServerPlayer$connection.get(Reflections.method$CraftPlayer$getHandle.invoke(player)), Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack));
+                Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack));
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {

@@ -471,9 +471,9 @@ public class Reflections {
             BukkitReflectionUtils.assembleCBClass("entity.CraftPlayer")
     ));
 
-    public static final Method method$CraftPlayer$getHandle = requireNonNull(
-            ReflectionUtils.getMethod(clazz$CraftPlayer, new String[] { "getHandle" })
-    );
+//    public static final Method method$CraftPlayer$getHandle = requireNonNull(
+//            ReflectionUtils.getMethod(clazz$CraftPlayer, new String[] { "getHandle" })
+//    );
 
     public static final Field field$ServerPlayer$connection = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(clazz$ServerPlayer, clazz$ServerGamePacketListenerImpl, 0)
@@ -1364,17 +1364,17 @@ public class Reflections {
             )
     );
 
-    public static final Field field$Vec3i$x = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 0)
-    );
-
-    public static final Field field$Vec3i$y = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 1)
-    );
-
-    public static final Field field$Vec3i$z = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 2)
-    );
+//    public static final Field field$Vec3i$x = requireNonNull(
+//            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 0)
+//    );
+//
+//    public static final Field field$Vec3i$y = requireNonNull(
+//            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 1)
+//    );
+//
+//    public static final Field field$Vec3i$z = requireNonNull(
+//            ReflectionUtils.getDeclaredField(clazz$Vec3i, int.class, 2)
+//    );
 
     public static final Class<?> clazz$BlockState = requireNonNull(
             ReflectionUtils.getClazz(
@@ -1597,11 +1597,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$BlockPos = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$BlockPos, int.class, int.class, int.class
-            )
-    );
+//    public static final Constructor<?> constructor$BlockPos = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$BlockPos, int.class, int.class, int.class
+//            )
+//    );
 
     public static final Method method$Vec3i$relative = requireNonNull(
             ReflectionUtils.getMethod(
@@ -2471,11 +2471,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$BlockGetter$getBlockState = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$BlockGetter, clazz$BlockState, clazz$BlockPos
-            )
-    );
+//    public static final Method method$BlockGetter$getBlockState = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$BlockGetter, clazz$BlockState, clazz$BlockPos
+//            )
+//    );
 
     public static final Method method$LevelAccessor$scheduleTick = requireNonNull(
             ReflectionUtils.getMethod(
@@ -3435,6 +3435,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$Level$getCraftWorld = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$Level, clazz$CraftWorld
