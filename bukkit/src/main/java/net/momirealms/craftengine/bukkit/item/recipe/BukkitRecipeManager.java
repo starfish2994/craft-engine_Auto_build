@@ -39,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Reader;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.*;
@@ -988,8 +989,22 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
         }
     }
 
+    // 1.21.5+
+    private static Object toTransmuteResult(ItemStack item) throws InvocationTargetException, IllegalAccessException, InstantiationException {
+        Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, item);
+        Object nmsItem = Reflections.method$ItemStack$getItem.invoke(itemStack);
+        return Reflections.constructor$TransmuteResult.newInstance(nmsItem);
+    }
+
     private static Object createMinecraftSmithingTransformRecipe(CustomSmithingTransformRecipe<ItemStack> ceRecipe) throws ReflectiveOperationException {
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isVersionNewerThan1_21_5()) {
+            return Reflections.constructor$SmithingTransformRecipe.newInstance(
+                    toOptionalMinecraftIngredient(ceRecipe.template()),
+                    toMinecraftIngredient(ceRecipe.base()),
+                    toOptionalMinecraftIngredient(ceRecipe.addition()),
+                    toTransmuteResult(ceRecipe.result(ItemBuildContext.EMPTY))
+            );
+        } else if (VersionHelper.isVersionNewerThan1_21_2()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toOptionalMinecraftIngredient(ceRecipe.template()),
                     toOptionalMinecraftIngredient(ceRecipe.base()),
