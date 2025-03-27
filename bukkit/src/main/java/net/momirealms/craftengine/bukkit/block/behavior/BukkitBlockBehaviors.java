@@ -6,6 +6,7 @@ import net.momirealms.craftengine.shared.block.EmptyBlockBehavior;
 
 public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key BUSH_BLOCK = Key.from("craftengine:bush_block");
+    public static final Key HANGING_BLOCK = Key.from("craftengine:hanging_block");
     public static final Key FALLING_BLOCK = Key.from("craftengine:falling_block");
     public static final Key LEAVES_BLOCK = Key.from("craftengine:leaves_block");
     public static final Key STRIPPABLE_BLOCK = Key.from("craftengine:strippable_block");
@@ -18,6 +19,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
         register(FALLING_BLOCK, FallingBlockBehavior.FACTORY);
         register(BUSH_BLOCK, BushBlockBehavior.FACTORY);
+        register(HANGING_BLOCK, HangingBlockBehavior.FACTORY);
         register(LEAVES_BLOCK, LeavesBlockBehavior.FACTORY);
         register(STRIPPABLE_BLOCK, StrippableBlockBehavior.FACTORY);
         register(SAPLING_BLOCK, SaplingBlockBehavior.FACTORY);

@@ -2,7 +2,10 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
-import net.momirealms.craftengine.bukkit.util.*;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.FeatureUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
@@ -12,6 +15,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
+import net.momirealms.craftengine.core.util.Tuple;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,6 +23,7 @@ import org.bukkit.World;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class SaplingBlockBehavior extends BushBlockBehavior {
@@ -27,8 +32,8 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
     private final Property<Integer> stageProperty;
     private final double boneMealSuccessChance;
 
-    public SaplingBlockBehavior(Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, double boneMealSuccessChance) {
-        super(tagsCanSurviveOn);
+    public SaplingBlockBehavior(Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance) {
+        super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
         this.feature = feature;
         this.stageProperty = stageProperty;
         this.boneMealSuccessChance = boneMealSuccessChance;
@@ -121,13 +126,8 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
                 throw new IllegalArgumentException("stage property not set for sapling");
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
-            if (arguments.containsKey("bottom-block-tags")) {
-                return new SaplingBlockBehavior(Key.of(feature), stageProperty, MiscUtils.getAsStringList(arguments.get("bottom-block-tags")).stream().map(it -> BlockTags.getOrCreate(Key.of(it))).toList(), boneMealSuccessChance);
-            } else if (arguments.containsKey("tags")) {
-                return new SaplingBlockBehavior(Key.of(feature), stageProperty, MiscUtils.getAsStringList(arguments.get("tags")).stream().map(it -> BlockTags.getOrCreate(Key.of(it))).toList(), boneMealSuccessChance);
-            } else {
-                return new SaplingBlockBehavior(Key.of(feature), stageProperty, List.of(DIRT_TAG, FARMLAND), boneMealSuccessChance);
-            }
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            return new SaplingBlockBehavior(Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance);
         }
     }
 }

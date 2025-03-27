@@ -1,18 +1,23 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.core.block.BlockStateParser;
+import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.PushReaction;
 import net.momirealms.craftengine.core.util.Instrument;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MapColor;
 import net.momirealms.craftengine.core.world.BlockPos;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.block.BlockPhysicsEvent;
 
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Optional;
 
 public class BlockStateUtils {
     public static final IdentityHashMap<Object, Object> CLIENT_SIDE_NOTE_BLOCKS = new IdentityHashMap<>();
@@ -27,8 +32,36 @@ public class BlockStateUtils {
         hasInit = true;
     }
 
-    @SuppressWarnings("unchecked")
+    public static List<Object> getAllBlockStates(String blockState) {
+        int index = blockState.indexOf('[');
+        if (index == -1) {
+            return getAllBlockStates(Key.of(blockState));
+        } else {
+            String blockTypeString = blockState.substring(0, index);
+            Key block = Key.of(blockTypeString);
+            Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().getBlock(block);
+            if (optionalCustomBlock.isPresent()) {
+                ImmutableBlockState state = BlockStateParser.deserialize(blockState);
+                if (state == null) {
+                    return List.of();
+                } else {
+                    return List.of(state.customBlockState().handle());
+                }
+            } else {
+                BlockData blockData = Bukkit.createBlockData(blockState);
+                return List.of(blockDataToBlockState(blockData));
+            }
+        }
+    }
+
     public static List<Object> getAllBlockStates(Key block) {
+        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().getBlock(block);
+        return optionalCustomBlock.map(customBlock -> customBlock.variantProvider().states().stream().map(it -> it.customBlockState().handle()).toList())
+                .orElseGet(() -> getAllVanillaBlockStates(block));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Object> getAllVanillaBlockStates(Key block) {
         try {
             Object blockIns = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, block.namespace(), block.value()));
             Object definition = Reflections.field$Block$StateDefinition.get(blockIns);

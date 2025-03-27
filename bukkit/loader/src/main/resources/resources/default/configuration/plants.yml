@@ -34,6 +34,9 @@ blocks:
         push-reaction: DESTROY
     behavior:
       type: bush_block
+      bottom-block-tags:
+        - minecraft:dirt
+        - minecraft:farmland
     loot:
       template: "default:loot_table/basic"
       arguments:

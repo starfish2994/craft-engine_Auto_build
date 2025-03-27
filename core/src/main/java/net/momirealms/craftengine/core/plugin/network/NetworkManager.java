@@ -3,8 +3,6 @@ package net.momirealms.craftengine.core.plugin.network;
 import io.netty.channel.Channel;
 import net.momirealms.craftengine.core.entity.player.Player;
 
-import java.util.Collection;
-
 public interface NetworkManager {
     String MOD_CHANNEL = "craftengine:payload";
 
