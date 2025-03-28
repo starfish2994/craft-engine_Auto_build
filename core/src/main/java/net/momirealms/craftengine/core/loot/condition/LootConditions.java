@@ -21,6 +21,7 @@ public class LootConditions {
     public static final Key ENCHANTMENT = Key.from("craftengine:enchantment");
     public static final Key INVERTED = Key.from("craftengine:inverted");
     public static final Key FALLING_BLOCK = Key.from("craftengine:falling_block");
+    public static final Key CROP_RIPE = Key.from("craftengine:crop_ripe");
 
     static {
         register(MATCH_ITEM, MatchItemCondition.FACTORY);
@@ -31,6 +32,7 @@ public class LootConditions {
         register(ENCHANTMENT, EnchantmentCondition.FACTORY);
         register(INVERTED, InvertedCondition.FACTORY);
         register(FALLING_BLOCK, FallingCondition.FACTORY);
+        register(CROP_RIPE, CropRipeCondition.FACTORY);
     }
 
     public static void register(Key key, LootConditionFactory factory) {

@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block;
 
 import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockBreakEvent;
+import net.momirealms.craftengine.bukkit.block.behavior.CropBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
@@ -138,6 +139,9 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
                 builder.withOptionalParameter(LootParameters.TOOL, itemInHand);
+                if (state.behavior() instanceof CropBlockBehavior) {
+                    builder.withParameter(LootParameters.CROP_BLOCK, true);
+                }
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
