@@ -209,7 +209,7 @@ blocks:
           range: 0~2
       appearances:
         stage_0:
-          state: "tripwire:0"
+          state: "tripwire:1"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_0"
               generation:
@@ -217,7 +217,7 @@ blocks:
                 textures:
                   "cross": "minecraft:block/custom/ender_pearl_flower_stage_0"
         stage_1:
-          state: "tripwire:1"
+          state: "tripwire:0"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_1"
               generation:
@@ -225,7 +225,7 @@ blocks:
                 textures:
                   "cross": "minecraft:block/custom/ender_pearl_flower_stage_1"
         stage_2:
-          state: "tripwire:2"
+          state: "sugar_cane:3"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_2"
               generation:
@@ -241,7 +241,7 @@ blocks:
           id: 1
         age=2:
           appearance: stage_2
-          id: 2
+          id: 8
 recipes:
   default:paper_from_reed:
     type: shaped
