@@ -300,6 +300,9 @@ public class BlockEventListener implements Listener {
                 if (yield < 1f) {
                     builder.withParameter(LootParameters.EXPLOSION_RADIUS, 1.0f / yield);
                 }
+                if (state.behavior() instanceof CropBlockBehavior) {
+                    builder.withParameter(LootParameters.CROP_BLOCK, true);
+                }
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }

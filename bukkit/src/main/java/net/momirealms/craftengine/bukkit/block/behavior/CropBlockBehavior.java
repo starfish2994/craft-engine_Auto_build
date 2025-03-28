@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.IntegerProperty;
 import net.momirealms.craftengine.core.block.properties.Property;
@@ -56,7 +57,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         if (i > maxAge) {
             i = maxAge;
         }
-        Reflections.method$ServerLevel$sendBlockUpdated.invoke(level, pos, state, getStateForAge(state, i), 3);
+        Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, i), UpdateOption.UPDATE_NONE.flags());
     }
 
     private static int getRawBrightness(Object level, Object pos) throws InvocationTargetException, IllegalAccessException {
@@ -74,8 +75,10 @@ public class CropBlockBehavior extends BushBlockBehavior {
         Object pos = args[2];
         if (getRawBrightness(level, pos) >= minGrowLight) {
             int age = this.getAge(state);
+            System.out.println("age: " + age);
             if (age < this.ageProperty.max && RandomUtils.generateRandomFloat(0, 1) >= this.growSpeed) {
-                Reflections.method$ServerLevel$sendBlockUpdated.invoke(level, pos, state, getStateForAge(state, age + 1), 3);
+                System.out.println("grow");
+                Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, age + 1), UpdateOption.UPDATE_NONE.flags());
             }
         }
     }

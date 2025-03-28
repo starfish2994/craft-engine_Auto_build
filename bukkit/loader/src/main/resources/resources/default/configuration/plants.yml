@@ -43,7 +43,7 @@ items:
     model:
       template: default:model/simplified_generated
       arguments:
-        path: "minecraft:item/custom/ender_pearl_crop_seed"
+        path: "minecraft:block/custom/ender_pearl_crop_seed"
     behavior:
       type: block_item
       block: default:ender_pearl_crop
@@ -199,26 +199,19 @@ blocks:
       pools:
         - rolls: 1
           entries:
-            - type: alternatives
-              children:
-                - type: item
-                  item: "default:ender_pearl_crop_seed"
-                  conditions:
-                    - type: survives_explosion
-                - type: item
-                  item: "minecraft:ender_pearl"
-                  conditions:
-                    - type: crop_ripe
-                  functions:
-                    - type: apply_bonus
-                      enchantment: minecraft:fortune
-                      formula:
-                        type: ore_drops
-                    - type: explosion_decay
-                      count:
-                        type: uniform
-                        min: "1"
-                        max: "5"
+            - type: item
+              item: "default:ender_pearl_crop_seed"
+              conditions:
+                - type: survives_explosion
+        - rolls:
+            type: uniform
+            min: "1"
+            max: "5"
+          entries:
+            - type: item
+              item: "minecraft:ender_pearl"
+              conditions:
+                - type: crop_ripe
     states:
       properties:
         age:
