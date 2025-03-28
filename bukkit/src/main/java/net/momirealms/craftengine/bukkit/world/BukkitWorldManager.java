@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.world.chunk.CESection;
 import net.momirealms.craftengine.core.world.chunk.serialization.ChunkSerializer;
 import net.momirealms.craftengine.core.world.chunk.storage.DefaultStorageAdaptor;
 import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
+import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -166,6 +167,26 @@ public class BukkitWorldManager implements WorldManager, Listener {
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
+    }
+
+    @Override
+    public void loadWorld(CEWorld world) {
+        this.worldMapLock.writeLock().lock();
+        try {
+            if (this.worlds.containsKey(world.world().uuid())) return;
+            this.worlds.put(world.world().uuid(), world);
+            this.resetWorldArray();
+            for (Chunk chunk : ((World) world.world().platformWorld()).getLoadedChunks()) {
+                handleChunkLoad(world, chunk);
+            }
+        } finally {
+            this.worldMapLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public CEWorld createWorld(net.momirealms.craftengine.core.world.World world, WorldDataStorage storage) {
+        return new BukkitCEWorld(world, storage);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)

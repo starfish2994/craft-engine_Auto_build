@@ -33,6 +33,14 @@ public abstract class CEWorld {
         this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
     }
 
+    public CEWorld(World world, WorldDataStorage dataStorage) {
+        this.world = world;
+        this.loadedChunkMap = new Long2ObjectOpenHashMap<>(1024, 0.5f);
+        this.worldDataStorage = dataStorage;
+        this.worldHeightAccessor = world.worldHeight();
+        this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
+    }
+
     public World world() {
         return world;
     }

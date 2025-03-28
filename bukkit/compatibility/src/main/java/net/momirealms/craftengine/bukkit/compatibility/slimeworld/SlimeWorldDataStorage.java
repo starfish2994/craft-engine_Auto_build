@@ -2,8 +2,6 @@ package net.momirealms.craftengine.bukkit.compatibility.slimeworld;
 
 import com.infernalsuite.asp.api.world.SlimeChunk;
 import com.infernalsuite.asp.api.world.SlimeWorld;
-import net.kyori.adventure.nbt.BinaryTag;
-import net.kyori.adventure.nbt.ByteArrayBinaryTag;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -14,12 +12,15 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 
 public class SlimeWorldDataStorage implements WorldDataStorage {
     private final WeakReference<SlimeWorld> slimeWorld;
+    private final SlimeFormatStorageAdaptor adaptor;
 
-    public SlimeWorldDataStorage(SlimeWorld slimeWorld) {
+    public SlimeWorldDataStorage(SlimeWorld slimeWorld, SlimeFormatStorageAdaptor adaptor) {
         this.slimeWorld = new WeakReference<>(slimeWorld);
+        this.adaptor = adaptor;
     }
 
     public SlimeWorld getWorld() {
@@ -31,16 +32,16 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
     public CompoundTag readChunkTagAt(ChunkPos pos) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
         if (slimeChunk == null) return null;
-        BinaryTag tag = slimeChunk.getExtraData().get("craftengine");
+        Object tag = slimeChunk.getExtraData().get("craftengine");
         if (tag == null) return null;
-        ByteArrayBinaryTag byteArrayBinaryTag = (ByteArrayBinaryTag) tag;
         try {
-            return NBT.readCompound(new DataInputStream(new ByteArrayInputStream(byteArrayBinaryTag.value())));
-        } catch (IOException e) {
+            return NBT.readCompound(new DataInputStream(new ByteArrayInputStream(adaptor.byteArrayTagToBytes(tag))));
+        } catch (Exception e) {
             throw new RuntimeException("Failed to read chunk tag from slime world. " + pos, e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void writeChunkTagAt(ChunkPos pos, @Nullable CompoundTag nbt) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
@@ -48,13 +49,14 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
         if (nbt == null) {
             slimeChunk.getExtraData().remove("craftengine");
         } else {
-            slimeChunk.getExtraData().computeIfAbsent("craftengine", l -> {
-                try {
-                    return ByteArrayBinaryTag.byteArrayBinaryTag(NBT.toBytes(nbt));
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to write chunk tag to slime world. " + pos, e);
-                }
-            });
+            try {
+                Object tag = adaptor.bytesToByteArrayTag(NBT.toBytes(nbt));
+                Map<String, ?> data1 = slimeChunk.getExtraData();
+                Map<String, Object> data2 = (Map<String, Object>) data1;
+                data2.put("craftengine", tag);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to write chunk tag to slime world. " + pos, e);
+            }
         }
     }
 
