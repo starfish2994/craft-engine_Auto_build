@@ -17,7 +17,7 @@ public class CropRipeCondition implements LootCondition {
 
     @Override
     public boolean test(LootContext lootContext) {
-        return lootContext.getOptionalParameter(LootParameters.CROP_BLOCK).orElse(false);
+        return lootContext.getOptionalParameter(LootParameters.CROP_RIPE).orElse(false);
     }
 
     public static class Factory implements LootConditionFactory {

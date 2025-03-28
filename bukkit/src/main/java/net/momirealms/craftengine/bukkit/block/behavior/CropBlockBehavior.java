@@ -37,6 +37,9 @@ public class CropBlockBehavior extends BushBlockBehavior {
     public final boolean isMaxAge(Object state) {
         return this.getAge(state) >= this.ageProperty.max;
     }
+    public final boolean isMaxAge(ImmutableBlockState state) {
+        return this.getAge(state) >= this.ageProperty.max;
+    }
 
     public static ImmutableBlockState getCEBlockState(Object nmsState) {
         return BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(nmsState));
@@ -44,6 +47,9 @@ public class CropBlockBehavior extends BushBlockBehavior {
 
     public final int getAge(Object state) {
         return getCEBlockState(state).get(ageProperty);
+    }
+    public final int getAge(ImmutableBlockState state) {
+        return state.get(ageProperty);
     }
 
     public Object getStateForAge(Object state, int age) {
@@ -75,8 +81,10 @@ public class CropBlockBehavior extends BushBlockBehavior {
         Object pos = args[2];
         if (getRawBrightness(level, pos) >= minGrowLight) {
             int age = this.getAge(state);
-            System.out.println("age: " + age);
-            if (age < this.ageProperty.max && RandomUtils.generateRandomFloat(0, 1) >= this.growSpeed) {
+            float randomFloat = RandomUtils.generateRandomFloat(0, 1);
+            System.out.println("age: " + age + "ageProperty.max: " + this.ageProperty.max + " -> " + (age < this.ageProperty.max));
+            System.out.println("randomFloat: " + randomFloat + "growSpeed: " + this.growSpeed + " -> " + (randomFloat < this.growSpeed));
+            if (age < this.ageProperty.max && randomFloat >= this.growSpeed) {
                 System.out.println("grow");
                 Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, age + 1), UpdateOption.UPDATE_NONE.flags());
             }

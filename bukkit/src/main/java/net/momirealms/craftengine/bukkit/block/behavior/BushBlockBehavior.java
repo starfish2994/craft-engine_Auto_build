@@ -71,8 +71,10 @@ public class BushBlockBehavior extends AbstractBlockBehavior {
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.WORLD, world);
-                if (this instanceof CropBlockBehavior) {
-                    builder.withParameter(LootParameters.CROP_BLOCK, true);
+                if (this instanceof CropBlockBehavior cropBlockBehavior) {
+                    if (cropBlockBehavior.isMaxAge(state)) {
+                        builder.withParameter(LootParameters.CROP_RIPE, true);
+                    }
                 }
                 for (Item<Object> item : previousState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);

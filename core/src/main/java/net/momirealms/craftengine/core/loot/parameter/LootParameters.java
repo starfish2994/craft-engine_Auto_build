@@ -18,5 +18,5 @@ public class LootParameters {
     public static final ContextKey<Player> PLAYER = new ContextKey<>(Key.of("craftengine:player"));
     public static final ContextKey<Item<?>> TOOL = new ContextKey<>(Key.of("craftengine:tool"));
     public static final ContextKey<ImmutableBlockState> BLOCK_STATE = new ContextKey<>(Key.of("craftengine:block_state"));
-    public static final ContextKey<Boolean> CROP_BLOCK = new ContextKey<>(Key.of("craftengine:crop_block"));
+    public static final ContextKey<Boolean> CROP_RIPE = new ContextKey<>(Key.of("craftengine:crop_ripe"));
 }
