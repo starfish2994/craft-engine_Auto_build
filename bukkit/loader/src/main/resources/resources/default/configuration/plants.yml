@@ -269,3 +269,22 @@ recipes:
     result:
       id: minecraft:magma_block
       count: 2
+vanilla-loots:
+  minecraft:ender_pearl_flower_seed_from_endermite:
+    type: entity
+    target: "minecraft:endermite"
+    override: false
+    loot:
+      pools:
+        - rolls: 1
+          conditions:
+            - type: table_bonus
+              enchantment: minecraft:looting
+              chances:
+                - 0.1
+                - 0.5
+                - 0.8
+                - 1
+          entries:
+            - type: item
+              item: "default:ender_pearl_flower_seed"

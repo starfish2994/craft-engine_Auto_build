@@ -17,6 +17,7 @@ public class LootConditions {
     public static final Key MATCH_BLOCK_PROPERTY = Key.from("craftengine:match_block_property");
     public static final Key TABLE_BONUS = Key.from("craftengine:table_bonus");
     public static final Key SURVIVES_EXPLOSION = Key.from("craftengine:survives_explosion");
+    public static final Key RANDOM = Key.from("craftengine:random");
     public static final Key ANY_OF = Key.from("craftengine:any_of");
     public static final Key ALL_OF = Key.from("craftengine:all_of");
     public static final Key ENCHANTMENT = Key.from("craftengine:enchantment");
@@ -33,6 +34,7 @@ public class LootConditions {
         register(ENCHANTMENT, EnchantmentCondition.FACTORY);
         register(INVERTED, InvertedCondition.FACTORY);
         register(FALLING_BLOCK, FallingCondition.FACTORY);
+        register(RANDOM, RandomCondition.FACTORY);
     }
 
     public static void register(Key key, LootConditionFactory factory) {
