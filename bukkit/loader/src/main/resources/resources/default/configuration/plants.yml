@@ -227,7 +227,7 @@ blocks:
                 parent: "minecraft:block/crop"
                 textures:
                   "crop": "minecraft:block/custom/ender_pearl_crop_stage1"
-        age1:
+        ripe:
           state: "sugar_cane:4"
           models:
             - path: "minecraft:block/custom/ender_pearl_crop_stage2"
@@ -235,56 +235,24 @@ blocks:
                 parent: "minecraft:block/crop"
                 textures:
                   "crop": "minecraft:block/custom/ender_pearl_crop_stage2"
-        age2:
-          state: "sugar_cane:5"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage3"
-              generation:
-                parent: "minecraft:block/crop"
-                textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage3"
-        age3:
-          state: "sugar_cane:6"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage4"
-              generation:
-                parent: "minecraft:block/crop"
-                textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage4"
-        age4:
-          state: "sugar_cane:7"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage5"
-              generation:
-                parent: "minecraft:block/crop"
-                textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage5"
-        age5:
-          state: "sugar_cane:8"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage6"
-              generation:
-                parent: "minecraft:block/crop"
-                textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage6"
       variants:
         age=0:
           appearance: default
           id: 8
         age=1:
-          appearance: age1
+          appearance: default
           id: 9
         age=2:
-          appearance: age2
+          appearance: default
           id: 10
         age=3:
-          appearance: age3
+          appearance: default
           id: 11
         age=4:
-          appearance: age4
+          appearance: default
           id: 12
         age=5:
-          appearance: age5
+          appearance: ripe
           id: 13
 recipes:
   default:paper_from_reed:
