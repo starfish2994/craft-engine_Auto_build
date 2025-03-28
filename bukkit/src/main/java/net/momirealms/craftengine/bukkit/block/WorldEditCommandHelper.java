@@ -1,6 +1,5 @@
-package net.momirealms.craftengine.bukkit.block.worldedit;
+package net.momirealms.craftengine.bukkit.block;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.BlockStateParser;

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.block.worldedit;
+package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
 import com.sk89q.worldedit.bukkit.BukkitBlockRegistry;
 import com.sk89q.worldedit.util.concurrency.LazyReference;

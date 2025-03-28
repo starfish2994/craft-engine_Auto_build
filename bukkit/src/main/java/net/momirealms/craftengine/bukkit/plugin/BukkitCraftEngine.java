@@ -17,13 +17,13 @@ import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
-import net.momirealms.craftengine.bukkit.plugin.papi.ImageExpansion;
-import net.momirealms.craftengine.bukkit.plugin.papi.ShiftExpansion;
+import net.momirealms.craftengine.bukkit.compatibility.papi.ImageExpansion;
+import net.momirealms.craftengine.bukkit.compatibility.papi.ShiftExpansion;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.BukkitSchedulerAdapter;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.sound.BukkitSoundManager;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
-import net.momirealms.craftengine.bukkit.util.PlaceholderAPIUtils;
+import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -176,8 +176,7 @@ public class BukkitCraftEngine extends CraftEngine {
         // compatibility
         // register expansion
         if (this.isPluginEnabled("PlaceholderAPI")) {
-            new ShiftExpansion(this).register();
-            new ImageExpansion(this).register();
+            PlaceholderAPIUtils.registerExpansions(this);
             this.hasPlaceholderAPI = true;
         }
     }
