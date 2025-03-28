@@ -1,13 +1,11 @@
 package net.momirealms.craftengine.core.loot.condition;
 
 import net.momirealms.craftengine.core.loot.LootContext;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class RandomCondition implements LootCondition {
     public static final Factory FACTORY = new Factory();

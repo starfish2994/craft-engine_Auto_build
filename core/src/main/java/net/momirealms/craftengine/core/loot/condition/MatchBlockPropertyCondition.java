@@ -7,7 +7,10 @@ import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class MatchBlockPropertyCondition implements LootCondition {
     public static final Factory FACTORY = new Factory();
