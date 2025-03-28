@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.plugin.logger.filter;
 
-
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Node;
@@ -13,10 +11,24 @@ import org.apache.logging.log4j.core.impl.MutableLogEvent;
 public class DisconnectLogFilter extends AbstractFilter {
     private static final String TARGET_LOGGER = "net.minecraft.server.network.ServerConfigurationPacketListenerImpl";
     private static final String TARGET_MESSAGE_PATTERN = "{} lost connection: {}";
+    private static DisconnectLogFilter instance;
+    private boolean enable = false;
+
+    public DisconnectLogFilter() {
+        instance = this;
+    }
+
+    public static DisconnectLogFilter instance() {
+        return instance;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     @Override
     public Result filter(LogEvent event) {
-        if (!ConfigManager.filterConfigurationPhaseDisconnect()) {
+        if (!enable) {
             return Result.NEUTRAL;
         }
 

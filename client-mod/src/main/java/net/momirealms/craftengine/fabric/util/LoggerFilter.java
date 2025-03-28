@@ -6,6 +6,7 @@ import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 
 public class LoggerFilter {
+
     public static void filter() {
         Logger rootLogger = (Logger) LogManager.getRootLogger();
         rootLogger.addFilter(new AbstractFilter() {
