@@ -200,7 +200,7 @@ blocks:
       arguments:
         crop_item: minecraft:ender_pearl
         crop_seed: default:ender_pearl_flower_seed
-        ripe_age: 4
+        ripe_age: 3
     states:
       properties:
         age:
