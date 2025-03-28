@@ -34,38 +34,8 @@ public class CropBlockBehavior extends BushBlockBehavior {
         this.minGrowLight = minGrowLight;
     }
 
-    public final boolean isMaxAge(Object state) {
-        return this.getAge(state) >= this.ageProperty.max;
-    }
-
-    public final boolean isMaxAge(ImmutableBlockState state) {
-        return this.getAge(state) >= this.ageProperty.max;
-    }
-
-    public static ImmutableBlockState getCEBlockState(Object nmsState) {
-        return BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(nmsState));
-    }
-
-    public final int getAge(Object state) {
-        return getCEBlockState(state).get(ageProperty);
-    }
-
     public final int getAge(ImmutableBlockState state) {
         return state.get(ageProperty);
-    }
-
-    public Object getStateForAge(Object state, int age) {
-        ImmutableBlockState afterState = getCEBlockState(state).owner().value().defaultState().with(ageProperty, age);
-        return afterState.customBlockState().handle();
-    }
-
-    public void growCrops(Object level, Object pos, Object state) throws InvocationTargetException, IllegalAccessException {
-        int i = this.getAge(state) + RandomUtils.generateRandomInt(2, 5);
-        int maxAge = this.ageProperty.max;
-        if (i > maxAge) {
-            i = maxAge;
-        }
-        Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, i), UpdateOption.UPDATE_NONE.flags());
     }
 
     private static int getRawBrightness(Object level, Object pos) throws InvocationTargetException, IllegalAccessException {
@@ -73,7 +43,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
     }
 
     private boolean hasSufficientLight(Object level, Object pos) throws InvocationTargetException, IllegalAccessException {
-        return getRawBrightness(level, pos) >= minGrowLight - 1;
+        return getRawBrightness(level, pos) >= this.minGrowLight - 1;
     }
 
     @Override
@@ -81,11 +51,13 @@ public class CropBlockBehavior extends BushBlockBehavior {
         Object state = args[0];
         Object level = args[1];
         Object pos = args[2];
-        if (getRawBrightness(level, pos) >= minGrowLight) {
-            int age = this.getAge(state);
-            float randomFloat = RandomUtils.generateRandomFloat(0, 1);
-            if (age < this.ageProperty.max && randomFloat < 1.0 / Math.floor(25.0 / this.growSpeed + 1.0)) {
-                Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, age + 1), UpdateOption.UPDATE_ALL.flags());
+        if (getRawBrightness(level, pos) >= this.minGrowLight) {
+            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+            if (currentState != null && !currentState.isEmpty()) {
+                int age = this.getAge(currentState);
+                if (age < this.ageProperty.max && RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
+                    Reflections.method$Level$setBlock.invoke(level, pos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                }
             }
         }
     }
@@ -103,12 +75,30 @@ public class CropBlockBehavior extends BushBlockBehavior {
     @Override
     public boolean isValidBoneMealTarget(Object thisBlock, Object[] args) {
         Object state = args[2];
-        return !this.isMaxAge(state);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (immutableBlockState != null && !immutableBlockState.isEmpty()) {
+            return getAge(immutableBlockState) != this.ageProperty.max;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
-        this.growCrops(args[0], args[2], args[3]);
+        this.performBoneMeal(args[0], args[2], args[3]);
+    }
+
+    private void performBoneMeal(Object level, Object pos, Object state) throws InvocationTargetException, IllegalAccessException {
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) {
+            return;
+        }
+        int i = this.getAge(immutableBlockState) + RandomUtils.generateRandomInt(2, 5);
+        int maxAge = this.ageProperty.max;
+        if (i > maxAge) {
+            i = maxAge;
+        }
+        Reflections.method$Level$setBlock.invoke(level, pos, immutableBlockState.with(this.ageProperty, i).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
     }
 
     public static class Factory implements BlockBehaviorFactory {
@@ -122,8 +112,8 @@ public class CropBlockBehavior extends BushBlockBehavior {
                 throw new IllegalArgumentException("age property not set for crop");
             }
             // 存活条件是最小生长亮度-1
-            int minGrowLight = MiscUtils.getAsInt(arguments.getOrDefault("min-grow-light", 9));
-            float growSpeed = MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1));
+            int minGrowLight = MiscUtils.getAsInt(arguments.getOrDefault("light-requirement", 9));
+            float growSpeed = MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.25f));
             return new CropBlockBehavior(tuple.left(), tuple.mid(), tuple.right(), ageProperty, growSpeed, minGrowLight);
         }
     }

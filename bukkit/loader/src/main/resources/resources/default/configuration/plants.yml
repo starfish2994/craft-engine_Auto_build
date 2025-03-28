@@ -35,15 +35,15 @@ items:
     behavior:
       type: block_item
       block: default:flame_cane
-  default:ender_pearl_flower_seed:
+  default:ender_pearl_flower_seeds:
     material: paper
     custom-model-data: 4003
     data:
-      item-name: "<!i><i18n:item.ender_pearl_flower_seed>"
+      item-name: "<!i><i18n:item.ender_pearl_flower_seeds>"
     model:
       template: default:model/simplified_generated
       arguments:
-        path: "minecraft:block/custom/ender_pearl_flower_seed"
+        path: "minecraft:item/custom/ender_pearl_flower_seeds"
     behavior:
       type: block_item
       block: default:ender_pearl_flower
@@ -185,45 +185,53 @@ blocks:
         - default:hardness/none
         - default:sound/grass
       overrides:
-        item: default:ender_pearl_flower_seed
+        item: default:ender_pearl_flower_seeds
         push-reaction: DESTROY
         map-color: 24
         is-randomly-ticking: true
     behavior:
       type: crop_block
-      grow-speed: 1
-      min-grow-light: 9
+      grow-speed: 0.25
+      light-requirement: 9
       bottom-blocks:
         - minecraft:end_stone
     loot:
       template: default:loot_table/seed_crop
       arguments:
         crop_item: minecraft:ender_pearl
-        crop_seed: default:ender_pearl_flower_seed
-        ripe_age: 3
+        crop_seed: default:ender_pearl_flower_seeds
+        ripe_age: 2
     states:
       properties:
         age:
           type: int
           default: 0
-          range: 0~3
+          range: 0~2
       appearances:
         stage_0:
           state: "tripwire:0"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_0"
+              generation:
+                parent: "minecraft:block/cross"
+                textures:
+                  "cross": "minecraft:block/custom/ender_pearl_flower_stage_0"
         stage_1:
           state: "tripwire:1"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_1"
+              generation:
+                parent: "minecraft:block/cross"
+                textures:
+                  "cross": "minecraft:block/custom/ender_pearl_flower_stage_1"
         stage_2:
           state: "tripwire:2"
           models:
             - path: "minecraft:block/custom/ender_pearl_flower_stage_2"
-        stage_3:
-          state: "sugar_cane:3"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_flower_stage_3"
+              generation:
+                parent: "minecraft:block/cross"
+                textures:
+                  "cross": "minecraft:block/custom/ender_pearl_flower_stage_2"
       variants:
         age=0:
           appearance: stage_0
@@ -234,9 +242,6 @@ blocks:
         age=2:
           appearance: stage_2
           id: 2
-        age=3:
-          appearance: stage_3
-          id: 8
 recipes:
   default:paper_from_reed:
     type: shaped
@@ -269,8 +274,9 @@ recipes:
     result:
       id: minecraft:magma_block
       count: 2
+
 vanilla-loots:
-  minecraft:ender_pearl_flower_seed_from_endermite:
+  minecraft:ender_pearl_flower_seeds_from_endermite:
     type: entity
     target: "minecraft:endermite"
     override: false
@@ -287,4 +293,4 @@ vanilla-loots:
                 - 1
           entries:
             - type: item
-              item: "default:ender_pearl_flower_seed"
+              item: "default:ender_pearl_flower_seeds"

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.world;
 
+import net.momirealms.craftengine.bukkit.compatibility.slimeworld.SlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -8,6 +9,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.SectionPos;
@@ -15,6 +17,8 @@ import net.momirealms.craftengine.core.world.WorldManager;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.CESection;
 import net.momirealms.craftengine.core.world.chunk.serialization.ChunkSerializer;
+import net.momirealms.craftengine.core.world.chunk.storage.DefaultStorageAdaptor;
+import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -27,6 +31,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,18 +43,34 @@ public class BukkitWorldManager implements WorldManager, Listener {
     private static BukkitWorldManager instance;
     private final BukkitCraftEngine plugin;
     private final Map<UUID, CEWorld> worlds;
-    private CEWorld[] worldArray;
+    private CEWorld[] worldArray = new CEWorld[0];
     private final ReentrantReadWriteLock worldMapLock = new ReentrantReadWriteLock();
     private SchedulerTask tickTask;
     // cache
     private UUID lastVisitedUUID;
     private CEWorld lastVisitedWorld;
+    private StorageAdaptor storageAdaptor;
 
     public BukkitWorldManager(BukkitCraftEngine plugin) {
         instance = this;
         this.plugin = plugin;
         this.worlds = new HashMap<>();
-        resetWorldArray();
+        if (VersionHelper.isVersionNewerThan1_21_4()) {
+            try {
+                Class.forName("com.infernalsuite.asp.api.AdvancedSlimePaperAPI");
+                SlimeFormatStorageAdaptor adaptor = new SlimeFormatStorageAdaptor(this);
+                this.storageAdaptor = adaptor;
+                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+                return;
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        this.storageAdaptor = new DefaultStorageAdaptor();
+    }
+
+    @Override
+    public void setStorageAdaptor(@NotNull StorageAdaptor storageAdaptor) {
+        this.storageAdaptor = storageAdaptor;
     }
 
     public static BukkitWorldManager instance() {
@@ -95,7 +116,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
         this.worldMapLock.writeLock().lock();
         try {
             for (World world : Bukkit.getWorlds()) {
-                CEWorld ceWorld = new BukkitCEWorld(new BukkitWorld(world));
+                CEWorld ceWorld = new BukkitCEWorld(new BukkitWorld(world), this.storageAdaptor);
                 this.worlds.put(world.getUID(), ceWorld);
                 this.resetWorldArray();
                 for (Chunk chunk : world.getLoadedChunks()) {
@@ -110,8 +131,11 @@ public class BukkitWorldManager implements WorldManager, Listener {
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
-        if (tickTask != null && !tickTask.cancelled()) {
-            tickTask.cancel();
+        if (this.storageAdaptor instanceof Listener listener) {
+            HandlerList.unregisterAll(listener);
+        }
+        if (this.tickTask != null && !this.tickTask.cancelled()) {
+            this.tickTask.cancel();
         }
 
         for (World world : Bukkit.getWorlds()) {
@@ -125,14 +149,18 @@ public class BukkitWorldManager implements WorldManager, Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onWorldLoad(WorldLoadEvent event) {
-        World world = event.getWorld();
-        CEWorld ceWorld = new BukkitCEWorld(new BukkitWorld(world));
+        this.loadWorld(new BukkitWorld(event.getWorld()));
+    }
+
+    @Override
+    public void loadWorld(net.momirealms.craftengine.core.world.World world) {
         this.worldMapLock.writeLock().lock();
         try {
-            if (this.worlds.containsKey(world.getUID())) return;
-            this.worlds.put(event.getWorld().getUID(), ceWorld);
+            if (this.worlds.containsKey(world.uuid())) return;
+            CEWorld ceWorld = new BukkitCEWorld(world, this.storageAdaptor);
+            this.worlds.put(world.uuid(), ceWorld);
             this.resetWorldArray();
-            for (Chunk chunk : world.getLoadedChunks()) {
+            for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
                 handleChunkLoad(ceWorld, chunk);
             }
         } finally {
@@ -142,11 +170,15 @@ public class BukkitWorldManager implements WorldManager, Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onWorldUnload(WorldUnloadEvent event) {
-        World world = event.getWorld();
+        unloadWorld(new BukkitWorld(event.getWorld()));
+    }
+
+    @Override
+    public void unloadWorld(net.momirealms.craftengine.core.world.World world) {
         CEWorld ceWorld;
         this.worldMapLock.writeLock().lock();
         try {
-            ceWorld = this.worlds.remove(world.getUID());
+            ceWorld = this.worlds.remove(world.uuid());
             if (ceWorld == null) {
                 return;
             }
@@ -158,8 +190,17 @@ public class BukkitWorldManager implements WorldManager, Listener {
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
-        for (Chunk chunk : world.getLoadedChunks()) {
+        for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
             handleChunkUnload(ceWorld, chunk);
+        }
+    }
+
+    @Override
+    public <T> net.momirealms.craftengine.core.world.World wrap(T world) {
+        if (world instanceof World w) {
+            return new BukkitWorld(w);
+        } else {
+            throw new IllegalArgumentException(world.getClass() + " is not a Bukkit World");
         }
     }
 
