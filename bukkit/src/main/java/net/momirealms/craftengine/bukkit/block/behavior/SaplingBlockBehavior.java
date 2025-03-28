@@ -3,10 +3,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.FeatureUtils;
-import net.momirealms.craftengine.bukkit.util.LocationUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
@@ -98,8 +95,34 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
     }
 
     @Override
-    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) {
-        return RandomUtils.generateRandomDouble(0d, 1d) < this.boneMealSuccessChance;
+    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) throws Exception {
+        boolean success = RandomUtils.generateRandomDouble(0d, 1d) < this.boneMealSuccessChance;
+        Object level = args[0];
+        Object blockPos = args[2];
+        Object blockState = args[3];
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) {
+            return false;
+        }
+        boolean sendParticles = false;
+        Object visualState = immutableBlockState.vanillaBlockState().handle();
+        Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
+        if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
+            boolean is = (boolean) Reflections.method$BonemealableBlock$isValidBonemealTarget.invoke(visualStateBlock, level, blockPos, visualState);
+            if (!is) {
+                sendParticles = true;
+            }
+        } else {
+            sendParticles = true;
+        }
+        if (sendParticles) {
+            World world = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
+            int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
+            int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
+            int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
+            world.spawnParticle(ParticleUtils.getParticle("HAPPY_VILLAGER"), x + 0.5, y + 0.5, z + 0.5, 12, 0.2, 0.2, 0.2);
+        }
+        return success;
     }
 
     @Override

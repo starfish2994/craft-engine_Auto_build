@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.ParticleUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -13,6 +15,7 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.Tuple;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
+import org.bukkit.World;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -36,6 +39,10 @@ public class CropBlockBehavior extends BushBlockBehavior {
 
     public final int getAge(ImmutableBlockState state) {
         return state.get(ageProperty);
+    }
+
+    public boolean isMaxAge(ImmutableBlockState state) {
+        return state.get(ageProperty) == ageProperty.max;
     }
 
     private static int getRawBrightness(Object level, Object pos) throws InvocationTargetException, IllegalAccessException {
@@ -93,12 +100,31 @@ public class CropBlockBehavior extends BushBlockBehavior {
         if (immutableBlockState == null || immutableBlockState.isEmpty()) {
             return;
         }
+        boolean sendParticles = false;
+        Object visualState = immutableBlockState.vanillaBlockState().handle();
+        Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
+        if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
+            boolean is = (boolean) Reflections.method$BonemealableBlock$isValidBonemealTarget.invoke(visualStateBlock, level, pos, visualState);
+            if (!is) {
+                sendParticles = true;
+            }
+        } else {
+            sendParticles = true;
+        }
+
         int i = this.getAge(immutableBlockState) + RandomUtils.generateRandomInt(2, 5);
         int maxAge = this.ageProperty.max;
         if (i > maxAge) {
             i = maxAge;
         }
         Reflections.method$Level$setBlock.invoke(level, pos, immutableBlockState.with(this.ageProperty, i).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
+        if (sendParticles) {
+            World world = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
+            int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
+            int y = FastNMS.INSTANCE.field$Vec3i$y(pos);
+            int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
+            world.spawnParticle(ParticleUtils.getParticle("HAPPY_VILLAGER"), x + 0.5, y + 0.5, z + 0.5, 12, 0.2, 0.2, 0.2);
+        }
     }
 
     public static class Factory implements BlockBehaviorFactory {
