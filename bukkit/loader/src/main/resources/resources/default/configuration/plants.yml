@@ -224,17 +224,17 @@ blocks:
           models:
             - path: "minecraft:block/custom/ender_pearl_crop_stage1"
               generation:
-                parent: "minecraft:block/crop"
+                parent: "minecraft:block/custom/tinted_cross"
                 textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage1"
+                  "cross": "minecraft:block/custom/ender_pearl_crop_stage1"
         ripe:
           state: "sugar_cane:4"
           models:
             - path: "minecraft:block/custom/ender_pearl_crop_stage2"
               generation:
-                parent: "minecraft:block/crop"
+                parent: "minecraft:block/custom/tinted_cross"
                 textures:
-                  "crop": "minecraft:block/custom/ender_pearl_crop_stage2"
+                  "cross": "minecraft:block/custom/ender_pearl_crop_stage2"
       variants:
         age=0:
           appearance: default
