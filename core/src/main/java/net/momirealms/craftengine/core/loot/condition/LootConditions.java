@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 
 public class LootConditions {
     public static final Key MATCH_ITEM = Key.from("craftengine:match_item");
+    public static final Key MATCH_BLOCK_PROPERTY = Key.from("craftengine:match_block_property");
     public static final Key TABLE_BONUS = Key.from("craftengine:table_bonus");
     public static final Key SURVIVES_EXPLOSION = Key.from("craftengine:survives_explosion");
     public static final Key ANY_OF = Key.from("craftengine:any_of");
@@ -21,10 +22,10 @@ public class LootConditions {
     public static final Key ENCHANTMENT = Key.from("craftengine:enchantment");
     public static final Key INVERTED = Key.from("craftengine:inverted");
     public static final Key FALLING_BLOCK = Key.from("craftengine:falling_block");
-    public static final Key CROP_RIPE = Key.from("craftengine:crop_ripe");
 
     static {
         register(MATCH_ITEM, MatchItemCondition.FACTORY);
+        register(MATCH_BLOCK_PROPERTY, MatchBlockPropertyCondition.FACTORY);
         register(TABLE_BONUS, TableBonusCondition.FACTORY);
         register(SURVIVES_EXPLOSION, SurvivesExplosionCondition.FACTORY);
         register(ANY_OF, AnyOfCondition.FACTORY);
@@ -32,7 +33,6 @@ public class LootConditions {
         register(ENCHANTMENT, EnchantmentCondition.FACTORY);
         register(INVERTED, InvertedCondition.FACTORY);
         register(FALLING_BLOCK, FallingCondition.FACTORY);
-        register(CROP_RIPE, CropRipeCondition.FACTORY);
     }
 
     public static void register(Key key, LootConditionFactory factory) {

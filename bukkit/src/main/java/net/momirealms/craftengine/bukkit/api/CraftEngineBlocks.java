@@ -182,11 +182,6 @@ public final class CraftEngineBlocks {
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
                 builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
             }
-            if (state.behavior() instanceof CropBlockBehavior cropBlockBehavior) {
-                if (cropBlockBehavior.isMaxAge(state)) {
-                    builder.withParameter(LootParameters.CROP_RIPE, true);
-                }
-            }
             for (Item<?> item : state.getDrops(builder, world)) {
                 world.dropItemNaturally(vec3d, item);
             }

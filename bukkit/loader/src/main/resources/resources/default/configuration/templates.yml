@@ -953,7 +953,12 @@ templates#recipes:
 
 # loot tables
 templates#loot_tables:
+
   # drop one item
+
+  # template: default:loot_table/basic
+  # arguments:
+  #   item: the item
   default:loot_table/basic:
     pools:
       - rolls: 1
@@ -962,7 +967,12 @@ templates#loot_tables:
         entries:
           - type: item
             item: "{item}"
+
   # drop with silk touch
+
+  # template: default:loot_table/silk_touch
+  # arguments:
+  #   item: the item
   default:loot_table/silk_touch:
     pools:
       - rolls: 1
@@ -972,7 +982,78 @@ templates#loot_tables:
         entries:
           - type: item
             item: "{item}"
-  # drop ores
+
+  # crop drops
+
+  # template: default:loot_table/seed_crop
+  # arguments:
+  #   crop_item: the ripe crop
+  #   crop_seed: the seed of the crop
+  #   ripe_age: the max age
+  default:loot_table/seed_crop:
+    pools:
+      - rolls: 1
+        entries:
+          - type: alternatives
+            children:
+              - type: item
+                item: "{crop_item}"
+                conditions:
+                  - type: match_block_property
+                    properties:
+                      age: "{ripe_age}"
+              - type: item
+                item: "{crop_seed}"
+      - rolls: 1
+        conditions:
+          - type: match_block_property
+            properties:
+              age: "{ripe_age}"
+        entries:
+          - type: item
+            item: "{crop_seed}"
+            functions:
+              - type: apply_bonus
+                enchantment: minecraft:fortune
+                formula:
+                  type: binomial_with_bonus_count
+                  extra: 3
+                  probability: 0.5714286
+
+  # template: default:loot_table/crop
+  # arguments:
+  #   crop_item: the ripe crop
+  #   ripe_age: the max age
+  default:loot_table/crop:
+    pools:
+      - rolls: 1
+        entries:
+          - type: item
+            item: "{crop_item}"
+      - rolls: 1
+        conditions:
+          - type: match_block_property
+            properties:
+              age: "{ripe_age}"
+        entries:
+          - type: item
+            item: "{crop_item}"
+            functions:
+              - type: apply_bonus
+                enchantment: minecraft:fortune
+                formula:
+                  type: binomial_with_bonus_count
+                  extra: 3
+                  probability: 0.5714286
+
+  # ore drops
+
+  # template: default:loot_table/ore
+  # arguments:
+  #   ore_block: the ore block
+  #   ore_drop: the drops of the ore
+  #   min_exp: the min exp to drop
+  #   max_exp: the max exp to drop
   default:loot_table/ore:
     pools:
       - rolls: 1
@@ -997,7 +1078,37 @@ templates#loot_tables:
                       type: uniform
                       min: "{min_exp}"
                       max: "{max_exp}"
-  # leaves
+
+  # template: default:loot_table/ore_no_exp
+  # arguments:
+  #   ore_block: the ore block
+  #   ore_drop: the drops of the ore
+  default:loot_table/ore_no_exp:
+    pools:
+      - rolls: 1
+        entries:
+          - type: alternatives
+            children:
+              - type: item
+                item: "{ore_block}"
+                conditions:
+                  - type: enchantment
+                    predicate: minecraft:silk_touch>=1
+              - type: item
+                item: "{ore_drop}"
+                functions:
+                  - type: apply_bonus
+                    enchantment: minecraft:fortune
+                    formula:
+                      type: ore_drops
+                  - type: explosion_decay
+
+  # leaves drops
+
+  # template: default:loot_table/leaves
+  # arguments:
+  #   leaves: the leaves block
+  #   sapling: the sapling item
   default:loot_table/leaves:
     pools:
       - rolls: 1

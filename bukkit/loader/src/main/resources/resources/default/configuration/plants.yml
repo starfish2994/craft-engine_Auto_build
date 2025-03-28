@@ -35,18 +35,18 @@ items:
     behavior:
       type: block_item
       block: default:flame_cane
-  default:ender_pearl_crop_seed:
+  default:ender_pearl_flower_seed:
     material: paper
     custom-model-data: 4003
     data:
-      item-name: "<!i><i18n:item.ender_pearl_crop_seed>"
+      item-name: "<!i><i18n:item.ender_pearl_flower_seed>"
     model:
       template: default:model/simplified_generated
       arguments:
-        path: "minecraft:block/custom/ender_pearl_crop_seed"
+        path: "minecraft:block/custom/ender_pearl_flower_seed"
     behavior:
       type: block_item
-      block: default:ender_pearl_crop
+      block: default:ender_pearl_flower
 blocks:
   default:fairy_flower:
     settings:
@@ -179,15 +179,15 @@ blocks:
         age=5:
           appearance: default
           id: 7
-  default:ender_pearl_crop:
+  default:ender_pearl_flower:
     settings:
       template:
         - default:hardness/none
         - default:sound/grass
       overrides:
-        item: default:ender_pearl_crop_seed
+        item: default:ender_pearl_flower_seed
         push-reaction: DESTROY
-        map-color: 15
+        map-color: 24
         is-randomly-ticking: true
     behavior:
       type: crop_block
@@ -196,64 +196,47 @@ blocks:
       bottom-blocks:
         - minecraft:end_stone
     loot:
-      pools:
-        - rolls: 1
-          entries:
-            - type: item
-              item: "default:ender_pearl_crop_seed"
-              conditions:
-                - type: survives_explosion
-        - rolls:
-            type: uniform
-            min: "1"
-            max: "5"
-          entries:
-            - type: item
-              item: "minecraft:ender_pearl"
-              conditions:
-                - type: crop_ripe
+      template: default:loot_table/seed_crop
+      arguments:
+        crop_item: minecraft:ender_pearl
+        crop_seed: default:ender_pearl_flower_seed
+        ripe_age: 4
     states:
       properties:
         age:
           type: int
           default: 0
-          range: 0~5
+          range: 0~3
       appearances:
-        default:
+        stage_0:
+          state: "tripwire:0"
+          models:
+            - path: "minecraft:block/custom/ender_pearl_flower_stage_0"
+        stage_1:
+          state: "tripwire:1"
+          models:
+            - path: "minecraft:block/custom/ender_pearl_flower_stage_1"
+        stage_2:
+          state: "tripwire:2"
+          models:
+            - path: "minecraft:block/custom/ender_pearl_flower_stage_2"
+        stage_3:
           state: "sugar_cane:3"
           models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage1"
-              generation:
-                parent: "minecraft:block/custom/tinted_cross"
-                textures:
-                  "cross": "minecraft:block/custom/ender_pearl_crop_stage1"
-        ripe:
-          state: "sugar_cane:4"
-          models:
-            - path: "minecraft:block/custom/ender_pearl_crop_stage2"
-              generation:
-                parent: "minecraft:block/custom/tinted_cross"
-                textures:
-                  "cross": "minecraft:block/custom/ender_pearl_crop_stage2"
+            - path: "minecraft:block/custom/ender_pearl_flower_stage_3"
       variants:
         age=0:
-          appearance: default
-          id: 8
+          appearance: stage_0
+          id: 0
         age=1:
-          appearance: default
-          id: 9
+          appearance: stage_1
+          id: 1
         age=2:
-          appearance: default
-          id: 10
+          appearance: stage_2
+          id: 2
         age=3:
-          appearance: default
-          id: 11
-        age=4:
-          appearance: default
-          id: 12
-        age=5:
-          appearance: ripe
-          id: 13
+          appearance: stage_3
+          id: 8
 recipes:
   default:paper_from_reed:
     type: shaped

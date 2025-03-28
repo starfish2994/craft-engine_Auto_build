@@ -139,11 +139,6 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
                 builder.withOptionalParameter(LootParameters.TOOL, itemInHand);
-                if (state.behavior() instanceof CropBlockBehavior cropBlockBehavior) {
-                    if (cropBlockBehavior.isMaxAge(state)) {
-                        builder.withParameter(LootParameters.CROP_RIPE, true);
-                    }
-                }
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
@@ -301,11 +296,6 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(LootParameters.WORLD, world);
                 if (yield < 1f) {
                     builder.withParameter(LootParameters.EXPLOSION_RADIUS, 1.0f / yield);
-                }
-                if (state.behavior() instanceof CropBlockBehavior cropBlockBehavior) {
-                    if (cropBlockBehavior.isMaxAge(state)) {
-                        builder.withParameter(LootParameters.CROP_RIPE, true);
-                    }
                 }
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);

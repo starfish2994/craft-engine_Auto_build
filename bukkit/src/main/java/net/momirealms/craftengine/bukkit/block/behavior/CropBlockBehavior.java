@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
@@ -37,6 +38,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
     public final boolean isMaxAge(Object state) {
         return this.getAge(state) >= this.ageProperty.max;
     }
+
     public final boolean isMaxAge(ImmutableBlockState state) {
         return this.getAge(state) >= this.ageProperty.max;
     }
@@ -48,6 +50,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
     public final int getAge(Object state) {
         return getCEBlockState(state).get(ageProperty);
     }
+
     public final int getAge(ImmutableBlockState state) {
         return state.get(ageProperty);
     }
