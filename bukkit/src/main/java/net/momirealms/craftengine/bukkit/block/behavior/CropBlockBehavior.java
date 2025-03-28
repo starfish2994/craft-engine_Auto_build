@@ -83,7 +83,6 @@ public class CropBlockBehavior extends BushBlockBehavior {
             int age = this.getAge(state);
             float randomFloat = RandomUtils.generateRandomFloat(0, 1);
             if (age < this.ageProperty.max && randomFloat < 1.0 / Math.floor(25.0 / this.growSpeed + 1.0)) {
-                System.out.println("grow");
                 Reflections.method$Level$setBlock.invoke(level, pos, getStateForAge(state, age + 1), UpdateOption.UPDATE_ALL.flags());
             }
         }
