@@ -35,6 +35,18 @@ items:
     behavior:
       type: block_item
       block: default:flame_cane
+  default:ender_pearl_crop_seed:
+    material: paper
+    custom-model-data: 4003
+    data:
+      item-name: "<!i><i18n:item.ender_pearl_crop_seed>"
+    model:
+      template: default:model/simplified_generated
+      arguments:
+        path: "minecraft:block/custom/ender_pearl_crop_seed"
+    behavior:
+      type: block_item
+      block: default:ender_pearl_crop
 blocks:
   default:fairy_flower:
     settings:
@@ -167,6 +179,81 @@ blocks:
         age=5:
           appearance: default
           id: 7
+  default:ender_pearl_crop:
+    settings:
+      template:
+        - default:hardness/none
+        - default:sound/grass
+      overrides:
+        item: default:ender_pearl_crop_seed
+        push-reaction: DESTROY
+        map-color: 15
+        is-randomly-ticking: true
+    behavior:
+      type: crop_block
+      grow-speed: 1
+      min-grow-light: 9
+      bottom-blocks:
+        - minecraft:end_stone
+    loot:
+      pools:
+        - rolls: 1
+          entries:
+            - type: item
+              item: "default:ender_pearl_crop_seed"
+              conditions:
+                - type: survives_explosion
+        - rolls:
+            type: uniform
+            min: "1"
+            max: "5"
+          entries:
+            - type: item
+              item: "minecraft:ender_pearl"
+              conditions:
+                - type: crop_ripe
+    states:
+      properties:
+        age:
+          type: int
+          default: 0
+          range: 0~5
+      appearances:
+        default:
+          state: "sugar_cane:3"
+          models:
+            - path: "minecraft:block/custom/ender_pearl_crop_stage1"
+              generation:
+                parent: "minecraft:block/custom/tinted_cross"
+                textures:
+                  "cross": "minecraft:block/custom/ender_pearl_crop_stage1"
+        ripe:
+          state: "sugar_cane:4"
+          models:
+            - path: "minecraft:block/custom/ender_pearl_crop_stage2"
+              generation:
+                parent: "minecraft:block/custom/tinted_cross"
+                textures:
+                  "cross": "minecraft:block/custom/ender_pearl_crop_stage2"
+      variants:
+        age=0:
+          appearance: default
+          id: 8
+        age=1:
+          appearance: default
+          id: 9
+        age=2:
+          appearance: default
+          id: 10
+        age=3:
+          appearance: default
+          id: 11
+        age=4:
+          appearance: default
+          id: 12
+        age=5:
+          appearance: ripe
+          id: 13
 recipes:
   default:paper_from_reed:
     type: shaped

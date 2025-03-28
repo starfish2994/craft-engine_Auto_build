@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.api;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.block.behavior.CropBlockBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -180,6 +181,11 @@ public final class CraftEngineBlocks {
             if (player != null) {
                 builder.withParameter(LootParameters.PLAYER, serverPlayer);
                 builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+            }
+            if (state.behavior() instanceof CropBlockBehavior cropBlockBehavior) {
+                if (cropBlockBehavior.isMaxAge(state)) {
+                    builder.withParameter(LootParameters.CROP_RIPE, true);
+                }
             }
             for (Item<?> item : state.getDrops(builder, world)) {
                 world.dropItemNaturally(vec3d, item);

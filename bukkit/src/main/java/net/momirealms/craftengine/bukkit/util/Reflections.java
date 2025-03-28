@@ -5739,4 +5739,36 @@ public class Reflections {
                     clazz$CraftEventFactory, boolean.class, clazz$Level, clazz$BlockPos, clazz$BlockState
             )
     );
+
+    public static final Class<?> clazz$BlockAndTintGetter = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.BlockAndTintGetter"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.IBlockLightAccess")
+            )
+    );
+
+    public static final Method method$BlockAndTintGetter$getRawBrightness = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockAndTintGetter, int.class, clazz$BlockPos, int.class
+            )
+    );
+
+    public static final Field field$Level$random = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$Level, clazz$RandomSource, 0
+            )
+    );
+
+    public static final Class<?> clazz$Mth = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("util.Mth"),
+                    BukkitReflectionUtils.assembleMCClass("util.MathHelper")
+            )
+    );
+
+    public static final Method method$nextInt = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Mth, int.class, clazz$RandomSource, int.class, int.class
+            )
+    );
 }

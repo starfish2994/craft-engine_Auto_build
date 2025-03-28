@@ -21,7 +21,10 @@ import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -68,6 +71,11 @@ public class BushBlockBehavior extends AbstractBlockBehavior {
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 builder.withParameter(LootParameters.LOCATION, vec3d);
                 builder.withParameter(LootParameters.WORLD, world);
+                if (this instanceof CropBlockBehavior cropBlockBehavior) {
+                    if (cropBlockBehavior.isMaxAge(state)) {
+                        builder.withParameter(LootParameters.CROP_RIPE, true);
+                    }
+                }
                 for (Item<Object> item : previousState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
