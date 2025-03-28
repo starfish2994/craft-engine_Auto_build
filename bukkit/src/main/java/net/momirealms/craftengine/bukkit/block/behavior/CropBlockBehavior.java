@@ -123,7 +123,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
             int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
             int y = FastNMS.INSTANCE.field$Vec3i$y(pos);
             int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
-            world.spawnParticle(ParticleUtils.getParticle("HAPPY_VILLAGER"), x + 0.5, y + 0.5, z + 0.5, 12, 0.2, 0.2, 0.2);
+            world.spawnParticle(ParticleUtils.getParticle("HAPPY_VILLAGER"), x + 0.5, y + 0.5, z + 0.5, 12, 0.25, 0.25, 0.25);
         }
     }
 
