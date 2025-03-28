@@ -40,7 +40,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -147,12 +146,7 @@ public class BlockItemBehavior extends ItemBehavior {
 
     protected boolean canPlace(BlockPlaceContext context, ImmutableBlockState state) {
         try {
-            Object player;
-            try {
-                player = Reflections.method$CraftPlayer$getHandle.invoke(context.getPlayer().platformPlayer());
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Failed to get server player", e);
-            }
+            Object player = context.getPlayer().serverPlayer();
             Object blockState = state.customBlockState().handle();
             Object blockPos = LocationUtils.toBlockPos(context.getClickedPos());
             Object voxelShape = Reflections.method$CollisionContext$of.invoke(null, player);

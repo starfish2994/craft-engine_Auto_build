@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -16,7 +17,6 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
-import org.bukkit.World;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -56,17 +56,17 @@ public class FallingBlockBehavior extends AbstractBlockBehavior {
     @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockPos = args[2];
-        int y = Reflections.field$Vec3i$y.getInt(blockPos);
+        int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
         Object world = args[1];
         Object dimension = Reflections.method$$LevelReader$dimensionType.invoke(world);
         int minY = Reflections.field$DimensionType$minY.getInt(dimension);
         if (y < minY) {
             return;
         }
-        int x = Reflections.field$Vec3i$x.getInt(blockPos);
-        int z = Reflections.field$Vec3i$z.getInt(blockPos);
-        Object belowPos = Reflections.constructor$BlockPos.newInstance(x, y - 1, z);
-        Object belowState = Reflections.method$BlockGetter$getBlockState.invoke(world, belowPos);
+        int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
+        int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
+        Object belowPos = LocationUtils.toBlockPos(x, y - 1, z);
+        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
         boolean isFree = (boolean) Reflections.method$FallingBlock$isFree.invoke(null, belowState);
         if (!isFree) {
             return;
@@ -96,7 +96,7 @@ public class FallingBlockBehavior extends AbstractBlockBehavior {
         double y = Reflections.field$Entity$yo.getDouble(fallingBlockEntity);
         double z = Reflections.field$Entity$zo.getDouble(fallingBlockEntity);
         Vec3d vec3d = new Vec3d(x, y, z);
-        net.momirealms.craftengine.core.world.World world = new BukkitWorld((World) Reflections.method$Level$getCraftWorld.invoke(level));
+        net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
         builder.withParameter(LootParameters.LOCATION, vec3d);
         builder.withParameter(LootParameters.WORLD, world);
         for (Item<Object> item : immutableBlockState.getDrops(builder, world)) {
@@ -121,7 +121,7 @@ public class FallingBlockBehavior extends AbstractBlockBehavior {
             if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
             Object level = args[0];
             Object pos = args[1];
-            net.momirealms.craftengine.core.world.World world = new BukkitWorld((World) Reflections.method$Level$getCraftWorld.invoke(level));
+            net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
             world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.sounds().landSound());
         }
     }

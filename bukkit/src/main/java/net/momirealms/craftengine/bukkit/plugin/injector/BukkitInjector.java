@@ -96,6 +96,8 @@ public class BukkitInjector {
                     .method(ElementMatchers.any()
                             .and(ElementMatchers.not(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet)))
                             .and(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
+                            // TODO Requires Paper Patch
+                            //.and(ElementMatchers.not(ElementMatchers.named("get").and(ElementMatchers.takesArguments(int.class)).and(ElementMatchers.returns(Object.class))))
                     )
                     .intercept(MethodDelegation.toField("target"))
                     .method(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet))

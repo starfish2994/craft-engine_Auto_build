@@ -118,7 +118,7 @@ public class BukkitVanillaLootManager implements VanillaLootManager, Listener {
                         VanillaLoot vanillaLoot = this.blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
                         vanillaLoot.addLootTable(lootTable);
                     } else {
-                        for (Object blockState : BlockStateUtils.getAllBlockStates(Key.of(target))) {
+                        for (Object blockState : BlockStateUtils.getAllVanillaBlockStates(Key.of(target))) {
                             if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
                                 this.plugin.logger().warn(path, "Failed to load " + id + ". Invalid target " + target);
                                 return;

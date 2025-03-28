@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.BlockTags;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -108,7 +109,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
         Object blockPos = args[2];
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(args[0]));
         if (immutableBlockState != null && immutableBlockState.behavior() instanceof LeavesBlockBehavior behavior && behavior.isDecaying(immutableBlockState)) {
-            World bukkitWorld = (World) Reflections.method$Level$getCraftWorld.invoke(level);
+            World bukkitWorld = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
             BlockPos pos = LocationUtils.fromBlockPos(blockPos);
             // call bukkit event
             LeavesDecayEvent event = new LeavesDecayEvent(bukkitWorld.getBlockAt(pos.x(), pos.y(), pos.z()));
@@ -142,7 +143,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
         for (int k = 0; k < j; ++k) {
             Object direction = Reflections.instance$Directions[k];
             Reflections.method$MutableBlockPos$setWithOffset.invoke(mutablePos, blockPos, direction);
-            Object blockState = Reflections.method$BlockGetter$getBlockState.invoke(world, mutablePos);
+            Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, mutablePos);
             i = Math.min(i, getDistanceAt(blockState) + 1);
             if (i == 1) {
                 break;

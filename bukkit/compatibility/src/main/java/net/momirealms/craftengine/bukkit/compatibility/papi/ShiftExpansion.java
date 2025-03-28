@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.papi;
+package net.momirealms.craftengine.bukkit.compatibility.papi;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
