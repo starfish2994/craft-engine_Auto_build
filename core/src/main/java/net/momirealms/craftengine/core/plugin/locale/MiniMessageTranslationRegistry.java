@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin.locale;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.translation.Translator;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -42,7 +43,7 @@ public interface MiniMessageTranslationRegistry extends Translator {
             if (errorCount == 1) {
                 throw firstError;
             } else if (errorCount > 1) {
-                throw new IllegalArgumentException(String.format("Invalid key (and %d more)", errorCount - 1), firstError);
+                throw new IllegalArgumentException(String.format("Invalid or duplicated lang key (and %d more).", errorCount - 1), firstError);
             }
         }
     }

@@ -138,6 +138,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.delayedInit();
             this.imageManager.delayedInit();
             this.vanillaLootManager.delayedInit();
+            this.delayedEnable();
         });
     }
 
@@ -164,6 +165,8 @@ public abstract class CraftEngine implements Plugin {
     }
 
     protected abstract void registerParsers();
+
+    public void delayedEnable() {}
 
     protected abstract List<Dependency> platformDependencies();
 
