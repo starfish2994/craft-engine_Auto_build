@@ -48,7 +48,18 @@ public class I18NData {
         int validKeyCount = 0;
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String key = entry.getKey();
-            if (key != null && key.length() > 11 && key.startsWith("block_name:")) {
+            if (key != null && key.length() > 11 &&
+                    key.charAt(0) == 'b' &&
+                    key.charAt(1) == 'l' &&
+                    key.charAt(2) == 'o' &&
+                    key.charAt(3) == 'c' &&
+                    key.charAt(4) == 'k' &&
+                    key.charAt(5) == '_' &&
+                    key.charAt(6) == 'n' &&
+                    key.charAt(7) == 'a' &&
+                    key.charAt(8) == 'm' &&
+                    key.charAt(9) == 'e' &&
+                    key.charAt(10) == ':') {
                 keyBuffer[validKeyCount++] = key;
             }
         }
