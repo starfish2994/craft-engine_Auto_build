@@ -184,8 +184,8 @@ public class ItemEventListener implements Listener {
             // so we should check and resend sounds on interact
             Object blockState = BlockStateUtils.blockDataToBlockState(clickedBlock.getBlockData());
             int stateId = BlockStateUtils.blockStateToId(blockState);
-            ImmutableBlockState againCustomBlock = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-            if (againCustomBlock == null || againCustomBlock.isEmpty()) {
+            ImmutableBlockState againstCustomBlock = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+            if (againstCustomBlock == null || againstCustomBlock.isEmpty()) {
                 return;
             }
 
@@ -194,13 +194,13 @@ public class ItemEventListener implements Listener {
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
             BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
             try {
-                BlockData craftBlockData = BlockStateUtils.fromBlockData(againCustomBlock.vanillaBlockState().handle());
+                BlockData craftBlockData = BlockStateUtils.fromBlockData(againstCustomBlock.vanillaBlockState().handle());
                 if (InteractUtils.isInteractable(KeyUtils.namespacedKey2Key(craftBlockData.getMaterial().getKey()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
                     if (!player.isSecondaryUseActive()) {
                         player.setResendSound();
                     }
                 } else {
-                    if (BlockStateUtils.isReplaceable(againCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againCustomBlock.vanillaBlockState().handle())) {
+                    if (BlockStateUtils.isReplaceable(againstCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againstCustomBlock.vanillaBlockState().handle())) {
                         player.setResendSwing();
                     }
                 }
