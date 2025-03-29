@@ -63,6 +63,11 @@ public class TranslationManagerImpl implements TranslationManager {
     }
 
     @Override
+    public void delayedLoad() {
+        this.clientLangManager.delayedLoad();
+    }
+
+    @Override
     public void reload() {
         // clear old data
         this.clientLangManager.reload();

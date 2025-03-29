@@ -59,4 +59,9 @@ public class ClientLangMangerImpl implements ClientLangManager {
                     .addTranslations(translations);
         }
     }
+
+    @Override
+    public void delayedLoad() {
+        this.i18nData.values().forEach(I18NData::processTranslations);
+    }
 }

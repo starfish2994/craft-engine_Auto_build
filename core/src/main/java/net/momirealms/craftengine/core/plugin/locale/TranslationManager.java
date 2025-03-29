@@ -24,6 +24,8 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
 
     void forcedLocale(Locale locale);
 
+    void delayedLoad();
+
     String miniMessageTranslation(String key, @Nullable Locale locale);
 
     default Component render(Component component) {

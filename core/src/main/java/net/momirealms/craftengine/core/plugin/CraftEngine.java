@@ -66,8 +66,21 @@ public abstract class CraftEngine implements Plugin {
     protected Consumer<Supplier<String>> debugger = (s) -> {};
     private boolean isReloading;
 
+    private String buildByBit = "%%__BUILTBYBIT__%%";
+    private String polymart = "%%__POLYMART__%%";
+    private String time = "%%__TIMESTAMP__%%";
+    private String user = "%%__USER__%%";
+    private String username = "%%__USERNAME__%%";
+
     protected CraftEngine() {
         instance = this;
+    }
+
+    public static CraftEngine instance() {
+        if (instance == null) {
+            throw new IllegalStateException("CraftEngine has not been initialized");
+        }
+        return instance;
     }
 
     @Override
@@ -83,6 +96,7 @@ public abstract class CraftEngine implements Plugin {
         this.configManager = new ConfigManager(this);
     }
 
+    // TODO Make most things async
     @Override
     public void reload() {
         if (this.isReloading) return;
@@ -104,11 +118,14 @@ public abstract class CraftEngine implements Plugin {
             this.packManager.reload();
             // load at last
             this.guiManager.reload();
+            // delayed load
+            this.translationManager.delayedLoad();
             this.blockManager.delayedLoad();
             this.furnitureManager.delayedLoad();
             this.itemBrowserManager.delayedLoad();
             this.soundManager.delayedLoad();
             this.imageManager.delayedLoad();
+            // reset debugger
             if (ConfigManager.debug()) {
                 this.debugger = (s) -> logger.info("[Debug] " + s.get());
             } else {
@@ -166,7 +183,7 @@ public abstract class CraftEngine implements Plugin {
 
     protected abstract void registerParsers();
 
-    public void delayedEnable() {}
+    protected abstract void delayedEnable();
 
     protected abstract List<Dependency> platformDependencies();
 
@@ -300,13 +317,6 @@ public abstract class CraftEngine implements Plugin {
 
     public boolean isReloading() {
         return isReloading;
-    }
-
-    public static CraftEngine instance() {
-        if (instance == null) {
-            throw new IllegalStateException("CraftEngine has not been initialized");
-        }
-        return instance;
     }
 
     public abstract boolean hasPlaceholderAPI();
