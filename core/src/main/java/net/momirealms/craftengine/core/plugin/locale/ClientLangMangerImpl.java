@@ -9,12 +9,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClientLangMangerImpl implements ClientLangManager {
-    private final Plugin plugin;
     private final Map<String, I18NData> i18nData = new HashMap<>();
 
-    public ClientLangMangerImpl(Plugin plugin) {
-        this.plugin = plugin;
-    }
+    protected ClientLangMangerImpl() {}
 
     @Override
     public void reload() {
