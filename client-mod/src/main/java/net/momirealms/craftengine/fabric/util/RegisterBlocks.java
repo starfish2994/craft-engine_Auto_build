@@ -21,11 +21,11 @@ public class RegisterBlocks {
                                  VoxelShape outlineShape, boolean isTransparent,
                                  int canPush) {
         AbstractBlock.Settings settings = Block.Settings.create()
-                .nonOpaque()
                 .strength(canPush != 0 ? 3600000.0F : -1.0F, 3600000.0F);
         if (canPush == 1) settings.pistonBehavior(PistonBehavior.NORMAL);
         if (canPush == 2) settings.pistonBehavior(PistonBehavior.PUSH_ONLY);
         VoxelShape collisionShape;
+        if (isTransparent) settings.nonOpaque();
         if (canPassThrough) {
             collisionShape = VoxelShapes.empty();
             settings.noCollision();
