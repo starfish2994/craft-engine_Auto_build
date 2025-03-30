@@ -587,7 +587,7 @@ public class PacketConsumers {
     };
 
     private static void handlePickItemFromEntityOnMainThread(Player player, LoadedFurniture furniture) throws Exception {
-        Key itemId = furniture.furniture().settings().itemId();
+        Key itemId = furniture.config().settings().itemId();
         if (itemId == null) return;
         pickItem(player, itemId);
     }
@@ -712,9 +712,9 @@ public class PacketConsumers {
                     }
                     if (player.isSneaking())
                         return;
-                    furniture.getAvailableSeat(entityId).ifPresent(seatPos -> {
-                        if (furniture.occupySeat(seatPos)) {
-                            furniture.mountSeat(Objects.requireNonNull(player.getPlayer()), seatPos);
+                    furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                        if (furniture.tryOccupySeat(seatPos)) {
+                            furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
                         }
                     });
                 }

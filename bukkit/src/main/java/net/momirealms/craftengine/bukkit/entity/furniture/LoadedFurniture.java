@@ -61,7 +61,7 @@ public class LoadedFurniture {
             fakeEntityIds.add(entityId);
             element.addSpawnPackets(entityId, this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
         }
-        for (HitBox hitBox : placement.hitboxes()) {
+        for (HitBox hitBox : placement.hitBoxes()) {
             int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
@@ -89,16 +89,11 @@ public class LoadedFurniture {
         return this.location;
     }
 
-    public void teleport(@NotNull Location location) {
-        if (location.equals(this.location)) return;
-        this.location = location;
-    }
-
     @NotNull
     public Entity baseEntity() {
         Entity entity = baseEntity.get();
         if (entity == null) {
-            throw new RuntimeException("Base entity not found");
+            throw new RuntimeException("Base entity not found. It might be unloaded.");
         }
         return entity;
     }
@@ -128,46 +123,36 @@ public class LoadedFurniture {
         this.seats.clear();
     }
 
-    public void addSeatEntity(Entity entity) {
-        this.seats.add(entity);
-    }
+    public Optional<Seat> findFirstAvailableSeat(int targetEntityId) {
+        HitBox hitbox = hitBoxes.get(targetEntityId);
+        if (hitbox == null) return Optional.empty();
 
-    public Optional<Seat> getAvailableSeat(int clickedEntityId) {
-        HitBox hitbox = this.hitBoxes.get(clickedEntityId);
-        if (hitbox == null)
-            return Optional.empty();
         Seat[] seats = hitbox.seats();
-        if (ArrayUtils.isEmpty(seats)) {
-            return Optional.empty();
-        }
-        for (Seat seat : seats) {
-            if (!this.occupiedSeats.contains(seat.offset())) {
-                return Optional.of(seat);
-            }
-        }
-        return Optional.empty();
+        if (ArrayUtils.isEmpty(seats)) return Optional.empty();
+
+        return Arrays.stream(seats)
+                .filter(s -> !occupiedSeats.contains(s.offset()))
+                .findFirst();
     }
 
-    public Location getSeatLocation(Seat seat) {
-        Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(seat.offset()));
-        double yaw = seat.yaw() + this.location.getYaw();
-        if (yaw < -180) yaw += 360;
-        Location newLocation = this.location.clone();
-        newLocation.setYaw((float) yaw);
-        newLocation.add(offset.x, offset.y + 0.6, -offset.z);
-        return newLocation;
-    }
-
-    public boolean releaseSeat(Vector3f seat) {
+    public boolean removeOccupiedSeat(Vector3f seat) {
         return this.occupiedSeats.remove(seat);
     }
 
-    public boolean occupySeat(Seat seat) {
+    public boolean removeOccupiedSeat(Seat seat) {
+        return this.removeOccupiedSeat(seat.offset());
+    }
+
+    public boolean tryOccupySeat(Seat seat) {
         if (this.occupiedSeats.contains(seat.offset())) {
             return false;
         }
         this.occupiedSeats.add(seat.offset());
         return true;
+    }
+
+    public UUID uuid() {
+        return this.baseEntity().getUniqueId();
     }
 
     public int baseEntityId() {
@@ -176,12 +161,12 @@ public class LoadedFurniture {
 
     @NotNull
     public List<Integer> hitBoxEntityIds() {
-        return this.hitBoxEntityIds;
+        return Collections.unmodifiableList(this.hitBoxEntityIds);
     }
 
     @NotNull
     public List<Integer> subEntityIds() {
-        return this.fakeEntityIds;
+        return Collections.unmodifiableList(this.fakeEntityIds);
     }
 
     @NotNull
@@ -190,17 +175,17 @@ public class LoadedFurniture {
     }
 
     @NotNull
-    public Key furnitureId() {
+    public Key id() {
         return this.id;
     }
 
     @NotNull
-    public CustomFurniture furniture() {
+    public CustomFurniture config() {
         return this.furniture;
     }
 
-    public void mountSeat(org.bukkit.entity.Player player, Seat seat) {
-        Location location = this.getSeatLocation(seat);
+    public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {
+        Location location = this.calculateSeatLocation(seat);
         Entity seatEntity = seat.limitPlayerRotation() ?
                 EntityUtils.spawnEntity(player.getWorld(), VersionHelper.isVersionNewerThan1_20_2() ? location.subtract(0,0.9875,0) : location.subtract(0,0.990625,0), EntityType.ARMOR_STAND, entity -> {
                     ArmorStand armorStand = (ArmorStand) entity;
@@ -227,7 +212,17 @@ public class LoadedFurniture {
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER, this.baseEntityId());
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 });
-        this.addSeatEntity(seatEntity);
+        this.seats.add(seatEntity);
         seatEntity.addPassenger(player);
+    }
+
+    private Location calculateSeatLocation(Seat seat) {
+        Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(seat.offset()));
+        double yaw = seat.yaw() + this.location.getYaw();
+        if (yaw < -180) yaw += 360;
+        Location newLocation = this.location.clone();
+        newLocation.setYaw((float) yaw);
+        newLocation.add(offset.x, offset.y + 0.6, -offset.z);
+        return newLocation;
     }
 }

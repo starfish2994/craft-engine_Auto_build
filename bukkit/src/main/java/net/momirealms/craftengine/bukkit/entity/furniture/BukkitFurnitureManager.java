@@ -103,10 +103,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
         if (placementMap == null) {
             throw new IllegalArgumentException("Missing required parameter 'placement' for furniture " + id);
         }
+
         for (Map.Entry<String, Object> entry : placementMap.entrySet()) {
+            // anchor type
             AnchorType anchorType = AnchorType.valueOf(entry.getKey().toUpperCase(Locale.ENGLISH));
             Map<String, Object> placementArguments = MiscUtils.castToMap(entry.getValue(), true);
 
+            // furniture display elements
             List<FurnitureElement> elements = new ArrayList<>();
             List<Map<String, Object>> elementConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("elements", List.of());
             for (Map<String, Object> element : elementConfigs) {
@@ -124,6 +127,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 );
                 elements.add(furnitureElement);
             }
+
+            // add hitboxes
             List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
             List<HitBox> hitboxes = new ArrayList<>();
             for (Map<String, Object> config : hitboxConfigs) {
@@ -132,6 +137,29 @@ public class BukkitFurnitureManager implements FurnitureManager {
             if (hitboxes.isEmpty()) {
                 hitboxes.add(InteractionHitBox.DEFAULT);
             }
+
+            // add colliders
+            List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
+            List<Collider> colliders = new ArrayList<>();
+            for (Map<String, Object> config : colliderConfigs) {
+                if (!config.containsKey("width") && !config.containsKey("height")) {
+                    colliders.add(new Collider(
+                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
+                            MiscUtils.getVector3f(config.getOrDefault("point-1", "0")),
+                            MiscUtils.getVector3f(config.getOrDefault("point-2", "0"))
+                    ));
+                } else {
+                    colliders.add(new Collider(
+                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
+                            MiscUtils.getAsFloat(config.getOrDefault("width", "1")),
+                            MiscUtils.getAsFloat(config.getOrDefault("height", "1"))
+                    ));
+                }
+            }
+
+            // rules
             Map<String, Object> ruleSection = MiscUtils.castToMap(placementArguments.get("rules"), true);
             if (ruleSection != null) {
                 RotationRule rotationRule = Optional.ofNullable((String) ruleSection.get("rotation"))
@@ -143,7 +171,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
-                        new Collider[0],
+                        colliders.toArray(new Collider[0]),
                         rotationRule,
                         alignmentRule
                 ));
@@ -151,7 +179,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
-                        new Collider[0],
+                        colliders.toArray(new Collider[0]),
                         RotationRule.ANY,
                         AlignmentRule.CENTER
                 ));
@@ -333,7 +361,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             return;
         }
         Vector3f seatPos = MiscUtils.getVector3f(vector3f);
-        furniture.releaseSeat(seatPos);
+        furniture.removeOccupiedSeat(seatPos);
     }
 
     protected boolean isSeatCarrierType(Entity entity) {

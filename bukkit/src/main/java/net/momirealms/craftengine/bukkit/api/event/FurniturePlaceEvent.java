@@ -33,12 +33,12 @@ public class FurniturePlaceEvent extends PlayerEvent implements Cancellable {
 
     @NotNull
     public LoadedFurniture furniture() {
-        return furniture;
+        return this.furniture;
     }
 
     @NotNull
     public Location location() {
-        return location;
+        return this.location;
     }
 
     @NotNull

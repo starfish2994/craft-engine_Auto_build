@@ -55,39 +55,7 @@ public class CustomFurniture {
         return placements.get(anchorType);
     }
 
-    public static class Placement {
-        private final FurnitureElement[] elements;
-        private final HitBox[] hitboxes;
-        private final Collider[] colliders;
-        private final RotationRule rotationRule;
-        private final AlignmentRule alignmentRule;
-
-        public Placement(FurnitureElement[] elements, HitBox[] hitboxes, Collider[] colliders, RotationRule rotationRule, AlignmentRule alignmentRule) {
-            this.elements = elements;
-            this.hitboxes = hitboxes;
-            this.colliders = colliders;
-            this.rotationRule = rotationRule;
-            this.alignmentRule = alignmentRule;
-        }
-
-        public HitBox[] hitboxes() {
-            return hitboxes;
-        }
-
-        public Collider[] colliders() {
-            return colliders;
-        }
-
-        public FurnitureElement[] elements() {
-            return elements;
-        }
-
-        public RotationRule rotationRule() {
-            return rotationRule;
-        }
-
-        public AlignmentRule alignmentRule() {
-            return alignmentRule;
-        }
+    public record Placement(FurnitureElement[] elements, HitBox[] hitBoxes, Collider[] colliders,
+                            RotationRule rotationRule, AlignmentRule alignmentRule) {
     }
 }
