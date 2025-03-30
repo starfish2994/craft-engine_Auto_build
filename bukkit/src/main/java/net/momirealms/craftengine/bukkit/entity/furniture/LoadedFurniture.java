@@ -27,7 +27,7 @@ public class LoadedFurniture {
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
     // location
-    private Location location;
+    private final Location location;
     // base entity
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
@@ -86,7 +86,7 @@ public class LoadedFurniture {
 
     @NotNull
     public Location location() {
-        return this.location;
+        return this.location.clone();
     }
 
     @NotNull

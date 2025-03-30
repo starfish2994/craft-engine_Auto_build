@@ -38,7 +38,7 @@ public class FurniturePlaceEvent extends PlayerEvent implements Cancellable {
 
     @NotNull
     public Location location() {
-        return this.location;
+        return this.location.clone();
     }
 
     @NotNull

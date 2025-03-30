@@ -65,7 +65,7 @@ public class FurnitureAttemptPlaceEvent extends PlayerEvent implements Cancellab
 
     @NotNull
     public Location location() {
-        return location;
+        return location.clone();
     }
 
     @NotNull

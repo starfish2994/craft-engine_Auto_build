@@ -28,7 +28,7 @@ public class FurnitureInteractEvent extends PlayerEvent implements Cancellable {
 
     @NotNull
     public Location interactionPoint() {
-        return interactionPoint;
+        return this.interactionPoint.clone();
     }
 
     @NotNull
@@ -44,6 +44,11 @@ public class FurnitureInteractEvent extends PlayerEvent implements Cancellable {
     @NotNull
     public LoadedFurniture furniture() {
         return this.furniture;
+    }
+
+    @NotNull
+    public Location location() {
+        return this.furniture.location();
     }
 
     @NotNull
