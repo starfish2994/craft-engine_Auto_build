@@ -13,6 +13,7 @@ import java.util.Optional;
 public class HitBoxTypes {
     public static final Key INTERACTION = Key.of("minecraft:interaction");
     public static final Key SHULKER = Key.of("minecraft:shulker");
+    public static final Key BOAT = Key.of("minecraft:boat");
 
     public static void register(Key key, HitBoxFactory factory) {
         Holder.Reference<HitBoxFactory> holder = ((WritableRegistry<HitBoxFactory>) BuiltInRegistries.HITBOX_FACTORY)

@@ -26,21 +26,18 @@ public class LoadedFurniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
-    private final Map<Integer, FurnitureElement> elements;
-    private final Map<Integer, HitBox> hitBoxes;
     // location
     private Location location;
     // base entity
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
-    // includes elements + interactions
-    private final List<Integer> subEntityIds;
-    // interactions
-    private final List<Integer> interactionEntityIds;
+    // cache
+    private final List<Integer> fakeEntityIds;
+    private final List<Integer> hitBoxEntityIds;
+    private final Map<Integer, HitBox> hitBoxes;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
-
     // cached spawn packet
     private Object cachedSpawnPacket;
 
@@ -54,40 +51,36 @@ public class LoadedFurniture {
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
         this.hitBoxes = new HashMap<>();
-        this.elements = new HashMap<>();
-        List<Integer> entityIds = new ArrayList<>();
+        List<Integer> fakeEntityIds = new ArrayList<>();
         List<Integer> hitBoxEntityIds = new ArrayList<>();
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
+
+        List<Object> packets = new ArrayList<>();
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
-            entityIds.add(entityId);
-            this.elements.put(entityId, element);
+            fakeEntityIds.add(entityId);
+            element.addSpawnPackets(entityId, this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
         }
         for (HitBox hitBox : placement.hitboxes()) {
-            int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
-            entityIds.add(entityId);
-            hitBoxEntityIds.add(entityId);
-            this.hitBoxes.put(entityId, hitBox);
-        }
-        this.subEntityIds = entityIds;
-        this.interactionEntityIds = hitBoxEntityIds;
-    }
-
-    public synchronized Object spawnPacket() {
-        if (this.cachedSpawnPacket == null) {
-            try {
-                List<Object> packets = new ArrayList<>();
-                for (Map.Entry<Integer, FurnitureElement> entry : this.elements.entrySet()) {
-                    entry.getValue().addSpawnPackets(entry.getKey(), this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
-                }
-                for (Map.Entry<Integer, HitBox> entry : this.hitBoxes.entrySet()) {
-                    entry.getValue().addSpawnPackets(entry.getKey(), this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
-                }
-                this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
+            int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
+            for (int entityId : ids) {
+                fakeEntityIds.add(entityId);
+                hitBoxEntityIds.add(entityId);
+                hitBox.addSpawnPackets(ids, this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
+                this.hitBoxes.put(entityId, hitBox);
             }
         }
+        try {
+            this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
+        }
+        this.fakeEntityIds = fakeEntityIds;
+        this.hitBoxEntityIds = hitBoxEntityIds;
+    }
+
+    @NotNull
+    public Object spawnPacket() {
         return this.cachedSpawnPacket;
     }
 
@@ -178,27 +171,32 @@ public class LoadedFurniture {
     }
 
     public int baseEntityId() {
-        return baseEntityId;
+        return this.baseEntityId;
     }
 
-    public List<Integer> interactionEntityIds() {
-        return interactionEntityIds;
+    @NotNull
+    public List<Integer> hitBoxEntityIds() {
+        return this.hitBoxEntityIds;
     }
 
+    @NotNull
     public List<Integer> subEntityIds() {
-        return this.subEntityIds;
+        return this.fakeEntityIds;
     }
 
+    @NotNull
     public AnchorType anchorType() {
-        return anchorType;
+        return this.anchorType;
     }
 
+    @NotNull
     public Key furnitureId() {
-        return id;
+        return this.id;
     }
 
+    @NotNull
     public CustomFurniture furniture() {
-        return furniture;
+        return this.furniture;
     }
 
     public void mountSeat(org.bukkit.entity.Player player, Seat seat) {

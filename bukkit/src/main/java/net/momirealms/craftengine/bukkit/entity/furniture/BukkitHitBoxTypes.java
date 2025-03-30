@@ -8,5 +8,7 @@ public class BukkitHitBoxTypes extends HitBoxTypes {
 
     static {
         register(INTERACTION, InteractionHitBox.FACTORY);
+        register(SHULKER, ShulkerHitBox.FACTORY);
+        register(BOAT, BoatHitBox.FACTORY);
     }
 }

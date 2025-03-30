@@ -237,7 +237,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
         if (furniture != null) {
             furniture.destroySeats();
-            for (int sub : furniture.interactionEntityIds()) {
+            for (int sub : furniture.hitBoxEntityIds()) {
                 this.furnitureByInteractionEntityId.remove(sub);
             }
         } else if (entity instanceof Interaction interaction) {
@@ -307,7 +307,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
     private synchronized LoadedFurniture addNewFurniture(ItemDisplay display, CustomFurniture furniture, AnchorType anchorType) {
         LoadedFurniture loadedFurniture = new LoadedFurniture(display, furniture, anchorType);
         this.furnitureByBaseEntityId.put(loadedFurniture.baseEntityId(), loadedFurniture);
-        for (int entityId : loadedFurniture.interactionEntityIds()) {
+        for (int entityId : loadedFurniture.hitBoxEntityIds()) {
             this.furnitureByInteractionEntityId.put(entityId, loadedFurniture);
         }
         return loadedFurniture;
