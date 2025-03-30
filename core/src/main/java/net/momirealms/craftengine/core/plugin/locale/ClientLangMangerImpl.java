@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.plugin.locale;
 
 import net.momirealms.craftengine.core.pack.Pack;
-import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;

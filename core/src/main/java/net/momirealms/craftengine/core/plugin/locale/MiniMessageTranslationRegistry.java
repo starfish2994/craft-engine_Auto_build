@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin.locale;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.translation.Translator;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;

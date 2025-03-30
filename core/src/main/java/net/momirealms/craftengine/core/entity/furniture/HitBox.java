@@ -1,33 +1,14 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
-import org.joml.Vector3f;
+import net.momirealms.craftengine.core.util.Key;
 
-public class HitBox {
-    private final Vector3f position;
-    private final Vector3f size;
-    private final Seat[] seats;
-    private final boolean responsive;
+import java.util.function.Consumer;
 
-    public HitBox(Vector3f position, Vector3f size, Seat[] seats, boolean responsive) {
-        this.position = position;
-        this.size = size;
-        this.seats = seats;
-        this.responsive = responsive;
-    }
+public interface HitBox {
 
-    public boolean responsive() {
-        return responsive;
-    }
+    Key type();
 
-    public Seat[] seats() {
-        return seats;
-    }
+    void addSpawnPackets(int entityId, double x, double y, double z, float yaw, Consumer<Object> packets);
 
-    public Vector3f offset() {
-        return position;
-    }
-
-    public Vector3f size() {
-        return size;
-    }
+    Seat[] seats();
 }

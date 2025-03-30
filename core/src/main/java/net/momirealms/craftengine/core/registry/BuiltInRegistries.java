@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.registry;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.PropertyFactory;
+import net.momirealms.craftengine.core.entity.furniture.HitBoxFactory;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
@@ -45,6 +46,7 @@ public class BuiltInRegistries {
     public static final Registry<PathMatcherFactory> PATH_MATCHER_FACTORY = createRegistry(Registries.PATH_MATCHER_FACTORY);
     public static final Registry<ResolutionFactory> RESOLUTION_FACTORY = createRegistry(Registries.RESOLUTION_FACTORY);
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);
+    public static final Registry<HitBoxFactory> HITBOX_FACTORY = createRegistry(Registries.HITBOX_FACTORY);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);

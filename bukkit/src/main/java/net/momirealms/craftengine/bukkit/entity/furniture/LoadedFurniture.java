@@ -1,13 +1,9 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import net.momirealms.craftengine.bukkit.entity.DisplayEntityData;
-import net.momirealms.craftengine.bukkit.entity.InteractionEntityData;
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
-import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.Key;
@@ -19,7 +15,6 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
@@ -35,8 +30,6 @@ public class LoadedFurniture {
     private final Map<Integer, HitBox> hitBoxes;
     // location
     private Location location;
-    // cached spawn packet
-    private Object cachedSpawnPacket;
     // base entity
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
@@ -47,6 +40,9 @@ public class LoadedFurniture {
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
+
+    // cached spawn packet
+    private Object cachedSpawnPacket;
 
     public LoadedFurniture(Entity baseEntity,
                            CustomFurniture furniture,
@@ -60,77 +56,39 @@ public class LoadedFurniture {
         this.hitBoxes = new HashMap<>();
         this.elements = new HashMap<>();
         List<Integer> entityIds = new ArrayList<>();
-        List<Integer> interactionEntityIds = new ArrayList<>();
+        List<Integer> hitBoxEntityIds = new ArrayList<>();
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             entityIds.add(entityId);
             this.elements.put(entityId, element);
         }
-        for (HitBox hitBox : placement.hitbox()) {
+        for (HitBox hitBox : placement.hitboxes()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             entityIds.add(entityId);
-            interactionEntityIds.add(entityId);
+            hitBoxEntityIds.add(entityId);
             this.hitBoxes.put(entityId, hitBox);
         }
         this.subEntityIds = entityIds;
-        this.interactionEntityIds = interactionEntityIds;
-        this.resetSpawnPackets();
+        this.interactionEntityIds = hitBoxEntityIds;
     }
 
-    private void resetSpawnPackets() {
-        try {
-            List<Object> packets = new ArrayList<>();
-            for (Map.Entry<Integer, FurnitureElement> entry : elements.entrySet()) {
-                int entityId = entry.getKey();
-                FurnitureElement element = entry.getValue();
-                Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(element.item(), null);
-                if (item == null) {
-                    CraftEngine.instance().logger().warn("Failed to create furniture element for " + id + " because item " + element.item() + " not found");
-                    continue;
+    public synchronized Object spawnPacket() {
+        if (this.cachedSpawnPacket == null) {
+            try {
+                List<Object> packets = new ArrayList<>();
+                for (Map.Entry<Integer, FurnitureElement> entry : this.elements.entrySet()) {
+                    entry.getValue().addSpawnPackets(entry.getKey(), this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
                 }
-                item.load();
-
-                Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(element.offset()));
-                Object addEntityPacket = Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityId, UUID.randomUUID(), this.location.getX() + offset.x, this.location.getY() + offset.y, this.location.getZ() - offset.z, 0, this.location.getYaw(),
-                        Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
-                );
-
-                ArrayList<Object> values = new ArrayList<>();
-                DisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), values);
-                DisplayEntityData.Scale.addEntityDataIfNotDefaultValue(element.scale(), values);
-                DisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(element.rotation(), values);
-                DisplayEntityData.BillboardConstraints.addEntityDataIfNotDefaultValue(element.billboard().id(), values);
-                DisplayEntityData.Translation.addEntityDataIfNotDefaultValue(element.translation(), values);
-                DisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(element.transform().id(), values);
-                Object setDataPacket = Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId, values);
-
-                packets.add(addEntityPacket);
-                packets.add(setDataPacket);
+                for (Map.Entry<Integer, HitBox> entry : this.hitBoxes.entrySet()) {
+                    entry.getValue().addSpawnPackets(entry.getKey(), this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
+                }
+                this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
             }
-            for (Map.Entry<Integer, HitBox> entry : hitBoxes.entrySet()) {
-                int entityId = entry.getKey();
-                HitBox hitBox = entry.getValue();
-                Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(hitBox.offset()));
-                Object addEntityPacket = Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityId, UUID.randomUUID(), this.location.getX() + offset.x, this.location.getY() + offset.y, this.location.getZ() - offset.z, 0, this.location.getYaw(),
-                        Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                );
-
-                ArrayList<Object> values = new ArrayList<>();
-                InteractionEntityData.Height.addEntityDataIfNotDefaultValue(hitBox.size().y, values);
-                InteractionEntityData.Width.addEntityDataIfNotDefaultValue(hitBox.size().x, values);
-                InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(hitBox.responsive(), values);
-                Object setDataPacket = Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId, values);
-
-                packets.add(addEntityPacket);
-                packets.add(setDataPacket);
-            }
-            this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
         }
+        return this.cachedSpawnPacket;
     }
 
     @NotNull
@@ -273,9 +231,5 @@ public class LoadedFurniture {
                 });
         this.addSeatEntity(seatEntity);
         seatEntity.addPassenger(player);
-    }
-
-    public @NotNull Object spawnPacket() {
-        return cachedSpawnPacket;
     }
 }

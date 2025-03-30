@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.core.entity.furniture.*;
@@ -115,7 +116,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 }
                 ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                 Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
-                FurnitureElement furnitureElement = new FurnitureElement(Key.of(key), billboard, transform,
+                FurnitureElement furnitureElement = new BukkitFurnitureElement(Key.of(key), billboard, transform,
                         MiscUtils.getVector3f(element.getOrDefault("scale", "1")),
                         MiscUtils.getVector3f(element.getOrDefault("translation", "0")),
                         MiscUtils.getVector3f(element.getOrDefault("position", "0")),
@@ -126,32 +127,10 @@ public class BukkitFurnitureManager implements FurnitureManager {
             List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
             List<HitBox> hitboxes = new ArrayList<>();
             for (Map<String, Object> config : hitboxConfigs) {
-                List<String> seats = (List<String>) config.getOrDefault("seats", List.of());
-                Seat[] seatArray = seats.stream()
-                        .map(arg -> {
-                            String[] split = arg.split(" ");
-                            if (split.length == 1) return new Seat(MiscUtils.getVector3f(split[0]), 0, false);
-                            return new Seat(MiscUtils.getVector3f(split[0]), Float.parseFloat(split[1]), true);
-                        })
-                        .toArray(Seat[]::new);
-                Vector3f position = MiscUtils.getVector3f(config.getOrDefault("position", "0"));
-                float width = MiscUtils.getAsFloat(config.getOrDefault("width", "1"));
-                float height = MiscUtils.getAsFloat(config.getOrDefault("height", "1"));
-                HitBox hitBox = new HitBox(
-                        position,
-                        new Vector3f(width, height, width),
-                        seatArray,
-                        (boolean) config.getOrDefault("interactive", true)
-                );
-                hitboxes.add(hitBox);
+                hitboxes.add(HitBoxTypes.fromMap(config));
             }
             if (hitboxes.isEmpty()) {
-                hitboxes.add(new HitBox(
-                        new Vector3f(),
-                        new Vector3f(1,1,1),
-                        new Seat[0],
-                        true
-                ));
+                hitboxes.add(InteractionHitBox.DEFAULT);
             }
             Map<String, Object> ruleSection = MiscUtils.castToMap(placementArguments.get("rules"), true);
             if (ruleSection != null) {
@@ -164,6 +143,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
+                        new Collider[0],
                         rotationRule,
                         alignmentRule
                 ));
@@ -171,6 +151,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
+                        new Collider[0],
                         RotationRule.ANY,
                         AlignmentRule.CENTER
                 ));
@@ -222,6 +203,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 tryLeavingSeat(player, vehicle);
             }
         }
+//        for (World world : Bukkit.getWorlds()) {
+//            for (Entity entity : world.getEntities()) {
+//                if (entity instanceof CollisionEntity) {
+//                    entity.remove();
+//                }
+//            }
+//        }
     }
 
     @Override
@@ -251,6 +239,10 @@ public class BukkitFurnitureManager implements FurnitureManager {
             furniture.destroySeats();
             for (int sub : furniture.interactionEntityIds()) {
                 this.furnitureByInteractionEntityId.remove(sub);
+            }
+        } else if (entity instanceof Interaction interaction) {
+            if (interaction instanceof CollisionEntity) {
+                entity.remove();
             }
         }
     }

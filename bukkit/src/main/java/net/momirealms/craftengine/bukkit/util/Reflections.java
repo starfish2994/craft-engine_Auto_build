@@ -2426,6 +2426,12 @@ public class Reflections {
             )
     );
 
+    public static final Constructor<?> constructor$AABB = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$AABB, double.class, double.class, double.class, double.class, double.class, double.class
+            )
+    );
+
     public static final Class<?> clazz$BlockGetter = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.level.BlockGetter"),
@@ -5753,22 +5759,27 @@ public class Reflections {
             )
     );
 
-    public static final Field field$Level$random = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$Level, clazz$RandomSource, 0
+    public static final Field field$Entity$boundingBox = requireNonNull(
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$Entity, clazz$AABB, 0
             )
     );
 
-    public static final Class<?> clazz$Mth = requireNonNull(
+    public static final Class<?> clazz$CraftShulker = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("util.Mth"),
-                    BukkitReflectionUtils.assembleMCClass("util.MathHelper")
+                    BukkitReflectionUtils.assembleCBClass("entity.CraftShulker")
             )
     );
 
-    public static final Method method$nextInt = requireNonNull(
+    public static final Class<?> clazz$Shulker = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.Shulker")
+            )
+    );
+
+    public static final Method method$CraftShulker$getHandle = requireNonNull(
             ReflectionUtils.getMethod(
-                    clazz$Mth, int.class, clazz$RandomSource, int.class, int.class
+                    clazz$CraftShulker, clazz$Shulker, 0
             )
     );
 }

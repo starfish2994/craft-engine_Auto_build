@@ -11,6 +11,7 @@ public class CustomFurniture {
     private final Key id;
     private final FurnitureSettings settings;
     private final EnumMap<AnchorType, Placement> placements;
+    private final AnchorType anyType;
     @Nullable
     private final LootTable<?> lootTable;
 
@@ -22,6 +23,7 @@ public class CustomFurniture {
         this.settings = settings;
         this.placements = placements;
         this.lootTable = lootTable;
+        this.anyType = placements.keySet().stream().findFirst().orElse(null);
     }
 
     public Key id() {
@@ -42,7 +44,7 @@ public class CustomFurniture {
     }
 
     public AnchorType getAnyPlacement() {
-        return placements.keySet().stream().findFirst().orElse(null);
+        return this.anyType;
     }
 
     public boolean isAllowedPlacement(AnchorType anchorType) {
@@ -55,19 +57,25 @@ public class CustomFurniture {
 
     public static class Placement {
         private final FurnitureElement[] elements;
-        private final HitBox[] hitbox;
+        private final HitBox[] hitboxes;
+        private final Collider[] colliders;
         private final RotationRule rotationRule;
         private final AlignmentRule alignmentRule;
 
-        public Placement(FurnitureElement[] elements, HitBox[] hitbox, RotationRule rotationRule, AlignmentRule alignmentRule) {
+        public Placement(FurnitureElement[] elements, HitBox[] hitboxes, Collider[] colliders, RotationRule rotationRule, AlignmentRule alignmentRule) {
             this.elements = elements;
-            this.hitbox = hitbox;
+            this.hitboxes = hitboxes;
+            this.colliders = colliders;
             this.rotationRule = rotationRule;
             this.alignmentRule = alignmentRule;
         }
 
-        public HitBox[] hitbox() {
-            return hitbox;
+        public HitBox[] hitboxes() {
+            return hitboxes;
+        }
+
+        public Collider[] colliders() {
+            return colliders;
         }
 
         public FurnitureElement[] elements() {

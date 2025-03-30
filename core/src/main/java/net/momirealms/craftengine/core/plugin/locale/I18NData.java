@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.plugin.locale;
 
 import net.momirealms.craftengine.core.block.BlockStateParser;
-import net.momirealms.craftengine.core.block.BlockStateVariantProvider;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
