@@ -1,8 +1,10 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.Pack;
@@ -362,9 +364,66 @@ public class BukkitFurnitureManager implements FurnitureManager {
         }
         Vector3f seatPos = MiscUtils.getVector3f(vector3f);
         furniture.removeOccupiedSeat(seatPos);
+
+        Location vehicleLocation = vehicle.getLocation();
+        Location originalLocation = vehicleLocation.clone();
+        originalLocation.setY(furniture.location().getY());
+        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection());
+        if (!isSafeLocation(targetLocation)) {
+            targetLocation = findSafeLocationNearby(originalLocation);
+            if (targetLocation == null) return;
+        }
+        targetLocation.setYaw(player.getLocation().getYaw());
+        targetLocation.setPitch(player.getLocation().getPitch());
+        player.teleport(targetLocation);
     }
 
     protected boolean isSeatCarrierType(Entity entity) {
         return (entity instanceof ArmorStand || entity instanceof ItemDisplay);
+    }
+
+    private boolean isSafeLocation(Location location) {
+        World world = location.getWorld();
+        if (world == null) return false;
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        if (!world.getBlockAt(x, y - 1, z).getType().isSolid()) return false;
+        if (!world.getBlockAt(x, y, z).isPassable()) return false;
+        if (isEntityBlocking(location)) return false;
+        return world.getBlockAt(x, y + 1, z).isPassable();
+    }
+
+    @Nullable
+    private Location findSafeLocationNearby(Location center) {
+        World world = center.getWorld();
+        if (world == null) return null;
+        int centerX = center.getBlockX();
+        int centerY = center.getBlockY();
+        int centerZ = center.getBlockZ();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) continue;
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                Location nearbyLocation = new Location(world, x + 0.5, centerY, z + 0.5);
+                if (isSafeLocation(nearbyLocation)) return nearbyLocation;
+            }
+        }
+        return null;
+    }
+
+    private boolean isEntityBlocking(Location location) {
+        World world = location.getWorld();
+        if (world == null) return true;
+        try {
+            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.5, 2, 0.5);
+            for (Entity bukkitEntity : nearbyEntities) {
+                if (bukkitEntity instanceof Player) continue;
+                Object nmsEntity = Reflections.method$CraftEntity$getHandle.invoke(bukkitEntity);
+                return (boolean) Reflections.method$Entity$canBeCollidedWith.invoke(nmsEntity);
+            }
+        } catch (Exception ignored) {}
+        return false;
     }
 }

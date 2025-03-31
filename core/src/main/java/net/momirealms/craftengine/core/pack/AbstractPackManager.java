@@ -27,6 +27,9 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -36,6 +39,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -50,6 +54,7 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
+    public static final List<byte[]> SHULKER_PNG = new ArrayList<>(1);
 
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
@@ -85,6 +90,8 @@ public abstract class AbstractPackManager implements PackManager {
         loadInternalList("internal/textures/block/_list.json", VANILLA_BLOCK_TEXTURES::add);
         loadInternalList("internal/textures/item/_list.json", VANILLA_ITEM_TEXTURES::add);
         loadInternalList("internal/textures/font/_list.json", VANILLA_FONT_TEXTURES::add);
+
+        loadInternalPng("internal/textures/entity/shulker/shulker.png", SHULKER_PNG::add);
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -112,6 +119,16 @@ public abstract class AbstractPackManager implements PackManager {
                         callback.accept(Key.of(FileUtils.pathWithoutExtension(primitive.getAsString())));
                     }
                 }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load " + path, e);
+        }
+    }
+
+    private void loadInternalPng(String path, Consumer<byte[]> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+            if (inputStream != null) {
+                callback.accept(inputStream.readAllBytes());
             }
         } catch (IOException e) {
             this.plugin.logger().warn("Failed to load " + path, e);
@@ -482,6 +499,7 @@ public abstract class AbstractPackManager implements PackManager {
         this.generateCustomSounds(generatedPackPath);
         this.generateClientLang(generatedPackPath);
         this.generateEquipments(generatedPackPath);
+        this.generateShulker(generatedPackPath);
 
         Path zipFile = resourcePackPath();
         try {
@@ -510,6 +528,81 @@ public abstract class AbstractPackManager implements PackManager {
             this.packHash = "";
             this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private void generateShulker(Path generatedPackPath) {
+        try {
+            if (ConfigManager.removedCollisionBoxEntityTextureLegacy()) {
+                File shulkerFile = generatedPackPath.resolve("assets/minecraft/textures/entity/shulker/shulker.png").toFile();
+                shulkerFile.getParentFile().mkdirs();
+                if (!shulkerFile.exists()) {
+                    try (OutputStream out = new FileOutputStream(shulkerFile)) {
+                        out.write(SHULKER_PNG.get(0));
+                    }
+                } else {
+                    this.modifyShulker(shulkerFile, shulkerFile);
+                }
+            }
+            if (ConfigManager.removedCollisionBoxEntityTexture()) {
+                File overlaysFile = generatedPackPath.resolve("1_20_2_ce/assets/minecraft/textures/entity/shulker/shulker.png").toFile();
+                overlaysFile.getParentFile().mkdirs();
+                File shulkerFile = generatedPackPath.resolve("assets/minecraft/textures/entity/shulker/shulker.png").toFile();
+                File packMetaFile = generatedPackPath.resolve("pack.mcmeta").toFile();
+                boolean modifyPackMetaFile = false;
+                if (!shulkerFile.exists() && packMetaFile.exists()) {
+                    try (OutputStream out = new FileOutputStream(overlaysFile)) {
+                        out.write(SHULKER_PNG.get(0));
+                    }
+                    modifyPackMetaFile = true;
+                } else if (packMetaFile.exists()) {
+                    this.modifyShulker(shulkerFile, overlaysFile);
+                    modifyPackMetaFile = true;
+                }
+                if (modifyPackMetaFile) {
+                    JsonObject packMcmeta = GsonHelper.readJsonFile(packMetaFile.toPath()).getAsJsonObject();
+                    JsonArray entries = packMcmeta.getAsJsonObject("overlays").getAsJsonArray("entries");
+                    JsonObject entrie = new JsonObject();
+                    JsonObject formats = new JsonObject();
+                    formats.addProperty("min_inclusive", 16);
+                    formats.addProperty("max_inclusive", 34);
+                    entrie.add("formats", formats);
+                    entrie.addProperty("directory", "1_20_2_ce");
+                    entries.add(entrie);
+                    GsonHelper.writeJsonFile(packMcmeta, packMetaFile.toPath());
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Error creating shulker.png", e);
+        }
+    }
+
+    private void modifyShulker(File shulkerFile, File saveFile) throws IOException {
+        BufferedImage originalImage = ImageIO.read(shulkerFile);
+        BufferedImage argbImage;
+        if (originalImage.getType() == BufferedImage.TYPE_INT_ARGB) {
+            argbImage = originalImage;
+        } else {
+            argbImage = new BufferedImage(
+                    originalImage.getWidth(),
+                    originalImage.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+            Graphics2D g = argbImage.createGraphics();
+            g.drawImage(originalImage, 0, 0, null);
+            g.dispose();
+        }
+        int startX = 0;
+        int startY = argbImage.getHeight() - 12;
+        int width = 24;
+        int heightRegion = 12;
+        for (int y = startY; y < startY + heightRegion; y++) {
+            for (int x = startX; x < startX + width; x++) {
+                int pixel = argbImage.getRGB(x, y);
+                int transparentPixel = pixel & 0x00FFFFFF;
+                argbImage.setRGB(x, y, transparentPixel);
+            }
+        }
+        ImageIO.write(argbImage, "PNG", saveFile);
     }
 
     private void generateEquipments(Path generatedPackPath) {

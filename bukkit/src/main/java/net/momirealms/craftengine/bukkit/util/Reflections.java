@@ -2808,6 +2808,7 @@ public class Reflections {
 
     public static final Object instance$Holder$Attribute$block_break_speed;
     public static final Object instance$Holder$Attribute$block_interaction_range;
+    public static final Object instance$Holder$Attribute$scale;
 
     static {
         try {
@@ -2821,9 +2822,15 @@ public class Reflections {
                 @SuppressWarnings("unchecked")
                 Optional<Object> blockInteractionRangeHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_interaction_range);
                 instance$Holder$Attribute$block_interaction_range = blockInteractionRangeHolder.orElse(null);
+
+                Object scale = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "scale" : "generic.scale");
+                @SuppressWarnings("unchecked")
+                Optional<Object> scaleHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, scale);
+                instance$Holder$Attribute$scale = scaleHolder.orElse(null);
             } else {
                 instance$Holder$Attribute$block_break_speed = null;
                 instance$Holder$Attribute$block_interaction_range = null;
+                instance$Holder$Attribute$scale = null;
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -3141,6 +3148,7 @@ public class Reflections {
 
     public static final Object instance$MobEffecr$mining_fatigue;
     public static final Object instance$MobEffecr$haste;
+    public static final Object instance$MobEffecr$invisibility;
 
     // for 1.20.1-1.20.4
     static {
@@ -3149,6 +3157,8 @@ public class Reflections {
             instance$MobEffecr$mining_fatigue = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, mining_fatigue);
             Object haste = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "haste");
             instance$MobEffecr$haste = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, haste);
+            Object invisibility = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "invisibility");
+            instance$MobEffecr$invisibility = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, invisibility);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -3665,6 +3675,7 @@ public class Reflections {
     public static final Object instance$EntityType$ITEM_DISPLAY;
     public static final Object instance$EntityType$FALLING_BLOCK;
     public static final Object instance$EntityType$INTERACTION;
+    public static final Object instance$EntityType$SHULKER;
 
     static {
         try {
@@ -3676,6 +3687,8 @@ public class Reflections {
             instance$EntityType$FALLING_BLOCK = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fallingBlock);
             Object interaction = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "interaction");
             instance$EntityType$INTERACTION = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, interaction);
+            Object shulker = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "shulker");
+            instance$EntityType$SHULKER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, shulker);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -5773,13 +5786,134 @@ public class Reflections {
 
     public static final Class<?> clazz$Shulker = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.Shulker")
+                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.Shulker"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.EntityShulker")
             )
     );
 
     public static final Method method$CraftShulker$getHandle = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$CraftShulker, clazz$Shulker, 0
+            )
+    );
+
+    public static final Class<?> clazz$Pose = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.Pose"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.EntityPose")
+            )
+    );
+
+    public static final Method method$Pose$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$Pose, clazz$Pose.arrayType()
+            )
+    );
+
+    public static final Object instance$Pose$STANDING;
+    public static final Object instance$Pose$FALL_FLYING;
+    public static final Object instance$Pose$SLEEPING;
+    public static final Object instance$Pose$SWIMMING;
+    public static final Object instance$Pose$SPIN_ATTACK;
+    public static final Object instance$Pose$CROUCHING;
+    public static final Object instance$Pose$LONG_JUMPING;
+    public static final Object instance$Pose$DYING;
+    public static final Object instance$Pose$CROAKING;
+    public static final Object instance$Pose$USING_TONGUE;
+    public static final Object instance$Pose$SITTING;
+    public static final Object instance$Pose$ROARING;
+    public static final Object instance$Pose$SNIFFING;
+    public static final Object instance$Pose$EMERGING;
+    public static final Object instance$Pose$DIGGING;
+    public static final Object instance$Pose$SLIDING;
+    public static final Object instance$Pose$SHOOTING;
+    public static final Object instance$Pose$INHALING;
+    public static final Object[] instance$Poses;
+
+    static {
+        try {
+            instance$Poses = (Object[]) method$Pose$values.invoke(null);
+            instance$Pose$STANDING = instance$Poses[0];
+            instance$Pose$FALL_FLYING = instance$Poses[1];
+            instance$Pose$SLEEPING = instance$Poses[2];
+            instance$Pose$SWIMMING = instance$Poses[3];
+            instance$Pose$SPIN_ATTACK = instance$Poses[4];
+            instance$Pose$CROUCHING = instance$Poses[5];
+            instance$Pose$LONG_JUMPING = instance$Poses[6];
+            instance$Pose$DYING = instance$Poses[7];
+            instance$Pose$CROAKING = instance$Poses[8];
+            instance$Pose$USING_TONGUE = instance$Poses[9];
+            instance$Pose$SITTING = instance$Poses[10];
+            instance$Pose$ROARING = instance$Poses[11];
+            instance$Pose$SNIFFING = instance$Poses[12];
+            instance$Pose$EMERGING = instance$Poses[13];
+            instance$Pose$DIGGING = instance$Poses[14];
+            if (VersionHelper.isVersionNewerThan1_20_3()) {
+                instance$Pose$SLIDING = instance$Poses[15];
+                instance$Pose$SHOOTING = instance$Poses[16];
+                instance$Pose$INHALING = instance$Poses[17];
+            } else {
+                instance$Pose$SLIDING = null;
+                instance$Pose$SHOOTING = null;
+                instance$Pose$INHALING = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Class<?> clazz$Attributes = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.ai.attributes.Attributes"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.ai.attributes.GenericAttributes")
+            )
+    );
+
+    // 1.20.5+
+    public static final Constructor<?> constructor$AttributeInstance =
+            ReflectionUtils.getConstructor(
+                    clazz$AttributeInstance, clazz$Holder, Consumer.class
+            );
+
+    public static final Method method$AttributeInstance$setBaseValue = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AttributeInstance, void.class, double.class
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundSetPassengersPacket = requireNonNull(
+            ReflectionUtils.getDeclaredConstructor(
+                    clazz$ClientboundSetPassengersPacket, clazz$FriendlyByteBuf
+            )
+    );
+
+    public static final Method method$FriendlyByteBuf$writeVarInt = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, new String[]{"writeVarInt", "d", "c"}, int.class
+            )
+    );
+
+    public static final Method method$FriendlyByteBuf$writeVarIntArray = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, int[].class
+            )
+    );
+
+    public static final Method method$Entity$canBeCollidedWith = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_5()
+                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith"})
+                    : VersionHelper.isVersionNewerThan1_20_3()
+                        ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bz"})
+                        : VersionHelper.isVersionNewerThan1_20_2()
+                            ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bx"})
+                            : VersionHelper.isVersionNewerThan1_20()
+                                ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bu"})
+                                : ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith", "bu", "bx", "bz"})
+    );
+
+    public static final Method method$CraftEntity$getHandle = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$CraftEntity, clazz$Entity, 0
             )
     );
 }

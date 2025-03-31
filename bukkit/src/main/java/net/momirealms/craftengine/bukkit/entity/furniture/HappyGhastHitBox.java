@@ -9,11 +9,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class BoatHitBox extends AbstractHitBox {
+public class HappyGhastHitBox extends AbstractHitBox {
     public static final Factory FACTORY = new Factory();
+    private final double scale;
 
-    public BoatHitBox(Seat[] seats, Vector3f position) {
+    public HappyGhastHitBox(Seat[] seats, Vector3f position, double scale) {
         super(seats, position);
+        this.scale = scale;
     }
 
     @Override
@@ -21,9 +23,13 @@ public class BoatHitBox extends AbstractHitBox {
         return HitBoxTypes.BOAT;
     }
 
+    public double scale() {
+        return scale;
+    }
+
     @Override
     public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Consumer<Object> packets) {
-        // 生成无重力船
+        // todo 乐魂
     }
 
     @Override
@@ -35,9 +41,11 @@ public class BoatHitBox extends AbstractHitBox {
 
         @Override
         public HitBox create(Map<String, Object> arguments) {
-            return new BoatHitBox(
+            double scale = MiscUtils.getAsDouble(arguments.getOrDefault("scale", "1"));
+            return new HappyGhastHitBox(
                     HitBoxFactory.getSeats(arguments),
-                    MiscUtils.getVector3f(arguments.getOrDefault("position", "0"))
+                    MiscUtils.getVector3f(arguments.getOrDefault("position", "0")),
+                    scale
             );
         }
     }
