@@ -9,7 +9,6 @@ import net.momirealms.craftengine.core.entity.furniture.ItemDisplayContext;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.QuaternionUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Quaternionf;
@@ -34,9 +33,9 @@ public class BukkitFurnitureElement extends AbstractFurnitureElement {
     }
 
     @Override
-    public void addSpawnPackets(int entityId, double x, double y, double z, float yaw, Consumer<Object> packets) {
+    public void addSpawnPackets(int entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
         try {
-            Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - yaw), 0).conjugate().transform(new Vector3f(position()));
+            Vector3f offset = conjugated.transform(new Vector3f(position()));
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityId, UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0

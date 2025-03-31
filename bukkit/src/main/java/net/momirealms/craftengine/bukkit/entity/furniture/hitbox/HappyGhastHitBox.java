@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Map;
@@ -28,7 +29,7 @@ public class HappyGhastHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Consumer<Object> packets) {
+    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
         // todo 乐魂
     }
 

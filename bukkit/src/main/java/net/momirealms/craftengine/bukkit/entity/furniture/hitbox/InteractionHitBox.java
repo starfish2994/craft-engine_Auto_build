@@ -5,7 +5,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.QuaternionUtils;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ public class InteractionHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Consumer<Object> packets) {
-        Vector3f offset = QuaternionUtils.toQuaternionf(0f, Math.toRadians(180f - yaw), 0f).conjugate().transform(new Vector3f(position()));
+    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
+        Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,

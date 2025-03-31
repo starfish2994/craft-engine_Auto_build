@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
-import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
@@ -145,10 +144,9 @@ public class BukkitFurnitureManager implements FurnitureManager {
             List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
             List<Collider> colliders = new ArrayList<>();
             for (Map<String, Object> config : colliderConfigs) {
-                if (!config.containsKey("width") && !config.containsKey("height")) {
+                if (!config.containsKey("position")) {
                     colliders.add(new Collider(
                             (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
-                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
                             MiscUtils.getVector3f(config.getOrDefault("point-1", "0")),
                             MiscUtils.getVector3f(config.getOrDefault("point-2", "0"))
                     ));
@@ -232,13 +230,6 @@ public class BukkitFurnitureManager implements FurnitureManager {
             Entity vehicle = player.getVehicle();
             if (vehicle != null) {
                 tryLeavingSeat(player, vehicle);
-            }
-        }
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (FastNMS.INSTANCE.method$CraftEntity$getHandle(entity) instanceof CollisionEntity) {
-                    entity.remove();
-                }
             }
         }
     }

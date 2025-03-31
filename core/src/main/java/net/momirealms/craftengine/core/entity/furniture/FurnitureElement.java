@@ -21,5 +21,5 @@ public interface FurnitureElement {
 
     Vector3f position();
 
-    void addSpawnPackets(int entityId, double x, double y, double z, float yaw, Consumer<Object> packets);
+    void addSpawnPackets(int entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets);
 }

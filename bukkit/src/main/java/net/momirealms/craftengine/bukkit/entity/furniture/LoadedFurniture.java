@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -17,6 +19,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.lang.ref.WeakReference;
@@ -55,18 +58,26 @@ public class LoadedFurniture {
         List<Integer> hitBoxEntityIds = new ArrayList<>();
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
 
+        double yawInRadius = Math.toRadians(180 - this.location.getYaw());
+        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, yawInRadius, 0).conjugate();
+
+        double x = location.getX();
+        double y = location.getY();
+        double z = location.getZ();
+        float yaw = this.location.getYaw();
+
         List<Object> packets = new ArrayList<>();
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.addSpawnPackets(entityId, this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
+            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packets::add);
         }
         for (HitBox hitBox : placement.hitBoxes()) {
             int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
                 hitBoxEntityIds.add(entityId);
-                hitBox.addSpawnPackets(ids, this.location.getX(), this.location.getY(), this.location.getZ(), this.location.getYaw(), packets::add);
+                hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, packets::add);
                 this.hitBoxes.put(entityId, hitBox);
             }
         }
@@ -77,6 +88,23 @@ public class LoadedFurniture {
         }
         this.fakeEntityIds = fakeEntityIds;
         this.hitBoxEntityIds = hitBoxEntityIds;
+
+        if (placement.colliders().length != 0) {
+            Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
+            for (Collider collider : placement.colliders()) {
+                Vector3f offset1 = conjugated.transform(new Vector3f(collider.point1()));
+                Vector3f offset2 = conjugated.transform(new Vector3f(collider.point2()));
+                double x1 = x + offset1.x();
+                double x2 = x + offset2.x();
+                double y1 = y + offset1.y();
+                double y2 = y + offset2.y();
+                double z1 = z - offset1.z();
+                double z2 = z - offset2.z();
+                Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
+                CollisionEntity entity = FastNMS.INSTANCE.createCollisionEntity(world, aabb, x, y, z, true, collider.canBeHitByProjectile());
+                FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
+            }
+        }
     }
 
     @NotNull
