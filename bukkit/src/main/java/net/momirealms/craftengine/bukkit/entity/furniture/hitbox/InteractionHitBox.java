@@ -69,8 +69,16 @@ public class InteractionHitBox extends AbstractHitBox {
         @Override
         public HitBox create(Map<String, Object> arguments) {
             Vector3f position = MiscUtils.getVector3f(arguments.getOrDefault("position", "0"));
-            float width = MiscUtils.getAsFloat(arguments.getOrDefault("width", "1"));
-            float height = MiscUtils.getAsFloat(arguments.getOrDefault("height", "1"));
+            float width;
+            float height;
+            if (arguments.containsKey("scale")) {
+                String[] split = arguments.get("scale").toString().split(",");
+                width = Float.parseFloat(split[0]);
+                height = Float.parseFloat(split[1]);
+            } else {
+                width = MiscUtils.getAsFloat(arguments.getOrDefault("width", "1"));
+                height = MiscUtils.getAsFloat(arguments.getOrDefault("height", "1"));
+            }
             return new InteractionHitBox(
                     HitBoxFactory.getSeats(arguments),
                     position,
