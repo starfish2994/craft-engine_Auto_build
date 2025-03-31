@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -46,14 +47,14 @@ public class InteractionHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
+    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-            ));
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId[0], List.copyOf(this.cachedValues)));
+            ), true);
+            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId[0], List.copyOf(this.cachedValues)), true);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct hitbox spawn packet", e);
         }

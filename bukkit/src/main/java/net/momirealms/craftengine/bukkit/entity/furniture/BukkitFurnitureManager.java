@@ -285,7 +285,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
                 this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
-                this.plugin.networkManager().sendPacket(player, furniture.spawnPacket());
+                this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
         }
     }

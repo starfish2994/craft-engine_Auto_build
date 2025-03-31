@@ -619,7 +619,7 @@ public class PacketConsumers {
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(entityId);
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
-                    user.sendPacket(furniture.spawnPacket(), false);
+                    user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
                     if (ConfigManager.hideBaseEntity()) {
                         event.setCancelled(true);
                     }

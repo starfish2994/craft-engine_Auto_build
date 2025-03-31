@@ -13,10 +13,7 @@ import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
@@ -41,11 +38,13 @@ public class LoadedFurniture {
     private final List<Integer> fakeEntityIds;
     private final List<Integer> hitBoxEntityIds;
     private final Map<Integer, HitBox> hitBoxes;
+    private final boolean minimized;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
     // cached spawn packet
     private Object cachedSpawnPacket;
+    private Object cachedMinimizedSpawnPacket;
 
     public LoadedFurniture(Entity baseEntity,
                            CustomFurniture furniture,
@@ -57,6 +56,7 @@ public class LoadedFurniture {
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
         this.hitBoxes = new HashMap<>();
+        this.minimized = furniture.settings().minimized();
         List<Integer> fakeEntityIds = new ArrayList<>();
         List<Integer> hitBoxEntityIds = new ArrayList<>();
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
@@ -70,22 +70,34 @@ public class LoadedFurniture {
         float yaw = this.location.getYaw();
 
         List<Object> packets = new ArrayList<>();
+        List<Object> minimizedPackets = new ArrayList<>();
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packets::add);
+            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packet -> {
+                packets.add(packet);
+                if (this.minimized) minimizedPackets.add(packet);
+            });
         }
         for (HitBox hitBox : placement.hitBoxes()) {
             int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
                 hitBoxEntityIds.add(entityId);
-                hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, packets::add);
+                hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+                    packets.add(packet);
+                    if (this.minimized && !canBeMinimized) {
+                        minimizedPackets.add(packet);
+                    }
+                });
                 this.hitBoxes.put(entityId, hitBox);
             }
         }
         try {
             this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+            if (this.minimized) {
+                this.cachedMinimizedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(minimizedPackets);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
         }
@@ -114,8 +126,13 @@ public class LoadedFurniture {
     }
 
     @NotNull
-    public Object spawnPacket() {
-        return this.cachedSpawnPacket;
+    public Object spawnPacket(Player player) {
+        // TODO hasPermission might be slow, can we use a faster way in the future?
+        if (!this.minimized || player.hasPermission(FurnitureManager.FURNITURE_ADMIN_NODE)) {
+            return this.cachedSpawnPacket;
+        } else {
+            return this.cachedMinimizedSpawnPacket;
+        }
     }
 
     @NotNull

@@ -7,6 +7,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -29,7 +30,7 @@ public class HappyGhastHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
+    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
         // todo 乐魂
     }
 

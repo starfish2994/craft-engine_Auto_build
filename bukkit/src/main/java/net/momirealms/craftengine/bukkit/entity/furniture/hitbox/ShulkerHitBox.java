@@ -14,6 +14,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -90,30 +91,30 @@ public class ShulkerHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityIds, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
+    public void addSpawnPackets(int[] entityIds, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityIds[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
-            ));
+            ), false);
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityIds[1], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
-            ));
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.copyOf(this.cachedShulkerValues)));
-            packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]));
+            ), false);
+            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]), false);
             if (VersionHelper.isVersionNewerThan1_20_5()) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);
-                packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)));
+                packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
             if (this.interactionEntity) {
                 packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                         entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.0005f, z - offset.z, 0, yaw,
                         Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                ));
-                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)));
+                ), true);
+                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
