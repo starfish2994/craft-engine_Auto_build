@@ -140,6 +140,9 @@ furniture:
       - "xxx:invalid_furniture"
   # Whether to hide the entity containing metadata
   hide-base-entity: true
+  # Removed collision box entity texture
+  removed-collision-box-entity-texture-1_20_2: true
+  removed-collision-box-entity-texture-1_20: false
 
 image:
   # Prevent players from using images set in minecraft:default font
