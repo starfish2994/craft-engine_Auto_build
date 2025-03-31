@@ -373,6 +373,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         Vector3f seatPos = MiscUtils.getVector3f(vector3f);
         furniture.removeOccupiedSeat(seatPos);
 
+        if (player.getVehicle() != null) return;
         Location vehicleLocation = vehicle.getLocation();
         Location originalLocation = vehicleLocation.clone();
         originalLocation.setY(furniture.location().getY());
