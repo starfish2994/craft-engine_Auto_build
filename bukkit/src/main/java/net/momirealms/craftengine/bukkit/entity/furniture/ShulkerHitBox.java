@@ -1,13 +1,8 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.bukkit.entity.BaseEntityData;
-import net.momirealms.craftengine.bukkit.entity.MobData;
 import net.momirealms.craftengine.bukkit.entity.ShulkerData;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
-import net.momirealms.craftengine.bukkit.util.MobEffectUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.*;
@@ -56,22 +51,21 @@ public class ShulkerHitBox extends AbstractHitBox {
         try {
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
                     entityIds[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
-                    Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
-            ));
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[0], getCachedValues()));
-            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                    entityIds[1], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
             ));
-            ByteBuf byteBuf = Unpooled.buffer();
-            Object friendlyByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(byteBuf);
-            Reflections.method$FriendlyByteBuf$writeVarInt.invoke(friendlyByteBuf, entityIds[1]);
-            Reflections.method$FriendlyByteBuf$writeVarIntArray.invoke(friendlyByteBuf, (Object) new int[] {entityIds[0]});
+            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                    entityIds[1], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                    Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
+            ));
+            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], getCachedValues()));
+            Object friendlyByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(Unpooled.buffer());
+            Reflections.method$FriendlyByteBuf$writeVarInt.invoke(friendlyByteBuf, entityIds[0]);
+            Reflections.method$FriendlyByteBuf$writeVarIntArray.invoke(friendlyByteBuf, (Object) new int[] {entityIds[1]});
             packets.accept(Reflections.constructor$ClientboundSetPassengersPacket.newInstance(friendlyByteBuf));
             if (VersionHelper.isVersionNewerThan1_20_5()) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Attributes$SCALE, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);
-                packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[0], Collections.singletonList(attributeInstance)));
+                packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)));
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
