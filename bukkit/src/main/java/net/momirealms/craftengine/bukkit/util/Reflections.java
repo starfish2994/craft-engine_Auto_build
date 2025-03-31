@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public class Reflections {
 
     public static void init() {
