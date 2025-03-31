@@ -77,7 +77,7 @@ public class PacketConsumers {
         try {
             if (user.clientModEnabled()) {
                 BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
                 byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
                 ByteBuf buf = Unpooled.copiedBuffer(buffer);
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
@@ -107,7 +107,7 @@ public class PacketConsumers {
                 Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
             } else {
                 BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
                 byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
                 ByteBuf buf = Unpooled.copiedBuffer(buffer);
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);

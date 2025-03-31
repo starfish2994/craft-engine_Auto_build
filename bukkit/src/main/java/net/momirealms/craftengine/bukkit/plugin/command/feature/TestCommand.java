@@ -28,7 +28,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                         Object level = Reflections.field$CraftWorld$ServerLevel.get(player.getWorld());
                         Object aabb = FastNMS.INSTANCE.constructor$AABB(location.getBlockX(), location.getBlockY(), location.getBlockZ(),
                                 location.getBlockX() + 1, location.getBlockY() + 1, location.getBlockZ() + 1);
-                        CollisionEntity nmsEntity = FastNMS.INSTANCE.createCollisionEntity(level, aabb, location.getBlockX() + 0.5, location.getBlockY(), location.getBlockZ() + 0.5, true, false);
+                        CollisionEntity nmsEntity = FastNMS.INSTANCE.createCollisionEntity(level, aabb, location.getBlockX() + 0.5, location.getBlockY(), location.getBlockZ() + 0.5, false);
                         FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(level, nmsEntity);
                     } catch (Exception e) {
                         e.printStackTrace();
