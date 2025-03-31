@@ -12,4 +12,16 @@ public class ModelEngineUtils {
         ActiveModel activeModel = ModelEngineAPI.createActiveModel(id);
         modeledEntity.addModel(activeModel, true);
     }
+
+    public static int interactionToBaseEntity(int entityId) {
+        ActiveModel activeModel = ModelEngineAPI.getInteractionTracker().getModelRelay(entityId);
+        if (activeModel != null) {
+            ModeledEntity modeledEntity = activeModel.getModeledEntity();
+            if (modeledEntity == null) {
+                return entityId;
+            }
+            return modeledEntity.getBase().getEntityId();
+        }
+        return entityId;
+    }
 }

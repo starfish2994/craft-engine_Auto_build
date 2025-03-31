@@ -9,6 +9,7 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -671,7 +672,13 @@ public class PacketConsumers {
         try {
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
-            int entityId = (int) Reflections.field$ServerboundInteractPacket$entityId.get(packet);
+            int entityId;
+            if (BukkitNetworkManager.hasModelEngine()) {
+                int fakeId = (int) Reflections.field$ServerboundInteractPacket$entityId.get(packet);
+                entityId = ModelEngineUtils.interactionToBaseEntity(fakeId);
+            } else {
+                entityId = Reflections.field$ServerboundInteractPacket$entityId.getInt(packet);
+            }
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;

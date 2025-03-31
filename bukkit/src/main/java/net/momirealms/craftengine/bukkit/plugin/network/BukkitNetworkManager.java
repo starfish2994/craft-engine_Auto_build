@@ -69,6 +69,11 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     private boolean active;
     private boolean init;
+    private static boolean hasModelEngine;
+
+    public static boolean hasModelEngine() {
+        return hasModelEngine;
+    }
 
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
@@ -111,6 +116,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }
         };
         this.active = true;
+        this.hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         instance = this;
     }
 
