@@ -550,35 +550,35 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
             if (ConfigManager.removedCollisionBoxEntityTexture()) {
-                File shulkerFile = generatedPackPath.resolve("assets/minecraft/textures/entity/shulker/shulker.png").toFile();
-                File packMetaFile = generatedPackPath.resolve("pack.mcmeta").toFile();
                 File overlaysFile = generatedPackPath.resolve("1_20_2_ce/assets/minecraft/textures/entity/shulker/shulker.png").toFile();
-                boolean modifyPackMetaFile = false;
-                if (!shulkerFile.exists() && packMetaFile.exists()) {
-                    File parentDir = overlaysFile.getParentFile();
-                    if (parentDir.mkdirs()) {
+                File parentDir = overlaysFile.getParentFile();
+                if (parentDir.mkdirs()) {
+                    File shulkerFile = generatedPackPath.resolve("assets/minecraft/textures/entity/shulker/shulker.png").toFile();
+                    File packMetaFile = generatedPackPath.resolve("pack.mcmeta").toFile();
+                    boolean modifyPackMetaFile = false;
+                    if (!shulkerFile.exists() && packMetaFile.exists()) {
                         try (OutputStream out = new FileOutputStream(overlaysFile)) {
                             out.write(SHULKER_PNG.get(0));
                         }
                         modifyPackMetaFile = true;
-                    } else {
-                        this.plugin.logger().warn("Failed to create parent directories for: " + overlaysFile.getAbsolutePath());
+                    } else if (packMetaFile.exists()) {
+                        this.modifyShulker(shulkerFile, overlaysFile);
+                        modifyPackMetaFile = true;
                     }
-                } else if (packMetaFile.exists()) {
-                    this.modifyShulker(shulkerFile, overlaysFile);
-                    modifyPackMetaFile = true;
-                }
-                if (modifyPackMetaFile) {
-                    JsonObject packMcmeta = GsonHelper.readJsonFile(packMetaFile.toPath()).getAsJsonObject();
-                    JsonArray entries = packMcmeta.getAsJsonObject("overlays").getAsJsonArray("entries");
-                    JsonObject entrie = new JsonObject();
-                    JsonObject formats = new JsonObject();
-                    formats.addProperty("min_inclusive", 16);
-                    formats.addProperty("max_inclusive", 34);
-                    entrie.add("formats", formats);
-                    entrie.addProperty("directory", "1_20_2_ce");
-                    entries.add(entrie);
-                    GsonHelper.writeJsonFile(packMcmeta, packMetaFile.toPath());
+                    if (modifyPackMetaFile) {
+                        JsonObject packMcmeta = GsonHelper.readJsonFile(packMetaFile.toPath()).getAsJsonObject();
+                        JsonArray entries = packMcmeta.getAsJsonObject("overlays").getAsJsonArray("entries");
+                        JsonObject entrie = new JsonObject();
+                        JsonObject formats = new JsonObject();
+                        formats.addProperty("min_inclusive", 16);
+                        formats.addProperty("max_inclusive", 34);
+                        entrie.add("formats", formats);
+                        entrie.addProperty("directory", "1_20_2_ce");
+                        entries.add(entrie);
+                        GsonHelper.writeJsonFile(packMcmeta, packMetaFile.toPath());
+                    }
+                } else {
+                    this.plugin.logger().warn("Failed to create parent directories for: " + overlaysFile.getAbsolutePath());
                 }
             }
         } catch (IOException e) {
