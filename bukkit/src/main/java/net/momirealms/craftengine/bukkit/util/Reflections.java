@@ -5779,7 +5779,8 @@ public class Reflections {
 
     public static final Class<?> clazz$Shulker = requireNonNull(
             ReflectionUtils.getClazz(
-                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.Shulker")
+                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.Shulker"),
+                    BukkitReflectionUtils.assembleMCClass("world.entity.monster.EntityShulker")
             )
     );
 
@@ -5854,12 +5855,6 @@ public class Reflections {
         }
     }
 
-    public static final Method method$AttributeInstance$getModifier = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$AttributeInstance, clazz$AttributeModifier, clazz$ResourceLocation
-            )
-    );
-
     public static final Class<?> clazz$Attributes = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("world.entity.ai.attributes.Attributes"),
@@ -5884,21 +5879,15 @@ public class Reflections {
             })
             .orElse(null);
 
-    public static final Constructor<?> constructor$AttributeInstance = requireNonNull(
+    // 1.20.5+
+    public static final Constructor<?> constructor$AttributeInstance =
             ReflectionUtils.getConstructor(
                     clazz$AttributeInstance, clazz$Holder, Consumer.class
-            )
-    );
+            );
 
     public static final Method method$AttributeInstance$setBaseValue = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$AttributeInstance, void.class, double.class
-            )
-    );
-
-    public static final Constructor<?> constructor$MobEffectInstance = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$MobEffectInstance, clazz$Holder, int.class, int.class, boolean.class, boolean.class, boolean.class
             )
     );
 
