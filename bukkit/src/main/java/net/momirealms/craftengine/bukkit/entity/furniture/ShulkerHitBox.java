@@ -1,14 +1,19 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import com.google.common.collect.Lists;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import net.momirealms.craftengine.bukkit.entity.BaseEntityData;
+import net.momirealms.craftengine.bukkit.entity.MobData;
+import net.momirealms.craftengine.bukkit.entity.ShulkerData;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.MobEffectUtils;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.*;
 import org.joml.Vector3f;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -19,6 +24,7 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final byte peek;
     // todo或许还能做个方向，但是会麻烦点，和 yaw 有关
     private final Direction direction;
+    private List<Object> cachedValues;
 
     public ShulkerHitBox(Seat[] seats, Vector3f position, double scale, byte peek, Direction direction) {
         super(seats, position);
@@ -46,10 +52,43 @@ public class ShulkerHitBox extends AbstractHitBox {
 
     @Override
     public void addSpawnPackets(int[] entityIds, double x, double y, double z, float yaw, Consumer<Object> packets) {
-        // 1.生成假的展示实体
-        // 2.生成假的潜影贝
-        // 3.潜影贝骑展示实体
-        // 4.潜影贝数据设置（隐身，尺寸，peek，方向）
+        Vector3f offset = QuaternionUtils.toQuaternionf(0f, Math.toRadians(180f - yaw), 0f).conjugate().transform(new Vector3f(position()));
+        try {
+            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                    entityIds[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                    Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
+            ));
+            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[0], getCachedValues()));
+            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                    entityIds[1], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                    Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
+            ));
+            ByteBuf byteBuf = Unpooled.buffer();
+            Object friendlyByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(byteBuf);
+            Reflections.method$FriendlyByteBuf$writeVarInt.invoke(friendlyByteBuf, entityIds[1]);
+            Reflections.method$FriendlyByteBuf$writeVarIntArray.invoke(friendlyByteBuf, (Object) new int[] {entityIds[0]});
+            packets.accept(Reflections.constructor$ClientboundSetPassengersPacket.newInstance(friendlyByteBuf));
+            if (VersionHelper.isVersionNewerThan1_20_5()) {
+                Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Attributes$SCALE, (Consumer<?>) (o) -> {});
+                Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);
+                packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[0], Collections.singletonList(attributeInstance)));
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
+        }
+    }
+
+    private synchronized List<Object> getCachedValues() {
+        if (this.cachedValues == null) {
+            this.cachedValues = new ArrayList<>();
+            ShulkerData.Peek.addEntityDataIfNotDefaultValue(peek, this.cachedValues);
+            ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedValues);
+            ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedValues);
+            ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedValues);
+            ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedValues); // 无ai
+            ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedValues); // 不可见
+        }
+        return this.cachedValues;
     }
 
     @Override
