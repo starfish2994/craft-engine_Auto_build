@@ -377,7 +377,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         Location vehicleLocation = vehicle.getLocation();
         Location originalLocation = vehicleLocation.clone();
         originalLocation.setY(furniture.location().getY());
-        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection());
+        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection().multiply(1.1));
         if (!isSafeLocation(targetLocation)) {
             targetLocation = findSafeLocationNearby(originalLocation);
             if (targetLocation == null) return;
@@ -426,7 +426,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         World world = location.getWorld();
         if (world == null) return true;
         try {
-            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.5, 2, 0.5);
+            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.38, 2, 0.38);
             for (Entity bukkitEntity : nearbyEntities) {
                 if (bukkitEntity instanceof Player) continue;
                 Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);
