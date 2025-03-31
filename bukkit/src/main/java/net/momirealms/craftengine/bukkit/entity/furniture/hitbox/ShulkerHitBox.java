@@ -37,6 +37,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         this.interactionEntity = interactionEntity;
 
         ShulkerData.Peek.addEntityDataIfNotDefaultValue(peek, this.cachedShulkerValues);
+        ShulkerData.Color.addEntityDataIfNotDefaultValue((byte) 0, this.cachedShulkerValues);
 //      ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedShulkerValues);
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
