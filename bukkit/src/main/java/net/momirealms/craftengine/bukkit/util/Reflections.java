@@ -649,9 +649,9 @@ public class Reflections {
             )
     );
 
-    public static Object allocateClientboundSetPassengersPacketInstance() throws InstantiationException {
-            return UNSAFE.allocateInstance(clazz$ClientboundSetPassengersPacket);
-    }
+//    public static Object allocateClientboundSetPassengersPacketInstance() throws InstantiationException {
+//            return UNSAFE.allocateInstance(clazz$ClientboundSetPassengersPacket);
+//    }
 
     public static final Field field$Vec3$Zero = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -5881,23 +5881,23 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundSetPassengersPacket = requireNonNull(
-            ReflectionUtils.getDeclaredConstructor(
-                    clazz$ClientboundSetPassengersPacket, clazz$FriendlyByteBuf
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundSetPassengersPacket = requireNonNull(
+//            ReflectionUtils.getDeclaredConstructor(
+//                    clazz$ClientboundSetPassengersPacket, clazz$FriendlyByteBuf
+//            )
+//    );
 
-    public static final Method method$FriendlyByteBuf$writeVarInt = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, new String[]{"writeVarInt", "d", "c"}, int.class
-            )
-    );
-
-    public static final Method method$FriendlyByteBuf$writeVarIntArray = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, int[].class
-            )
-    );
+//    public static final Method method$FriendlyByteBuf$writeVarInt = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, new String[]{"writeVarInt", "d", "c"}, int.class
+//            )
+//    );
+//
+//    public static final Method method$FriendlyByteBuf$writeVarIntArray = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, int[].class
+//            )
+//    );
 
     public static final Method method$Entity$canBeCollidedWith = requireNonNull(
             VersionHelper.isVersionNewerThan1_20_5()
@@ -5911,6 +5911,7 @@ public class Reflections {
                                 : ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith", "bu", "bx", "bz"})
     );
 
+    @Deprecated
     public static final Method method$CraftEntity$getHandle = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$CraftEntity, clazz$Entity, 0

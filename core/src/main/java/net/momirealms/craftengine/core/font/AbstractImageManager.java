@@ -101,7 +101,7 @@ public abstract class AbstractImageManager implements ImageManager {
             int[] codepoints = CharacterUtils.charsToCodePoints(chars.get(i));
             for (int codepoint : codepoints) {
                 if (PreConditions.runIfTrue(font.isCodepointInUse(codepoint),
-                        () -> this.plugin.logger().warn(path, String.format("Codepoint [%s] is already used in font [%s]", CharacterUtils.encodeCharsToUnicode(Character.toChars(codepoint)), font.key().toString())))) return;
+                        () -> this.plugin.logger().warn(path, String.format("Codepoint [%s (%s)] is already used in font [%s]", CharacterUtils.encodeCharsToUnicode(Character.toChars(codepoint)), new String(Character.toChars(codepoint)), font.key().toString())))) return;
             }
             codepointGrid[i] = codepoints;
             if (size == -1) size = codepoints.length;

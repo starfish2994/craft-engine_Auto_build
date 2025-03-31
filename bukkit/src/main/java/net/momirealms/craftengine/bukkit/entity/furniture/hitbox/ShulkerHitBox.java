@@ -1,7 +1,8 @@
-package net.momirealms.craftengine.bukkit.entity.furniture;
+package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
 import io.netty.buffer.Unpooled;
-import net.momirealms.craftengine.bukkit.entity.ShulkerData;
+import net.momirealms.craftengine.bukkit.entity.data.ShulkerData;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
@@ -58,10 +59,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                     Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
             ));
             packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], getCachedValues()));
-            Object friendlyByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(Unpooled.buffer());
-            Reflections.method$FriendlyByteBuf$writeVarInt.invoke(friendlyByteBuf, entityIds[0]);
-            Reflections.method$FriendlyByteBuf$writeVarIntArray.invoke(friendlyByteBuf, (Object) new int[] {entityIds[1]});
-            packets.accept(Reflections.constructor$ClientboundSetPassengersPacket.newInstance(friendlyByteBuf));
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]));
             if (VersionHelper.isVersionNewerThan1_20_5()) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);

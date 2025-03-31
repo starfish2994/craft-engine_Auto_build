@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -233,13 +234,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 tryLeavingSeat(player, vehicle);
             }
         }
-//        for (World world : Bukkit.getWorlds()) {
-//            for (Entity entity : world.getEntities()) {
-//                if (entity instanceof CollisionEntity) {
-//                    entity.remove();
-//                }
-//            }
-//        }
+        for (World world : Bukkit.getWorlds()) {
+            for (Entity entity : world.getEntities()) {
+                if (FastNMS.INSTANCE.method$CraftEntity$getHandle(entity) instanceof CollisionEntity) {
+                    entity.remove();
+                }
+            }
+        }
     }
 
     @Override
@@ -262,17 +263,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
         return this.furnitureByInteractionEntityId.get(entityId);
     }
 
-    protected void handleEntityUnload(Entity entity) {
+    protected void handleBaseFurnitureUnload(Entity entity) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
         if (furniture != null) {
             furniture.destroySeats();
             for (int sub : furniture.hitBoxEntityIds()) {
                 this.furnitureByInteractionEntityId.remove(sub);
-            }
-        } else if (entity instanceof Interaction interaction) {
-            if (interaction instanceof CollisionEntity) {
-                entity.remove();
             }
         }
     }
@@ -420,7 +417,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.5, 2, 0.5);
             for (Entity bukkitEntity : nearbyEntities) {
                 if (bukkitEntity instanceof Player) continue;
-                Object nmsEntity = Reflections.method$CraftEntity$getHandle.invoke(bukkitEntity);
+                Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);
                 return (boolean) Reflections.method$Entity$canBeCollidedWith.invoke(nmsEntity);
             }
         } catch (Exception ignored) {}

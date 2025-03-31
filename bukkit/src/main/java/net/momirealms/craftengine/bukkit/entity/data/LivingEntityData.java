@@ -1,10 +1,9 @@
-package net.momirealms.craftengine.bukkit.entity;
+package net.momirealms.craftengine.bukkit.entity.data;
 
 import java.util.List;
 import java.util.Optional;
 
 public class LivingEntityData<T> extends BaseEntityData<T> {
-
     public static final LivingEntityData<Byte> LivingEntityFlags = new LivingEntityData<>(8, EntityDataValue.Serializers$BYTE, (byte) 0);
     public static final LivingEntityData<Float> Health = new LivingEntityData<>(9, EntityDataValue.Serializers$FLOAT, 1.0f);
     public static final LivingEntityData<List<Object>> EffectParticles = new LivingEntityData<>(10, EntityDataValue.Serializers$PARTICLES, List.of());

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.entity.furniture;
+package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
@@ -20,7 +20,7 @@ public class HappyGhastHitBox extends AbstractHitBox {
 
     @Override
     public Key type() {
-        return HitBoxTypes.BOAT;
+        return HitBoxTypes.HAPPY_GHAST;
     }
 
     public double scale() {

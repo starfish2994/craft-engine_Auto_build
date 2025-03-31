@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.entity;
+package net.momirealms.craftengine.bukkit.entity.data;
 
 public class SimpleEntityData<T> implements EntityData<T> {
 

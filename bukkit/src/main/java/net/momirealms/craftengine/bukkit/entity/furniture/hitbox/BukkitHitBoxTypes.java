@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.entity.furniture;
+package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
 import net.momirealms.craftengine.core.entity.furniture.HitBoxTypes;
 
@@ -9,6 +9,6 @@ public class BukkitHitBoxTypes extends HitBoxTypes {
     static {
         register(INTERACTION, InteractionHitBox.FACTORY);
         register(SHULKER, ShulkerHitBox.FACTORY);
-        register(BOAT, HappyGhastHitBox.FACTORY);
+        register(HAPPY_GHAST, HappyGhastHitBox.FACTORY);
     }
 }

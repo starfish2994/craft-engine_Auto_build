@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.entity;
+package net.momirealms.craftengine.bukkit.entity.data;
 
 import net.momirealms.craftengine.bukkit.util.Reflections;
 
