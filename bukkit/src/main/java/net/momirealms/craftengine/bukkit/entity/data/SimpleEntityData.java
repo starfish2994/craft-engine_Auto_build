@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.data;
 
 public class SimpleEntityData<T> implements EntityData<T> {
-
     private final int id;
     private final Object serializer;
     private final T defaultValue;

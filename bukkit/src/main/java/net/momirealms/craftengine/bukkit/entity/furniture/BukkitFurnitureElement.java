@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import net.momirealms.craftengine.bukkit.entity.data.DisplayEntityData;
+import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.AbstractFurnitureElement;
@@ -55,12 +55,12 @@ public class BukkitFurnitureElement extends AbstractFurnitureElement {
                 CraftEngine.instance().logger().warn("Failed to create furniture element for " + item() + " because item " + item() + " not found");
                 item = BukkitItemManager.instance().wrap(new ItemStack(Material.STONE));
             }
-            DisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), this.cachedValues);
-            DisplayEntityData.Scale.addEntityDataIfNotDefaultValue(scale(), this.cachedValues);
-            DisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(rotation(), this.cachedValues);
-            DisplayEntityData.BillboardConstraints.addEntityDataIfNotDefaultValue(billboard().id(), this.cachedValues);
-            DisplayEntityData.Translation.addEntityDataIfNotDefaultValue(translation(), this.cachedValues);
-            DisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(transform().id(), this.cachedValues);
+            ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), this.cachedValues);
+            ItemDisplayEntityData.Scale.addEntityDataIfNotDefaultValue(scale(), this.cachedValues);
+            ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(rotation(), this.cachedValues);
+            ItemDisplayEntityData.BillboardConstraints.addEntityDataIfNotDefaultValue(billboard().id(), this.cachedValues);
+            ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(translation(), this.cachedValues);
+            ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(transform().id(), this.cachedValues);
         }
         return this.cachedValues;
     }

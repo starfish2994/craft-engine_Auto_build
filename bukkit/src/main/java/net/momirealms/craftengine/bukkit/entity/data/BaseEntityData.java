@@ -5,7 +5,6 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import java.util.Optional;
 
 public class BaseEntityData<T> extends SimpleEntityData<T> {
-
     public static final BaseEntityData<Byte> SharedFlags = new BaseEntityData<>(0, EntityDataValue.Serializers$BYTE, (byte) 0);
     public static final BaseEntityData<Integer> AirSupply = new BaseEntityData<>(1, EntityDataValue.Serializers$INT, 300);
     public static final BaseEntityData<Optional<Object>> CustomName = new BaseEntityData<>(2, EntityDataValue.Serializers$OPTIONAL_COMPONENT, Optional.empty());

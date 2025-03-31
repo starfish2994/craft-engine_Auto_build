@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
-import io.netty.buffer.Unpooled;
 import net.momirealms.craftengine.bukkit.entity.data.ShulkerData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
