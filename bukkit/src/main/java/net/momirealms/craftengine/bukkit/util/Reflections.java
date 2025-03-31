@@ -5917,4 +5917,16 @@ public class Reflections {
                     clazz$CraftEntity, clazz$Entity, 0
             )
     );
+
+    public static final Method method$Entity$getId = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_5()
+                    ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId"})
+                    : VersionHelper.isVersionNewerThan1_20_3()
+                        ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"aj"})
+                        : VersionHelper.isVersionNewerThan1_20_2()
+                            ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"ah"})
+                            : VersionHelper.isVersionNewerThan1_20()
+                                ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"af"})
+                                : ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId", "aj", "ah", "af"})
+    );
 }

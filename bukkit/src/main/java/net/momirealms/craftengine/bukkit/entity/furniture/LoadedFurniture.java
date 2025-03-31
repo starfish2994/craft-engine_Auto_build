@@ -240,6 +240,10 @@ public class LoadedFurniture {
         return Collections.unmodifiableList(this.fakeEntityIds);
     }
 
+    public CollisionEntity[] collisionEntities() {
+        return this.collisionEntities;
+    }
+
     @NotNull
     public AnchorType anchorType() {
         return this.anchorType;
