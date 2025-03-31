@@ -5898,4 +5898,22 @@ public class Reflections {
                     clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, int[].class
             )
     );
+
+    public static final Method method$Entity$canBeCollidedWith = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_5()
+                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith"})
+                    : VersionHelper.isVersionNewerThan1_20_3()
+                        ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bz"})
+                        : VersionHelper.isVersionNewerThan1_20_2()
+                            ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bx"})
+                            : VersionHelper.isVersionNewerThan1_20()
+                                ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bu"})
+                                : ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith", "bu", "bx", "bz"})
+    );
+
+    public static final Method method$CraftEntity$getHandle = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$CraftEntity, clazz$Entity, 0
+            )
+    );
 }
