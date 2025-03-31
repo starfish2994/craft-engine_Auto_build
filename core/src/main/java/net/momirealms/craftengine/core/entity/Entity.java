@@ -22,4 +22,6 @@ public abstract class Entity {
     public abstract World level();
 
     public abstract Direction getDirection();
+
+    public abstract Object literalObject();
 }

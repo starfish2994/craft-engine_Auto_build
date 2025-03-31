@@ -557,7 +557,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByInteractionEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -618,9 +618,9 @@ public class PacketConsumers {
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(entityId);
                 if (furniture != null) {
-                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
+                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
-                    if (ConfigManager.hideBaseEntity()) {
+                    if (ConfigManager.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
                     }
                 }
@@ -675,7 +675,7 @@ public class PacketConsumers {
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByInteractionEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;

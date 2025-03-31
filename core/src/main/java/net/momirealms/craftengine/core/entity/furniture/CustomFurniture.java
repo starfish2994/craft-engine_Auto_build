@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.Optional;
 
 public class CustomFurniture {
     private final Key id;
@@ -55,7 +56,11 @@ public class CustomFurniture {
         return placements.get(anchorType);
     }
 
-    public record Placement(FurnitureElement[] elements, HitBox[] hitBoxes, Collider[] colliders,
-                            RotationRule rotationRule, AlignmentRule alignmentRule) {
+    public record Placement(FurnitureElement[] elements,
+                            HitBox[] hitBoxes,
+                            Collider[] colliders,
+                            RotationRule rotationRule,
+                            AlignmentRule alignmentRule,
+                            Optional<ExternalModel> externalModel) {
     }
 }

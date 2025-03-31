@@ -6,7 +6,6 @@ import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface HitBox {

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.entity.BukkitEntity;
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
@@ -36,9 +37,10 @@ public class LoadedFurniture {
     private final CollisionEntity[] collisionEntities;
     // cache
     private final List<Integer> fakeEntityIds;
-    private final List<Integer> hitBoxEntityIds;
+    private final List<Integer> entityIds;
     private final Map<Integer, HitBox> hitBoxes;
     private final boolean minimized;
+    private final boolean hasExternalModel;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
@@ -58,8 +60,22 @@ public class LoadedFurniture {
         this.hitBoxes = new HashMap<>();
         this.minimized = furniture.settings().minimized();
         List<Integer> fakeEntityIds = new ArrayList<>();
-        List<Integer> hitBoxEntityIds = new ArrayList<>();
+        List<Integer> mainEntityIds = new ArrayList<>();
+        mainEntityIds.add(this.baseEntityId);
+
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
+        // bind external furniture
+        Optional<ExternalModel> optionalExternal = placement.externalModel();
+        if (optionalExternal.isPresent()) {
+            try {
+                optionalExternal.get().bindModel(new BukkitEntity(baseEntity));
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to load external model for furniture " + id, e);
+            }
+            hasExternalModel = true;
+        } else {
+            hasExternalModel = false;
+        }
 
         double yawInRadius = Math.toRadians(180 - this.location.getYaw());
         Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, yawInRadius, 0).conjugate();
@@ -83,7 +99,7 @@ public class LoadedFurniture {
             int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
-                hitBoxEntityIds.add(entityId);
+                mainEntityIds.add(entityId);
                 hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
                     packets.add(packet);
                     if (this.minimized && !canBeMinimized) {
@@ -102,7 +118,7 @@ public class LoadedFurniture {
             CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
         }
         this.fakeEntityIds = fakeEntityIds;
-        this.hitBoxEntityIds = hitBoxEntityIds;
+        this.entityIds = mainEntityIds;
         int colliderSize = placement.colliders().length;
         this.collisionEntities = new CollisionEntity[colliderSize];
         if (colliderSize != 0) {
@@ -215,12 +231,12 @@ public class LoadedFurniture {
     }
 
     @NotNull
-    public List<Integer> hitBoxEntityIds() {
-        return Collections.unmodifiableList(this.hitBoxEntityIds);
+    public List<Integer> entityIds() {
+        return Collections.unmodifiableList(this.entityIds);
     }
 
     @NotNull
-    public List<Integer> subEntityIds() {
+    public List<Integer> fakeEntityIds() {
         return Collections.unmodifiableList(this.fakeEntityIds);
     }
 
@@ -237,6 +253,10 @@ public class LoadedFurniture {
     @NotNull
     public CustomFurniture config() {
         return this.furniture;
+    }
+
+    public boolean hasExternalModel() {
+        return hasExternalModel;
     }
 
     public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {

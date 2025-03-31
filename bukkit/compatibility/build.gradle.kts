@@ -7,6 +7,7 @@ repositories {
     maven("https://repo.rapture.pw/repository/maven-releases/")  // slime world
     maven("https://repo.infernalsuite.com/repository/maven-snapshots/")  // slime world
     maven("https://repo.momirealms.net/releases/")
+    maven("https://mvn.lumine.io/repository/maven-public/") // model engine
 }
 
 dependencies {
@@ -23,6 +24,10 @@ dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.19")
     // SlimeWorld
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
+    // ModelEngine
+    compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.8")
+    // BetterModels
+    compileOnly("io.github.toxicity188:BetterModel:1.4.2")
 }
 
 java {

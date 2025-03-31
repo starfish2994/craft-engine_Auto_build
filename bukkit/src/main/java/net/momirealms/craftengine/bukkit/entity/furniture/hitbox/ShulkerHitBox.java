@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 import net.momirealms.craftengine.bukkit.entity.data.InteractionEntityData;
 import net.momirealms.craftengine.bukkit.entity.data.ShulkerData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Direction;

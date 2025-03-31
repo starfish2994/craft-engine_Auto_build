@@ -104,8 +104,6 @@ public class ConfigManager implements Reloadable {
     protected boolean furniture$remove_invalid_furniture_on_chunk_load$enable;
     protected Set<String> furniture$remove_invalid_furniture_on_chunk_load$list;
     protected boolean furniture$hide_base_entity;
-    protected boolean furniture$removed_collision_box_entity_texture_1_20_2;
-    protected boolean furniture$removed_collision_box_entity_texture_1_20;
 
     protected boolean block$sound_system$enable;
     protected boolean recipe$enable;
@@ -262,8 +260,6 @@ public class ConfigManager implements Reloadable {
         furniture$remove_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.remove-invalid-furniture-on-chunk-load.enable", false);
         furniture$remove_invalid_furniture_on_chunk_load$list = new HashSet<>(config.getStringList("furniture.remove-invalid-furniture-on-chunk-load.list"));
         furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
-        furniture$removed_collision_box_entity_texture_1_20_2 = config.getBoolean("furniture.removed-collision-box-entity-texture-1_20_2", true);
-        furniture$removed_collision_box_entity_texture_1_20 = config.getBoolean("furniture.removed-collision-box-entity-texture-1_20", false);
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -555,14 +551,6 @@ public class ConfigManager implements Reloadable {
 
     public static boolean hideBaseEntity() {
         return instance().furniture$hide_base_entity;
-    }
-
-    public static boolean removedCollisionBoxEntityTexture() {
-        return instance().furniture$removed_collision_box_entity_texture_1_20_2;
-    }
-
-    public static boolean removedCollisionBoxEntityTextureLegacy() {
-        return instance().furniture$removed_collision_box_entity_texture_1_20;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

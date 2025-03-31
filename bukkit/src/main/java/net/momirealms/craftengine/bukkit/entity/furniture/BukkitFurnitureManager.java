@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
+import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -39,7 +41,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
     private final Map<Key, CustomFurniture> byId = new HashMap<>();
 
     private final Map<Integer, LoadedFurniture> furnitureByBaseEntityId  = new ConcurrentHashMap<>(256, 0.5f);
-    private final Map<Integer, LoadedFurniture> furnitureByInteractionEntityId  = new ConcurrentHashMap<>(512, 0.5f);
+    private final Map<Integer, LoadedFurniture> furnitureByEntityId = new ConcurrentHashMap<>(512, 0.5f);
     // Event listeners
     private final Listener dismountListener;
     private final FurnitureEventListener furnitureEventListener;
@@ -150,6 +152,16 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 }
             }
 
+            // external model providers
+            Optional<ExternalModel> externalModel;
+            if (placementArguments.containsKey("model-engine")) {
+                externalModel = Optional.of(new ModelEngineModel(placementArguments.get("model-engine").toString()));
+            } else if (placementArguments.containsKey("better-model")) {
+                externalModel = Optional.of(new BetterModelModel(placementArguments.get("better-model").toString()));
+            } else {
+                externalModel = Optional.empty();
+            }
+
             // add hitboxes
             List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
             List<HitBox> hitboxes = new ArrayList<>();
@@ -158,7 +170,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 hitboxes.add(hitBox);
                 hitBox.optionCollider().ifPresent(colliders::add);
             }
-            if (hitboxes.isEmpty()) {
+            if (hitboxes.isEmpty() && externalModel.isEmpty()) {
                 hitboxes.add(InteractionHitBox.DEFAULT);
             }
 
@@ -176,7 +188,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
                         hitboxes.toArray(new HitBox[0]),
                         colliders.toArray(new Collider[0]),
                         rotationRule,
-                        alignmentRule
+                        alignmentRule,
+                        externalModel
                 ));
             } else {
                 placements.put(anchorType, new CustomFurniture.Placement(
@@ -184,7 +197,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
                         hitboxes.toArray(new HitBox[0]),
                         colliders.toArray(new Collider[0]),
                         RotationRule.ANY,
-                        AlignmentRule.CENTER
+                        AlignmentRule.CENTER,
+                        externalModel
                 ));
             }
         }
@@ -252,8 +266,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
     }
 
     @Nullable
-    public LoadedFurniture getLoadedFurnitureByInteractionEntityId(int entityId) {
-        return this.furnitureByInteractionEntityId.get(entityId);
+    public LoadedFurniture getLoadedFurnitureByEntityId(int entityId) {
+        return this.furnitureByEntityId.get(entityId);
     }
 
     protected void handleBaseFurnitureUnload(Entity entity) {
@@ -261,8 +275,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
         if (furniture != null) {
             furniture.destroySeats();
-            for (int sub : furniture.hitBoxEntityIds()) {
-                this.furnitureByInteractionEntityId.remove(sub);
+            for (int sub : furniture.entityIds()) {
+                this.furnitureByEntityId.remove(sub);
             }
         }
     }
@@ -284,7 +298,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             }
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
-                this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
+                this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                 this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
         }
@@ -331,8 +345,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
     private synchronized LoadedFurniture addNewFurniture(ItemDisplay display, CustomFurniture furniture, AnchorType anchorType) {
         LoadedFurniture loadedFurniture = new LoadedFurniture(display, furniture, anchorType);
         this.furnitureByBaseEntityId.put(loadedFurniture.baseEntityId(), loadedFurniture);
-        for (int entityId : loadedFurniture.hitBoxEntityIds()) {
-            this.furnitureByInteractionEntityId.put(entityId, loadedFurniture);
+        for (int entityId : loadedFurniture.entityIds()) {
+            this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
         return loadedFurniture;
     }

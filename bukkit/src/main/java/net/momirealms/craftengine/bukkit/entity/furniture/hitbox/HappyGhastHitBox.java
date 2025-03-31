@@ -8,7 +8,6 @@ import org.joml.Vector3f;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class HappyGhastHitBox extends AbstractHitBox {
