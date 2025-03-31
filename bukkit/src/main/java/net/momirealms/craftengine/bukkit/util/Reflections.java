@@ -2808,6 +2808,7 @@ public class Reflections {
 
     public static final Object instance$Holder$Attribute$block_break_speed;
     public static final Object instance$Holder$Attribute$block_interaction_range;
+    public static final Object instance$Holder$Attribute$scale;
 
     static {
         try {
@@ -2821,9 +2822,15 @@ public class Reflections {
                 @SuppressWarnings("unchecked")
                 Optional<Object> blockInteractionRangeHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_interaction_range);
                 instance$Holder$Attribute$block_interaction_range = blockInteractionRangeHolder.orElse(null);
+
+                Object scale = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "scale" : "generic.scale");
+                @SuppressWarnings("unchecked")
+                Optional<Object> scaleHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, scale);
+                instance$Holder$Attribute$scale = scaleHolder.orElse(null);
             } else {
                 instance$Holder$Attribute$block_break_speed = null;
                 instance$Holder$Attribute$block_interaction_range = null;
+                instance$Holder$Attribute$scale = null;
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -5861,23 +5868,6 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("world.entity.ai.attributes.GenericAttributes")
             )
     );
-
-    // 1.20.5+
-    public static final Field field$Attributes$SCALE =
-            ReflectionUtils.getDeclaredField(
-                    clazz$Attributes, "SCALE"
-            );
-
-    // 1.20.5+
-    public static final Object instance$Attributes$SCALE = Optional.ofNullable(field$Attributes$SCALE)
-            .map(it -> {
-                try {
-                    return it.get(null);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
 
     // 1.20.5+
     public static final Constructor<?> constructor$AttributeInstance =

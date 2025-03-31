@@ -63,7 +63,7 @@ public class ShulkerHitBox extends AbstractHitBox {
             Reflections.method$FriendlyByteBuf$writeVarIntArray.invoke(friendlyByteBuf, (Object) new int[] {entityIds[1]});
             packets.accept(Reflections.constructor$ClientboundSetPassengersPacket.newInstance(friendlyByteBuf));
             if (VersionHelper.isVersionNewerThan1_20_5()) {
-                Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Attributes$SCALE, (Consumer<?>) (o) -> {});
+                Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)));
             }
