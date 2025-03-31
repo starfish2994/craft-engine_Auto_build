@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.util.Key;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -18,4 +19,8 @@ public interface HitBox {
     Seat[] seats();
 
     Vector3f position();
+
+    default Optional<Collider> optionCollider() {
+        return Optional.empty();
+    }
 }

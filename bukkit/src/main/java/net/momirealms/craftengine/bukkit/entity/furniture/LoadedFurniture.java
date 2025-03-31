@@ -20,6 +20,7 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.lang.ref.WeakReference;
@@ -34,6 +35,8 @@ public class LoadedFurniture {
     // base entity
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
+    // colliders
+    private final CollisionEntity[] collisionEntities;
     // cache
     private final List<Integer> fakeEntityIds;
     private final List<Integer> hitBoxEntityIds;
@@ -88,12 +91,14 @@ public class LoadedFurniture {
         }
         this.fakeEntityIds = fakeEntityIds;
         this.hitBoxEntityIds = hitBoxEntityIds;
-
-        if (placement.colliders().length != 0) {
+        int colliderSize = placement.colliders().length;
+        this.collisionEntities = new CollisionEntity[colliderSize];
+        if (colliderSize != 0) {
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
-            for (Collider collider : placement.colliders()) {
-                Vector3f offset1 = conjugated.transform(new Vector3f(collider.point1()));
-                Vector3f offset2 = conjugated.transform(new Vector3f(collider.point2()));
+            for (int i = 0; i < colliderSize; i++) {
+                Collider collider = placement.colliders()[i];
+                Vector3d offset1 = conjugated.transform(new Vector3d(collider.point1()));
+                Vector3d offset2 = conjugated.transform(new Vector3d(collider.point2()));
                 double x1 = x + offset1.x();
                 double x2 = x + offset2.x();
                 double y1 = y + offset1.y();
@@ -103,6 +108,7 @@ public class LoadedFurniture {
                 Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
                 CollisionEntity entity = FastNMS.INSTANCE.createCollisionEntity(world, aabb, x, y, z, true, collider.canBeHitByProjectile());
                 FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
+                this.collisionEntities[i] = entity;
             }
         }
     }
@@ -135,6 +141,10 @@ public class LoadedFurniture {
             return;
         }
         this.baseEntity().remove();
+        for (CollisionEntity entity : this.collisionEntities) {
+            if (entity != null)
+                entity.destroy();
+        }
         for (Entity entity : this.seats) {
             for (Entity passenger : entity.getPassengers()) {
                 entity.removePassenger(passenger);

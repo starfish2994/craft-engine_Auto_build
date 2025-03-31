@@ -130,16 +130,6 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 elements.add(furnitureElement);
             }
 
-            // add hitboxes
-            List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
-            List<HitBox> hitboxes = new ArrayList<>();
-            for (Map<String, Object> config : hitboxConfigs) {
-                hitboxes.add(HitBoxTypes.fromMap(config));
-            }
-            if (hitboxes.isEmpty()) {
-                hitboxes.add(InteractionHitBox.DEFAULT);
-            }
-
             // add colliders
             List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
             List<Collider> colliders = new ArrayList<>();
@@ -147,8 +137,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 if (!config.containsKey("position")) {
                     colliders.add(new Collider(
                             (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
-                            MiscUtils.getVector3f(config.getOrDefault("point-1", "0")),
-                            MiscUtils.getVector3f(config.getOrDefault("point-2", "0"))
+                            MiscUtils.getVector3d(config.getOrDefault("point-1", "0")),
+                            MiscUtils.getVector3d(config.getOrDefault("point-2", "0"))
                     ));
                 } else {
                     colliders.add(new Collider(
@@ -158,6 +148,18 @@ public class BukkitFurnitureManager implements FurnitureManager {
                             MiscUtils.getAsFloat(config.getOrDefault("height", "1"))
                     ));
                 }
+            }
+
+            // add hitboxes
+            List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
+            List<HitBox> hitboxes = new ArrayList<>();
+            for (Map<String, Object> config : hitboxConfigs) {
+                HitBox hitBox = HitBoxTypes.fromMap(config);
+                hitboxes.add(hitBox);
+                hitBox.optionCollider().ifPresent(colliders::add);
+            }
+            if (hitboxes.isEmpty()) {
+                hitboxes.add(InteractionHitBox.DEFAULT);
             }
 
             // rules
@@ -276,6 +278,10 @@ public class BukkitFurnitureManager implements FurnitureManager {
             CustomFurniture customFurniture = optionalFurniture.get();
             LoadedFurniture previous = this.furnitureByBaseEntityId.get(display.getEntityId());
             if (previous != null) return;
+            Location location = entity.getLocation();
+            if (FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                return;
+            }
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
                 this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
