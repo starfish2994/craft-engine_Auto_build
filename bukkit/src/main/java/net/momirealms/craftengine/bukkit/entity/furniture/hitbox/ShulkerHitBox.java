@@ -44,8 +44,8 @@ public class ShulkerHitBox extends AbstractHitBox {
 
         if (this.interactionEntity) {
             // make it a litter bigger
-            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPhysicalPeek(peek) * scale + 1.01f, cachedInteractionValues);
-            InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPhysicalPeek(peek * 0.01F) * scale + 1.01f, cachedInteractionValues);
+            InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
         }
     }
