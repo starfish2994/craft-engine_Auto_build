@@ -625,7 +625,7 @@ public class PacketConsumers {
                         event.setCancelled(true);
                     }
                 }
-            } else if (entityType == Reflections.instance$EntityType$INTERACTION) {
+            } else if (entityType == Reflections.instance$EntityType$SHULKER) {
                 // Cancel collider entity packet
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
