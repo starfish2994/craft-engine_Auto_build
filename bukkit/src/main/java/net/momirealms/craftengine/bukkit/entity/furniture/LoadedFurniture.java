@@ -99,7 +99,6 @@ public class LoadedFurniture {
         }
         for (HitBox hitBox : placement.hitBoxes()) {
             int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
-            int lastEntityId = -1;
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
                 mainEntityIds.add(entityId);
@@ -110,11 +109,6 @@ public class LoadedFurniture {
                     }
                 });
                 this.hitBoxes.put(entityId, hitBox);
-                lastEntityId = entityId;
-            }
-            // 预测添加一个CollisionEntity
-            if (lastEntityId != -1) {
-                this.hitBoxes.put(lastEntityId + 1, hitBox);
             }
         }
         try {

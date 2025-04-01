@@ -360,7 +360,6 @@ public class BukkitFurnitureManager implements FurnitureManager {
             try {
                 int collisionEntityId = (int) Reflections.method$Entity$getId.invoke(collisionEntity);
                 this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
-                this.furnitureByEntityId.put(collisionEntityId, loadedFurniture);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
