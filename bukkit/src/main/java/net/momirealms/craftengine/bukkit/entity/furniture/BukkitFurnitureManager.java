@@ -359,6 +359,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
             this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
         }
+        loadedFurniture.initializeColliders();
         return loadedFurniture;
     }
 
