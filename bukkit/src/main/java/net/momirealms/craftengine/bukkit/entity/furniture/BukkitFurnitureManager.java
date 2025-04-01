@@ -135,24 +135,24 @@ public class BukkitFurnitureManager implements FurnitureManager {
             }
 
             // add colliders
-            List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
             List<Collider> colliders = new ArrayList<>();
-            for (Map<String, Object> config : colliderConfigs) {
-                if (!config.containsKey("position")) {
-                    colliders.add(new Collider(
-                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
-                            MiscUtils.getVector3d(config.getOrDefault("point-1", "0")),
-                            MiscUtils.getVector3d(config.getOrDefault("point-2", "0"))
-                    ));
-                } else {
-                    colliders.add(new Collider(
-                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
-                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
-                            MiscUtils.getAsFloat(config.getOrDefault("width", "1")),
-                            MiscUtils.getAsFloat(config.getOrDefault("height", "1"))
-                    ));
-                }
-            }
+//            List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
+//            for (Map<String, Object> config : colliderConfigs) {
+//                if (!config.containsKey("position")) {
+//                    colliders.add(new Collider(
+//                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+//                            MiscUtils.getVector3d(config.getOrDefault("point-1", "0")),
+//                            MiscUtils.getVector3d(config.getOrDefault("point-2", "0"))
+//                    ));
+//                } else {
+//                    colliders.add(new Collider(
+//                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+//                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
+//                            MiscUtils.getAsFloat(config.getOrDefault("width", "1")),
+//                            MiscUtils.getAsFloat(config.getOrDefault("height", "1"))
+//                    ));
+//                }
+//            }
 
             // external model providers
             Optional<ExternalModel> externalModel;

@@ -80,8 +80,9 @@ public class ShulkerHitBox extends AbstractHitBox {
         }
         return Optional.of(new Collider(
                 true,
-                new Vector3d(x1 + position.x, y1 + position.y, z1 + position.z),
-                new Vector3d(x2 + position.x, y2 + position.y, z2 + position.z)
+                position,
+                new Vector3d(x1, y1, z1),
+                new Vector3d(x2, y2, z2)
         ));
     }
 
