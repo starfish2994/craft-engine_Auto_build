@@ -12,7 +12,6 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
-import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -691,21 +690,26 @@ public class PacketConsumers {
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
             LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
-            if (furniture == null) return;
+            if (furniture == null) {
+                furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
+                player.sendMessage("Interact with " + entityId + " " + actionType + " " + furniture);
+                if (furniture == null) return;
+            }
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
             if (serverPlayer.isSpectatorMode() || serverPlayer.isAdventureMode()) return;
+            LoadedFurniture finalFurniture = furniture;
             BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                 if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
-                    if (furniture.isValid()) {
+                    if (finalFurniture.isValid()) {
                         if (!BukkitCraftEngine.instance().antiGrief().canBreak(player, location)) {
                             return;
                         }
-                        FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
+                        FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), finalFurniture);
                         if (EventUtils.fireAndCheckCancel(breakEvent)) {
                             return;
                         }
-                        CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
+                        CraftEngineFurniture.remove(finalFurniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
                     }
                 } else if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
                     InteractionHand hand;
@@ -721,15 +725,15 @@ public class PacketConsumers {
                     } catch (ReflectiveOperationException e) {
                         throw new RuntimeException("Failed to get interaction hand from interact packet", e);
                     }
-                    FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture, hand, interactionPoint);
+                    FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), finalFurniture, hand, interactionPoint);
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
                     if (player.isSneaking())
                         return;
-                    furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
-                        if (furniture.tryOccupySeat(seatPos)) {
-                            furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
+                    finalFurniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                        if (finalFurniture.tryOccupySeat(seatPos)) {
+                            finalFurniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
                         }
                     });
                 }
