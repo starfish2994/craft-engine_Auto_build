@@ -4,7 +4,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_rod>"
       tooltip-style: minecraft:topaz
@@ -18,7 +18,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_bow>"
       tooltip-style: minecraft:topaz
@@ -34,7 +34,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_crossbow>"
       tooltip-style: minecraft:topaz
@@ -52,7 +52,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_pickaxe>"
       tooltip-style: minecraft:topaz
@@ -67,7 +67,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
       tooltip-style: minecraft:topaz
@@ -82,7 +82,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_hoe>"
       tooltip-style: minecraft:topaz
@@ -97,7 +97,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_shovel>"
       tooltip-style: minecraft:topaz
@@ -112,7 +112,7 @@ items:
     custom-model-data: 1000
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_sword>"
       tooltip-style: minecraft:topaz
@@ -152,7 +152,7 @@ templates:
       tooltip-style: minecraft:topaz
     settings:
       tags:
-        - "topaz_tools"
+        - "default:topaz_tools"
       equippable:
         slot: "{slot}"
         asset-id: topaz

@@ -31,7 +31,7 @@ items:
     settings:
       anvil-repair-item:
         - target:
-            - "#topaz_tools"
+            - "#default:topaz_tools"
           percent: 0.25
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz>"

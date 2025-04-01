@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FurnitureSettings {
+    boolean minimized;
     FurnitureSounds sounds = FurnitureSounds.EMPTY;
     @Nullable
     Key itemId;
@@ -26,6 +27,7 @@ public class FurnitureSettings {
         FurnitureSettings newSettings = of();
         newSettings.sounds = settings.sounds;
         newSettings.itemId = settings.itemId;
+        newSettings.minimized = settings.minimized;
         return newSettings;
     }
 
@@ -45,6 +47,10 @@ public class FurnitureSettings {
         return sounds;
     }
 
+    public boolean minimized() {
+        return minimized;
+    }
+
     @Nullable
     public Key itemId() {
         return itemId;
@@ -57,6 +63,11 @@ public class FurnitureSettings {
 
     public FurnitureSettings itemId(Key itemId) {
         this.itemId = itemId;
+        return this;
+    }
+
+    public FurnitureSettings minimized(boolean minimized) {
+        this.minimized = minimized;
         return this;
     }
 
@@ -81,6 +92,10 @@ public class FurnitureSettings {
             registerFactory("item", (value -> {
                 String item = value.toString();
                 return settings -> settings.itemId(Key.of(item));
+            }));
+            registerFactory("minimized", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.minimized(bool);
             }));
         }
 

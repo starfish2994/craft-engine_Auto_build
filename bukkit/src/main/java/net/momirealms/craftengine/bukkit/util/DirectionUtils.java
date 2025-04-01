@@ -29,4 +29,15 @@ public class DirectionUtils {
             case EAST -> BlockFace.EAST;
         };
     }
+
+    public static Object toNMSDirection(Direction direction) {
+        return switch (direction) {
+            case UP -> Reflections.instance$Direction$UP;
+            case DOWN -> Reflections.instance$Direction$DOWN;
+            case NORTH -> Reflections.instance$Direction$NORTH;
+            case SOUTH -> Reflections.instance$Direction$SOUTH;
+            case WEST -> Reflections.instance$Direction$WEST;
+            case EAST -> Reflections.instance$Direction$EAST;
+        };
+    }
 }

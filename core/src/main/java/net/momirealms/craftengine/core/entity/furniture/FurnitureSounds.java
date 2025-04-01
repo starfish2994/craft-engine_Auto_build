@@ -23,7 +23,7 @@ public class FurnitureSounds {
         if (map == null) return EMPTY;
         return new FurnitureSounds(
                 SoundData.create(map.getOrDefault("break", "minecraft:intentionally_empty"), 1f, 0.8f),
-                SoundData.create(map.getOrDefault("place", "minecraft:intentionally_empty"), 0f, 0.8f),
+                SoundData.create(map.getOrDefault("place", "minecraft:intentionally_empty"), 1f, 0.8f),
                 SoundData.create(map.getOrDefault("rotate", "minecraft:intentionally_empty"), 1f, 0.8f)
         );
     }

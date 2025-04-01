@@ -251,7 +251,7 @@ public class CraftEngineFurniture {
                               boolean playSound) {
         Location location = loadedFurniture.location();
         loadedFurniture.destroy();
-        LootTable<ItemStack> lootTable = (LootTable<ItemStack>) loadedFurniture.furniture().lootTable();
+        LootTable<ItemStack> lootTable = (LootTable<ItemStack>) loadedFurniture.config().lootTable();
         Vec3d vec3d = LocationUtils.toVec3d(location);
         World world = new BukkitWorld(location.getWorld());
         if (dropLoot && lootTable != null) {
@@ -268,7 +268,7 @@ public class CraftEngineFurniture {
             }
         }
         if (playSound) {
-            world.playBlockSound(vec3d, loadedFurniture.furniture().settings().sounds().breakSound());
+            world.playBlockSound(vec3d, loadedFurniture.config().settings().sounds().breakSound());
         }
     }
 }

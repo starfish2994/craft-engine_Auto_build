@@ -50,6 +50,7 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
+    public static final List<byte[]> SHULKER_PNG = new ArrayList<>(1);
 
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
@@ -85,6 +86,8 @@ public abstract class AbstractPackManager implements PackManager {
         loadInternalList("internal/textures/block/_list.json", VANILLA_BLOCK_TEXTURES::add);
         loadInternalList("internal/textures/item/_list.json", VANILLA_ITEM_TEXTURES::add);
         loadInternalList("internal/textures/font/_list.json", VANILLA_FONT_TEXTURES::add);
+
+        loadInternalPng("internal/textures/entity/shulker/shulker.png", SHULKER_PNG::add);
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -112,6 +115,16 @@ public abstract class AbstractPackManager implements PackManager {
                         callback.accept(Key.of(FileUtils.pathWithoutExtension(primitive.getAsString())));
                     }
                 }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load " + path, e);
+        }
+    }
+
+    private void loadInternalPng(String path, Consumer<byte[]> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+            if (inputStream != null) {
+                callback.accept(inputStream.readAllBytes());
             }
         } catch (IOException e) {
             this.plugin.logger().warn("Failed to load " + path, e);
@@ -271,6 +284,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/configuration/templates.yml");
         // i18n
         plugin.saveResource("resources/default/configuration/i18n.yml");
+        // block_name
+        plugin.saveResource("resources/default/configuration/block_name.yml");
         // categories
         plugin.saveResource("resources/default/configuration/categories.yml");
         // icons

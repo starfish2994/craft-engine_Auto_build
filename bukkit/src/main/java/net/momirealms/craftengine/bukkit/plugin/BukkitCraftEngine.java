@@ -6,13 +6,13 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
 import net.momirealms.craftengine.bukkit.font.BukkitImageManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BukkitItemBehaviors;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.loot.BukkitVanillaLootManager;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
-import net.momirealms.craftengine.bukkit.plugin.bstats.CraftEngineMetrics;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
@@ -29,6 +29,7 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.classpath.ReflectionClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
+import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.dependency.Dependencies;
 import net.momirealms.craftengine.core.plugin.dependency.Dependency;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImpl;
@@ -37,6 +38,7 @@ import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -141,7 +143,7 @@ public class BukkitCraftEngine extends CraftEngine {
         }
         BukkitBlockBehaviors.init();
         BukkitItemBehaviors.init();
-        CraftEngineMetrics.init(this);
+        BukkitHitBoxTypes.init();
         super.packManager = new BukkitPackManager(this);
         super.senderFactory = new BukkitSenderFactory(this);
         super.itemManager = new BukkitItemManager(this);
@@ -200,6 +202,13 @@ public class BukkitCraftEngine extends CraftEngine {
         super.reload();
         CraftEngineReloadEvent event = new CraftEngineReloadEvent(this);
         EventUtils.fireAndForget(event);
+    }
+
+    @Override
+    public void delayedEnable() {
+        if (ConfigManager.metrics()) {
+            new Metrics(this.bootstrap(), 24333);
+        }
     }
 
     @Override

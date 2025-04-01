@@ -597,6 +597,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public org.bukkit.entity.Player literalObject() {
+        return platformPlayer();
+    }
+
+    @Override
     public Map<Integer, List<Integer>> furnitureView() {
         return this.furnitureView;
     }

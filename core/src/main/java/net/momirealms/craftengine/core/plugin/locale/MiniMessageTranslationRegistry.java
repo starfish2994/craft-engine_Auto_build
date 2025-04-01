@@ -42,7 +42,7 @@ public interface MiniMessageTranslationRegistry extends Translator {
             if (errorCount == 1) {
                 throw firstError;
             } else if (errorCount > 1) {
-                throw new IllegalArgumentException(String.format("Invalid key (and %d more)", errorCount - 1), firstError);
+                throw new IllegalArgumentException(String.format("Invalid or duplicated lang key (and %d more).", errorCount - 1), firstError);
             }
         }
     }

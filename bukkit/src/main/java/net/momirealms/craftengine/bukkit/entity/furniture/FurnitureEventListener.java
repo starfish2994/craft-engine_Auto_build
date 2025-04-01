@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -57,7 +58,9 @@ public class FurnitureEventListener implements Listener {
     public void onChunkUnload(ChunkUnloadEvent event) {
         Entity[] entities = event.getChunk().getEntities();
         for (Entity entity : entities) {
-            this.manager.handleEntityUnload(entity);
+            if (entity instanceof ItemDisplay) {
+                this.manager.handleBaseFurnitureUnload(entity);
+            }
         }
     }
 
@@ -65,13 +68,17 @@ public class FurnitureEventListener implements Listener {
     public void onWorldUnload(WorldUnloadEvent event) {
         List<Entity> entities = event.getWorld().getEntities();
         for (Entity entity : entities) {
-            this.manager.handleEntityUnload(entity);
+            if (entity instanceof ItemDisplay) {
+                this.manager.handleBaseFurnitureUnload(entity);
+            }
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onEntityUnload(EntityRemoveFromWorldEvent event) {
-        this.manager.handleEntityUnload(event.getEntity());
+        if (event.getEntity() instanceof ItemDisplay itemDisplay) {
+            this.manager.handleBaseFurnitureUnload(itemDisplay);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

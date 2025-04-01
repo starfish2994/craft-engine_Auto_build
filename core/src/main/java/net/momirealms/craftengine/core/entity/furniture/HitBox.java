@@ -1,33 +1,26 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
+import net.momirealms.craftengine.core.util.Key;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class HitBox {
-    private final Vector3f position;
-    private final Vector3f size;
-    private final Seat[] seats;
-    private final boolean responsive;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
-    public HitBox(Vector3f position, Vector3f size, Seat[] seats, boolean responsive) {
-        this.position = position;
-        this.size = size;
-        this.seats = seats;
-        this.responsive = responsive;
-    }
+public interface HitBox {
 
-    public boolean responsive() {
-        return responsive;
-    }
+    Key type();
 
-    public Seat[] seats() {
-        return seats;
-    }
+    void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets);
 
-    public Vector3f offset() {
-        return position;
-    }
+    int[] acquireEntityIds(Supplier<Integer> entityIdSupplier);
 
-    public Vector3f size() {
-        return size;
+    Seat[] seats();
+
+    Vector3f position();
+
+    default Optional<Collider> optionalCollider() {
+        return Optional.empty();
     }
 }

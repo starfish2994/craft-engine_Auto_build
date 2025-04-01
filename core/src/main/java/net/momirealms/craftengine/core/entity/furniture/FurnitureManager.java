@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface FurnitureManager extends Reloadable, ConfigSectionParser {
     String CONFIG_SECTION_NAME = "furniture";
+    String FURNITURE_ADMIN_NODE = "craftengine.furniture.admin";
 
     void delayedLoad();
 

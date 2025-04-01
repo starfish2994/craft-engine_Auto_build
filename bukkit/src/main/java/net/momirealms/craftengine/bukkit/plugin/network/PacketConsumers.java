@@ -9,6 +9,7 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -76,7 +77,7 @@ public class PacketConsumers {
         try {
             if (user.clientModEnabled()) {
                 BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
                 byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
                 ByteBuf buf = Unpooled.copiedBuffer(buffer);
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
@@ -106,7 +107,7 @@ public class PacketConsumers {
                 Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
             } else {
                 BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = Reflections.field$ClientboundLevelChunkWithLightPacket$chunkData.get(packet);
+                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
                 byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
                 ByteBuf buf = Unpooled.copiedBuffer(buffer);
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
@@ -557,7 +558,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByInteractionEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -587,7 +588,7 @@ public class PacketConsumers {
     };
 
     private static void handlePickItemFromEntityOnMainThread(Player player, LoadedFurniture furniture) throws Exception {
-        Key itemId = furniture.furniture().settings().itemId();
+        Key itemId = furniture.config().settings().itemId();
         if (itemId == null) return;
         pickItem(player, itemId);
     }
@@ -618,11 +619,18 @@ public class PacketConsumers {
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(entityId);
                 if (furniture != null) {
-                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
-                    user.sendPacket(furniture.spawnPacket(), false);
-                    if (ConfigManager.hideBaseEntity()) {
+                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                    user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
+                    if (ConfigManager.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
                     }
+                }
+            } else if (entityType == Reflections.instance$EntityType$SHULKER) {
+                // Cancel collider entity packet
+                int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
+                if (furniture != null) {
+                    event.setCancelled(true);
                 }
             }
         } catch (Exception e) {
@@ -671,11 +679,17 @@ public class PacketConsumers {
         try {
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
-            int entityId = (int) Reflections.field$ServerboundInteractPacket$entityId.get(packet);
+            int entityId;
+            if (BukkitNetworkManager.hasModelEngine()) {
+                int fakeId = (int) Reflections.field$ServerboundInteractPacket$entityId.get(packet);
+                entityId = ModelEngineUtils.interactionToBaseEntity(fakeId);
+            } else {
+                entityId = Reflections.field$ServerboundInteractPacket$entityId.getInt(packet);
+            }
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByInteractionEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
@@ -712,9 +726,9 @@ public class PacketConsumers {
                     }
                     if (player.isSneaking())
                         return;
-                    furniture.getAvailableSeat(entityId).ifPresent(seatPos -> {
-                        if (furniture.occupySeat(seatPos)) {
-                            furniture.mountSeat(Objects.requireNonNull(player.getPlayer()), seatPos);
+                    furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                        if (furniture.tryOccupySeat(seatPos)) {
+                            furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
                         }
                     });
                 }
@@ -897,6 +911,7 @@ public class PacketConsumers {
             callback.accept(new String(newCodepoints, 0, newCodepoints.length));
         }
     }
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
         try {
             if (!VersionHelper.isVersionNewerThan1_20_5()) return;

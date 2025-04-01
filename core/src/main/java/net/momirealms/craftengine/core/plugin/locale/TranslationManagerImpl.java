@@ -44,7 +44,7 @@ public class TranslationManagerImpl implements TranslationManager {
     public TranslationManagerImpl(Plugin plugin) {
         this.plugin = plugin;
         this.translationsDirectory = this.plugin.dataFolderPath().resolve("translations");
-        this.clientLangManager = new ClientLangMangerImpl(plugin);
+        this.clientLangManager = new ClientLangMangerImpl();
         this.langVersion = PluginProperties.getValue("lang-version");
         this.supportedLanguages = PluginProperties.getValue("supported-languages").split(",");
         instance = this;
@@ -60,6 +60,11 @@ public class TranslationManagerImpl implements TranslationManager {
     @Override
     public void forcedLocale(Locale locale) {
         this.forcedLocale = locale;
+    }
+
+    @Override
+    public void delayedLoad() {
+        this.clientLangManager.delayedLoad();
     }
 
     @Override

@@ -1,7 +1,13 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
+import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
+import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.Pack;
@@ -36,7 +42,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
     private final Map<Key, CustomFurniture> byId = new HashMap<>();
 
     private final Map<Integer, LoadedFurniture> furnitureByBaseEntityId  = new ConcurrentHashMap<>(256, 0.5f);
-    private final Map<Integer, LoadedFurniture> furnitureByInteractionEntityId  = new ConcurrentHashMap<>(512, 0.5f);
+    private final Map<Integer, LoadedFurniture> furnitureByEntityId = new ConcurrentHashMap<>(512, 0.5f);
+    private final Map<Integer, LoadedFurniture> furnitureByCollisionEntitiesId = new ConcurrentHashMap<>(256, 0.5f);
     // Event listeners
     private final Listener dismountListener;
     private final FurnitureEventListener furnitureEventListener;
@@ -102,10 +109,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
         if (placementMap == null) {
             throw new IllegalArgumentException("Missing required parameter 'placement' for furniture " + id);
         }
+
         for (Map.Entry<String, Object> entry : placementMap.entrySet()) {
+            // anchor type
             AnchorType anchorType = AnchorType.valueOf(entry.getKey().toUpperCase(Locale.ENGLISH));
             Map<String, Object> placementArguments = MiscUtils.castToMap(entry.getValue(), true);
 
+            // furniture display elements
             List<FurnitureElement> elements = new ArrayList<>();
             List<Map<String, Object>> elementConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("elements", List.of());
             for (Map<String, Object> element : elementConfigs) {
@@ -115,7 +125,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 }
                 ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                 Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
-                FurnitureElement furnitureElement = new FurnitureElement(Key.of(key), billboard, transform,
+                FurnitureElement furnitureElement = new BukkitFurnitureElement(Key.of(key), billboard, transform,
                         MiscUtils.getVector3f(element.getOrDefault("scale", "1")),
                         MiscUtils.getVector3f(element.getOrDefault("translation", "0")),
                         MiscUtils.getVector3f(element.getOrDefault("position", "0")),
@@ -123,36 +133,50 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 );
                 elements.add(furnitureElement);
             }
+
+            // add colliders
+            List<Collider> colliders = new ArrayList<>();
+//            List<Map<String, Object>> colliderConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("colliders", List.of());
+//            for (Map<String, Object> config : colliderConfigs) {
+//                if (!config.containsKey("position")) {
+//                    colliders.add(new Collider(
+//                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+//                            MiscUtils.getVector3d(config.getOrDefault("point-1", "0")),
+//                            MiscUtils.getVector3d(config.getOrDefault("point-2", "0"))
+//                    ));
+//                } else {
+//                    colliders.add(new Collider(
+//                            (boolean) config.getOrDefault("can-be-hit-by-projectile", false),
+//                            MiscUtils.getVector3f(config.getOrDefault("position", "0")),
+//                            MiscUtils.getAsFloat(config.getOrDefault("width", "1")),
+//                            MiscUtils.getAsFloat(config.getOrDefault("height", "1"))
+//                    ));
+//                }
+//            }
+
+            // external model providers
+            Optional<ExternalModel> externalModel;
+            if (placementArguments.containsKey("model-engine")) {
+                externalModel = Optional.of(new ModelEngineModel(placementArguments.get("model-engine").toString()));
+            } else if (placementArguments.containsKey("better-model")) {
+                externalModel = Optional.of(new BetterModelModel(placementArguments.get("better-model").toString()));
+            } else {
+                externalModel = Optional.empty();
+            }
+
+            // add hitboxes
             List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
             List<HitBox> hitboxes = new ArrayList<>();
             for (Map<String, Object> config : hitboxConfigs) {
-                List<String> seats = (List<String>) config.getOrDefault("seats", List.of());
-                Seat[] seatArray = seats.stream()
-                        .map(arg -> {
-                            String[] split = arg.split(" ");
-                            if (split.length == 1) return new Seat(MiscUtils.getVector3f(split[0]), 0, false);
-                            return new Seat(MiscUtils.getVector3f(split[0]), Float.parseFloat(split[1]), true);
-                        })
-                        .toArray(Seat[]::new);
-                Vector3f position = MiscUtils.getVector3f(config.getOrDefault("position", "0"));
-                float width = MiscUtils.getAsFloat(config.getOrDefault("width", "1"));
-                float height = MiscUtils.getAsFloat(config.getOrDefault("height", "1"));
-                HitBox hitBox = new HitBox(
-                        position,
-                        new Vector3f(width, height, width),
-                        seatArray,
-                        (boolean) config.getOrDefault("interactive", true)
-                );
+                HitBox hitBox = HitBoxTypes.fromMap(config);
                 hitboxes.add(hitBox);
+                hitBox.optionalCollider().ifPresent(colliders::add);
             }
-            if (hitboxes.isEmpty()) {
-                hitboxes.add(new HitBox(
-                        new Vector3f(),
-                        new Vector3f(1,1,1),
-                        new Seat[0],
-                        true
-                ));
+            if (hitboxes.isEmpty() && externalModel.isEmpty()) {
+                hitboxes.add(InteractionHitBox.DEFAULT);
             }
+
+            // rules
             Map<String, Object> ruleSection = MiscUtils.castToMap(placementArguments.get("rules"), true);
             if (ruleSection != null) {
                 RotationRule rotationRule = Optional.ofNullable((String) ruleSection.get("rotation"))
@@ -164,15 +188,19 @@ public class BukkitFurnitureManager implements FurnitureManager {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
+                        colliders.toArray(new Collider[0]),
                         rotationRule,
-                        alignmentRule
+                        alignmentRule,
+                        externalModel
                 ));
             } else {
                 placements.put(anchorType, new CustomFurniture.Placement(
                         elements.toArray(new FurnitureElement[0]),
                         hitboxes.toArray(new HitBox[0]),
+                        colliders.toArray(new Collider[0]),
                         RotationRule.ANY,
-                        AlignmentRule.CENTER
+                        AlignmentRule.CENTER,
+                        externalModel
                 ));
             }
         }
@@ -240,17 +268,22 @@ public class BukkitFurnitureManager implements FurnitureManager {
     }
 
     @Nullable
-    public LoadedFurniture getLoadedFurnitureByInteractionEntityId(int entityId) {
-        return this.furnitureByInteractionEntityId.get(entityId);
+    public LoadedFurniture getLoadedFurnitureByEntityId(int entityId) {
+        return this.furnitureByEntityId.get(entityId);
     }
 
-    protected void handleEntityUnload(Entity entity) {
+    @Nullable
+    public LoadedFurniture getLoadedFurnitureByCollisionEntityId(int entityId) {
+        return this.furnitureByCollisionEntitiesId.get(entityId);
+    }
+
+    protected void handleBaseFurnitureUnload(Entity entity) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
         if (furniture != null) {
             furniture.destroySeats();
-            for (int sub : furniture.interactionEntityIds()) {
-                this.furnitureByInteractionEntityId.remove(sub);
+            for (int sub : furniture.entityIds()) {
+                this.furnitureByEntityId.remove(sub);
             }
         }
     }
@@ -266,10 +299,14 @@ public class BukkitFurnitureManager implements FurnitureManager {
             CustomFurniture customFurniture = optionalFurniture.get();
             LoadedFurniture previous = this.furnitureByBaseEntityId.get(display.getEntityId());
             if (previous != null) return;
+            Location location = entity.getLocation();
+            if (FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                return;
+            }
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
-                this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.subEntityIds());
-                this.plugin.networkManager().sendPacket(player, furniture.spawnPacket());
+                this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
         }
     }
@@ -315,9 +352,14 @@ public class BukkitFurnitureManager implements FurnitureManager {
     private synchronized LoadedFurniture addNewFurniture(ItemDisplay display, CustomFurniture furniture, AnchorType anchorType) {
         LoadedFurniture loadedFurniture = new LoadedFurniture(display, furniture, anchorType);
         this.furnitureByBaseEntityId.put(loadedFurniture.baseEntityId(), loadedFurniture);
-        for (int entityId : loadedFurniture.interactionEntityIds()) {
-            this.furnitureByInteractionEntityId.put(entityId, loadedFurniture);
+        for (int entityId : loadedFurniture.entityIds()) {
+            this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
+        for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
+            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
+            this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
+        }
+        loadedFurniture.initializeColliders();
         return loadedFurniture;
     }
 
@@ -341,10 +383,68 @@ public class BukkitFurnitureManager implements FurnitureManager {
             return;
         }
         Vector3f seatPos = MiscUtils.getVector3f(vector3f);
-        furniture.releaseSeat(seatPos);
+        furniture.removeOccupiedSeat(seatPos);
+
+        if (player.getVehicle() != null) return;
+        Location vehicleLocation = vehicle.getLocation();
+        Location originalLocation = vehicleLocation.clone();
+        originalLocation.setY(furniture.location().getY());
+        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection().multiply(1.1));
+        if (!isSafeLocation(targetLocation)) {
+            targetLocation = findSafeLocationNearby(originalLocation);
+            if (targetLocation == null) return;
+        }
+        targetLocation.setYaw(player.getLocation().getYaw());
+        targetLocation.setPitch(player.getLocation().getPitch());
+        player.teleport(targetLocation);
     }
 
     protected boolean isSeatCarrierType(Entity entity) {
         return (entity instanceof ArmorStand || entity instanceof ItemDisplay);
+    }
+
+    private boolean isSafeLocation(Location location) {
+        World world = location.getWorld();
+        if (world == null) return false;
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        if (!world.getBlockAt(x, y - 1, z).getType().isSolid()) return false;
+        if (!world.getBlockAt(x, y, z).isPassable()) return false;
+        if (isEntityBlocking(location)) return false;
+        return world.getBlockAt(x, y + 1, z).isPassable();
+    }
+
+    @Nullable
+    private Location findSafeLocationNearby(Location center) {
+        World world = center.getWorld();
+        if (world == null) return null;
+        int centerX = center.getBlockX();
+        int centerY = center.getBlockY();
+        int centerZ = center.getBlockZ();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) continue;
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                Location nearbyLocation = new Location(world, x + 0.5, centerY, z + 0.5);
+                if (isSafeLocation(nearbyLocation)) return nearbyLocation;
+            }
+        }
+        return null;
+    }
+
+    private boolean isEntityBlocking(Location location) {
+        World world = location.getWorld();
+        if (world == null) return true;
+        try {
+            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.38, 2, 0.38);
+            for (Entity bukkitEntity : nearbyEntities) {
+                if (bukkitEntity instanceof Player) continue;
+                Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);
+                return (boolean) Reflections.method$Entity$canBeCollidedWith.invoke(nmsEntity);
+            }
+        } catch (Exception ignored) {}
+        return false;
     }
 }

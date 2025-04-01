@@ -1,13 +1,12 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import net.momirealms.craftengine.bukkit.entity.DisplayEntityData;
-import net.momirealms.craftengine.bukkit.entity.InteractionEntityData;
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.entity.BukkitEntity;
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
-import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.Key;
@@ -15,13 +14,11 @@ import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.lang.ref.WeakReference;
@@ -31,22 +28,26 @@ public class LoadedFurniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
-    private final Map<Integer, FurnitureElement> elements;
-    private final Map<Integer, HitBox> hitBoxes;
     // location
-    private Location location;
-    // cached spawn packet
-    private Object cachedSpawnPacket;
+    private final Location location;
     // base entity
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
-    // includes elements + interactions
-    private final List<Integer> subEntityIds;
-    // interactions
-    private final List<Integer> interactionEntityIds;
+    // colliders
+    private final CollisionEntity[] collisionEntities;
+    // cache
+    private final List<Integer> fakeEntityIds;
+    private final List<Integer> entityIds;
+    private final Map<Integer, HitBox> hitBoxes;
+    private final boolean minimized;
+    private final boolean hasExternalModel;
+    private final CustomFurniture.Placement placement;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
+    // cached spawn packet
+    private Object cachedSpawnPacket;
+    private Object cachedMinimizedSpawnPacket;
 
     public LoadedFurniture(Entity baseEntity,
                            CustomFurniture furniture,
@@ -58,96 +59,117 @@ public class LoadedFurniture {
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
         this.hitBoxes = new HashMap<>();
-        this.elements = new HashMap<>();
-        List<Integer> entityIds = new ArrayList<>();
-        List<Integer> interactionEntityIds = new ArrayList<>();
+        this.minimized = furniture.settings().minimized();
+        List<Integer> fakeEntityIds = new ArrayList<>();
+        List<Integer> mainEntityIds = new ArrayList<>();
+        mainEntityIds.add(this.baseEntityId);
+
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
+        this.placement = placement;
+        // bind external furniture
+        Optional<ExternalModel> optionalExternal = placement.externalModel();
+        if (optionalExternal.isPresent()) {
+            try {
+                optionalExternal.get().bindModel(new BukkitEntity(baseEntity));
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to load external model for furniture " + id, e);
+            }
+            hasExternalModel = true;
+        } else {
+            hasExternalModel = false;
+        }
+
+        double yawInRadius = Math.toRadians(180 - this.location.getYaw());
+        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, yawInRadius, 0).conjugate();
+
+        double x = location.getX();
+        double y = location.getY();
+        double z = location.getZ();
+        float yaw = this.location.getYaw();
+
+        List<Object> packets = new ArrayList<>();
+        List<Object> minimizedPackets = new ArrayList<>();
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
-            entityIds.add(entityId);
-            this.elements.put(entityId, element);
+            fakeEntityIds.add(entityId);
+            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packet -> {
+                packets.add(packet);
+                if (this.minimized) minimizedPackets.add(packet);
+            });
         }
-        for (HitBox hitBox : placement.hitbox()) {
-            int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
-            entityIds.add(entityId);
-            interactionEntityIds.add(entityId);
-            this.hitBoxes.put(entityId, hitBox);
-        }
-        this.subEntityIds = entityIds;
-        this.interactionEntityIds = interactionEntityIds;
-        this.resetSpawnPackets();
-    }
-
-    private void resetSpawnPackets() {
-        try {
-            List<Object> packets = new ArrayList<>();
-            for (Map.Entry<Integer, FurnitureElement> entry : elements.entrySet()) {
-                int entityId = entry.getKey();
-                FurnitureElement element = entry.getValue();
-                Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(element.item(), null);
-                if (item == null) {
-                    CraftEngine.instance().logger().warn("Failed to create furniture element for " + id + " because item " + element.item() + " not found");
-                    continue;
+        for (HitBox hitBox : placement.hitBoxes()) {
+            int[] ids = hitBox.acquireEntityIds(Reflections.instance$Entity$ENTITY_COUNTER::incrementAndGet);
+            for (int entityId : ids) {
+                fakeEntityIds.add(entityId);
+                mainEntityIds.add(entityId);
+                this.hitBoxes.put(entityId, hitBox);
+            }
+            hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+                packets.add(packet);
+                if (this.minimized && !canBeMinimized) {
+                    minimizedPackets.add(packet);
                 }
-                item.load();
-
-                Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(element.offset()));
-                Object addEntityPacket = Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityId, UUID.randomUUID(), this.location.getX() + offset.x, this.location.getY() + offset.y, this.location.getZ() - offset.z, 0, this.location.getYaw(),
-                        Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
-                );
-
-                ArrayList<Object> values = new ArrayList<>();
-                DisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), values);
-                DisplayEntityData.Scale.addEntityDataIfNotDefaultValue(element.scale(), values);
-                DisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(element.rotation(), values);
-                DisplayEntityData.BillboardConstraints.addEntityDataIfNotDefaultValue(element.billboard().id(), values);
-                DisplayEntityData.Translation.addEntityDataIfNotDefaultValue(element.translation(), values);
-                DisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(element.transform().id(), values);
-                Object setDataPacket = Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId, values);
-
-                packets.add(addEntityPacket);
-                packets.add(setDataPacket);
-            }
-            for (Map.Entry<Integer, HitBox> entry : hitBoxes.entrySet()) {
-                int entityId = entry.getKey();
-                HitBox hitBox = entry.getValue();
-                Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(hitBox.offset()));
-                Object addEntityPacket = Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityId, UUID.randomUUID(), this.location.getX() + offset.x, this.location.getY() + offset.y, this.location.getZ() - offset.z, 0, this.location.getYaw(),
-                        Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                );
-
-                ArrayList<Object> values = new ArrayList<>();
-                InteractionEntityData.Height.addEntityDataIfNotDefaultValue(hitBox.size().y, values);
-                InteractionEntityData.Width.addEntityDataIfNotDefaultValue(hitBox.size().x, values);
-                InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(hitBox.responsive(), values);
-                Object setDataPacket = Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId, values);
-
-                packets.add(addEntityPacket);
-                packets.add(setDataPacket);
-            }
+            });
+        }
+        try {
             this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+            if (this.minimized) {
+                this.cachedMinimizedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(minimizedPackets);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
+        }
+        this.fakeEntityIds = fakeEntityIds;
+        this.entityIds = mainEntityIds;
+        int colliderSize = placement.colliders().length;
+        this.collisionEntities = new CollisionEntity[colliderSize];
+        if (colliderSize != 0) {
+            Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
+            for (int i = 0; i < colliderSize; i++) {
+                Collider collider = placement.colliders()[i];
+                Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
+                Vector3d offset1 = collider.point1();
+                Vector3d offset2 = collider.point2();
+                double x1 = x + offset1.x() + offset.x();
+                double x2 = x + offset2.x() + offset.x();
+                double y1 = y + offset1.y() + offset.y();
+                double y2 = y + offset2.y() + offset.y();
+                double z1 = z + offset1.z() - offset.z();
+                double z2 = z + offset2.z() - offset.z();
+                Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
+                CollisionEntity entity = FastNMS.INSTANCE.createCollisionShulker(world, aabb, x, y, z, collider.canBeHitByProjectile());
+                this.collisionEntities[i] = entity;
+            }
+        }
+    }
+
+    public void initializeColliders() {
+        Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
+        for (CollisionEntity entity : this.collisionEntities) {
+            FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
+        }
+    }
+
+    @NotNull
+    public Object spawnPacket(Player player) {
+        // TODO hasPermission might be slow, can we use a faster way in the future?
+        if (!this.minimized || player.hasPermission(FurnitureManager.FURNITURE_ADMIN_NODE)) {
+            return this.cachedSpawnPacket;
+        } else {
+            return this.cachedMinimizedSpawnPacket;
         }
     }
 
     @NotNull
     public Location location() {
-        return this.location;
-    }
-
-    public void teleport(@NotNull Location location) {
-        if (location.equals(this.location)) return;
-        this.location = location;
+        return this.location.clone();
     }
 
     @NotNull
     public Entity baseEntity() {
         Entity entity = baseEntity.get();
         if (entity == null) {
-            throw new RuntimeException("Base entity not found");
+            throw new RuntimeException("Base entity not found. It might be unloaded.");
         }
         return entity;
     }
@@ -161,6 +183,10 @@ public class LoadedFurniture {
             return;
         }
         this.baseEntity().remove();
+        for (CollisionEntity entity : this.collisionEntities) {
+            if (entity != null)
+                entity.destroy();
+        }
         for (Entity entity : this.seats) {
             for (Entity passenger : entity.getPassengers()) {
                 entity.removePassenger(passenger);
@@ -177,41 +203,27 @@ public class LoadedFurniture {
         this.seats.clear();
     }
 
-    public void addSeatEntity(Entity entity) {
-        this.seats.add(entity);
-    }
+    public Optional<Seat> findFirstAvailableSeat(int targetEntityId) {
+        HitBox hitbox = hitBoxes.get(targetEntityId);
+        if (hitbox == null) return Optional.empty();
 
-    public Optional<Seat> getAvailableSeat(int clickedEntityId) {
-        HitBox hitbox = this.hitBoxes.get(clickedEntityId);
-        if (hitbox == null)
-            return Optional.empty();
         Seat[] seats = hitbox.seats();
-        if (ArrayUtils.isEmpty(seats)) {
-            return Optional.empty();
-        }
-        for (Seat seat : seats) {
-            if (!this.occupiedSeats.contains(seat.offset())) {
-                return Optional.of(seat);
-            }
-        }
-        return Optional.empty();
+        if (ArrayUtils.isEmpty(seats)) return Optional.empty();
+
+        return Arrays.stream(seats)
+                .filter(s -> !occupiedSeats.contains(s.offset()))
+                .findFirst();
     }
 
-    public Location getSeatLocation(Seat seat) {
-        Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(seat.offset()));
-        double yaw = seat.yaw() + this.location.getYaw();
-        if (yaw < -180) yaw += 360;
-        Location newLocation = this.location.clone();
-        newLocation.setYaw((float) yaw);
-        newLocation.add(offset.x, offset.y + 0.6, -offset.z);
-        return newLocation;
-    }
-
-    public boolean releaseSeat(Vector3f seat) {
+    public boolean removeOccupiedSeat(Vector3f seat) {
         return this.occupiedSeats.remove(seat);
     }
 
-    public boolean occupySeat(Seat seat) {
+    public boolean removeOccupiedSeat(Seat seat) {
+        return this.removeOccupiedSeat(seat.offset());
+    }
+
+    public boolean tryOccupySeat(Seat seat) {
         if (this.occupiedSeats.contains(seat.offset())) {
             return false;
         }
@@ -219,32 +231,57 @@ public class LoadedFurniture {
         return true;
     }
 
+    public UUID uuid() {
+        return this.baseEntity().getUniqueId();
+    }
+
     public int baseEntityId() {
-        return baseEntityId;
+        return this.baseEntityId;
     }
 
-    public List<Integer> interactionEntityIds() {
-        return interactionEntityIds;
+    @NotNull
+    public List<Integer> entityIds() {
+        return Collections.unmodifiableList(this.entityIds);
     }
 
-    public List<Integer> subEntityIds() {
-        return this.subEntityIds;
+    @NotNull
+    public List<Integer> fakeEntityIds() {
+        return Collections.unmodifiableList(this.fakeEntityIds);
     }
 
+    public CollisionEntity[] collisionEntities() {
+        return this.collisionEntities;
+    }
+
+    @NotNull
     public AnchorType anchorType() {
-        return anchorType;
+        return this.anchorType;
     }
 
-    public Key furnitureId() {
-        return id;
+    @NotNull
+    public Key id() {
+        return this.id;
     }
 
-    public CustomFurniture furniture() {
-        return furniture;
+    @NotNull
+    public CustomFurniture config() {
+        return this.furniture;
     }
 
-    public void mountSeat(org.bukkit.entity.Player player, Seat seat) {
-        Location location = this.getSeatLocation(seat);
+    public boolean hasExternalModel() {
+        return hasExternalModel;
+    }
+
+    public CustomFurniture.Placement placement() {
+        return this.placement;
+    }
+
+    public Map<Integer, HitBox> hitBoxes() {
+        return this.hitBoxes;
+    }
+
+    public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {
+        Location location = this.calculateSeatLocation(seat);
         Entity seatEntity = seat.limitPlayerRotation() ?
                 EntityUtils.spawnEntity(player.getWorld(), VersionHelper.isVersionNewerThan1_20_2() ? location.subtract(0,0.9875,0) : location.subtract(0,0.990625,0), EntityType.ARMOR_STAND, entity -> {
                     ArmorStand armorStand = (ArmorStand) entity;
@@ -271,11 +308,17 @@ public class LoadedFurniture {
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER, this.baseEntityId());
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 });
-        this.addSeatEntity(seatEntity);
+        this.seats.add(seatEntity);
         seatEntity.addPassenger(player);
     }
 
-    public @NotNull Object spawnPacket() {
-        return cachedSpawnPacket;
+    private Location calculateSeatLocation(Seat seat) {
+        Vector3f offset = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate().transform(new Vector3f(seat.offset()));
+        double yaw = seat.yaw() + this.location.getYaw();
+        if (yaw < -180) yaw += 360;
+        Location newLocation = this.location.clone();
+        newLocation.setYaw((float) yaw);
+        newLocation.add(offset.x, offset.y + 0.6, -offset.z);
+        return newLocation;
     }
 }

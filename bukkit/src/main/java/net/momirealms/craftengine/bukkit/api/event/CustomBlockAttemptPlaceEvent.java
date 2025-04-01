@@ -64,7 +64,7 @@ public class CustomBlockAttemptPlaceEvent extends PlayerEvent implements Cancell
 
     @NotNull
     public Location location() {
-        return this.location;
+        return this.location.clone();
     }
 
     @NotNull

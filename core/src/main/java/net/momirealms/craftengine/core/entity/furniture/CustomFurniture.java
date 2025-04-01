@@ -6,11 +6,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.Optional;
 
 public class CustomFurniture {
     private final Key id;
     private final FurnitureSettings settings;
     private final EnumMap<AnchorType, Placement> placements;
+    private final AnchorType anyType;
     @Nullable
     private final LootTable<?> lootTable;
 
@@ -22,6 +24,7 @@ public class CustomFurniture {
         this.settings = settings;
         this.placements = placements;
         this.lootTable = lootTable;
+        this.anyType = placements.keySet().stream().findFirst().orElse(null);
     }
 
     public Key id() {
@@ -42,7 +45,7 @@ public class CustomFurniture {
     }
 
     public AnchorType getAnyPlacement() {
-        return placements.keySet().stream().findFirst().orElse(null);
+        return this.anyType;
     }
 
     public boolean isAllowedPlacement(AnchorType anchorType) {
@@ -53,33 +56,11 @@ public class CustomFurniture {
         return placements.get(anchorType);
     }
 
-    public static class Placement {
-        private final FurnitureElement[] elements;
-        private final HitBox[] hitbox;
-        private final RotationRule rotationRule;
-        private final AlignmentRule alignmentRule;
-
-        public Placement(FurnitureElement[] elements, HitBox[] hitbox, RotationRule rotationRule, AlignmentRule alignmentRule) {
-            this.elements = elements;
-            this.hitbox = hitbox;
-            this.rotationRule = rotationRule;
-            this.alignmentRule = alignmentRule;
-        }
-
-        public HitBox[] hitbox() {
-            return hitbox;
-        }
-
-        public FurnitureElement[] elements() {
-            return elements;
-        }
-
-        public RotationRule rotationRule() {
-            return rotationRule;
-        }
-
-        public AlignmentRule alignmentRule() {
-            return alignmentRule;
-        }
+    public record Placement(FurnitureElement[] elements,
+                            HitBox[] hitBoxes,
+                            Collider[] colliders,
+                            RotationRule rotationRule,
+                            AlignmentRule alignmentRule,
+                            Optional<ExternalModel> externalModel) {
     }
 }

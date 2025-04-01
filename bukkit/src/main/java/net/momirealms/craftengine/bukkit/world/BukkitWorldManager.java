@@ -395,6 +395,4 @@ public class BukkitWorldManager implements WorldManager, Listener {
         }
         ceChunk.load();
     }
-
-
 }

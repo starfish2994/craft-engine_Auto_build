@@ -15,7 +15,6 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -70,7 +69,7 @@ public class ItemEventListener implements Listener {
                 block,
                 event.getBlockFace(),
                 event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
-                action == Action.RIGHT_CLICK_BLOCK ? CustomBlockInteractEvent.Action.RIGHT_CLICK : CustomBlockInteractEvent.Action.LEFT_CLICK
+                action.isRightClick() ? CustomBlockInteractEvent.Action.RIGHT_CLICK : CustomBlockInteractEvent.Action.LEFT_CLICK
         );
         if (EventUtils.fireAndCheckCancel(interactEvent)) {
             event.setCancelled(true);
@@ -184,22 +183,23 @@ public class ItemEventListener implements Listener {
             // so we should check and resend sounds on interact
             Object blockState = BlockStateUtils.blockDataToBlockState(clickedBlock.getBlockData());
             int stateId = BlockStateUtils.blockStateToId(blockState);
-            ImmutableBlockState againCustomBlock = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-            if (againCustomBlock == null || againCustomBlock.isEmpty()) {
+            ImmutableBlockState againstCustomBlock = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+            if (againstCustomBlock == null || againstCustomBlock.isEmpty()) {
                 return;
             }
+
             BlockPos pos = LocationUtils.toBlockPos(clickedBlock.getLocation());
             Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
             BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
             try {
-                BlockData craftBlockData = BlockStateUtils.fromBlockData(againCustomBlock.vanillaBlockState().handle());
-                if (InteractUtils.isInteractable(Key.of(clickedBlock.getType().getKey().asString()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
+                BlockData craftBlockData = BlockStateUtils.fromBlockData(againstCustomBlock.vanillaBlockState().handle());
+                if (InteractUtils.isInteractable(KeyUtils.namespacedKey2Key(craftBlockData.getMaterial().getKey()), bukkitPlayer, craftBlockData, hitResult, itemInHand)) {
                     if (!player.isSecondaryUseActive()) {
                         player.setResendSound();
                     }
                 } else {
-                    if (BlockStateUtils.isReplaceable(againCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againCustomBlock.vanillaBlockState().handle())) {
+                    if (BlockStateUtils.isReplaceable(againstCustomBlock.customBlockState().handle()) && !BlockStateUtils.isReplaceable(againstCustomBlock.vanillaBlockState().handle())) {
                         player.setResendSwing();
                     }
                 }

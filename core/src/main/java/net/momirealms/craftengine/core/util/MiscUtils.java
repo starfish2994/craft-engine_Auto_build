@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.util;
 
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -145,6 +146,18 @@ public class MiscUtils {
             return new Vector3f(Float.parseFloat(split[0]));
         } else {
             throw new RuntimeException("Cannot convert " + o + " to Vector3f");
+        }
+    }
+
+    public static Vector3d getVector3d(Object o) {
+        String stringFormat = o.toString();
+        String[] split = stringFormat.split(",");
+        if (split.length == 3) {
+            return new Vector3d(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
+        } else if (split.length == 1) {
+            return new Vector3d(Double.parseDouble(split[0]));
+        } else {
+            throw new RuntimeException("Cannot convert " + o + " to Vector3d");
         }
     }
 

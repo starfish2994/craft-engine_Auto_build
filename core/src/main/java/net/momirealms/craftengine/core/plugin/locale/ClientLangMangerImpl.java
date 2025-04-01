@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.plugin.locale;
 
 import net.momirealms.craftengine.core.pack.Pack;
-import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -9,12 +8,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClientLangMangerImpl implements ClientLangManager {
-    private final Plugin plugin;
     private final Map<String, I18NData> i18nData = new HashMap<>();
 
-    public ClientLangMangerImpl(Plugin plugin) {
-        this.plugin = plugin;
-    }
+    protected ClientLangMangerImpl() {}
 
     @Override
     public void reload() {
@@ -58,5 +54,10 @@ public class ClientLangMangerImpl implements ClientLangManager {
             this.i18nData.computeIfAbsent(langId + "_" + lang, k -> new I18NData())
                     .addTranslations(translations);
         }
+    }
+
+    @Override
+    public void delayedLoad() {
+        this.i18nData.values().forEach(I18NData::processTranslations);
     }
 }
