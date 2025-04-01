@@ -127,15 +127,15 @@ public class LoadedFurniture {
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
             for (int i = 0; i < colliderSize; i++) {
                 Collider collider = placement.colliders()[i];
-                Vector3f offset = conjugated.transform(collider.position());
+                Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
                 Vector3d offset1 = collider.point1();
                 Vector3d offset2 = collider.point2();
                 double x1 = x + offset1.x() + offset.x();
                 double x2 = x + offset2.x() + offset.x();
                 double y1 = y + offset1.y() + offset.y();
                 double y2 = y + offset2.y() + offset.y();
-                double z1 = z - offset1.z() + offset.z();
-                double z2 = z - offset2.z() + offset.z();
+                double z1 = z + offset1.z() - offset.z();
+                double z2 = z + offset2.z() - offset.z();
                 Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
                 CollisionEntity entity = FastNMS.INSTANCE.createCollisionShulker(world, aabb, x, y, z, collider.canBeHitByProjectile());
                 FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
