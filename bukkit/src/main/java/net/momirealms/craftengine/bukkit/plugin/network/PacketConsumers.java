@@ -626,7 +626,7 @@ public class PacketConsumers {
                     }
                 }
             } else if (entityType == Reflections.instance$EntityType$INTERACTION) {
-                // 取消服务端碰撞实体
+                // Cancel collider entity packet
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
                 if (furniture != null) {
@@ -911,6 +911,7 @@ public class PacketConsumers {
             callback.accept(new String(newCodepoints, 0, newCodepoints.length));
         }
     }
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
         try {
             if (!VersionHelper.isVersionNewerThan1_20_5()) return;

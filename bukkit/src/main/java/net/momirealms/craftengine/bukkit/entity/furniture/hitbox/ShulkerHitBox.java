@@ -45,8 +45,9 @@ public class ShulkerHitBox extends AbstractHitBox {
         ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
 
         if (this.interactionEntity) {
-            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPeekHeight(peek, scale) + 0.001f, cachedInteractionValues);
-            InteractionEntityData.Width.addEntityDataIfNotDefaultValue((float) scale + 0.001f, cachedInteractionValues);
+            // make it a litter bigger
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPeekHeight(peek, scale) + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Width.addEntityDataIfNotDefaultValue((float) scale + 0.01f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
         }
     }
@@ -115,8 +116,9 @@ public class ShulkerHitBox extends AbstractHitBox {
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
             if (this.interactionEntity) {
+                // make it a litter lower
                 packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.0005f, z - offset.z, 0, yaw,
+                        entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
                         Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
                 ), true);
                 packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);

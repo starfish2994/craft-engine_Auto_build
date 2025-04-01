@@ -357,12 +357,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
             this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
         for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
-            try {
-                int collisionEntityId = (int) Reflections.method$Entity$getId.invoke(collisionEntity);
-                this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
+            this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
         }
         return loadedFurniture;
     }

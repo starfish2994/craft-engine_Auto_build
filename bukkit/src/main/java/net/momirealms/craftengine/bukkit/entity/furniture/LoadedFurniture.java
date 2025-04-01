@@ -102,14 +102,14 @@ public class LoadedFurniture {
             for (int entityId : ids) {
                 fakeEntityIds.add(entityId);
                 mainEntityIds.add(entityId);
-                hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
-                    packets.add(packet);
-                    if (this.minimized && !canBeMinimized) {
-                        minimizedPackets.add(packet);
-                    }
-                });
                 this.hitBoxes.put(entityId, hitBox);
             }
+            hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+                packets.add(packet);
+                if (this.minimized && !canBeMinimized) {
+                    minimizedPackets.add(packet);
+                }
+            });
         }
         try {
             this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
