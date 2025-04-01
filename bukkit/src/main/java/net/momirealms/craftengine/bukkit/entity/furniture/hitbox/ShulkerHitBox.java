@@ -5,11 +5,9 @@ import net.momirealms.craftengine.bukkit.entity.data.ShulkerData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -20,7 +18,7 @@ import java.util.function.Supplier;
 public class ShulkerHitBox extends AbstractHitBox {
     public static final Factory FACTORY = new Factory();
     // 1.20.6+
-    private final double scale;
+    private final float scale;
     private final byte peek;
     private final boolean interactive;
     private final boolean interactionEntity;
@@ -29,7 +27,7 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final List<Object> cachedShulkerValues = new ArrayList<>();
     private final List<Object> cachedInteractionValues = new ArrayList<>();
 
-    public ShulkerHitBox(Seat[] seats, Vector3f position, double scale, byte peek, boolean interactionEntity, boolean interactive) {
+    public ShulkerHitBox(Seat[] seats, Vector3f position, float scale, byte peek, boolean interactionEntity, boolean interactive) {
         super(seats, position);
         this.scale = scale;
         this.peek = peek;
@@ -46,29 +44,49 @@ public class ShulkerHitBox extends AbstractHitBox {
 
         if (this.interactionEntity) {
             // make it a litter bigger
-            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPeekHeight(peek, scale) + 0.01f, cachedInteractionValues);
-            InteractionEntityData.Width.addEntityDataIfNotDefaultValue((float) scale + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPhysicalPeek(peek) * scale + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.01f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
         }
     }
 
     @Override
-    public Optional<Collider> optionCollider() {
+    public Optional<Collider> optionalCollider() {
+        float peek = getPhysicalPeek(this.peek() * 0.01F);
+        double x1 = -scale * 0.5;
+        double y1 = 0.0;
+        double z1 = -scale * 0.5;
+        double x2 = scale * 0.5;
+        double y2 = scale;
+        double z2 = scale * 0.5;
+
+        double dx = (double) direction.stepX() * peek * (double) scale;
+        if (dx > 0) {
+            x2 += dx;
+        } else if (dx < 0) {
+            x1 += dx;
+        }
+        double dy = (double) direction.stepY() * peek * (double) scale;
+        if (dy > 0) {
+            y2 += dy;
+        } else if (dy < 0) {
+            y1 += dy;
+        }
+        double dz = (double) direction.stepZ() * peek * (double) scale;
+        if (dz > 0) {
+            z2 += dz;
+        } else if (dz < 0) {
+            z1 += dz;
+        }
         return Optional.of(new Collider(
                 true,
-                position(),
-                (float) scale(),
-                getPeekHeight(peek(), scale())
+                new Vector3d(x1, y1, z1),
+                new Vector3d(x2, y2, z2)
         ));
     }
 
-    private static float getPeekHeight(byte peek, double scale) {
-        double sineValue = Math.sin(
-                (0.5 + peek * 0.01) * Math.PI
-        );
-        return (float) (
-                (1.0 + (0.5 - sineValue * 0.5)) * scale
-        );
+    private static float getPhysicalPeek(float peek) {
+        return 0.5F - MCUtils.sin((0.5F + peek) * 3.1415927F) * 0.5F;
     }
 
     public boolean interactionEntity() {
@@ -87,7 +105,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         return peek;
     }
 
-    public double scale() {
+    public float scale() {
         return scale;
     }
 
@@ -144,7 +162,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         @Override
         public HitBox create(Map<String, Object> arguments) {
             Vector3f position = MiscUtils.getVector3f(arguments.getOrDefault("position", "0"));
-            double scale = MiscUtils.getAsDouble(arguments.getOrDefault("scale", "1"));
+            float scale = MiscUtils.getAsFloat(arguments.getOrDefault("scale", "1"));
             byte peek = (byte) MiscUtils.getAsInt(arguments.getOrDefault("peek", 0));
             Direction directionEnum = Optional.ofNullable(arguments.get("direction")).map(it -> Direction.valueOf(it.toString().toUpperCase(Locale.ENGLISH))).orElse(Direction.UP);
             boolean interactive = (boolean) arguments.getOrDefault("interactive", true);

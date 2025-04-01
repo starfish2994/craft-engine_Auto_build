@@ -14,7 +14,7 @@ public class Collider {
         this.point2 = point2;
     }
 
-    public Collider(boolean canBeHitByProjectile, Vector3f position, float width, float height) {
+    public Collider(boolean canBeHitByProjectile, Vector3f position, double width, double height) {
         this.canBeHitByProjectile = canBeHitByProjectile;
         this.point1 = new Vector3d(position.x - width / 2, position.y, position.z - width / 2);
         this.point2 = new Vector3d(position.x + width / 2, position.y + height, position.z + width / 2);

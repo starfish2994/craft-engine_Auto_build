@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -171,7 +170,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             for (Map<String, Object> config : hitboxConfigs) {
                 HitBox hitBox = HitBoxTypes.fromMap(config);
                 hitboxes.add(hitBox);
-                hitBox.optionCollider().ifPresent(colliders::add);
+                hitBox.optionalCollider().ifPresent(colliders::add);
             }
             if (hitboxes.isEmpty() && externalModel.isEmpty()) {
                 hitboxes.add(InteractionHitBox.DEFAULT);

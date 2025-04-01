@@ -20,7 +20,7 @@ public interface HitBox {
 
     Vector3f position();
 
-    default Optional<Collider> optionCollider() {
+    default Optional<Collider> optionalCollider() {
         return Optional.empty();
     }
 }
