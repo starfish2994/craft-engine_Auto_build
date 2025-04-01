@@ -136,7 +136,7 @@ public class LoadedFurniture {
                 double z1 = z - offset1.z();
                 double z2 = z - offset2.z();
                 Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
-                CollisionEntity entity = FastNMS.INSTANCE.createCollisionEntity(world, aabb, x, y, z, collider.canBeHitByProjectile());
+                CollisionEntity entity = FastNMS.INSTANCE.createCollisionShulker(world, aabb, x, y, z, collider.canBeHitByProjectile());
                 FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
                 this.collisionEntities[i] = entity;
             }
