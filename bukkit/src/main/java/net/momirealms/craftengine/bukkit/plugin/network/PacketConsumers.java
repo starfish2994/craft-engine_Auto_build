@@ -625,6 +625,13 @@ public class PacketConsumers {
                         event.setCancelled(true);
                     }
                 }
+            } else if (entityType == Reflections.instance$EntityType$INTERACTION) {
+                // 取消服务端碰撞实体
+                int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
+                if (furniture != null) {
+                    event.setCancelled(true);
+                }
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);

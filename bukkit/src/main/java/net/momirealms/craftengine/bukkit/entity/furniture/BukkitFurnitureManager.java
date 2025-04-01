@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.entity.furniture;
 import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +44,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
 
     private final Map<Integer, LoadedFurniture> furnitureByBaseEntityId  = new ConcurrentHashMap<>(256, 0.5f);
     private final Map<Integer, LoadedFurniture> furnitureByEntityId = new ConcurrentHashMap<>(512, 0.5f);
+    private final Map<Integer, LoadedFurniture> furnitureByCollisionEntitiesId = new ConcurrentHashMap<>(256, 0.5f);
     // Event listeners
     private final Listener dismountListener;
     private final FurnitureEventListener furnitureEventListener;
@@ -270,6 +273,11 @@ public class BukkitFurnitureManager implements FurnitureManager {
         return this.furnitureByEntityId.get(entityId);
     }
 
+    @Nullable
+    public LoadedFurniture getLoadedFurnitureByCollisionEntityId(int entityId) {
+        return this.furnitureByCollisionEntitiesId.get(entityId);
+    }
+
     protected void handleBaseFurnitureUnload(Entity entity) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
@@ -348,6 +356,14 @@ public class BukkitFurnitureManager implements FurnitureManager {
         for (int entityId : loadedFurniture.entityIds()) {
             this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
+        for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
+            try {
+                int collisionEntityId = (int) Reflections.method$Entity$getId.invoke(collisionEntity);
+                this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return loadedFurniture;
     }
 
@@ -377,7 +393,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         Location vehicleLocation = vehicle.getLocation();
         Location originalLocation = vehicleLocation.clone();
         originalLocation.setY(furniture.location().getY());
-        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection());
+        Location targetLocation = originalLocation.clone().add(vehicleLocation.getDirection().multiply(1.1));
         if (!isSafeLocation(targetLocation)) {
             targetLocation = findSafeLocationNearby(originalLocation);
             if (targetLocation == null) return;
@@ -426,7 +442,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         World world = location.getWorld();
         if (world == null) return true;
         try {
-            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.5, 2, 0.5);
+            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.38, 2, 0.38);
             for (Entity bukkitEntity : nearbyEntities) {
                 if (bukkitEntity instanceof Player) continue;
                 Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);

@@ -37,6 +37,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         this.interactionEntity = interactionEntity;
 
         ShulkerData.Peek.addEntityDataIfNotDefaultValue(peek, this.cachedShulkerValues);
+        ShulkerData.Color.addEntityDataIfNotDefaultValue((byte) 0, this.cachedShulkerValues);
 //      ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedShulkerValues);
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
@@ -44,7 +45,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
 
         if (this.interactionEntity) {
-            InteractionEntityData.Height.addEntityDataIfNotDefaultValue((float) ((1 + getPeekHeight(peek)) * scale) + 0.001f, cachedInteractionValues);
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(getPeekHeight(peek, scale) + 0.001f, cachedInteractionValues);
             InteractionEntityData.Width.addEntityDataIfNotDefaultValue((float) scale + 0.001f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
         }
@@ -56,12 +57,17 @@ public class ShulkerHitBox extends AbstractHitBox {
                 true,
                 position(),
                 (float) scale(),
-                1 + getPeekHeight(peek())
+                getPeekHeight(peek(), scale())
         ));
     }
 
-    private static float getPeekHeight(byte peek) {
-        return (float) (0.5F - Math.sin((0.5F + peek * 0.01F) * 3.1415927F) * 0.5F);
+    private static float getPeekHeight(byte peek, double scale) {
+        double sineValue = Math.sin(
+                (0.5 + peek * 0.01) * Math.PI
+        );
+        return (float) (
+                (1.0 + (0.5 - sineValue * 0.5)) * scale
+        );
     }
 
     public boolean interactionEntity() {
