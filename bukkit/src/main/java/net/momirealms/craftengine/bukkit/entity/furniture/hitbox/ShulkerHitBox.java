@@ -53,12 +53,12 @@ public class ShulkerHitBox extends AbstractHitBox {
     @Override
     public Optional<Collider> optionalCollider() {
         float peek = getPhysicalPeek(this.peek() * 0.01F);
-        double x1 = -scale * 0.5;
+        double x1 = -this.scale * 0.5;
         double y1 = 0.0;
-        double z1 = -scale * 0.5;
-        double x2 = scale * 0.5;
-        double y2 = scale;
-        double z2 = scale * 0.5;
+        double z1 = -this.scale * 0.5;
+        double x2 = this.scale * 0.5;
+        double y2 = this.scale;
+        double z2 = this.scale * 0.5;
 
         double dx = (double) direction.stepX() * peek * (double) scale;
         if (dx > 0) {
@@ -80,8 +80,8 @@ public class ShulkerHitBox extends AbstractHitBox {
         }
         return Optional.of(new Collider(
                 true,
-                new Vector3d(x1, y1, z1),
-                new Vector3d(x2, y2, z2)
+                new Vector3d(x1 + position.x, y1 + position.y, z1 + position.z),
+                new Vector3d(x2 + position.x, y2 + position.y, z2 + position.z)
         ));
     }
 
