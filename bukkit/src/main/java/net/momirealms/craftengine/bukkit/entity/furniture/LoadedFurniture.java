@@ -41,6 +41,7 @@ public class LoadedFurniture {
     private final Map<Integer, HitBox> hitBoxes;
     private final boolean minimized;
     private final boolean hasExternalModel;
+    private final CustomFurniture.Placement placement;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
@@ -64,6 +65,7 @@ public class LoadedFurniture {
         mainEntityIds.add(this.baseEntityId);
 
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
+        this.placement = placement;
         // bind external furniture
         Optional<ExternalModel> optionalExternal = placement.externalModel();
         if (optionalExternal.isPresent()) {
@@ -261,6 +263,14 @@ public class LoadedFurniture {
 
     public boolean hasExternalModel() {
         return hasExternalModel;
+    }
+
+    public CustomFurniture.Placement placement() {
+        return this.placement;
+    }
+
+    public Map<Integer, HitBox> hitBoxes() {
+        return this.hitBoxes;
     }
 
     public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {
