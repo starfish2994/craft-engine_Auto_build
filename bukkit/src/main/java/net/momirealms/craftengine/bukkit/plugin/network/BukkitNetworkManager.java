@@ -92,31 +92,19 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
         this.registerConsumers();
         this.packetsConsumer = ((serverPlayer, packets) -> {
-            try {
-                Object bundle = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
-                Reflections.method$ServerGamePacketListenerImpl$sendPacket.invoke(
-                        Reflections.field$ServerPlayer$connection.get(serverPlayer), bundle);
-            } catch (ReflectiveOperationException e) {
-                plugin.logger().warn("Failed to create bundle packet", e);
-            }
+            Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
+            FastNMS.INSTANCE.sendPacket(serverPlayer, bundle);
         });
-        this.delayedPacketConsumer = (serverPlayer, packet) -> {
-            try {
-                Reflections.method$ServerGamePacketListenerImpl$sendPacket.invoke(
-                        Reflections.field$ServerPlayer$connection.get(serverPlayer), packet);
-            } catch (ReflectiveOperationException e) {
-                plugin.logger().warn("Failed to invoke send packet", e);
-            }
-        };
+        this.delayedPacketConsumer = FastNMS.INSTANCE::sendPacket;
         this.immediatePacketConsumer = (serverPlayer, packet) -> {
             try {
-                Reflections.method$Connection$sendPacketImmediate.invoke(Reflections.field$ServerCommonPacketListenerImpl$connection.get(Reflections.field$ServerPlayer$connection.get(serverPlayer)), packet, null, true);
+                Reflections.method$Connection$sendPacketImmediate.invoke(FastNMS.INSTANCE.field$Player$connection$connection(serverPlayer), packet, null, true);
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to invoke send packet", e);
             }
         };
         this.active = true;
-        this.hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
+        hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         instance = this;
     }
 
@@ -258,17 +246,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     public Channel getChannel(Player player) {
-        try {
-            return (Channel) Reflections.field$Channel.get(
-                    Reflections.field$NetworkManager.get(
-                            Reflections.field$ServerPlayer$connection.get(
-                                    FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)
-                            )
-                    )
-            );
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
+        return (Channel) FastNMS.INSTANCE.field$Player$connection$connection$channel(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
     }
 
     public void sendPacket(@NotNull Player player, @NotNull Object packet) {

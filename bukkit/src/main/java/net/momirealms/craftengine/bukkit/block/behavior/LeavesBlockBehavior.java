@@ -39,8 +39,8 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
     @Nullable
     private final Property<Boolean> waterloggedProperty;
 
-    public LeavesBlockBehavior(int maxDistance, Property<Integer> distanceProperty, Property<Boolean> persistentProperty, @Nullable Property<Boolean> waterloggedProperty) {
-        super(waterloggedProperty);
+    public LeavesBlockBehavior(CustomBlock block, int maxDistance, Property<Integer> distanceProperty, Property<Boolean> persistentProperty, @Nullable Property<Boolean> waterloggedProperty) {
+        super(block, waterloggedProperty);
         this.maxDistance = maxDistance;
         this.distanceProperty = distanceProperty;
         this.persistentProperty = persistentProperty;
@@ -97,7 +97,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
                 if (blockState == newState.customBlockState().handle()) {
                     Reflections.method$BlockStateBase$updateNeighbourShapes.invoke(blockState, level, blockPos, UpdateOption.UPDATE_ALL.flags(), 512);
                 } else {
-                    Reflections.method$Level$setBlock.invoke(level, blockPos, newState.customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                    FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, newState.customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
                 }
             }
         }
@@ -182,7 +182,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
             }
             Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
             int actual = distance.possibleValues().get(distance.possibleValues().size() - 1);
-            return new LeavesBlockBehavior(actual, distance, persistent, waterlogged);
+            return new LeavesBlockBehavior(block, actual, distance, persistent, waterlogged);
         }
     }
 }

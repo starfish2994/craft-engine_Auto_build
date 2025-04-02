@@ -291,7 +291,7 @@ public class PacketConsumers {
     private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
         Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
-            Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
+            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
             Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, LocationUtils.toBlockPos(pos));
             int stateId = BlockStateUtils.blockStateToId(blockState);
             // not a custom block
@@ -546,7 +546,7 @@ public class PacketConsumers {
     };
 
     private static void handlePickItemFromBlockPacketOnMainThread(Player player, Object pos) throws Exception {
-        Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(player.getWorld());
+        Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
         Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, pos);
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null) return;

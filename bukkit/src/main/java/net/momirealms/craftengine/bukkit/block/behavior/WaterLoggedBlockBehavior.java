@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
-import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
@@ -9,12 +8,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class WaterLoggedBlockBehavior extends AbstractBlockBehavior {
+public class WaterLoggedBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     @Nullable
     private final Property<Boolean> waterloggedProperty;
 
-    public WaterLoggedBlockBehavior(@Nullable Property<Boolean> waterloggedProperty) {
+    public WaterLoggedBlockBehavior(CustomBlock block, @Nullable Property<Boolean> waterloggedProperty) {
+        super(block);
         this.waterloggedProperty = waterloggedProperty;
     }
 
@@ -82,7 +82,7 @@ public class WaterLoggedBlockBehavior extends AbstractBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
-            return new WaterLoggedBlockBehavior(waterlogged);
+            return new WaterLoggedBlockBehavior(block, waterlogged);
         }
     }
 }

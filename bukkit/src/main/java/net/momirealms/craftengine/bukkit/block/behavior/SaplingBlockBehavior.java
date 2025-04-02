@@ -31,8 +31,8 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
     private final double boneMealSuccessChance;
     private final float growSpeed;
 
-    public SaplingBlockBehavior(Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance, float growSpeed) {
-        super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
+    public SaplingBlockBehavior(CustomBlock block, Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance, float growSpeed) {
+        super(block, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
         this.feature = feature;
         this.stageProperty = stageProperty;
         this.boneMealSuccessChance = boneMealSuccessChance;
@@ -79,18 +79,18 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
             CraftEngine.instance().logger().warn("Configured feature not found: " + treeFeature());
             return;
         }
-        Object chunkGenerator = Reflections.method$ServerChunkCache$getGenerator.invoke(Reflections.field$ServerLevel$chunkSource.get(world));
+        Object chunkGenerator = Reflections.method$ServerChunkCache$getGenerator.invoke(FastNMS.INSTANCE.method$ServerLevel$getChunkSource(world));
         Object configuredFeature = Reflections.method$Holder$value.invoke(holder.get());
         Object fluidState = Reflections.method$Level$getFluidState.invoke(world, blockPos);
         Object legacyState = Reflections.method$FluidState$createLegacyBlock.invoke(fluidState);
-        Reflections.method$Level$setBlock.invoke(world, blockPos, legacyState, UpdateOption.UPDATE_NONE.flags());
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, legacyState, UpdateOption.UPDATE_NONE.flags());
         if ((boolean) Reflections.method$ConfiguredFeature$place.invoke(configuredFeature, world, chunkGenerator, randomSource, blockPos)) {
             if (FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, blockPos) == legacyState) {
                 Reflections.method$ServerLevel$sendBlockUpdated.invoke(world, blockPos, blockState, legacyState, 2);
             }
         } else {
             // failed to place, rollback changes
-            Reflections.method$Level$setBlock.invoke(world, blockPos, blockState, UpdateOption.UPDATE_NONE.flags());
+            FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, blockState, UpdateOption.UPDATE_NONE.flags());
         }
     }
 
@@ -150,7 +150,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
-            return new SaplingBlockBehavior(Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
+            return new SaplingBlockBehavior(block, Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
                     MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0)));
         }
     }

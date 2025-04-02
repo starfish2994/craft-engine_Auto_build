@@ -16,8 +16,8 @@ public class OnLiquidBlockBehavior extends BushBlockBehavior {
     private final boolean onWater;
     private final boolean onLava;
 
-    public OnLiquidBlockBehavior(boolean onWater, boolean onLava) {
-        super(List.of(), Set.of(), Set.of());
+    public OnLiquidBlockBehavior(CustomBlock block, boolean onWater, boolean onLava) {
+        super(block, List.of(), Set.of(), Set.of());
         this.onWater = onWater;
         this.onLava = onLava;
     }
@@ -34,7 +34,7 @@ public class OnLiquidBlockBehavior extends BushBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             List<String> liquidTypes = MiscUtils.getAsStringList(arguments.getOrDefault("liquid-type", List.of("water")));
-            return new OnLiquidBlockBehavior(liquidTypes.contains("water"), liquidTypes.contains("lava"));
+            return new OnLiquidBlockBehavior(block, liquidTypes.contains("water"), liquidTypes.contains("lava"));
         }
     }
 

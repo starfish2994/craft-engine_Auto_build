@@ -112,9 +112,9 @@ public class LoadedFurniture {
             });
         }
         try {
-            this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+            this.cachedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             if (this.minimized) {
-                this.cachedMinimizedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(minimizedPackets);
+                this.cachedMinimizedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(minimizedPackets);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);

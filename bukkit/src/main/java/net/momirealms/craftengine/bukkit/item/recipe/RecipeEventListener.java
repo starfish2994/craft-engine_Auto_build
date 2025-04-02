@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -347,7 +348,7 @@ public class RecipeEventListener implements Listener {
                     BukkitRecipeManager.minecraftRecipeManager(),
                     Reflections.instance$RecipeType$CAMPFIRE_COOKING,
                     Reflections.constructor$SingleRecipeInput.newInstance(Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack)),
-                    Reflections.field$CraftWorld$ServerLevel.get(event.getPlayer().getWorld()),
+                    FastNMS.INSTANCE.field$CraftWorld$ServerLevel(event.getPlayer().getWorld()),
                     null
             );
             if (optionalMCRecipe.isEmpty()) {

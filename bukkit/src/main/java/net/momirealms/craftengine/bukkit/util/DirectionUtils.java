@@ -40,4 +40,13 @@ public class DirectionUtils {
             case EAST -> Reflections.instance$Direction$EAST;
         };
     }
+
+    public static Direction fromNMSDirection(Object direction) {
+        try {
+            int index = (int) Reflections.method$Direction$ordinal.invoke(direction);
+            return Direction.values()[index];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

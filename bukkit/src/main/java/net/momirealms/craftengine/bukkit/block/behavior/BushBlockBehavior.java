@@ -9,7 +9,6 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
@@ -29,14 +28,15 @@ import org.bukkit.Registry;
 import java.util.*;
 import java.util.concurrent.Callable;
 
-public class BushBlockBehavior extends AbstractBlockBehavior {
+public class BushBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     protected final List<Object> tagsCanSurviveOn;
     protected final Set<Object> blocksCansSurviveOn;
     protected final Set<String> customBlocksCansSurviveOn;
     protected final boolean any;
 
-    public BushBlockBehavior(List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
+    public BushBlockBehavior(CustomBlock block, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
+        super(block);
         this.tagsCanSurviveOn = tagsCanSurviveOn;
         this.blocksCansSurviveOn = blocksCansSurviveOn;
         this.customBlocksCansSurviveOn = customBlocksCansSurviveOn;
@@ -93,7 +93,7 @@ public class BushBlockBehavior extends AbstractBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
-            return new BushBlockBehavior(tuple.left(), tuple.mid(), tuple.right());
+            return new BushBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right());
         }
     }
 

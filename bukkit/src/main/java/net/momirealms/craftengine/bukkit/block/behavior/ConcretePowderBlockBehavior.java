@@ -32,9 +32,9 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
     private Object defaultBlockState;
     private ImmutableBlockState defaultImmutableBlockState;
 
-    public ConcretePowderBlockBehavior(float hurtAmount, int maxHurt, Key block) {
-        super(hurtAmount, maxHurt);
-        this.targetBlock = block;
+    public ConcretePowderBlockBehavior(CustomBlock block, float hurtAmount, int maxHurt, Key targetBlock) {
+        super(block, hurtAmount, maxHurt);
+        this.targetBlock = targetBlock;
     }
 
     public ImmutableBlockState defaultImmutableBlockState() {
@@ -161,7 +161,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
             if (solidBlock == null) {
                 throw new IllegalArgumentException("No `solid-block` specified for concrete powder block behavior");
             }
-            return new ConcretePowderBlockBehavior(hurtAmount, hurtMax, Key.of(solidBlock));
+            return new ConcretePowderBlockBehavior(block, hurtAmount, hurtMax, Key.of(solidBlock));
         }
     }
 }

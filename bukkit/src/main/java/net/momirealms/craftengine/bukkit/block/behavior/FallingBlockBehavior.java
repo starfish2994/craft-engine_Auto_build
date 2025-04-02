@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
@@ -21,12 +20,13 @@ import net.momirealms.craftengine.shared.block.BlockBehavior;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class FallingBlockBehavior extends AbstractBlockBehavior {
+public class FallingBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final float hurtAmount;
     private final int maxHurt;
 
-    public FallingBlockBehavior(float hurtAmount, int maxHurt) {
+    public FallingBlockBehavior(CustomBlock block, float hurtAmount, int maxHurt) {
+        super(block);
         this.hurtAmount = hurtAmount;
         this.maxHurt = maxHurt;
     }
@@ -131,7 +131,7 @@ public class FallingBlockBehavior extends AbstractBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             float hurtAmount = MiscUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f));
             int hurtMax = MiscUtils.getAsInt(arguments.getOrDefault("max-hurt", -1));
-            return new FallingBlockBehavior(hurtAmount, hurtMax);
+            return new FallingBlockBehavior(block, hurtAmount, hurtMax);
         }
     }
 }

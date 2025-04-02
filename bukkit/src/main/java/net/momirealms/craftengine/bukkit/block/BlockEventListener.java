@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block;
 
 import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockBreakEvent;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
@@ -316,10 +317,10 @@ public class BlockEventListener implements Listener {
                 Block sourceBlock = event.getSourceBlock();
                 BlockFace direction = sourceBlock.getFace(block);
                 if (direction == BlockFace.UP || direction == BlockFace.DOWN) {
-                    Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
-                    Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(serverLevel);
+                    Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
+                    Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
                     Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    Reflections.method$ServerChunkCache$blockChanged.invoke(chunkSource, blockPos);
+                    FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
                     if (direction == BlockFace.UP) {
                         NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$UP, blockPos, 0);
                     } else {

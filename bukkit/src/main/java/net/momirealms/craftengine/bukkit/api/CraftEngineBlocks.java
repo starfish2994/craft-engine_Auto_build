@@ -108,11 +108,11 @@ public final class CraftEngineBlocks {
                                 boolean playSound) {
         boolean success;
         try {
-            Object worldServer = Reflections.field$CraftWorld$ServerLevel.get(location.getWorld());
+            Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld());
             Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
             Object blockState = block.customBlockState().handle();
             Object oldBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
-            success = (boolean) Reflections.method$LevelWriter$setBlock.invoke(worldServer, blockPos, blockState, option.flags());
+            success = FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, blockState, option.flags());
             if (success) {
                 Reflections.method$BlockStateBase$onPlace.invoke(blockState, worldServer, blockPos, oldBlockState, true);
                 if (playSound) {

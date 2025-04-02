@@ -10,10 +10,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.Fallable;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -69,9 +66,29 @@ public class CraftEngineBlock
     }
 
     @Override
+    protected @NotNull BlockState rotate(@NotNull BlockState state, @NotNull Rotation rotation) {
+        try {
+            return (BlockState) this.behaviorHolder.value().rotate(this, new Object[]{state, rotation}, () -> super.rotate(state, rotation));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return super.rotate(state, rotation);
+        }
+    }
+
+    @Override
+    protected @NotNull BlockState mirror(@NotNull BlockState state, @NotNull Mirror mirror) {
+        try {
+            return (BlockState) this.behaviorHolder.value().mirror(this, new Object[]{state, mirror}, () -> super.mirror(state, mirror));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return super.mirror(state, mirror);
+        }
+    }
+
+    @Override
     protected void tick(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         try {
-            behaviorHolder.value().tick(this, new Object[]{state, level, pos, random}, () -> {
+            this.behaviorHolder.value().tick(this, new Object[]{state, level, pos, random}, () -> {
                  super.tick(state, level, pos, random);
                  return null;
             });

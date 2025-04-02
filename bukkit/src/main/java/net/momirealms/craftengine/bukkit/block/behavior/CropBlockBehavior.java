@@ -29,9 +29,9 @@ public class CropBlockBehavior extends BushBlockBehavior {
     private final float growSpeed;
     private final int minGrowLight;
 
-    public CropBlockBehavior(List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn,
+    public CropBlockBehavior(CustomBlock block, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn,
                              Property<Integer> ageProperty, float growSpeed, int minGrowLight) {
-        super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
+        super(block, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
         this.ageProperty = (IntegerProperty) ageProperty;
         this.growSpeed = growSpeed;
         this.minGrowLight = minGrowLight;
@@ -63,7 +63,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
             if (currentState != null && !currentState.isEmpty()) {
                 int age = this.getAge(currentState);
                 if (age < this.ageProperty.max && RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
-                    Reflections.method$Level$setBlock.invoke(level, pos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                    FastNMS.INSTANCE.method$LevelWriter$setBlock(level, pos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
                 }
             }
         }
@@ -117,7 +117,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         if (i > maxAge) {
             i = maxAge;
         }
-        Reflections.method$Level$setBlock.invoke(level, pos, immutableBlockState.with(this.ageProperty, i).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(level, pos, immutableBlockState.with(this.ageProperty, i).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
         if (sendParticles) {
             World world = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
             int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
@@ -140,7 +140,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
             // 存活条件是最小生长亮度-1
             int minGrowLight = MiscUtils.getAsInt(arguments.getOrDefault("light-requirement", 9));
             float growSpeed = MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.25f));
-            return new CropBlockBehavior(tuple.left(), tuple.mid(), tuple.right(), ageProperty, growSpeed, minGrowLight);
+            return new CropBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right(), ageProperty, growSpeed, minGrowLight);
         }
     }
 }

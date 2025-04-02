@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.world;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -51,7 +52,7 @@ public class BukkitWorldBlock implements WorldBlock {
     public boolean isWaterSource(BlockPlaceContext blockPlaceContext) {
         try {
             Location location = block.getLocation();
-            Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(block.getWorld());
+            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(block.getWorld());
             Object fluidData = Reflections.method$Level$getFluidState.invoke(serverLevel, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
             if (fluidData == null) return false;
             return (boolean) Reflections.method$FluidState$isSource.invoke(fluidData);

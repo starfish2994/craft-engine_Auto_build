@@ -13,8 +13,8 @@ import java.util.Set;
 public class HangingBlockBehavior extends BushBlockBehavior {
     public static final Factory FACTORY = new Factory();
 
-    public HangingBlockBehavior(List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
-        super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
+    public HangingBlockBehavior(CustomBlock block, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
+        super(block, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class HangingBlockBehavior extends BushBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
-            return new HangingBlockBehavior(tuple.left(), tuple.mid(), tuple.right());
+            return new HangingBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right());
         }
     }
 }

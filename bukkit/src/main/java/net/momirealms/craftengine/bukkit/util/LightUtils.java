@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import org.bukkit.World;
 
@@ -11,30 +12,25 @@ public class LightUtils {
 
     private LightUtils() {}
 
-    @SuppressWarnings("unchecked")
     public static void updateChunkLight(World world, Map<Long, BitSet> sectionPosSet) {
         try {
-            Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
-            Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(serverLevel);
+            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
+            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
             for (Map.Entry<Long, BitSet> entry : sectionPosSet.entrySet()) {
                 long chunkKey = entry.getKey();
-                Object chunkHolder = Reflections.method$ServerChunkCache$getVisibleChunkIfPresent.invoke(chunkSource, chunkKey);
+                Object chunkHolder = FastNMS.INSTANCE.method$ServerChunkCache$getVisibleChunkIfPresent(chunkSource, chunkKey);
                 if (chunkHolder == null) continue;
-                List<Object> players;
-                if (Reflections.method$ChunkHolder$getPlayers != null) {
-                    players = (List<Object>) Reflections.method$ChunkHolder$getPlayers.invoke(chunkHolder, false);
-                } else {
-                    Object chunkHolder$PlayerProvider = Reflections.field$ChunkHolder$playerProvider.get(chunkHolder);
-                    players = (List<Object>) Reflections.method$ChunkHolder$PlayerProvider$getPlayers.invoke(chunkHolder$PlayerProvider, false);
-                }
+                List<Object> players = FastNMS.INSTANCE.method$ChunkHolder$getPlayers(chunkHolder);
                 if (players.isEmpty()) continue;
                 Object lightEngine = Reflections.field$ChunkHolder$lightEngine.get(chunkHolder);
                 BitSet blockChangedLightSectionFilter = (BitSet) Reflections.field$ChunkHolder$blockChangedLightSectionFilter.get(chunkHolder);
                 blockChangedLightSectionFilter.or(entry.getValue());
                 BitSet skyChangedLightSectionFilter = (BitSet) Reflections.field$ChunkHolder$skyChangedLightSectionFilter.get(chunkHolder);
-                Object chunkPos = Reflections.constructor$ChunkPos.newInstance((int) chunkKey, (int) (chunkKey >> 32));
-                Object lightPacket = Reflections.constructor$ClientboundLightUpdatePacket.newInstance(chunkPos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
-                Reflections.method$ChunkHolder$broadcast.invoke(chunkHolder, players, lightPacket);
+                Object chunkPos = FastNMS.INSTANCE.constructor$ChunkPos((int) chunkKey, (int) (chunkKey >> 32));
+                Object lightPacket = FastNMS.INSTANCE.constructor$ClientboundLightUpdatePacket(chunkPos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
+                for (Object player : players) {
+                    FastNMS.INSTANCE.sendPacket(player, lightPacket);
+                }
                 blockChangedLightSectionFilter.clear();
                 skyChangedLightSectionFilter.clear();
             }

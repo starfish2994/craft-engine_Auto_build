@@ -421,9 +421,9 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundBundlePacket = requireNonNull(
-            ReflectionUtils.getConstructor(clazz$ClientboundBundlePacket, Iterable.class)
-    );
+//    public static final Constructor<?> constructor$ClientboundBundlePacket = requireNonNull(
+//            ReflectionUtils.getConstructor(clazz$ClientboundBundlePacket, Iterable.class)
+//    );
 
     public static final Class<?> clazz$Packet = requireNonNull(
             ReflectionUtils.getClazz(
@@ -492,12 +492,6 @@ public class Reflections {
             ReflectionUtils.getDeclaredMethod(
                     clazz$Connection, void.class, new String[] {"sendPacket"}, clazz$Packet, clazz$PacketSendListener, Boolean.class
             )
-    );
-
-    public static final Field field$NetworkManager = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
-            ReflectionUtils.getDeclaredField(clazz$ServerGamePacketListenerImpl.getSuperclass(), clazz$Connection, 0) :
-            ReflectionUtils.getDeclaredField(clazz$ServerGamePacketListenerImpl, clazz$Connection, 0)
     );
 
     public static final Field field$Channel = requireNonNull(
@@ -1053,11 +1047,12 @@ public class Reflections {
             )
     );
 
-    public static final Field field$CraftWorld$ServerLevel = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$CraftWorld, clazz$ServerLevel, 0
-            )
-    );
+//    @Deprecated
+//    public static final Field field$CraftWorld$ServerLevel = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$CraftWorld, clazz$ServerLevel, 0
+//            )
+//    );
 
     public static final Method method$ServerLevel$getNoiseBiome = requireNonNull(
             ReflectionUtils.getMethod(
@@ -1806,17 +1801,18 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ServerLevel$chunkSource = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ServerLevel, clazz$ServerChunkCache, 0
-            )
-    );
+    @Deprecated
+//    public static final Field field$ServerLevel$chunkSource = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ServerLevel, clazz$ServerChunkCache, 0
+//            )
+//    );
 
-    public static final Method method$ServerChunkCache$blockChanged = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$ServerChunkCache, void.class, clazz$BlockPos
-            )
-    );
+//    public static final Method method$ServerChunkCache$blockChanged = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$ServerChunkCache, void.class, clazz$BlockPos
+//            )
+//    );
 
 //    public static final Method method$ServerChunkCache$getChunkAtIfLoadedMainThread = requireNonNull(
 //            ReflectionUtils.getMethod(
@@ -2644,6 +2640,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Constructor<?> constructor$ChunkPos = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$ChunkPos, int.class, int.class
@@ -2695,7 +2692,7 @@ public class Reflections {
             )
     );
 
-    // 1.20 ~ 1.21.4
+    // 1.20 ~ 1.21.4 moonrise
     public static final Method method$ChunkHolder$getPlayers =
             ReflectionUtils.getMethod(
                     clazz$ChunkHolder, List.class, boolean.class
@@ -2725,6 +2722,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$ServerChunkCache$getVisibleChunkIfPresent = requireNonNull(
             ReflectionUtils.getDeclaredMethod(
                     clazz$ServerChunkCache, clazz$ChunkHolder, long.class
@@ -3577,12 +3575,6 @@ public class Reflections {
             )
     );
 
-    public static final Method method$Level$setBlock = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$Level, boolean.class, clazz$BlockPos, clazz$BlockState, int.class
-            )
-    );
-
     public static final Method method$Block$updateFromNeighbourShapes = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$Block, clazz$BlockState, clazz$BlockState, clazz$LevelAccessor, clazz$BlockPos
@@ -3735,6 +3727,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$LevelWriter$setBlock = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelWriter, boolean.class, clazz$BlockPos, clazz$BlockState, int.class
@@ -5961,6 +5954,88 @@ public class Reflections {
     public static final Field field$ClientboundSetEntityMotionPacket$id = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundSetEntityMotionPacket, int.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$Rotation = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.Rotation"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.EnumBlockRotation")
+            )
+    );
+
+    public static final Method method$Rotation$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$Rotation, clazz$Rotation.arrayType()
+            )
+    );
+
+    public static final Object instance$Rotation$NONE;
+    public static final Object instance$Rotation$CLOCKWISE_90;
+    public static final Object instance$Rotation$CLOCKWISE_180;
+    public static final Object instance$Rotation$COUNTERCLOCKWISE_90;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$Rotation$values.invoke(null);
+            instance$Rotation$NONE = values[0];
+            instance$Rotation$CLOCKWISE_90 = values[1];
+            instance$Rotation$CLOCKWISE_180 = values[2];
+            instance$Rotation$COUNTERCLOCKWISE_90 = values[3];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Method method$Rotation$ordinal = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Rotation, int.class, new String[]{"ordinal"}
+            )
+    );
+
+    public static final Class<?> clazz$Mirror = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.Mirror"),
+                    BukkitReflectionUtils.assembleMCClass("world.level.block.EnumBlockMirror")
+            )
+    );
+
+    public static final Method method$Mirror$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$Mirror, clazz$Mirror.arrayType()
+            )
+    );
+
+    public static final Object instance$Mirror$NONE;
+    public static final Object instance$Mirror$LEFT_RIGHT;
+    public static final Object instance$Mirror$FRONT_BACK;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$Mirror$values.invoke(null);
+            instance$Mirror$NONE = values[0];
+            instance$Mirror$LEFT_RIGHT = values[1];
+            instance$Mirror$FRONT_BACK = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Method method$Mirror$ordinal = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Mirror, int.class, new String[]{"ordinal"}
+            )
+    );
+
+    public static final Method method$BlockBehaviour$rotate = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$Rotation
+            )
+    );
+
+    public static final Method method$BlockBehaviour$mirror = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$Mirror
             )
     );
 }
