@@ -6038,4 +6038,16 @@ public class Reflections {
                     clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$Mirror
             )
     );
+
+    public static final Method method$BlockStateBase$rotate = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, clazz$BlockState, clazz$Rotation
+            )
+    );
+
+    public static final Method method$BlockStateBase$mirror = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$BlockStateBase, clazz$BlockState, clazz$Mirror
+            )
+    );
 }

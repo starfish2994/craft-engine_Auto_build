@@ -61,14 +61,14 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
             }
         });
         HARD_CODED_PROPERTY_DATA.put("facing_clockwise", (behavior, property) -> {
-            if (property.valueClass() == Direction.class) {
+            if (property.valueClass() == HorizontalDirection.class) {
                 @SuppressWarnings("unchecked")
-                Property<Direction> directionProperty = (Property<Direction>) property;
+                Property<HorizontalDirection> directionProperty = (Property<HorizontalDirection>) property;
                 behavior.rotateFunction = (thisBlock, blockState, rotation) ->
-                        blockState.with(directionProperty, rotation.rotate(blockState.get(directionProperty)))
+                        blockState.with(directionProperty, rotation.rotate(blockState.get(directionProperty).toDirection()).toHorizontalDirection())
                                 .customBlockState().handle();
                 behavior.mirrorFunction = (thisBlock, blockState, mirror) -> {
-                    Rotation rotation = mirror.getRotation(blockState.get(directionProperty));
+                    Rotation rotation = mirror.getRotation(blockState.get(directionProperty).toDirection());
                     return behavior.rotateFunction.rotate(thisBlock, blockState, rotation);
                 };
             }
