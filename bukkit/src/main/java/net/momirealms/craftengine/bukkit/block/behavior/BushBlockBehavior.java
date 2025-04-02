@@ -63,7 +63,8 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
             blockPos = args[4];
         }
         if (!canSurvive(thisBlock, state, level, blockPos)) {
-            ImmutableBlockState previousState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+            int stateId = BlockStateUtils.blockStateToId(state);
+            ImmutableBlockState previousState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (previousState != null && !previousState.isEmpty()) {
                 ContextHolder.Builder builder = ContextHolder.builder();
                 BlockPos pos = LocationUtils.fromBlockPos(blockPos);
@@ -74,6 +75,8 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
                 for (Item<Object> item : previousState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
+                world.playBlockSound(vec3d, previousState.sounds().breakSound());
+                FastNMS.INSTANCE.method$Level$levelEvent(level, 2001, blockPos, stateId);
             }
             return Reflections.method$Block$defaultBlockState.invoke(Reflections.instance$Blocks$AIR);
         }

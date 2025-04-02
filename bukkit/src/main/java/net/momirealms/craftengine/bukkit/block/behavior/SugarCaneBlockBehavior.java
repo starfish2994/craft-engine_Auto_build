@@ -55,19 +55,21 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         Object level = args[1];
         Object blockPos = args[2];
         if (!canSurvive(thisBlock, blockState, level, blockPos)) {
-            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+            int stateId = BlockStateUtils.blockStateToId(blockState);
+            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (currentState != null && !currentState.isEmpty()) {
                 // break the sugar cane
                 Reflections.method$Level$removeBlock.invoke(level, blockPos, false);
                 Vec3d vec3d = Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos));
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
-                // TODO client side particles?
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(LootParameters.LOCATION, vec3d)
                         .withParameter(LootParameters.WORLD, world);
                 for (Item<Object> item : currentState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
+                world.playBlockSound(vec3d, currentState.sounds().breakSound());
+                FastNMS.INSTANCE.method$Level$levelEvent(level, 2001, blockPos, stateId);
             }
         }
     }
