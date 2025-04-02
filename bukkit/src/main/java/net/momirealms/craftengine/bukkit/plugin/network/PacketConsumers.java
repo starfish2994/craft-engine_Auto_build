@@ -666,6 +666,48 @@ public class PacketConsumers {
         }
     };
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_AND_ROTATION_ENTITY = (user, event, packet) -> {
+        try {
+            int entityId = (int) Reflections.field$ClientboundMoveEntityPacket$entityId.get(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+                event.setCancelled(true);
+            }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ROTATE_HEAD = (user, event, packet) -> {
+        try {
+            int entityId = (int) Reflections.field$ClientboundRotateHeadPacket$entityId.get(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+                event.setCancelled(true);
+            }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundRotateHeadPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_MOTION = (user, event, packet) -> {
+        try {
+            int entityId = (int) Reflections.field$ClientboundSetEntityMotionPacket$id.get(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+                event.setCancelled(true);
+            }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> REMOVE_ENTITY = (user, event, packet) -> {
         try {
             IntList intList = (IntList) Reflections.field$ClientboundRemoveEntitiesPacket$entityIds.get(packet);
