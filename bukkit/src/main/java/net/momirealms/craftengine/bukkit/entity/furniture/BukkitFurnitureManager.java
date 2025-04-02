@@ -275,13 +275,17 @@ public class BukkitFurnitureManager implements FurnitureManager {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByRealEntityId.remove(id);
         if (furniture != null) {
-            furniture.destroySeats();
+            Location location = entity.getLocation();
+            boolean isPreventing = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+            if (!isPreventing) {
+                furniture.destroySeats();
+            }
             for (int sub : furniture.entityIds()) {
                 this.furnitureByEntityId.remove(sub);
             }
             for (CollisionEntity collision : furniture.collisionEntities()) {
                 this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
-                collision.destroy();
+                if (!isPreventing) collision.destroy();
             }
         }
     }
