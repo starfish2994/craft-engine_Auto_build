@@ -70,7 +70,8 @@ public class PacketConsumers {
     }
 
     public static int remapMOD(int stateId) {
-        return mappingsMOD[stateId];
+        int modStateId = mappingsMOD[stateId];
+        return BlockStateUtils.isVanillaBlock(modStateId) ? remap(modStateId) : modStateId;
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
@@ -290,7 +291,7 @@ public class PacketConsumers {
     private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
         Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
-            Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(world);
+            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
             Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, LocationUtils.toBlockPos(pos));
             int stateId = BlockStateUtils.blockStateToId(blockState);
             // not a custom block
@@ -545,7 +546,7 @@ public class PacketConsumers {
     };
 
     private static void handlePickItemFromBlockPacketOnMainThread(Player player, Object pos) throws Exception {
-        Object serverLevel = Reflections.field$CraftWorld$ServerLevel.get(player.getWorld());
+        Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
         Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, pos);
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null) return;
@@ -617,7 +618,7 @@ public class PacketConsumers {
             } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByBaseEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
@@ -628,7 +629,7 @@ public class PacketConsumers {
             } else if (entityType == Reflections.instance$EntityType$SHULKER) {
                 // Cancel collider entity packet
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByCollisionEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
@@ -641,7 +642,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundEntityPositionSyncPacket$id.get(packet);
-            if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
         } catch (Exception e) {
@@ -652,7 +653,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundMoveEntityPacket$entityId.get(packet);
-            if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
         } catch (Exception e) {

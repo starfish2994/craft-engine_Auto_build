@@ -33,5 +33,5 @@ public interface FurnitureManager extends Reloadable, ConfigSectionParser {
 
     Optional<CustomFurniture> getFurniture(Key id);
 
-    boolean isFurnitureBaseEntity(int entityId);
+    boolean isFurnitureRealEntity(int entityId);
 }

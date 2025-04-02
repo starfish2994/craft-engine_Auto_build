@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.bukkit.world;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -36,7 +36,7 @@ public class BukkitWorld implements World {
     @Override
     public Object serverWorld() {
         try {
-            return Reflections.field$CraftWorld$ServerLevel.get(platformWorld());
+            return FastNMS.INSTANCE.field$CraftWorld$ServerLevel(platformWorld());
         } catch (Exception e) {
             throw new RuntimeException("Failed to get server world", e);
         }

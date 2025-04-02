@@ -38,17 +38,15 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
     private final boolean nearLava;
     private final IntegerProperty ageProperty;
     private final float growSpeed;
-    private final CustomBlock customBlock;
 
     public SugarCaneBlockBehavior(CustomBlock customBlock, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, Property<Integer> ageProperty,
                                   int maxHeight, boolean nearWater, boolean nearLava, float growSpeed) {
-        super(tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
+        super(customBlock, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
         this.nearWater = nearWater;
         this.nearLava = nearLava;
         this.maxHeight = maxHeight;
         this.ageProperty = (IntegerProperty) ageProperty;
         this.growSpeed = growSpeed;
-        this.customBlock = customBlock;
     }
 
     @Override
@@ -57,19 +55,21 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         Object level = args[1];
         Object blockPos = args[2];
         if (!canSurvive(thisBlock, blockState, level, blockPos)) {
-            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+            int stateId = BlockStateUtils.blockStateToId(blockState);
+            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (currentState != null && !currentState.isEmpty()) {
                 // break the sugar cane
                 Reflections.method$Level$removeBlock.invoke(level, blockPos, false);
                 Vec3d vec3d = Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos));
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
-                // TODO client side particles?
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(LootParameters.LOCATION, vec3d)
                         .withParameter(LootParameters.WORLD, world);
                 for (Item<Object> item : currentState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
+                world.playBlockSound(vec3d, currentState.sounds().breakSound());
+                FastNMS.INSTANCE.method$Level$levelEvent(level, 2001, blockPos, stateId);
             }
         }
     }
@@ -120,13 +120,13 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
                 if (age >= this.ageProperty.max || RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
                     Object abovePos = LocationUtils.above(blockPos);
                     if (VersionHelper.isVersionNewerThan1_21_5()) {
-                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
                     } else {
-                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, customBlock.defaultState().customBlockState().handle());
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle());
                     }
-                    Reflections.method$Level$setBlock.invoke(level, blockPos, currentState.with(this.ageProperty, this.ageProperty.min).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
+                    FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, currentState.with(this.ageProperty, this.ageProperty.min).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
                 } else if (RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
-                    Reflections.method$Level$setBlock.invoke(level, blockPos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
+                    FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, currentState.with(this.ageProperty, age + 1).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
                 }
             }
         }
@@ -143,7 +143,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         // 如果下方是同种方块
         if (!BlockStateUtils.isVanillaBlock(id)) {
             ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(id);
-            if (immutableBlockState.owner().value() == this.customBlock) {
+            if (immutableBlockState.owner().value() == super.customBlock) {
                 return true;
             }
         }

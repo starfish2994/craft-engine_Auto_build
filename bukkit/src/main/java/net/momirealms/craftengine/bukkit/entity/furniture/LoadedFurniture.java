@@ -112,9 +112,9 @@ public class LoadedFurniture {
             });
         }
         try {
-            this.cachedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(packets);
+            this.cachedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             if (this.minimized) {
-                this.cachedMinimizedSpawnPacket = Reflections.constructor$ClientboundBundlePacket.newInstance(minimizedPackets);
+                this.cachedMinimizedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(minimizedPackets);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init spawn packets for furniture " + id, e);
@@ -126,6 +126,7 @@ public class LoadedFurniture {
         if (colliderSize != 0) {
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
             for (int i = 0; i < colliderSize; i++) {
+                // TODO better shulker hitbox
                 Collider collider = placement.colliders()[i];
                 Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
                 Vector3d offset1 = collider.point1();

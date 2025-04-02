@@ -150,7 +150,7 @@ public class BlockItemBehavior extends ItemBehavior {
             Object blockState = state.customBlockState().handle();
             Object blockPos = LocationUtils.toBlockPos(context.getClickedPos());
             Object voxelShape = Reflections.method$CollisionContext$of.invoke(null, player);
-            Object world = Reflections.field$CraftWorld$ServerLevel.get(context.getLevel().platformWorld());
+            Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel((World) context.getLevel().platformWorld());
             boolean defaultReturn = ((!this.checkStatePlacement() || (boolean) Reflections.method$BlockStateBase$canSurvive.invoke(blockState, world, blockPos))
                     && (boolean) Reflections.method$ServerLevel$checkEntityCollision.invoke(world, blockState, player, voxelShape, blockPos, true));
             Block block = FastNMS.INSTANCE.method$CraftBlock$at(world, blockPos);

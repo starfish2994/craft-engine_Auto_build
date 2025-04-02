@@ -1,18 +1,18 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
-import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
 import java.util.Map;
 
-public class StrippableBlockBehavior extends AbstractBlockBehavior {
+public class StrippableBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Key stripped;
 
-    public StrippableBlockBehavior(Key stripped) {
+    public StrippableBlockBehavior(CustomBlock block, Key stripped) {
+        super(block);
         this.stripped = stripped;
     }
 
@@ -28,7 +28,7 @@ public class StrippableBlockBehavior extends AbstractBlockBehavior {
             if (stripped == null) {
                 throw new IllegalArgumentException("stripped is null");
             }
-            return new StrippableBlockBehavior(Key.of(stripped));
+            return new StrippableBlockBehavior(block, Key.of(stripped));
         }
     }
 }

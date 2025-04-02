@@ -174,6 +174,12 @@ public class BukkitInjector {
                     // getShape
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getShape))
                     .intercept(MethodDelegation.to(GetShapeInterceptor.INSTANCE))
+                    // mirror
+                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$mirror))
+                    .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
+                    // rotate
+                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$rotate))
+                    .intercept(MethodDelegation.to(RotateInterceptor.INSTANCE))
                     // tick
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$tick))
                     .intercept(MethodDelegation.to(TickInterceptor.INSTANCE))
@@ -711,8 +717,8 @@ public class BukkitInjector {
         int id = (int) Reflections.field$Direction$data3d.get(direction);
         // Y axis
         if (id == 0 || id == 1) {
-            Object chunkSource = Reflections.field$ServerLevel$chunkSource.get(serverLevel);
-            Reflections.method$ServerChunkCache$blockChanged.invoke(chunkSource, blockPos);
+            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
+            FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
             if (id == 1) {
                 NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$DOWN, blockPos, 0);
             } else {
@@ -731,6 +737,36 @@ public class BukkitInjector {
                 return holder.value().getShape(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run getShape", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class MirrorInterceptor {
+        public static final MirrorInterceptor INSTANCE = new MirrorInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().mirror(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run mirror", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class RotateInterceptor {
+        public static final RotateInterceptor INSTANCE = new RotateInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().rotate(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run rotate", e);
                 return superMethod.call();
             }
         }

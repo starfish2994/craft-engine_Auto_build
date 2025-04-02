@@ -12,7 +12,7 @@ public class NoteBlockChainUpdateUtils {
         Object relativePos = Reflections.method$BlockPos$relative.invoke(blockPos, direction);
         Object state = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, relativePos);
         if (BlockStateUtils.isClientSideNoteBlock(state)) {
-            Reflections.method$ServerChunkCache$blockChanged.invoke(chunkSource, relativePos);
+            FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, relativePos);
             noteBlockChainUpdate(level, chunkSource, direction, relativePos, times+1);
         }
     }

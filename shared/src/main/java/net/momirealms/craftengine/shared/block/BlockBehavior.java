@@ -4,6 +4,14 @@ import java.util.concurrent.Callable;
 
 public abstract class BlockBehavior {
 
+    public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        return superMethod.call();
+    }
+
+    public Object mirror(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        return superMethod.call();
+    }
+
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         return superMethod.call();
     }

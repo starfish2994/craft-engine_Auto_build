@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
@@ -107,21 +108,16 @@ public final class CraftEngineBlocks {
                                 @NotNull UpdateOption option,
                                 boolean playSound) {
         boolean success;
-        try {
-            Object worldServer = Reflections.field$CraftWorld$ServerLevel.get(location.getWorld());
-            Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-            Object blockState = block.customBlockState().handle();
-            Object oldBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
-            success = (boolean) Reflections.method$LevelWriter$setBlock.invoke(worldServer, blockPos, blockState, option.flags());
-            if (success) {
-                Reflections.method$BlockStateBase$onPlace.invoke(blockState, worldServer, blockPos, oldBlockState, true);
-                if (playSound) {
-                    location.getWorld().playSound(location, block.sounds().placeSound().toString(), SoundCategory.BLOCKS, block.sounds().placeSound().volume(), block.sounds().placeSound().pitch());
-                }
+        Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld());
+        Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        Object blockState = block.customBlockState().handle();
+        Object oldBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
+        success = FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, blockState, option.flags());
+        if (success) {
+            FastNMS.INSTANCE.method$BlockStateBase$onPlace(blockState, worldServer, blockPos, oldBlockState, false);
+            if (playSound) {
+                location.getWorld().playSound(location, block.sounds().placeSound().toString(), SoundCategory.BLOCKS, block.sounds().placeSound().volume(), block.sounds().placeSound().pitch());
             }
-        } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to set nms block", e);
-            return false;
         }
         return success;
     }
@@ -189,8 +185,7 @@ public final class CraftEngineBlocks {
             world.playBlockSound(vec3d, state.sounds().breakSound());
         }
         if (sendParticles) {
-            // TODO Particles
-            //ParticleUtils.addBlockBreakParticles(block.getWorld(), LocationUtils.toBlockPos(location), state.customBlockState().handle());
+            FastNMS.INSTANCE.method$Level$levelEvent(world.serverWorld(), 2001, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), state.customBlockState().registryId());
         }
         block.setType(Material.AIR, applyPhysics);
         return true;
