@@ -644,6 +644,9 @@ public class PacketConsumers {
             if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
                 event.setCancelled(true);
             }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
+                event.setCancelled(true);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
         }
