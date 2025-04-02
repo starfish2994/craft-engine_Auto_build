@@ -184,34 +184,48 @@ public class BlockEventListener implements Listener {
         }
     }
 
-    // override vanilla block loots
+    // BlockBreakBlockEvent = liquid + piston
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreakBlock(BlockBreakBlockEvent event) {
         Block block = event.getBlock();
         Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
         int stateId = BlockStateUtils.blockStateToId(blockState);
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
-            return;
-        }
-        this.plugin.vanillaLootManager().getBlockLoot(stateId).ifPresent(it -> {
-            if (it.override()) {
-                event.getDrops().clear();
-                event.setExpToDrop(0);
-            }
-
-            Location location = block.getLocation();
-            Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-            net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
-            ContextHolder.Builder builder = ContextHolder.builder();
-            builder.withParameter(LootParameters.WORLD, world);
-            builder.withParameter(LootParameters.LOCATION, vec3d);
-            ContextHolder contextHolder = builder.build();
-            for (LootTable<?> lootTable : it.lootTables()) {
-                for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
+            // custom blocks
+            ImmutableBlockState immutableBlockState = this.manager.getImmutableBlockStateUnsafe(stateId);
+            if (!immutableBlockState.isEmpty()) {
+                Location location = block.getLocation();
+                net.momirealms.craftengine.core.world.World world = new BukkitWorld(block.getWorld());
+                Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                ContextHolder.Builder builder = ContextHolder.builder();
+                builder.withParameter(LootParameters.WORLD, world);
+                builder.withParameter(LootParameters.LOCATION, vec3d);
+                for (Item<?> item : immutableBlockState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
             }
-        });
+        } else {
+            // override vanilla block loots
+            this.plugin.vanillaLootManager().getBlockLoot(stateId).ifPresent(it -> {
+                if (it.override()) {
+                    event.getDrops().clear();
+                    event.setExpToDrop(0);
+                }
+
+                Location location = block.getLocation();
+                Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
+                ContextHolder.Builder builder = ContextHolder.builder();
+                builder.withParameter(LootParameters.WORLD, world);
+                builder.withParameter(LootParameters.LOCATION, vec3d);
+                ContextHolder contextHolder = builder.build();
+                for (LootTable<?> lootTable : it.lootTables()) {
+                    for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
+                        world.dropItemNaturally(vec3d, item);
+                    }
+                }
+            });
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -241,37 +255,38 @@ public class BlockEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onPistonRetract(BlockPistonRetractEvent event) {
-        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
-    }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onPistonExtend(BlockPistonExtendEvent event) {
-        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
-    }
-
-    private void handlePistonEvent(BlockFace face, List<Block> blocksList, Block piston) {
-        int blocks = blocksList.size();
-        net.momirealms.craftengine.core.world.World world = new BukkitWorld(piston.getWorld());
-        for (int i = blocks - 1; i >= 0; --i) {
-            Location oldLocation = blocksList.get(i).getLocation();
-            BlockPos oldPos = new BlockPos(oldLocation.getBlockX(), oldLocation.getBlockY(), oldLocation.getBlockZ());
-            Block block = blocksList.get(i);
-            ImmutableBlockState blockState = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
-            if (blockState != null && blockState.pushReaction() == PushReaction.DESTROY) {
-                // break actions
-                ContextHolder.Builder builder = ContextHolder.builder();
-                Vec3d vec3d = Vec3d.atCenterOf(oldPos);
-                builder.withParameter(LootParameters.LOCATION, vec3d);
-                builder.withParameter(LootParameters.WORLD, world);
-                for (Item<Object> item : blockState.getDrops(builder, world)) {
-                    world.dropItemNaturally(vec3d, item);
-                }
-                world.playBlockSound(vec3d, blockState.sounds().breakSound());
-            }
-        }
-    }
+// Use BlockBreakBlock event
+//    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+//    public void onPistonRetract(BlockPistonRetractEvent event) {
+//        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
+//    }
+//
+//    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+//    public void onPistonExtend(BlockPistonExtendEvent event) {
+//        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
+//    }
+//
+//    private void handlePistonEvent(BlockFace face, List<Block> blocksList, Block piston) {
+//        int blocks = blocksList.size();
+//        net.momirealms.craftengine.core.world.World world = new BukkitWorld(piston.getWorld());
+//        for (int i = blocks - 1; i >= 0; --i) {
+//            Location oldLocation = blocksList.get(i).getLocation();
+//            BlockPos oldPos = new BlockPos(oldLocation.getBlockX(), oldLocation.getBlockY(), oldLocation.getBlockZ());
+//            Block block = blocksList.get(i);
+//            ImmutableBlockState blockState = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
+//            if (blockState != null && blockState.pushReaction() == PushReaction.DESTROY) {
+//                // break actions
+//                ContextHolder.Builder builder = ContextHolder.builder();
+//                Vec3d vec3d = Vec3d.atCenterOf(oldPos);
+//                builder.withParameter(LootParameters.LOCATION, vec3d);
+//                builder.withParameter(LootParameters.WORLD, world);
+//                for (Item<Object> item : blockState.getDrops(builder, world)) {
+//                    world.dropItemNaturally(vec3d, item);
+//                }
+//                world.playBlockSound(vec3d, blockState.sounds().breakSound());
+//            }
+//        }
+//    }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityExplode(EntityExplodeEvent event) {
