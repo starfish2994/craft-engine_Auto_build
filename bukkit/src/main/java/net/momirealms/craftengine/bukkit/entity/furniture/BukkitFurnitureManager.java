@@ -41,9 +41,8 @@ public class BukkitFurnitureManager implements FurnitureManager {
 
     private final Map<Key, CustomFurniture> byId = new HashMap<>();
 
-    private final Map<Integer, LoadedFurniture> furnitureByBaseEntityId  = new ConcurrentHashMap<>(256, 0.5f);
+    private final Map<Integer, LoadedFurniture> furnitureByRealEntityId = new ConcurrentHashMap<>(256, 0.5f);
     private final Map<Integer, LoadedFurniture> furnitureByEntityId = new ConcurrentHashMap<>(512, 0.5f);
-    private final Map<Integer, LoadedFurniture> furnitureByCollisionEntitiesId = new ConcurrentHashMap<>(256, 0.5f);
     // Event listeners
     private final Listener dismountListener;
     private final FurnitureEventListener furnitureEventListener;
@@ -78,7 +77,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             SoundData data = furniture.settings().sounds().placeSound();
             location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
         }
-        return getLoadedFurnitureByBaseEntityId(furnitureEntity.getEntityId());
+        return getLoadedFurnitureByRealEntityId(furnitureEntity.getEntityId());
     }
 
     @Override
@@ -258,13 +257,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
     }
 
     @Override
-    public boolean isFurnitureBaseEntity(int entityId) {
-        return this.furnitureByBaseEntityId.containsKey(entityId);
+    public boolean isFurnitureRealEntity(int entityId) {
+        return this.furnitureByRealEntityId.containsKey(entityId);
     }
 
     @Nullable
-    public LoadedFurniture getLoadedFurnitureByBaseEntityId(int entityId) {
-        return this.furnitureByBaseEntityId.get(entityId);
+    public LoadedFurniture getLoadedFurnitureByRealEntityId(int entityId) {
+        return this.furnitureByRealEntityId.get(entityId);
     }
 
     @Nullable
@@ -272,22 +271,17 @@ public class BukkitFurnitureManager implements FurnitureManager {
         return this.furnitureByEntityId.get(entityId);
     }
 
-    @Nullable
-    public LoadedFurniture getLoadedFurnitureByCollisionEntityId(int entityId) {
-        return this.furnitureByCollisionEntitiesId.get(entityId);
-    }
-
-    public boolean isFurnitureCollisionEntity(int entityId) {
-        return this.furnitureByCollisionEntitiesId.containsKey(entityId);
-    }
-
     protected void handleBaseFurnitureUnload(Entity entity) {
         int id = entity.getEntityId();
-        LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);
+        LoadedFurniture furniture = this.furnitureByRealEntityId.remove(id);
         if (furniture != null) {
             furniture.destroySeats();
             for (int sub : furniture.entityIds()) {
                 this.furnitureByEntityId.remove(sub);
+            }
+            for (CollisionEntity collision : furniture.collisionEntities()) {
+                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
+                collision.destroy();
             }
         }
     }
@@ -301,7 +295,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             Optional<CustomFurniture> optionalFurniture = getFurniture(key);
             if (optionalFurniture.isEmpty()) return;
             CustomFurniture customFurniture = optionalFurniture.get();
-            LoadedFurniture previous = this.furnitureByBaseEntityId.get(display.getEntityId());
+            LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
             if (previous != null) return;
             Location location = entity.getLocation();
             if (FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
@@ -323,7 +317,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
             Optional<CustomFurniture> optionalFurniture = getFurniture(key);
             if (optionalFurniture.isPresent()) {
                 CustomFurniture customFurniture = optionalFurniture.get();
-                LoadedFurniture previous = this.furnitureByBaseEntityId.get(display.getEntityId());
+                LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
                 if (previous != null) return;
                 addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
                 return;
@@ -355,13 +349,13 @@ public class BukkitFurnitureManager implements FurnitureManager {
 
     private synchronized LoadedFurniture addNewFurniture(ItemDisplay display, CustomFurniture furniture, AnchorType anchorType) {
         LoadedFurniture loadedFurniture = new LoadedFurniture(display, furniture, anchorType);
-        this.furnitureByBaseEntityId.put(loadedFurniture.baseEntityId(), loadedFurniture);
+        this.furnitureByRealEntityId.put(loadedFurniture.baseEntityId(), loadedFurniture);
         for (int entityId : loadedFurniture.entityIds()) {
             this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
         for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
             int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
-            this.furnitureByCollisionEntitiesId.put(collisionEntityId, loadedFurniture);
+            this.furnitureByRealEntityId.put(collisionEntityId, loadedFurniture);
         }
         loadedFurniture.initializeColliders();
         return loadedFurniture;
@@ -377,7 +371,7 @@ public class BukkitFurnitureManager implements FurnitureManager {
         Integer baseFurniture = vehicle.getPersistentDataContainer().get(FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER);
         if (baseFurniture == null) return;
         vehicle.remove();
-        LoadedFurniture furniture = getLoadedFurnitureByBaseEntityId(baseFurniture);
+        LoadedFurniture furniture = getLoadedFurnitureByRealEntityId(baseFurniture);
         if (furniture == null) {
             return;
         }
