@@ -203,7 +203,8 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.BOOSTED_YAML,
                 Dependencies.MINIMESSAGE,
                 Dependencies.TEXT_SERIALIZER_GSON,
-                Dependencies.TEXT_SERIALIZER_JSON
+                Dependencies.TEXT_SERIALIZER_JSON,
+                Dependencies.AHO_CORASICK
         );
     }
 

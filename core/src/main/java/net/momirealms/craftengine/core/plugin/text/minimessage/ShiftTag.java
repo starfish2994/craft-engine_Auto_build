@@ -1,20 +1,20 @@
-package net.momirealms.craftengine.core.plugin.minimessage;
+package net.momirealms.craftengine.core.plugin.text.minimessage;
 
 import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.ParsingException;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class I18NTag implements TagResolver {
-    private final MiniMessageTextContext context;
+public class ShiftTag implements TagResolver {
+    public static final ShiftTag INSTANCE = new ShiftTag();
 
-    public I18NTag(MiniMessageTextContext context) {
-        this.context = context;
+    public static ShiftTag instance() {
+        return INSTANCE;
     }
 
     @Override
@@ -22,13 +22,17 @@ public class I18NTag implements TagResolver {
         if (!this.has(name)) {
             return null;
         }
-        String i18nKey = arguments.popOr("No argument i18n key provided").toString();
-        String translation = TranslationManager.instance().miniMessageTranslation(i18nKey);
-        return Tag.inserting(AdventureHelper.miniMessage().deserialize(translation, this.context.tagResolvers()));
+        String shiftAmount = arguments.popOr("No argument shift provided").toString();
+        try {
+            int shift = Integer.parseInt(shiftAmount);
+            return Tag.inserting(AdventureHelper.miniMessage(CraftEngine.instance().imageManager().createMiniMessageOffsets(shift)));
+        } catch (NumberFormatException e) {
+            throw ctx.newException("Invalid shift value", arguments);
+        }
     }
 
     @Override
     public boolean has(@NotNull String name) {
-        return "i18n".equals(name) || "l10n".equals(name);
+        return "shift".equals(name);
     }
 }

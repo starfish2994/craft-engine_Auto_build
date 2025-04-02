@@ -72,5 +72,6 @@ tasks {
         relocate("net.objecthunter.exp4j", "net.momirealms.craftengine.libraries.exp4j")
         relocate("net.bytebuddy", "net.momirealms.craftengine.libraries.bytebuddy")
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
+        relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
     }
 }

@@ -49,6 +49,8 @@ dependencies {
     compileOnly("commons-io:commons-io:${rootProject.properties["commons_io_version"]}")
     // Data Fixer Upper
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
+    // Aho-Corasick java implementation
+    compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
 }
 
 java {
@@ -75,6 +77,7 @@ tasks {
         relocate("com.saicone.rtag", "net.momirealms.craftengine.libraries.rtag")
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
+        relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")
     }
 }

@@ -207,4 +207,11 @@ public class Dependencies {
             "adventure-text-serializer-json",
             List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
     );
+    public static final Dependency AHO_CORASICK = new Dependency(
+            "ahocorasick",
+            "org{}ahocorasick",
+            "ahocorasick",
+            "aho-corasick",
+            List.of(Relocation.of("ahocorasick", "org{}ahocorasick"))
+    );
 }
