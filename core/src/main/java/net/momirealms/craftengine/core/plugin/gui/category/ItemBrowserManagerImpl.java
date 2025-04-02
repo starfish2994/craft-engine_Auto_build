@@ -76,9 +76,6 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
         String name = section.getOrDefault("name", id).toString();
         List<String> members = MiscUtils.getAsStringList(section.getOrDefault("list", List.of()));
         Key icon = Key.of(section.getOrDefault("icon", ItemKeys.STONE).toString());
-        if (this.plugin.itemManager().getCustomItem(icon).isEmpty()) {
-            icon = ItemKeys.STONE;
-        }
         int priority = MiscUtils.getAsInt(section.getOrDefault("priority", 0));
         Category category = new Category(id, name, MiscUtils.getAsStringList(section.getOrDefault("lore", List.of())), icon, members.stream().distinct().toList(), priority, (boolean) section.getOrDefault("hidden", false));
         if (this.byId.containsKey(id)) {
