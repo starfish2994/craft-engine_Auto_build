@@ -6050,4 +6050,10 @@ public class Reflections {
                     clazz$BlockStateBase, clazz$BlockState, clazz$Mirror
             )
     );
+
+    public static final Constructor<?> constructor$ClientboundMoveEntityPacket$Pos = requireNonNull(
+            ReflectionUtils.getDeclaredConstructor(
+                    clazz$ClientboundMoveEntityPacket$Pos, int.class, short.class, short.class, short.class, boolean.class
+            )
+    );
 }
