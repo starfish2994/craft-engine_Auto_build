@@ -70,7 +70,8 @@ public class PacketConsumers {
     }
 
     public static int remapMOD(int stateId) {
-        return mappingsMOD[stateId];
+        int modStateId = mappingsMOD[stateId];
+        return BlockStateUtils.isVanillaBlock(modStateId) ? remap(modStateId) : modStateId;
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
@@ -644,6 +645,9 @@ public class PacketConsumers {
             if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
                 event.setCancelled(true);
             }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
+                event.setCancelled(true);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
         }
@@ -653,6 +657,9 @@ public class PacketConsumers {
         try {
             int entityId = (int) Reflections.field$ClientboundMoveEntityPacket$entityId.get(packet);
             if (BukkitFurnitureManager.instance().isFurnitureBaseEntity(entityId)) {
+                event.setCancelled(true);
+            }
+            if (BukkitFurnitureManager.instance().isFurnitureCollisionEntity(entityId)) {
                 event.setCancelled(true);
             }
         } catch (Exception e) {

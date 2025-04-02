@@ -277,6 +277,10 @@ public class BukkitFurnitureManager implements FurnitureManager {
         return this.furnitureByCollisionEntitiesId.get(entityId);
     }
 
+    public boolean isFurnitureCollisionEntity(int entityId) {
+        return this.furnitureByCollisionEntitiesId.containsKey(entityId);
+    }
+
     protected void handleBaseFurnitureUnload(Entity entity) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByBaseEntityId.remove(id);

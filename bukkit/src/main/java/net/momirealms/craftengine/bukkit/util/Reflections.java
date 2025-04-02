@@ -5930,4 +5930,37 @@ public class Reflections {
                                 ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"af"})
                                 : ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId", "aj", "ah", "af"})
     );
+
+    public static final Class<?> clazz$ClientboundMoveEntityPacket$PosRot = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundMoveEntityPacket$PosRot"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntity$PacketPlayOutRelEntityMoveLook")
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundRotateHeadPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundRotateHeadPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityHeadRotation")
+            )
+    );
+
+    public static final Field field$ClientboundRotateHeadPacket$entityId = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundRotateHeadPacket, int.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundSetEntityMotionPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetEntityMotionPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityVelocity")
+            )
+    );
+
+    public static final Field field$ClientboundSetEntityMotionPacket$id = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundSetEntityMotionPacket, int.class, 0
+            )
+    );
 }
