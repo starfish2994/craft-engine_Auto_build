@@ -65,3 +65,6 @@ warning.config.image.invalid_codepoint_grid: "<yellow>Issue found in file <arg:0
 warning.config.image.file_not_exist: "<yellow>Issue found in file <arg:0> - PNG file <arg:2> not found for image '<arg:1>'.</yellow>"
 warning.config.recipe.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated recipe '<arg:1>'.</yellow>"
 warning.config.i18n.unknown_locale: "<yellow>Issue found in file <arg:0> - Unknown locale '<arg:1>'.</yellow>"
+warning.config.template.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated template '<arg:1>'.</yellow>"
+warning.config.vanilla_loot.type_not_exist: "<yellow>Issue found in file <arg:0> - 'type' not set for vanilla loot '<arg:1>'.</yellow>"
+warning.config.vanilla_loot.block.invalid_target: "<yellow>Issue found in file <arg:0> - Invalid block target [<arg:2>] in vanilla loot '<arg:1>'.</yellow>"

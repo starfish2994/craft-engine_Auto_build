@@ -142,7 +142,7 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public void enable() {
         this.networkManager.enable();
-        this.templateManager = new TemplateManagerImpl(this);
+        this.templateManager = new TemplateManagerImpl();
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
         this.commandManager.registerDefaultFeatures();
         // delay the reload so other plugins can register some parsers
@@ -205,7 +205,7 @@ public abstract class CraftEngine implements Plugin {
         this.packManager.registerConfigSectionParser(this.soundManager);
         this.packManager.registerConfigSectionParser(this.soundManager.jukeboxSongManager());
         // register vanilla loot parser
-        this.packManager.registerConfigSectionParser(this.vanillaLootManager);
+        this.packManager.registerConfigSectionParser(this.vanillaLootManager.parser());
     }
 
     protected abstract void delayedEnable();

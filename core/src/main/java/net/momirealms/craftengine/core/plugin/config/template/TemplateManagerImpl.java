@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -19,13 +20,11 @@ import java.util.regex.Matcher;
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public class TemplateManagerImpl implements TemplateManager {
-    private final CraftEngine plugin;
     private final Map<Key, Object> templates = new HashMap<>();
     private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES));
     private final TemplateParser templateParser;
 
-    public TemplateManagerImpl(CraftEngine plugin) {
-        this.plugin = plugin;
+    public TemplateManagerImpl() {
         this.templateParser = new TemplateParser();
     }
 
@@ -60,7 +59,10 @@ public class TemplateManagerImpl implements TemplateManager {
 
     @Override
     public void addTemplate(Pack pack, Path path, Key id, Object obj) {
-        if (PreConditions.runIfTrue(this.templates.containsKey(id), () -> this.plugin.logger().warn(path, "Template duplicates: " + id))) return;
+        if (this.templates.containsKey(id)) {
+            TranslationManager.instance().log("warning.config.template.duplicated", path.toString(), id.toString());
+            return;
+        }
         this.templates.put(id, obj);
     }
 
