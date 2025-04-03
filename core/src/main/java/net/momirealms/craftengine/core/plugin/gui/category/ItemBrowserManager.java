@@ -16,20 +16,11 @@ import java.util.TreeSet;
 
 import static java.util.Objects.requireNonNull;
 
-public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] {"categories", "category"};
+public interface ItemBrowserManager extends Reloadable {
     int MAX_RECIPE_DEPTH = 16;
     String GET_ITEM_PERMISSION = "craftengine.browser.get_item";
 
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
-
-    default int loadingSequence() {
-        return LoadingSequence.CATEGORY;
-    }
-
-    void delayedLoad();
+    ConfigSectionParser parser();
 
     void addExternalCategoryMember(Key item, List<Key> category);
 

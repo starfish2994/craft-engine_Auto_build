@@ -96,12 +96,17 @@ public abstract class CraftEngine implements Plugin {
         this.configManager = new ConfigManager(this);
     }
 
-    // TODO Make most things async
     @Override
     public void reload() {
         if (this.isReloading) return;
         this.isReloading = true;
         this.configManager.reload();
+        // reset debugger
+        if (ConfigManager.debug()) {
+            this.debugger = (s) -> logger.info("[Debug] " + s.get());
+        } else {
+            this.debugger = (s) -> {};
+        }
         this.translationManager.reload();
         this.templateManager.reload();
         this.furnitureManager.reload();
@@ -125,12 +130,6 @@ public abstract class CraftEngine implements Plugin {
         this.soundManager.delayedLoad();
         this.fontManager.delayedLoad();
         this.recipeManager.delayedLoad();
-        // reset debugger
-        if (ConfigManager.debug()) {
-            this.debugger = (s) -> logger.info("[Debug] " + s.get());
-        } else {
-            this.debugger = (s) -> {};
-        }
         scheduler().sync().run(() -> {
             try {
                 this.recipeManager.runSyncTasks();
@@ -187,7 +186,7 @@ public abstract class CraftEngine implements Plugin {
 
     protected void registerParsers() {
         // register template parser
-        this.packManager.registerConfigSectionParser(this.templateManager);
+        this.packManager.registerConfigSectionParser(this.templateManager.parser());
         // register font parser
         this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
         // register item parser
@@ -199,7 +198,7 @@ public abstract class CraftEngine implements Plugin {
         // register recipe parser
         this.packManager.registerConfigSectionParser(this.recipeManager.parser());
         // register category parser
-        this.packManager.registerConfigSectionParser(this.itemBrowserManager);
+        this.packManager.registerConfigSectionParser(this.itemBrowserManager.parser());
         // register translation parser
         this.packManager.registerConfigSectionParsers(this.translationManager.parsers());
         // register sound parser

@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.plugin.locale;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.Translator;
-import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import org.jetbrains.annotations.Nullable;

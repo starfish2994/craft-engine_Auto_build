@@ -50,7 +50,6 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
-    public static final List<byte[]> SHULKER_PNG = new ArrayList<>(1);
 
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
@@ -86,8 +85,6 @@ public abstract class AbstractPackManager implements PackManager {
         loadInternalList("internal/textures/block/_list.json", VANILLA_BLOCK_TEXTURES::add);
         loadInternalList("internal/textures/item/_list.json", VANILLA_ITEM_TEXTURES::add);
         loadInternalList("internal/textures/font/_list.json", VANILLA_FONT_TEXTURES::add);
-
-        loadInternalPng("internal/textures/entity/shulker/shulker.png", SHULKER_PNG::add);
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -408,14 +405,13 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
         for (Map.Entry<ConfigSectionParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
             ConfigSectionParser parser = entry.getKey();
-            boolean isTemplate = parser.sectionId()[0].equals(TemplateManager.CONFIG_SECTION_NAME[0]);
             long t1 = System.nanoTime();
             for (CachedConfig cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        if (isTemplate) {
+                        if (parser.isTemplate()) {
                             ((TemplateManager) parser).addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
                         } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {

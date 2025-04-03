@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -17,14 +19,33 @@ import java.util.regex.Matcher;
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public class TemplateManagerImpl implements TemplateManager {
-    private static final String LEFT_BRACKET = "{";
-    private static final String RIGHT_BRACKET = "}";
     private final CraftEngine plugin;
     private final Map<Key, Object> templates = new HashMap<>();
     private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES));
+    private final TemplateParser templateParser;
 
     public TemplateManagerImpl(CraftEngine plugin) {
         this.plugin = plugin;
+        this.templateParser = new TemplateParser();
+    }
+
+    public class TemplateParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"templates", "template"};
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.TEMPLATE;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            addTemplate(pack, path, id, section);
+        }
     }
 
     @Override
@@ -33,8 +54,8 @@ public class TemplateManagerImpl implements TemplateManager {
     }
 
     @Override
-    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-        addTemplate(pack, path, id, section);
+    public ConfigSectionParser parser() {
+        return this.templateParser;
     }
 
     @Override
@@ -233,7 +254,7 @@ public class TemplateManagerImpl implements TemplateManager {
     // 将某个输入变成最终的结果，可以是string->string，也可以是string->map/list
     private Object applyArgument(String input, Map<String, TemplateArgument> arguments) {
         StringBuilder result = new StringBuilder();
-        Matcher matcher = PATTERN.matcher(input);
+        Matcher matcher = ARGUMENT_PATTERN.matcher(input);
         boolean first = true;
         while (matcher.find()) {
             String placeholder = matcher.group();

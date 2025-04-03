@@ -15,6 +15,10 @@ public interface ConfigSectionParser extends Comparable<ConfigSectionParser> {
 
     int loadingSequence();
 
+    default boolean isTemplate() {
+        return false;
+    }
+
     @Override
     default int compareTo(@NotNull ConfigSectionParser another) {
         return Integer.compare(loadingSequence(), another.loadingSequence());

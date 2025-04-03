@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
-import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
@@ -10,22 +9,18 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public interface TemplateManager extends Reloadable, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] {"templates", "template"};
-    Pattern PATTERN = Pattern.compile("\\{[^{}]+}");
+public interface TemplateManager extends Reloadable {
+    Pattern ARGUMENT_PATTERN = Pattern.compile("\\{[^{}]+}");
+    String LEFT_BRACKET = "{";
+    String RIGHT_BRACKET = "}";
     String TEMPLATE = "template";
     String OVERRIDES = "overrides";
     String ARGUMENTS = "arguments";
 
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
+    ConfigSectionParser parser();
 
     void addTemplate(Pack pack, Path path, Key id, Object obj);
 
     Map<String, Object> applyTemplates(Map<String, Object> input);
 
-    default int loadingSequence() {
-        return LoadingSequence.TEMPLATE;
-    }
 }
