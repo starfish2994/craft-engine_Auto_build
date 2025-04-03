@@ -603,7 +603,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateClientLang(Path generatedPackPath) {
-        for (Map.Entry<String, I18NData> entry : this.plugin.translationManager().clientLangManager().langData().entrySet()) {
+        for (Map.Entry<String, I18NData> entry : this.plugin.translationManager().clientLangData().entrySet()) {
             JsonObject json = new JsonObject();
             for (Map.Entry<String, String> pair : entry.getValue().translations.entrySet()) {
                 json.addProperty(pair.getKey(), pair.getValue());

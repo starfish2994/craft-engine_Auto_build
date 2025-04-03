@@ -201,8 +201,7 @@ public abstract class CraftEngine implements Plugin {
         // register category parser
         this.packManager.registerConfigSectionParser(this.itemBrowserManager);
         // register translation parser
-        this.packManager.registerConfigSectionParser(this.translationManager);
-        this.packManager.registerConfigSectionParser(this.translationManager.clientLangManager());
+        this.packManager.registerConfigSectionParsers(this.translationManager.parsers());
         // register sound parser
         this.packManager.registerConfigSectionParser(this.soundManager);
         this.packManager.registerConfigSectionParser(this.soundManager.jukeboxSongManager());
