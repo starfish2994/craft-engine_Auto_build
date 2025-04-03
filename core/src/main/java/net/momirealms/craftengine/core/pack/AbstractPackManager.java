@@ -1024,7 +1024,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateFonts(Path generatedPackPath) {
         // generate image font json
-        for (Font font : plugin.imageManager().fontsInUse()) {
+        for (Font font : plugin.imageManager().fonts()) {
             Key namespacedKey = font.key();
             Path fontPath = generatedPackPath.resolve("assets")
                     .resolve(namespacedKey.namespace())
@@ -1058,7 +1058,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             for (BitmapImage image : font.bitmapImages()) {
-                providers.add(image.getJson());
+                providers.add(image.get());
             }
 
             try (FileWriter fileWriter = new FileWriter(fontPath.toFile())) {

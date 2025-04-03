@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.font;
 
 import com.google.gson.JsonObject;
 
-public interface FontProvider {
+import java.util.function.Supplier;
 
-    JsonObject getJson();
+public interface FontProvider extends Supplier<JsonObject> {
 }

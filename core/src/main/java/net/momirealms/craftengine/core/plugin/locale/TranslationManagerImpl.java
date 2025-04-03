@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
+import net.momirealms.craftengine.core.plugin.text.minimessage.IndexedArgumentTag;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -233,6 +234,13 @@ public class TranslationManagerImpl implements TranslationManager {
     @Override
     public ClientLangManager clientLangManager() {
         return clientLangManager;
+    }
+
+    @Override
+    public void log(String id, String... args) {
+        String translation = miniMessageTranslation(id);
+        if (translation == null) translation = id;
+        this.plugin.senderFactory().console().sendMessage(AdventureHelper.miniMessage().deserialize(translation, new IndexedArgumentTag(Arrays.stream(args).map(Component::text).toList())));
     }
 
     private Map<String, Object> updateLangFile(Map<String, Object> previous, Path translationFile) throws IOException {

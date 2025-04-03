@@ -4,12 +4,12 @@ import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Font {
     private final Key key;
-    private final HashMap<Integer, BitmapImage> idToCodepoint = new LinkedHashMap<>();
+    private final Map<Integer, BitmapImage> idToCodepoint = new LinkedHashMap<>();
 
     public Font(Key key) {
         this.key = key;
@@ -24,11 +24,11 @@ public class Font {
         return Collections.unmodifiableCollection(this.idToCodepoint.keySet());
     }
 
-    public BitmapImage getImageByCodepoint(int codepoint) {
+    public BitmapImage bitmapImageByCodepoint(int codepoint) {
         return this.idToCodepoint.get(codepoint);
     }
 
-    public void registerCodepoint(int codepoint, BitmapImage image) {
+    public void addBitMapImage(int codepoint, BitmapImage image) {
         this.idToCodepoint.put(codepoint, image);
     }
 
@@ -37,7 +37,7 @@ public class Font {
     }
 
     public Collection<BitmapImage> bitmapImages() {
-        return idToCodepoint.values().stream().distinct().toList();
+        return this.idToCodepoint.values().stream().distinct().toList();
     }
 
     @Override

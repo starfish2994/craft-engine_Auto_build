@@ -18,7 +18,7 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
-import net.momirealms.craftengine.core.font.ImageManager;
+import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -777,10 +777,10 @@ public class PacketConsumers {
             if (!ConfigManager.filterAnvil()) return;
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
-                ImageManager manager = CraftEngine.instance().imageManager();
+                FontManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
                 // check bypass
-                if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_ANVIL)) {
+                if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
                     return;
                 }
                 runIfContainsIllegalCharacter(message, manager, (s) -> {
@@ -801,10 +801,10 @@ public class PacketConsumers {
         try {
             if (!ConfigManager.filterSign()) return;
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
-            ImageManager manager = CraftEngine.instance().imageManager();
+            FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass
-            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_SIGN)) {
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_SIGN)) {
                 return;
             }
             for (int i = 0; i < lines.length; i++) {
@@ -827,10 +827,10 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
             if (!ConfigManager.filterBook()) return;
-            ImageManager manager = CraftEngine.instance().imageManager();
+            FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass
-            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_BOOK)) {
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_BOOK)) {
                 return;
             }
 
@@ -879,7 +879,7 @@ public class PacketConsumers {
         }
     };
 
-    private static Pair<Boolean, String> processClientString(String original, ImageManager manager) {
+    private static Pair<Boolean, String> processClientString(String original, FontManager manager) {
         if (original.isEmpty()) {
             return Pair.of(false, original);
         }
@@ -888,7 +888,7 @@ public class PacketConsumers {
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (manager.isIllegalCharacter(codepoint)) {
+            if (manager.isIllegalCodepoint(codepoint)) {
                 newCodepoints[i] = '*';
                 hasIllegal = true;
             } else {
@@ -898,14 +898,14 @@ public class PacketConsumers {
         return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
     }
 
-    private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
+    private static void runIfContainsIllegalCharacter(String string, FontManager manager, Consumer<String> callback) {
         if (string.isEmpty()) return;
         int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
         int[] newCodepoints = new int[codepoints.length];
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (!manager.isIllegalCharacter(codepoint)) {
+            if (!manager.isIllegalCodepoint(codepoint)) {
                 newCodepoints[i] = codepoint;
             } else {
                 newCodepoints[i] = '*';

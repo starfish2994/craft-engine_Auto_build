@@ -7,7 +7,7 @@ import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
-import net.momirealms.craftengine.bukkit.font.BukkitImageManager;
+import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BukkitItemBehaviors;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
@@ -154,7 +154,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.worldManager = new BukkitWorldManager(this);
         super.soundManager = new BukkitSoundManager(this);
         super.vanillaLootManager = new BukkitVanillaLootManager(this);
-        this.imageManager = new BukkitImageManager(this);
+        this.fontManager = new BukkitFontManager(this);
         super.enable();
         // tick task
         if (VersionHelper.isFolia()) {
@@ -216,7 +216,7 @@ public class BukkitCraftEngine extends CraftEngine {
         // register template parser
         this.packManager.registerConfigSectionParser(this.templateManager);
         // register font parser
-        this.packManager.registerConfigSectionParser(this.imageManager);
+        this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
         // register item parser
         this.packManager.registerConfigSectionParser(this.itemManager);
         // register furniture parser

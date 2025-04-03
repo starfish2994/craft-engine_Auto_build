@@ -14,6 +14,12 @@ public interface PackManager extends Reloadable {
 
     boolean registerConfigSectionParser(ConfigSectionParser parser);
 
+    default void registerConfigSectionParsers(ConfigSectionParser[] parsers) {
+        for (ConfigSectionParser parser : parsers) {
+            registerConfigSectionParser(parser);
+        }
+    }
+
     boolean unregisterConfigSectionParser(String id);
 
     default void unregisterConfigSectionParser(ConfigSectionParser parser) {

@@ -4,8 +4,8 @@ import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.core.font.AbstractImageManager;
-import net.momirealms.craftengine.core.font.ImageManager;
+import net.momirealms.craftengine.core.font.AbstractFontManager;
+import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import org.bukkit.Bukkit;
@@ -19,11 +19,11 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Consumer;
 
-public class BukkitImageManager extends AbstractImageManager implements Listener {
+public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
     private final Object serializer;
 
-    public BukkitImageManager(BukkitCraftEngine plugin) {
+    public BukkitFontManager(BukkitCraftEngine plugin) {
         super(plugin);
         this.plugin = plugin;
         try {
@@ -63,7 +63,7 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
     public void onCommand(PlayerCommandPreprocessEvent event) {
         if (!ConfigManager.filterCommand()) return;
         if (!this.isDefaultFontInUse()) return;
-        if (event.getPlayer().hasPermission(ImageManager.BYPASS_COMMAND)) {
+        if (event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
             return;
         }
         runIfContainsIllegalCharacter(event.getMessage(), event::setMessage);
@@ -74,7 +74,7 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
         Player player = event.player();
         if (player == null) return;
         if (!this.isDefaultFontInUse()) return;
-        if (player.hasPermission(ImageManager.BYPASS_CHAT)) {
+        if (player.hasPermission(FontManager.BYPASS_CHAT)) {
             return;
         }
         try {
@@ -101,7 +101,7 @@ public class BukkitImageManager extends AbstractImageManager implements Listener
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (!isIllegalCharacter(codepoint)) {
+            if (!isIllegalCodepoint(codepoint)) {
                 newCodepoints[i] = codepoint;
             } else {
                 newCodepoints[i] = '*';

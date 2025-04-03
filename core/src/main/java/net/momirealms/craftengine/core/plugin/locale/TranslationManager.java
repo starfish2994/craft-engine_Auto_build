@@ -45,4 +45,6 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
     default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
+
+    void log(String id, String... args);
 }

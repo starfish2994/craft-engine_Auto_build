@@ -10,9 +10,11 @@ import java.util.UUID;
 
 public abstract class SenderFactory<P extends Plugin, T> {
     private final P plugin;
+    private final Sender console;
 
     public SenderFactory(P plugin) {
         this.plugin = plugin;
+        this.console = wrap(consoleCommandSender());
     }
 
     protected P plugin() {
@@ -35,8 +37,14 @@ public abstract class SenderFactory<P extends Plugin, T> {
 
     protected abstract boolean isConsole(T sender);
 
+    protected abstract <C extends T> C consoleCommandSender();
+
     protected boolean consoleHasAllPermissions() {
         return true;
+    }
+
+    public Sender console() {
+        return console;
     }
 
     public <C extends T> Sender wrap(C sender) {

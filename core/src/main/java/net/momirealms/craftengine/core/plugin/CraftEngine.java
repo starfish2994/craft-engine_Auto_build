@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.plugin;
 
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
-import net.momirealms.craftengine.core.font.ImageManager;
+import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
@@ -45,7 +45,7 @@ public abstract class CraftEngine implements Plugin {
     protected SchedulerAdapter<?> scheduler;
     protected NetworkManager networkManager;
     protected ClassPathAppender classPathAppender;
-    protected ImageManager imageManager;
+    protected FontManager fontManager;
     protected PackManager packManager;
     protected ConfigManager configManager;
     protected ItemManager<?> itemManager;
@@ -106,7 +106,7 @@ public abstract class CraftEngine implements Plugin {
             this.translationManager.reload();
             this.templateManager.reload();
             this.furnitureManager.reload();
-            this.imageManager.reload();
+            this.fontManager.reload();
             this.itemManager.reload();
             this.soundManager.reload();
             this.recipeManager.reload();
@@ -124,7 +124,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.delayedLoad();
             this.itemBrowserManager.delayedLoad();
             this.soundManager.delayedLoad();
-            this.imageManager.delayedLoad();
+            this.fontManager.delayedLoad();
             // reset debugger
             if (ConfigManager.debug()) {
                 this.debugger = (s) -> logger.info("[Debug] " + s.get());
@@ -153,7 +153,7 @@ public abstract class CraftEngine implements Plugin {
             this.worldManager.delayedInit();
             this.packManager.delayedInit();
             this.furnitureManager.delayedInit();
-            this.imageManager.delayedInit();
+            this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
             this.delayedEnable();
         });
@@ -164,7 +164,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.senderFactory != null) this.senderFactory.close();
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.networkManager != null) this.networkManager.shutdown();
-        if (this.imageManager != null) this.imageManager.disable();
+        if (this.fontManager != null) this.fontManager.disable();
         if (this.packManager != null) this.packManager.disable();
         if (this.itemManager != null) this.itemManager.disable();
         if (this.blockManager != null) this.blockManager.disable();
@@ -241,8 +241,8 @@ public abstract class CraftEngine implements Plugin {
     }
 
     @Override
-    public ImageManager imageManager() {
-        return imageManager;
+    public FontManager imageManager() {
+        return fontManager;
     }
 
     @Override
