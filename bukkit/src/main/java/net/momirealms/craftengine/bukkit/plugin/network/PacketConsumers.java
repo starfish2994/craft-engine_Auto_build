@@ -961,4 +961,41 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
         }
     };
+
+    @SuppressWarnings("unchecked")
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
+        try {
+            int id = (int) Reflections.field$ClientboundSetEntityDataPacket$id.get(packet);
+            Object player = user.serverPlayer();
+            Object level = Reflections.method$Entity$level.invoke(player);
+            Object entityLookup = Reflections.method$Level$moonrise$getEntityLookup.invoke(level);
+            Object entity = Reflections.method$EntityLookup$get.invoke(entityLookup, id);
+            if (entity == null) return;
+            Object entityType = Reflections.method$Entity$getType.invoke(entity);
+            if (entityType != Reflections.instance$EntityType$BLOCK_DISPLAY) return;
+            List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
+            for (int i = 0; i < packedItems.size(); i++) {
+                Object packedItem = packedItems.get(i);
+                int entityDataId = (int) Reflections.field$SynchedEntityData$DataValue$id.get(packedItem);
+                if ((VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 23)
+                        || (!VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 22)) {
+                    continue;
+                }
+                Object blockState = Reflections.field$SynchedEntityData$DataValue$value.get(packedItem);
+                Object serializer = Reflections.field$SynchedEntityData$DataValue$serializer.get(packedItem);
+                int stateId = BlockStateUtils.blockStateToId(blockState);
+                int newStateId;
+                if (!user.clientModEnabled()) {
+                    newStateId = remap(stateId);
+                } else {
+                    newStateId = remapMOD(stateId);
+                }
+                packedItems.set(i, Reflections.constructor$SynchedEntityData$DataValue.newInstance(
+                        entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
+                ));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
+    };
 }
