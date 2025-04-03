@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 public interface ImageManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "images";
+    String[] CONFIG_SECTION_NAME = new String[] {"images", "image"};
     Key DEFAULT_FONT = Key.of("minecraft:default");
     String BYPASS_BOOK = "craftengine.filter.bypass.book";
     String BYPASS_SIGN = "craftengine.filter.bypass.sign";
@@ -20,11 +20,17 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
     String BYPASS_COMMAND = "craftengine.filter.bypass.command";
     String BYPASS_ANVIL = "craftengine.filter.bypass.anvil";
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 
     void delayedLoad();
+
+    void delayedInit();
+
+    default int loadingSequence() {
+        return LoadingSequence.FONT;
+    }
 
     boolean isDefaultFontInUse();
 
@@ -69,10 +75,4 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
     default String createRawOffsets(int offset) {
         return createOffsets(offset, (raw, font) -> raw);
     }
-
-    default int loadingSequence() {
-        return LoadingSequence.FONT;
-    }
-
-    void delayedInit();
 }

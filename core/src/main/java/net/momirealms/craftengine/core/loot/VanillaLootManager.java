@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import java.util.Optional;
 
 public interface VanillaLootManager extends ConfigSectionParser, Reloadable {
-    String CONFIG_SECTION_NAME = "vanilla-loots";
+    String[] CONFIG_SECTION_NAME = new String[] {"vanilla-loots", "vanilla-loot", "loots", "loot"};
 
     @Override
     default int loadingSequence() {
@@ -15,7 +15,7 @@ public interface VanillaLootManager extends ConfigSectionParser, Reloadable {
     }
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

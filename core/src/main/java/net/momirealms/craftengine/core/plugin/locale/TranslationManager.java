@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public interface TranslationManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "i18n";
+    String[] CONFIG_SECTION_NAME = new String[] {"i18n", "internationalization", "translation", "translations"};
 
     static TranslationManager instance() {
         return TranslationManagerImpl.instance;
@@ -44,7 +44,7 @@ public interface TranslationManager extends Reloadable, ConfigSectionParser {
     }
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 }

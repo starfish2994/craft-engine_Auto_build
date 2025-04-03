@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface FurnitureManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "furniture";
+    String[] CONFIG_SECTION_NAME = new String[] { "furniture" };
     String FURNITURE_ADMIN_NODE = "craftengine.furniture.admin";
 
     void delayedLoad();
@@ -22,7 +22,7 @@ public interface FurnitureManager extends Reloadable, ConfigSectionParser {
     void delayedInit();
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

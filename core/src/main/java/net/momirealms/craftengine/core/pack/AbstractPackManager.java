@@ -192,8 +192,12 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public boolean registerConfigSectionParser(ConfigSectionParser parser) {
-        if (this.sectionParsers.containsKey(parser.sectionId())) return false;
-        this.sectionParsers.put(parser.sectionId(), parser);
+        for (String id : parser.sectionId()) {
+            if (this.sectionParsers.containsKey(id)) return false;
+        }
+        for (String id : parser.sectionId()) {
+            this.sectionParsers.put(id, parser);
+        }
         return true;
     }
 
@@ -404,7 +408,7 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
         for (Map.Entry<ConfigSectionParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
             ConfigSectionParser parser = entry.getKey();
-            boolean isTemplate = parser.sectionId().equals(TemplateManager.CONFIG_SECTION_NAME);
+            boolean isTemplate = parser.sectionId()[0].equals(TemplateManager.CONFIG_SECTION_NAME[0]);
             long t1 = System.nanoTime();
             for (CachedConfig cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
@@ -420,16 +424,16 @@ public abstract class AbstractPackManager implements PackManager {
                                     parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
                                 }
                             } else {
-                                this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId() + "." + configEntry.getKey() + " - ");
+                                this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId()[0] + "." + configEntry.getKey() + " - ");
                             }
                         }
                     } catch (Exception e) {
-                        this.plugin.logger().warn(cached.filePath(), "Error loading " + parser.sectionId() + "." + key, e);
+                        this.plugin.logger().warn(cached.filePath(), "Error loading " + parser.sectionId()[0] + "." + key, e);
                     }
                 }
             }
             long t2 = System.nanoTime();
-            this.plugin.logger().info("Loaded " + parser.sectionId() + " in " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
+            this.plugin.logger().info("Loaded " + parser.sectionId()[0] + " in " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
         }
         this.cachedConfigs.clear();
     }
