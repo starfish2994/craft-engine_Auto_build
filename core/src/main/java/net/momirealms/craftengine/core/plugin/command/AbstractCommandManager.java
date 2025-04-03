@@ -75,7 +75,7 @@ public abstract class AbstractCommandManager<C> implements CraftEngineCommandMan
         injectExceptionHandler(CommandExecutionException.class, MinecraftExceptionHandler.createDefaultCommandExecutionHandler(), StandardCaptionKeys.EXCEPTION_UNEXPECTED);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void injectExceptionHandler(Class<? extends Throwable> type, MinecraftExceptionHandler.MessageFactory<C, ?> factory, Caption key) {
         getCommandManager().exceptionController().registerHandler(type, ctx -> {
             final @Nullable ComponentLike message = factory.message(captionFormatter, (ExceptionContext) ctx);

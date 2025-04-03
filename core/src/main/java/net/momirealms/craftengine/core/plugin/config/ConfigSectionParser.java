@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface ConfigSectionParser extends Comparable<ConfigSectionParser> {
 
-    String sectionId();
+    String[] sectionId();
 
     void parseSection(Pack pack, Path path, Key id, Map<String, Object> section);
 

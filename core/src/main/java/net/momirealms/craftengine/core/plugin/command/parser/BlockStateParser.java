@@ -13,6 +13,7 @@ import org.incendo.cloud.parser.ArgumentParseResult;
 import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
+import org.incendo.cloud.suggestion.Suggestion;
 
 public class BlockStateParser<C> implements ArgumentParser<C, ImmutableBlockState>, BlockingSuggestionProvider.Strings<C> {
 
@@ -36,9 +37,7 @@ public class BlockStateParser<C> implements ArgumentParser<C, ImmutableBlockStat
 
     @Override
     public @NonNull Iterable<@NonNull String> stringSuggestions(@NonNull CommandContext<C> commandContext, @NonNull CommandInput input) {
-        return CraftEngine.instance().blockManager().cachedSuggestions().stream().map(it -> {
-            return it.suggestion();
-        }).toList();
+        return CraftEngine.instance().blockManager().cachedSuggestions().stream().map(Suggestion::suggestion).toList();
     }
 
     public static final class BlockStateParseException extends ParserException {

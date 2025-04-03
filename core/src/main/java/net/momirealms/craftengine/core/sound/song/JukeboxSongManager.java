@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 
 public interface JukeboxSongManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "jukebox_songs";
+    String[] CONFIG_SECTION_NAME = new String[] {"jukebox_songs", "song", "songs", "jukebox", "jukebox_song"};
 
     @Override
     default int loadingSequence() {
@@ -13,7 +13,7 @@ public interface JukeboxSongManager extends Reloadable, ConfigSectionParser {
     }
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

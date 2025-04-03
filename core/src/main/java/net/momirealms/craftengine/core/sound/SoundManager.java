@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.util.Key;
 import java.util.Map;
 
 public interface SoundManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "sounds";
+    String[] CONFIG_SECTION_NAME = new String[] {"sounds", "sound"};
 
     void delayedLoad();
 
@@ -23,7 +23,7 @@ public interface SoundManager extends Reloadable, ConfigSectionParser {
     }
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 }

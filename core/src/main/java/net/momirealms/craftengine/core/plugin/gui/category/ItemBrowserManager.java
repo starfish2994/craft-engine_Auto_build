@@ -17,11 +17,11 @@ import java.util.TreeSet;
 import static java.util.Objects.requireNonNull;
 
 public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "categories";
+    String[] CONFIG_SECTION_NAME = new String[] {"categories", "category"};
     int MAX_RECIPE_DEPTH = 16;
     String GET_ITEM_PERMISSION = "craftengine.browser.get_item";
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

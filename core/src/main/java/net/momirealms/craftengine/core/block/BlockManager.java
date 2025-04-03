@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface BlockManager extends Reloadable, ModelGenerator, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "blocks";
+    String[] CONFIG_SECTION_NAME = new String[] {"blocks", "block"};
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

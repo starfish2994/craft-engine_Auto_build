@@ -17,9 +17,9 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "items";
+    String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

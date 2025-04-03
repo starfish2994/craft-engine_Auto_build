@@ -12,9 +12,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface RecipeManager<T> extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "recipes";
+    String[] CONFIG_SECTION_NAME = new String[] {"recipes", "recipe"};
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

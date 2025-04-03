@@ -11,13 +11,13 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public interface TemplateManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "templates";
+    String[] CONFIG_SECTION_NAME = new String[] {"templates", "template"};
     Pattern PATTERN = Pattern.compile("\\{[^{}]+}");
     String TEMPLATE = "template";
     String OVERRIDES = "overrides";
     String ARGUMENTS = "arguments";
 
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

@@ -38,7 +38,7 @@ public interface ClientLangManager extends Reloadable, ConfigSectionParser {
                     Collectors.mapping(split -> split[1], Collectors.toUnmodifiableList())
             ));
 
-    String CONFIG_SECTION_NAME = "lang";
+    String[] CONFIG_SECTION_NAME = new String[] {"lang", "language", "languages"};
 
     Map<String, I18NData> langData();
 
@@ -48,7 +48,7 @@ public interface ClientLangManager extends Reloadable, ConfigSectionParser {
     }
 
     @Override
-    default String sectionId() {
+    default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
 

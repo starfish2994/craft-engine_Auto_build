@@ -16,8 +16,10 @@ public interface PackManager extends Reloadable {
 
     boolean unregisterConfigSectionParser(String id);
 
-    default boolean unregisterConfigSectionParser(ConfigSectionParser parser) {
-        return this.unregisterConfigSectionParser(parser.sectionId());
+    default void unregisterConfigSectionParser(ConfigSectionParser parser) {
+        for (String id : parser.sectionId()) {
+            unregisterConfigSectionParser(id);
+        }
     }
 
     void delayedInit();
