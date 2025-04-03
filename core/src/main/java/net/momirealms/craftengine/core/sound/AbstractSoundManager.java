@@ -1,66 +1,48 @@
 package net.momirealms.craftengine.core.sound;
 
+import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.sound.song.JukeboxSongManager;
+import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 
 import java.nio.file.Path;
 import java.util.*;
 
 public abstract class AbstractSoundManager implements SoundManager {
     protected final CraftEngine plugin;
-    protected final Map<Key, SoundEvent> byId;
-    protected final Map<String, List<SoundEvent>> byNamespace;
-    protected final JukeboxSongManager jukeboxSongManager;
+    protected final Map<Key, SoundEvent> byId = new HashMap<>();
+    protected final Map<String, List<SoundEvent>> byNamespace = new HashMap<>();
+    protected final Map<Key, JukeboxSong> songs = new HashMap<>();
+    protected final SoundParser soundParser;
+    protected final SongParser songParser;
 
     public AbstractSoundManager(CraftEngine plugin) {
         this.plugin = plugin;
-        this.jukeboxSongManager = createJukeboxSongManager();
-        this.byId = new HashMap<>();
-        this.byNamespace = new HashMap<>();
+        this.soundParser = new SoundParser();
+        this.songParser = new SongParser();
     }
 
-    protected abstract JukeboxSongManager createJukeboxSongManager();
+    @Override
+    public ConfigSectionParser[] parsers() {
+        return new ConfigSectionParser[] { this.soundParser, this.songParser };
+    }
 
     @Override
     public void unload() {
         this.byId.clear();
         this.byNamespace.clear();
-        this.jukeboxSongManager.unload();
-    }
-
-    @Override
-    public void load() {
-        this.jukeboxSongManager.load();
     }
 
     @Override
     public void delayedLoad() {
-        this.jukeboxSongManager.delayedLoad();
-    }
-
-    @Override
-    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-        if (this.byId.containsKey(id)) {
-            this.plugin.logger().warn(path, "Sound " + id + " already exists");
-            return;
-        }
-        boolean replace = (boolean) section.getOrDefault("replace", false);
-        String subtitle = (String) section.get("subtitle");
-        List<?> soundList = (List<?>) section.get("sounds");
-        List<Sound> sounds = new ArrayList<>();
-        for (Object sound : soundList) {
-            if (sound instanceof String soundPath) {
-                sounds.add(Sound.path(soundPath));
-            } else if (sound instanceof Map<?,?> map) {
-                sounds.add(Sound.SoundFile.fromMap(MiscUtils.castToMap(map, false)));
-            }
-        }
-        SoundEvent event = new SoundEvent(id, replace, subtitle, sounds);
-        this.byId.put(id, event);
-        this.byNamespace.computeIfAbsent(id.namespace(), k -> new ArrayList<>()).add(event);
+        if (!VersionHelper.isVersionNewerThan1_21()) return;
+        this.registerSongs(this.songs);
     }
 
     @Override
@@ -72,8 +54,73 @@ public abstract class AbstractSoundManager implements SoundManager {
         return Collections.unmodifiableMap(this.byNamespace);
     }
 
-    @Override
-    public JukeboxSongManager jukeboxSongManager() {
-        return this.jukeboxSongManager;
+    protected abstract void registerSongs(Map<Key, JukeboxSong> songs);
+
+    public class SongParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"jukebox_songs", "song", "songs", "jukebox", "jukebox_song"};
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.JUKEBOX_SONG;
+        }
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (AbstractSoundManager.this.songs.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.jukebox_song.duplicated", path.toString(), id.toString());
+                return;
+            }
+            String sound = (String) section.get("sound");
+            if (sound == null) {
+                AbstractSoundManager.this.plugin.logger().warn(path, "No sound specified");
+                return;
+            }
+            Component description = AdventureHelper.miniMessage(section.getOrDefault("description", "").toString());
+            float length = MiscUtils.getAsFloat(section.get("length"));
+            int comparatorOutput = MiscUtils.getAsInt(section.getOrDefault("comparator-output", 15));
+            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, MiscUtils.getAsFloat(section.getOrDefault("range", 32f)));
+            AbstractSoundManager.this.songs.put(id, song);
+        }
+    }
+
+    public class SoundParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"sounds", "sound"};
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.SOUND;
+        }
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (AbstractSoundManager.this.byId.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.sound.duplicated", path.toString(), id.toString());
+                return;
+            }
+            boolean replace = (boolean) section.getOrDefault("replace", false);
+            String subtitle = (String) section.get("subtitle");
+            List<?> soundList = (List<?>) section.get("sounds");
+            List<Sound> sounds = new ArrayList<>();
+            for (Object sound : soundList) {
+                if (sound instanceof String soundPath) {
+                    sounds.add(Sound.path(soundPath));
+                } else if (sound instanceof Map<?,?> map) {
+                    sounds.add(Sound.SoundFile.fromMap(MiscUtils.castToMap(map, false)));
+                }
+            }
+            SoundEvent event = new SoundEvent(id, replace, subtitle, sounds);
+            AbstractSoundManager.this.byId.put(id, event);
+            AbstractSoundManager.this.byNamespace.computeIfAbsent(id.namespace(), k -> new ArrayList<>()).add(event);
+        }
     }
 }

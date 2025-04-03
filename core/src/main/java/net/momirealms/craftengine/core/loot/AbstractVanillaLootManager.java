@@ -2,7 +2,9 @@ package net.momirealms.craftengine.core.loot;
 
 import net.momirealms.craftengine.core.util.Key;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public abstract class AbstractVanillaLootManager implements VanillaLootManager {
     protected final Map<Integer, VanillaLoot> blockLoots = new HashMap<>();

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.sound.song;
+package net.momirealms.craftengine.core.sound;
 
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.Key;

@@ -11,7 +11,6 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.AbstractVanillaLootManager;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.loot.VanillaLoot;
-import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
@@ -19,7 +18,6 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.PreConditions;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -34,7 +32,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 // note: block listeners are in BlockEventListener to reduce performance cost
 public class BukkitVanillaLootManager extends AbstractVanillaLootManager implements Listener {
