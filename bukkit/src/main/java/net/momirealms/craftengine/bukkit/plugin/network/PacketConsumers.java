@@ -61,6 +61,11 @@ public class PacketConsumers {
                 mappingsMOD[entry.getKey()] = entry.getValue();
             }
         }
+        for (int i = 0; i < mappingsMOD.length; i++) {
+            if (BlockStateUtils.isVanillaBlock(i)) {
+                mappingsMOD[i] = remap(i);
+            }
+        }
         BLOCK_LIST = new IntIdentityList(registrySize);
         BIOME_LIST = new IntIdentityList(RegistryUtils.currentBiomeRegistrySize());
     }
@@ -70,8 +75,7 @@ public class PacketConsumers {
     }
 
     public static int remapMOD(int stateId) {
-        int modStateId = mappingsMOD[stateId];
-        return BlockStateUtils.isVanillaBlock(modStateId) ? remap(modStateId) : modStateId;
+        return mappingsMOD[stateId];
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
