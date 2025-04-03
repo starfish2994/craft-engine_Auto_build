@@ -10,6 +10,7 @@ public class CraftEngineReloadEvent extends Event {
     private final BukkitCraftEngine plugin;
 
     public CraftEngineReloadEvent(BukkitCraftEngine plugin) {
+        super(true);
         this.plugin = plugin;
     }
 

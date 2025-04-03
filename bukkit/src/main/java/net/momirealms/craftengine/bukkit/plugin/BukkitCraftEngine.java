@@ -200,8 +200,10 @@ public class BukkitCraftEngine extends CraftEngine {
     @Override
     public void reload() {
         super.reload();
-        CraftEngineReloadEvent event = new CraftEngineReloadEvent(this);
-        EventUtils.fireAndForget(event);
+        scheduler.async().execute(() -> {
+            CraftEngineReloadEvent event = new CraftEngineReloadEvent(this);
+            EventUtils.fireAndForget(event);
+        });
     }
 
     @Override
@@ -209,32 +211,6 @@ public class BukkitCraftEngine extends CraftEngine {
         if (ConfigManager.metrics()) {
             new Metrics(this.bootstrap(), 24333);
         }
-    }
-
-    @Override
-    protected void registerParsers() {
-        // register template parser
-        this.packManager.registerConfigSectionParser(this.templateManager);
-        // register font parser
-        this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
-        // register item parser
-        this.packManager.registerConfigSectionParser(this.itemManager);
-        // register furniture parser
-        this.packManager.registerConfigSectionParser(this.furnitureManager);
-        // register block parser
-        this.packManager.registerConfigSectionParser(this.blockManager);
-        // register recipe parser
-        this.packManager.registerConfigSectionParser(this.recipeManager);
-        // register category parser
-        this.packManager.registerConfigSectionParser(this.itemBrowserManager);
-        // register translation parser
-        this.packManager.registerConfigSectionParser(this.translationManager);
-        this.packManager.registerConfigSectionParser(this.translationManager.clientLangManager());
-        // register sound parser
-        this.packManager.registerConfigSectionParser(this.soundManager);
-        this.packManager.registerConfigSectionParser(this.soundManager.jukeboxSongManager());
-        // register vanilla loot parser
-        this.packManager.registerConfigSectionParser(this.vanillaLootManager);
     }
 
     @Override

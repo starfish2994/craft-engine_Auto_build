@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe;
 
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
-import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.Key;
@@ -9,35 +8,28 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
-public interface RecipeManager<T> extends Reloadable, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] {"recipes", "recipe"};
+public interface RecipeManager<T> extends Reloadable {
 
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
+    ConfigSectionParser parser();
 
     boolean isDataPackRecipe(Key key);
 
     boolean isCustomRecipe(Key key);
 
-    Optional<Recipe<T>> getRecipeById(Key id);
+    Optional<Recipe<T>> recipeById(Key id);
 
-    List<Recipe<T>> getRecipes(Key type);
+    List<Recipe<T>> recipesByType(Key type);
 
-    List<Recipe<T>> getRecipeByResult(Key result);
+    List<Recipe<T>> recipeByResult(Key result);
 
-    List<Recipe<T>> getRecipeByIngredient(Key ingredient);
+    List<Recipe<T>> recipeByIngredient(Key ingredient);
 
     @Nullable
-    Recipe<T> getRecipe(Key type, RecipeInput input);
+    Recipe<T> recipeByInput(Key type, RecipeInput input);
 
-    @Nullable Recipe<T> getRecipe(Key type, RecipeInput input, @Nullable Key lastRecipe);
+    @Nullable
+    Recipe<T> recipeByInput(Key type, RecipeInput input, @Nullable Key lastRecipe);
 
-    CompletableFuture<Void> asyncDelayedLoad();
-
-    default int loadingSequence() {
-        return LoadingSequence.RECIPE;
-    }
+    void runSyncTasks();
 }

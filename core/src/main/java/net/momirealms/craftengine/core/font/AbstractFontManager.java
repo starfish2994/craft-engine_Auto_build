@@ -68,7 +68,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     @Override
     public Collection<Font> fonts() {
-        return new ArrayList<>(this.fonts.values());
+        return Collections.unmodifiableCollection(this.fonts.values());
     }
 
     @Override

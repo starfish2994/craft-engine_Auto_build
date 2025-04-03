@@ -101,39 +101,43 @@ public abstract class CraftEngine implements Plugin {
     public void reload() {
         if (this.isReloading) return;
         this.isReloading = true;
-        try {
-            this.configManager.reload();
-            this.translationManager.reload();
-            this.templateManager.reload();
-            this.furnitureManager.reload();
-            this.fontManager.reload();
-            this.itemManager.reload();
-            this.soundManager.reload();
-            this.recipeManager.reload();
-            this.itemBrowserManager.reload();
-            this.blockManager.reload();
-            this.worldManager.reload();
-            this.vanillaLootManager.reload();
-            // load configs here
-            this.packManager.reload();
-            // load at last
-            this.guiManager.reload();
-            // delayed load
-            this.translationManager.delayedLoad();
-            this.blockManager.delayedLoad();
-            this.furnitureManager.delayedLoad();
-            this.itemBrowserManager.delayedLoad();
-            this.soundManager.delayedLoad();
-            this.fontManager.delayedLoad();
-            // reset debugger
-            if (ConfigManager.debug()) {
-                this.debugger = (s) -> logger.info("[Debug] " + s.get());
-            } else {
-                this.debugger = (s) -> {};
-            }
-        } finally {
-            this.recipeManager.asyncDelayedLoad().thenRun(() -> this.isReloading = false);
+        this.configManager.reload();
+        this.translationManager.reload();
+        this.templateManager.reload();
+        this.furnitureManager.reload();
+        this.fontManager.reload();
+        this.itemManager.reload();
+        this.soundManager.reload();
+        this.recipeManager.reload();
+        this.itemBrowserManager.reload();
+        this.blockManager.reload();
+        this.worldManager.reload();
+        this.vanillaLootManager.reload();
+        // load configs here
+        this.packManager.reload();
+        // load at last
+        this.guiManager.reload();
+        // delayed load
+        this.translationManager.delayedLoad();
+        this.blockManager.delayedLoad();
+        this.furnitureManager.delayedLoad();
+        this.itemBrowserManager.delayedLoad();
+        this.soundManager.delayedLoad();
+        this.fontManager.delayedLoad();
+        this.recipeManager.delayedLoad();
+        // reset debugger
+        if (ConfigManager.debug()) {
+            this.debugger = (s) -> logger.info("[Debug] " + s.get());
+        } else {
+            this.debugger = (s) -> {};
         }
+        scheduler().sync().run(() -> {
+            try {
+                this.recipeManager.runSyncTasks();
+            } finally {
+                this.isReloading = false;
+            }
+        });
     }
 
     @Override
@@ -181,7 +185,30 @@ public abstract class CraftEngine implements Plugin {
         ResourcePackHost.instance().disable();
     }
 
-    protected abstract void registerParsers();
+    protected void registerParsers() {
+        // register template parser
+        this.packManager.registerConfigSectionParser(this.templateManager);
+        // register font parser
+        this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
+        // register item parser
+        this.packManager.registerConfigSectionParser(this.itemManager);
+        // register furniture parser
+        this.packManager.registerConfigSectionParser(this.furnitureManager);
+        // register block parser
+        this.packManager.registerConfigSectionParser(this.blockManager);
+        // register recipe parser
+        this.packManager.registerConfigSectionParser(this.recipeManager.parser());
+        // register category parser
+        this.packManager.registerConfigSectionParser(this.itemBrowserManager);
+        // register translation parser
+        this.packManager.registerConfigSectionParser(this.translationManager);
+        this.packManager.registerConfigSectionParser(this.translationManager.clientLangManager());
+        // register sound parser
+        this.packManager.registerConfigSectionParser(this.soundManager);
+        this.packManager.registerConfigSectionParser(this.soundManager.jukeboxSongManager());
+        // register vanilla loot parser
+        this.packManager.registerConfigSectionParser(this.vanillaLootManager);
+    }
 
     protected abstract void delayedEnable();
 

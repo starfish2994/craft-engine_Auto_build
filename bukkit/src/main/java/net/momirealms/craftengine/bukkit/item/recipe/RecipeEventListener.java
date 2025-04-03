@@ -85,7 +85,7 @@ public class RecipeEventListener implements Listener {
                         recipeType = RecipeTypes.SMOKING;
                     }
 
-                    Recipe<ItemStack> ceRecipe = recipeManager.getRecipe(recipeType, input);
+                    Recipe<ItemStack> ceRecipe = recipeManager.recipeByInput(recipeType, input);
                     // The item is an ingredient, we should never consider it as fuel firstly
                     if (ceRecipe != null) return;
 
@@ -345,7 +345,7 @@ public class RecipeEventListener implements Listener {
         try {
             @SuppressWarnings("unchecked")
             Optional<Object> optionalMCRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor1.invoke(
-                    BukkitRecipeManager.minecraftRecipeManager(),
+                    BukkitRecipeManager.nmsRecipeManager(),
                     Reflections.instance$RecipeType$CAMPFIRE_COOKING,
                     Reflections.constructor$SingleRecipeInput.newInstance(Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack)),
                     FastNMS.INSTANCE.field$CraftWorld$ServerLevel(event.getPlayer().getWorld()),
@@ -360,7 +360,7 @@ public class RecipeEventListener implements Listener {
                 return;
             }
             SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
             if (ceRecipe == null) {
                 event.setCancelled(true);
             }
@@ -392,7 +392,7 @@ public class RecipeEventListener implements Listener {
         }
 
         SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setTotalCookTime(Integer.MAX_VALUE);
             return;
@@ -427,7 +427,7 @@ public class RecipeEventListener implements Listener {
         }
 
         SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setCancelled(true);
             return;
@@ -802,14 +802,14 @@ public class RecipeEventListener implements Listener {
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
         Key lastRecipe = serverPlayer.lastUsedRecipe();
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPELESS, input, lastRecipe);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPELESS, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.result(new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
             serverPlayer.setLastUsedRecipe(ceRecipe.id());
             correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }
-        ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input, lastRecipe);
+        ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPED, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.result(new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
             serverPlayer.setLastUsedRecipe(ceRecipe.id());
@@ -821,7 +821,7 @@ public class RecipeEventListener implements Listener {
     }
 
     private void correctCraftingRecipeUsed(CraftingInventory inventory, Recipe<ItemStack> recipe) {
-        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        Object holderOrRecipe = recipeManager.nmsRecipeHolderByRecipe(recipe);
         if (holderOrRecipe == null) {
             // it's a vanilla recipe but not injected
             return;
@@ -857,7 +857,7 @@ public class RecipeEventListener implements Listener {
                 getOptimizedIDItem(addition)
         );
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SMITHING_TRANSFORM, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SMITHING_TRANSFORM, input);
         if (ceRecipe == null) {
             event.setResult(null);
             return;
@@ -878,7 +878,7 @@ public class RecipeEventListener implements Listener {
     }
 
     private void correctSmithingRecipeUsed(SmithingInventory inventory, Recipe<ItemStack> recipe) {
-        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        Object holderOrRecipe = recipeManager.nmsRecipeHolderByRecipe(recipe);
         if (holderOrRecipe == null) {
             // it's a vanilla recipe but not injected
             return;

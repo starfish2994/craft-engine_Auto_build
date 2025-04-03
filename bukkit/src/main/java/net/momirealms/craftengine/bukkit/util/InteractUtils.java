@@ -79,14 +79,14 @@ public class InteractUtils {
         register(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
             if (!ConfigManager.enableRecipeSystem()) return false;
             Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().getRecipe(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
                     keyReference, item.getItem()
             ))) != null).isPresent();
         });
         register(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
             if (!ConfigManager.enableRecipeSystem()) return false;
             Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().getRecipe(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
                     keyReference, item.getItem()
             ))) != null).isPresent();
         });

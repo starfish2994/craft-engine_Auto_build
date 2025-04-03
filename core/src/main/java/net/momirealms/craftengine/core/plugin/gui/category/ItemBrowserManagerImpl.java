@@ -239,7 +239,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                         return;
                     }
                     if (LEFT_CLICK.contains(c.type())) {
-                        List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(itemId);
+                        List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(itemId);
                         player.playSound(Constants.SOUND_CLICK_BUTTON);
                         if (!inRecipes.isEmpty()) {
                             openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
@@ -247,7 +247,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                             openNoRecipePage(player, itemId, e.gui(), 0);
                         }
                     } else if (RIGHT_CLICK.contains(c.type())) {
-                        List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(itemId);
+                        List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(itemId);
                         player.playSound(Constants.SOUND_CLICK_BUTTON);
                         if (!inRecipes.isEmpty()) {
                             openRecipePage(c.clicker(), e.gui(), inRecipes, 0, 0, canOpenNoRecipePage);
@@ -288,7 +288,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 item.count(item.maxStackSize());
                 c.setItemOnCursor(item);
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(result);
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
                     openRecipePage(c.clicker(), e.gui(), inRecipes, 0, depth + 1, true);
@@ -377,7 +377,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -386,7 +386,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -460,7 +460,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -469,7 +469,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -493,7 +493,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -502,7 +502,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -526,7 +526,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -535,7 +535,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -584,7 +584,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -593,7 +593,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -620,7 +620,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -629,7 +629,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -717,7 +717,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -726,7 +726,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -759,7 +759,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -768,7 +768,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -862,7 +862,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 return;
             }
             if (LEFT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -871,7 +871,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     openNoRecipePage(player, result, e.gui(), 0);
                 }
             } else if (RIGHT_CLICK.contains(c.type())) {
-                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(result);
+                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(result);
                 if (inRecipes == recipes) return;
                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                 if (!inRecipes.isEmpty()) {
@@ -954,7 +954,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                     return;
                                 }
                                 if (LEFT_CLICK.contains(c.type())) {
-                                    List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                                    List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                                     if (inRecipes == recipes) return;
                                     player.playSound(Constants.SOUND_CLICK_BUTTON);
                                     if (!inRecipes.isEmpty()) {
@@ -963,7 +963,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                         openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                     }
                                 } else if (RIGHT_CLICK.contains(c.type())) {
-                                    List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                                    List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                                     if (inRecipes == recipes) return;
                                     player.playSound(Constants.SOUND_CLICK_BUTTON);
                                     if (!inRecipes.isEmpty()) {
@@ -997,7 +997,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                 return;
                             }
                             if (LEFT_CLICK.contains(c.type())) {
-                                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByResult(e.item().id());
+                                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByResult(e.item().id());
                                 if (inRecipes == recipes) return;
                                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                                 if (!inRecipes.isEmpty()) {
@@ -1006,7 +1006,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                                     openNoRecipePage(player, e.item().id(), e.gui(), 0);
                                 }
                             } else if (RIGHT_CLICK.contains(c.type())) {
-                                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().getRecipeByIngredient(e.item().id());
+                                List<Recipe<Object>> inRecipes = this.plugin.recipeManager().recipeByIngredient(e.item().id());
                                 if (inRecipes == recipes) return;
                                 player.playSound(Constants.SOUND_CLICK_BUTTON);
                                 if (!inRecipes.isEmpty()) {
