@@ -3033,6 +3033,32 @@ public class Reflections {
         }
     }
 
+    public static final Class<?> clazz$ClientboundSetEquipmentPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetEquipmentPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityEquipment")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundSetEquipmentPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundSetEquipmentPacket, int.class, List.class
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundEntityEventPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundEntityEventPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityStatus")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundEntityEventPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundEntityEventPacket, clazz$Entity, byte.class
+            )
+    );
+
     public static final Method method$Block$defaultBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$Block, clazz$BlockState

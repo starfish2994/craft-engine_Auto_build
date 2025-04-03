@@ -85,5 +85,7 @@ public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectio
 
     Collection<Suggestion> cachedSuggestions();
 
+    Collection<Suggestion> cachedTotemSuggestions();
+
     Object encodeJava(Key componentType, @Nullable Object component);
 }
