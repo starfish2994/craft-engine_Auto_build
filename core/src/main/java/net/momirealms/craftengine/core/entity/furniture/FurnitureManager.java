@@ -1,33 +1,40 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
-import net.momirealms.craftengine.core.pack.LoadingSequence;
+import net.momirealms.craftengine.core.entity.Entity;
 import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.World;
 import org.incendo.cloud.suggestion.Suggestion;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface FurnitureManager extends Reloadable, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] { "furniture" };
+public interface FurnitureManager extends Reloadable {
     String FURNITURE_ADMIN_NODE = "craftengine.furniture.admin";
+
+    ConfigSectionParser parser();
 
     void initSuggestions();
 
     Collection<Suggestion> cachedSuggestions();
 
-    @Override
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
+    Furniture place(CustomFurniture furniture, Vec3d vec3d, World world, AnchorType anchorType, boolean playSound);
 
-    @Override
-    default int loadingSequence() {
-        return LoadingSequence.FURNITURE;
-    }
-
-    Optional<CustomFurniture> getFurniture(Key id);
+    Optional<CustomFurniture> furnitureById(Key id);
 
     boolean isFurnitureRealEntity(int entityId);
+
+    @Nullable
+    Furniture loadedFurnitureByRealEntityId(int entityId);
+
+    @Nullable
+    default Furniture loadedFurnitureByRealEntity(Entity entity) {
+        return loadedFurnitureByRealEntityId(entity.entityID());
+    }
+
+    @Nullable
+    Furniture loadedFurnitureByEntityId(int entityId);
 }

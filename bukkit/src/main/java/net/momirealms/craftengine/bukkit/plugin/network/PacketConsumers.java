@@ -563,7 +563,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -622,7 +622,7 @@ public class PacketConsumers {
             } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
@@ -633,7 +633,7 @@ public class PacketConsumers {
             } else if (entityType == Reflections.instance$EntityType$SHULKER) {
                 // Cancel collider entity packet
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
@@ -694,7 +694,7 @@ public class PacketConsumers {
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;

@@ -192,7 +192,7 @@ public abstract class CraftEngine implements Plugin {
         // register item parser
         this.packManager.registerConfigSectionParser(this.itemManager);
         // register furniture parser
-        this.packManager.registerConfigSectionParser(this.furnitureManager);
+        this.packManager.registerConfigSectionParser(this.furnitureManager.parser());
         // register block parser
         this.packManager.registerConfigSectionParser(this.blockManager);
         // register recipe parser
