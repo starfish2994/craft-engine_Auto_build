@@ -132,7 +132,7 @@ public abstract class CraftEngine implements Plugin {
                 this.debugger = (s) -> {};
             }
         } finally {
-            this.recipeManager.delayedLoad().thenRun(() -> this.isReloading = false);
+            this.recipeManager.asyncDelayedLoad().thenRun(() -> this.isReloading = false);
         }
     }
 

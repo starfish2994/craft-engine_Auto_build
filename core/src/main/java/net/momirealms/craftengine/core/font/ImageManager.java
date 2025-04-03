@@ -24,10 +24,6 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
         return CONFIG_SECTION_NAME;
     }
 
-    void delayedLoad();
-
-    void delayedInit();
-
     default int loadingSequence() {
         return LoadingSequence.FONT;
     }

@@ -85,7 +85,5 @@ public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectio
 
     Collection<Suggestion> cachedSuggestions();
 
-    void delayedInit();
-
     Object encodeJava(Key componentType, @Nullable Object component);
 }

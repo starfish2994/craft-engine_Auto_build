@@ -35,9 +35,7 @@ public interface RecipeManager<T> extends Reloadable, ConfigSectionParser {
 
     @Nullable Recipe<T> getRecipe(Key type, RecipeInput input, @Nullable Key lastRecipe);
 
-    CompletableFuture<Void> delayedLoad();
-
-    void delayedInit();
+    CompletableFuture<Void> asyncDelayedLoad();
 
     default int loadingSequence() {
         return LoadingSequence.RECIPE;

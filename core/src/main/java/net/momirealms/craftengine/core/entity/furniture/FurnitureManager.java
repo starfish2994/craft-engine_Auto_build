@@ -13,13 +13,9 @@ public interface FurnitureManager extends Reloadable, ConfigSectionParser {
     String[] CONFIG_SECTION_NAME = new String[] { "furniture" };
     String FURNITURE_ADMIN_NODE = "craftengine.furniture.admin";
 
-    void delayedLoad();
-
     void initSuggestions();
 
     Collection<Suggestion> cachedSuggestions();
-
-    void delayedInit();
 
     @Override
     default String[] sectionId() {

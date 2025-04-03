@@ -420,7 +420,7 @@ public class BukkitRecipeManager implements RecipeManager<ItemStack> {
     }
 
     @Override
-    public CompletableFuture<Void> delayedLoad() {
+    public CompletableFuture<Void> asyncDelayedLoad() {
         if (!ConfigManager.enableRecipeSystem()) return CompletableFuture.completedFuture(null);
         return this.processVanillaRecipes().thenRun(() -> {
             try {

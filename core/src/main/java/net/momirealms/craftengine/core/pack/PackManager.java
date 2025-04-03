@@ -22,8 +22,6 @@ public interface PackManager extends Reloadable {
         }
     }
 
-    void delayedInit();
-
     void generateResourcePack();
 
     Path resourcePackPath();

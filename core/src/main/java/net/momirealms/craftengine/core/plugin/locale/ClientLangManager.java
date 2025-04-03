@@ -53,6 +53,4 @@ public interface ClientLangManager extends Reloadable, ConfigSectionParser {
     }
 
     void addTranslation(String langId, Map<String, String> translations);
-
-    void delayedLoad();
 }

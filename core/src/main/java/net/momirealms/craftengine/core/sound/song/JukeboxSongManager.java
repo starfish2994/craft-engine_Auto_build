@@ -16,6 +16,4 @@ public interface JukeboxSongManager extends Reloadable, ConfigSectionParser {
     default String[] sectionId() {
         return CONFIG_SECTION_NAME;
     }
-
-    void delayedLoad();
 }

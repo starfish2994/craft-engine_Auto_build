@@ -19,7 +19,5 @@ public interface VanillaLootManager extends ConfigSectionParser, Reloadable {
         return CONFIG_SECTION_NAME;
     }
 
-    void delayedInit();
-
     Optional<VanillaLoot> getBlockLoot(int blockState);
 }

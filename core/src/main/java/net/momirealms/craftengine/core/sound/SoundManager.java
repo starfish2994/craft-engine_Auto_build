@@ -11,8 +11,6 @@ import java.util.Map;
 public interface SoundManager extends Reloadable, ConfigSectionParser {
     String[] CONFIG_SECTION_NAME = new String[] {"sounds", "sound"};
 
-    void delayedLoad();
-
     Map<Key, SoundEvent> sounds();
 
     JukeboxSongManager jukeboxSongManager();

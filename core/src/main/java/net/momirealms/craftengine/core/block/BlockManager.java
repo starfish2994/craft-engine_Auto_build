@@ -20,6 +20,10 @@ public interface BlockManager extends Reloadable, ModelGenerator, ConfigSectionP
         return CONFIG_SECTION_NAME;
     }
 
+    default int loadingSequence() {
+        return LoadingSequence.BLOCK;
+    }
+
     Collection<ModelGeneration> modelsToGenerate();
 
     Map<Key, Map<String, JsonElement>> blockOverrides();
@@ -35,12 +39,4 @@ public interface BlockManager extends Reloadable, ModelGenerator, ConfigSectionP
     Map<Key, Key> soundMapper();
 
     void initSuggestions();
-
-    void delayedLoad();
-
-    void delayedInit();
-
-    default int loadingSequence() {
-        return LoadingSequence.BLOCK;
-    }
 }
