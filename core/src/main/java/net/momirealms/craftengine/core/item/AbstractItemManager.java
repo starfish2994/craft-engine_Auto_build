@@ -35,6 +35,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final Set<EquipmentGeneration> equipmentsToGenerate;
     // Cached command suggestions
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
+    protected final List<Suggestion> cachedTotemSuggestions = new ArrayList<>();
 
     protected void registerDataFunction(Function<Object, ItemModifier<I>> function, String... alias) {
         for (String a : alias) {
@@ -65,6 +66,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         super.clearModelsToGenerate();
         this.customItems.clear();
         this.cachedSuggestions.clear();
+        this.cachedTotemSuggestions.clear();
         this.legacyOverrides.clear();
         this.modernOverrides.clear();
         this.customItemTags.clear();
@@ -118,6 +120,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     @Override
     public Collection<Suggestion> cachedSuggestions() {
         return Collections.unmodifiableCollection(this.cachedSuggestions);
+    }
+
+    @Override
+    public Collection<Suggestion> cachedTotemSuggestions() {
+        return Collections.unmodifiableCollection(this.cachedTotemSuggestions);
     }
 
     @Override

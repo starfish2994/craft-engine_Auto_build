@@ -256,6 +256,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         CustomItem<ItemStack> customItem = itemBuilder.build();
         this.customItems.put(id, customItem);
         this.cachedSuggestions.add(Suggestion.suggestion(id.toString()));
+        if (material == Material.TOTEM_OF_UNDYING)
+            this.cachedTotemSuggestions.add(Suggestion.suggestion(id.toString()));
 
         // post process
         // register tags

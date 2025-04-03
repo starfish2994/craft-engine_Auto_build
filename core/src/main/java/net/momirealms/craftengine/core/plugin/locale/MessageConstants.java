@@ -20,4 +20,5 @@ public interface MessageConstants {
     TranslatableComponent.Builder COMMAND_SEARCH_RECIPE_NO_ITEM = Component.translatable().key("command.search_recipe.no_item");
     TranslatableComponent.Builder COMMAND_SEARCH_USAGE_NOT_FOUND = Component.translatable().key("command.search_usage.not_found");
     TranslatableComponent.Builder COMMAND_SEARCH_USAGE_NO_ITEM = Component.translatable().key("command.search_usage.no_item");
+    TranslatableComponent.Builder COMMAND_TOTEM_NOT_TOTEM = Component.translatable().key("command.totem.not_totem");
 }
