@@ -40,6 +40,11 @@ public class TemplateManagerImpl implements TemplateManager {
         }
 
         @Override
+        public boolean isTemplate() {
+            return true;
+        }
+
+        @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             addTemplate(pack, path, id, section);
         }
