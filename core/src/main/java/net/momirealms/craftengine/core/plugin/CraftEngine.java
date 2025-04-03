@@ -190,7 +190,7 @@ public abstract class CraftEngine implements Plugin {
         // register font parser
         this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
         // register item parser
-        this.packManager.registerConfigSectionParser(this.itemManager);
+        this.packManager.registerConfigSectionParser(this.itemManager.parser());
         // register furniture parser
         this.packManager.registerConfigSectionParser(this.furnitureManager.parser());
         // register block parser

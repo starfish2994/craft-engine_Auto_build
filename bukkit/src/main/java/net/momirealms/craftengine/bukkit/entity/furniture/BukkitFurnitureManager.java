@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -24,7 +25,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataType;
-import org.incendo.cloud.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -103,12 +103,18 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         @SuppressWarnings("unchecked")
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (byId.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.furniture.duplicated", path.toString(), id.toString());
+                return;
+            }
+
             Map<String, Object> lootMap = MiscUtils.castToMap(section.get("loot"), true);
             Map<String, Object> settingsMap = MiscUtils.castToMap(section.get("settings"), true);
             Map<String, Object> placementMap = MiscUtils.castToMap(section.get("placement"), true);
             EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
             if (placementMap == null) {
-                throw new IllegalArgumentException("Missing required parameter 'placement' for furniture " + id);
+                TranslationManager.instance().log("warning.config.furniture.lack_placement", path.toString(), id.toString());
+                return;
             }
 
             for (Map.Entry<String, Object> entry : placementMap.entrySet()) {
@@ -122,7 +128,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> element : elementConfigs) {
                     String key = (String) element.get("item");
                     if (key == null) {
-                        throw new IllegalArgumentException("Missing required parameter 'item' for furniture " + id);
+                        TranslationManager.instance().log("warning.config.furniture.element.lack_item", path.toString(), id.toString());
+                        return;
                     }
                     ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                     Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));

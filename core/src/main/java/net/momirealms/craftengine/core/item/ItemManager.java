@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
-import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
@@ -16,12 +15,9 @@ import org.incendo.cloud.suggestion.Suggestion;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
+public interface ItemManager<T> extends Reloadable, ModelGenerator {
 
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
+    ConfigSectionParser parser();
 
     Map<Key, TreeSet<LegacyOverridesModel>> legacyItemOverrides();
 
@@ -78,10 +74,6 @@ public interface ItemManager<T> extends Reloadable, ModelGenerator, ConfigSectio
     int fuelTime(T itemStack);
 
     int fuelTime(Key id);
-
-    default int loadingSequence() {
-        return LoadingSequence.ITEM;
-    }
 
     Collection<Suggestion> cachedSuggestions();
 
