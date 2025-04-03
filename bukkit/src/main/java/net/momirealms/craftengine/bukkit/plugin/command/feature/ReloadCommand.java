@@ -58,15 +58,17 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                     } else if (argument == ReloadArgument.ALL) {
                         plugin().scheduler().executeAsync(() -> {
                             plugin().reload((a, b) -> {
-                                try {
-                                    long time1 = System.currentTimeMillis();
-                                    plugin().packManager().generateResourcePack();
-                                    long time2 = System.currentTimeMillis();
-                                    handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS, Component.text(a + b + time2 - time1), Component.text(a), Component.text(b), Component.text(time2 - time1));
-                                } catch (Exception e) {
-                                    handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_FAILURE);
-                                    plugin().logger().warn("Failed to generate resource pack", e);
-                                }
+                                plugin().scheduler().async().execute(() -> {
+                                    try {
+                                        long time1 = System.currentTimeMillis();
+                                        plugin().packManager().generateResourcePack();
+                                        long time2 = System.currentTimeMillis();
+                                        handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS, Component.text(a + b + time2 - time1), Component.text(a), Component.text(b), Component.text(time2 - time1));
+                                    } catch (Exception e) {
+                                        handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_FAILURE);
+                                        plugin().logger().warn("Failed to generate resource pack", e);
+                                    }
+                                });
                             });
                         });
                     }

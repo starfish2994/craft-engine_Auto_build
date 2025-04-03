@@ -412,7 +412,7 @@ public abstract class AbstractPackManager implements PackManager {
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                         if (parser.isTemplate()) {
-                            ((TemplateManager) parser).addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                            this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
                         } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> configSection1 = castToMap(configSection0, false);
