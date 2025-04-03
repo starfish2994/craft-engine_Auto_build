@@ -19,10 +19,13 @@ import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.properties.Properties;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -45,6 +48,7 @@ import java.util.*;
 public class BukkitBlockManager extends AbstractBlockManager {
     private static BukkitBlockManager instance;
     private final BukkitCraftEngine plugin;
+    private final BlockParser blockParser;
 
     // A temporary map used to detect whether the same block state corresponds to multiple models.
     private final Map<Integer, Key> tempRegistryIdConflictMap = new HashMap<>();
@@ -57,7 +61,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private int customBlockCount;
 
     // CraftEngine objects
-    private final Map<Key, CustomBlock> id2CraftEngineBlocks = new HashMap<>();
+    private final Map<Key, CustomBlock> byId = new HashMap<>();
     private final ImmutableBlockState[] stateId2ImmutableBlockStates;
 
     // Minecraft objects
@@ -96,6 +100,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
         this.plugin = plugin;
+        this.blockParser = new BlockParser();
         this.initVanillaRegistry();
         this.loadMappingsAndAdditionalBlocks();
         if (plugin.hasMod() && plugin.requiresRestart()) {
@@ -150,7 +155,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         super.clearModelsToGenerate();
         this.clearCache();
         this.appearanceToRealState.clear();
-        this.id2CraftEngineBlocks.clear();
+        this.byId.clear();
         this.cachedSuggestions.clear();
         this.blockStateOverrides.clear();
         this.modBlockStates.clear();
@@ -222,18 +227,23 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Override
+    public ConfigSectionParser parser() {
+        return this.blockParser;
+    }
+
+    @Override
     public Map<Key, Map<String, JsonElement>> blockOverrides() {
         return Collections.unmodifiableMap(this.blockStateOverrides);
     }
 
     @Override
     public Map<Key, CustomBlock> blocks() {
-        return Collections.unmodifiableMap(this.id2CraftEngineBlocks);
+        return Collections.unmodifiableMap(this.byId);
     }
 
     @Override
     public Optional<CustomBlock> getBlock(Key key) {
-        return Optional.ofNullable(this.id2CraftEngineBlocks.get(key));
+        return Optional.ofNullable(this.byId.get(key));
     }
 
     @Override
@@ -246,7 +256,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.cachedSuggestions.clear();
         this.namespacesInUse.clear();
         Set<String> states = new HashSet<>();
-        for (CustomBlock block : this.id2CraftEngineBlocks.values()) {
+        for (CustomBlock block : this.byId.values()) {
             states.add(block.id().toString());
             this.namespacesInUse.add(block.id().namespace());
             for (ImmutableBlockState state : block.variantProvider().states()) {
@@ -368,100 +378,134 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    @Override
-    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-        // read block settings
-        BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
-        // read loot table
-        LootTable<ItemStack> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
-        // read states
-        Map<String, Property<?>> properties;
-        Map<String, Integer> appearances;
-        Map<String, VariantState> variants;
-        Map<String, Object> stateSection = MiscUtils.castToMap(section.get("state"), true);
-        if (stateSection != null) {
-            properties = Map.of();
-            int internalId = MiscUtils.getAsInt(stateSection.getOrDefault("id", -1));
-            if (PreConditions.runIfTrue(internalId < 0, () -> plugin.logger().warn(path, "No state id configured for block " + id))) return;
-            Pair<Key, Integer> pair = parseAppearanceSection(path, stateSection, id);
-            if (pair == null) return;
-            appearances = Map.of("default", pair.right());
-            Key internalBlockId = Key.of(CraftEngine.NAMESPACE, pair.left().value() + "_" + internalId);
-            int internalBlockRegistryId = MiscUtils.getAsInt(this.internalId2StateId.getOrDefault(internalBlockId, -1));
-            if (internalBlockRegistryId == -1) {
-                plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(this.registeredRealBlockSlots.get(pair.left()))-1) +
-                        ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
-                return;
-            }
-            variants = Map.of("", new VariantState("default", settings, internalBlockRegistryId));
-        } else {
-            Map<String, Object> statesSection = MiscUtils.castToMap(section.get("states"), true);
-            if (statesSection == null) {
-                plugin.logger().warn(path, "No states configured for block " + id);
-                return;
-            }
-            Map<String, Object> propertySection = MiscUtils.castToMap(statesSection.get("properties"), true);
-            if (PreConditions.isNull(propertySection, () -> plugin.logger().warn(path, "No properties configured for block " + id))) return;
-            properties = parseProperties(path, propertySection);
-            Map<String, Object> appearancesSection = MiscUtils.castToMap(statesSection.get("appearances"), true);
-            if (PreConditions.isNull(appearancesSection, () -> plugin.logger().warn(path, "No appearances configured for block " + id))) return;
-            appearances = new HashMap<>();
-            Map<String, Key> tempTypeMap = new HashMap<>();
-            for (Map.Entry<String, Object> appearanceEntry : appearancesSection.entrySet()) {
-                if (appearanceEntry.getValue() instanceof Map<?, ?> appearanceSection) {
-                    Pair<Key, Integer> pair = parseAppearanceSection(path, MiscUtils.castToMap(appearanceSection, false), id);
-                    if (pair == null) return;
-                    appearances.put(appearanceEntry.getKey(), pair.right());
-                    tempTypeMap.put(appearanceEntry.getKey(), pair.left());
-                }
-            }
-            Map<String, Object> variantsSection = MiscUtils.castToMap(statesSection.get("variants"), true);
-            if (PreConditions.isNull(variantsSection, () -> plugin.logger().warn(path, "No variants configured for block " + id))) return;
-            variants = new HashMap<>();
-            for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
-                if (variantEntry.getValue() instanceof Map<?, ?> variantSection0) {
-                    Map<String, Object> variantSection = MiscUtils.castToMap(variantSection0, false);
-                    String variantName = variantEntry.getKey();
-                    String appearance = (String) variantSection.get("appearance");
-                    if (appearance == null) {
-                        plugin.logger().warn(path, "No appearance configured for variant " + variantName);
-                        return;
-                    }
-                    if (!appearances.containsKey(appearance)) {
-                        plugin.logger().warn(path, appearance + " is not a valid appearance for block " + id);
-                        return;
-                    }
-                    int internalId = MiscUtils.getAsInt(variantSection.getOrDefault("id", -1));
-                    Key baseBlock = tempTypeMap.get(appearance);
-                    Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
-                    int internalBlockRegistryId = MiscUtils.getAsInt(this.internalId2StateId.getOrDefault(internalBlockId, -1));
-                    if (internalBlockRegistryId == -1) {
-                        plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(this.registeredRealBlockSlots.getOrDefault(baseBlock, 1))-1) +
-                                ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
-                        return;
-                    }
-                    Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
-                    variants.put(variantName, new VariantState(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
-                }
-            }
+    public class BlockParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"blocks", "block"};
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
         }
-        // create or get block holder
-        Holder.Reference<CustomBlock> holder = BuiltInRegistries.BLOCK.get(id).orElseGet(() ->
-                ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).registerForHolder(new ResourceKey<>(BuiltInRegistries.BLOCK.key().location(), id)));
-        // create block
-        Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
 
-        BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.BLOCK;
+        }
 
-        // bind appearance
-        bindAppearance(block);
-        this.id2CraftEngineBlocks.put(id, block);
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (byId.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.block.duplicated", path.toString(), id.toString());
+                return;
+            }
 
-        // generate mod assets
-        if (ConfigManager.generateModAssets()) {
-            for (ImmutableBlockState state : block.variantProvider().states()) {
-                Key realBlockId = BlockStateUtils.getBlockOwnerIdFromState(state.customBlockState());
-                this.modBlockStates.put(realBlockId, this.tempVanillaBlockStateModels.get(state.vanillaBlockState().registryId()));
+            // read block settings
+            BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
+            // read loot table
+            LootTable<ItemStack> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
+            // read states
+            Map<String, Property<?>> properties;
+            Map<String, Integer> appearances;
+            Map<String, VariantState> variants;
+            Map<String, Object> stateSection = MiscUtils.castToMap(section.get("state"), true);
+            if (stateSection != null) {
+                properties = Map.of();
+                int internalId = MiscUtils.getAsInt(stateSection.getOrDefault("id", -1));
+                if (internalId < 0) {
+                    TranslationManager.instance().log("warning.config.block.lack_real_id", path.toString(), id.toString());
+                    return;
+                }
+                Pair<Key, Integer> pair = parseAppearanceSection(path, id, stateSection);
+                if (pair == null) return;
+                appearances = Map.of("default", pair.right());
+                Key internalBlockId = Key.of(CraftEngine.NAMESPACE, pair.left().value() + "_" + internalId);
+                int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
+                if (internalBlockRegistryId == -1) {
+                    plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1) +
+                            ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
+                    return;
+                }
+                variants = Map.of("", new VariantState("default", settings, internalBlockRegistryId));
+            } else {
+                Map<String, Object> statesSection = MiscUtils.castToMap(section.get("states"), true);
+                if (statesSection == null) {
+                    TranslationManager.instance().log("warning.config.block.lack_state", path.toString(), id.toString());
+                    return;
+                }
+                Map<String, Object> propertySection = MiscUtils.castToMap(statesSection.get("properties"), true);
+                if (propertySection == null) {
+                    TranslationManager.instance().log("warning.config.block.state.lack_properties", path.toString(), id.toString());
+                    return;
+                }
+                properties = parseProperties(path, propertySection);
+                Map<String, Object> appearancesSection = MiscUtils.castToMap(statesSection.get("appearances"), true);
+                if (appearancesSection == null) {
+                    TranslationManager.instance().log("warning.config.block.state.lack_appearances", path.toString(), id.toString());
+                    return;
+                }
+
+                appearances = new HashMap<>();
+                Map<String, Key> tempTypeMap = new HashMap<>();
+                for (Map.Entry<String, Object> appearanceEntry : appearancesSection.entrySet()) {
+                    if (appearanceEntry.getValue() instanceof Map<?, ?> appearanceSection) {
+                        Pair<Key, Integer> pair = parseAppearanceSection(path, id, MiscUtils.castToMap(appearanceSection, false));
+                        if (pair == null) return;
+                        appearances.put(appearanceEntry.getKey(), pair.right());
+                        tempTypeMap.put(appearanceEntry.getKey(), pair.left());
+                    }
+                }
+
+                Map<String, Object> variantsSection = MiscUtils.castToMap(statesSection.get("variants"), true);
+                if (variantsSection == null) {
+                    TranslationManager.instance().log("warning.config.block.state.lack_variants", path.toString(), id.toString());
+                    return;
+                }
+
+                variants = new HashMap<>();
+                for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
+                    if (variantEntry.getValue() instanceof Map<?, ?> variantSection0) {
+                        Map<String, Object> variantSection = MiscUtils.castToMap(variantSection0, false);
+                        String variantName = variantEntry.getKey();
+                        String appearance = (String) variantSection.get("appearance");
+                        if (appearance == null) {
+                            TranslationManager.instance().log("warning.config.block.state.variant.lack_appearance", path.toString(), id.toString(), variantName);
+                            return;
+                        }
+                        if (!appearances.containsKey(appearance)) {
+                            TranslationManager.instance().log("warning.config.block.state.variant.invalid_appearance", path.toString(), id.toString(), variantName, appearance);
+                            return;
+                        }
+                        int internalId = MiscUtils.getAsInt(variantSection.getOrDefault("id", -1));
+                        Key baseBlock = tempTypeMap.get(appearance);
+                        Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
+                        int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
+                        if (internalBlockRegistryId == -1) {
+                            plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1))-1) +
+                                    ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
+                            return;
+                        }
+                        Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
+                        variants.put(variantName, new VariantState(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
+                    }
+                }
+            }
+            // create or get block holder
+            Holder.Reference<CustomBlock> holder = BuiltInRegistries.BLOCK.get(id).orElseGet(() ->
+                    ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).registerForHolder(new ResourceKey<>(BuiltInRegistries.BLOCK.key().location(), id)));
+            // create block
+            Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
+
+            BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+
+            // bind appearance
+            bindAppearance(block);
+            byId.put(id, block);
+
+            // generate mod assets
+            if (ConfigManager.generateModAssets()) {
+                for (ImmutableBlockState state : block.variantProvider().states()) {
+                    Key realBlockId = BlockStateUtils.getBlockOwnerIdFromState(state.customBlockState());
+                    modBlockStates.put(realBlockId, tempVanillaBlockStateModels.get(state.vanillaBlockState().registryId()));
+                }
             }
         }
     }
@@ -493,10 +537,13 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Nullable
-    private Pair<Key, Integer> parseAppearanceSection(Path path, Map<String, Object> section, Key id) {
+    private Pair<Key, Integer> parseAppearanceSection(Path path, Key id, Map<String, Object> section) {
         String vanillaStateString = (String) section.get("state");
-        if (PreConditions.isNull(vanillaStateString,
-                () -> this.plugin.logger().warn(path, "No block state found for: " + id))) return null;
+        if (vanillaStateString == null) {
+            TranslationManager.instance().log("warning.config.block.state.lack_state", path.toString(), id.toString());
+            return null;
+        }
+
         int vanillaStateRegistryId;
         try {
             vanillaStateRegistryId = parseVanillaStateRegistryId(vanillaStateString);

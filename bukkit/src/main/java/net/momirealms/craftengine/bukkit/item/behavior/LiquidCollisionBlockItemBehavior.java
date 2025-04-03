@@ -67,7 +67,7 @@ public class LiquidCollisionBlockItemBehavior extends BlockItemBehavior {
             }
             int offset = MiscUtils.getAsInt(arguments.getOrDefault("y-offset", 1));
             if (id instanceof Map<?, ?> map) {
-                BukkitBlockManager.instance().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
                 return new LiquidCollisionBlockItemBehavior(key, offset);
             } else {
                 return new LiquidCollisionBlockItemBehavior(Key.of(id.toString()), offset);

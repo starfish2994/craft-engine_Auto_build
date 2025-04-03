@@ -13,16 +13,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-public interface BlockManager extends Reloadable, ModelGenerator, ConfigSectionParser {
-    String[] CONFIG_SECTION_NAME = new String[] {"blocks", "block"};
+public interface BlockManager extends Reloadable, ModelGenerator {
 
-    default String[] sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
-
-    default int loadingSequence() {
-        return LoadingSequence.BLOCK;
-    }
+    ConfigSectionParser parser();
 
     Collection<ModelGeneration> modelsToGenerate();
 

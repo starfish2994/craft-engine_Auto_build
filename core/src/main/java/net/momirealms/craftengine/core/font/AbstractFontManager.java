@@ -136,6 +136,11 @@ public abstract class AbstractFontManager implements FontManager {
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (images.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.image.duplicated", path.toString(), id.toString());
+                return;
+            }
+
             Object heightObj = section.get("height");
             if (heightObj == null) {
                 TranslationManager.instance().log("warning.config.image.lack_height", path.toString(), id.toString());

@@ -34,6 +34,8 @@ import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -98,7 +100,12 @@ public abstract class CraftEngine implements Plugin {
 
     @Override
     public void reload() {
+        reload((a, b) -> {});
+    }
+
+    public void reload(BiConsumer<Long, Long> time) {
         if (this.isReloading) return;
+        long time1 = System.currentTimeMillis();
         this.isReloading = true;
         this.configManager.reload();
         // reset debugger
@@ -130,9 +137,12 @@ public abstract class CraftEngine implements Plugin {
         this.soundManager.delayedLoad();
         this.fontManager.delayedLoad();
         this.recipeManager.delayedLoad();
+        long time2 = System.currentTimeMillis();
         scheduler().sync().run(() -> {
             try {
                 this.recipeManager.runSyncTasks();
+                long time3 = System.currentTimeMillis();
+                time.accept(time2 - time1, time3 - time2);
             } finally {
                 this.isReloading = false;
             }
@@ -194,7 +204,7 @@ public abstract class CraftEngine implements Plugin {
         // register furniture parser
         this.packManager.registerConfigSectionParser(this.furnitureManager.parser());
         // register block parser
-        this.packManager.registerConfigSectionParser(this.blockManager);
+        this.packManager.registerConfigSectionParser(this.blockManager.parser());
         // register recipe parser
         this.packManager.registerConfigSectionParser(this.recipeManager.parser());
         // register category parser
