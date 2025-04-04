@@ -40,7 +40,6 @@ public abstract class AbstractModelGenerator implements ModelGenerator {
         if (!ResourceLocation.isValid(model.parentModelPath())) {
             TranslationManager.instance().log("warning.config.model.generation.parent.invalid_resource_location", path.toString(), id.toString(), model.parentModelPath());
         }
-
         for (Map.Entry<String, String> texture : model.texturesOverride().entrySet()) {
             if (!ResourceLocation.isValid(texture.getValue())) {
                 TranslationManager.instance().log("warning.config.model.generation.texture.invalid_resource_location", path.toString(), id.toString(), texture.getKey(), texture.getValue());

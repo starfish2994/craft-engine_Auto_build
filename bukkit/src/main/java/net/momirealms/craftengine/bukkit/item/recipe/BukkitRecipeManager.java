@@ -297,6 +297,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @Override
     public void unload() {
+        if (!Config.enableRecipeSystem()) return;
         super.unload();
         try {
             if (VersionHelper.isVersionNewerThan1_21_2()) {
@@ -310,6 +311,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @Override
     public void delayedLoad() {
+        if (!Config.enableRecipeSystem()) return;
         this.injectDataPackRecipes();
     }
 
@@ -368,12 +370,23 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             for (Object pack : selected) {
                 packResources.add(Reflections.method$Pack$open.invoke(pack));
             }
+
+            boolean hasDisabledAny = !Config.disabledVanillaRecipes().isEmpty();
             try (AutoCloseable resourceManager = (AutoCloseable) Reflections.constructor$MultiPackResourceManager.newInstance(Reflections.instance$PackType$SERVER_DATA, packResources)) {
                 Map<Object, Object> scannedResources = (Map<Object, Object>) Reflections.method$FileToIdConverter$listMatchingResources.invoke(fileToIdConverter, resourceManager);
                 for (Map.Entry<Object, Object> entry : scannedResources.entrySet()) {
                     Key id = extractKeyFromResourceLocation(entry.getKey().toString());
-                    // Maybe it's unregistered by other plugins
-                    if (Bukkit.getRecipe(new NamespacedKey(id.namespace(), id.value())) == null) {
+                    // now CraftEngine takes over everything
+//                    // Maybe it's unregistered by other plugins
+//                    if (Bukkit.getRecipe(new NamespacedKey(id.namespace(), id.value())) == null) {
+//                        continue;
+//                    }
+                    if (Config.disableAllVanillaRecipes()) {
+                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id));
+                        continue;
+                    }
+                    if (hasDisabledAny && Config.disabledVanillaRecipes().contains(id)) {
+                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id));
                         continue;
                     }
                     markAsDataPackRecipe(id);
@@ -423,6 +436,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @Override
     public void runDelayedSyncTasks() {
+        if (!Config.enableRecipeSystem()) return;
         try {
             // run delayed tasks
             for (Runnable r : this.delayedTasksOnMainThread) {
