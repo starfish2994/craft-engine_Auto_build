@@ -349,7 +349,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // Parse models
                 ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(generation);
+                    prepareModelGeneration(path, id, generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {
@@ -369,7 +369,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // use components
                 ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(generation);
+                    prepareModelGeneration(path, id, generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {

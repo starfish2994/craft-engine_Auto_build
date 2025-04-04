@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
+import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -367,7 +368,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                     return;
                 }
 
-                Pair<Key, Integer> pair = parseAppearanceSection(path, id, stateSection);
+                Pair<Key, Integer> pair = parseAppearanceSection(pack, path, id, stateSection);
                 if (pair == null) return;
 
                 appearances = Map.of("default", pair.right());
@@ -407,7 +408,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 Map<String, Key> tempTypeMap = new HashMap<>();
                 for (Map.Entry<String, Object> appearanceEntry : appearancesSection.entrySet()) {
                     if (appearanceEntry.getValue() instanceof Map<?, ?> appearanceSection) {
-                        Pair<Key, Integer> pair = parseAppearanceSection(path, id, MiscUtils.castToMap(appearanceSection, false));
+                        Pair<Key, Integer> pair = parseAppearanceSection(pack, path, id, MiscUtils.castToMap(appearanceSection, false));
                         if (pair == null) return;
                         appearances.put(appearanceEntry.getKey(), pair.right());
                         tempTypeMap.put(appearanceEntry.getKey(), pair.left());
@@ -463,7 +464,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             for (ImmutableBlockState state : block.variantProvider().states()) {
                 ImmutableBlockState previous = stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()];
                 if (previous != null && !previous.isEmpty()) {
-                    TranslationManager.instance().log("warning.config.block.bind_real_state", path.toString(), id.toString(), state.toString(), previous.toString());
+                    TranslationManager.instance().log("warning.config.block.state.bind_real_state", path.toString(), id.toString(), state.toString(), previous.toString());
                     continue;
                 }
                 stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()] = state;
@@ -500,7 +501,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Nullable
-    private Pair<Key, Integer> parseAppearanceSection(Path path, Key id, Map<String, Object> section) {
+    private Pair<Key, Integer> parseAppearanceSection(Pack pack, Path path, Key id, Map<String, Object> section) {
         // require state non null
         String vanillaStateString = (String) section.get("state");
         if (vanillaStateString == null) {
@@ -538,11 +539,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
         List<JsonObject> variants = new ArrayList<>();
         if (models instanceof Map<?, ?> singleModelSection) {
-            loadVariantModel(variants, MiscUtils.castToMap(singleModelSection, false));
+            loadVariantModel(pack, path, id, variants, MiscUtils.castToMap(singleModelSection, false));
         } else if (models instanceof List<?> modelList) {
             for (Object model : modelList) {
                 if (model instanceof Map<?,?> singleModelMap) {
-                    loadVariantModel(variants, MiscUtils.castToMap(singleModelMap, false));
+                    loadVariantModel(pack, path, id, variants, MiscUtils.castToMap(singleModelMap, false));
                 }
             }
         }
@@ -567,9 +568,17 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return Pair.of(block, vanillaStateRegistryId);
     }
 
-    private void loadVariantModel(List<JsonObject> variants, Map<String, Object> singleModelMap) {
+    private void loadVariantModel(Pack pack, Path path, Key id, List<JsonObject> variants, Map<String, Object> singleModelMap) {
         JsonObject json = new JsonObject();
         String modelPath = (String) singleModelMap.get("path");
+        if (modelPath == null) {
+            TranslationManager.instance().log("warning.config.block.state.model.lack_path", path.toString(), id.toString());
+            return;
+        }
+        if (!ResourceLocation.isValid(modelPath)) {
+            TranslationManager.instance().log("warning.config.block.state.model.invalid_resource_location", path.toString(), id.toString(), modelPath);
+            return;
+        }
         json.addProperty("model", modelPath);
         if (singleModelMap.containsKey("x")) json.addProperty("x", MiscUtils.getAsInt(singleModelMap.get("x")));
         if (singleModelMap.containsKey("y")) json.addProperty("y", MiscUtils.getAsInt(singleModelMap.get("y")));
@@ -577,7 +586,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (singleModelMap.containsKey("weight")) json.addProperty("weight", MiscUtils.getAsInt(singleModelMap.get("weight")));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
-            prepareModelGeneration(new ModelGeneration(Key.of(modelPath), generationMap));
+            prepareModelGeneration(path, id, new ModelGeneration(Key.of(modelPath), generationMap));
         }
         variants.add(json);
     }

@@ -46,7 +46,7 @@ public class BukkitCommandManager extends AbstractCommandManager<CommandSender> 
                 new DebugSetBlockCommand(this, plugin),
                 new DebugSpawnFurnitureCommand(this, plugin),
                 new DebugTargetBlockCommand(this, plugin),
-                new TotemCommand(this, plugin)
+                new TotemAnimationCommand(this, plugin)
         ));
         final LegacyPaperCommandManager<CommandSender> manager = (LegacyPaperCommandManager<CommandSender>) getCommandManager();
         manager.settings().set(ManagerSetting.ALLOW_UNSAFE_REGISTRATION, true);

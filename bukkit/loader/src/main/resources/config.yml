@@ -152,7 +152,14 @@ image:
     sign: true
 
 recipe:
+  # Enable the plugin's recipe system
   enable: true
+  # Disable vanilla recipes
+  disable-vanilla-recipes:
+    # Disable all vanilla recipes
+    all: false
+    # Disable the recipes in list
+    list: []
 
 gui:
   browser:

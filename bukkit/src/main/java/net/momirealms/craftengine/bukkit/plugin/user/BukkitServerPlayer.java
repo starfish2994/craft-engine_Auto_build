@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.user;
 import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -13,6 +14,7 @@ import net.momirealms.craftengine.core.block.PackedBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.util.Direction;
@@ -437,16 +439,26 @@ public class BukkitServerPlayer extends Player {
                         return;
                     }
                 }
-                this.miningProgress = (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(this.destroyedState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos) + miningProgress;
+
+                float progressToAdd = (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(this.destroyedState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos);
+                int id = BlockStateUtils.blockStateToId(this.destroyedState);
+                ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
+                if (customState != null && !customState.isEmpty()
+                        && !customState.settings().isCorrectTool(item == null ? ItemKeys.AIR : item.id())) {
+                    progressToAdd *= customState.settings().incorrectToolSpeed();
+                }
+
+                this.miningProgress = progressToAdd + miningProgress;
                 int packetStage = (int) (this.miningProgress * 10.0F);
                 if (packetStage != this.lastSentState) {
                     this.lastSentState = packetStage;
                     broadcastDestroyProgress(player, hitPos, blockPos, packetStage);
                 }
+
                 if (this.miningProgress >= 1f) {
                     //Reflections.method$ServerLevel$levelEvent.invoke(Reflections.field$CraftWorld$ServerLevel.get(player.getWorld()), null, 2001, blockPos, BlockStateUtils.blockStateToId(this.destroyedState));
                     Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
-                    Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, BlockStateUtils.blockStateToId(this.destroyedState), false);
+                    Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, id, false);
                     sendPacket(levelEventPacket, false);
                     this.stopMiningBlock();
                 }

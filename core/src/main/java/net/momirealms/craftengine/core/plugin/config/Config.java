@@ -17,6 +17,7 @@ import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.util.AdventureHelper;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Config {
     private static Config instance;
@@ -105,7 +107,10 @@ public class Config {
     protected boolean furniture$hide_base_entity;
 
     protected boolean block$sound_system$enable;
+
     protected boolean recipe$enable;
+    protected boolean recipe$disable_vanilla_recipes$all;
+    protected Set<Key> recipe$disable_vanilla_recipes$list;
 
     protected boolean item$non_italic_tag;
 
@@ -259,6 +264,8 @@ public class Config {
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
+        recipe$disable_vanilla_recipes$all = config.getBoolean("recipe.disable-vanilla-recipes.all", false);
+        recipe$disable_vanilla_recipes$list = config.getStringList("recipe.disable-vanilla-recipes.list").stream().map(Key::of).collect(Collectors.toSet());
 
         // image
         image$illegal_characters_filter$anvil = config.getBoolean("image.illegal-characters-filter.anvil", true);
@@ -348,6 +355,14 @@ public class Config {
 
     public static boolean enableRecipeSystem() {
         return instance.recipe$enable;
+    }
+
+    public static boolean disableAllVanillaRecipes() {
+        return instance.recipe$disable_vanilla_recipes$all;
+    }
+
+    public static Set<Key> disabledVanillaRecipes() {
+        return instance.recipe$disable_vanilla_recipes$list;
     }
 
     public static boolean nonItalic() {
