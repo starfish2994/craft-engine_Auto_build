@@ -11,7 +11,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -52,7 +52,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		// for 1.20.1 servers, not recommended to use
-		if (ConfigManager.sendPackOnJoin() && !VersionHelper.isVersionNewerThan1_20_2()) {
+		if (Config.sendPackOnJoin() && !VersionHelper.isVersionNewerThan1_20_2()) {
 			this.sendResourcePack(plugin.networkManager().getUser(event.getPlayer()), null);
 		}
 	}
@@ -60,7 +60,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
 		// for 1.20.1 servers, not recommended to use
-		if (ConfigManager.sendPackOnJoin() && ConfigManager.kickOnDeclined() && !VersionHelper.isVersionNewerThan1_20_2()) {
+		if (Config.sendPackOnJoin() && Config.kickOnDeclined() && !VersionHelper.isVersionNewerThan1_20_2()) {
 			if (event.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED || event.getStatus() == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
 				event.getPlayer().kick();
 			}
@@ -73,34 +73,34 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
 		// update server properties
 		if (VersionHelper.isVersionNewerThan1_20_2()) {
-			if (ConfigManager.hostMode() == HostMode.SELF_HOST) {
+			if (Config.hostMode() == HostMode.SELF_HOST) {
 				if (Files.exists(resourcePackPath())) {
-					updateResourcePackSettings(super.packUUID, ResourcePackHost.instance().url(), super.packHash, ConfigManager.kickOnDeclined(), ConfigManager.resourcePackPrompt());
+					updateResourcePackSettings(super.packUUID, ResourcePackHost.instance().url(), super.packHash, Config.kickOnDeclined(), Config.resourcePackPrompt());
 				}
-			} else if (ConfigManager.hostMode() == HostMode.EXTERNAL_HOST) {
-				updateResourcePackSettings(ConfigManager.externalPackUUID(), ConfigManager.externalPackUrl(), ConfigManager.externalPackSha1(), ConfigManager.kickOnDeclined(), ConfigManager.resourcePackPrompt());
+			} else if (Config.hostMode() == HostMode.EXTERNAL_HOST) {
+				updateResourcePackSettings(Config.externalPackUUID(), Config.externalPackUrl(), Config.externalPackSha1(), Config.kickOnDeclined(), Config.resourcePackPrompt());
 			}
 		}
 
-		if (ConfigManager.sendPackOnReload()) {
+		if (Config.sendPackOnReload()) {
 			if (this.previousHostMode == HostMode.SELF_HOST) {
 				this.previousHostUUID = super.packUUID;
 			}
 			// unload packs if user changed to none host
-			if (ConfigManager.hostMode() == HostMode.NONE && this.previousHostMode != HostMode.NONE) {
+			if (Config.hostMode() == HostMode.NONE && this.previousHostMode != HostMode.NONE) {
 				unloadResourcePackForOnlinePlayers(this.previousHostUUID);
 			}
 			// load new external resource pack on reload
-			if (ConfigManager.hostMode() == HostMode.EXTERNAL_HOST) {
+			if (Config.hostMode() == HostMode.EXTERNAL_HOST) {
 				if (this.previousHostMode == HostMode.NONE) {
 					updateResourcePackForOnlinePlayers(null);
 				} else {
 					updateResourcePackForOnlinePlayers(this.previousHostUUID);
 				}
 				// record previous host uuid here
-				this.previousHostUUID = ConfigManager.externalPackUUID();
+				this.previousHostUUID = Config.externalPackUUID();
 			}
-			if (ConfigManager.hostMode() == HostMode.SELF_HOST && this.previousHostMode != HostMode.SELF_HOST) {
+			if (Config.hostMode() == HostMode.SELF_HOST && this.previousHostMode != HostMode.SELF_HOST) {
 				if (ReloadCommand.RELOAD_PACK_FLAG) {
 					ReloadCommand.RELOAD_PACK_FLAG = false;
 					if (this.previousHostMode == HostMode.NONE) {
@@ -111,7 +111,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 				}
 			}
 		}
-		this.previousHostMode = ConfigManager.hostMode();
+		this.previousHostMode = Config.hostMode();
 	}
 
 	@Override
@@ -134,12 +134,12 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 		super.generateResourcePack();
 		// update server properties
 		if (VersionHelper.isVersionNewerThan1_20_2()) {
-			if (ConfigManager.hostMode() == HostMode.SELF_HOST) {
-				updateResourcePackSettings(super.packUUID, ResourcePackHost.instance().url(), super.packHash, ConfigManager.kickOnDeclined(), ConfigManager.resourcePackPrompt());
+			if (Config.hostMode() == HostMode.SELF_HOST) {
+				updateResourcePackSettings(super.packUUID, ResourcePackHost.instance().url(), super.packHash, Config.kickOnDeclined(), Config.resourcePackPrompt());
 			}
 		}
 		// resend packs
-		if (ConfigManager.hostMode() == HostMode.SELF_HOST && ConfigManager.sendPackOnReload()) {
+		if (Config.hostMode() == HostMode.SELF_HOST && Config.sendPackOnReload()) {
 			updateResourcePackForOnlinePlayers(this.previousHostUUID);
 		}
 	}
@@ -162,7 +162,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 	}
 
 	private void updateResourcePackSettings(UUID uuid, String url, String sha1, boolean required, Component prompt) {
-		if (!ConfigManager.sendPackOnJoin()) {
+		if (!Config.sendPackOnJoin()) {
 			resetResourcePackSettings();
 			return;
 		}
@@ -182,36 +182,36 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 	}
 
 	public void sendResourcePack(NetWorkUser user, @Nullable UUID previousPack) {
-		if (ConfigManager.hostMode() == HostMode.NONE) return;
+		if (Config.hostMode() == HostMode.NONE) return;
 		String url;
 		String sha1;
 		UUID uuid;
-		if (ConfigManager.hostMode() == HostMode.SELF_HOST) {
+		if (Config.hostMode() == HostMode.SELF_HOST) {
 			url = ResourcePackHost.instance().url();
 			sha1 = super.packHash;
 			uuid = super.packUUID;
 			if (!Files.exists(resourcePackPath())) return;
 		} else {
-			url = ConfigManager.externalPackUrl();
-			sha1 = ConfigManager.externalPackSha1();
-			uuid = ConfigManager.externalPackUUID();
+			url = Config.externalPackUrl();
+			sha1 = Config.externalPackSha1();
+			uuid = Config.externalPackUUID();
 			if (uuid.equals(previousPack)) return;
 		}
 
-		Object packPrompt = ComponentUtils.adventureToMinecraft(ConfigManager.resourcePackPrompt());
+		Object packPrompt = ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt());
 		try {
 			Object packPacket;
 			if (VersionHelper.isVersionNewerThan1_20_5()) {
 				packPacket = Reflections.constructor$ClientboundResourcePackPushPacket.newInstance(
-						uuid, url, sha1, ConfigManager.kickOnDeclined(), Optional.of(packPrompt)
+						uuid, url, sha1, Config.kickOnDeclined(), Optional.of(packPrompt)
 				);
 			} else if (VersionHelper.isVersionNewerThan1_20_3()) {
 				packPacket = Reflections.constructor$ClientboundResourcePackPushPacket.newInstance(
-						uuid, url, sha1, ConfigManager.kickOnDeclined(), packPrompt
+						uuid, url, sha1, Config.kickOnDeclined(), packPrompt
 				);
 			} else {
 				packPacket = Reflections.constructor$ClientboundResourcePackPushPacket.newInstance(
-						url + uuid, sha1, ConfigManager.kickOnDeclined(), packPrompt
+						url + uuid, sha1, Config.kickOnDeclined(), packPrompt
 				);
 			}
 			if (user.decoderState() == ConnectionState.PLAY) {

@@ -12,16 +12,16 @@ public class BukkitBootstrap extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.plugin.load();
+        this.plugin.onPluginLoad();
     }
 
     @Override
     public void onEnable() {
-        this.plugin.enable();
+        this.plugin.onPluginEnable();
     }
 
     @Override
     public void onDisable() {
-        this.plugin.disable();
+        this.plugin.onPluginDisable();
     }
 }

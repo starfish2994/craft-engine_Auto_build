@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.plugin.locale;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.Translator;
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public interface TranslationManager extends Reloadable {
+public interface TranslationManager extends Manageable {
     Set<String> ALL_LANG = Set.of(
             "af_za", "ar_sa", "ast_es", "az_az", "ba_ru", "bar", "be_by", "be_latn",
             "bg_bg", "br_fr", "brb", "bs_ba", "ca_es", "cs_cz", "cy_gb", "da_dk",

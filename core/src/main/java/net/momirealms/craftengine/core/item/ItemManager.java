@@ -6,7 +6,7 @@ import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -15,7 +15,7 @@ import org.incendo.cloud.suggestion.Suggestion;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public interface ItemManager<T> extends Reloadable, ModelGenerator {
+public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     ConfigSectionParser parser();
 

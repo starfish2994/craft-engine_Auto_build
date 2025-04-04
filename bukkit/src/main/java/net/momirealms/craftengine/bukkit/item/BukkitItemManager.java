@@ -26,7 +26,7 @@ import net.momirealms.craftengine.core.pack.model.*;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectProperty;
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -352,12 +352,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     prepareModelGeneration(generation);
                 }
 
-                if (ConfigManager.packMaxVersion() > 21.39f) {
+                if (Config.packMaxVersion() > 21.39f) {
                     TreeMap<Integer, ItemModel> map = modernOverrides.computeIfAbsent(materialId, k -> new TreeMap<>());
                     map.put(customModelData, model);
                 }
 
-                if (ConfigManager.packMinVersion() < 21.39f) {
+                if (Config.packMinVersion() < 21.39f) {
                     List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
                     processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, customModelData);
                     TreeSet<LegacyOverridesModel> lom = legacyOverrides.computeIfAbsent(materialId, k -> new TreeSet<>());
@@ -372,11 +372,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     prepareModelGeneration(generation);
                 }
 
-                if (ConfigManager.packMaxVersion() > 21.39f) {
+                if (Config.packMaxVersion() > 21.39f) {
                     modernItemModels1_21_4.put(itemModelKey, model);
                 }
 
-                if (ConfigManager.packMaxVersion() > 21.19f && ConfigManager.packMinVersion() < 21.39f) {
+                if (Config.packMaxVersion() > 21.19f && Config.packMinVersion() < 21.39f) {
                     List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
                     processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, 0);
                     if (!legacyOverridesModels.isEmpty()) {

@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,7 +26,7 @@ public class ResourcePackHost {
     private long rateLimitInterval = 1000;
 
     public String url() {
-        return ConfigManager.hostProtocol() + "://" + ip + ":" + port + "/";
+        return Config.hostProtocol() + "://" + ip + ":" + port + "/";
     }
 
     public void enable(String ip, int port, Path resourcePackPath) {
@@ -77,7 +77,7 @@ public class ResourcePackHost {
     private class ResourcePackHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (ConfigManager.denyNonMinecraftRequest()) {
+            if (Config.denyNonMinecraftRequest()) {
                 String userAgent = exchange.getRequestHeaders().getFirst("User-Agent");
                 if (userAgent == null || !userAgent.startsWith("Minecraft Java/")) {
                     CraftEngine.instance().debug(() -> "Blocked non-Minecraft Java client. User-Agent: " + userAgent);

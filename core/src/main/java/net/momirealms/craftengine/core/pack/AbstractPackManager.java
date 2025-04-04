@@ -15,10 +15,9 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
-import net.momirealms.craftengine.core.plugin.config.template.TemplateManager;
 import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.sound.AbstractSoundManager;
 import net.momirealms.craftengine.core.sound.SoundEvent;
@@ -140,10 +139,10 @@ public abstract class AbstractPackManager implements PackManager {
         this.loadPacks();
         this.loadConfigs();
         this.calculateHash();
-        if (ConfigManager.hostMode() == HostMode.SELF_HOST) {
-            Path path = ConfigManager.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(ConfigManager.hostResourcePackPath()) : Path.of(ConfigManager.hostResourcePackPath());
-            ResourcePackHost.instance().enable(ConfigManager.hostIP(), ConfigManager.hostPort(), path);
-            ResourcePackHost.instance().setRateLimit(ConfigManager.requestRate(), ConfigManager.requestInterval(), TimeUnit.SECONDS);
+        if (Config.hostMode() == HostMode.SELF_HOST) {
+            Path path = Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
+            ResourcePackHost.instance().enable(Config.hostIP(), Config.hostPort(), path);
+            ResourcePackHost.instance().setRateLimit(Config.requestRate(), Config.requestInterval(), TimeUnit.SECONDS);
         } else {
             ResourcePackHost.instance().disable();
         }
@@ -206,7 +205,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     public Path selfHostPackPath() {
-        return ConfigManager.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(ConfigManager.hostResourcePackPath()) : Path.of(ConfigManager.hostResourcePackPath());
+        return Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
     }
 
     private void loadPacks() {
@@ -229,7 +228,7 @@ public abstract class AbstractPackManager implements PackManager {
                     String version = null;
                     String author = null;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
-                        YamlDocument metaYML = ConfigManager.instance().loadYamlData(metaFile.toFile());
+                        YamlDocument metaYML = Config.instance().loadYamlData(metaFile.toFile());
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
                         version = metaYML.getString("version");
@@ -466,7 +465,7 @@ public abstract class AbstractPackManager implements PackManager {
         try {
             List<Path> folders = new ArrayList<>();
             folders.addAll(loadedPacks().stream().map(Pack::resourcePackFolder).toList());
-            folders.addAll(ConfigManager.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
+            folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
 
             List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);
             if (!duplicated.isEmpty()) {
@@ -528,7 +527,7 @@ public abstract class AbstractPackManager implements PackManager {
     private void generateEquipments(Path generatedPackPath) {
         for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
             EquipmentData equipmentData = generator.modernData();
-            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.4f) {
+            if (equipmentData != null && Config.packMaxVersion() >= 21.4f) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
                         .resolve(equipmentData.assetId().namespace())
@@ -561,7 +560,7 @@ public abstract class AbstractPackManager implements PackManager {
                     this.plugin.logger().severe("Error writing equipment file", e);
                 }
             }
-            if (equipmentData != null && ConfigManager.packMaxVersion() >= 21.2f && ConfigManager.packMinVersion() < 21.4f) {
+            if (equipmentData != null && Config.packMaxVersion() >= 21.2f && Config.packMinVersion() < 21.4f) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
                         .resolve(equipmentData.assetId().namespace())
@@ -663,7 +662,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateOverrideSounds(Path generatedPackPath) {
-        if (!ConfigManager.enableSoundSystem()) return;
+        if (!Config.enableSoundSystem()) return;
 
         Path soundPath = generatedPackPath
                 .resolve("assets")
@@ -753,7 +752,7 @@ public abstract class AbstractPackManager implements PackManager {
     private void generateBlockOverrides(Path generatedPackPath) {
         File blockStatesFile = new File(plugin.dataFolderFile(), "blockstates.yml");
         if (!blockStatesFile.exists()) plugin.saveResource("blockstates.yml");
-        YamlDocument preset = ConfigManager.instance().loadYamlData(blockStatesFile);
+        YamlDocument preset = Config.instance().loadYamlData(blockStatesFile);
         for (Map.Entry<Key, Map<String, JsonElement>> entry : plugin.blockManager().blockOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedBlockPath = generatedPackPath
@@ -788,7 +787,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        if (!ConfigManager.generateModAssets()) return;
+        if (!Config.generateModAssets()) return;
         for (Map.Entry<Key, JsonElement> entry : plugin.blockManager().modBlockStates().entrySet()) {
             Key key = entry.getKey();
             Path overridedBlockPath = generatedPackPath
@@ -815,8 +814,8 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateModernItemModels1_21_2(Path generatedPackPath) {
-        if (ConfigManager.packMaxVersion() < 21.19f) return;
-        if (ConfigManager.packMinVersion() > 21.39f) return;
+        if (Config.packMaxVersion() < 21.19f) return;
+        if (Config.packMinVersion() > 21.39f) return;
 
         boolean has = false;
         for (Map.Entry<Key, List<LegacyOverridesModel>> entry : plugin.itemManager().modernItemModels1_21_2().entrySet()) {
@@ -868,13 +867,13 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        if (ConfigManager.packMinVersion() < 21.19f && has) {
-            plugin.logger().warn("You are using item-model component for models which requires 1.21.2+. But the min supported version is " + "1." + ConfigManager.packMinVersion());
+        if (Config.packMinVersion() < 21.19f && has) {
+            plugin.logger().warn("You are using item-model component for models which requires 1.21.2+. But the min supported version is " + "1." + Config.packMinVersion());
         }
     }
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
-        if (ConfigManager.packMaxVersion() < 21.39f) return;
+        if (Config.packMaxVersion() < 21.39f) return;
         for (Map.Entry<Key, ItemModel> entry : plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
@@ -907,7 +906,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateModernItemOverrides(Path generatedPackPath) {
-        if (ConfigManager.packMaxVersion() < 21.39f) return;
+        if (Config.packMaxVersion() < 21.39f) return;
         for (Map.Entry<Key, TreeMap<Integer, ItemModel>> entry : plugin.itemManager().modernItemOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedItemPath = generatedPackPath
@@ -967,7 +966,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateLegacyItemOverrides(Path generatedPackPath) {
-        if (ConfigManager.packMinVersion() > 21.39f) return;
+        if (Config.packMinVersion() > 21.39f) return;
         for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : plugin.itemManager().legacyItemOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedItemPath = generatedPackPath
@@ -1064,7 +1063,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        if (ConfigManager.resourcePack$overrideUniform()) {
+        if (Config.resourcePack$overrideUniform()) {
             Path fontPath = generatedPackPath.resolve("assets")
                     .resolve("minecraft")
                     .resolve("font")
@@ -1115,7 +1114,7 @@ public abstract class AbstractPackManager implements PackManager {
                             Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
                             conflicts.add(file);
                         } else {
-                            for (ConditionalResolution resolution : ConfigManager.resolutions()) {
+                            for (ConditionalResolution resolution : Config.resolutions()) {
                                 if (resolution.matcher().test(relative)) {
                                     resolution.resolution().run(targetPath, file);
                                     return FileVisitResult.CONTINUE;

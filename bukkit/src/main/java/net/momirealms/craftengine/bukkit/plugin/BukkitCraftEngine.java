@@ -29,7 +29,7 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.classpath.ReflectionClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.dependency.Dependencies;
 import net.momirealms.craftengine.core.plugin.dependency.Dependency;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImpl;
@@ -65,17 +65,20 @@ public class BukkitCraftEngine extends CraftEngine {
     private boolean hasPlaceholderAPI;
 
     public BukkitCraftEngine(JavaPlugin bootstrap) {
-        VersionHelper.init(serverVersion());
+        super((p) -> {
+            CraftEngineReloadEvent event = new CraftEngineReloadEvent((BukkitCraftEngine) p);
+            EventUtils.fireAndForget(event);
+        });
         instance = this;
         this.bootstrap = bootstrap;
         super.classPathAppender = new ReflectionClassPathAppender(this);
         super.scheduler = new BukkitSchedulerAdapter(this);
         super.logger = new JavaPluginLogger(bootstrap.getLogger());
+        // find mod class if present
         Class<?> modClass = ReflectionUtils.getClazz(MOD_CLASS);
         if (modClass != null) {
             Field isSuccessfullyRegistered = ReflectionUtils.getDeclaredField(modClass, "isSuccessfullyRegistered");
             try {
-                assert isSuccessfullyRegistered != null;
                 requiresRestart = !(boolean) isSuccessfullyRegistered.get(null);
                 hasMod = true;
             } catch (Exception ignore) {
@@ -84,13 +87,11 @@ public class BukkitCraftEngine extends CraftEngine {
     }
 
     @Override
-    public void load() {
-        super.load();
+    public void onPluginLoad() {
+        super.onPluginLoad();
         Reflections.init();
         BukkitInjector.init();
         super.networkManager = new BukkitNetworkManager(this);
-        super.networkManager.init();
-        // load mappings and inject blocks
         super.blockManager = new BukkitBlockManager(this);
         super.furnitureManager = new BukkitFurnitureManager(this);
         this.successfullyLoaded = true;
@@ -105,8 +106,8 @@ public class BukkitCraftEngine extends CraftEngine {
     }
 
     @Override
-    public void enable() {
-        if (successfullyEnabled) {
+    public void onPluginEnable() {
+        if (this.successfullyEnabled) {
             logger().severe(" ");
             logger().severe(" ");
             logger().severe(" ");
@@ -154,8 +155,37 @@ public class BukkitCraftEngine extends CraftEngine {
         super.worldManager = new BukkitWorldManager(this);
         super.soundManager = new BukkitSoundManager(this);
         super.vanillaLootManager = new BukkitVanillaLootManager(this);
-        this.fontManager = new BukkitFontManager(this);
-        super.enable();
+        super.fontManager = new BukkitFontManager(this);
+        super.onPluginEnable();
+        // compatibility
+        // register expansion
+        if (this.isPluginEnabled("PlaceholderAPI")) {
+            PlaceholderAPIUtils.registerExpansions(this);
+            this.hasPlaceholderAPI = true;
+        }
+    }
+
+    @Override
+    public void onPluginDisable() {
+        super.onPluginDisable();
+        if (this.tickTask != null) this.tickTask.cancel();
+        if (!Bukkit.getServer().isStopping()) {
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe("Please do not disable plugins at runtime.");
+            logger().severe(" ");
+            logger().severe(" ");
+            logger().severe(" ");
+            Bukkit.getServer().shutdown();
+        }
+    }
+
+    @Override
+    public void platformDelayedEnable() {
+        if (Config.metrics()) {
+            new Metrics(this.bootstrap(), 24333);
+        }
         // tick task
         if (VersionHelper.isFolia()) {
             this.tickTask = this.scheduler().sync().runRepeating(() -> {
@@ -171,45 +201,6 @@ public class BukkitCraftEngine extends CraftEngine {
                     serverPlayer.tick();
                 }
             }, 1, 1);
-        }
-
-        // compatibility
-        // register expansion
-        if (this.isPluginEnabled("PlaceholderAPI")) {
-            PlaceholderAPIUtils.registerExpansions(this);
-            this.hasPlaceholderAPI = true;
-        }
-    }
-
-    @Override
-    public void disable() {
-        super.disable();
-        if (this.tickTask != null) this.tickTask.cancel();
-        if (!Bukkit.getServer().isStopping()) {
-            logger().severe(" ");
-            logger().severe(" ");
-            logger().severe(" ");
-            logger().severe("Please do not disable plugins at runtime.");
-            logger().severe(" ");
-            logger().severe(" ");
-            logger().severe(" ");
-            Bukkit.getServer().shutdown();
-        }
-    }
-
-    @Override
-    public void reload() {
-        super.reload();
-        scheduler.async().execute(() -> {
-            CraftEngineReloadEvent event = new CraftEngineReloadEvent(this);
-            EventUtils.fireAndForget(event);
-        });
-    }
-
-    @Override
-    public void delayedEnable() {
-        if (ConfigManager.metrics()) {
-            new Metrics(this.bootstrap(), 24333);
         }
     }
 

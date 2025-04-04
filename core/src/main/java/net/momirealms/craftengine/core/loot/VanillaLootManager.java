@@ -1,12 +1,12 @@
 package net.momirealms.craftengine.core.loot;
 
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Optional;
 
-public interface VanillaLootManager extends Reloadable {
+public interface VanillaLootManager extends Manageable {
 
     ConfigSectionParser parser();
 

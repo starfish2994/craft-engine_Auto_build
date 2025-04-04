@@ -20,7 +20,7 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
@@ -300,7 +300,7 @@ public class PacketConsumers {
             int stateId = BlockStateUtils.blockStateToId(blockState);
             // not a custom block
             if (BlockStateUtils.isVanillaBlock(stateId)) {
-                if (ConfigManager.enableSoundSystem()) {
+                if (Config.enableSoundSystem()) {
                     Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
                         player.startMiningBlock(world, pos, blockState, false, null);
@@ -626,7 +626,7 @@ public class PacketConsumers {
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
-                    if (ConfigManager.hideBaseEntity() && !furniture.hasExternalModel()) {
+                    if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
                     }
                 }
@@ -774,7 +774,7 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterAnvil()) return;
+            if (!Config.filterAnvil()) return;
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
                 FontManager manager = CraftEngine.instance().imageManager();
@@ -799,7 +799,7 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterSign()) return;
+            if (!Config.filterSign()) return;
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
             FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
@@ -826,7 +826,7 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterBook()) return;
+            if (!Config.filterBook()) return;
             FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass

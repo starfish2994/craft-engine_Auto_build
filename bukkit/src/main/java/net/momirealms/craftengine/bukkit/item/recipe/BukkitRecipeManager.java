@@ -16,7 +16,7 @@ import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.item.recipe.vanilla.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.HeptaFunction;
@@ -284,7 +284,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @Override
     public void load() {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             try {
                 this.stolenFeatureFlagSet = Reflections.field$RecipeManager$featureflagset.get(nmsRecipeManager);
@@ -422,7 +422,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     @Override
-    public void runSyncTasks() {
+    public void runDelayedSyncTasks() {
         try {
             // run delayed tasks
             for (Runnable r : this.delayedTasksOnMainThread) {

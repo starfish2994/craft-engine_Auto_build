@@ -40,7 +40,7 @@ public abstract class AbstractSoundManager implements SoundManager {
     }
 
     @Override
-    public void delayedLoad() {
+    public void runDelayedSyncTasks() {
         if (!VersionHelper.isVersionNewerThan1_21()) return;
         this.registerSongs(this.songs);
     }

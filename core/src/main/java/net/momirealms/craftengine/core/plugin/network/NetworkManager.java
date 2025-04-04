@@ -2,8 +2,12 @@ package net.momirealms.craftengine.core.plugin.network;
 
 import io.netty.channel.Channel;
 import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.plugin.Manageable;
+import org.jetbrains.annotations.NotNull;
 
-public interface NetworkManager {
+import java.util.List;
+
+public interface NetworkManager extends Manageable {
     String MOD_CHANNEL = "craftengine:payload";
 
     void setUser(Channel channel, NetWorkUser user);
@@ -16,9 +20,15 @@ public interface NetworkManager {
 
     NetWorkUser[] onlineUsers();
 
-    void init();
+    default void sendPacket(@NotNull NetWorkUser player, Object packet) {
+        sendPacket(player, packet, false);
+    }
 
-    void enable();
+    void sendPacket(@NotNull NetWorkUser player, Object packet, boolean immediately);
 
-    void shutdown();
+    default void sendPackets(@NotNull NetWorkUser player, List<Object> packet) {
+        sendPacket(player, packet, false);
+    }
+
+    void sendPackets(@NotNull NetWorkUser player, List<Object> packet, boolean immediately);
 }

@@ -6,7 +6,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractFontManager;
 import net.momirealms.craftengine.core.font.FontManager;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -48,20 +48,20 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChat(AsyncChatDecorateEvent event) {
-        if (!ConfigManager.filterChat()) return;
+        if (!Config.filterChat()) return;
         this.processChatEvent(event);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     @SuppressWarnings("UnstableApiUsage")
     public void onChatCommand(AsyncChatCommandDecorateEvent event) {
-        if (!ConfigManager.filterChat()) return;
+        if (!Config.filterChat()) return;
         this.processChatEvent(event);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        if (!ConfigManager.filterCommand()) return;
+        if (!Config.filterCommand()) return;
         if (!this.isDefaultFontInUse()) return;
         if (event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
             return;

@@ -12,7 +12,7 @@ import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.SoundData;
@@ -305,8 +305,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 return;
             }
             // Remove the entity if it's not a valid furniture
-            if (ConfigManager.removeInvalidFurniture()) {
-                if (ConfigManager.furnitureToRemove().isEmpty() || ConfigManager.furnitureToRemove().contains(id)) {
+            if (Config.removeInvalidFurniture()) {
+                if (Config.furnitureToRemove().isEmpty() || Config.furnitureToRemove().contains(id)) {
                     entity.remove();
                 }
             }

@@ -14,7 +14,6 @@ import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResol
 import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
-import net.momirealms.craftengine.core.plugin.Reloadable;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -32,8 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ConfigManager implements Reloadable {
-    private static ConfigManager instance;
+public class Config {
+    private static Config instance;
     protected final CraftEngine plugin;
     private final Path configFilePath;
     private final String configVersion;
@@ -116,14 +115,13 @@ public class ConfigManager implements Reloadable {
     protected boolean image$illegal_characters_filter$sign;
     protected boolean image$illegal_characters_filter$book;
 
-    public ConfigManager(CraftEngine plugin) {
+    public Config(CraftEngine plugin) {
         this.plugin = plugin;
         this.configVersion = PluginProperties.getValue("config");
         this.configFilePath = this.plugin.dataFolderPath().resolve("config.yml");
         instance = this;
     }
 
-    @Override
     public void load() {
         if (Files.exists(this.configFilePath)) {
             this.config = this.loadYamlData(this.configFilePath.toFile());
@@ -168,11 +166,6 @@ public class ConfigManager implements Reloadable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void unload() {
-        Reloadable.super.unload();
     }
 
     private void loadSettings() {
@@ -610,7 +603,7 @@ public class ConfigManager implements Reloadable {
         return config;
     }
 
-    public static ConfigManager instance() {
+    public static Config instance() {
         return instance;
     }
 }

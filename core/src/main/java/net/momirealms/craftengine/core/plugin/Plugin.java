@@ -10,7 +10,7 @@ import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.pack.PackManager;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateManager;
 import net.momirealms.craftengine.core.plugin.dependency.DependencyManager;
 import net.momirealms.craftengine.core.plugin.gui.GuiManager;
@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
-public interface Plugin extends Reloadable {
+public interface Plugin {
 
     InputStream resourceStream(String filePath);
 
@@ -38,6 +38,8 @@ public interface Plugin extends Reloadable {
     File dataFolderFile();
 
     Path dataFolderPath();
+
+    boolean isReloading();
 
     DependencyManager dependencyManager();
 
@@ -57,7 +59,7 @@ public interface Plugin extends Reloadable {
 
     FontManager imageManager();
 
-    ConfigManager configManager();
+    Config config();
 
     TranslationManager translationManager();
 
@@ -69,7 +71,7 @@ public interface Plugin extends Reloadable {
 
     <T> RecipeManager<T> recipeManager();
 
-    SenderFactory<? extends Plugin, ?> senderFactory();
+    <P extends Plugin, C> SenderFactory<P, C> senderFactory();
 
     WorldManager worldManager();
 

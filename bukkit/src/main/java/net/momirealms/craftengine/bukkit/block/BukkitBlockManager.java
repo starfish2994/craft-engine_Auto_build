@@ -23,7 +23,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -251,8 +251,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return Collections.unmodifiableCollection(this.cachedSuggestions);
     }
 
-    @Override
-    public void initSuggestions() {
+    private void initSuggestions() {
         this.cachedSuggestions.clear();
         this.namespacesInUse.clear();
         Set<String> states = new HashSet<>();
@@ -269,7 +268,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public Set<String> namespacesInUse() {
-        return Collections.unmodifiableSet(namespacesInUse);
+        return Collections.unmodifiableSet(this.namespacesInUse);
     }
 
     public ImmutableMap<Key, List<Integer>> blockAppearanceArranger() {
@@ -501,7 +500,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             byId.put(id, block);
 
             // generate mod assets
-            if (ConfigManager.generateModAssets()) {
+            if (Config.generateModAssets()) {
                 for (ImmutableBlockState state : block.variantProvider().states()) {
                     Key realBlockId = BlockStateUtils.getBlockOwnerIdFromState(state.customBlockState());
                     modBlockStates.put(realBlockId, tempVanillaBlockStateModels.get(state.vanillaBlockState().registryId()));
@@ -650,7 +649,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private void loadMappingsAndAdditionalBlocks() {
         this.plugin.logger().info("Loading mappings.yml.");
         File mappingFile = new File(plugin.dataFolderFile(), "mappings.yml");
-        YamlDocument mappings = ConfigManager.instance().loadOrCreateYamlData("mappings.yml");
+        YamlDocument mappings = Config.instance().loadOrCreateYamlData("mappings.yml");
         Map<String, String> blockStateMappings = loadBlockStateMappings(mappings);
         this.validateBlockStateMappings(mappingFile, blockStateMappings);
         Map<Integer, String> stateMap = new HashMap<>();
@@ -663,7 +662,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
         this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
         this.plugin.logger().info("Freed " + this.blockAppearanceMapper.size() + " block state appearances.");
-        YamlDocument additionalYaml = ConfigManager.instance().loadOrCreateYamlData("additional-real-blocks.yml");
+        YamlDocument additionalYaml = Config.instance().loadOrCreateYamlData("additional-real-blocks.yml");
         this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
     }
 

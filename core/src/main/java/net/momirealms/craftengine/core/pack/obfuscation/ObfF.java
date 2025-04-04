@@ -101,7 +101,7 @@ public final class ObfF {
     }
 
     private static Section 九转大肠() {
-        return CraftEngine.instance().configManager().settings()
+        return CraftEngine.instance().config().settings()
                 .getSection("resource-pack.protection");
     }
 

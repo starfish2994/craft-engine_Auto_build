@@ -8,7 +8,7 @@ import net.momirealms.craftengine.core.item.recipe.vanilla.reader.VanillaRecipeR
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -155,7 +155,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-            if (!ConfigManager.enableRecipeSystem()) return;
+            if (!Config.enableRecipeSystem()) return;
             if (AbstractRecipeManager.this.byId.containsKey(id)) {
                 TranslationManager.instance().log("warning.config.recipe.duplicated", path.toString(), id.toString());
                 return;

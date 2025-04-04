@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.font;
 
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.util.Key;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface FontManager extends Reloadable {
+public interface FontManager extends Manageable {
     Key DEFAULT_FONT = Key.of("minecraft:default");
     String BYPASS_BOOK = "craftengine.filter.bypass.book";
     String BYPASS_SIGN = "craftengine.filter.bypass.sign";

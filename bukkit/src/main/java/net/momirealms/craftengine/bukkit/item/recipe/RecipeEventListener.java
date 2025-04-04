@@ -17,7 +17,7 @@ import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -261,7 +261,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onFurnaceInventoryOpen(InventoryOpenEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!(event.getInventory() instanceof FurnaceInventory furnaceInventory)) {
             return;
         }
@@ -277,7 +277,7 @@ public class RecipeEventListener implements Listener {
     // for 1.20.1-1.21.1
     @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (VersionHelper.isVersionNewerThan1_21_2()) return;
         Block block = event.getBlock();
         Material material = block.getType();
@@ -295,7 +295,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlaceBlock(BlockPlaceEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         Block block = event.getBlock();
         Material material = block.getType();
         if (material == Material.FURNACE || material == Material.BLAST_FURNACE || material == Material.SMOKER) {
@@ -322,7 +322,7 @@ public class RecipeEventListener implements Listener {
     // for 1.21.2+
     @EventHandler(ignoreCancelled = true)
     public void onPutItemOnCampfire(PlayerInteractEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block clicked = event.getClickedBlock();
@@ -373,7 +373,7 @@ public class RecipeEventListener implements Listener {
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(CampfireStartEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         CampfireRecipe recipe = event.getRecipe();
         Key recipeId = new Key(recipe.getKey().namespace(), recipe.getKey().value());
@@ -404,7 +404,7 @@ public class RecipeEventListener implements Listener {
     // for 1.21.2+
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(BlockCookEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         Material type = event.getBlock().getType();
         if (type != Material.CAMPFIRE && type != Material.SOUL_CAMPFIRE) return;
@@ -743,7 +743,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCraftingRecipe(PrepareItemCraftEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
@@ -836,7 +836,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSmithingTransform(PrepareSmithingEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         SmithingInventory inventory = event.getInventory();
         if (!(inventory.getRecipe() instanceof SmithingTransformRecipe recipe)) return;
 

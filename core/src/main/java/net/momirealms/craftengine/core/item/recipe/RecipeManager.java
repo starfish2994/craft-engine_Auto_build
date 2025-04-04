@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.item.recipe;
 
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public interface RecipeManager<T> extends Reloadable {
+public interface RecipeManager<T> extends Manageable {
 
     ConfigSectionParser parser();
 
@@ -30,6 +30,4 @@ public interface RecipeManager<T> extends Reloadable {
 
     @Nullable
     Recipe<T> recipeByInput(Key type, RecipeInput input, @Nullable Key lastRecipe);
-
-    void runSyncTasks();
 }
