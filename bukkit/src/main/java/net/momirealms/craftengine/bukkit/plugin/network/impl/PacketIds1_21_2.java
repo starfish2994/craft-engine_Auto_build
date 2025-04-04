@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.network.impl;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
 
+@Deprecated
 public class PacketIds1_21_2 implements PacketIds {
 
     @Override

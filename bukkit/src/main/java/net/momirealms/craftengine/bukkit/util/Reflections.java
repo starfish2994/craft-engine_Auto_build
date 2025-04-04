@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -6123,4 +6124,20 @@ public class Reflections {
                     clazz$EntityLookup, clazz$Entity, int.class
             )
     );
+
+    // 1.21+
+    public static final Class<?> clazz$PacketReport =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("data.info.PacketReport")
+            );
+
+    // 1.21+
+    public static final Constructor<?> constructor$PacketReport = Optional.ofNullable(clazz$PacketReport)
+            .map(it -> ReflectionUtils.getConstructor(it, 0))
+            .orElse(null);
+
+    // 1.21+
+    public static final Method method$PacketReport$serializePackets = Optional.ofNullable(clazz$PacketReport)
+            .map(it -> ReflectionUtils.getDeclaredMethod(it, JsonElement.class))
+            .orElse(null);
 }
