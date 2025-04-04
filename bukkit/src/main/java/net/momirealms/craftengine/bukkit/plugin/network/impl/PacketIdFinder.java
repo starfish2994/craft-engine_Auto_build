@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PacketIdsFind {
+public class PacketIdFinder {
     private static final Map<String, Map<String, Integer>> gamePacketIds = new HashMap<>();
 
     static {
@@ -27,7 +27,7 @@ public class PacketIdsFind {
         }
     }
 
-    public static int getClientboundPackets(String packetName) {
+    public static int clientboundByName(String packetName) {
         return gamePacketIds.get("clientbound").get(packetName);
     }
 }

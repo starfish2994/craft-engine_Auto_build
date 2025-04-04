@@ -6,26 +6,26 @@ public class PacketIds1_21 implements PacketIds {
 
     @Override
     public int clientboundBlockUpdatePacket() {
-        return PacketIdsFind.getClientboundPackets("minecraft:block_update");
+        return PacketIdFinder.clientboundByName("minecraft:block_update");
     }
 
     @Override
     public int clientboundSectionBlocksUpdatePacket() {
-        return PacketIdsFind.getClientboundPackets("minecraft:section_blocks_update");
+        return PacketIdFinder.clientboundByName("minecraft:section_blocks_update");
     }
 
     @Override
     public int clientboundLevelParticlesPacket() {
-        return PacketIdsFind.getClientboundPackets("minecraft:level_particles");
+        return PacketIdFinder.clientboundByName("minecraft:level_particles");
     }
 
     @Override
     public int clientboundLevelEventPacket() {
-        return PacketIdsFind.getClientboundPackets("minecraft:level_event");
+        return PacketIdFinder.clientboundByName("minecraft:level_event");
     }
 
     @Override
     public int clientboundAddEntityPacket() {
-        return PacketIdsFind.getClientboundPackets("minecraft:add_entity");
+        return PacketIdFinder.clientboundByName("minecraft:add_entity");
     }
 }
