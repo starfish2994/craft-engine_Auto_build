@@ -55,7 +55,7 @@ public class Dependency {
     }
 
     public String fileName(String classifier) {
-        String name = customArtifactID.toLowerCase(Locale.ROOT).replace('_', '-');
+        String name = customArtifactID.toLowerCase(Locale.ENGLISH).replace('_', '-');
         String extra = classifier == null || classifier.isEmpty()
                 ? ""
                 : "-" + classifier;

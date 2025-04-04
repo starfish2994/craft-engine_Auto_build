@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -806,6 +807,12 @@ public class Reflections {
     public static final Field field$SynchedEntityData$DataValue$id = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$SynchedEntityData$DataValue, int.class, 0
+            )
+    );
+
+    public static final Field field$SynchedEntityData$DataValue$serializer = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$SynchedEntityData$DataValue, 1
             )
     );
 
@@ -3027,6 +3034,32 @@ public class Reflections {
         }
     }
 
+    public static final Class<?> clazz$ClientboundSetEquipmentPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetEquipmentPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityEquipment")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundSetEquipmentPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundSetEquipmentPacket, int.class, List.class
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundEntityEventPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundEntityEventPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutEntityStatus")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundEntityEventPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundEntityEventPacket, clazz$Entity, byte.class
+            )
+    );
+
     public static final Method method$Block$defaultBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$Block, clazz$BlockState
@@ -3666,6 +3699,7 @@ public class Reflections {
 
     public static final Object instance$EntityType$TEXT_DISPLAY;
     public static final Object instance$EntityType$ITEM_DISPLAY;
+    public static final Object instance$EntityType$BLOCK_DISPLAY;
     public static final Object instance$EntityType$FALLING_BLOCK;
     public static final Object instance$EntityType$INTERACTION;
     public static final Object instance$EntityType$SHULKER;
@@ -3676,6 +3710,8 @@ public class Reflections {
             instance$EntityType$TEXT_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, textDisplay);
             Object itemDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "item_display");
             instance$EntityType$ITEM_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, itemDisplay);
+            Object blockDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "block_display");
+            instance$EntityType$BLOCK_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, blockDisplay);
             Object fallingBlock = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "falling_block");
             instance$EntityType$FALLING_BLOCK = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fallingBlock);
             Object interaction = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "interaction");
@@ -6050,4 +6086,58 @@ public class Reflections {
                     clazz$BlockStateBase, clazz$BlockState, clazz$Mirror
             )
     );
+
+    public static final Constructor<?> constructor$ClientboundMoveEntityPacket$Pos = requireNonNull(
+            ReflectionUtils.getDeclaredConstructor(
+                    clazz$ClientboundMoveEntityPacket$Pos, int.class, short.class, short.class, short.class, boolean.class
+            )
+    );
+
+    public static final Method method$Entity$getType = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$Entity, clazz$EntityType
+            )
+    );
+
+    public static final Constructor<?> constructor$SynchedEntityData$DataValue = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$SynchedEntityData$DataValue, int.class, clazz$EntityDataSerializer, Object.class
+            )
+    );
+
+    public static final Class<?> clazz$EntityLookup = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup",
+                    "io.papermc.paper.chunk.system.entity.EntityLookup"
+            )
+    );
+
+    public static final Method method$Level$moonrise$getEntityLookup = requireNonNull(
+            ReflectionUtils.getMethod(
+                    VersionHelper.isVersionNewerThan1_21() ? clazz$Level : clazz$ServerLevel,
+                    clazz$EntityLookup
+            )
+    );
+
+    public static final Method method$EntityLookup$get = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$EntityLookup, clazz$Entity, int.class
+            )
+    );
+
+    // 1.21+
+    public static final Class<?> clazz$PacketReport =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("data.info.PacketReport")
+            );
+
+    // 1.21+
+    public static final Constructor<?> constructor$PacketReport = Optional.ofNullable(clazz$PacketReport)
+            .map(it -> ReflectionUtils.getConstructor(it, 0))
+            .orElse(null);
+
+    // 1.21+
+    public static final Method method$PacketReport$serializePackets = Optional.ofNullable(clazz$PacketReport)
+            .map(it -> ReflectionUtils.getDeclaredMethod(it, JsonElement.class))
+            .orElse(null);
 }

@@ -47,7 +47,7 @@ public class SearchUsageAdminCommand extends BukkitCommandFeature<CommandSender>
                     for (Player player : players) {
                         BukkitServerPlayer serverPlayer = plugin().adapt(player);
                         Key itemId = Key.of(namespacedKey.namespace(), namespacedKey.value());
-                        List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByIngredient(itemId);
+                        List<Recipe<Object>> inRecipes = plugin().recipeManager().recipeByIngredient(itemId);
                         if (!inRecipes.isEmpty()) {
                             plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                         }

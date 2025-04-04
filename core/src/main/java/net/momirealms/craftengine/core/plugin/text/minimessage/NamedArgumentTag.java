@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.plugin.minimessage;
+package net.momirealms.craftengine.core.plugin.text.minimessage;
 
 import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.ParsingException;

@@ -47,7 +47,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
     }
 
     public InteractionResult place(UseOnContext context) {
-        Optional<CustomFurniture> optionalCustomFurniture = BukkitFurnitureManager.instance().getFurniture(this.id);
+        Optional<CustomFurniture> optionalCustomFurniture = BukkitFurnitureManager.instance().furnitureById(this.id);
         if (optionalCustomFurniture.isEmpty()) {
             CraftEngine.instance().logger().warn("Furniture " + this.id + " not found");
             return InteractionResult.FAIL;
@@ -139,7 +139,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
                 throw new IllegalArgumentException("Missing required parameter 'furniture' for furniture_item behavior");
             }
             if (id instanceof Map<?,?> map) {
-                BukkitFurnitureManager.instance().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                BukkitFurnitureManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
                 return new FurnitureItemBehavior(key);
             } else {
                 return new FurnitureItemBehavior(Key.of(id.toString()));

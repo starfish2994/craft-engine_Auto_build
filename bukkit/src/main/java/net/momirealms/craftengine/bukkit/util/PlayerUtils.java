@@ -1,5 +1,9 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import com.mojang.datafixers.util.Pair;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Item;
@@ -10,6 +14,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -139,5 +146,29 @@ public class PlayerUtils {
         }
 
         return actualAmount;
+    }
+
+    public static void sendTotemAnimation(Player player, ItemStack totem) {
+        ItemStack offhandItem = player.getInventory().getItemInOffHand();
+        List<Object> packets = new ArrayList<>();
+        try {
+            Object previousItem = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, offhandItem);
+            Object totemItem = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, totem);
+
+            Object packet1 = Reflections.constructor$ClientboundSetEquipmentPacket
+                    .newInstance(player.getEntityId(), List.of(Pair.of(Reflections.instance$EquipmentSlot$OFFHAND, totemItem)));
+            Object packet2 = Reflections.constructor$ClientboundEntityEventPacket
+                    .newInstance(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player), (byte) 35);
+            Object packet3 = Reflections.constructor$ClientboundSetEquipmentPacket
+                    .newInstance(player.getEntityId(), List.of(Pair.of(Reflections.instance$EquipmentSlot$OFFHAND, previousItem)));
+            packets.add(packet1);
+            packets.add(packet2);
+            packets.add(packet3);
+
+            Object bundlePacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
+            BukkitNetworkManager.instance().sendPacket(player, bundlePacket);
+        } catch (ReflectiveOperationException e) {
+            BukkitCraftEngine.instance().logger().warn("Failed to send totem animation");
+        }
     }
 }

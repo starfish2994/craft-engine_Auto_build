@@ -18,13 +18,17 @@ import net.momirealms.craftengine.core.item.modifier.CustomModelDataModifier;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemModelModifier;
 import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
+import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.*;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectProperty;
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -59,6 +63,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final BukkitCraftEngine plugin;
     private final ItemEventListener itemEventListener;
     private final DebugStickListener debugStickListener;
+    private final ItemParser itemParser;
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -66,6 +71,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.factory = BukkitItemFactory.create(plugin);
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
+        this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
         instance = this;
     }
@@ -118,6 +124,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.unload();
         HandlerList.unregisterAll(this.itemEventListener);
         HandlerList.unregisterAll(this.debugStickListener);
+    }
+
+    @Override
+    public ConfigSectionParser parser() {
+        return this.itemParser;
     }
 
     @Override
@@ -176,173 +187,209 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return wrapped.id();
     }
 
-    @Override
-    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-        // just register for recipes
-        Holder.Reference<Key> holder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
-                .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
-                        .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
+    public class ItemParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
 
-        String materialStringId = (String) section.get("material");
-        Material material = MaterialUtils.getMaterial(materialStringId);
-        if (material == null) {
-            plugin.logger().warn(path, "material " + Optional.ofNullable(materialStringId).map(it -> it + " ").orElse("") + "does not exist for item " + id);
-            return;
-        }
-        Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
-
-        int customModelData = MiscUtils.getAsInt(section.getOrDefault("custom-model-data", 0));
-        Key itemModelKey = null;
-
-        CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
-        itemBuilder.modifier(new IdModifier<>(id));
-
-        boolean hasItemModelSection = section.containsKey("item-model");
-
-        // To get at least one model provider
-        // Sets some basic model info
-        if (customModelData != 0) {
-            itemBuilder.modifier(new CustomModelDataModifier<>(customModelData));
-        }
-        // Requires the item to have model before apply item-model
-        else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isVersionNewerThan1_21_2()) {
-            // check server version here because components require 1.21.2+
-            // customize or use the id
-            itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
-            itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
         }
 
-        if (hasItemModelSection) {
-            itemModelKey = Key.from(section.get("item-model").toString());
-            itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.ITEM;
         }
 
-        // Get item behaviors
-        Object behaviorConfig = section.get("behavior");
-        if (behaviorConfig instanceof List<?>) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> behavior = (List<Map<String, Object>>) behaviorConfig;
-            List<ItemBehavior> behaviors = new ArrayList<>();
-            for (Map<String, Object> behaviorMap : behavior) {
-                behaviors.add(ItemBehaviors.fromMap(pack, path, id, behaviorMap));
-            }
-            itemBuilder.behavior(behaviors);
-        } else if (behaviorConfig instanceof Map<?, ?>) {
-            Map<String, Object> behaviorSection = MiscUtils.castToMap(section.get("behavior"), true);
-            if (behaviorSection != null) {
-                itemBuilder.behavior(ItemBehaviors.fromMap(pack, path, id, behaviorSection));
-            }
-        }
-
-        // Get item data
-        Map<String, Object> dataSection = MiscUtils.castToMap(section.get("data"), true);
-        if (dataSection != null) {
-            for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
-                Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
-                    try {
-                        itemBuilder.modifier(function.apply(dataEntry.getValue()));
-                    } catch (IllegalArgumentException e) {
-                        plugin.logger().warn("Invalid data format", e);
-                    }
-                });
-            }
-        }
-
-        if (section.containsKey("settings")) {
-            Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
-            itemBuilder.settings(ItemSettings.fromMap(settings));
-        }
-
-        CustomItem<ItemStack> customItem = itemBuilder.build();
-        this.customItems.put(id, customItem);
-        this.cachedSuggestions.add(Suggestion.suggestion(id.toString()));
-
-        // post process
-        // register tags
-        Set<Key> tags = customItem.settings().tags();
-        for (Key tag : tags) {
-            this.customItemTags.computeIfAbsent(tag, k -> new ArrayList<>()).add(holder);
-        }
-
-        // create trims
-        EquipmentGeneration equipment = customItem.settings().equipment();
-        if (equipment != null) {
-            EquipmentData modern = equipment.modernData();
-            // 1.21.2+
-            if (modern != null) {
-                this.equipmentsToGenerate.add(equipment);
-            }
-            // TODO 1.20
-        }
-
-        // add it to category
-        if (section.containsKey("category")) {
-            this.plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
-        }
-
-        // model part, can be null
-        // but if it exists, either custom model data or item model should be configured
-        Map<String, Object> modelSection = MiscUtils.castToMap(section.get("model"), true);
-        if (modelSection == null) {
-            return;
-        }
-
-        boolean hasModel = false;
-        if (customModelData != 0) {
-            hasModel= true;
-            // use custom model data
-            // check conflict
-            Map<Integer, Key> conflict = this.cmdConflictChecker.computeIfAbsent(materialId, k -> new HashMap<>());
-            if (conflict.containsKey(customModelData)) {
-                plugin.logger().warn(path, "Failed to create model for " + id + " because custom-model-data " + customModelData + " already occupied by item " + conflict.get(customModelData).toString());
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (customItems.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.item.duplicated", path.toString(), id.toString());
                 return;
             }
 
-            conflict.put(customModelData, id);
+            // just register for recipes
+            Holder.Reference<Key> holder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
+                    .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
+                            .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
-            // Parse models
-            ItemModel model = ItemModels.fromMap(modelSection);
-            for (ModelGeneration generation : model.modelsToGenerate()) {
-                prepareModelGeneration(generation);
+            String materialStringId = (String) section.get("material");
+            if (materialStringId == null) {
+                TranslationManager.instance().log("warning.config.item.lack_material", path.toString(), id.toString());
+                return;
             }
 
-            if (ConfigManager.packMaxVersion() > 21.39f) {
-                TreeMap<Integer, ItemModel> map = this.modernOverrides.computeIfAbsent(materialId, k -> new TreeMap<>());
-                map.put(customModelData, model);
+            Material material = MaterialUtils.getMaterial(materialStringId);
+            if (material == null) {
+                TranslationManager.instance().log("warning.config.item.invalid_material", path.toString(), id.toString(), materialStringId);
+                return;
+            }
+            
+            Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
+            int customModelData = MiscUtils.getAsInt(section.getOrDefault("custom-model-data", 0));
+            Key itemModelKey = null;
+
+            CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
+            itemBuilder.modifier(new IdModifier<>(id));
+
+            boolean hasItemModelSection = section.containsKey("item-model");
+
+            // To get at least one model provider
+            // Sets some basic model info
+            if (customModelData != 0) {
+                itemBuilder.modifier(new CustomModelDataModifier<>(customModelData));
+            }
+            // Requires the item to have model before apply item-model
+            else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isVersionNewerThan1_21_2()) {
+                // check server version here because components require 1.21.2+
+                // customize or use the id
+                itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
+                if (ResourceLocation.isValid(itemModelKey.toString())) {
+                    itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+                } else {
+                    itemModelKey = null;
+                }
             }
 
-            if (ConfigManager.packMinVersion() < 21.39f) {
-                List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
-                processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, customModelData);
-                TreeSet<LegacyOverridesModel> lom = this.legacyOverrides.computeIfAbsent(materialId, k -> new TreeSet<>());
-                lom.addAll(legacyOverridesModels);
-            }
-        }
-        if (itemModelKey != null) {
-            hasModel = true;
-            // use components
-            ItemModel model = ItemModels.fromMap(modelSection);
-            for (ModelGeneration generation : model.modelsToGenerate()) {
-                prepareModelGeneration(generation);
+            if (hasItemModelSection) {
+                itemModelKey = Key.from(section.get("item-model").toString());
+                itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
             }
 
-            if (ConfigManager.packMaxVersion() > 21.39f) {
-                this.modernItemModels1_21_4.put(itemModelKey, model);
+            // Get item behaviors
+            Object behaviorConfig = section.get("behavior");
+            if (behaviorConfig instanceof List<?>) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> behavior = (List<Map<String, Object>>) behaviorConfig;
+                List<ItemBehavior> behaviors = new ArrayList<>();
+                for (Map<String, Object> behaviorMap : behavior) {
+                    behaviors.add(ItemBehaviors.fromMap(pack, path, id, behaviorMap));
+                }
+                itemBuilder.behavior(behaviors);
+            } else if (behaviorConfig instanceof Map<?, ?>) {
+                Map<String, Object> behaviorSection = MiscUtils.castToMap(section.get("behavior"), true);
+                if (behaviorSection != null) {
+                    itemBuilder.behavior(ItemBehaviors.fromMap(pack, path, id, behaviorSection));
+                }
             }
 
-            if (ConfigManager.packMaxVersion() > 21.19f && ConfigManager.packMinVersion() < 21.39f) {
-                List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
-                processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, 0);
-                if (legacyOverridesModels.isEmpty()) {
-                    plugin.logger().warn(path, "Can't convert " + id + "'s model to legacy format.");
+            // Get item data
+            Map<String, Object> dataSection = MiscUtils.castToMap(section.get("data"), true);
+            if (dataSection != null) {
+                for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
+                    Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
+                        try {
+                            itemBuilder.modifier(function.apply(dataEntry.getValue()));
+                        } catch (IllegalArgumentException e) {
+                            plugin.logger().warn("Invalid data format", e);
+                        }
+                    });
+                }
+            }
+
+            if (section.containsKey("settings")) {
+                Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
+                itemBuilder.settings(ItemSettings.fromMap(settings));
+            }
+
+            CustomItem<ItemStack> customItem = itemBuilder.build();
+            customItems.put(id, customItem);
+
+            // cache command suggestions
+            cachedSuggestions.add(Suggestion.suggestion(id.toString()));
+            if (material == Material.TOTEM_OF_UNDYING)
+                cachedTotemSuggestions.add(Suggestion.suggestion(id.toString()));
+
+            // post process
+            // register tags
+            Set<Key> tags = customItem.settings().tags();
+            for (Key tag : tags) {
+                customItemTags.computeIfAbsent(tag, k -> new ArrayList<>()).add(holder);
+            }
+
+            // create trims
+            EquipmentGeneration equipment = customItem.settings().equipment();
+            if (equipment != null) {
+                EquipmentData modern = equipment.modernData();
+                // 1.21.2+
+                if (modern != null) {
+                    equipmentsToGenerate.add(equipment);
+                }
+                // TODO 1.20
+            }
+
+            // add it to category
+            if (section.containsKey("category")) {
+                plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
+            }
+
+            // model part, can be null
+            // but if it exists, either custom model data or item model should be configured
+            Map<String, Object> modelSection = MiscUtils.castToMap(section.get("model"), true);
+            if (modelSection == null) {
+                return;
+            }
+
+            boolean hasModel = false;
+            if (customModelData != 0) {
+                hasModel= true;
+                // use custom model data
+                // check conflict
+                Map<Integer, Key> conflict = cmdConflictChecker.computeIfAbsent(materialId, k -> new HashMap<>());
+                if (conflict.containsKey(customModelData)) {
+                    TranslationManager.instance().log("warning.config.item.custom_model_data_conflict", path.toString(), id.toString(), String.valueOf(customModelData), conflict.get(customModelData).toString());
                     return;
                 }
-                legacyOverridesModels.sort(LegacyOverridesModel::compareTo);
-                this.modernItemModels1_21_2.put(itemModelKey, legacyOverridesModels);
+
+                if (customModelData > 16_777_216) {
+                    TranslationManager.instance().log("warning.config.item.bad_custom_model_data_value", path.toString(), id.toString(), String.valueOf(customModelData));
+                }
+
+                conflict.put(customModelData, id);
+
+                // Parse models
+                ItemModel model = ItemModels.fromMap(modelSection);
+                for (ModelGeneration generation : model.modelsToGenerate()) {
+                    prepareModelGeneration(path, id, generation);
+                }
+
+                if (Config.packMaxVersion() > 21.39f) {
+                    TreeMap<Integer, ItemModel> map = modernOverrides.computeIfAbsent(materialId, k -> new TreeMap<>());
+                    map.put(customModelData, model);
+                }
+
+                if (Config.packMinVersion() < 21.39f) {
+                    List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
+                    processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, customModelData);
+                    TreeSet<LegacyOverridesModel> lom = legacyOverrides.computeIfAbsent(materialId, k -> new TreeSet<>());
+                    lom.addAll(legacyOverridesModels);
+                }
             }
-        }
-        if (!hasModel) {
-            plugin.logger().warn(path, "No custom-model-data/item-model configured for " + id);
+            if (itemModelKey != null) {
+                hasModel = true;
+                // use components
+                ItemModel model = ItemModels.fromMap(modelSection);
+                for (ModelGeneration generation : model.modelsToGenerate()) {
+                    prepareModelGeneration(path, id, generation);
+                }
+
+                if (Config.packMaxVersion() > 21.39f) {
+                    modernItemModels1_21_4.put(itemModelKey, model);
+                }
+
+                if (Config.packMaxVersion() > 21.19f && Config.packMinVersion() < 21.39f) {
+                    List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
+                    processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, 0);
+                    if (!legacyOverridesModels.isEmpty()) {
+                        legacyOverridesModels.sort(LegacyOverridesModel::compareTo);
+                        modernItemModels1_21_2.put(itemModelKey, legacyOverridesModels);
+                    } else {
+                        plugin.debug(() -> "Can't convert " + id + "'s model to legacy format.");
+                    }
+                }
+            }
+            if (!hasModel) {
+                TranslationManager.instance().log("warning.config.item.lack_model_id", path.toString(), id.toString());
+            }
         }
     }
 

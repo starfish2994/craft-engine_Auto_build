@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.core.plugin.command.sender.Sender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
 import net.momirealms.craftengine.core.util.Tristate;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
@@ -77,6 +78,12 @@ public class BukkitSenderFactory extends SenderFactory<BukkitCraftEngine, Comman
     @Override
     protected boolean isConsole(CommandSender sender) {
         return sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected <C extends CommandSender> C consoleCommandSender() {
+        return (C) Bukkit.getConsoleSender();
     }
 
     @Override

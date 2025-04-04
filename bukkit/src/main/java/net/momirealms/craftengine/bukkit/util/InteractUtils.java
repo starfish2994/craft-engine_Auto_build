@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Direction;
@@ -77,16 +77,16 @@ public class InteractUtils {
             return false;
         });
         register(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
-            if (!ConfigManager.enableRecipeSystem()) return false;
+            if (!Config.enableRecipeSystem()) return false;
             Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().getRecipe(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
                     keyReference, item.getItem()
             ))) != null).isPresent();
         });
         register(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
-            if (!ConfigManager.enableRecipeSystem()) return false;
+            if (!Config.enableRecipeSystem()) return false;
             Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().getRecipe(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
                     keyReference, item.getItem()
             ))) != null).isPresent();
         });

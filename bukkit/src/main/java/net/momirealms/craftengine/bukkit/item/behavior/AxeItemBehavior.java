@@ -60,7 +60,7 @@ public class AxeItemBehavior extends ItemBehavior {
             return InteractionResult.PASS;
         }
 
-        Optional<CustomBlock> optionalNewCustomBlock = BukkitBlockManager.instance().getBlock(blockBehavior.stripped());
+        Optional<CustomBlock> optionalNewCustomBlock = BukkitBlockManager.instance().blockById(blockBehavior.stripped());
         if (optionalNewCustomBlock.isEmpty()) {
             CraftEngine.instance().logger().warn("stripped block " + blockBehavior.stripped() + " does not exist");
             return InteractionResult.FAIL;

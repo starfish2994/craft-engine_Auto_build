@@ -12,7 +12,7 @@ import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.plugin.command.sender.Sender;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.locale.CraftEngineCaptionFormatter;
 import net.momirealms.craftengine.core.plugin.locale.CraftEngineCaptionProvider;
 import net.momirealms.craftengine.core.util.ArrayUtils;
@@ -75,7 +75,7 @@ public abstract class AbstractCommandManager<C> implements CraftEngineCommandMan
         injectExceptionHandler(CommandExecutionException.class, MinecraftExceptionHandler.createDefaultCommandExecutionHandler(), StandardCaptionKeys.EXCEPTION_UNEXPECTED);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void injectExceptionHandler(Class<? extends Throwable> type, MinecraftExceptionHandler.MessageFactory<C, ?> factory, Caption key) {
         getCommandManager().exceptionController().registerHandler(type, ctx -> {
             final @Nullable ComponentLike message = factory.message(captionFormatter, (ExceptionContext) ctx);
@@ -126,7 +126,7 @@ public abstract class AbstractCommandManager<C> implements CraftEngineCommandMan
 
     @Override
     public void registerDefaultFeatures() {
-        YamlDocument document = ConfigManager.instance().loadYamlConfig(commandsFile,
+        YamlDocument document = Config.instance().loadYamlConfig(commandsFile,
                 GeneralSettings.DEFAULT,
                 LoaderSettings
                     .builder()

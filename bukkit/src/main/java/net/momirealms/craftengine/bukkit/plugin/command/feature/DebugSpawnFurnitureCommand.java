@@ -47,7 +47,7 @@ public class DebugSpawnFurnitureCommand extends BukkitCommandFeature<CommandSend
                     NamespacedKey namespacedKey = context.get("id");
                     Key id = KeyUtils.namespacedKey2Key(namespacedKey);
                     BukkitFurnitureManager furnitureManager = BukkitFurnitureManager.instance();
-                    Optional<CustomFurniture> optionalCustomFurniture = furnitureManager.getFurniture(id);
+                    Optional<CustomFurniture> optionalCustomFurniture = furnitureManager.furnitureById(id);
                     if (optionalCustomFurniture.isEmpty()) {
                         return;
                     }

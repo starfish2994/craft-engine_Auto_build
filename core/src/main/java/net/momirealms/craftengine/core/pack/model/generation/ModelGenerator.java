@@ -6,6 +6,4 @@ public interface ModelGenerator {
     Collection<ModelGeneration> modelsToGenerate();
 
     void clearModelsToGenerate();
-
-    void prepareModelGeneration(ModelGeneration model);
 }

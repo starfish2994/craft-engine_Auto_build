@@ -217,6 +217,20 @@ public class FriendlyByteBuf extends ByteBuf {
         return this;
     }
 
+    public FriendlyByteBuf writeFixedSizeLongArray(long[] array) {
+        for (long value : array) {
+            this.writeLong(value);
+        }
+        return this;
+    }
+
+    public long[] readFixedSizeLongArray(long[] output) {
+        for(int i = 0; i < output.length; ++i) {
+            output[i] = this.readLong();
+        }
+        return output;
+    }
+
     public long[] readLongArray() {
         return this.readLongArray(null);
     }

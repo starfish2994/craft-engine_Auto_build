@@ -2,30 +2,30 @@ package net.momirealms.craftengine.bukkit.plugin.network.impl;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
 
-public class PacketIds1_21_5 implements PacketIds {
+public class PacketIds1_21 implements PacketIds {
 
     @Override
     public int clientboundBlockUpdatePacket() {
-        return 8;
+        return PacketIdFinder.clientboundByName("minecraft:block_update");
     }
 
     @Override
     public int clientboundSectionBlocksUpdatePacket() {
-        return 72;
+        return PacketIdFinder.clientboundByName("minecraft:section_blocks_update");
     }
 
     @Override
     public int clientboundLevelParticlesPacket() {
-        return 40;
+        return PacketIdFinder.clientboundByName("minecraft:level_particles");
     }
 
     @Override
     public int clientboundLevelEventPacket() {
-        return 39;
+        return PacketIdFinder.clientboundByName("minecraft:level_event");
     }
 
     @Override
     public int clientboundAddEntityPacket() {
-        return 1;
+        return PacketIdFinder.clientboundByName("minecraft:add_entity");
     }
 }

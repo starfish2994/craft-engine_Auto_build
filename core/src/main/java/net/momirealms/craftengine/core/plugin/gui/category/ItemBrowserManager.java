@@ -3,9 +3,8 @@ package net.momirealms.craftengine.core.plugin.gui.category;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
-import net.momirealms.craftengine.core.pack.LoadingSequence;
-import net.momirealms.craftengine.core.plugin.Reloadable;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.Manageable;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.gui.Gui;
 import net.momirealms.craftengine.core.util.Key;
@@ -16,20 +15,11 @@ import java.util.TreeSet;
 
 import static java.util.Objects.requireNonNull;
 
-public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "categories";
+public interface ItemBrowserManager extends Manageable {
     int MAX_RECIPE_DEPTH = 16;
     String GET_ITEM_PERMISSION = "craftengine.browser.get_item";
 
-    default String sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
-
-    default int loadingSequence() {
-        return LoadingSequence.CATEGORY;
-    }
-
-    void delayedLoad();
+    ConfigSectionParser parser();
 
     void addExternalCategoryMember(Key item, List<Key> category);
 
@@ -81,7 +71,7 @@ public interface ItemBrowserManager extends Reloadable, ConfigSectionParser {
         public static Key SOUND_CLICK_BUTTON;
 
         public static void load() {
-            Section section = ConfigManager.instance().settings().getSection("gui.browser");
+            Section section = Config.instance().settings().getSection("gui.browser");
             if (section == null) return;
             BROWSER_TITLE = getOrThrow(section, "main.title");
             BROWSER_NEXT_PAGE_AVAILABLE = Key.of(getOrThrow(section, "main.page-navigation.next.available"));

@@ -9,11 +9,15 @@ import java.util.Map;
 
 public interface ConfigSectionParser extends Comparable<ConfigSectionParser> {
 
-    String sectionId();
+    String[] sectionId();
 
     void parseSection(Pack pack, Path path, Key id, Map<String, Object> section);
 
     int loadingSequence();
+
+    default boolean isTemplate() {
+        return false;
+    }
 
     @Override
     default int compareTo(@NotNull ConfigSectionParser another) {

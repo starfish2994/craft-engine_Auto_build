@@ -32,7 +32,7 @@ import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -357,7 +357,7 @@ public class BukkitInjector {
         @SuppressWarnings("unchecked")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
+            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
@@ -394,13 +394,13 @@ public class BukkitInjector {
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
                 }
@@ -412,7 +412,7 @@ public class BukkitInjector {
                 injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
                 injectedCacheCheck.lastRecipe(resourceLocation);
-                return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(pair.getSecond()));
+                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(pair.getSecond()));
             } else {
                 return Optional.empty();
             }
@@ -425,7 +425,7 @@ public class BukkitInjector {
         @SuppressWarnings("unchecked")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
+            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
@@ -462,13 +462,13 @@ public class BukkitInjector {
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
                 }
@@ -480,7 +480,7 @@ public class BukkitInjector {
                 injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
                 injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
+                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();
             }
@@ -493,7 +493,7 @@ public class BukkitInjector {
         @SuppressWarnings("unchecked")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
+            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
@@ -522,13 +522,13 @@ public class BukkitInjector {
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
                 }
@@ -540,7 +540,7 @@ public class BukkitInjector {
                 injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
                 injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
+                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();
             }
@@ -553,7 +553,7 @@ public class BukkitInjector {
         @SuppressWarnings("unchecked")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.minecraftRecipeManager();
+            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
@@ -583,11 +583,11 @@ public class BukkitInjector {
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
                 if (type == Reflections.instance$RecipeType$SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMELTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.BLASTING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
                 } else if (type == Reflections.instance$RecipeType$SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.getRecipe(RecipeTypes.SMOKING, input, lastCustomRecipe);
+                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
                 }
@@ -599,7 +599,7 @@ public class BukkitInjector {
                 injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
                 // It doesn't matter at all
                 injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.getRecipeHolderByRecipe(ceRecipe)).orElse(holder));
+                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
             } else {
                 return Optional.empty();
             }
@@ -623,14 +623,14 @@ public class BukkitInjector {
                 CESection section = holder.ceSection();
                 if (BlockStateUtils.isVanillaBlock(stateId)) {
                     section.setBlockState(x, y, z, EmptyBlock.INSTANCE.defaultState());
-                    if (ConfigManager.enableLightSystem() && ConfigManager.forceUpdateLight()) {
+                    if (Config.enableLightSystem() && Config.forceUpdateLight()) {
                         updateLightIfChanged(holder, previousState, newState, null, y, z, x);
                     }
                 } else {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     section.setBlockState(x, y, z, immutableBlockState);
                     if (!immutableBlockState.isEmpty()) {
-                        if (ConfigManager.enableLightSystem()) {
+                        if (Config.enableLightSystem()) {
                             updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
                         }
                     }

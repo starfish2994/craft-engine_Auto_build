@@ -7,15 +7,15 @@ import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.Key;
 
 public class BitmapImage implements FontProvider {
-    private final Key imageId;
+    private final Key id;
     private final Key font;
     private final int height;
     private final int ascent;
     private final String file;
     private final int[][] codepointGrid;
 
-    public BitmapImage(Key imageId, Key font, int height, int ascent, String file, int[][] codepointGrid) {
-        this.imageId = imageId;
+    public BitmapImage(Key id, Key font, int height, int ascent, String file, int[][] codepointGrid) {
+        this.id = id;
         this.font = font;
         this.height = height;
         this.ascent = ascent;
@@ -39,16 +39,16 @@ public class BitmapImage implements FontProvider {
         return font;
     }
 
-    public Key imageId() {
-        return imageId;
+    public Key id() {
+        return id;
     }
 
     public int[][] codepointGrid() {
-        return codepointGrid;
+        return codepointGrid.clone();
     }
 
     public int codepointAt(int row, int column) {
-        if (row < 0 || row >= codepointGrid.length || column < 0 || column >= codepointGrid[row].length) {
+        if (!isValidCoordinate(row, column)) {
             throw new IndexOutOfBoundsException("Invalid index: (" + row + ", " + column + ")");
         }
         return codepointGrid[row][column];
@@ -69,16 +69,16 @@ public class BitmapImage implements FontProvider {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         BitmapImage image = (BitmapImage) object;
-        return imageId.equals(image.imageId);
+        return id.equals(image.id);
     }
 
     @Override
     public int hashCode() {
-        return imageId.hashCode();
+        return id.hashCode();
     }
 
     @Override
-    public JsonObject getJson() {
+    public JsonObject get() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", "bitmap");
         jsonObject.addProperty("height", height);

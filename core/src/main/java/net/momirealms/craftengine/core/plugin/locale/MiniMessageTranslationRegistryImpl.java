@@ -8,9 +8,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.util.TriState;
 import net.kyori.examination.Examinable;
 import net.kyori.examination.ExaminableProperty;
-import net.momirealms.craftengine.core.plugin.minimessage.ImageTag;
-import net.momirealms.craftengine.core.plugin.minimessage.IndexedArgumentTag;
-import net.momirealms.craftengine.core.plugin.minimessage.ShiftTag;
+import net.momirealms.craftengine.core.plugin.text.minimessage.ImageTag;
+import net.momirealms.craftengine.core.plugin.text.minimessage.IndexedArgumentTag;
+import net.momirealms.craftengine.core.plugin.text.minimessage.ShiftTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

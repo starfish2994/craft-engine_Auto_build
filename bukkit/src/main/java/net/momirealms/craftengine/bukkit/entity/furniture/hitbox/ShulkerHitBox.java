@@ -36,7 +36,7 @@ public class ShulkerHitBox extends AbstractHitBox {
 
         ShulkerData.Peek.addEntityDataIfNotDefaultValue(peek, this.cachedShulkerValues);
         ShulkerData.Color.addEntityDataIfNotDefaultValue((byte) 0, this.cachedShulkerValues);
-//      ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedShulkerValues);
+        // ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedShulkerValues);
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedShulkerValues); // 无ai
@@ -119,16 +119,27 @@ public class ShulkerHitBox extends AbstractHitBox {
     public void addSpawnPackets(int[] entityIds, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
+            double originalY = y + offset.y;
+            double integerPart = Math.floor(originalY);
+            double fractionalPart = originalY - integerPart;
+            double processedY = (fractionalPart >= 0.5) ? integerPart + 1 : originalY;
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                    entityIds[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                    entityIds[0], UUID.randomUUID(), x + offset.x, originalY, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
             ), false);
             packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                    entityIds[1], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                    entityIds[1], UUID.randomUUID(), x + offset.x, processedY, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
             ), false);
             packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]), false);
+            if (originalY != processedY) {
+                double deltaY = originalY - processedY;
+                short ya = (short) (deltaY * 8192);
+                packets.accept(Reflections.constructor$ClientboundMoveEntityPacket$Pos.newInstance(
+                        entityIds[1], (short) 0, ya, (short) 0, true
+                ), false);
+            }
             if (VersionHelper.isVersionNewerThan1_20_5()) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);

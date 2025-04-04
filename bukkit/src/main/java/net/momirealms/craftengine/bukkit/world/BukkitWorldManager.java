@@ -7,7 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.CEWorld;
@@ -265,7 +265,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
                 return;
             } finally {
-                if (ConfigManager.restoreVanillaBlocks()) {
+                if (Config.restoreVanillaBlocks()) {
                     CESection[] ceSections = ceChunk.sections();
                     Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
                     Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
@@ -313,7 +313,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 for (int i = 0; i < ceSections.length; i++) {
                     CESection ceSection = ceSections[i];
                     Object section = sections[i];
-                    if (ConfigManager.syncCustomBlocks()) {
+                    if (Config.syncCustomBlocks()) {
                         Object statesContainer = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
                         Object data = Reflections.varHandle$PalettedContainer$data.get(statesContainer);
                         Object palette = Reflections.field$PalettedContainer$Data$palette.get(data);
@@ -362,7 +362,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                             }
                         }
                     }
-                    if (ConfigManager.restoreCustomBlocks()) {
+                    if (Config.restoreCustomBlocks()) {
                         if (!ceSection.statesContainer().isEmpty()) {
                             for (int x = 0; x < 16; x++) {
                                 for (int z = 0; z < 16; z++) {
@@ -378,7 +378,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                     }
                     BukkitInjector.injectLevelChunkSection(section, ceSection, ceWorld, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
                 }
-                if (ConfigManager.enableRecipeSystem()) {
+                if (Config.enableRecipeSystem()) {
                     @SuppressWarnings("unchecked")
                     Map<Object, Object> blockEntities = (Map<Object, Object>) FastNMS.INSTANCE.field$ChunkAccess$blockEntities(levelChunk);
                     for (Object blockEntity : blockEntities.values()) {

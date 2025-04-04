@@ -37,20 +37,21 @@ import java.util.function.BiConsumer;
 
 public class BukkitNetworkManager implements NetworkManager, Listener, PluginMessageListener {
     private static BukkitNetworkManager instance;
-    private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> nmsPacketFunctions = new HashMap<>();
-    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> byteBufPacketFunctions = new HashMap<>();
+    private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
+    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
 
     private static void registerNMSPacketConsumer(final TriConsumer<NetWorkUser, NMSPacketEvent, Object> function, @Nullable Class<?> packet) {
         if (packet == null) return;
-        nmsPacketFunctions.put(packet, function);
+        NMS_PACKET_HANDLERS.put(packet, function);
     }
 
     private static void registerByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
-        byteBufPacketFunctions.put(id, function);
+        BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
     }
 
     private final BiConsumer<Object, List<Object>> packetsConsumer;
-    private final BiConsumer<Object, Object> delayedPacketConsumer;
+    private final BiConsumer<Object, List<Object>> immediatePacketsConsumer;
+    private final BiConsumer<Object, Object> packetConsumer;
     private final BiConsumer<Object, Object> immediatePacketConsumer;
     private final BukkitCraftEngine plugin;
 
@@ -67,35 +68,22 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static final String PACKET_ENCODER = "craftengine_encoder";
     private static final String PACKET_DECODER = "craftengine_decoder";
 
-    private boolean active;
-    private boolean init;
     private static boolean hasModelEngine;
 
-    public static boolean hasModelEngine() {
-        return hasModelEngine;
-    }
-
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
+        instance = this;
+        hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         this.plugin = plugin;
-        if (VersionHelper.isVersionNewerThan1_21_5()) {
-            this.packetIds = new PacketIds1_21_5();
-        } else if (VersionHelper.isVersionNewerThan1_21_2()) {
-            this.packetIds = new PacketIds1_21_2();
-        } else if (VersionHelper.isVersionNewerThan1_20_5()) {
-            this.packetIds = new PacketIds1_20_5();
-        } else if (VersionHelper.isVersionNewerThan1_20_3()) {
-            this.packetIds = new PacketIds1_20_3();
-        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
-            this.packetIds = new PacketIds1_20_2();
-        } else {
-            this.packetIds = new PacketIds1_20();
-        }
-        this.registerConsumers();
+        // set up packet id
+        this.packetIds = setupPacketIds();
+        // register packet handlers
+        this.registerPacketHandlers();
+        // set up packet senders
+        this.packetConsumer = FastNMS.INSTANCE::sendPacket;
         this.packetsConsumer = ((serverPlayer, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            FastNMS.INSTANCE.sendPacket(serverPlayer, bundle);
+            this.packetConsumer.accept(serverPlayer, bundle);
         });
-        this.delayedPacketConsumer = FastNMS.INSTANCE::sendPacket;
         this.immediatePacketConsumer = (serverPlayer, packet) -> {
             try {
                 Reflections.method$Connection$sendPacketImmediate.invoke(FastNMS.INSTANCE.field$Player$connection$connection(serverPlayer), packet, null, true);
@@ -103,12 +91,45 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 plugin.logger().warn("Failed to invoke send packet", e);
             }
         };
-        this.active = true;
-        hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
-        instance = this;
+        this.immediatePacketsConsumer = (serverPlayer, packets) -> {
+            Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
+            this.immediatePacketConsumer.accept(serverPlayer, bundle);
+        };
+        // set up mod channel
+        this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
+        this.plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL);
+        // Inject server channel
+        try {
+            Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
+            Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
+            @SuppressWarnings("unchecked")
+            List<ChannelFuture> channels = (List<ChannelFuture>) Reflections.field$ServerConnectionListener$channels.get(serverConnection);
+            ListMonitor<ChannelFuture> monitor = new ListMonitor<>(channels, (future) -> {
+                Channel channel = future.channel();
+                injectServerChannel(channel);
+                this.injectedChannels.add(channel);
+            }, (object) -> {});
+            Reflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to init server connection", e);
+        }
     }
 
-    private void registerConsumers() {
+    private PacketIds setupPacketIds() {
+        if (VersionHelper.isVersionNewerThan1_21()) {
+            return new PacketIds1_21();
+        } else if (VersionHelper.isVersionNewerThan1_20_5()) {
+            return new PacketIds1_20_5();
+        } else if (VersionHelper.isVersionNewerThan1_20_3()) {
+            return new PacketIds1_20_3();
+        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+            return new PacketIds1_20_2();
+        } else {
+            return new PacketIds1_20();
+        }
+    }
+
+    private void registerPacketHandlers() {
         registerNMSPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, Reflections.clazz$ClientboundLevelChunkWithLightPacket);
         registerNMSPacketConsumer(PacketConsumers.PLAYER_ACTION, Reflections.clazz$ServerboundPlayerActionPacket);
         registerNMSPacketConsumer(PacketConsumers.SWING_HAND, Reflections.clazz$ServerboundSwingPacket);
@@ -128,6 +149,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, Reflections.clazz$ServerboundSignUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
+        registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_DATA, Reflections.clazz$ClientboundSetEntityDataPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
@@ -149,7 +171,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         Channel channel = getChannel(player);
@@ -169,40 +191,17 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         return this.onlineUserArray;
     }
 
-    @Override
     // 保留仅注册入频道用
+    @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {}
 
     @Override
     public void init() {
-        if (init) return;
-        try {
-            this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
-            this.plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL);
-            Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
-            Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
-            @SuppressWarnings("unchecked")
-            List<ChannelFuture> channels = (List<ChannelFuture>) Reflections.field$ServerConnectionListener$channels.get(serverConnection);
-            ListMonitor<ChannelFuture> monitor = new ListMonitor<>(channels, (future) -> {
-                if (!this.active) return;
-                Channel channel = future.channel();
-                injectServerChannel(channel);
-                this.injectedChannels.add(channel);
-            }, (object) -> {});
-            Reflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
-            this.init = true;
-        } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to init server connection", e);
-        }
-    }
-
-    @Override
-    public void enable() {
         Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
     }
 
     @Override
-    public void shutdown() {
+    public void disable() {
         HandlerList.unregisterAll(this);
         for (Channel channel : injectedChannels) {
             uninjectServerChannel(channel);
@@ -211,7 +210,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             handleDisconnection(getChannel(player));
         }
         injectedChannels.clear();
-        active = false;
     }
 
     @Override
@@ -258,16 +256,26 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
     }
 
+    @Override
     public void sendPacket(@NotNull NetWorkUser player, Object packet, boolean immediately) {
         if (immediately) {
             this.immediatePacketConsumer.accept(player.serverPlayer(), packet);
         } else {
-            this.delayedPacketConsumer.accept(player.serverPlayer(), packet);
+            this.packetConsumer.accept(player.serverPlayer(), packet);
         }
     }
 
-    public void sendPackets(@NotNull NetWorkUser player, List<Object> packet) {
-        this.packetsConsumer.accept(player.serverPlayer(), packet);
+    @Override
+    public void sendPackets(@NotNull NetWorkUser player, List<Object> packet, boolean immediately) {
+        if (immediately) {
+            this.immediatePacketsConsumer.accept(player.serverPlayer(), packet);
+        } else {
+            this.packetsConsumer.accept(player.serverPlayer(), packet);
+        }
+    }
+
+    public static boolean hasModelEngine() {
+        return hasModelEngine;
     }
 
     public void receivePacket(@NotNull NetWorkUser player, Object packet) {
@@ -542,13 +550,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     protected void handleNMSPacket(NetWorkUser user, NMSPacketEvent event, Object packet) {
-        Optional.ofNullable(nmsPacketFunctions.get(packet.getClass()))
+        Optional.ofNullable(NMS_PACKET_HANDLERS.get(packet.getClass()))
                 .ifPresent(function -> function.accept(user, event, packet));
     }
 
     protected void handleByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(byteBufPacketFunctions.get(packetID))
+        Optional.ofNullable(BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
                 .ifPresent(function -> function.accept(user, event));
     }
 

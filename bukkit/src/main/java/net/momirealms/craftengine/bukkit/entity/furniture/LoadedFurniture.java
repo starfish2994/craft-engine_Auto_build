@@ -6,12 +6,15 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
@@ -24,7 +27,7 @@ import org.joml.Vector3f;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-public class LoadedFurniture {
+public class LoadedFurniture implements Furniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
@@ -144,6 +147,7 @@ public class LoadedFurniture {
         }
     }
 
+    @Override
     public void initializeColliders() {
         Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
         for (CollisionEntity entity : this.collisionEntities) {
@@ -161,6 +165,16 @@ public class LoadedFurniture {
         }
     }
 
+    @Override
+    public Vec3d position() {
+        return new Vec3d(location.getX(), location.getY(), location.getZ());
+    }
+
+    @Override
+    public World world() {
+        return new BukkitWorld(this.location.getWorld());
+    }
+
     @NotNull
     public Location location() {
         return this.location.clone();
@@ -175,10 +189,12 @@ public class LoadedFurniture {
         return entity;
     }
 
+    @Override
     public boolean isValid() {
         return baseEntity().isValid();
     }
 
+    @Override
     public void destroy() {
         if (!isValid()) {
             return;
@@ -197,6 +213,7 @@ public class LoadedFurniture {
         this.seats.clear();
     }
 
+    @Override
     public void destroySeats() {
         for (Entity entity : this.seats) {
             entity.remove();
@@ -204,6 +221,7 @@ public class LoadedFurniture {
         this.seats.clear();
     }
 
+    @Override
     public Optional<Seat> findFirstAvailableSeat(int targetEntityId) {
         HitBox hitbox = hitBoxes.get(targetEntityId);
         if (hitbox == null) return Optional.empty();
@@ -216,14 +234,12 @@ public class LoadedFurniture {
                 .findFirst();
     }
 
+    @Override
     public boolean removeOccupiedSeat(Vector3f seat) {
         return this.occupiedSeats.remove(seat);
     }
 
-    public boolean removeOccupiedSeat(Seat seat) {
-        return this.removeOccupiedSeat(seat.offset());
-    }
-
+    @Override
     public boolean tryOccupySeat(Seat seat) {
         if (this.occupiedSeats.contains(seat.offset())) {
             return false;
@@ -232,10 +248,12 @@ public class LoadedFurniture {
         return true;
     }
 
+    @Override
     public UUID uuid() {
         return this.baseEntity().getUniqueId();
     }
 
+    @Override
     public int baseEntityId() {
         return this.baseEntityId;
     }
@@ -254,31 +272,29 @@ public class LoadedFurniture {
         return this.collisionEntities;
     }
 
-    @NotNull
-    public AnchorType anchorType() {
+    @Override
+    public @NotNull AnchorType anchorType() {
         return this.anchorType;
     }
 
-    @NotNull
-    public Key id() {
+    @Override
+    public @NotNull Key id() {
         return this.id;
     }
 
-    @NotNull
-    public CustomFurniture config() {
+    @Override
+    public @NotNull CustomFurniture config() {
         return this.furniture;
     }
 
+    @Override
     public boolean hasExternalModel() {
         return hasExternalModel;
     }
 
-    public CustomFurniture.Placement placement() {
-        return this.placement;
-    }
-
-    public Map<Integer, HitBox> hitBoxes() {
-        return this.hitBoxes;
+    @Override
+    public void spawnSeatEntityForPlayer(net.momirealms.craftengine.core.entity.player.Player player, Seat seat) {
+        spawnSeatEntityForPlayer((Player) player.platformPlayer(), seat);
     }
 
     public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {

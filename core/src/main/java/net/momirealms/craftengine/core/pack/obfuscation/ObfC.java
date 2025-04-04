@@ -46,7 +46,7 @@ public class ObfC {
     }
 
     private static String normalizeCharset(String input) {
-        return input.toLowerCase(Locale.ROOT);
+        return input.toLowerCase(Locale.ENGLISH);
     }
 
     private static String generateDefaultCharset() {

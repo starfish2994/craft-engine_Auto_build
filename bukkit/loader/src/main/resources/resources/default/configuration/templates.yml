@@ -471,15 +471,15 @@ templates#settings#sounds:
     arguments:
       block_type: bamboo
   default:sound/vine:
-    template: default:block
+    template: default:sound/block_template
     arguments:
       block_type: vine
   default:sound/lantern:
-    template: default:block
+    template: default:sound/block_template
     arguments:
       block_type: lantern
   default:sound/amethyst_block:
-    template: default:block
+    template: default:sound/block_template
     arguments:
       block_type: amethyst_block
 

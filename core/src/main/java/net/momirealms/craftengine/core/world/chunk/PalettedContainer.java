@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.IndexedIterable;
 import net.momirealms.craftengine.core.util.MCUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -15,12 +16,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.IntUnaryOperator;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.LongStream;
 
 public class PalettedContainer<T> implements PaletteResizeListener<T>, ReadableContainer<T> {
+    private static final BiConsumer<FriendlyByteBuf, long[]> RAW_DATA_WRITER = VersionHelper.isVersionNewerThan1_21_5() ?
+            (FriendlyByteBuf::writeFixedSizeLongArray) : (FriendlyByteBuf::writeLongArray);
+    private static final BiConsumer<FriendlyByteBuf, long[]> RAW_DATA_READER = VersionHelper.isVersionNewerThan1_21_5() ?
+            (FriendlyByteBuf::readFixedSizeLongArray) : (FriendlyByteBuf::readLongArray);
     private final PaletteResizeListener<T> dummyListener = (newSize, added) -> 0;
     private final IndexedIterable<T> idList;
     private Data<T> data;
@@ -78,7 +81,7 @@ public class PalettedContainer<T> implements PaletteResizeListener<T>, ReadableC
             int i = buf.readByte();
             Data<T> data = this.getCompatibleData(this.data, i);
             data.palette.readPacket(buf);
-            buf.readLongArray(data.storage.getData());
+            RAW_DATA_READER.accept(buf, data.storage.getData());
             this.data = data;
         } finally {
             this.unlock();
@@ -303,7 +306,7 @@ public class PalettedContainer<T> implements PaletteResizeListener<T>, ReadableC
         public void writePacket(FriendlyByteBuf buf) {
             buf.writeByte(this.storage.getElementBits());
             this.palette.writePacket(buf);
-            buf.writeLongArray(this.storage.getData());
+            RAW_DATA_WRITER.accept(buf, this.storage.getData());
         }
     }
 

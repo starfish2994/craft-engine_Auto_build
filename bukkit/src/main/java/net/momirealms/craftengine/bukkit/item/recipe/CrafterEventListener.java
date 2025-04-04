@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -39,7 +39,7 @@ public class CrafterEventListener implements Listener {
 
     @EventHandler
     public void onCrafting(CrafterCraftEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         CraftingRecipe recipe = event.getRecipe();
         if (!(event.getBlock().getState() instanceof Crafter crafter)) {
             return;
@@ -82,12 +82,12 @@ public class CrafterEventListener implements Listener {
             return;
         }
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPELESS, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPELESS, input);
         if (ceRecipe != null) {
             event.setResult(ceRecipe.result(ItemBuildContext.EMPTY));
             return;
         }
-        ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input);
+        ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPED, input);
         if (ceRecipe != null) {
             event.setResult(ceRecipe.result(ItemBuildContext.EMPTY));
             return;

@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.font;
 
-import net.momirealms.craftengine.core.pack.LoadingSequence;
-import net.momirealms.craftengine.core.plugin.Reloadable;
+import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
@@ -9,10 +8,8 @@ import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
-public interface ImageManager extends Reloadable, ConfigSectionParser {
-    String CONFIG_SECTION_NAME = "images";
+public interface FontManager extends Manageable {
     Key DEFAULT_FONT = Key.of("minecraft:default");
     String BYPASS_BOOK = "craftengine.filter.bypass.book";
     String BYPASS_SIGN = "craftengine.filter.bypass.sign";
@@ -20,27 +17,23 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
     String BYPASS_COMMAND = "craftengine.filter.bypass.command";
     String BYPASS_ANVIL = "craftengine.filter.bypass.anvil";
 
-    default String sectionId() {
-        return CONFIG_SECTION_NAME;
-    }
-
-    void delayedLoad();
+    ConfigSectionParser[] parsers();
 
     boolean isDefaultFontInUse();
 
-    boolean isIllegalCharacter(int codepoint);
+    boolean isIllegalCodepoint(int codepoint);
 
-    Collection<Font> fontsInUse();
+    Collection<Font> fonts();
 
     Optional<BitmapImage> bitmapImageByCodepoint(Key font, int codepoint);
 
-    default Optional<BitmapImage> getBitmapImageByChars(Key font, char[] chars) {
+    default Optional<BitmapImage> bitmapImageByChars(Key font, char[] chars) {
         return bitmapImageByCodepoint(font, CharacterUtils.charsToCodePoint(chars));
     }
 
     Optional<BitmapImage> bitmapImageByImageId(Key imageId);
 
-    Optional<Font> getFontInUse(Key font);
+    Optional<Font> fontById(Key font);
 
     int codepointByImageId(Key imageId, int x, int y);
 
@@ -48,15 +41,15 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
         return this.codepointByImageId(imageId, 0, 0);
     }
 
-    default char[] getCharsByImageId(Key imageId) {
-        return getCharsByImageId(imageId, 0, 0);
+    default char[] charsByImageId(Key imageId) {
+        return charsByImageId(imageId, 0, 0);
     }
 
-    default char[] getCharsByImageId(Key imageId, int x, int y) {
+    default char[] charsByImageId(Key imageId, int x, int y) {
         return Character.toChars(this.codepointByImageId(imageId, x, y));
     }
 
-    String createOffsets(int offset, BiFunction<String, String, String> tagFormatter);
+    String createOffsets(int offset, FontTagFormatter tagFormatter);
 
     default String createMiniMessageOffsets(int offset) {
         return createOffsets(offset, FormatUtils::miniMessageFont);
@@ -69,10 +62,4 @@ public interface ImageManager extends Reloadable, ConfigSectionParser {
     default String createRawOffsets(int offset) {
         return createOffsets(offset, (raw, font) -> raw);
     }
-
-    default int loadingSequence() {
-        return LoadingSequence.FONT;
-    }
-
-    void delayedInit();
 }

@@ -17,7 +17,7 @@ import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -85,7 +85,7 @@ public class RecipeEventListener implements Listener {
                         recipeType = RecipeTypes.SMOKING;
                     }
 
-                    Recipe<ItemStack> ceRecipe = recipeManager.getRecipe(recipeType, input);
+                    Recipe<ItemStack> ceRecipe = recipeManager.recipeByInput(recipeType, input);
                     // The item is an ingredient, we should never consider it as fuel firstly
                     if (ceRecipe != null) return;
 
@@ -261,7 +261,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onFurnaceInventoryOpen(InventoryOpenEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!(event.getInventory() instanceof FurnaceInventory furnaceInventory)) {
             return;
         }
@@ -277,7 +277,7 @@ public class RecipeEventListener implements Listener {
     // for 1.20.1-1.21.1
     @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (VersionHelper.isVersionNewerThan1_21_2()) return;
         Block block = event.getBlock();
         Material material = block.getType();
@@ -295,7 +295,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlaceBlock(BlockPlaceEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         Block block = event.getBlock();
         Material material = block.getType();
         if (material == Material.FURNACE || material == Material.BLAST_FURNACE || material == Material.SMOKER) {
@@ -322,7 +322,7 @@ public class RecipeEventListener implements Listener {
     // for 1.21.2+
     @EventHandler(ignoreCancelled = true)
     public void onPutItemOnCampfire(PlayerInteractEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block clicked = event.getClickedBlock();
@@ -345,7 +345,7 @@ public class RecipeEventListener implements Listener {
         try {
             @SuppressWarnings("unchecked")
             Optional<Object> optionalMCRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor1.invoke(
-                    BukkitRecipeManager.minecraftRecipeManager(),
+                    BukkitRecipeManager.nmsRecipeManager(),
                     Reflections.instance$RecipeType$CAMPFIRE_COOKING,
                     Reflections.constructor$SingleRecipeInput.newInstance(Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack)),
                     FastNMS.INSTANCE.field$CraftWorld$ServerLevel(event.getPlayer().getWorld()),
@@ -360,7 +360,7 @@ public class RecipeEventListener implements Listener {
                 return;
             }
             SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
             if (ceRecipe == null) {
                 event.setCancelled(true);
             }
@@ -373,7 +373,7 @@ public class RecipeEventListener implements Listener {
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(CampfireStartEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         CampfireRecipe recipe = event.getRecipe();
         Key recipeId = new Key(recipe.getKey().namespace(), recipe.getKey().value());
@@ -392,7 +392,7 @@ public class RecipeEventListener implements Listener {
         }
 
         SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setTotalCookTime(Integer.MAX_VALUE);
             return;
@@ -404,7 +404,7 @@ public class RecipeEventListener implements Listener {
     // for 1.21.2+
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(BlockCookEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         if (!VersionHelper.isVersionNewerThan1_21_2()) return;
         Material type = event.getBlock().getType();
         if (type != Material.CAMPFIRE && type != Material.SOUL_CAMPFIRE) return;
@@ -427,7 +427,7 @@ public class RecipeEventListener implements Listener {
         }
 
         SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.getRecipe(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setCancelled(true);
             return;
@@ -743,7 +743,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCraftingRecipe(PrepareItemCraftEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
         if (recipe == null)
             return;
@@ -802,14 +802,14 @@ public class RecipeEventListener implements Listener {
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
         Key lastRecipe = serverPlayer.lastUsedRecipe();
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPELESS, input, lastRecipe);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPELESS, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.result(new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
             serverPlayer.setLastUsedRecipe(ceRecipe.id());
             correctCraftingRecipeUsed(inventory, ceRecipe);
             return;
         }
-        ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SHAPED, input, lastRecipe);
+        ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPED, input, lastRecipe);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.result(new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
             serverPlayer.setLastUsedRecipe(ceRecipe.id());
@@ -821,7 +821,7 @@ public class RecipeEventListener implements Listener {
     }
 
     private void correctCraftingRecipeUsed(CraftingInventory inventory, Recipe<ItemStack> recipe) {
-        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        Object holderOrRecipe = recipeManager.nmsRecipeHolderByRecipe(recipe);
         if (holderOrRecipe == null) {
             // it's a vanilla recipe but not injected
             return;
@@ -836,7 +836,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSmithingTransform(PrepareSmithingEvent event) {
-        if (!ConfigManager.enableRecipeSystem()) return;
+        if (!Config.enableRecipeSystem()) return;
         SmithingInventory inventory = event.getInventory();
         if (!(inventory.getRecipe() instanceof SmithingTransformRecipe recipe)) return;
 
@@ -857,7 +857,7 @@ public class RecipeEventListener implements Listener {
                 getOptimizedIDItem(addition)
         );
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.getRecipe(RecipeTypes.SMITHING_TRANSFORM, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SMITHING_TRANSFORM, input);
         if (ceRecipe == null) {
             event.setResult(null);
             return;
@@ -878,7 +878,7 @@ public class RecipeEventListener implements Listener {
     }
 
     private void correctSmithingRecipeUsed(SmithingInventory inventory, Recipe<ItemStack> recipe) {
-        Object holderOrRecipe = recipeManager.getRecipeHolderByRecipe(recipe);
+        Object holderOrRecipe = recipeManager.nmsRecipeHolderByRecipe(recipe);
         if (holderOrRecipe == null) {
             // it's a vanilla recipe but not injected
             return;

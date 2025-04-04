@@ -35,7 +35,7 @@ public class SearchRecipePlayerCommand extends BukkitCommandFeature<CommandSende
                         return;
                     }
                     Key itemId = item.id();
-                    List<Recipe<Object>> inRecipes = plugin().recipeManager().getRecipeByResult(itemId);
+                    List<Recipe<Object>> inRecipes = plugin().recipeManager().recipeByResult(itemId);
                     if (!inRecipes.isEmpty()) {
                         plugin().itemBrowserManager().openRecipePage(serverPlayer, null, inRecipes, 0, 0, false);
                     } else {

@@ -28,6 +28,7 @@ public class BlockSettings {
     @Nullable
     Key itemId;
     Set<Key> tags = Set.of();
+    float incorrectToolSpeed = 0.3f;
     Set<Key> correctTools = Set.of();
     String name;
 
@@ -81,6 +82,7 @@ public class BlockSettings {
         newSettings.fluidState = settings.fluidState;
         newSettings.blockLight = settings.blockLight;
         newSettings.name = settings.name;
+        newSettings.incorrectToolSpeed = settings.incorrectToolSpeed;
         return newSettings;
     }
 
@@ -122,6 +124,10 @@ public class BlockSettings {
 
     public boolean canOcclude() {
         return canOcclude;
+    }
+
+    public float incorrectToolSpeed() {
+        return incorrectToolSpeed;
     }
 
     public String name() {
@@ -240,6 +246,11 @@ public class BlockSettings {
 
     public BlockSettings canOcclude(boolean canOcclude) {
         this.canOcclude = canOcclude;
+        return this;
+    }
+
+    public BlockSettings incorrectToolSpeed(float incorrectToolSpeed) {
+        this.incorrectToolSpeed = incorrectToolSpeed;
         return this;
     }
 
@@ -380,6 +391,10 @@ public class BlockSettings {
             registerFactory("correct-tools", (value -> {
                 List<String> tools = MiscUtils.getAsStringList(value);
                 return settings -> settings.correctTools(tools.stream().map(Key::of).collect(Collectors.toSet()));
+            }));
+            registerFactory("incorrect-tool-dig-speed", (value -> {
+                float floatValue = MiscUtils.getAsFloat(value);
+                return settings -> settings.incorrectToolSpeed(floatValue);
             }));
             registerFactory("name", (value -> {
                 String name = value.toString();

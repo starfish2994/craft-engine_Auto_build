@@ -18,9 +18,9 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
-import net.momirealms.craftengine.core.font.ImageManager;
+import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.ConfigManager;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
@@ -61,6 +61,11 @@ public class PacketConsumers {
                 mappingsMOD[entry.getKey()] = entry.getValue();
             }
         }
+        for (int i = 0; i < mappingsMOD.length; i++) {
+            if (BlockStateUtils.isVanillaBlock(i)) {
+                mappingsMOD[i] = remap(i);
+            }
+        }
         BLOCK_LIST = new IntIdentityList(registrySize);
         BIOME_LIST = new IntIdentityList(RegistryUtils.currentBiomeRegistrySize());
     }
@@ -70,8 +75,7 @@ public class PacketConsumers {
     }
 
     public static int remapMOD(int stateId) {
-        int modStateId = mappingsMOD[stateId];
-        return BlockStateUtils.isVanillaBlock(modStateId) ? remap(modStateId) : modStateId;
+        return mappingsMOD[stateId];
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
@@ -296,7 +300,7 @@ public class PacketConsumers {
             int stateId = BlockStateUtils.blockStateToId(blockState);
             // not a custom block
             if (BlockStateUtils.isVanillaBlock(stateId)) {
-                if (ConfigManager.enableSoundSystem()) {
+                if (Config.enableSoundSystem()) {
                     Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
                         player.startMiningBlock(world, pos, blockState, false, null);
@@ -559,7 +563,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -618,18 +622,18 @@ public class PacketConsumers {
             } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
-                    if (ConfigManager.hideBaseEntity() && !furniture.hasExternalModel()) {
+                    if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
                     }
                 }
             } else if (entityType == Reflections.instance$EntityType$SHULKER) {
                 // Cancel collider entity packet
                 int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByRealEntityId(entityId);
+                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
@@ -690,7 +694,7 @@ public class PacketConsumers {
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().getLoadedFurnitureByEntityId(entityId);
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
@@ -770,13 +774,13 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterAnvil()) return;
+            if (!Config.filterAnvil()) return;
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
-                ImageManager manager = CraftEngine.instance().imageManager();
+                FontManager manager = CraftEngine.instance().imageManager();
                 if (!manager.isDefaultFontInUse()) return;
                 // check bypass
-                if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_ANVIL)) {
+                if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
                     return;
                 }
                 runIfContainsIllegalCharacter(message, manager, (s) -> {
@@ -795,12 +799,12 @@ public class PacketConsumers {
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterSign()) return;
+            if (!Config.filterSign()) return;
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
-            ImageManager manager = CraftEngine.instance().imageManager();
+            FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass
-            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_SIGN)) {
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_SIGN)) {
                 return;
             }
             for (int i = 0; i < lines.length; i++) {
@@ -822,11 +826,11 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
-            if (!ConfigManager.filterBook()) return;
-            ImageManager manager = CraftEngine.instance().imageManager();
+            if (!Config.filterBook()) return;
+            FontManager manager = CraftEngine.instance().imageManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass
-            if (((BukkitServerPlayer) user).hasPermission(ImageManager.BYPASS_BOOK)) {
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_BOOK)) {
                 return;
             }
 
@@ -875,7 +879,7 @@ public class PacketConsumers {
         }
     };
 
-    private static Pair<Boolean, String> processClientString(String original, ImageManager manager) {
+    private static Pair<Boolean, String> processClientString(String original, FontManager manager) {
         if (original.isEmpty()) {
             return Pair.of(false, original);
         }
@@ -884,7 +888,7 @@ public class PacketConsumers {
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (manager.isIllegalCharacter(codepoint)) {
+            if (manager.isIllegalCodepoint(codepoint)) {
                 newCodepoints[i] = '*';
                 hasIllegal = true;
             } else {
@@ -894,14 +898,14 @@ public class PacketConsumers {
         return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
     }
 
-    private static void runIfContainsIllegalCharacter(String string, ImageManager manager, Consumer<String> callback) {
+    private static void runIfContainsIllegalCharacter(String string, FontManager manager, Consumer<String> callback) {
         if (string.isEmpty()) return;
         int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
         int[] newCodepoints = new int[codepoints.length];
         boolean hasIllegal = false;
         for (int i = 0; i < codepoints.length; i++) {
             int codepoint = codepoints[i];
-            if (!manager.isIllegalCharacter(codepoint)) {
+            if (!manager.isIllegalCodepoint(codepoint)) {
                 newCodepoints[i] = codepoint;
             } else {
                 newCodepoints[i] = '*';
@@ -955,6 +959,46 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
+        }
+    };
+
+    @SuppressWarnings("unchecked")
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
+        try {
+            int id = (int) Reflections.field$ClientboundSetEntityDataPacket$id.get(packet);
+            Object player = user.serverPlayer();
+            Object level = Reflections.method$Entity$level.invoke(player);
+            Object entityLookup = Reflections.method$Level$moonrise$getEntityLookup.invoke(level);
+            Object entity = Reflections.method$EntityLookup$get.invoke(entityLookup, id);
+            if (entity == null) return;
+            Object entityType = Reflections.method$Entity$getType.invoke(entity);
+            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
+                for (int i = 0; i < packedItems.size(); i++) {
+                    Object packedItem = packedItems.get(i);
+                    int entityDataId = (int) Reflections.field$SynchedEntityData$DataValue$id.get(packedItem);
+                    if ((VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 23)
+                            || (!VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 22)) {
+                        continue;
+                    }
+                    Object blockState = Reflections.field$SynchedEntityData$DataValue$value.get(packedItem);
+                    Object serializer = Reflections.field$SynchedEntityData$DataValue$serializer.get(packedItem);
+                    int stateId = BlockStateUtils.blockStateToId(blockState);
+                    int newStateId;
+                    if (!user.clientModEnabled()) {
+                        newStateId = remap(stateId);
+                    } else {
+                        newStateId = remapMOD(stateId);
+                    }
+                    packedItems.set(i, Reflections.constructor$SynchedEntityData$DataValue.newInstance(
+                            entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
+                    ));
+                    break;
+                }
+            }
+            // todo修改其他实体的物品的方块谓词
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }
     };
 }

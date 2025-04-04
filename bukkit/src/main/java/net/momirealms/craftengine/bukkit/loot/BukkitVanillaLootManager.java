@@ -8,14 +8,16 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.loot.AbstractVanillaLootManager;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.loot.VanillaLoot;
-import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
+import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.PreConditions;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -30,18 +32,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 // note: block listeners are in BlockEventListener to reduce performance cost
-public class BukkitVanillaLootManager implements VanillaLootManager, Listener {
+public class BukkitVanillaLootManager extends AbstractVanillaLootManager implements Listener {
     private final BukkitCraftEngine plugin;
-    private final Map<Integer, VanillaLoot> blockLoots;
-    private final Map<Key, VanillaLoot> entityLoots;
+    private final VanillaLootParser vanillaLootParser;
 
     public BukkitVanillaLootManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
-        this.blockLoots = new HashMap<>();
-        this.entityLoots = new HashMap<>();
+        this.vanillaLootParser = new VanillaLootParser();
     }
 
     @Override
@@ -52,17 +55,6 @@ public class BukkitVanillaLootManager implements VanillaLootManager, Listener {
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
-    }
-
-    @Override
-    public void unload() {
-        this.blockLoots.clear();
-        this.entityLoots.clear();
-    }
-
-    @Override
-    public Optional<VanillaLoot> getBlockLoot(int vanillaBlockState) {
-        return Optional.ofNullable(this.blockLoots.get(vanillaBlockState));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -97,45 +89,65 @@ public class BukkitVanillaLootManager implements VanillaLootManager, Listener {
     }
 
     @Override
-    public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-        String type = (String) section.get("type");
-        if (PreConditions.isNull(type, () -> this.plugin.logger().warn(path, "`type` option is required for vanilla-loot " + id))) {
-            return;
+    public ConfigSectionParser parser() {
+        return this.vanillaLootParser;
+    }
+
+    public class VanillaLootParser implements ConfigSectionParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"vanilla-loots", "vanilla-loot", "loots", "loot"};
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.VANILLA_LOOTS;
         }
-        VanillaLoot.Type typeEnum = VanillaLoot.Type.valueOf(type.toUpperCase(Locale.ENGLISH));
-        boolean override = (boolean) section.getOrDefault("override", false);
-        List<String> targets = MiscUtils.getAsStringList(section.getOrDefault("target", List.of()));
-        LootTable<?> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.get("loot"), false));
-        switch (typeEnum) {
-            case BLOCK -> {
-                for (String target : targets) {
-                    if (target.endsWith("]") && target.contains("[")) {
-                        java.lang.Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(target));
-                        if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
-                            this.plugin.logger().warn(path, "Failed to load " + id + ". Invalid target " + target);
-                            return;
-                        }
-                        VanillaLoot vanillaLoot = this.blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
-                        vanillaLoot.addLootTable(lootTable);
-                    } else {
-                        for (Object blockState : BlockStateUtils.getAllVanillaBlockStates(Key.of(target))) {
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            String type = (String) section.get("type");
+            if (type == null) {
+                TranslationManager.instance().log("warning.config.vanilla_loot.type_not_exist", path.toString(), id.toString());
+                return;
+            }
+            VanillaLoot.Type typeEnum = VanillaLoot.Type.valueOf(type.toUpperCase(Locale.ENGLISH));
+            boolean override = (boolean) section.getOrDefault("override", false);
+            List<String> targets = MiscUtils.getAsStringList(section.getOrDefault("target", List.of()));
+            LootTable<?> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.get("loot"), false));
+            switch (typeEnum) {
+                case BLOCK -> {
+                    for (String target : targets) {
+                        if (target.endsWith("]") && target.contains("[")) {
+                            java.lang.Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(target));
                             if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
-                                this.plugin.logger().warn(path, "Failed to load " + id + ". Invalid target " + target);
+                                TranslationManager.instance().log("warning.config.vanilla_loot.block.invalid_target", path.toString(), id.toString(), target);
                                 return;
                             }
-                            VanillaLoot vanillaLoot = this.blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
-                            if (override) vanillaLoot.override(true);
+                            VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
                             vanillaLoot.addLootTable(lootTable);
+                        } else {
+                            for (Object blockState : BlockStateUtils.getAllVanillaBlockStates(Key.of(target))) {
+                                if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
+                                    TranslationManager.instance().log("warning.config.vanilla_loot.block.invalid_target", path.toString(), id.toString(), target);
+                                    return;
+                                }
+                                VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
+                                if (override) vanillaLoot.override(true);
+                                vanillaLoot.addLootTable(lootTable);
+                            }
                         }
                     }
                 }
-            }
-            case ENTITY -> {
-                for (String target : targets) {
-                    Key key = Key.of(target);
-                    VanillaLoot vanillaLoot = this.entityLoots.computeIfAbsent(key, k -> new VanillaLoot(VanillaLoot.Type.ENTITY));
-                    vanillaLoot.addLootTable(lootTable);
-                    if (override) vanillaLoot.override(true);
+                case ENTITY -> {
+                    for (String target : targets) {
+                        Key key = Key.of(target);
+                        VanillaLoot vanillaLoot = entityLoots.computeIfAbsent(key, k -> new VanillaLoot(VanillaLoot.Type.ENTITY));
+                        vanillaLoot.addLootTable(lootTable);
+                        if (override) vanillaLoot.override(true);
+                    }
                 }
             }
         }
