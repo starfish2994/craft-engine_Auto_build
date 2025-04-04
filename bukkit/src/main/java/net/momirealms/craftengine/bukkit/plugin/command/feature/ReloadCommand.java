@@ -34,43 +34,64 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                         argument = optional.get();
                     }
                     if (argument == ReloadArgument.CONFIG) {
-                        plugin().scheduler().executeAsync(() -> {
-                            try {
-                                RELOAD_PACK_FLAG = true;
-                                plugin().reload((a, b) -> handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_SUCCESS, Component.text(a + b), Component.text(a), Component.text(b)));
-                            } catch (Exception e) {
-                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_FAILURE);
-                                plugin().logger().warn("Failed to reload config", e);
-                            }
-                        });
+                        try {
+                            RELOAD_PACK_FLAG = true;
+                            plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), false).thenAccept(reloadResult -> {
+                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_SUCCESS,
+                                        Component.text(reloadResult.asyncTime() + reloadResult.syncTime()),
+                                        Component.text(reloadResult.asyncTime()),
+                                        Component.text(reloadResult.syncTime())
+                                );
+                            });
+                        } catch (Exception e) {
+                            handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_FAILURE);
+                            plugin().logger().warn("Failed to reload config", e);
+                        }
+                    } else if (argument == ReloadArgument.RECIPE) {
+                        try {
+                            RELOAD_PACK_FLAG = true;
+                            plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), true).thenAccept(reloadResult -> {
+                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_SUCCESS,
+                                        Component.text(reloadResult.asyncTime() + reloadResult.syncTime()),
+                                        Component.text(reloadResult.asyncTime()),
+                                        Component.text(reloadResult.syncTime())
+                                );
+                            });
+                        } catch (Exception e) {
+                            handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_FAILURE);
+                            plugin().logger().warn("Failed to reload config", e);
+                        }
                     } else if (argument == ReloadArgument.PACK) {
                         plugin().scheduler().executeAsync(() -> {
                             try {
                                 long time1 = System.currentTimeMillis();
                                 plugin().packManager().generateResourcePack();
                                 long time2 = System.currentTimeMillis();
-                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_SUCCESS, Component.text(time2 - time1));
+                                long packTime = time2 - time1;
+                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_SUCCESS, Component.text(packTime));
                             } catch (Exception e) {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
                                 plugin().logger().warn("Failed to generate resource pack", e);
                             }
                         });
                     } else if (argument == ReloadArgument.ALL) {
-                        plugin().scheduler().executeAsync(() -> {
-                            plugin().reload((a, b) -> {
-                                plugin().scheduler().async().execute(() -> {
-                                    try {
-                                        long time1 = System.currentTimeMillis();
-                                        plugin().packManager().generateResourcePack();
-                                        long time2 = System.currentTimeMillis();
-                                        handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS, Component.text(a + b + time2 - time1), Component.text(a), Component.text(b), Component.text(time2 - time1));
-                                    } catch (Exception e) {
-                                        handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_FAILURE);
-                                        plugin().logger().warn("Failed to generate resource pack", e);
-                                    }
-                                });
-                            });
-                        });
+                        try {
+                            plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), true).thenAcceptAsync(reloadResult -> {
+                                long time1 = System.currentTimeMillis();
+                                plugin().packManager().generateResourcePack();
+                                long time2 = System.currentTimeMillis();
+                                long packTime = time2 - time1;
+                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS,
+                                        Component.text(reloadResult.asyncTime() + reloadResult.syncTime() + packTime),
+                                        Component.text(reloadResult.asyncTime()),
+                                        Component.text(reloadResult.syncTime()),
+                                        Component.text(packTime)
+                                );
+                            }, plugin().scheduler().async());
+                        } catch (Exception e) {
+                            handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_FAILURE);
+                            plugin().logger().warn("Failed to generate resource pack", e);
+                        }
                     }
                 });
     }
@@ -82,6 +103,7 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
 
     public enum ReloadArgument {
         CONFIG,
+        RECIPE,
         PACK,
         ALL
     }

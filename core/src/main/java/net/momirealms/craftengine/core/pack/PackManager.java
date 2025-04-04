@@ -9,6 +9,8 @@ import java.util.Collection;
 
 public interface PackManager extends Manageable {
 
+    void loadResources(boolean recipe);
+
     @NotNull
     Collection<Pack> loadedPacks();
 

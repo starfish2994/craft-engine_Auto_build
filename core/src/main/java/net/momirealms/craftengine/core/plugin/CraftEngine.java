@@ -138,11 +138,12 @@ public abstract class CraftEngine implements Plugin {
             this.worldManager.reload();
             this.vanillaLootManager.reload();
             this.guiManager.reload();
+            this.packManager.reload();
             if (reloadRecipe) {
                 this.recipeManager.reload();
             }
             // now we load resources
-            this.packManager.reload();
+            this.packManager.loadResources(reloadRecipe);
             // handle some special client lang for instance block_name
             this.translationManager.delayedLoad();
             // init suggestions and packet mapper
@@ -161,12 +162,13 @@ public abstract class CraftEngine implements Plugin {
             long asyncTime = time2 - time1;
             syncExecutor.execute(() -> {
                 try {
+                    long time3 = System.currentTimeMillis();
                     // register songs
                     this.soundManager.runDelayedSyncTasks();
                     // register recipes
                     this.recipeManager.runDelayedSyncTasks();
-                    long time3 = System.currentTimeMillis();
-                    long syncTime = time3 - time2;
+                    long time4 = System.currentTimeMillis();
+                    long syncTime = time4 - time3;
                     this.reloadEventDispatcher.accept(this);
                     future.complete(ReloadResult.success(asyncTime, syncTime));
                 } finally {

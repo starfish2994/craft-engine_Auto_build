@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
@@ -136,8 +137,6 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        this.loadPacks();
-        this.loadConfigs();
         this.calculateHash();
         if (Config.hostMode() == HostMode.SELF_HOST) {
             Path path = Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
@@ -146,6 +145,12 @@ public abstract class AbstractPackManager implements PackManager {
         } else {
             ResourcePackHost.instance().disable();
         }
+    }
+
+    @Override
+    public void loadResources(boolean recipe) {
+        this.loadPacks();
+        this.loadResourceConfigs(recipe ? (p) -> true : (p) -> p.loadingSequence() != LoadingSequence.RECIPE);
     }
 
     @Override
@@ -372,7 +377,7 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/gui/sprites/tooltip/topaz_frame.png.mcmeta");
     }
 
-    private void loadConfigs() {
+    private void loadResourceConfigs(Predicate<ConfigSectionParser> predicate) {
         long o1 = System.nanoTime();
         for (Pack pack : loadedPacks()) {
             Pair<List<Path>, List<Path>> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
@@ -412,7 +417,7 @@ public abstract class AbstractPackManager implements PackManager {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                         if (parser.isTemplate()) {
                             this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                        } else {
+                        } else if (predicate.test(parser)) {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> configSection1 = castToMap(configSection0, false);
                                 if ((boolean) configSection1.getOrDefault("enable", true)) {
