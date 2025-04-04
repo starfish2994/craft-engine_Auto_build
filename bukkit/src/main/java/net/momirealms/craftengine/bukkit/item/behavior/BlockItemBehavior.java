@@ -61,7 +61,7 @@ public class BlockItemBehavior extends ItemBehavior {
         if (!context.canPlace()) {
             return InteractionResult.FAIL;
         }
-        Optional<CustomBlock> optionalBlock = BukkitBlockManager.instance().getBlock(this.blockId);
+        Optional<CustomBlock> optionalBlock = BukkitBlockManager.instance().blockById(this.blockId);
         if (optionalBlock.isEmpty()) {
             CraftEngine.instance().logger().warn("Failed to place unknown block " + this.blockId);
             return InteractionResult.FAIL;

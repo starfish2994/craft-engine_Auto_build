@@ -82,7 +82,7 @@ warning.config.item.custom_model_data_conflict: "<yellow>在文件 <arg:0> 中�
 warning.config.item.lack_model_id: "<yellow>在文件 <arg:0> 中发现问题 - 物品 '<arg:1>' 缺少必要的 'custom-model-data' 或 'item-model' 模型标识参数</yellow>"
 warning.config.block.duplicated: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 重复定义</yellow>"
 warning.config.block.lack_state: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 缺少必要的 'state' 状态参数</yellow>"
-warning.config.block.lack_real_id: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 的 'state' 配置缺少必要的 'id' 标识参数</yellow>"
+warning.config.block.state.lack_real_id: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 的 'state' 配置缺少必要的 'id' 标识参数</yellow>"
 warning.config.block.state.lack_state: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 的 'state' 配置缺少必要的 'state' 状态参数</yellow>"
 warning.config.block.state.lack_properties: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 的 'states' 配置缺少必要的 'properties' 属性配置</yellow>"
 warning.config.block.state.lack_appearances: "<yellow>在文件 <arg:0> 中发现问题 - 方块 '<arg:1>' 的 'states' 配置缺少必要的 'appearances' 外观配置</yellow>"

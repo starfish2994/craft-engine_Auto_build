@@ -39,7 +39,7 @@ public class BlockStateUtils {
         } else {
             String blockTypeString = blockState.substring(0, index);
             Key block = Key.of(blockTypeString);
-            Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().getBlock(block);
+            Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().blockById(block);
             if (optionalCustomBlock.isPresent()) {
                 ImmutableBlockState state = BlockStateParser.deserialize(blockState);
                 if (state == null) {
@@ -55,7 +55,7 @@ public class BlockStateUtils {
     }
 
     public static List<Object> getAllBlockStates(Key block) {
-        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().getBlock(block);
+        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().blockById(block);
         return optionalCustomBlock.map(customBlock -> customBlock.variantProvider().states().stream().map(it -> it.customBlockState().handle()).toList())
                 .orElseGet(() -> getAllVanillaBlockStates(block));
     }
@@ -80,7 +80,7 @@ public class BlockStateUtils {
     }
 
     public static BlockData fromBlockData(Object blockState) {
-        return (BlockData) FastNMS.INSTANCE.method$CraftBlockData$fromData(blockState);
+        return FastNMS.INSTANCE.method$CraftBlockData$fromData(blockState);
     }
 
     public static int blockDataToId(BlockData blockData) {

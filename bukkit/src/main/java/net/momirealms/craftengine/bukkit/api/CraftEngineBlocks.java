@@ -37,7 +37,7 @@ public final class CraftEngineBlocks {
      */
     @Nullable
     public static CustomBlock byId(@NotNull Key id) {
-        return BukkitBlockManager.instance().getBlock(id).orElse(null);
+        return BukkitBlockManager.instance().blockById(id).orElse(null);
     }
 
     /**

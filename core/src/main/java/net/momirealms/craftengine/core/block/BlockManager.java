@@ -24,7 +24,7 @@ public interface BlockManager extends Manageable, ModelGenerator {
 
     Map<Key, CustomBlock> blocks();
 
-    Optional<CustomBlock> getBlock(Key key);
+    Optional<CustomBlock> blockById(Key key);
 
     Collection<Suggestion> cachedSuggestions();
 

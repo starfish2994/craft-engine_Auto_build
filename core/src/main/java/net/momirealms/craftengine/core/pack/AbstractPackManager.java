@@ -444,10 +444,8 @@ public abstract class AbstractPackManager implements PackManager {
             int hashIndex = key.indexOf('#');
             String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
-                    .ifPresent(parser -> {
-                        this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
-                                .add(new CachedConfig(castToMap(typeSections0, false), path, pack));
-                    });
+                    .ifPresent(parser -> this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
+                            .add(new CachedConfig(castToMap(typeSections0, false), path, pack)));
         }
     }
 

@@ -36,7 +36,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
-import org.incendo.cloud.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -59,11 +58,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     // The total amount of blocks registered
     private int customBlockCount;
-
-    // CraftEngine objects
-    private final Map<Key, CustomBlock> byId = new HashMap<>();
-    private final ImmutableBlockState[] stateId2ImmutableBlockStates;
-
+    protected final ImmutableBlockState[] stateId2ImmutableBlockStates;
     // Minecraft objects
     // Cached new blocks $ holders
     private ImmutableMap<Key, Integer> internalId2StateId;
@@ -87,14 +82,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private final Map<Key, Map<String, JsonElement>> blockStateOverrides = new HashMap<>();
     // for mod, real block id -> state models
     private final Map<Key, JsonElement> modBlockStates = new HashMap<>();
-    // Cached command suggestions
-    private final List<Suggestion> cachedSuggestions = new ArrayList<>();
-    // Cached Namespace
-    private final Set<String> namespacesInUse = new HashSet<>();
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
-
     private WorldEditCommandHelper weCommandHelper;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
@@ -106,7 +96,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (plugin.hasMod() && plugin.requiresRestart()) {
             blockEventListener = null;
             fallingBlockRemoveListener = null;
-            stateId2ImmutableBlockStates = null;
+            stateId2ImmutableBlockStates = new ImmutableBlockState[]{};
             return;
         }
         this.registerBlocks();
@@ -152,11 +142,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     @Override
     public void unload() {
-        super.clearModelsToGenerate();
+        super.unload();
         this.clearCache();
         this.appearanceToRealState.clear();
-        this.byId.clear();
-        this.cachedSuggestions.clear();
         this.blockStateOverrides.clear();
         this.modBlockStates.clear();
         if (EmptyBlock.INSTANCE != null)
@@ -234,41 +222,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
     @Override
     public Map<Key, Map<String, JsonElement>> blockOverrides() {
         return Collections.unmodifiableMap(this.blockStateOverrides);
-    }
-
-    @Override
-    public Map<Key, CustomBlock> blocks() {
-        return Collections.unmodifiableMap(this.byId);
-    }
-
-    @Override
-    public Optional<CustomBlock> getBlock(Key key) {
-        return Optional.ofNullable(this.byId.get(key));
-    }
-
-    @Override
-    public Collection<Suggestion> cachedSuggestions() {
-        return Collections.unmodifiableCollection(this.cachedSuggestions);
-    }
-
-    private void initSuggestions() {
-        this.cachedSuggestions.clear();
-        this.namespacesInUse.clear();
-        Set<String> states = new HashSet<>();
-        for (CustomBlock block : this.byId.values()) {
-            states.add(block.id().toString());
-            this.namespacesInUse.add(block.id().namespace());
-            for (ImmutableBlockState state : block.variantProvider().states()) {
-                states.add(state.toString());
-            }
-        }
-        for (String state : states) {
-            this.cachedSuggestions.add(Suggestion.suggestion(state));
-        }
-    }
-
-    public Set<String> namespacesInUse() {
-        return Collections.unmodifiableSet(this.namespacesInUse);
     }
 
     public ImmutableMap<Key, List<Integer>> blockAppearanceArranger() {
@@ -392,11 +345,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            // check duplicated config
             if (byId.containsKey(id)) {
                 TranslationManager.instance().log("warning.config.block.duplicated", path.toString(), id.toString());
                 return;
             }
-
             // read block settings
             BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
             // read loot table
@@ -410,38 +363,46 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 properties = Map.of();
                 int internalId = MiscUtils.getAsInt(stateSection.getOrDefault("id", -1));
                 if (internalId < 0) {
-                    TranslationManager.instance().log("warning.config.block.lack_real_id", path.toString(), id.toString());
+                    TranslationManager.instance().log("warning.config.block.state.lack_real_id", path.toString(), id.toString());
                     return;
                 }
+
                 Pair<Key, Integer> pair = parseAppearanceSection(path, id, stateSection);
                 if (pair == null) return;
+
                 appearances = Map.of("default", pair.right());
                 Key internalBlockId = Key.of(CraftEngine.NAMESPACE, pair.left().value() + "_" + internalId);
                 int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
                 if (internalBlockRegistryId == -1) {
-                    plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1) +
-                            ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
+                    TranslationManager.instance().log("warning.config.block.state.invalid_real_state_id",
+                            path.toString(),
+                            id.toString(),
+                            pair.left().value() + "_" + internalId,
+                            String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1)
+                    );
                     return;
                 }
                 variants = Map.of("", new VariantState("default", settings, internalBlockRegistryId));
             } else {
+                // states
                 Map<String, Object> statesSection = MiscUtils.castToMap(section.get("states"), true);
                 if (statesSection == null) {
                     TranslationManager.instance().log("warning.config.block.lack_state", path.toString(), id.toString());
                     return;
                 }
+                // properties
                 Map<String, Object> propertySection = MiscUtils.castToMap(statesSection.get("properties"), true);
                 if (propertySection == null) {
                     TranslationManager.instance().log("warning.config.block.state.lack_properties", path.toString(), id.toString());
                     return;
                 }
-                properties = parseProperties(path, propertySection);
+                properties = parseProperties(path, id, propertySection);
+                // appearance
                 Map<String, Object> appearancesSection = MiscUtils.castToMap(statesSection.get("appearances"), true);
                 if (appearancesSection == null) {
                     TranslationManager.instance().log("warning.config.block.state.lack_appearances", path.toString(), id.toString());
                     return;
                 }
-
                 appearances = new HashMap<>();
                 Map<String, Key> tempTypeMap = new HashMap<>();
                 for (Map.Entry<String, Object> appearanceEntry : appearancesSection.entrySet()) {
@@ -452,13 +413,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         tempTypeMap.put(appearanceEntry.getKey(), pair.left());
                     }
                 }
-
+                // variants
                 Map<String, Object> variantsSection = MiscUtils.castToMap(statesSection.get("variants"), true);
                 if (variantsSection == null) {
                     TranslationManager.instance().log("warning.config.block.state.lack_variants", path.toString(), id.toString());
                     return;
                 }
-
                 variants = new HashMap<>();
                 for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
                     if (variantEntry.getValue() instanceof Map<?, ?> variantSection0) {
@@ -478,8 +438,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
                         int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
                         if (internalBlockRegistryId == -1) {
-                            plugin.logger().warn(path, "Failed to register " + id + " because id " + internalId + " is not a value between 0~" + (MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1))-1) +
-                                    ". Consider editing additional-real-blocks.yml if the number of real block IDs is insufficient while there are still available appearances");
+                            TranslationManager.instance().log("warning.config.block.state.invalid_real_state_id",
+                                    path.toString(),
+                                    id.toString(),
+                                    internalBlockId.toString(),
+                                    String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1)) - 1)
+                            );
                             return;
                         }
                         Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
@@ -487,18 +451,27 @@ public class BukkitBlockManager extends AbstractBlockManager {
                     }
                 }
             }
+
             // create or get block holder
             Holder.Reference<CustomBlock> holder = BuiltInRegistries.BLOCK.get(id).orElseGet(() ->
                     ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).registerForHolder(new ResourceKey<>(BuiltInRegistries.BLOCK.key().location(), id)));
             // create block
             Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
-
             BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
 
-            // bind appearance
-            bindAppearance(block);
-            byId.put(id, block);
+            // bind appearance and real state
+            for (ImmutableBlockState state : block.variantProvider().states()) {
+                ImmutableBlockState previous = stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()];
+                if (previous != null && !previous.isEmpty()) {
+                    TranslationManager.instance().log("warning.config.block.bind_real_state", path.toString(), id.toString(), state.toString(), previous.toString());
+                    continue;
+                }
+                stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()] = state;
+                tempBlockAppearanceConvertor.put(state.customBlockState().registryId(), state.vanillaBlockState().registryId());
+                appearanceToRealState.computeIfAbsent(state.vanillaBlockState().registryId(), k -> new ArrayList<>()).add(state.customBlockState().registryId());
+            }
 
+            byId.put(id, block);
             // generate mod assets
             if (Config.generateModAssets()) {
                 for (ImmutableBlockState state : block.variantProvider().states()) {
@@ -509,27 +482,18 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private void bindAppearance(CustomBlock block) {
-        for (ImmutableBlockState state : block.variantProvider().states()) {
-            ImmutableBlockState previous = this.stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()];
-            if (previous != null && !previous.isEmpty()) {
-                this.plugin.logger().severe("[Fatal] Failed to bind real block state for " + state + ": the state is already occupied by " + previous);
-                continue;
-            }
-            this.stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()] = state;
-            this.tempBlockAppearanceConvertor.put(state.customBlockState().registryId(), state.vanillaBlockState().registryId());
-            this.appearanceToRealState.computeIfAbsent(state.vanillaBlockState().registryId(), k -> new ArrayList<>()).add(state.customBlockState().registryId());
-        }
-    }
-
-    private Map<String, Property<?>> parseProperties(Path path, Map<String, Object> propertiesSection) {
+    private Map<String, Property<?>> parseProperties(Path path, Key id, Map<String, Object> propertiesSection) {
         Map<String, Property<?>> properties = new HashMap<>();
         for (Map.Entry<String, Object> entry : propertiesSection.entrySet()) {
             if (entry.getValue() instanceof Map<?, ?> params) {
-                Property<?> property = Properties.fromMap(entry.getKey(), MiscUtils.castToMap(params, false));
-                properties.put(entry.getKey(), property);
+                try {
+                    Property<?> property = Properties.fromMap(entry.getKey(), MiscUtils.castToMap(params, false));
+                    properties.put(entry.getKey(), property);
+                } catch (Exception e) {
+                    TranslationManager.instance().log("warning.config.block.state.invalid_property", path.toString(), id.toString(), entry.getKey(), e.getMessage());
+                }
             } else {
-                this.plugin.logger().warn(path, "Invalid property format: " + entry.getKey());
+                TranslationManager.instance().log("warning.config.block.state.invalid_property_structure", path.toString(), id.toString(), entry.getKey());
             }
         }
         return properties;
@@ -537,25 +501,41 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     @Nullable
     private Pair<Key, Integer> parseAppearanceSection(Path path, Key id, Map<String, Object> section) {
+        // require state non null
         String vanillaStateString = (String) section.get("state");
         if (vanillaStateString == null) {
             TranslationManager.instance().log("warning.config.block.state.lack_state", path.toString(), id.toString());
             return null;
         }
 
+        // get its registry id
         int vanillaStateRegistryId;
-        try {
-            vanillaStateRegistryId = parseVanillaStateRegistryId(vanillaStateString);
-        } catch (BlockStateArrangeException e) {
-            this.plugin.logger().warn(path, "Failed to load " + id + " - " + e.getMessage(), e);
+        VanillaStateParseResult parseResult = parseVanillaStateRegistryId(vanillaStateString);
+        if (parseResult.success()) {
+            vanillaStateRegistryId = parseResult.result;
+        } else {
+            String[] args = new String[parseResult.args.length + 2];
+            args[0] = path.toString();
+            args[1] = id.toString();
+            System.arraycopy(parseResult.args, 0, args, 2, parseResult.args.length);
+            TranslationManager.instance().log(parseResult.reason(), args);
             return null;
         }
+
+        // check conflict
         Key ifAny = this.tempRegistryIdConflictMap.get(vanillaStateRegistryId);
         if (ifAny != null && !ifAny.equals(id)) {
-            this.plugin.logger().warn(path, "Can't use " + BlockStateUtils.idToBlockState(vanillaStateRegistryId) + " as the base block for " + id + " because the state has already been used by " + ifAny);
+            TranslationManager.instance().log("warning.config.block.state.conflict", path.toString(), id.toString(), BlockStateUtils.fromBlockData(BlockStateUtils.idToBlockState(vanillaStateRegistryId)).getAsString(), ifAny.toString());
             return null;
         }
+
+        // require models not to be null
         Object models = section.getOrDefault("models", section.get("model"));
+        if (models == null) {
+            TranslationManager.instance().log("warning.config.block.state.no_model_set", path.toString(), id.toString());
+            return null;
+        }
+
         List<JsonObject> variants = new ArrayList<>();
         if (models instanceof Map<?, ?> singleModelSection) {
             loadVariantModel(variants, MiscUtils.castToMap(singleModelSection, false));
@@ -565,11 +545,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
                     loadVariantModel(variants, MiscUtils.castToMap(singleModelMap, false));
                 }
             }
-        } else {
-            this.plugin.logger().warn(path, "No model set for " + id);
-            return null;
         }
         if (variants.isEmpty()) return null;
+
         this.tempRegistryIdConflictMap.put(vanillaStateRegistryId, id);
         String blockState = BlockStateUtils.idToBlockState(vanillaStateRegistryId).toString();
         Key block = Key.of(blockState.substring(blockState.indexOf('{') + 1, blockState.lastIndexOf('}')));
@@ -604,46 +582,50 @@ public class BukkitBlockManager extends AbstractBlockManager {
         variants.add(json);
     }
 
-    private int parseVanillaStateRegistryId(String blockState) throws BlockStateArrangeException {
+    private VanillaStateParseResult parseVanillaStateRegistryId(String blockState) {
         String[] split = blockState.split(":", 3);
-        PreConditions.runIfTrue(split.length >= 4, () -> {
-            throw new BlockStateArrangeException("Invalid vanilla block state: " + blockState);
-        });
+        if (split.length >= 4) {
+            return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+        }
         int registryId;
-        // minecraft:xxx:0
-        // xxx:0
         String stateOrId = split[split.length - 1];
         boolean isId = !stateOrId.contains("[") && !stateOrId.contains("]");
         if (isId) {
-            if (split.length == 1) {
-                throw new BlockStateArrangeException("Invalid vanilla block state: " + blockState);
-            }
+            if (split.length == 1) return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
             Key block = split.length == 2 ? Key.of(split[0]) : Key.of(split[0], split[1]);
             try {
                 int id = split.length == 2 ? Integer.parseInt(split[1]) : Integer.parseInt(split[2]);
-                PreConditions.runIfTrue(id < 0, () -> {
-                    throw new BlockStateArrangeException("Invalid block state: " + blockState);
-                });
+                if (id < 0) return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
                 List<Integer> arranger = this.blockAppearanceArranger.get(block);
-                if (arranger == null) {
-                    throw new BlockStateArrangeException("No freed block state is available for block " + block);
-                }
-                if (id >= arranger.size()) {
-                    throw new BlockStateArrangeException(blockState + " is not a valid block state because " + id + " is outside of the range (0~" + (arranger.size() - 1) + ")");
-                }
+                if (arranger == null) return VanillaStateParseResult.failure("warning.config.block.state.unavailable_state", new String[]{blockState});
+                if (id >= arranger.size()) return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla_state_id", new String[]{blockState, String.valueOf(arranger.size() - 1)});
                 registryId = arranger.get(id);
             } catch (NumberFormatException e) {
-                throw new BlockStateArrangeException("Invalid block state: " + blockState);
+                return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
             }
         } else {
             try {
                 BlockData blockData = Bukkit.createBlockData(blockState);
                 registryId = BlockStateUtils.blockDataToId(blockData);
+                if (!this.blockAppearanceMapper.containsKey(registryId)) {
+                    return VanillaStateParseResult.failure("warning.config.block.state.unavailable_state", new String[]{blockState});
+                }
             } catch (IllegalArgumentException e) {
-                throw new BlockStateArrangeException("Invalid block state: " + blockState);
+                return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
             }
         }
-        return registryId;
+        return VanillaStateParseResult.success(registryId);
+    }
+
+    public record VanillaStateParseResult(boolean success, int result, String reason, String[] args) {
+
+        public static VanillaStateParseResult success(int result) {
+            return new VanillaStateParseResult(true, result, null, null);
+        }
+
+        public static VanillaStateParseResult failure(String reason, String[] args) {
+            return new VanillaStateParseResult(false, -1, reason, args);
+        }
     }
 
     private void loadMappingsAndAdditionalBlocks() {

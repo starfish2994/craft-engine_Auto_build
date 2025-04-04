@@ -22,7 +22,7 @@ public class I18NData {
                 return List.of("block." + stateToRealBlockId(parsed));
             } else {
                 Key blockId = Key.of(id);
-                Optional<CustomBlock> blockOptional = CraftEngine.instance().blockManager().getBlock(blockId);
+                Optional<CustomBlock> blockOptional = CraftEngine.instance().blockManager().blockById(blockId);
                 if (blockOptional.isPresent()) {
                     List<ImmutableBlockState> states = blockOptional.get().variantProvider().states();
                     if (states.size() == 1) {
