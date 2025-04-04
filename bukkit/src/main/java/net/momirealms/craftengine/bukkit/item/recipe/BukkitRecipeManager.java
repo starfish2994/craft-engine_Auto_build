@@ -432,13 +432,13 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             // give flags back on 1.21.2+
             if (VersionHelper.isVersionNewerThan1_21_2() && this.stolenFeatureFlagSet != null) {
-                Reflections.field$RecipeManager$featureflagset.set(nmsRecipeManager, this.stolenFeatureFlagSet);
-                this.stolenFeatureFlagSet = false;
+                Reflections.field$RecipeManager$featureflagset.set(nmsRecipeManager(), this.stolenFeatureFlagSet);
+                this.stolenFeatureFlagSet = null;
             }
 
             // refresh recipes
             if (VersionHelper.isVersionNewerThan1_21_2()) {
-                Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
+                Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager());
             }
 
             // send to players
