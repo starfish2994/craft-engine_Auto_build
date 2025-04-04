@@ -69,12 +69,12 @@ search_recipe_admin:
     - /craftengine item search-recipe
     - /ce item search-recipe
 
-totem:
+totem_animation:
   enable: true
-  permission: ce.command.admin.totem
+  permission: ce.command.admin.totem_animation
   usage:
-    - /craftengine totem
-    - /ce totem
+    - /craftengine feature totem-animation
+    - /ce feature totem-animation
 
 # Debug commands
 debug_set_block:

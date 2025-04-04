@@ -68,6 +68,6 @@ public class TotemCommand extends BukkitCommandFeature<CommandSender> {
 
     @Override
     public String getFeatureID() {
-        return "totem";
+        return "totem_animation";
     }
 }
