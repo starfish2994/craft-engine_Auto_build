@@ -166,7 +166,9 @@ public abstract class CraftEngine implements Plugin {
                     // register songs
                     this.soundManager.runDelayedSyncTasks();
                     // register recipes
-                    this.recipeManager.runDelayedSyncTasks();
+                    if (reloadRecipe) {
+                        this.recipeManager.runDelayedSyncTasks();
+                    }
                     long time4 = System.currentTimeMillis();
                     long syncTime = time4 - time3;
                     this.reloadEventDispatcher.accept(this);

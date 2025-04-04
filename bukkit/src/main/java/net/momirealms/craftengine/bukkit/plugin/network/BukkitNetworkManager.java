@@ -82,7 +82,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         this.packetConsumer = FastNMS.INSTANCE::sendPacket;
         this.packetsConsumer = ((serverPlayer, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            packetConsumer.accept(serverPlayer, bundle);
+            this.packetConsumer.accept(serverPlayer, bundle);
         });
         this.immediatePacketConsumer = (serverPlayer, packet) -> {
             try {
