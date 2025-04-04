@@ -19,7 +19,7 @@ public class ResourceLocation {
         return character == '_' || character == '-' || character >= 'a' && character <= 'z' || character >= '0' && character <= '9' || character == '.';
     }
 
-    private static boolean isValidNamespace(String namespace) {
+    public static boolean isValidNamespace(String namespace) {
         for(int i = 0; i < namespace.length(); ++i) {
             if (!validNamespaceChar(namespace.charAt(i))) {
                 return false;
@@ -28,7 +28,7 @@ public class ResourceLocation {
         return true;
     }
 
-    private static boolean isValidPath(String path) {
+    public static boolean isValidPath(String path) {
         for(int i = 0; i < path.length(); ++i) {
             if (!validPathChar(path.charAt(i))) {
                 return false;

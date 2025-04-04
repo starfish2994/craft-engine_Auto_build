@@ -48,7 +48,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         if (this.defaultBlockState != null) {
             return this.defaultBlockState;
         }
-        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().getBlock(this.targetBlock);
+        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().blockById(this.targetBlock);
         if (optionalCustomBlock.isPresent()) {
             CustomBlock customBlock = optionalCustomBlock.get();
             this.defaultBlockState = customBlock.defaultState().customBlockState().handle();

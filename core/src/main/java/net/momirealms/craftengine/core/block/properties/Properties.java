@@ -36,7 +36,7 @@ public class Properties {
     public static Property<?> fromMap(String name, Map<String, Object> map) {
         String type = (String) map.getOrDefault("type", "empty");
         if (type == null) {
-            throw new NullPointerException("behavior type cannot be null");
+            throw new NullPointerException("Property type cannot be null");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         PropertyFactory factory = BuiltInRegistries.PROPERTY_FACTORY.getValue(key);
