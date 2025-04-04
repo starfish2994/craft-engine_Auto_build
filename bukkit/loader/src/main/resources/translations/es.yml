@@ -53,4 +53,4 @@ command.search_recipe.not_found: "<red>No se encontró ninguna receta para este 
 command.search_usage.not_found: "<red>No se encontró ningún uso para este objeto</red>"
 command.search_recipe.no_item: "<red>Por favor, sostén un objeto antes de ejecutar este comando</red>"
 command.search_usage.no_item: "<red>Por favor, sostén un objeto antes de ejecutar este comando</red>"
-command.totem.not_totem: "<red>'<arg:0>' no es del tipo totem_of_undying</red>"
+command.totem_animation.failure.not_totem: "<red>'<arg:0>' no es del tipo totem_of_undying</red>"

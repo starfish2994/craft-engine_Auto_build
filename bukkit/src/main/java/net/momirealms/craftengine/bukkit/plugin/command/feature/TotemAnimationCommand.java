@@ -28,9 +28,9 @@ import org.incendo.cloud.suggestion.SuggestionProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-public class TotemCommand extends BukkitCommandFeature<CommandSender> {
+public class TotemAnimationCommand extends BukkitCommandFeature<CommandSender> {
 
-    public TotemCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
+    public TotemAnimationCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
     }
 
@@ -49,15 +49,10 @@ public class TotemCommand extends BukkitCommandFeature<CommandSender> {
                     NamespacedKey namespacedKey = context.get("id");
                     Key key = Key.of(namespacedKey.namespace(), namespacedKey.value());
                     CustomItem<ItemStack> item = plugin().itemManager().getCustomItem(key).orElse(null);
-                    if (item == null) {
-                        handleFeedback(context, MessageConstants.COMMAND_ITEM_GET_FAILURE_NOT_EXIST, Component.text(key.toString()));
-                        return;
-                    }
-                    if (MaterialUtils.getMaterial(item.material()) != Material.TOTEM_OF_UNDYING) {
+                    if (item == null || MaterialUtils.getMaterial(item.material()) != Material.TOTEM_OF_UNDYING) {
                         handleFeedback(context, MessageConstants.COMMAND_TOTEM_NOT_TOTEM, Component.text(key.toString()));
                         return;
                     }
-
                     ItemStack totem = item.buildItemStack();
                     MultiplePlayerSelector selector = context.get("players");
                     for (Player player : selector.values()) {
