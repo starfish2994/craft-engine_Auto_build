@@ -27,7 +27,7 @@ public interface NetworkManager extends Manageable {
     void sendPacket(@NotNull NetWorkUser player, Object packet, boolean immediately);
 
     default void sendPackets(@NotNull NetWorkUser player, List<Object> packet) {
-        sendPacket(player, packet, false);
+        sendPackets(player, packet, false);
     }
 
     void sendPackets(@NotNull NetWorkUser player, List<Object> packet, boolean immediately);
