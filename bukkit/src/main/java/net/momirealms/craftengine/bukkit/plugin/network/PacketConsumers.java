@@ -972,28 +972,31 @@ public class PacketConsumers {
             Object entity = Reflections.method$EntityLookup$get.invoke(entityLookup, id);
             if (entity == null) return;
             Object entityType = Reflections.method$Entity$getType.invoke(entity);
-            if (entityType != Reflections.instance$EntityType$BLOCK_DISPLAY) return;
-            List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
-            for (int i = 0; i < packedItems.size(); i++) {
-                Object packedItem = packedItems.get(i);
-                int entityDataId = (int) Reflections.field$SynchedEntityData$DataValue$id.get(packedItem);
-                if ((VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 23)
-                        || (!VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 22)) {
-                    continue;
+            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
+                for (int i = 0; i < packedItems.size(); i++) {
+                    Object packedItem = packedItems.get(i);
+                    int entityDataId = (int) Reflections.field$SynchedEntityData$DataValue$id.get(packedItem);
+                    if ((VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 23)
+                            || (!VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 22)) {
+                        continue;
+                    }
+                    Object blockState = Reflections.field$SynchedEntityData$DataValue$value.get(packedItem);
+                    Object serializer = Reflections.field$SynchedEntityData$DataValue$serializer.get(packedItem);
+                    int stateId = BlockStateUtils.blockStateToId(blockState);
+                    int newStateId;
+                    if (!user.clientModEnabled()) {
+                        newStateId = remap(stateId);
+                    } else {
+                        newStateId = remapMOD(stateId);
+                    }
+                    packedItems.set(i, Reflections.constructor$SynchedEntityData$DataValue.newInstance(
+                            entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
+                    ));
+                    break;
                 }
-                Object blockState = Reflections.field$SynchedEntityData$DataValue$value.get(packedItem);
-                Object serializer = Reflections.field$SynchedEntityData$DataValue$serializer.get(packedItem);
-                int stateId = BlockStateUtils.blockStateToId(blockState);
-                int newStateId;
-                if (!user.clientModEnabled()) {
-                    newStateId = remap(stateId);
-                } else {
-                    newStateId = remapMOD(stateId);
-                }
-                packedItems.set(i, Reflections.constructor$SynchedEntityData$DataValue.newInstance(
-                        entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
-                ));
             }
+            // todo修改其他实体的物品的方块谓词
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }
