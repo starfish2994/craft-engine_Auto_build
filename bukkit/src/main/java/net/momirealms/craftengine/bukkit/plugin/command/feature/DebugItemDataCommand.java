@@ -40,7 +40,7 @@ public class DebugItemDataCommand extends BukkitCommandFeature<CommandSender> {
                     for (String text : readableList) {
                         joiner.add(text);
                     }
-                    plugin().senderFactory().wrap(context.sender()).sendMessage(AdventureHelper.miniMessage(joiner.toString()));
+                    plugin().senderFactory().wrap(context.sender()).sendMessage(AdventureHelper.miniMessage().deserialize(joiner.toString()));
                 });
     }
 

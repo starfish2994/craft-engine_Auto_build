@@ -200,6 +200,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             String name = obj.toString();
             return new ItemNameModifier<>(name);
         }, "item-name", "display-name");
+
         registerDataFunction((obj) -> {
             List<String> name = MiscUtils.getAsStringList(obj);
             return new LoreModifier<>(name);

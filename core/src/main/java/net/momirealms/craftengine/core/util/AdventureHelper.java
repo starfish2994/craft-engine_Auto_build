@@ -22,8 +22,6 @@ public class AdventureHelper {
     private final MiniMessage miniMessage;
     private final MiniMessage miniMessageStrict;
     private final GsonComponentSerializer gsonComponentSerializer;
-    private final Cache<String, String> miniMessageToJsonCache = Caffeine.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).build();
-    public static boolean legacySupport = false;
 
     private AdventureHelper() {
         this.miniMessage = MiniMessage.builder().build();
@@ -45,20 +43,6 @@ public class AdventureHelper {
     }
 
     /**
-     * Converts a MiniMessage string to a Component.
-     *
-     * @param text the MiniMessage string
-     * @return the resulting Component
-     */
-    public static Component miniMessage(String text) {
-        if (legacySupport) {
-            return miniMessage().deserialize(legacyToMiniMessage(text));
-        } else {
-            return miniMessage().deserialize(text);
-        }
-    }
-
-    /**
      * Retrieves the MiniMessage instance.
      *
      * @return the MiniMessage instance
@@ -74,41 +58,6 @@ public class AdventureHelper {
      */
     public static GsonComponentSerializer getGson() {
         return getInstance().gsonComponentSerializer;
-    }
-
-    /**
-     * Converts a MiniMessage string to a JSON string.
-     *
-     * @param miniMessage the MiniMessage string
-     * @return the JSON string representation
-     */
-    public static String miniMessageToJson(String miniMessage) {
-        AdventureHelper instance = getInstance();
-        return instance.miniMessageToJsonCache.get(miniMessage, (text) -> instance.gsonComponentSerializer.serialize(miniMessage(text)));
-    }
-
-    /**
-     * Sends a title to an audience.
-     *
-     * @param audience the audience to send the title to
-     * @param title    the title component
-     * @param subtitle the subtitle component
-     * @param fadeIn   the fade-in duration in ticks
-     * @param stay     the stay duration in ticks
-     * @param fadeOut  the fade-out duration in ticks
-     */
-    public static void sendTitle(Audience audience, Component title, Component subtitle, int fadeIn, int stay, int fadeOut) {
-        audience.showTitle(Title.title(title, subtitle, Title.Times.times(Duration.ofMillis(fadeIn * 50L), Duration.ofMillis(stay * 50L), Duration.ofMillis(fadeOut * 50L))));
-    }
-
-    /**
-     * Sends an action bar message to an audience.
-     *
-     * @param audience  the audience to send the action bar message to
-     * @param actionBar the action bar component
-     */
-    public static void sendActionBar(Audience audience, Component actionBar) {
-        audience.sendActionBar(actionBar);
     }
 
     /**
@@ -173,6 +122,10 @@ public class AdventureHelper {
         return getInstance().gsonComponentSerializer.deserialize(json);
     }
 
+    public static Component jsonElementToComponent(JsonElement json) {
+        return getInstance().gsonComponentSerializer.deserializeFromTree(json);
+    }
+
     /**
      * Converts a Component to a JSON string.
      *
@@ -183,22 +136,8 @@ public class AdventureHelper {
         return getGson().serialize(component);
     }
 
-    /**
-     * Converts a JsonElement to a Component.
-     * @param gson the JsonElement to convert
-     * @return the resulting Component
-     */
-    public static Component jsonElementToComponent(JsonElement gson) {
-        return GsonComponentSerializer.gson().deserializeFromTree(gson);
-    }
-
-    /**
-     * Converts a JsonElement to a JSON string.
-     * @param jsonElement the JsonElement to convert
-     * @return the JSON string representation
-     */
-    public static String jsonElementToStringJson(JsonElement jsonElement) {
-        return componentToJson(jsonElementToComponent(jsonElement));
+    public static JsonElement componentToJsonElement(Component component) {
+        return getGson().serializeToTree(component);
     }
 
     /**

@@ -404,10 +404,16 @@ public class Reflections {
             BukkitReflectionUtils.assembleMCClass("core.HolderLookup$b")
     );
 
-    public static final Method method$Component$Serializer$fromJson = ReflectionUtils.getMethod(
+    public static final Method method$Component$Serializer$fromJson0 = ReflectionUtils.getMethod(
             clazz$Component$Serializer,
             new String[] { "fromJson" },
             String.class, clazz$HolderLookup$Provider
+    );
+
+    public static final Method method$Component$Serializer$fromJson1 = ReflectionUtils.getMethod(
+            clazz$Component$Serializer,
+            new String[] { "fromJson" },
+            JsonElement.class, clazz$HolderLookup$Provider
     );
 
     public static final Method method$Component$Serializer$toJson = ReflectionUtils.getMethod(

@@ -28,7 +28,7 @@ public class MergePackMcMetaResolution implements Resolution {
         }
     }
 
-    public static void mergeMcMeta(Path file1, Path file2, JsonObject customDescription) throws IOException {
+    public static void mergeMcMeta(Path file1, Path file2, JsonElement customDescription) throws IOException {
         JsonElement elem1 = GsonHelper.readJsonFile(file1);
         JsonElement elem2 = GsonHelper.readJsonFile(file2);
 
@@ -193,7 +193,7 @@ public class MergePackMcMetaResolution implements Resolution {
     @Override
     public void run(Path existing, Path conflict) {
         try {
-            mergeMcMeta(existing, conflict, JsonParser.parseString(AdventureHelper.miniMessageToJson(this.description)).getAsJsonObject());
+            mergeMcMeta(existing, conflict, AdventureHelper.componentToJsonElement(AdventureHelper.miniMessage().deserialize(this.description)));
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to merge pack.mcmeta when resolving file conflicts", e);
         }

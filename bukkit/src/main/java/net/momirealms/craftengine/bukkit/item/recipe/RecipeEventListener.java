@@ -561,16 +561,16 @@ public class RecipeEventListener implements Listener {
 
         String renameText;
         int maxRepairCost;
-        int previousCost;
+        //int previousCost;
         if (VersionHelper.isVersionNewerThan1_21_2()) {
             AnvilView anvilView = event.getView();
             renameText = anvilView.getRenameText();
             maxRepairCost = anvilView.getMaximumRepairCost();
-            previousCost = anvilView.getRepairCost();
+            //previousCost = anvilView.getRepairCost();
         } else {
             renameText = LegacyInventoryUtils.getRenameText(inventory);
             maxRepairCost = LegacyInventoryUtils.getMaxRepairCost(inventory);
-            previousCost = LegacyInventoryUtils.getRepairCost(inventory);
+            //previousCost = LegacyInventoryUtils.getRepairCost(inventory);
         }
 
         int repairCost = actualConsumedAmount;

@@ -80,7 +80,7 @@ public abstract class AbstractSoundManager implements SoundManager {
                 AbstractSoundManager.this.plugin.logger().warn(path, "No sound specified");
                 return;
             }
-            Component description = AdventureHelper.miniMessage(section.getOrDefault("description", "").toString());
+            Component description = AdventureHelper.miniMessage().deserialize(section.getOrDefault("description", "").toString());
             float length = MiscUtils.getAsFloat(section.get("length"));
             int comparatorOutput = MiscUtils.getAsInt(section.getOrDefault("comparator-output", 15));
             JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, MiscUtils.getAsFloat(section.getOrDefault("range", 32f)));
