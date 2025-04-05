@@ -637,6 +637,9 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
+            } else if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
+                user.entityView().put(entityId, entityType);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -966,12 +969,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
         try {
             int id = (int) Reflections.field$ClientboundSetEntityDataPacket$id.get(packet);
-            Object player = user.serverPlayer();
-            Object level = Reflections.method$Entity$level.invoke(player);
-            Object entityLookup = Reflections.method$Level$moonrise$getEntityLookup.invoke(level);
-            Object entity = Reflections.method$EntityLookup$get.invoke(entityLookup, id);
-            if (entity == null) return;
-            Object entityType = Reflections.method$Entity$getType.invoke(entity);
+            Object entityType = user.entityView().get(id);
             if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
                 List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
                 for (int i = 0; i < packedItems.size(); i++) {
