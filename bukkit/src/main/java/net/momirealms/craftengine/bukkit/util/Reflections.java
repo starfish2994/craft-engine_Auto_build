@@ -6146,4 +6146,15 @@ public class Reflections {
     public static final Method method$PacketReport$serializePackets = Optional.ofNullable(clazz$PacketReport)
             .map(it -> ReflectionUtils.getDeclaredMethod(it, JsonElement.class))
             .orElse(null);
+
+    public static final Object instance$GsonComponentSerializer;
+
+    static {
+        try {
+            Object builder = Reflections.method$GsonComponentSerializer$builder.invoke(null);
+            instance$GsonComponentSerializer = Reflections.method$GsonComponentSerializer$Builder$build.invoke(builder);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

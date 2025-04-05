@@ -18,7 +18,9 @@ public abstract class AbstractFontManager implements FontManager {
     private final CraftEngine plugin;
                 // namespace:font font
     private final Map<Key, Font> fonts = new HashMap<>();
-                // namespace:id image
+    // namespace:id emoji
+    private final Map<Key, Emoji> emojis = new HashMap<>();
+    // namespace:id image
     private final Map<Key, BitmapImage> images = new HashMap<>();
     private final Set<Integer> illegalChars = new HashSet<>();
     private final ImageParser imageParser;
