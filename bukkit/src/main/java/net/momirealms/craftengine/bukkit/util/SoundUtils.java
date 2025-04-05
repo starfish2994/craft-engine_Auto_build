@@ -19,8 +19,6 @@ public class SoundUtils {
     }
 
     public static Object getOrRegisterSoundEvent(Key key) throws ReflectiveOperationException {
-        return Reflections.method$SoundEvent$createVariableRangeEvent.invoke(null,
-                Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, key.namespace(), key.value())
-        );
+        return Reflections.method$SoundEvent$createVariableRangeEvent.invoke(null, KeyUtils.toResourceLocation(key));
     }
 }

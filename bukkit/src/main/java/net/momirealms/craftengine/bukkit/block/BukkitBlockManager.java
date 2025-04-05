@@ -659,7 +659,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     private void recordVanillaNoteBlocks() {
         try {
-            Object resourceLocation = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, BlockKeys.NOTE_BLOCK.namespace(), BlockKeys.NOTE_BLOCK.value());
+            Object resourceLocation = KeyUtils.toResourceLocation(BlockKeys.NOTE_BLOCK);
             Object block = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
             Object stateDefinition = Reflections.field$Block$StateDefinition.get(block);
             @SuppressWarnings("unchecked")

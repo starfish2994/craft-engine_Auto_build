@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.sound;
 
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.sound.AbstractSoundManager;
@@ -26,8 +27,8 @@ public class BukkitSoundManager extends AbstractSoundManager {
             for (Map.Entry<Key, JukeboxSong> entry : songs.entrySet()) {
                 Key id = entry.getKey();
                 JukeboxSong jukeboxSong = entry.getValue();
-                Object resourceLocation = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, id.namespace(), id.value());
-                Object soundId = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, jukeboxSong.sound().namespace(), jukeboxSong.sound().value());
+                Object resourceLocation = KeyUtils.toResourceLocation(id);
+                Object soundId = KeyUtils.toResourceLocation(jukeboxSong.sound());
                 Object song = Reflections.method$Registry$get.invoke(Reflections.instance$InternalRegistries$JUKEBOX_SONG, resourceLocation);
 
                 Object soundEvent = VersionHelper.isVersionNewerThan1_21_2() ?

@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import net.momirealms.craftengine.core.util.VersionHelper;
+
 public class EntityDataUtils {
 
     private EntityDataUtils() {}
@@ -9,6 +11,7 @@ public class EntityDataUtils {
     private static final int USE_DEFAULT_BACKGROUND = 0x04; // 4
     private static final int LEFT_ALIGNMENT = 0x08; // 8
     private static final int RIGHT_ALIGNMENT = 0x10; // 16
+    public static final int BLOCK_STATE_DATA_ID = VersionHelper.isVersionNewerThan1_20_2() ? 23 : 22;
 
     public static byte encodeTextDisplayMask(boolean hasShadow, boolean isSeeThrough, boolean useDefaultBackground, int alignment) {
         int bitMask = 0;

@@ -6,7 +6,9 @@ import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagCompound;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.CloneableConstantItem;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.bukkit.util.RecipeUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -125,8 +127,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                     nmsRecipe = Reflections.constructor$RecipeHolder.newInstance(
                             Reflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value())), nmsRecipe);
                 } else if (VersionHelper.isVersionNewerThan1_20_2()) {
-                    nmsRecipe = Reflections.constructor$RecipeHolder.newInstance(
-                            Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, id.namespace(), id.value()), nmsRecipe);
+                    nmsRecipe = Reflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
                 } else {
                     return () -> {};
                 }
@@ -693,7 +694,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         List<Object> itemStacks = new ArrayList<>();
         for (Holder<Key> holder : holders) {
             ItemStack itemStack = BukkitItemManager.instance().getBuildableItem(holder.value()).get().buildItemStack(ItemBuildContext.EMPTY, 1);
-            Object nmsStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack);
+            Object nmsStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack);
             itemStacks.add(nmsStack);
         }
         return itemStacks;
@@ -779,7 +780,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             }
             return optional.get();
         } else {
-            Object resourceLocation = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, id.namespace(), id.value());
+            Object resourceLocation = KeyUtils.toResourceLocation(id);
             @SuppressWarnings("unchecked")
             Optional<Object> optional = (Optional<Object>) Reflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceLocation);
             if (optional.isEmpty()) {
@@ -837,7 +838,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     // 1.21.5+
     private static Object toTransmuteResult(ItemStack item) throws InvocationTargetException, IllegalAccessException, InstantiationException {
-        Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, item);
+        Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(item);
         Object nmsItem = Reflections.method$ItemStack$getItem.invoke(itemStack);
         return Reflections.constructor$TransmuteResult.newInstance(nmsItem);
     }
@@ -856,22 +857,22 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                     toOptionalMinecraftIngredient(recipe.template()),
                     toOptionalMinecraftIngredient(recipe.base()),
                     toOptionalMinecraftIngredient(recipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, recipe.result(ItemBuildContext.EMPTY))
+                    FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(recipe.result(ItemBuildContext.EMPTY))
             );
         } else if (VersionHelper.isVersionNewerThan1_20_2()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toMinecraftIngredient(recipe.template()),
                     toMinecraftIngredient(recipe.base()),
                     toMinecraftIngredient(recipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, recipe.result(ItemBuildContext.EMPTY))
+                    FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(recipe.result(ItemBuildContext.EMPTY))
             );
         } else {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
-                    Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, recipe.id().namespace(), recipe.id().value()),
+                    KeyUtils.toResourceLocation(recipe.id()),
                     toMinecraftIngredient(recipe.template()),
                     toMinecraftIngredient(recipe.base()),
                     toMinecraftIngredient(recipe.addition()),
-                    Reflections.method$CraftItemStack$asNMSCopy.invoke(null, recipe.result(ItemBuildContext.EMPTY))
+                    FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(recipe.result(ItemBuildContext.EMPTY))
             );
         }
     }

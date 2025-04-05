@@ -152,8 +152,8 @@ public class PlayerUtils {
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
         List<Object> packets = new ArrayList<>();
         try {
-            Object previousItem = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, offhandItem);
-            Object totemItem = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, totem);
+            Object previousItem = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(offhandItem);
+            Object totemItem = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(totem);
 
             Object packet1 = Reflections.constructor$ClientboundSetEquipmentPacket
                     .newInstance(player.getEntityId(), List.of(Pair.of(Reflections.instance$EquipmentSlot$OFFHAND, totemItem)));
