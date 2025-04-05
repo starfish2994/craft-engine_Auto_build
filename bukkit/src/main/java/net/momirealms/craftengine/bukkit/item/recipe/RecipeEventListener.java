@@ -643,6 +643,7 @@ public class RecipeEventListener implements Listener {
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onAnvilRenameItem(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
@@ -663,14 +664,14 @@ public class RecipeEventListener implements Listener {
                 } else {
                     renameText = LegacyInventoryUtils.getRenameText(inventory);
                 }
-                System.out.println(wrappedFirst.itemName().get());
-                System.out.println(wrappedFirst.lore().get());
-                try {
-                    if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
-                        event.setResult(null);
+                if (renameText != null && !renameText.isBlank()) {
+                    try {
+                        if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
+                            event.setResult(null);
+                        }
+                    } catch (Exception e) {
+                        this.plugin.logger().warn("Failed to get hover name", e);
                     }
-                } catch (Exception e) {
-                    this.plugin.logger().warn("Failed to get hover name", e);
                 }
             }
         });
