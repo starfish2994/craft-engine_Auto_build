@@ -26,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -56,9 +58,20 @@ public abstract class AbstractPackManager implements PackManager {
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+    private static final byte[] emptyImage;
     protected BiConsumer<Path, Path> zipGenerator;
     protected String packHash;
     protected UUID packUUID;
+
+    static {
+        var stream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        emptyImage = stream.toByteArray();
+    }
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -497,6 +510,7 @@ public abstract class AbstractPackManager implements PackManager {
         this.generateCustomSounds(generatedPackPath);
         this.generateClientLang(generatedPackPath);
         this.generateEquipments(generatedPackPath);
+        this.generateParticle(generatedPackPath);
 
         Path zipFile = resourcePackPath();
         try {
@@ -524,6 +538,39 @@ public abstract class AbstractPackManager implements PackManager {
         } else {
             this.packHash = "";
             this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private void generateParticle(Path generatedPackPath) {
+        if (!Config.removeTintedLeavesParticle()) return;
+        if (Config.packMaxVersion() < 21.49f) return;
+        var json = new JsonObject();
+        var textures = new JsonArray();
+        textures.add("empty");
+        json.add("textures", textures);
+        var jsonPath = generatedPackPath
+                .resolve("assets")
+                .resolve("minecraft")
+                .resolve("particles")
+                .resolve("tinted_leaves.json");
+        var pngPath = generatedPackPath
+                .resolve("assets")
+                .resolve("minecraft")
+                .resolve("textures")
+                .resolve("particle")
+                .resolve("empty.png");
+        try {
+            Files.createDirectories(jsonPath.getParent());
+            Files.createDirectories(pngPath.getParent());
+        } catch (IOException e) {
+            plugin.logger().severe("Error creating directories", e);
+            return;
+        }
+        try {
+            GsonHelper.writeJsonFile(json, jsonPath);
+            Files.write(pngPath, emptyImage);
+        } catch (IOException e) {
+            this.plugin.logger().severe("Error writing particles file", e);
         }
     }
 
