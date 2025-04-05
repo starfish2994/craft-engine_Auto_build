@@ -1,8 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import com.saicone.rtag.RtagItem;
-import net.kyori.adventure.Adventure;
-import net.kyori.adventure.text.NBTComponent;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import org.bukkit.inventory.ItemStack;
 

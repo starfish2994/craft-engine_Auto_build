@@ -29,4 +29,10 @@ public class PacketIds1_21_2 implements PacketIds {
     public int clientboundAddEntityPacket() {
         return 1;
     }
+
+    // TODO NOT TESTED
+    @Override
+    public int clientboundOpenScreenPacket() {
+        return 48;
+    }
 }

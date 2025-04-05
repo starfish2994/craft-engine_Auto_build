@@ -17,7 +17,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Consumer;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {

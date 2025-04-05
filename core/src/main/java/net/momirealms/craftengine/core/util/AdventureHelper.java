@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.util;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
@@ -9,10 +7,6 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.title.Title;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Helper class for handling Adventure components and related functionalities.

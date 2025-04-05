@@ -28,4 +28,10 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundAddEntityPacket() {
         return 1;
     }
+
+    // TODO NOT TESTED
+    @Override
+    public int clientboundOpenScreenPacket() {
+        return 48;
+    }
 }

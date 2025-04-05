@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.util.FormatUtils;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 public interface FontManager extends Manageable {
@@ -62,4 +63,6 @@ public interface FontManager extends Manageable {
     default String createRawOffsets(int offset) {
         return createOffsets(offset, (raw, font) -> raw);
     }
+
+    Map<String, String> matchTags(String json);
 }

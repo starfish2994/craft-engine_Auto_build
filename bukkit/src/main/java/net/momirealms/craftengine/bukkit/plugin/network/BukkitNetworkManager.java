@@ -154,6 +154,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
+        registerByteBufPacketConsumer(PacketConsumers.OPEN_SCREEN, this.packetIds.clientboundOpenScreenPacket());
     }
 
     public static BukkitNetworkManager instance() {

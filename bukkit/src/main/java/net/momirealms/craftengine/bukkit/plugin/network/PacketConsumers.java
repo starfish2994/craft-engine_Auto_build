@@ -238,6 +238,35 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
+        try {
+            if (VersionHelper.isVersionNewerThan1_20_3()) {
+
+            } else {
+                FriendlyByteBuf buf = event.getBuffer();
+                int containerId = buf.readVarInt();
+                int type = buf.readVarInt();
+                String json = buf.readUtf();
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) return;
+                event.setChanged(true);
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> {
+                        b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue()));
+                    });
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(containerId);
+                buf.writeVarInt(type);
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
