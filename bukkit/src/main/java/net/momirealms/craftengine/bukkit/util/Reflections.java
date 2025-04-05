@@ -6157,4 +6157,111 @@ public class Reflections {
             throw new RuntimeException(e);
         }
     }
+
+    // 1.20.2+
+    public static final Class<?> clazz$ServerboundClientInformationPacket =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundClientInformationPacket")
+            );
+
+    // 1.20.2+
+    public static final Constructor<?> constructor$ServerboundClientInformationPacket = Optional.ofNullable(clazz$ServerboundClientInformationPacket)
+            .map(it -> ReflectionUtils.getConstructor(it, 1))
+            .orElse(null);
+
+    // 1.20.2+
+    public static final Field field$ServerboundClientInformationPacket$information = Optional.ofNullable(clazz$ServerboundClientInformationPacket)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 0))
+            .orElse(null);
+
+    // 1.20.2+
+    // 从 1.21.2+ 才有 particleStatus
+    public static final Class<?> clazz$ClientInformation =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.level.ClientInformation")
+            );
+
+    // 1.20.2+
+    public static final Constructor<?> constructor$ClientInformation = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getConstructor(it, 1))
+            .orElse(null);
+
+    // 1.20.2+ String
+    public static final Field field$ClientInformation$language = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 0))
+            .orElse(null);
+
+    // 1.20.2+ int
+    public static final Field field$ClientInformation$viewDistance = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 1))
+            .orElse(null);
+
+    // 1.20.2+ ChatVisiblity
+    public static final Field field$ClientInformation$chatVisibility = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 2))
+            .orElse(null);
+
+    // 1.20.2+ boolean
+    public static final Field field$ClientInformation$chatColors = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 3))
+            .orElse(null);
+
+    // 1.20.2+ int
+    public static final Field field$ClientInformation$modelCustomisation = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 4))
+            .orElse(null);
+
+    // 1.20.2+ HumanoidArm
+    public static final Field field$ClientInformation$mainHand = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 5))
+            .orElse(null);
+
+    // 1.20.2+ boolean
+    public static final Field field$ClientInformation$textFilteringEnabled = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 6))
+            .orElse(null);
+
+    // 1.20.2+ boolean
+    public static final Field field$ClientInformation$allowsListing = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 7))
+            .orElse(null);
+
+    // 1.21.2+
+    public static final Class<?> clazz$ParticleStatus =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.level.ParticleStatus")
+            );
+
+    // 1.21.2+
+    public static final Method method$ParticleStatus$values = Optional.ofNullable(clazz$ParticleStatus)
+            .map(it -> ReflectionUtils.getStaticMethod(it, it.arrayType()))
+            .orElse(null);
+
+    // 1.21.2+
+    public static final Object instance$ParticleStatus$ALL;
+    public static final Object instance$ParticleStatus$DECREASED;
+    public static final Object instance$ParticleStatus$MINIMAL;
+
+    // 1.21.2+
+    static {
+        try {
+            if (VersionHelper.isVersionNewerThan1_21_2()) {
+                Object[] values = (Object[]) method$ParticleStatus$values.invoke(null);
+                instance$ParticleStatus$ALL = values[0];
+                instance$ParticleStatus$DECREASED = values[1];
+                instance$ParticleStatus$MINIMAL = values[2];
+            } else {
+                instance$ParticleStatus$ALL = null;
+                instance$ParticleStatus$DECREASED = null;
+                instance$ParticleStatus$MINIMAL = null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 1.21.2+ ParticleStatus
+    public static final Field field$ClientInformation$particleStatus = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getDeclaredField(it, 8))
+            .orElse(null);
 }

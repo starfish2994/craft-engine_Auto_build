@@ -45,6 +45,7 @@ public class Config {
     protected boolean metrics;
     protected boolean filterConfigurationPhaseDisconnect;
 
+    protected boolean resource_pack$remove_tinted_leaves_particle;
     protected boolean resource_pack$generate_mod_assets;
     protected boolean resource_pack$override_uniform_font;
     protected List<ConditionalResolution> resource_pack$duplicated_files_handler;
@@ -187,6 +188,7 @@ public class Config {
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
         resource_pack$generate_mod_assets = config.getBoolean("resource-pack.generate-mod-assets", false);
+        resource_pack$remove_tinted_leaves_particle = config.getBoolean("resource-pack.remove-tinted-leaves-particle", true);
         resource_pack$supported_version$min = getVersion(config.get("resource-pack.supported-version.min", "1.20").toString());
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
@@ -535,6 +537,10 @@ public class Config {
 
     public static boolean generateModAssets() {
         return instance.resource_pack$generate_mod_assets;
+    }
+
+    public static boolean removeTintedLeavesParticle() {
+        return instance.resource_pack$remove_tinted_leaves_particle;
     }
 
     public static boolean filterChat() {
