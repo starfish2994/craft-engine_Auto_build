@@ -6,8 +6,10 @@ import net.momirealms.craftengine.bukkit.item.behavior.BoneMealItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -579,22 +581,19 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @SuppressWarnings("unchecked")
     private void registerAllVanillaItems() {
         try {
-            for (Material material : Registry.MATERIAL) {
-                if (material.getKey().namespace().equals("minecraft")) {
-                    if (!material.isLegacy() && material.isItem()) {
-                        Key id = Key.from(material.getKey().asString());
-                        VANILLA_ITEMS.add(id);
-                        Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
-                                .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
-                                        .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
-
-                        Object resourceLocation = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, id.namespace(), id.value());
-                        Object mcHolder = ((Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$ITEM, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$ITEM, resourceLocation))).get();
-                        Set<Object> tags = (Set<Object>) Reflections.field$Holder$Reference$tags.get(mcHolder);
-                        for (Object tag : tags) {
-                            Key tagId = Key.of(Reflections.field$TagKey$location.get(tag).toString());
-                            VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(holder);
-                        }
+            for (NamespacedKey item : FastNMS.INSTANCE.getAllVanillaItems()) {
+                if (item.getNamespace().equals("minecraft")) {
+                    Key id = KeyUtils.namespacedKey2Key(item);
+                    VANILLA_ITEMS.add(id);
+                    Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
+                            .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
+                                    .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
+                    Object resourceLocation = KeyUtils.toResourceLocation(id.namespace(), id.value());
+                    Object mcHolder = ((Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$ITEM, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$ITEM, resourceLocation))).get();
+                    Set<Object> tags = (Set<Object>) Reflections.field$Holder$Reference$tags.get(mcHolder);
+                    for (Object tag : tags) {
+                        Key tagId = Key.of(Reflections.field$TagKey$location.get(tag).toString());
+                        VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(holder);
                     }
                 }
             }

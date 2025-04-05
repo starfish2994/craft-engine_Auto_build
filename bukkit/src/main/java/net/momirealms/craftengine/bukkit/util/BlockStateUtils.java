@@ -63,7 +63,7 @@ public class BlockStateUtils {
     @SuppressWarnings("unchecked")
     public static List<Object> getAllVanillaBlockStates(Key block) {
         try {
-            Object blockIns = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, block.namespace(), block.value()));
+            Object blockIns = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, KeyUtils.toResourceLocation(block));
             Object definition = Reflections.field$Block$StateDefinition.get(blockIns);
             return (List<Object>) Reflections.field$StateDefinition$states.get(definition);
         } catch (Exception e) {

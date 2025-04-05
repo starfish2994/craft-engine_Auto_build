@@ -1,31 +1,27 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.VersionHelper;
 
 public class ComponentUtils {
 
     private ComponentUtils() {}
 
     public static Object adventureToMinecraft(Component component) {
-        String json = AdventureHelper.componentToJson(component);
-        return jsonToMinecraft(json);
+        return jsonElementToMinecraft(AdventureHelper.componentToJsonElement(component));
+    }
+
+    public static Object jsonElementToMinecraft(JsonElement json) {
+        return FastNMS.INSTANCE.method$Component$Serializer$fromJson(json);
     }
 
     public static Object jsonToMinecraft(String json) {
-        if (VersionHelper.isVersionNewerThan1_20_5()) {
-            try {
-                return Reflections.method$Component$Serializer$fromJson.invoke(null, json, Reflections.instance$MinecraftRegistry);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                return Reflections.method$CraftChatMessage$fromJSON.invoke(null, json);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        return FastNMS.INSTANCE.method$Component$Serializer$fromJson(json);
+    }
+
+    public static String minecraftToJson(Object component) {
+        return FastNMS.INSTANCE.method$Component$Serializer$toJson(component);
     }
 }

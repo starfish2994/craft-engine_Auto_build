@@ -404,10 +404,16 @@ public class Reflections {
             BukkitReflectionUtils.assembleMCClass("core.HolderLookup$b")
     );
 
-    public static final Method method$Component$Serializer$fromJson = ReflectionUtils.getMethod(
+    public static final Method method$Component$Serializer$fromJson0 = ReflectionUtils.getMethod(
             clazz$Component$Serializer,
             new String[] { "fromJson" },
             String.class, clazz$HolderLookup$Provider
+    );
+
+    public static final Method method$Component$Serializer$fromJson1 = ReflectionUtils.getMethod(
+            clazz$Component$Serializer,
+            new String[] { "fromJson" },
+            JsonElement.class, clazz$HolderLookup$Provider
     );
 
     public static final Method method$Component$Serializer$toJson = ReflectionUtils.getMethod(
@@ -564,11 +570,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ClientboundRemoveEntitiesPacket$entityIds = requireNonNull(
-            ReflectionUtils.getInstanceDeclaredField(
-                    clazz$ClientboundRemoveEntitiesPacket, 0
-            )
-    );
+//    public static final Field field$ClientboundRemoveEntitiesPacket$entityIds = requireNonNull(
+//            ReflectionUtils.getInstanceDeclaredField(
+//                    clazz$ClientboundRemoveEntitiesPacket, 0
+//            )
+//    );
 
     public static final Field field$ClientboundAddEntityPacket$entityId = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -792,35 +798,35 @@ public class Reflections {
         }
     }
 
-    public static final Field field$ClientboundSetEntityDataPacket$id = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ClientboundSetEntityDataPacket, int.class, 0
-            )
-    );
+//    public static final Field field$ClientboundSetEntityDataPacket$id = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ClientboundSetEntityDataPacket, int.class, 0
+//            )
+//    );
 
-    public static final Field field$ClientboundSetEntityDataPacket$packedItems = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ClientboundSetEntityDataPacket, List.class, 0
-            )
-    );
+//    public static final Field field$ClientboundSetEntityDataPacket$packedItems = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ClientboundSetEntityDataPacket, List.class, 0
+//            )
+//    );
 
-    public static final Field field$SynchedEntityData$DataValue$id = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$SynchedEntityData$DataValue, int.class, 0
-            )
-    );
+//    public static final Field field$SynchedEntityData$DataValue$id = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$SynchedEntityData$DataValue, int.class, 0
+//            )
+//    );
 
-    public static final Field field$SynchedEntityData$DataValue$serializer = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$SynchedEntityData$DataValue, 1
-            )
-    );
-
-    public static final Field field$SynchedEntityData$DataValue$value = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$SynchedEntityData$DataValue, 2
-            )
-    );
+//    public static final Field field$SynchedEntityData$DataValue$serializer = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$SynchedEntityData$DataValue, 1
+//            )
+//    );
+//
+//    public static final Field field$SynchedEntityData$DataValue$value = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$SynchedEntityData$DataValue, 2
+//            )
+//    );
 
     public static final Class<?> clazz$ClientboundUpdateAttributesPacket = requireNonNull(
             ReflectionUtils.getClazz(
@@ -3140,11 +3146,11 @@ public class Reflections {
         }
     }
 
-    public static final Field field$ServerboundInteractPacket$entityId = requireNonNull(
-            ReflectionUtils.getInstanceDeclaredField(
-                    clazz$ServerboundInteractPacket, int.class, 0
-            )
-    );
+//    public static final Field field$ServerboundInteractPacket$entityId = requireNonNull(
+//            ReflectionUtils.getInstanceDeclaredField(
+//                    clazz$ServerboundInteractPacket, int.class, 0
+//            )
+//    );
 
     public static final Field field$ServerboundInteractPacket$usingSecondaryAction = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
@@ -3354,11 +3360,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$CraftItemStack$asNMSCopy = requireNonNull(
-            ReflectionUtils.getStaticMethod(
-                    clazz$CraftItemStack, clazz$ItemStack, new String[]{"asNMSCopy"}, ItemStack.class
-            )
-    );
+//    public static final Method method$CraftItemStack$asNMSCopy = requireNonNull(
+//            ReflectionUtils.getStaticMethod(
+//                    clazz$CraftItemStack, clazz$ItemStack, new String[]{"asNMSCopy"}, ItemStack.class
+//            )
+//    );
 
     public static final Field field$Holder$Reference$tags = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -6099,11 +6105,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$SynchedEntityData$DataValue = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$SynchedEntityData$DataValue, int.class, clazz$EntityDataSerializer, Object.class
-            )
-    );
+//    public static final Constructor<?> constructor$SynchedEntityData$DataValue = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$SynchedEntityData$DataValue, int.class, clazz$EntityDataSerializer, Object.class
+//            )
+//    );
 
     public static final Class<?> clazz$EntityLookup = requireNonNull(
             ReflectionUtils.getClazz(

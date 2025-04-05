@@ -251,10 +251,10 @@ public class PacketConsumers {
                 writeMethod = Reflections.method$Packet$write;
             }
             Object packet = Reflections.constructor$ClientboundLevelParticlesPacket.newInstance(mcByteBuf);
-            Object option = Reflections.field$ClientboundLevelParticlesPacket$particle.get(packet);
+            Object option = FastNMS.INSTANCE.field$ClientboundLevelParticlesPacket$particle(packet);
             if (option == null) return;
             if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
-            Object blockState = Reflections.field$BlockParticleOption$blockState.get(option);
+            Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
             int id = BlockStateUtils.blockStateToId(blockState);
             int remapped = remap(id);
             if (remapped == id) return;
@@ -274,7 +274,7 @@ public class PacketConsumers {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             Player platformPlayer = player.platformPlayer();
             World world = platformPlayer.getWorld();
-            Object blockPos = Reflections.field$ServerboundPlayerActionPacket$pos.get(packet);
+            Object blockPos = FastNMS.INSTANCE.field$ServerboundPlayerActionPacket$pos(packet);
             BlockPos pos = LocationUtils.fromBlockPos(blockPos);
             if (VersionHelper.isFolia()) {
                 BukkitCraftEngine.instance().scheduler().sync().run(() -> {
@@ -293,7 +293,7 @@ public class PacketConsumers {
     };
 
     private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
-        Object action = Reflections.field$ServerboundPlayerActionPacket$action.get(packet);
+        Object action = FastNMS.INSTANCE.field$ServerboundPlayerActionPacket$action(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
             Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(serverLevel, LocationUtils.toBlockPos(pos));
@@ -313,7 +313,7 @@ public class PacketConsumers {
                 return;
             }
             if (player.isAdventureMode()) {
-                Object itemStack = Reflections.method$CraftItemStack$asNMSCopy.invoke(null, player.platformPlayer().getInventory().getItemInMainHand());
+                Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(player.platformPlayer().getInventory().getItemInMainHand());
                 Object blockPos = LocationUtils.toBlockPos(pos);
                 Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
                 if (VersionHelper.isVersionNewerThan1_20_5()) {
@@ -375,6 +375,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESPAWN = (user, event, packet) -> {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
+            player.clearView();
             Object dimensionKey;
             if (!VersionHelper.isVersionNewerThan1_20_2()) {
                 dimensionKey = Reflections.field$ClientboundRespawnPacket$dimension.get(packet);
@@ -606,22 +607,22 @@ public class PacketConsumers {
         }
         assert Reflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
         Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), Reflections.method$CraftItemStack$asNMSCopy.invoke(null, itemStack));
+                Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
         try {
-            Object entityType = Reflections.field$ClientboundAddEntityPacket$type.get(packet);
+            Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
             // Falling blocks
             if (entityType == Reflections.instance$EntityType$FALLING_BLOCK) {
-                int data = Reflections.field$ClientboundAddEntityPacket$data.getInt(packet);
+                int data = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$data(packet);
                 int remapped = remap(data);
                 if (remapped != data) {
                     Reflections.field$ClientboundAddEntityPacket$data.set(packet, remapped);
                 }
             } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
-                int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
+                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
@@ -632,17 +633,21 @@ public class PacketConsumers {
                 }
             } else if (entityType == Reflections.instance$EntityType$SHULKER) {
                 // Cancel collider entity packet
-                int entityId = (int) Reflections.field$ClientboundAddEntityPacket$entityId.get(packet);
+                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
+            } else if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
+                user.entityView().put(entityId, entityType);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
         }
     };
 
+    // 1.21.3+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundEntityPositionSyncPacket$id.get(packet);
@@ -667,7 +672,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> REMOVE_ENTITY = (user, event, packet) -> {
         try {
-            IntList intList = (IntList) Reflections.field$ClientboundRemoveEntitiesPacket$entityIds.get(packet);
+            IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
             for (int i = 0, size = intList.size(); i < size; i++) {
                 List<Integer> entities = user.furnitureView().remove(intList.getInt(i));
                 if (entities == null) continue;
@@ -686,16 +691,16 @@ public class PacketConsumers {
             if (player == null) return;
             int entityId;
             if (BukkitNetworkManager.hasModelEngine()) {
-                int fakeId = (int) Reflections.field$ServerboundInteractPacket$entityId.get(packet);
+                int fakeId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
                 entityId = ModelEngineUtils.interactionToBaseEntity(fakeId);
             } else {
-                entityId = Reflections.field$ServerboundInteractPacket$entityId.getInt(packet);
+                entityId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
             }
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
+            if (furniture == null) return;
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
             if (actionType == null) return;
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
-            if (furniture == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
             if (serverPlayer.isSpectatorMode() || serverPlayer.isAdventureMode()) return;
@@ -718,9 +723,10 @@ public class PacketConsumers {
                         Object interactionHand = Reflections.field$ServerboundInteractPacket$InteractionAtLocationAction$hand.get(action);
                         hand = interactionHand == Reflections.instance$InteractionHand$MAIN_HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
                         Object vec3 = Reflections.field$ServerboundInteractPacket$InteractionAtLocationAction$location.get(action);
-                        double x = (double) Reflections.field$Vec3$x.get(vec3);
-                        double y = (double) Reflections.field$Vec3$y.get(vec3);
-                        double z = (double) Reflections.field$Vec3$z.get(vec3);
+
+                        double x = FastNMS.INSTANCE.field$Vec3$x(vec3);
+                        double y = FastNMS.INSTANCE.field$Vec3$y(vec3);
+                        double z = FastNMS.INSTANCE.field$Vec3$z(vec3);
                         interactionPoint = new Location(location.getWorld(), x, y, z);
                     } catch (ReflectiveOperationException e) {
                         throw new RuntimeException("Failed to get interaction hand from interact packet", e);
@@ -745,25 +751,15 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
         try {
-            Object sound = Reflections.field$ClientboundSoundPacket$sound.get(packet);
-            Object soundEvent = Reflections.method$Holder$value.invoke(sound);
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(Key.of(Reflections.field$SoundEvent$location.get(soundEvent).toString()));
+            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
+            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString()));
             if (mapped != null) {
                 event.setCancelled(true);
-                Object newId = Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, mapped.namespace(), mapped.value());
+                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
                 Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
                         Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
                         Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
-                Object newSoundPacket = Reflections.constructor$ClientboundSoundPacket.newInstance(
-                        Reflections.method$Holder$direct.invoke(null, newSoundEvent),
-                        Reflections.field$ClientboundSoundPacket$source.get(packet),
-                        (double) Reflections.field$ClientboundSoundPacket$x.getInt(packet) / 8,
-                        (double) Reflections.field$ClientboundSoundPacket$y.getInt(packet) / 8,
-                        (double) Reflections.field$ClientboundSoundPacket$z.getInt(packet) / 8,
-                        Reflections.field$ClientboundSoundPacket$volume.get(packet),
-                        Reflections.field$ClientboundSoundPacket$pitch.get(packet),
-                        Reflections.field$ClientboundSoundPacket$seed.get(packet)
-                );
+                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
                 user.sendPacket(newSoundPacket, true);
             }
         } catch (Exception e) {
@@ -962,27 +958,19 @@ public class PacketConsumers {
         }
     };
 
-    @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
         try {
-            int id = (int) Reflections.field$ClientboundSetEntityDataPacket$id.get(packet);
-            Object player = user.serverPlayer();
-            Object level = Reflections.method$Entity$level.invoke(player);
-            Object entityLookup = Reflections.method$Level$moonrise$getEntityLookup.invoke(level);
-            Object entity = Reflections.method$EntityLookup$get.invoke(entityLookup, id);
-            if (entity == null) return;
-            Object entityType = Reflections.method$Entity$getType.invoke(entity);
+            int id = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$id(packet);
+            Object entityType = user.entityView().get(id);
             if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
-                List<Object> packedItems = (List<Object>) Reflections.field$ClientboundSetEntityDataPacket$packedItems.get(packet);
+                List<Object> packedItems = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$packedItems(packet);
                 for (int i = 0; i < packedItems.size(); i++) {
                     Object packedItem = packedItems.get(i);
-                    int entityDataId = (int) Reflections.field$SynchedEntityData$DataValue$id.get(packedItem);
-                    if ((VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 23)
-                            || (!VersionHelper.isVersionNewerThan1_20_2() && entityDataId != 22)) {
+                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+                    if (entityDataId != EntityDataUtils.BLOCK_STATE_DATA_ID) {
                         continue;
                     }
-                    Object blockState = Reflections.field$SynchedEntityData$DataValue$value.get(packedItem);
-                    Object serializer = Reflections.field$SynchedEntityData$DataValue$serializer.get(packedItem);
+                    Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
                     int stateId = BlockStateUtils.blockStateToId(blockState);
                     int newStateId;
                     if (!user.clientModEnabled()) {
@@ -990,7 +978,8 @@ public class PacketConsumers {
                     } else {
                         newStateId = remapMOD(stateId);
                     }
-                    packedItems.set(i, Reflections.constructor$SynchedEntityData$DataValue.newInstance(
+                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
                             entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
                     ));
                     break;

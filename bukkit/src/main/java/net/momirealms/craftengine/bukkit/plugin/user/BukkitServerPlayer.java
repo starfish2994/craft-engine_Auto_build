@@ -69,7 +69,9 @@ public class BukkitServerPlayer extends Player {
 
     private boolean hasClientMod = false;
     // for better fake furniture visual sync
+    // TODO CLEAR ENTITY VIEW
     private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
+    private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -343,7 +345,7 @@ public class BukkitServerPlayer extends Player {
             } else {
                 if (VersionHelper.isVersionNewerThan1_20_5()) {
                     Object attributeModifier = VersionHelper.isVersionNewerThan1_21() ?
-                            Reflections.constructor$AttributeModifier.newInstance(Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, "craftengine", "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
+                            Reflections.constructor$AttributeModifier.newInstance(KeyUtils.toResourceLocation("craftengine", "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
                             Reflections.constructor$AttributeModifier.newInstance(UUID.randomUUID(), "craftengine:custom_hardness", -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE);
                     Object attributeSnapshot = Reflections.constructor$ClientboundUpdateAttributesPacket$AttributeSnapshot.newInstance(Reflections.instance$Holder$Attribute$block_break_speed, 1d, Lists.newArrayList(attributeModifier));
                     Object newPacket = Reflections.constructor$ClientboundUpdateAttributesPacket1.newInstance(entityID(), Lists.newArrayList(attributeSnapshot));
@@ -618,6 +620,11 @@ public class BukkitServerPlayer extends Player {
         return this.furnitureView;
     }
 
+    @Override
+    public Map<Integer, Object> entityView() {
+        return this.entityTypeView;
+    }
+
     public void setResendSound() {
         resentSoundTick = gameTicks();
     }
@@ -648,5 +655,11 @@ public class BukkitServerPlayer extends Player {
 
     public void setClientModState(boolean enable) {
         this.hasClientMod = enable;
+    }
+
+    @Override
+    public void clearView() {
+        this.entityTypeView.clear();
+        this.furnitureView.clear();
     }
 }

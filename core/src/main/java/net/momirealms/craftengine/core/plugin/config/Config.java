@@ -202,7 +202,7 @@ public class Config {
         resource_pack$external_host$sha1 = config.getString("resource-pack.send.external-host.sha1", "");
         String packUUIDStr = config.getString("resource-pack.send.external-host.uuid", "");
         resource_pack$external_host$uuid = packUUIDStr.isEmpty() ? UUID.nameUUIDFromBytes(resource_pack$external_host$url.getBytes(StandardCharsets.UTF_8)) : UUID.fromString(packUUIDStr);
-        resource_pack$send$prompt = AdventureHelper.miniMessage(config.getString("resource-pack.send.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
+        resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.send.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
         resource_pack$send$self_host$rate_limit$reset_interval = config.getLong("resource-pack.send.self-host.rate-limit.reset-interval", 30L);
         resource_pack$send$self_host$rate_limit$max_requests = config.getInt("resource-pack.send.self-host.rate-limit.max-requests", 3);
         resource_pack$send$self_host$deny_non_minecraft_request = config.getBoolean("resource-pack.send.deny-non-minecraft-request", true);

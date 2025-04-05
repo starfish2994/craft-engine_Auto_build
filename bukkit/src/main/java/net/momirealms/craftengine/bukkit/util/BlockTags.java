@@ -14,7 +14,7 @@ public class BlockTags {
         Object value = CACHE.get(key);
         if (value == null) {
             try {
-                value = Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$BLOCK, Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, key.namespace(), key.value()));
+                value = Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$BLOCK, KeyUtils.toResourceLocation(key));
                 CACHE.put(key, value);
                 return value;
             } catch (Exception e) {

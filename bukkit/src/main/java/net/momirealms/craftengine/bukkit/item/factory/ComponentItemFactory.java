@@ -25,30 +25,8 @@ import java.util.function.Function;
 @SuppressWarnings("UnstableApiUsage")
 public class ComponentItemFactory extends BukkitItemFactory {
 
-    private final BiConsumer<ItemWrapper<ItemStack>, Integer> customModelDataSetter;
-    private final Function<ItemWrapper<ItemStack>, Optional<Integer>> customModelDataGetter;
-
     public ComponentItemFactory(CraftEngine plugin) {
         super(plugin);
-        this.customModelDataSetter = VersionHelper.isVersionNewerThan1_21_4() ?
-                ((item, data) -> item.setComponent(ComponentKeys.CUSTOM_MODEL_DATA,
-                        Map.of("floats", List.of(data.floatValue())))) : ((item, data) -> item.setComponent(ComponentKeys.CUSTOM_MODEL_DATA, data));
-        this.customModelDataGetter = VersionHelper.isVersionNewerThan1_21_4() ?
-                (item) -> {
-                    Optional<Object> optional = ComponentType.encodeJava(ComponentKeys.CUSTOM_MODEL_DATA, item.getComponent(ComponentKeys.CUSTOM_MODEL_DATA));
-                    if (optional.isEmpty()) return Optional.empty();
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> data = (Map<String, Object>) optional.get();
-                    @SuppressWarnings("unchecked")
-                    List<Float> floats = (List<Float>) data.get("floats");
-                    if (floats == null || floats.isEmpty()) return Optional.empty();
-                    return Optional.of((int) Math.floor(floats.get(0)));
-                } : (item) -> Optional.ofNullable(
-                (Integer) ComponentType.encodeJava(
-                        ComponentKeys.CUSTOM_MODEL_DATA,
-                        item.getComponent(ComponentKeys.CUSTOM_MODEL_DATA)
-                ).orElse(null)
-        );
     }
 
     @Override
@@ -61,14 +39,18 @@ public class ComponentItemFactory extends BukkitItemFactory {
         if (data == null) {
             item.removeComponent(ComponentKeys.CUSTOM_MODEL_DATA);
         } else {
-            this.customModelDataSetter.accept(item, data);
+            item.setComponent(ComponentKeys.CUSTOM_MODEL_DATA, data);
         }
     }
 
     @Override
     protected Optional<Integer> customModelData(ItemWrapper<ItemStack> item) {
         if (!item.hasComponent(ComponentKeys.CUSTOM_MODEL_DATA)) return Optional.empty();
-        return this.customModelDataGetter.apply(item);
+        return Optional.ofNullable(
+                (Integer) ComponentType.encodeJava(
+                        ComponentKeys.CUSTOM_MODEL_DATA,
+                        item.getComponent(ComponentKeys.CUSTOM_MODEL_DATA)
+                ).orElse(null));
     }
 
     @Override

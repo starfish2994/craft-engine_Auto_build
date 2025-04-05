@@ -537,10 +537,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         handleNMSPacket(user, event, packet);
     }
 
-    @SuppressWarnings("unchecked")
-    private void onNMSPacketSend(NetWorkUser player, NMSPacketEvent event, Object packet) throws ReflectiveOperationException {
+    private void onNMSPacketSend(NetWorkUser player, NMSPacketEvent event, Object packet) {
         if (Reflections.clazz$ClientboundBundlePacket.isInstance(packet)) {
-            Iterable<Object> packets = (Iterable<Object>) Reflections.field$BundlePacket$packets.get(packet);
+            Iterable<Object> packets = FastNMS.INSTANCE.method$ClientboundBundlePacket$subPackets(packet);
             for (Object p : packets) {
                 onNMSPacketSend(player, event, p);
             }

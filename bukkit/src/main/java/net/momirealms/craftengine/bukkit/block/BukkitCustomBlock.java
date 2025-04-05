@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block;
 
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.util.SoundUtils;
 import net.momirealms.craftengine.core.block.*;
@@ -125,7 +126,7 @@ public class BukkitCustomBlock extends CustomBlock {
                 Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(state.customBlockState().registryId());
                 Set<Object> tags = new HashSet<>();
                 for (Key tag : settings.tags()) {
-                    tags.add(Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$BLOCK, Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, tag.namespace(), tag.value())));
+                    tags.add(Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$BLOCK, KeyUtils.toResourceLocation(tag)));
                 }
                 Reflections.field$Holder$Reference$tags.set(holder, tags);
                 // set burning properties

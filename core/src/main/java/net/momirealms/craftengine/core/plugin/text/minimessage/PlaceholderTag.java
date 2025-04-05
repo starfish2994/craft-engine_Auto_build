@@ -25,7 +25,7 @@ public class PlaceholderTag implements TagResolver {
         }
         String placeholder = arguments.popOr("No argument placeholder provided").toString();
         String parsed = CraftEngine.instance().parse(player, "%" + placeholder + "%");
-        return Tag.inserting(AdventureHelper.miniMessage(parsed));
+        return Tag.inserting(AdventureHelper.miniMessage().deserialize(parsed));
     }
 
     @Override

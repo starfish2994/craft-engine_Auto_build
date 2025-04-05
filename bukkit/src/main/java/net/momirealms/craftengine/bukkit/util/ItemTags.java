@@ -17,7 +17,7 @@ public class ItemTags {
         Object value = CACHE.get(key);
         if (value == null) {
             try {
-                value = Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$ITEM, Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, key.namespace(), key.value()));
+                value = Reflections.method$TagKey$create.invoke(null, Reflections.instance$Registries$ITEM, KeyUtils.toResourceLocation(key));
                 CACHE.put(key, value);
                 return value;
             } catch (Exception e) {
