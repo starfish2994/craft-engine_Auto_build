@@ -11,6 +11,4 @@ public interface PacketIds {
     int clientboundLevelEventPacket();
 
     int clientboundAddEntityPacket();
-
-    int clientboundOpenScreenPacket();
 }

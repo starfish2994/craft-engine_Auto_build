@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
@@ -29,6 +30,8 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
+import net.momirealms.sparrow.nbt.NBT;
+import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -238,34 +241,36 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
-        try {
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
 
-            } else {
-                FriendlyByteBuf buf = event.getBuffer();
-                int containerId = buf.readVarInt();
-                int type = buf.readVarInt();
-                String json = buf.readUtf();
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
-                if (tokens.isEmpty()) return;
-                event.setChanged(true);
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> {
-                        b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue()));
-                    });
-                }
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                buf.writeVarInt(containerId);
-                buf.writeVarInt(type);
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
-        }
-    };
+
+//    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
+//        try {
+//            if (VersionHelper.isVersionNewerThan1_20_3()) {
+//                FriendlyByteBuf buf = event.getBuffer();
+//            } else {
+//                FriendlyByteBuf buf = event.getBuffer();
+//                int containerId = buf.readVarInt();
+//                int type = buf.readVarInt();
+//                String json = buf.readUtf();
+//                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+//                if (tokens.isEmpty()) return;
+//                event.setChanged(true);
+//                Component component = AdventureHelper.jsonToComponent(json);
+//                for (Map.Entry<String, String> token : tokens.entrySet()) {
+//                    component = component.replaceText(b -> {
+//                        b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue()));
+//                    });
+//                }
+//                buf.clear();
+//                buf.writeVarInt(event.packetID());
+//                buf.writeVarInt(containerId);
+//                buf.writeVarInt(type);
+//                buf.writeUtf(AdventureHelper.componentToJson(component));
+//            }
+//        } catch (Exception e) {
+//            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
+//        }
+//    };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE = (user, event) -> {
         try {
@@ -781,7 +786,8 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
         try {
             Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString()));
+            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
+            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
             if (mapped != null) {
                 event.setCancelled(true);
                 Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
@@ -1017,6 +1023,14 @@ public class PacketConsumers {
             // todo修改其他实体的物品的方块谓词
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> OPEN_SCREEN = (user, event, packet) -> {
+        try {
+
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
         }
     };
 }

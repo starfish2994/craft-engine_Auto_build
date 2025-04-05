@@ -150,11 +150,11 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
         registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_DATA, Reflections.clazz$ClientboundSetEntityDataPacket);
+        registerNMSPacketConsumer(PacketConsumers.OPEN_SCREEN, Reflections.clazz$ClientboundOpenScreenPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
-        registerByteBufPacketConsumer(PacketConsumers.OPEN_SCREEN, this.packetIds.clientboundOpenScreenPacket());
     }
 
     public static BukkitNetworkManager instance() {
@@ -444,7 +444,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                     }
                 });
             } catch (Throwable e) {
-                plugin.logger().severe("An error occurred when reading packets", e);
+                plugin.logger().severe("An error occurred when reading packets. Packet class: " + packet.getClass(), e);
                 super.write(context, packet, channelPromise);
             }
         }
