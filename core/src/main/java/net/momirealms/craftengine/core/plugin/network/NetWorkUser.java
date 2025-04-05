@@ -40,4 +40,6 @@ public interface NetWorkUser {
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);
+
+    Map<Integer, Object> entityView();
 }
