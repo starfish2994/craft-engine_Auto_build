@@ -18,6 +18,7 @@ public class ItemSettings {
     EquipmentGeneration equipment;
     boolean canRepair = true;
     List<AnvilRepairItem> anvilRepairItems = List.of();
+    boolean renameable = true;
 
     private ItemSettings() {}
 
@@ -43,6 +44,7 @@ public class ItemSettings {
         newSettings.equipment = settings.equipment;
         newSettings.canRepair = settings.canRepair;
         newSettings.anvilRepairItems = settings.anvilRepairItems;
+        newSettings.renameable = settings.renameable;
         return newSettings;
     }
 
@@ -66,6 +68,10 @@ public class ItemSettings {
         return fuelTime;
     }
 
+    public boolean renameable() {
+        return renameable;
+    }
+
     public Set<Key> tags() {
         return tags;
     }
@@ -86,6 +92,11 @@ public class ItemSettings {
 
     public ItemSettings canRepair(boolean canRepair) {
         this.canRepair = canRepair;
+        return this;
+    }
+
+    public ItemSettings renameable(boolean renameable) {
+        this.renameable = renameable;
         return this;
     }
 
@@ -123,6 +134,10 @@ public class ItemSettings {
             registerFactory("repairable", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.canRepair(bool);
+            }));
+            registerFactory("renameable", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.renameable(bool);
             }));
             registerFactory("anvil-repair-item", (value -> {
                 @SuppressWarnings("unchecked")
