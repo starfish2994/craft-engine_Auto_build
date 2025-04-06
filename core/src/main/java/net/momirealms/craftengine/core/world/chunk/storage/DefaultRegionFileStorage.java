@@ -15,10 +15,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.Stream;
 
 public class DefaultRegionFileStorage implements WorldDataStorage {
-    private static final int FORMAT_VERSION = 1;
     private final Path folder;
 
     public static final String REGION_FILE_SUFFIX = ".mca";
@@ -30,15 +28,6 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
 
     public DefaultRegionFileStorage(Path directory) {
         this.folder = directory;
-        Path metaDataFile = this.folder.getParent().resolve("craftengine.dat");
-    }
-
-    private Path[] regionFiles() throws IOException {
-        try (Stream<Path> paths = Files.walk(this.folder)) {
-            return paths
-                    .filter(path -> path.toString().endsWith(REGION_FILE_SUFFIX))
-                    .toArray(Path[]::new);
-        }
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -138,7 +127,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
                 if (dataInputStream == null) {
                     return null;
                 }
-                tag = NBT.readCompound(dataInputStream, true);
+                tag = NBT.readCompound(dataInputStream, false);
             } catch (Throwable t1) {
                 try {
                     dataInputStream.close();
@@ -163,7 +152,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
             } else {
                 DataOutputStream dataOutputStream = regionFile.getChunkDataOutputStream(pos);
                 try {
-                    NBT.writeCompound(nbt, dataOutputStream, true);
+                    NBT.writeCompound(nbt, dataOutputStream, false);
                 } catch (Throwable t1) {
                     if (dataOutputStream != null) {
                         try {

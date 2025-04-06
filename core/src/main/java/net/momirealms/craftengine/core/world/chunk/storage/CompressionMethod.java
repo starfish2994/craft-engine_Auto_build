@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.world.chunk.storage;
 
-import com.github.luben.zstd.ZstdInputStream;
-import com.github.luben.zstd.ZstdOutputStream;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import net.jpountz.lz4.LZ4BlockOutputStream;

@@ -232,6 +232,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.senderFactory != null) this.senderFactory.close();
+        if (this.dependencyManager != null) this.dependencyManager.close();
         ResourcePackHost.instance().disable();
     }
 
