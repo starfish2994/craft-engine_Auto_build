@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.world.chunk.storage.CompressionMethod;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,6 +100,7 @@ public class Config {
     protected boolean light_system$force_update_light;
     protected boolean light_system$enable;
 
+    protected int chunk_system$compression_method;
     protected boolean chunk_system$restore_vanilla_blocks_on_chunk_unload;
     protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
     protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
@@ -252,6 +254,7 @@ public class Config {
         light_system$enable = config.getBoolean("light-system.enable", true);
 
         // chunk
+        chunk_system$compression_method = config.getInt("chunk-system.compression-method", 4);
         chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
         chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.restore-custom-blocks-on-chunk-load", true);
         chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
@@ -544,27 +547,35 @@ public class Config {
     }
 
     public static boolean filterChat() {
-        return instance().image$illegal_characters_filter$chat;
+        return instance.image$illegal_characters_filter$chat;
     }
 
     public static boolean filterAnvil() {
-        return instance().image$illegal_characters_filter$anvil;
+        return instance.image$illegal_characters_filter$anvil;
     }
 
     public static boolean filterCommand() {
-        return instance().image$illegal_characters_filter$command;
+        return instance.image$illegal_characters_filter$command;
     }
 
     public static boolean filterBook() {
-        return instance().image$illegal_characters_filter$book;
+        return instance.image$illegal_characters_filter$book;
     }
 
     public static boolean filterSign() {
-        return instance().image$illegal_characters_filter$sign;
+        return instance.image$illegal_characters_filter$sign;
     }
 
     public static boolean hideBaseEntity() {
-        return instance().furniture$hide_base_entity;
+        return instance.furniture$hide_base_entity;
+    }
+
+    public static int compressionMethod() {
+        int id = instance.chunk_system$compression_method;
+        if (id <= 0 || id > CompressionMethod.METHOD_COUNT) {
+            id = 4;
+        }
+        return id;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

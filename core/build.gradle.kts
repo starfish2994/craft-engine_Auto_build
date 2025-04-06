@@ -79,6 +79,7 @@ tasks {
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")
+        relocate("net.jpountz", "net.momirealms.craftengine.libraries.jpountz") // lz4
     }
 }
 

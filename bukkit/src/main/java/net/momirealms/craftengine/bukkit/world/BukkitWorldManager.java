@@ -212,11 +212,17 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 this.lastVisitedUUID = null;
             }
             this.resetWorldArray();
+
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
         for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
             handleChunkUnload(ceWorld, chunk);
+        }
+        try {
+            ceWorld.worldDataStorage().close();
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to close world storage", e);
         }
     }
 

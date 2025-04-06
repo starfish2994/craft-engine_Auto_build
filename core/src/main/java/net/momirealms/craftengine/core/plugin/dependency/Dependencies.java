@@ -214,4 +214,11 @@ public class Dependencies {
             "aho-corasick",
             List.of(Relocation.of("ahocorasick", "org{}ahocorasick"))
     );
+    public static final Dependency LZ4 = new Dependency(
+            "lz4",
+            "org{}lz4",
+            "lz4-java",
+            "lz4-java",
+            List.of(Relocation.of("jpountz", "net{}jpountz"))
+    );
 }

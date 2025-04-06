@@ -279,7 +279,8 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.MINIMESSAGE,
                 Dependencies.TEXT_SERIALIZER_GSON,
                 Dependencies.TEXT_SERIALIZER_JSON,
-                Dependencies.AHO_CORASICK
+                Dependencies.AHO_CORASICK,
+                Dependencies.LZ4
         );
     }
 

@@ -42,10 +42,6 @@ public class RegionFile implements AutoCloseable {
     public final ReentrantLock fileLock = new ReentrantLock(true);
     public final Path regionFile;
 
-    public RegionFile(Path fileChannel, Path directory) throws IOException {
-        this(fileChannel, directory, CompressionMethod.GZIP);
-    }
-
     public RegionFile(Path path, Path directory, CompressionMethod compressionMethod) throws IOException {
         this.header = ByteBuffer.allocateDirect(8192);
         this.regionFile = path;
@@ -400,10 +396,12 @@ public class RegionFile implements AutoCloseable {
 
         public ChunkBuffer(ChunkPos pos) {
             super(8096);
+            // chunk size 4 bytes
             super.write(0);
             super.write(0);
             super.write(0);
             super.write(0);
+            // compression method
             super.write(RegionFile.this.compression.getId());
             this.pos = pos;
         }
