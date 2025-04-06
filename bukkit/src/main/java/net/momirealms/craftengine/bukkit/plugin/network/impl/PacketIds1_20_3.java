@@ -29,9 +29,8 @@ public class PacketIds1_20_3 implements PacketIds {
         return 1;
     }
 
-    //TODO TEST
     @Override
     public int clientboundOpenScreenPacket() {
-        return 48;
+        return 49;
     }
 }
