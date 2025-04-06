@@ -334,7 +334,7 @@ public class RegionFile implements AutoCloseable {
         // If the chunk file is too large, store it as an additional file
         if (sectorsToWrite >= EXTERNAL_CHUNK_THRESHOLD) {
             Path path = this.getExternalChunkPath(pos);
-            LOGGER.warn(String.format("Saving oversized chunk %s (%s bytes) to external file %s", pos, sizeToWrite, path));
+            LOGGER.warn(String.format("Saving oversized chunk %s (%s bytes) to external file %s", pos.x() + "," + pos.z(), sizeToWrite, path));
             sectorsToWrite = 1;
             sectorStartPosition = this.usedSectors.allocate(sectorsToWrite);
             regionFileOperation = this.writeToExternalFileSafely(path, buf);
