@@ -29,10 +29,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     try {
                         Collection<Entity> entities = player.getLocation().getNearbyEntities(2,2,2);
                         for (Entity entity : entities) {
-                            System.out.println(entity.getType());
                             if (FastNMS.INSTANCE.method$CraftEntity$getHandle(entity) instanceof CollisionEntity) {
-                                System.out.println(entity.getEntityId());
-                                System.out.println(entity.getUniqueId());
                             }
                         }
                     } catch (Exception e) {

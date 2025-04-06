@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public static final NamespacedKey FURNITURE_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:furniture_id"));
@@ -59,9 +58,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         this.furnitureParser = new FurnitureParser();
         this.furnitureEventListener = new FurnitureEventListener(this);
         this.dismountListener = VersionHelper.isVersionNewerThan1_20_3() ? new DismountListener1_20_3(this) : new DismountListener1_20(this::handleDismount);
-        plugin.scheduler().asyncRepeating(() -> {
-            System.out.println("数量" + furnitureByRealEntityId.size());
-        }, 3,  3, TimeUnit.SECONDS);
     }
 
     @Override

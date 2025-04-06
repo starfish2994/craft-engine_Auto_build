@@ -56,7 +56,6 @@ public abstract class AbstractFontManager implements FontManager {
     @Override
     public Map<String, String> matchTags(String json) {
         if (this.trie == null) {
-            System.out.println(1);
             return Collections.emptyMap();
         }
         Map<String, String> tags = new HashMap<>();
