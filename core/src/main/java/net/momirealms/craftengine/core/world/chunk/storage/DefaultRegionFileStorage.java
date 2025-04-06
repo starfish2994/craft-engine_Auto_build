@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DefaultRegionFileStorage implements WorldDataStorage {
-
+    private static final int FORMAT_VERSION = 1;
     private final Path folder;
 
     public static final String REGION_FILE_SUFFIX = ".mca";
@@ -127,7 +127,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
                 if (dataInputStream == null) {
                     return null;
                 }
-                tag = NBT.readCompound(dataInputStream);
+                tag = NBT.readCompound(dataInputStream, true);
             } catch (Throwable t1) {
                 try {
                     dataInputStream.close();
@@ -152,7 +152,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
             } else {
                 DataOutputStream dataOutputStream = regionFile.getChunkDataOutputStream(pos);
                 try {
-                    NBT.writeCompound(nbt, dataOutputStream);
+                    NBT.writeCompound(nbt, dataOutputStream, true);
                 } catch (Throwable t1) {
                     if (dataOutputStream != null) {
                         try {

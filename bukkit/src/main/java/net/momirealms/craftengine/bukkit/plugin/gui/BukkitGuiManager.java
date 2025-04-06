@@ -28,7 +28,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
     @Override
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
-        this.timerTask = plugin.scheduler().sync().runRepeating(this::timerTask, 20, 20);
+        this.timerTask = plugin.scheduler().sync().runRepeating(this::timerTask, 30, 30);
     }
 
     @Override
@@ -40,10 +40,21 @@ public class BukkitGuiManager implements GuiManager, Listener {
     }
 
     public void timerTask() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
-            if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
-                holder.gui().onTimer();
+        if (VersionHelper.isFolia()) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                this.plugin.scheduler().sync().run(() -> {
+                    org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
+                    if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
+                        holder.gui().onTimer();
+                    }
+                }, player.getWorld(), player.getLocation().getBlockX() >> 4, player.getLocation().getBlockZ() >> 4);
+            }
+        } else {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
+                if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
+                    holder.gui().onTimer();
+                }
             }
         }
     }
