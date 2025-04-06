@@ -59,7 +59,7 @@ public class FurnitureEventListener implements Listener {
         Entity[] entities = event.getChunk().getEntities();
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
-                this.manager.handleBaseFurnitureUnload(entity);
+                this.manager.handleBaseFurnitureUnload(entity, true);
             }
         }
     }
@@ -69,7 +69,7 @@ public class FurnitureEventListener implements Listener {
         List<Entity> entities = event.getWorld().getEntities();
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
-                this.manager.handleBaseFurnitureUnload(entity);
+                this.manager.handleBaseFurnitureUnload(entity, true);
             }
         }
     }
@@ -77,7 +77,7 @@ public class FurnitureEventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onEntityUnload(EntityRemoveFromWorldEvent event) {
         if (event.getEntity() instanceof ItemDisplay itemDisplay) {
-            this.manager.handleBaseFurnitureUnload(itemDisplay);
+            this.manager.handleBaseFurnitureUnload(itemDisplay, false);
         }
     }
 

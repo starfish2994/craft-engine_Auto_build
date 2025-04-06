@@ -249,7 +249,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         return this.furnitureByEntityId.get(entityId);
     }
 
-    protected void handleBaseFurnitureUnload(Entity entity) {
+    protected void handleBaseFurnitureUnload(Entity entity, boolean unloadColliders) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByRealEntityId.remove(id);
         if (furniture != null) {
@@ -262,7 +262,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 this.furnitureByEntityId.remove(sub);
             }
             for (CollisionEntity collision : furniture.collisionEntities()) {
-                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
+                if (unloadColliders) {
+                    this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
+                }
                 if (!isPreventing) collision.destroy();
             }
         }
