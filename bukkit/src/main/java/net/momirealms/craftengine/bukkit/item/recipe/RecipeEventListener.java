@@ -643,6 +643,40 @@ public class RecipeEventListener implements Listener {
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onAnvilRenameItem(PrepareAnvilEvent event) {
+        AnvilInventory inventory = event.getInventory();
+        ItemStack first = inventory.getFirstItem();
+        if (ItemUtils.isEmpty(first)) {
+            return;
+        }
+        if (event.getResult() == null) {
+            return;
+        }
+        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
+        wrappedFirst.getCustomItem().ifPresent(item -> {
+            if (!item.settings().renameable()) {
+                String renameText;
+                if (VersionHelper.isVersionNewerThan1_21_2()) {
+                    AnvilView anvilView = event.getView();
+                    renameText = anvilView.getRenameText();
+                } else {
+                    renameText = LegacyInventoryUtils.getRenameText(inventory);
+                }
+                if (renameText != null && !renameText.isBlank()) {
+                    try {
+                        if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
+                            event.setResult(null);
+                        }
+                    } catch (Exception e) {
+                        this.plugin.logger().warn("Failed to get hover name", e);
+                    }
+                }
+            }
+        });
+    }
+
     public static int calculateIncreasedRepairCost(int cost) {
         return (int) Math.min((long) cost * 2L + 1L, 2147483647L);
     }

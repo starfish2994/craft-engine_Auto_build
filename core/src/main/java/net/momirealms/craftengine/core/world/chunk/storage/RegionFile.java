@@ -3,6 +3,8 @@ package net.momirealms.craftengine.core.world.chunk.storage;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.sparrow.nbt.CompoundTag;
+import net.momirealms.sparrow.nbt.NBT;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -15,11 +17,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 public class RegionFile implements AutoCloseable {
     private static final PluginLogger LOGGER = CraftEngine.instance().logger();
-
+    private static final byte FORMAT_VERSION = 1;
     public static final int SECTOR_BYTES = 4096;
     public static final int CHUNK_HEADER_SIZE = 5;
     public static final int EXTERNAL_STREAM_FLAG = 128;
@@ -42,9 +46,18 @@ public class RegionFile implements AutoCloseable {
     public final ReentrantLock fileLock = new ReentrantLock(true);
     public final Path regionFile;
 
-    public RegionFile(Path fileChannel, Path directory) throws IOException {
-        this(fileChannel, directory, CompressionMethod.GZIP);
-    }
+    private static final List<Function<DataInputStream, DataInputStream>> FORMAT_UPDATER = List.of(
+            // version 0 -> 1 (Use nameless compound tag)
+            (old) -> {
+                try {
+                    CompoundTag tag = NBT.readCompound(new DataInputStream(old), true);
+                    return new DataInputStream(new ByteArrayInputStream(NBT.toBytes(tag)));
+                } catch (IOException e) {
+                    CraftEngine.instance().logger().warn("Failed to migrate data from version 0 -> 1", e);
+                    return null;
+                }
+            }
+    );
 
     public RegionFile(Path path, Path directory, CompressionMethod compressionMethod) throws IOException {
         this.header = ByteBuffer.allocateDirect(8192);
@@ -124,7 +137,10 @@ public class RegionFile implements AutoCloseable {
 
         // Read the chunk's stub information
         int size = bytebuffer.getInt();
-        byte type = bytebuffer.get();
+        byte flags = bytebuffer.get();
+        byte compressionScheme = (byte) (flags & 0b00000111);
+        byte version = (byte) ((flags & 0b01111000) >>> 3);
+
         if (size == 0) {
             LOGGER.warn(String.format("Chunk %s is allocated, but stream is missing", pos));
             return null;
@@ -132,13 +148,24 @@ public class RegionFile implements AutoCloseable {
 
         // Calculate the actual data size
         int actualSize = size - 1;
-        if (RegionFile.isExternalStreamChunk(type)) {
+        if (RegionFile.isExternalStreamChunk(flags)) {
             // If the chunk has both internal and external streams, log a warning.
             if (actualSize != 0) {
                 LOGGER.warn("Chunk has both internal and external streams");
             }
             // Create and return an input stream for the external chunk.
-            return this.createExternalChunkInputStream(pos, RegionFile.getExternalChunkVersion(type));
+            if (version == FORMAT_VERSION) {
+                return this.createExternalChunkInputStream(pos, RegionFile.getExternalChunkVersion(compressionScheme));
+            } else {
+                int currentVersion = version;
+                DataInputStream inputStream = this.createExternalChunkInputStream(pos, RegionFile.getExternalChunkVersion(compressionScheme));
+                while (currentVersion < FORMAT_VERSION) {
+                    inputStream = FORMAT_UPDATER.get(currentVersion).apply(inputStream);
+                    if (inputStream == null) break;
+                    currentVersion++;
+                }
+                return inputStream;
+            }
         } else if (actualSize > bytebuffer.remaining()) {
             // If the declared size of the chunk is greater than the remaining bytes in the buffer, the stream is truncated.
             LOGGER.severe(String.format("Chunk %s stream is truncated: expected %s but read %s", pos, actualSize, bytebuffer.remaining()));
@@ -148,9 +175,34 @@ public class RegionFile implements AutoCloseable {
             LOGGER.severe(String.format("Declared size %s of chunk %s is negative", size, pos));
             return null;
         } else {
-            // Otherwise, create and return a standard input stream for the chunk data.
-            return this.createChunkInputStream(pos, type, RegionFile.createInputStream(bytebuffer, actualSize));
+            if (version == FORMAT_VERSION) {
+                // Otherwise, create and return a standard input stream for the chunk data.
+                return this.createChunkInputStream(pos, compressionScheme, RegionFile.createInputStream(bytebuffer, actualSize));
+            } else {
+                int currentVersion = version;
+                DataInputStream inputStream = this.createChunkInputStream(pos, compressionScheme, RegionFile.createInputStream(bytebuffer, actualSize));
+                while (currentVersion < FORMAT_VERSION) {
+                    inputStream = FORMAT_UPDATER.get(currentVersion).apply(inputStream);
+                    if (inputStream == null) break;
+                    currentVersion++;
+                }
+                return inputStream;
+            }
         }
+    }
+
+    public static byte encodeFlag(byte compressionScheme, byte version, boolean external) {
+        if (compressionScheme <= 0 || compressionScheme > 7) {
+            throw new IllegalArgumentException("compression method can only be a number between 1 and 7");
+        }
+        if (version < 0 || version > 15) {
+            throw new IllegalArgumentException("Version number can only be a number between 0 and 15");
+        }
+        return (byte) (
+                (external ? 0b10000000 : 0) |
+                        ((version & 0b00001111) << 3) |
+                        (compressionScheme & 0b00000111)
+        );
     }
 
     private static int getTimestamp() {
@@ -282,7 +334,7 @@ public class RegionFile implements AutoCloseable {
         // If the chunk file is too large, store it as an additional file
         if (sectorsToWrite >= EXTERNAL_CHUNK_THRESHOLD) {
             Path path = this.getExternalChunkPath(pos);
-            LOGGER.warn(String.format("Saving oversized chunk %s (%s bytes) to external file %s", pos, sizeToWrite, path));
+            LOGGER.warn(String.format("Saving oversized chunk %s (%s bytes) to external file %s", pos.x() + "," + pos.z(), sizeToWrite, path));
             sectorsToWrite = 1;
             sectorStartPosition = this.usedSectors.allocate(sectorsToWrite);
             regionFileOperation = this.writeToExternalFileSafely(path, buf);
@@ -311,7 +363,8 @@ public class RegionFile implements AutoCloseable {
     private ByteBuffer createExternalHeader(CompressionMethod compression) {
         ByteBuffer bytebuffer = ByteBuffer.allocate(CHUNK_HEADER_SIZE);
         bytebuffer.putInt(1);
-        bytebuffer.put((byte) (compression.getId() | EXTERNAL_STREAM_FLAG));
+        bytebuffer.put(encodeFlag((byte) compression.getId(), FORMAT_VERSION, true));
+        //bytebuffer.put((byte) (compression.getId() | EXTERNAL_STREAM_FLAG));
         ((Buffer) bytebuffer).flip();
         return bytebuffer;
     }
@@ -400,11 +453,13 @@ public class RegionFile implements AutoCloseable {
 
         public ChunkBuffer(ChunkPos pos) {
             super(8096);
+            // chunk size 4 bytes
             super.write(0);
             super.write(0);
             super.write(0);
             super.write(0);
-            super.write(RegionFile.this.compression.getId());
+            // compression method
+            super.write(encodeFlag((byte) RegionFile.this.compression.getId(), FORMAT_VERSION, false));
             this.pos = pos;
         }
 

@@ -29,6 +29,8 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
+import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -78,6 +80,7 @@ public class PacketConsumers {
         return mappingsMOD[stateId];
     }
 
+    // TODO Use bytebuffer?
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
         try {
             if (user.clientModEnabled()) {
@@ -235,6 +238,48 @@ public class PacketConsumers {
             buf.writeBoolean(global);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelEventPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
+        try {
+            if (VersionHelper.isVersionNewerThan1_20_3()) {
+                FriendlyByteBuf buf = event.getBuffer();
+                int containerId = buf.readVarInt();
+                int type = buf.readVarInt();
+                Tag nbt = buf.readNbt(false);
+                if (nbt == null) return;
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                if (tokens.isEmpty()) return;
+                Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(containerId);
+                buf.writeVarInt(type);
+                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+            } else {
+                FriendlyByteBuf buf = event.getBuffer();
+                int containerId = buf.readVarInt();
+                int type = buf.readVarInt();
+                String json = buf.readUtf();
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) return;
+                event.setChanged(true);
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(containerId);
+                buf.writeVarInt(type);
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
         }
     };
 
@@ -610,6 +655,7 @@ public class PacketConsumers {
                 Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
     }
 
+    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
         try {
             Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
@@ -648,6 +694,7 @@ public class PacketConsumers {
     };
 
     // 1.21.3+
+    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundEntityPositionSyncPacket$id.get(packet);
@@ -659,6 +706,7 @@ public class PacketConsumers {
         }
     };
 
+    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundMoveEntityPacket$entityId.get(packet);
@@ -670,6 +718,7 @@ public class PacketConsumers {
         }
     };
 
+    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> REMOVE_ENTITY = (user, event, packet) -> {
         try {
             IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
@@ -749,10 +798,12 @@ public class PacketConsumers {
         }
     };
 
+    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
         try {
             Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString()));
+            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
+            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
             if (mapped != null) {
                 event.setCancelled(true);
                 Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
@@ -958,36 +1009,44 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
-        try {
-            int id = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$id(packet);
-            Object entityType = user.entityView().get(id);
-            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
-                List<Object> packedItems = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$packedItems(packet);
-                for (int i = 0; i < packedItems.size(); i++) {
-                    Object packedItem = packedItems.get(i);
-                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                    if (entityDataId != EntityDataUtils.BLOCK_STATE_DATA_ID) {
-                        continue;
-                    }
-                    Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                    int stateId = BlockStateUtils.blockStateToId(blockState);
-                    int newStateId;
-                    if (!user.clientModEnabled()) {
-                        newStateId = remap(stateId);
-                    } else {
-                        newStateId = remapMOD(stateId);
-                    }
-                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                            entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
-                    ));
-                    break;
-                }
-            }
-            // todo修改其他实体的物品的方块谓词
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
-        }
-    };
+    // TODO 使用bytebuffer
+//    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
+//        try {
+//            int id = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$id(packet);
+//            Object entityType = user.entityView().get(id);
+//            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+//                List<Object> packedItems = FastNMS.INSTANCE.field$ClientboundSetEntityDataPacket$packedItems(packet);
+//                for (int i = 0; i < packedItems.size(); i++) {
+//                    Object packedItem = packedItems.get(i);
+//                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+//                    if (entityDataId != EntityDataUtils.BLOCK_STATE_DATA_ID) {
+//                        continue;
+//                    }
+//                    Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+//                    int stateId = BlockStateUtils.blockStateToId(blockState);
+//                    int newStateId;
+//                    if (!user.clientModEnabled()) {
+//                        newStateId = remap(stateId);
+//                    } else {
+//                        newStateId = remapMOD(stateId);
+//                    }
+//                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+//                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
+//                            entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
+//                    ));
+//                    break;
+//                }
+//            }
+//        } catch (Exception e) {
+//            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+//        }
+//    };
+
+//    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> OPEN_SCREEN = (user, event, packet) -> {
+//        try {
+//
+//        } catch (Exception e) {
+//            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
+//        }
+//    };
 }

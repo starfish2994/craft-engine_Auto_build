@@ -38,6 +38,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public static final NamespacedKey FURNITURE_ANCHOR_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:anchor_type"));
     public static final NamespacedKey FURNITURE_SEAT_BASE_ENTITY_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:seat_to_base_entity"));
     public static final NamespacedKey FURNITURE_SEAT_VECTOR_3F_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:seat_vector"));
+    public static final NamespacedKey FURNITURE_COLLISION = Objects.requireNonNull(NamespacedKey.fromString("craftengine:collision"));
     private static BukkitFurnitureManager instance;
     private final BukkitCraftEngine plugin;
     private final FurnitureParser furnitureParser;
@@ -73,7 +74,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             ItemDisplay display = (ItemDisplay) entity;
             display.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_KEY, PersistentDataType.STRING, furniture.id().toString());
             display.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_ANCHOR_KEY, PersistentDataType.STRING, finalAnchorType.name());
-            handleEntityLoadEarly(display);
+            handleBaseEntityLoadEarly(display);
         });
         if (playSound) {
             SoundData data = furniture.settings().sounds().placeSound();
@@ -214,7 +215,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         for (World world : Bukkit.getWorlds()) {
             List<Entity> entities = world.getEntities();
             for (Entity entity : entities) {
-                handleEntityLoadEarly(entity);
+                if (entity instanceof ItemDisplay display) {
+                    handleBaseEntityLoadEarly(display);
+                }
             }
         }
     }
@@ -249,7 +252,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         return this.furnitureByEntityId.get(entityId);
     }
 
-    protected void handleBaseFurnitureUnload(Entity entity) {
+    protected void handleBaseEntityUnload(Entity entity) {
         int id = entity.getEntityId();
         LoadedFurniture furniture = this.furnitureByRealEntityId.remove(id);
         if (furniture != null) {
@@ -261,55 +264,110 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (int sub : furniture.entityIds()) {
                 this.furnitureByEntityId.remove(sub);
             }
-            for (CollisionEntity collision : furniture.collisionEntities()) {
-                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
-                if (!isPreventing) collision.destroy();
-            }
+//            for (CollisionEntity collision : furniture.collisionEntities()) {
+//                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
+//                if (!isPreventing) collision.destroy();
+//            }
         }
     }
 
+    protected void handleCollisionEntityUnload(Entity entity) {
+        int id = entity.getEntityId();
+        this.furnitureByRealEntityId.remove(id);
+    }
+
     @SuppressWarnings("deprecation") // just a misleading name `getTrackedPlayers`
-    protected void handleEntityLoadLate(Entity entity) {
-        if (entity instanceof ItemDisplay display) {
-            String id = entity.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
-            if (id == null) return;
-            Key key = Key.of(id);
-            Optional<CustomFurniture> optionalFurniture = furnitureById(key);
-            if (optionalFurniture.isEmpty()) return;
-            CustomFurniture customFurniture = optionalFurniture.get();
-            LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
-            if (previous != null) return;
-            Location location = entity.getLocation();
-            if (FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
-                return;
+    protected void handleBaseEntityLoadLate(ItemDisplay display, int depth) {
+        // must be a furniture item
+        String id = display.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
+        if (id == null) return;
+
+        Key key = Key.of(id);
+        Optional<CustomFurniture> optionalFurniture = furnitureById(key);
+        if (optionalFurniture.isEmpty()) return;
+
+        CustomFurniture customFurniture = optionalFurniture.get();
+        LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
+        if (previous != null) return;
+
+        Location location = display.getLocation();
+        boolean above1_20_1 = VersionHelper.isVersionNewerThan1_20_2();
+        boolean preventChange = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+        if (above1_20_1) {
+            if (!preventChange) {
+                LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
+                furniture.initializeColliders();
+                for (Player player : display.getTrackedPlayers()) {
+                    this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                    this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
+                }
             }
-            LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
+        } else {
+            LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
                 this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                 this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
+            if (preventChange) {
+                this.plugin.scheduler().sync().runLater(furniture::initializeColliders, 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+            } else {
+                furniture.initializeColliders();
+            }
+        }
+        if (depth > 2) return;
+        this.plugin.scheduler().sync().runLater(() -> handleBaseEntityLoadLate(display, depth + 1), 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+    }
+
+    protected void handleCollisionEntityLoadLate(Shulker shulker, int depth) {
+        // remove the shulker if it's not a collision entity, it might be wrongly copied by WorldEdit
+        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(shulker) instanceof CollisionEntity) {
+            return;
+        }
+        Byte flag = shulker.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
+        if (flag != null && flag == 1) {
+            return;
+        }
+
+        Location location = shulker.getLocation();
+        World world = location.getWorld();
+        int chunkX = location.getBlockX() >> 4;
+        int chunkZ = location.getBlockZ() >> 4;
+        if (!FastNMS.INSTANCE.isPreventingStatusUpdates(world, chunkX, chunkZ)) {
+            shulker.remove();
+            return;
+        }
+
+        if (depth > 2) return;
+        plugin.scheduler().sync().runLater(() -> {
+            handleCollisionEntityLoadLate(shulker, depth + 1);
+        }, 1, world, chunkX, chunkZ);
+    }
+
+    public void handleBaseEntityLoadEarly(ItemDisplay display) {
+        String id = display.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
+        if (id == null) return;
+        Key key = Key.of(id);
+        Optional<CustomFurniture> optionalFurniture = furnitureById(key);
+        if (optionalFurniture.isPresent()) {
+            CustomFurniture customFurniture = optionalFurniture.get();
+            LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
+            if (previous != null) return;
+            LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
+            furniture.initializeColliders(); // safely do it here
+            return;
+        }
+        // Remove the entity if it's not a valid furniture
+        if (Config.removeInvalidFurniture()) {
+            if (Config.furnitureToRemove().isEmpty() || Config.furnitureToRemove().contains(id)) {
+                display.remove();
+            }
         }
     }
 
-    public void handleEntityLoadEarly(Entity entity) {
-        if (entity instanceof ItemDisplay display) {
-            String id = entity.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
-            if (id == null) return;
-            Key key = Key.of(id);
-            Optional<CustomFurniture> optionalFurniture = furnitureById(key);
-            if (optionalFurniture.isPresent()) {
-                CustomFurniture customFurniture = optionalFurniture.get();
-                LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
-                if (previous != null) return;
-                addNewFurniture(display, customFurniture, getAnchorType(entity, customFurniture));
-                return;
-            }
-            // Remove the entity if it's not a valid furniture
-            if (Config.removeInvalidFurniture()) {
-                if (Config.furnitureToRemove().isEmpty() || Config.furnitureToRemove().contains(id)) {
-                    entity.remove();
-                }
-            }
+    public void handleCollisionEntityLoadOnEntitiesLoad(Shulker shulker) {
+        // remove the shulker if it's on chunk load stage
+        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(shulker) instanceof CollisionEntity) {
+            shulker.remove();
         }
     }
 
@@ -339,7 +397,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
             this.furnitureByRealEntityId.put(collisionEntityId, loadedFurniture);
         }
-        loadedFurniture.initializeColliders();
         return loadedFurniture;
     }
 

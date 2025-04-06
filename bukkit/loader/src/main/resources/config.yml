@@ -58,6 +58,8 @@ resource-pack:
   supported-version:
     min: "1.20"
     max: LATEST
+  # Remove 1.21.5+ tinted_leaves particles
+  remove-tinted-leaves-particle: true
   merge-external-folders:
     - ModelEngine/resource pack
     - CustomNameplates/ResourcePack
@@ -227,6 +229,12 @@ light-system:
   force-update-light: false
 
 chunk-system:
+  # 1 = NONE      |  Compression Speed | Decompress Speed | Compression Ratio | Memory Usage   |
+  # 2 = DEFLATE   |     Medium-Slow           Medium          Moderate              Low        |
+  # 3 = GZIP      |     Medium-Slow           Medium          Moderate              Low        |
+  # 4 = LAZ4      |     Blazing-Fast        Blazing-Fast        Low                 Low        |
+  # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
+  compression-method: 4
   # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
   # While this can improve performance, custom blocks will turn into air if the plugin is uninstalled.
   restore-vanilla-blocks-on-chunk-unload: true

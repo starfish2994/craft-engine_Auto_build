@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.util.CharacterUtils;
+import net.momirealms.craftengine.core.util.FormatUtils;
 import net.momirealms.craftengine.core.util.Key;
 
 public class BitmapImage implements FontProvider {
@@ -21,6 +22,11 @@ public class BitmapImage implements FontProvider {
         this.ascent = ascent;
         this.file = file;
         this.codepointGrid = codepointGrid;
+    }
+
+    public String miniMessage(int row, int col) {
+        int codepoint = codepointGrid[row][col];
+        return FormatUtils.miniMessageFont(new String(Character.toChars(codepoint)), font.toString());
     }
 
     public int height() {
@@ -45,6 +51,14 @@ public class BitmapImage implements FontProvider {
 
     public int[][] codepointGrid() {
         return codepointGrid.clone();
+    }
+
+    public int rows() {
+        return codepointGrid.length;
+    }
+
+    public int columns() {
+        return codepointGrid[0].length;
     }
 
     public int codepointAt(int row, int column) {

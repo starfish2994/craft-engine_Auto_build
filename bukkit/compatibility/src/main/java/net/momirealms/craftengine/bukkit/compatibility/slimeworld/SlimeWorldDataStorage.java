@@ -8,8 +8,6 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -35,7 +33,7 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
         Object tag = slimeChunk.getExtraData().get("craftengine");
         if (tag == null) return null;
         try {
-            return NBT.readCompound(new DataInputStream(new ByteArrayInputStream(adaptor.byteArrayTagToBytes(tag))));
+            return NBT.fromBytes(adaptor.byteArrayTagToBytes(tag));
         } catch (Exception e) {
             throw new RuntimeException("Failed to read chunk tag from slime world. " + pos, e);
         }

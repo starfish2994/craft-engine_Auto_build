@@ -232,6 +232,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.senderFactory != null) this.senderFactory.close();
+        if (this.dependencyManager != null) this.dependencyManager.close();
         ResourcePackHost.instance().disable();
     }
 
@@ -279,7 +280,8 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.MINIMESSAGE,
                 Dependencies.TEXT_SERIALIZER_GSON,
                 Dependencies.TEXT_SERIALIZER_JSON,
-                Dependencies.AHO_CORASICK
+                Dependencies.AHO_CORASICK,
+                Dependencies.LZ4
         );
     }
 

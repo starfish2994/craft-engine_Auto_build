@@ -2,10 +2,7 @@ package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemDisplay;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,7 +31,11 @@ public class FurnitureEventListener implements Listener {
     public void onEntitiesLoadEarly(EntitiesLoadEvent event) {
         List<Entity> entities = event.getEntities();
         for (Entity entity : entities) {
-            this.manager.handleEntityLoadEarly(entity);
+            if (entity instanceof ItemDisplay itemDisplay) {
+                this.manager.handleBaseEntityLoadEarly(itemDisplay);
+            } else if (entity instanceof Shulker shulker) {
+                this.manager.handleCollisionEntityLoadOnEntitiesLoad(shulker);
+            }
         }
     }
 
@@ -42,13 +43,20 @@ public class FurnitureEventListener implements Listener {
     public void onWorldLoad(WorldLoadEvent event) {
         List<Entity> entities = event.getWorld().getEntities();
         for (Entity entity : entities) {
-            this.manager.handleEntityLoadEarly(entity);
+            if (entity instanceof ItemDisplay itemDisplay) {
+                this.manager.handleBaseEntityLoadEarly(itemDisplay);
+            }
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityLoad(EntityAddToWorldEvent event) {
-        this.manager.handleEntityLoadLate(event.getEntity());
+        Entity entity = event.getEntity();
+        if (entity instanceof ItemDisplay itemDisplay) {
+            this.manager.handleBaseEntityLoadLate(itemDisplay, 0);
+        } else if (entity instanceof Shulker shulker) {
+            this.manager.handleCollisionEntityLoadLate(shulker, 0);
+        }
     }
 
     /*
@@ -59,7 +67,9 @@ public class FurnitureEventListener implements Listener {
         Entity[] entities = event.getChunk().getEntities();
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
-                this.manager.handleBaseFurnitureUnload(entity);
+                this.manager.handleBaseEntityUnload(entity);
+            } else if (entity instanceof Shulker) {
+                this.manager.handleCollisionEntityUnload(entity);
             }
         }
     }
@@ -69,15 +79,20 @@ public class FurnitureEventListener implements Listener {
         List<Entity> entities = event.getWorld().getEntities();
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
-                this.manager.handleBaseFurnitureUnload(entity);
+                this.manager.handleBaseEntityUnload(entity);
+            } else if (entity instanceof Shulker) {
+                this.manager.handleCollisionEntityUnload(entity);
             }
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onEntityUnload(EntityRemoveFromWorldEvent event) {
-        if (event.getEntity() instanceof ItemDisplay itemDisplay) {
-            this.manager.handleBaseFurnitureUnload(itemDisplay);
+        Entity entity = event.getEntity();
+        if (entity instanceof ItemDisplay) {
+            this.manager.handleBaseEntityUnload(entity);
+        } else if (entity instanceof Shulker) {
+            this.manager.handleCollisionEntityUnload(entity);
         }
     }
 

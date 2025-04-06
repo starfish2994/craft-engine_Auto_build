@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Loads and manages runtime dependencies for the plugin.
  */
-public interface DependencyManager extends AutoCloseable {
+public interface DependencyManager {
 
     /**
      * Loads dependencies.
@@ -23,6 +23,5 @@ public interface DependencyManager extends AutoCloseable {
      */
     ClassLoader obtainClassLoaderWith(Set<Dependency> dependencies);
 
-    @Override
     void close();
 }

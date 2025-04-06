@@ -44,7 +44,6 @@ public class LoadedFurniture implements Furniture {
     private final Map<Integer, HitBox> hitBoxes;
     private final boolean minimized;
     private final boolean hasExternalModel;
-    private final CustomFurniture.Placement placement;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
     private final Vector<Entity> seats = new Vector<>();
@@ -68,7 +67,6 @@ public class LoadedFurniture implements Furniture {
         mainEntityIds.add(this.baseEntityId);
 
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
-        this.placement = placement;
         // bind external furniture
         Optional<ExternalModel> optionalExternal = placement.externalModel();
         if (optionalExternal.isPresent()) {
@@ -152,6 +150,8 @@ public class LoadedFurniture implements Furniture {
         Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
         for (CollisionEntity entity : this.collisionEntities) {
             FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
+            Entity bukkitEntity = FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity);
+            bukkitEntity.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_COLLISION, PersistentDataType.BYTE, (byte) 1);
         }
     }
 

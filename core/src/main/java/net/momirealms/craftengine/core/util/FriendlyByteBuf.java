@@ -11,8 +11,8 @@ import io.netty.util.ByteProcessor;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
+import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -316,12 +316,12 @@ public class FriendlyByteBuf extends ByteBuf {
         return this;
     }
 
-    public FriendlyByteBuf writeNbt(@Nullable CompoundTag compound) {
+    public FriendlyByteBuf writeNbt(@Nullable Tag compound, boolean named) {
         if (compound == null) {
             this.writeByte(0);
         } else {
             try {
-                NBT.writeCompound(compound, new ByteBufOutputStream(this));
+                NBT.writeUnnamedTag(compound, new ByteBufOutputStream(this), named);
             } catch (IOException e) {
                 throw new EncoderException("Failed to write NBT compound: " + e.getMessage(), e);
             }
@@ -330,7 +330,7 @@ public class FriendlyByteBuf extends ByteBuf {
     }
 
     @Nullable
-    public CompoundTag readNbt() {
+    public Tag readNbt(boolean named) {
         int initialIndex = this.readerIndex();
         byte marker = this.readByte();
         if (marker == 0) {
@@ -338,7 +338,7 @@ public class FriendlyByteBuf extends ByteBuf {
         } else {
             this.readerIndex(initialIndex);
             try {
-                return NBT.readCompound(new ByteBufInputStream(this));
+                return NBT.readUnnamedTag(new ByteBufInputStream(this), named);
             } catch (IOException e) {
                 throw new EncoderException("Failed to read NBT compound: " + e.getMessage(), e);
             }

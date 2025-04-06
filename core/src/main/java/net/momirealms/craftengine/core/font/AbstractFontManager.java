@@ -7,8 +7,11 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.CharacterUtils;
+import net.momirealms.craftengine.core.util.FormatUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import org.ahocorasick.trie.Token;
+import org.ahocorasick.trie.Trie;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,13 +21,17 @@ public abstract class AbstractFontManager implements FontManager {
     private final CraftEngine plugin;
                 // namespace:font font
     private final Map<Key, Font> fonts = new HashMap<>();
-                // namespace:id image
+    // namespace:id emoji
+    private final Map<Key, Emoji> emojis = new HashMap<>();
+    // namespace:id image
     private final Map<Key, BitmapImage> images = new HashMap<>();
     private final Set<Integer> illegalChars = new HashSet<>();
     private final ImageParser imageParser;
     private final EmojiParser emojiParser;
 
     private OffsetFont offsetFont;
+    private Trie trie;
+    private Map<String, String> tagMapper;
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -47,6 +54,20 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
+    public Map<String, String> matchTags(String json) {
+        if (this.trie == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> tags = new HashMap<>();
+        for (Token token : this.trie.tokenize(json)) {
+            if (token.isMatch()) {
+                tags.put(token.getFragment(), this.tagMapper.get(token.getFragment()));
+            }
+        }
+        return tags;
+    }
+
+    @Override
     public ConfigSectionParser[] parsers() {
         return new ConfigSectionParser[] {this.imageParser, this.emojiParser};
     }
@@ -54,6 +75,31 @@ public abstract class AbstractFontManager implements FontManager {
     @Override
     public void delayedLoad() {
         Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
+        this.buildTrie();
+    }
+
+    private void buildTrie() {
+        this.tagMapper = new HashMap<>();
+        for (BitmapImage image : this.images.values()) {
+            String id = image.id().toString();
+            this.tagMapper.put(addImageTag(id), image.miniMessage(0, 0));
+            for (int i = 0; i < image.rows(); i++) {
+                for (int j = 0; j < image.columns(); j++) {
+                    this.tagMapper.put(addImageTag(id + ":" + i + ":" + j), image.miniMessage(i, j));
+                }
+            }
+        }
+        for (int i = -256; i <= 256; i++) {
+            this.tagMapper.put("<shift:" + i + ">", this.offsetFont.createOffset(i, FormatUtils::miniMessageFont));
+        }
+        this.trie = Trie.builder()
+                .ignoreOverlaps()
+                .addKeywords(this.tagMapper.keySet())
+                .build();
+    }
+
+    private static String addImageTag(String text) {
+        return "<image:" + text + ">";
     }
 
     @Override

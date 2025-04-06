@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.world.chunk.storage;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.ExceptionCollector;
 import net.momirealms.craftengine.core.util.FileUtils;
 import net.momirealms.craftengine.core.world.ChunkPos;
@@ -16,15 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DefaultRegionFileStorage implements WorldDataStorage {
-
     private final Path folder;
 
     public static final String REGION_FILE_SUFFIX = ".mca";
     public static final String REGION_FILE_PREFIX = "r.";
+    public static final int MAX_NON_EXISTING_CACHE = 1024 * 64;
 
     public final Long2ObjectLinkedOpenHashMap<RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap<>();
     private final LongLinkedOpenHashSet nonExistingRegionFiles = new LongLinkedOpenHashSet();
-    static final int MAX_NON_EXISTING_CACHE = 1024 * 64;
 
     public DefaultRegionFileStorage(Path directory) {
         this.folder = directory;
@@ -88,7 +88,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
                 this.createRegionFile(chunkPosLongKey);
             }
             FileUtils.createDirectoriesSafe(this.folder);
-            RegionFile newRegionFile = new RegionFile(path, this.folder);
+            RegionFile newRegionFile = new RegionFile(path, this.folder, CompressionMethod.fromId(Config.compressionMethod()));
 
             this.regionCache.putAndMoveToFirst(chunkPosLongKey, newRegionFile);
             if (lock) {
@@ -127,7 +127,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
                 if (dataInputStream == null) {
                     return null;
                 }
-                tag = NBT.readCompound(dataInputStream);
+                tag = NBT.readCompound(dataInputStream, false);
             } catch (Throwable t1) {
                 try {
                     dataInputStream.close();
@@ -152,7 +152,7 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
             } else {
                 DataOutputStream dataOutputStream = regionFile.getChunkDataOutputStream(pos);
                 try {
-                    NBT.writeCompound(nbt, dataOutputStream);
+                    NBT.writeCompound(nbt, dataOutputStream, false);
                 } catch (Throwable t1) {
                     if (dataOutputStream != null) {
                         try {

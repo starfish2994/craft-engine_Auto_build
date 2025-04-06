@@ -56,6 +56,8 @@ dependencies {
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
     // BStats
     compileOnly("org.bstats:bstats-bukkit:${rootProject.properties["bstats_version"]}")
+    // Aho-Corasick java implementation
+    compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
 }
 
 java {

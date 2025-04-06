@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -112,16 +113,19 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 world.tick();
             }
         }, 1, 1);
-
         // load loaded chunks
         this.worldMapLock.writeLock().lock();
         try {
             for (World world : Bukkit.getWorlds()) {
-                CEWorld ceWorld = new BukkitCEWorld(new BukkitWorld(world), this.storageAdaptor);
-                this.worlds.put(world.getUID(), ceWorld);
-                this.resetWorldArray();
-                for (Chunk chunk : world.getLoadedChunks()) {
-                    handleChunkLoad(ceWorld, chunk);
+                try {
+                    CEWorld ceWorld = new BukkitCEWorld(new BukkitWorld(world), this.storageAdaptor);
+                    this.worlds.put(world.getUID(), ceWorld);
+                    this.resetWorldArray();
+                    for (Chunk chunk : world.getLoadedChunks()) {
+                        handleChunkLoad(ceWorld, chunk);
+                    }
+                } catch (Exception e) {
+                    CraftEngine.instance().logger().warn("Error loading world: " + world.getName(), e);
                 }
             }
         } finally {
@@ -208,11 +212,17 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 this.lastVisitedUUID = null;
             }
             this.resetWorldArray();
+
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
         for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
             handleChunkUnload(ceWorld, chunk);
+        }
+        try {
+            ceWorld.worldDataStorage().close();
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to close world storage", e);
         }
     }
 

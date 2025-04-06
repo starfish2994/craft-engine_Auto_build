@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.font;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractFontManager;
 import net.momirealms.craftengine.core.font.FontManager;
@@ -16,22 +17,14 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.function.Consumer;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
-    private final Object serializer;
 
     public BukkitFontManager(BukkitCraftEngine plugin) {
         super(plugin);
         this.plugin = plugin;
-        try {
-            Object builder = Reflections.method$GsonComponentSerializer$builder.invoke(null);
-            this.serializer = Reflections.method$GsonComponentSerializer$Builder$build.invoke(builder);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -79,16 +72,15 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         }
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
-            String jsonMessage = (String) Reflections.method$ComponentSerializer$serialize.invoke(serializer, originalMessage);
-            runIfContainsIllegalCharacter(jsonMessage, (json) -> {
+            runIfContainsIllegalCharacter(ComponentUtils.paperAdventureToJson(originalMessage), (json) -> {
+                Object component = ComponentUtils.jsonToPaperAdventure(json);
                 try {
-                    Object component = Reflections.method$ComponentSerializer$deserialize.invoke(serializer, json);
                     Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
                 } catch (ReflectiveOperationException e) {
                     throw new RuntimeException(e);
                 }
             });
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
