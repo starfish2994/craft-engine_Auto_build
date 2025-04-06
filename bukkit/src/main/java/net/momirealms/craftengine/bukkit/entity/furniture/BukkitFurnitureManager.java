@@ -291,7 +291,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         if (previous != null) return;
 
         Location location = display.getLocation();
-        if (!FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+        if (!VersionHelper.isVersionNewerThan1_20_2() || !FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
                 this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
