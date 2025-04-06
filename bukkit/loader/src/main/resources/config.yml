@@ -233,7 +233,7 @@ chunk-system:
   # 2 = DEFLATE   |     Medium-Slow           Medium          Moderate              Low        |
   # 3 = GZIP      |     Medium-Slow           Medium          Moderate              Low        |
   # 4 = LAZ4      |     Blazing-Fast        Blazing-Fast        Low                 Low        |
-  # 5 = ZSTD      |     Medium-Fast           Fast              High               Medium      |
+  # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
   # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
   # While this can improve performance, custom blocks will turn into air if the plugin is uninstalled.
