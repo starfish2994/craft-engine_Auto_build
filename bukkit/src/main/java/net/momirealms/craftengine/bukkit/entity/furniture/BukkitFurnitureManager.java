@@ -291,19 +291,31 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         if (previous != null) return;
 
         Location location = display.getLocation();
-        if (!VersionHelper.isVersionNewerThan1_20_2() || !FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+        boolean above1_20_1 = VersionHelper.isVersionNewerThan1_20_2();
+        boolean preventChange = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+        if (above1_20_1) {
+            if (!preventChange) {
+                LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
+                furniture.initializeColliders();
+                for (Player player : display.getTrackedPlayers()) {
+                    this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                    this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
+                }
+            }
+        } else {
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
                 this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
                 this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
-            return;
+            if (preventChange) {
+                this.plugin.scheduler().sync().runLater(furniture::initializeColliders, 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+            } else {
+                furniture.initializeColliders();
+            }
         }
-
         if (depth > 2) return;
-        this.plugin.scheduler().sync().runLater(() -> {
-            handleBaseEntityLoadLate(display, depth + 1);
-        }, 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+        this.plugin.scheduler().sync().runLater(() -> handleBaseEntityLoadLate(display, depth + 1), 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
     }
 
     protected void handleCollisionEntityLoadLate(Shulker shulker, int depth) {
@@ -340,7 +352,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             CustomFurniture customFurniture = optionalFurniture.get();
             LoadedFurniture previous = this.furnitureByRealEntityId.get(display.getEntityId());
             if (previous != null) return;
-            addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
+            LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
+            furniture.initializeColliders(); // safely do it here
             return;
         }
         // Remove the entity if it's not a valid furniture
@@ -384,7 +397,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
             this.furnitureByRealEntityId.put(collisionEntityId, loadedFurniture);
         }
-        loadedFurniture.initializeColliders();
         return loadedFurniture;
     }
 
