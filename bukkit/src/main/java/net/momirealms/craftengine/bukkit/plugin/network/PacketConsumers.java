@@ -697,7 +697,7 @@ public class PacketConsumers {
     //         FriendlyByteBuf buf = event.getBuffer();
     //         int entityId = buf.readVarInt();
     //         if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
-    //             event.setCancelled(true);
+    //             event.setCancelled(true); // 这里炸了导致无法实现
     //         }
     //     } catch (Exception e) {
     //         CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
