@@ -701,7 +701,15 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
         try {
             Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
-            if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
+            // Falling blocks
+            if (entityType == Reflections.instance$EntityType$FALLING_BLOCK) {
+                // TODO USE bytebuffer
+                int data = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$data(packet);
+                int remapped = remap(data);
+                if (remapped != data) {
+                    Reflections.field$ClientboundAddEntityPacket$data.set(packet, remapped);
+                }
+            } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
                 int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
@@ -719,6 +727,10 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
+            } else if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                // TODO USE bytebuffer
+                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
+                user.entityView().put(entityId, entityType);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
