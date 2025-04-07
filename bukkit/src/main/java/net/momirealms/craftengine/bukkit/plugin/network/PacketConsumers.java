@@ -653,6 +653,7 @@ public class PacketConsumers {
                 Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
     }
 
+    // TODO 需要修复
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
