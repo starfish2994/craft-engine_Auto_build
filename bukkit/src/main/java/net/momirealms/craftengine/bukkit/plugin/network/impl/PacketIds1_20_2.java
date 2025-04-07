@@ -48,4 +48,14 @@ public class PacketIds1_20_2 implements PacketIds {
     public int clientboundSetEntityDataPacket() {
         return 84;
     }
+
+    @Override
+    public int clientboundSetTitleTextPacket() {
+        return 97;
+    }
+
+    @Override
+    public int clientboundSetSubtitleTextPacket() {
+        return 95;
+    }
 }

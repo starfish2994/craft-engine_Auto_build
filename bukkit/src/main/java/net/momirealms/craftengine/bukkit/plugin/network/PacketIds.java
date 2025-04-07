@@ -19,4 +19,8 @@ public interface PacketIds {
     int clientboundRemoveEntitiesPacket();
 
     int clientboundSetEntityDataPacket();
+
+    int clientboundSetTitleTextPacket();
+
+    int clientboundSetSubtitleTextPacket();
 }

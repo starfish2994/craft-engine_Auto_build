@@ -48,4 +48,14 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundSetEntityDataPacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_entity_data");
     }
+
+    @Override
+    public int clientboundSetTitleTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_title_text");
+    }
+
+    @Override
+    public int clientboundSetSubtitleTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_subtitle_text");
+    }
 }

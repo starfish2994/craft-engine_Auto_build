@@ -151,12 +151,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
 //        registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_DATA, Reflections.clazz$ClientboundSetEntityDataPacket);
-//        registerNMSPacketConsumer(PacketConsumers.OPEN_SCREEN, Reflections.clazz$ClientboundOpenScreenPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.OPEN_SCREEN_1_20_3 : PacketConsumers.OPEN_SCREEN_1_20, this.packetIds.clientboundOpenScreenPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
         // registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
         registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
         // registerByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());
