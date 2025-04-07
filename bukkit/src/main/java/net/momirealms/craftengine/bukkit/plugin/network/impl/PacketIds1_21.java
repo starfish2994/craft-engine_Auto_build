@@ -33,4 +33,49 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundOpenScreenPacket() {
         return PacketIdFinder.clientboundByName("minecraft:open_screen");
     }
+
+    @Override
+    public int clientboundSoundPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:sound");
+    }
+
+    @Override
+    public int clientboundRemoveEntitiesPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:remove_entities");
+    }
+
+    @Override
+    public int clientboundSetEntityDataPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_entity_data");
+    }
+
+    @Override
+    public int clientboundSetTitleTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_title_text");
+    }
+
+    @Override
+    public int clientboundSetSubtitleTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_subtitle_text");
+    }
+
+    @Override
+    public int clientboundSetActionBarTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_action_bar_text");
+    }
+
+    @Override
+    public int clientboundBossEventPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:boss_event");
+    }
+
+    @Override
+    public int clientboundSystemChatPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:system_chat");
+    }
+
+    @Override
+    public int clientboundTabListPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:tab_list");
+    }
 }

@@ -13,4 +13,22 @@ public interface PacketIds {
     int clientboundAddEntityPacket();
 
     int clientboundOpenScreenPacket();
+
+    int clientboundSoundPacket();
+
+    int clientboundRemoveEntitiesPacket();
+
+    int clientboundSetEntityDataPacket();
+
+    int clientboundSetTitleTextPacket();
+
+    int clientboundSetSubtitleTextPacket();
+
+    int clientboundSetActionBarTextPacket();
+
+    int clientboundBossEventPacket();
+
+    int clientboundSystemChatPacket();
+
+    int clientboundTabListPacket();
 }

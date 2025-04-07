@@ -323,8 +323,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         if (FastNMS.INSTANCE.method$CraftEntity$getHandle(shulker) instanceof CollisionEntity) {
             return;
         }
+        // not a collision entity
         Byte flag = shulker.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
-        if (flag != null && flag == 1) {
+        if (flag == null || flag != 1) {
             return;
         }
 

@@ -33,4 +33,49 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundOpenScreenPacket() {
         return 48;
     }
+
+    @Override
+    public int clientboundSoundPacket() {
+        return 98;
+    }
+
+    @Override
+    public int clientboundRemoveEntitiesPacket() {
+        return 62;
+    }
+
+    @Override
+    public int clientboundSetEntityDataPacket() {
+        return 82;
+    }
+
+    @Override
+    public int clientboundSetTitleTextPacket() {
+        return 95;
+    }
+
+    @Override
+    public int clientboundSetSubtitleTextPacket() {
+        return 93;
+    }
+
+    @Override
+    public int clientboundSetActionBarTextPacket() {
+        return 70;
+    }
+
+    @Override
+    public int clientboundBossEventPacket() {
+        return 11;
+    }
+
+    @Override
+    public int clientboundSystemChatPacket() {
+        return 100;
+    }
+
+    @Override
+    public int clientboundTabListPacket() {
+        return 101;
+    }
 }

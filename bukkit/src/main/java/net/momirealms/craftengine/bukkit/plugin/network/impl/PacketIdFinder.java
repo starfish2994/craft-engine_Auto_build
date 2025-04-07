@@ -28,6 +28,6 @@ public class PacketIdFinder {
     }
 
     public static int clientboundByName(String packetName) {
-        return gamePacketIds.get("clientbound").get(packetName);
+        return gamePacketIds.get("clientbound").getOrDefault(packetName, -1);
     }
 }

@@ -122,6 +122,12 @@ public class Config {
     protected boolean image$illegal_characters_filter$anvil;
     protected boolean image$illegal_characters_filter$sign;
     protected boolean image$illegal_characters_filter$book;
+    protected boolean image$intercept_packets$system_chat;
+    protected boolean image$intercept_packets$tab_list;
+    protected boolean image$intercept_packets$actionbar;
+    protected boolean image$intercept_packets$title;
+    protected boolean image$intercept_packets$bossbar;
+    protected boolean image$intercept_packets$container;
 
     public Config(CraftEngine plugin) {
         this.plugin = plugin;
@@ -278,6 +284,12 @@ public class Config {
         image$illegal_characters_filter$chat = config.getBoolean("image.illegal-characters-filter.chat", true);
         image$illegal_characters_filter$command = config.getBoolean("image.illegal-characters-filter.command", true);
         image$illegal_characters_filter$sign = config.getBoolean("image.illegal-characters-filter.sign", true);
+        image$intercept_packets$system_chat = config.getBoolean("image.intercept-packets.system-chat", true);
+        image$intercept_packets$tab_list = config.getBoolean("image.intercept-packets.tab-list", true);
+        image$intercept_packets$actionbar = config.getBoolean("image.intercept-packets.actionbar", true);
+        image$intercept_packets$title = config.getBoolean("image.intercept-packets.title", true);
+        image$intercept_packets$bossbar = config.getBoolean("image.intercept-packets.bossbar", true);
+        image$intercept_packets$container = config.getBoolean("image.intercept-packets.container", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -576,6 +588,30 @@ public class Config {
             id = 4;
         }
         return id;
+    }
+
+    public static boolean interceptSystemChat() {
+        return instance.image$intercept_packets$system_chat;
+    }
+
+    public static boolean interceptTabList() {
+        return instance.image$intercept_packets$tab_list;
+    }
+
+    public static boolean interceptActionBar() {
+        return instance.image$intercept_packets$actionbar;
+    }
+
+    public static boolean interceptTitle() {
+        return instance.image$intercept_packets$title;
+    }
+
+    public static boolean interceptBossBar() {
+        return instance.image$intercept_packets$bossbar;
+    }
+
+    public static boolean interceptContainer() {
+        return instance.image$intercept_packets$container;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {
