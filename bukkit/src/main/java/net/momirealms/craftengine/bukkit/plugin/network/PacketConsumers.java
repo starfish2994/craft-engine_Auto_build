@@ -243,6 +243,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BOSS_EVENT_1_20 = (user, event) -> {
+        if (!Config.interceptBossBar()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             UUID uuid = buf.readUUID();
@@ -290,6 +291,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BOSS_EVENT_1_20_3 = (user, event) -> {
+        if (!Config.interceptBossBar()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             UUID uuid = buf.readUUID();
@@ -339,6 +341,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SYSTEM_CHAT_1_20 = (user, event) -> {
+        if (!Config.interceptSystemChat()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
@@ -360,6 +363,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SYSTEM_CHAT_1_20_3 = (user, event) -> {
+        if (!Config.interceptSystemChat()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
@@ -381,7 +385,8 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_SUBTITLE_TEXT_1_20 = (user, event) -> {
+        if (!Config.interceptTitle()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
@@ -396,11 +401,12 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeUtf(AdventureHelper.componentToJson(component));
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetSubtitleTextPacket", e);
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20_3 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_SUBTITLE_TEXT_1_20_3 = (user, event) -> {
+        if (!Config.interceptTitle()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
@@ -416,11 +422,94 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetSubtitleTextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TITLE_TEXT_1_20 = (user, event) -> {
+        if (!Config.interceptTitle()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String json = buf.readUtf();
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = AdventureHelper.jsonToComponent(json);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeUtf(AdventureHelper.componentToJson(component));
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetTitleTextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TITLE_TEXT_1_20_3 = (user, event) -> {
+        if (!Config.interceptTitle()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Tag nbt = buf.readNbt(false);
+            if (nbt == null) return;
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetTitleTextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ACTIONBAR_TEXT_1_20 = (user, event) -> {
+        if (!Config.interceptActionBar()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String json = buf.readUtf();
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = AdventureHelper.jsonToComponent(json);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeUtf(AdventureHelper.componentToJson(component));
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetActionBarTextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ACTIONBAR_TEXT_1_20_3 = (user, event) -> {
+        if (!Config.interceptActionBar()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Tag nbt = buf.readNbt(false);
+            if (nbt == null) return;
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetActionBarTextPacket", e);
         }
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TAB_LIST_1_20 = (user, event) -> {
+        if (!Config.interceptTabList()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json1 = buf.readUtf();
@@ -455,6 +544,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TAB_LIST_1_20_3 = (user, event) -> {
+        if (!Config.interceptTabList()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt1 = buf.readNbt(false);
@@ -491,6 +581,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN_1_20 = (user, event) -> {
+        if (!Config.interceptContainer()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int containerId = buf.readVarInt();
@@ -514,6 +605,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN_1_20_3 = (user, event) -> {
+        if (!Config.interceptContainer()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int containerId = buf.readVarInt();

@@ -156,9 +156,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.OPEN_SCREEN_1_20_3 : PacketConsumers.OPEN_SCREEN_1_20, this.packetIds.clientboundOpenScreenPacket());
-        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
-        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
-        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetActionBarTextPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_SUBTITLE_TEXT_1_20_3 : PacketConsumers.SET_SUBTITLE_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_ACTIONBAR_TEXT_1_20_3 : PacketConsumers.SET_ACTIONBAR_TEXT_1_20, this.packetIds.clientboundSetActionBarTextPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.BOSS_EVENT_1_20_3 : PacketConsumers.BOSS_EVENT_1_20, this.packetIds.clientboundBossEventPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SYSTEM_CHAT_1_20_3 : PacketConsumers.SYSTEM_CHAT_1_20, this.packetIds.clientboundSystemChatPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.TAB_LIST_1_20_3 : PacketConsumers.TAB_LIST_1_20, this.packetIds.clientboundTabListPacket());

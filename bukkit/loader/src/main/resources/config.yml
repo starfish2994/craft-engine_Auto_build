@@ -152,6 +152,19 @@ image:
     chat: true
     command: true
     sign: true
+  # By intercepting packets, you are allowed to use <image:...> <shift:...> in other plugins
+  intercept-packets:
+    system-chat: true
+    tab-list: true
+    actionbar: true
+    title: true
+    bossbar: true
+    container: true
+    # TODO: toast: true
+    # TODO: name: true
+    # TODO: team: true
+
+emoji: {}
 
 recipe:
   # Enable the plugin's recipe system
