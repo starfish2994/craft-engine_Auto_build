@@ -754,7 +754,6 @@ public class PacketConsumers {
             IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
             for (int i = 0, size = intList.size(); i < size; i++) {
                 List<Integer> entities = user.furnitureView().remove(intList.getInt(i));
-                System.out.println("Removing " + entities);
                 if (entities == null) continue;
                 for (int entityId : entities) {
                     intList.add(entityId);
@@ -1086,6 +1085,7 @@ public class PacketConsumers {
     //        CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
     //    }
     // };
+
     // 之前的旧东西经供参考需要改成使用bytebuffer的
     // public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
     //     try {

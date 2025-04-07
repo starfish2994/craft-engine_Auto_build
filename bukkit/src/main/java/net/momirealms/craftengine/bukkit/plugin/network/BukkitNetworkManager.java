@@ -486,9 +486,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
-            }/* else {
-                list.add(io.netty.buffer.Unpooled.EMPTY_BUFFER);
-            }*/
+            }
         }
 
         private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {
