@@ -68,4 +68,14 @@ public class PacketIds1_20_3 implements PacketIds {
     public int clientboundBossEventPacket() {
         return 10;
     }
+
+    @Override
+    public int clientboundSystemChatPacket() {
+        return 105;
+    }
+
+    @Override
+    public int clientboundTabListPacket() {
+        return 106;
+    }
 }

@@ -68,4 +68,14 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundBossEventPacket() {
         return PacketIdFinder.clientboundByName("minecraft:boss_event");
     }
+
+    @Override
+    public int clientboundSystemChatPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:system_chat");
+    }
+
+    @Override
+    public int clientboundTabListPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:tab_list");
+    }
 }

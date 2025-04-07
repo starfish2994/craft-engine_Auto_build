@@ -27,4 +27,8 @@ public interface PacketIds {
     int clientboundSetActionBarTextPacket();
 
     int clientboundBossEventPacket();
+
+    int clientboundSystemChatPacket();
+
+    int clientboundTabListPacket();
 }

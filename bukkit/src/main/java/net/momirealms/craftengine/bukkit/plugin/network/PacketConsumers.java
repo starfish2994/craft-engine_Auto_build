@@ -5,7 +5,6 @@ import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
@@ -339,6 +338,49 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SYSTEM_CHAT_1_20 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String json = buf.readUtf();
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            if (tokens.isEmpty()) return;
+            boolean overlay = buf.readBoolean();
+            event.setChanged(true);
+            Component component = AdventureHelper.jsonToComponent(json);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeBoolean(overlay);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSystemChatPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SYSTEM_CHAT_1_20_3 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Tag nbt = buf.readNbt(false);
+            if (nbt == null) return;
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            if (tokens.isEmpty()) return;
+            boolean overlay = buf.readBoolean();
+            event.setChanged(true);
+            Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+            buf.writeBoolean(overlay);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSystemChatPacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
@@ -365,6 +407,7 @@ public class PacketConsumers {
             if (nbt == null) return;
             Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
+            event.setChanged(true);
             Component component = NBTComponentSerializer.nbt().deserialize(nbt);
             for (Map.Entry<String, String> token : tokens.entrySet()) {
                 component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
@@ -372,6 +415,76 @@ public class PacketConsumers {
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TAB_LIST_1_20 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String json1 = buf.readUtf();
+            String json2 = buf.readUtf();
+            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(json1);
+            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(json2);
+            if (tokens1.isEmpty() && tokens2.isEmpty()) return;
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            if (!tokens1.isEmpty()) {
+                Component component = AdventureHelper.jsonToComponent(json1);
+                for (Map.Entry<String, String> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+            } else {
+                buf.writeUtf(json1);
+            }
+            if (!tokens2.isEmpty()) {
+                Component component = AdventureHelper.jsonToComponent(json2);
+                for (Map.Entry<String, String> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+            } else {
+                buf.writeUtf(json2);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TAB_LIST_1_20_3 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Tag nbt1 = buf.readNbt(false);
+            if (nbt1 == null) return;
+            Tag nbt2 = buf.readNbt(false);
+            if (nbt2 == null) return;
+            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(nbt1.getAsString());
+            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(nbt2.getAsString());
+            if (tokens1.isEmpty() && tokens2.isEmpty()) return;
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            if (!tokens1.isEmpty()) {
+                Component component = NBTComponentSerializer.nbt().deserialize(nbt1);
+                for (Map.Entry<String, String> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+            } else {
+                buf.writeNbt(nbt1, false);
+            }
+            if (!tokens2.isEmpty()) {
+                Component component = NBTComponentSerializer.nbt().deserialize(nbt2);
+                for (Map.Entry<String, String> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+            } else {
+                buf.writeNbt(nbt2, false);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
         }
