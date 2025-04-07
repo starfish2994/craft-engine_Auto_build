@@ -6269,17 +6269,28 @@ public class Reflections {
             ReflectionUtils.getMethod(clazz$Registry, int.class, Object.class)
     );
 
-    public static final int instance$EntityType$FALLING_BLOCK$registryId;
     public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
+    public static final int instance$EntityType$FALLING_BLOCK$registryId;
 
     static {
         try {
-            Object blockDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "block_display");
-            instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, blockDisplay);
-            Object fallingBlock = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "falling_block");
-            instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fallingBlock);
+            instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$BLOCK_DISPLAY);
+            instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    // 先注释后面再说
+    // public static final Method method$ClientboundSetEntityDataPacket$pack = requireNonNull(
+    //         ReflectionUtils.getDeclaredMethod(
+    //                 clazz$ClientboundSetEntityDataPacket, void.class, List.class, clazz$RegistryFriendlyByteBuf
+    //         )
+    // );
+    //
+    // public static final Method method$ClientboundSetEntityDataPacket$unpack = requireNonNull(
+    //         ReflectionUtils.getDeclaredMethod(
+    //                 clazz$ClientboundSetEntityDataPacket, List.class, clazz$RegistryFriendlyByteBuf
+    //         )
+    // );
 }
