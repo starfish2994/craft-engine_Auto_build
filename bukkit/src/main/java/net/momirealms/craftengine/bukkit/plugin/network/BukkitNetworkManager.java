@@ -46,6 +46,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private static void registerByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
+        if (id == -1) return;
         BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
     }
 
@@ -156,6 +157,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
         registerByteBufPacketConsumer(PacketConsumers.OPEN_SCREEN, this.packetIds.clientboundOpenScreenPacket());
+        // registerByteBufPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, this.packetIds.clientboundEntityPositionSyncPacket());
     }
 
     public static BukkitNetworkManager instance() {

@@ -33,4 +33,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundOpenScreenPacket() {
         return PacketIdFinder.clientboundByName("minecraft:open_screen");
     }
+
+    @Override
+    public int clientboundEntityPositionSyncPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:entity_position_sync");
+    }
 }

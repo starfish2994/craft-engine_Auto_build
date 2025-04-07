@@ -13,4 +13,6 @@ public interface PacketIds {
     int clientboundAddEntityPacket();
 
     int clientboundOpenScreenPacket();
+
+    int clientboundEntityPositionSyncPacket();
 }

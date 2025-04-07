@@ -243,10 +243,10 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
         try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int containerId = buf.readVarInt();
+            int type = buf.readVarInt();
             if (VersionHelper.isVersionNewerThan1_20_3()) {
-                FriendlyByteBuf buf = event.getBuffer();
-                int containerId = buf.readVarInt();
-                int type = buf.readVarInt();
                 Tag nbt = buf.readNbt(false);
                 if (nbt == null) return;
                 Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
@@ -261,9 +261,6 @@ public class PacketConsumers {
                 buf.writeVarInt(type);
                 buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
             } else {
-                FriendlyByteBuf buf = event.getBuffer();
-                int containerId = buf.readVarInt();
-                int type = buf.readVarInt();
                 String json = buf.readUtf();
                 Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
                 if (tokens.isEmpty()) return;
@@ -695,6 +692,17 @@ public class PacketConsumers {
 
     // 1.21.3+
     // TODO USE bytebuffer
+    // public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
+    //     try {
+    //         FriendlyByteBuf buf = event.getBuffer();
+    //         int entityId = buf.readVarInt();
+    //         if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+    //             event.setCancelled(true);
+    //         }
+    //     } catch (Exception e) {
+    //         CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
+    //     }
+    // };
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundEntityPositionSyncPacket$id.get(packet);
@@ -1001,6 +1009,7 @@ public class PacketConsumers {
                     );
                     user.nettyChannel().writeAndFlush(kickPacket);
                     user.nettyChannel().disconnect();
+                    return;
                 }
                 user.setClientModState(true);
             }

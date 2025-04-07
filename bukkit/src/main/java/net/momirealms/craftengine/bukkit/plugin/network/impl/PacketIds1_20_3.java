@@ -33,4 +33,9 @@ public class PacketIds1_20_3 implements PacketIds {
     public int clientboundOpenScreenPacket() {
         return 49;
     }
+
+    @Override
+    public int clientboundEntityPositionSyncPacket() {
+        return -1;
+    }
 }
