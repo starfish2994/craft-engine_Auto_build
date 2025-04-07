@@ -33,4 +33,19 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundOpenScreenPacket() {
         return PacketIdFinder.clientboundByName("minecraft:open_screen");
     }
+
+    @Override
+    public int clientboundSoundPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:sound");
+    }
+
+    @Override
+    public int clientboundRemoveEntitiesPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:remove_entities");
+    }
+
+    @Override
+    public int clientboundSetEntityDataPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_entity_data");
+    }
 }
