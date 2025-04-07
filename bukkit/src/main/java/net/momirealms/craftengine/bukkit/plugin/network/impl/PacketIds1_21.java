@@ -63,4 +63,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundSetActionBarTextPacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_action_bar_text");
     }
+
+    @Override
+    public int clientboundBossEventPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:boss_event");
+    }
 }

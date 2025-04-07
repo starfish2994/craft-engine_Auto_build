@@ -243,6 +243,102 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BOSS_EVENT_1_20 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            UUID uuid = buf.readUUID();
+            int actionType = buf.readVarInt();
+            if (actionType == 0) {
+                String json = buf.readUtf();
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) return;
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                float health = buf.readFloat();
+                int color = buf.readVarInt();
+                int division = buf.readVarInt();
+                byte flag = buf.readByte();
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUUID(uuid);
+                buf.writeVarInt(actionType);
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+                buf.writeFloat(health);
+                buf.writeVarInt(color);
+                buf.writeVarInt(division);
+                buf.writeByte(flag);
+            } else if (actionType == 3) {
+                String json = buf.readUtf();
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) return;
+                event.setChanged(true);
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUUID(uuid);
+                buf.writeVarInt(actionType);
+                buf.writeUtf(AdventureHelper.componentToJson(component));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundBossEventPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BOSS_EVENT_1_20_3 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            UUID uuid = buf.readUUID();
+            int actionType = buf.readVarInt();
+            if (actionType == 0) {
+                Tag nbt = buf.readNbt(false);
+                if (nbt == null) return;
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                if (tokens.isEmpty()) return;
+                Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                float health = buf.readFloat();
+                int color = buf.readVarInt();
+                int division = buf.readVarInt();
+                byte flag = buf.readByte();
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUUID(uuid);
+                buf.writeVarInt(actionType);
+                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+                buf.writeFloat(health);
+                buf.writeVarInt(color);
+                buf.writeVarInt(division);
+                buf.writeByte(flag);
+            } else if (actionType == 3) {
+                Tag nbt = buf.readNbt(false);
+                if (nbt == null) return;
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                if (tokens.isEmpty()) return;
+                event.setChanged(true);
+                Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUUID(uuid);
+                buf.writeVarInt(actionType);
+                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundBossEventPacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
@@ -267,11 +363,9 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            System.out.println(nbt.getAsString());
             Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             Component component = NBTComponentSerializer.nbt().deserialize(nbt);
-            System.out.println(GsonComponentSerializer.gson().serialize(component));
             for (Map.Entry<String, String> token : tokens.entrySet()) {
                 component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
             }

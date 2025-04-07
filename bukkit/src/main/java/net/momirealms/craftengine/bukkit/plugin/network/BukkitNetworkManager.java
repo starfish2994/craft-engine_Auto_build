@@ -159,6 +159,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TEXT_1_20_3 : PacketConsumers.SET_TEXT_1_20, this.packetIds.clientboundSetActionBarTextPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.BOSS_EVENT_1_20_3 : PacketConsumers.BOSS_EVENT_1_20, this.packetIds.clientboundBossEventPacket());
         // registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
         registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
         // registerByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());

@@ -25,4 +25,6 @@ public interface PacketIds {
     int clientboundSetSubtitleTextPacket();
 
     int clientboundSetActionBarTextPacket();
+
+    int clientboundBossEventPacket();
 }
