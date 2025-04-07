@@ -242,40 +242,47 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN_1_20 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int containerId = buf.readVarInt();
             int type = buf.readVarInt();
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
-                Tag nbt = buf.readNbt(false);
-                if (nbt == null) return;
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
-                if (tokens.isEmpty()) return;
-                Component component = NBTComponentSerializer.nbt().deserialize(nbt);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
-                }
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                buf.writeVarInt(containerId);
-                buf.writeVarInt(type);
-                buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
-            } else {
-                String json = buf.readUtf();
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
-                if (tokens.isEmpty()) return;
-                event.setChanged(true);
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
-                }
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                buf.writeVarInt(containerId);
-                buf.writeVarInt(type);
-                buf.writeUtf(AdventureHelper.componentToJson(component));
+            String json = buf.readUtf();
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = AdventureHelper.jsonToComponent(json);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
             }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeVarInt(containerId);
+            buf.writeVarInt(type);
+            buf.writeUtf(AdventureHelper.componentToJson(component));
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN_1_20_3 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int containerId = buf.readVarInt();
+            int type = buf.readVarInt();
+            Tag nbt = buf.readNbt(false);
+            if (nbt == null) return;
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            if (tokens.isEmpty()) return;
+            Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeVarInt(containerId);
+            buf.writeVarInt(type);
+            buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
         }

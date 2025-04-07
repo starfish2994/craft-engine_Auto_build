@@ -55,7 +55,7 @@ public class FurnitureEventListener implements Listener {
         if (entity instanceof ItemDisplay itemDisplay) {
             this.manager.handleBaseEntityLoadLate(itemDisplay, 0);
         } else if (entity instanceof Shulker shulker) {
-            this.manager.handleCollisionEntityLoadLate(shulker, 0);
+            //this.manager.handleCollisionEntityLoadLate(shulker, 0);
         }
     }
 
