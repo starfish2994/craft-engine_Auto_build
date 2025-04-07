@@ -58,4 +58,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundSetSubtitleTextPacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_subtitle_text");
     }
+
+    @Override
+    public int clientboundSetActionBarTextPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_action_bar_text");
+    }
 }

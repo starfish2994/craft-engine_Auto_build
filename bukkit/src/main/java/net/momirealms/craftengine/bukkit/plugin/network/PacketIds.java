@@ -23,4 +23,6 @@ public interface PacketIds {
     int clientboundSetTitleTextPacket();
 
     int clientboundSetSubtitleTextPacket();
+
+    int clientboundSetActionBarTextPacket();
 }

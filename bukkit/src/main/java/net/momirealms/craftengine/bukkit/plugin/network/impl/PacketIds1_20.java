@@ -58,4 +58,9 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundSetSubtitleTextPacket() {
         return 93;
     }
+
+    @Override
+    public int clientboundSetActionBarTextPacket() {
+        return 70;
+    }
 }

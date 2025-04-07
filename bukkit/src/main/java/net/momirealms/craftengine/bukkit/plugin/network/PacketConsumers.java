@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
@@ -242,7 +243,7 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TITLE_TEXT_1_20 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
@@ -257,18 +258,20 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeUtf(AdventureHelper.componentToJson(component));
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet(Sub)TitleTextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TITLE_TEXT_1_20_3 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_TEXT_1_20_3 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
+            System.out.println(nbt.getAsString());
             Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             Component component = NBTComponentSerializer.nbt().deserialize(nbt);
+            System.out.println(GsonComponentSerializer.gson().serialize(component));
             for (Map.Entry<String, String> token : tokens.entrySet()) {
                 component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
             }
@@ -276,7 +279,7 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeNbt(NBTComponentSerializer.nbt().serialize(component), false);
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet(Sub)TitleTextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
         }
     };
 
