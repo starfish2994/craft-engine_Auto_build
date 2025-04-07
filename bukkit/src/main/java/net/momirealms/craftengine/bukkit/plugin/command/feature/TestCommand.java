@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
-import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
-import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
@@ -9,6 +8,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Shulker;
+import org.bukkit.persistence.PersistentDataType;
 import org.incendo.cloud.Command;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     try {
                         Collection<Entity> entities = player.getLocation().getNearbyEntities(2,2,2);
                         for (Entity entity : entities) {
-                            if (FastNMS.INSTANCE.method$CraftEntity$getHandle(entity) instanceof CollisionEntity) {
+                            if (entity instanceof Shulker) {
                             }
                         }
                     } catch (Exception e) {
