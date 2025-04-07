@@ -38,4 +38,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundEntityPositionSyncPacket() {
         return -1;
     }
+
+    @Override
+    public int clientboundRemoveEntitiesPacket() {
+        return 66;
+    }
 }

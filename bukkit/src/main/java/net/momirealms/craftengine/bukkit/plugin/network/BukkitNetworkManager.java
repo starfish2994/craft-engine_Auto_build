@@ -141,7 +141,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.LOGIN, Reflections.clazz$ClientboundLoginPacket);
         registerNMSPacketConsumer(PacketConsumers.RESPAWN, Reflections.clazz$ClientboundRespawnPacket);
         registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, Reflections.clazz$ServerboundInteractPacket);
-        registerNMSPacketConsumer(PacketConsumers.REMOVE_ENTITY, Reflections.clazz$ClientboundRemoveEntitiesPacket);
+        // registerNMSPacketConsumer(PacketConsumers.REMOVE_ENTITY, Reflections.clazz$ClientboundRemoveEntitiesPacket);
         registerNMSPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, Reflections.clazz$ClientboundEntityPositionSyncPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_ENTITY, Reflections.clazz$ClientboundMoveEntityPacket$Pos);
         registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_ENTITY, Reflections.clazz$ServerboundPickItemFromEntityPacket);
@@ -157,7 +157,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
         registerByteBufPacketConsumer(PacketConsumers.OPEN_SCREEN, this.packetIds.clientboundOpenScreenPacket());
-        // registerByteBufPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, this.packetIds.clientboundEntityPositionSyncPacket());
+        registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
+        registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
     }
 
     public static BukkitNetworkManager instance() {
@@ -483,7 +484,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
-            }
+            }/* else {
+                list.add(io.netty.buffer.Unpooled.EMPTY_BUFFER);
+            }*/
         }
 
         private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {

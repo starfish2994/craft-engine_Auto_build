@@ -15,4 +15,6 @@ public interface PacketIds {
     int clientboundOpenScreenPacket();
 
     int clientboundEntityPositionSyncPacket();
+
+    int clientboundRemoveEntitiesPacket();
 }

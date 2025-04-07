@@ -38,4 +38,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundEntityPositionSyncPacket() {
         return PacketIdFinder.clientboundByName("minecraft:entity_position_sync");
     }
+
+    @Override
+    public int clientboundRemoveEntitiesPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:remove_entities");
+    }
 }

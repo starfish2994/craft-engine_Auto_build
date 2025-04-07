@@ -6264,4 +6264,22 @@ public class Reflections {
     public static final Field field$ClientInformation$particleStatus = Optional.ofNullable(clazz$ClientInformation)
             .map(it -> ReflectionUtils.getDeclaredField(it, 8))
             .orElse(null);
+
+    public static final Method method$Registry$getId = requireNonNull(
+            ReflectionUtils.getMethod(clazz$Registry, int.class, Object.class)
+    );
+
+    public static final int instance$EntityType$FALLING_BLOCK$registryId;
+    public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
+
+    static {
+        try {
+            Object blockDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "block_display");
+            instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, blockDisplay);
+            Object fallingBlock = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "falling_block");
+            instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fallingBlock);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

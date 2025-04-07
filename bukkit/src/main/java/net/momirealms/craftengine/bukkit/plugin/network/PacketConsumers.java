@@ -652,18 +652,54 @@ public class PacketConsumers {
                 Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
     }
 
-    // TODO USE bytebuffer
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            UUID uuid = buf.readUUID();
+            int type = buf.readVarInt();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            byte xRot = buf.readByte();
+            byte yRot = buf.readByte();
+            byte yHeadRot = buf.readByte();
+            int data = buf.readVarInt();
+            int xa = buf.readShort();
+            int ya = buf.readShort();
+            int za = buf.readShort();
+            // Falling blocks
+            if (type == Reflections.instance$EntityType$FALLING_BLOCK$registryId) {
+                int remapped = remap(data);
+                if (remapped != data) {
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(id);
+                    buf.writeUUID(uuid);
+                    buf.writeVarInt(type);
+                    buf.writeDouble(x);
+                    buf.writeDouble(y);
+                    buf.writeDouble(z);
+                    buf.writeByte(xRot);
+                    buf.writeByte(yRot);
+                    buf.writeByte(yHeadRot);
+                    buf.writeVarInt(remapped);
+                    buf.writeShort(xa);
+                    buf.writeShort(ya);
+                    buf.writeShort(za);
+                }
+            } else if (type == Reflections.instance$EntityType$BLOCK_DISPLAY$registryId) {
+                user.entityView().put(id, Reflections.instance$EntityType$BLOCK_DISPLAY);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
         try {
             Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
-            // Falling blocks
-            if (entityType == Reflections.instance$EntityType$FALLING_BLOCK) {
-                int data = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$data(packet);
-                int remapped = remap(data);
-                if (remapped != data) {
-                    Reflections.field$ClientboundAddEntityPacket$data.set(packet, remapped);
-                }
-            } else if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
+            if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
                 int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
@@ -681,9 +717,6 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
-            } else if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
-                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
-                user.entityView().put(entityId, entityType);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -691,21 +724,9 @@ public class PacketConsumers {
     };
 
     // 1.21.3+
-    // TODO USE bytebuffer
-    // public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> OPEN_SCREEN = (user, event) -> {
-    //     try {
-    //         FriendlyByteBuf buf = event.getBuffer();
-    //         int entityId = buf.readVarInt();
-    //         if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
-    //             event.setCancelled(true); // 这里炸了导致无法实现
-    //         }
-    //     } catch (Exception e) {
-    //         CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
-    //     }
-    // };
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
-            int entityId = (int) Reflections.field$ClientboundEntityPositionSyncPacket$id.get(packet);
+            int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
@@ -714,7 +735,6 @@ public class PacketConsumers {
         }
     };
 
-    // TODO USE bytebuffer
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ClientboundMoveEntityPacket$entityId.get(packet);
@@ -726,10 +746,10 @@ public class PacketConsumers {
         }
     };
 
-    // TODO USE bytebuffer
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> REMOVE_ENTITY = (user, event, packet) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> REMOVE_ENTITY = (user, event) -> {
         try {
-            IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
+            FriendlyByteBuf buf = event.getBuffer();
+            IntList intList = buf.readIntIdList();
             for (int i = 0, size = intList.size(); i < size; i++) {
                 List<Integer> entities = user.furnitureView().remove(intList.getInt(i));
                 if (entities == null) continue;
