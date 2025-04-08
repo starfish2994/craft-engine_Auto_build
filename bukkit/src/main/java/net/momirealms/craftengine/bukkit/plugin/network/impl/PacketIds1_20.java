@@ -78,4 +78,9 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundTabListPacket() {
         return 101;
     }
+
+    @Override
+    public int clientboundSetPlayerTeamPacket() {
+        return 90;
+    }
 }

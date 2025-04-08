@@ -78,4 +78,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundTabListPacket() {
         return PacketIdFinder.clientboundByName("minecraft:tab_list");
     }
+
+    @Override
+    public int clientboundSetPlayerTeamPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_player_team");
+    }
 }

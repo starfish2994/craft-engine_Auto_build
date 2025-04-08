@@ -200,6 +200,13 @@ public class Dependencies {
             "adventure-text-serializer-gson",
             List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
     );
+    public static final Dependency TEXT_SERIALIZER_GSON_LEGACY = new Dependency(
+            "adventure-text-serializer-json-legacy-impl",
+            "net{}kyori",
+            "adventure-text-serializer-json-legacy-impl",
+            "adventure-text-serializer-json-legacy-impl",
+            List.of(Relocation.of("adventure", "net{}kyori{}adventure"))
+    );
     public static final Dependency TEXT_SERIALIZER_JSON = new Dependency(
             "adventure-text-serializer-json",
             "net{}kyori",

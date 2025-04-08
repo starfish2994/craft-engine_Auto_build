@@ -282,7 +282,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.SNAKE_YAML,
                 Dependencies.BOOSTED_YAML,
                 Dependencies.MINIMESSAGE,
-                Dependencies.TEXT_SERIALIZER_GSON,
+                Dependencies.TEXT_SERIALIZER_GSON, Dependencies.TEXT_SERIALIZER_GSON_LEGACY,
                 Dependencies.TEXT_SERIALIZER_JSON,
                 Dependencies.AHO_CORASICK,
                 Dependencies.LZ4

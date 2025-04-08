@@ -25,6 +25,7 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-gson:${rootProject.properties["adventure_bundle_version"]}") {
         exclude("com.google.code.gson", "gson")
     }
+    compileOnly("net.kyori:adventure-text-serializer-json-legacy-impl:${rootProject.properties["adventure_bundle_version"]}")
     // Command
     compileOnly("org.incendo:cloud-core:${rootProject.properties["cloud_core_version"]}")
     compileOnly("org.incendo:cloud-minecraft-extras:${rootProject.properties["cloud_minecraft_extras_version"]}")
@@ -45,7 +46,6 @@ dependencies {
     compileOnly("com.github.luben:zstd-jni:${rootProject.properties["zstd_version"]}")
     compileOnly("org.lz4:lz4-java:${rootProject.properties["lz4_version"]}")
     // Commons IO
-    compileOnly("commons-io:commons-io:${rootProject.properties["commons_io_version"]}")
     compileOnly("commons-io:commons-io:${rootProject.properties["commons_io_version"]}")
     // Data Fixer Upper
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")

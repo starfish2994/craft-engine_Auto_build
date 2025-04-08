@@ -160,9 +160,8 @@ image:
     title: true
     bossbar: true
     container: true
-    # TODO: toast: true
+    team: true
     # TODO: name: true
-    # TODO: team: true
 
 emoji: {}
 
