@@ -142,12 +142,16 @@ public abstract class CraftEngine implements Plugin {
             if (reloadRecipe) {
                 this.recipeManager.reload();
             }
-            // now we load resources
-            this.packManager.loadResources(reloadRecipe);
-            // handle some special client lang for instance block_name
-            this.translationManager.delayedLoad();
+            try {
+                // now we load resources
+                this.packManager.loadResources(reloadRecipe);
+            } catch (Exception e) {
+                this.logger().warn("Failed to load resources folder", e);
+            }
             // init suggestions and packet mapper
             this.blockManager.delayedLoad();
+            // handle some special client lang for instance block_name
+            this.translationManager.delayedLoad();
             // init suggestions
             this.furnitureManager.delayedLoad();
             // sort the categories
