@@ -161,7 +161,9 @@ image:
     bossbar: true
     container: true
     team: true
-    # TODO: name: true
+    scoreboard: true
+    entity-name: true
+    text-display: true
 
 emoji: {}
 
