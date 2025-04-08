@@ -8,7 +8,8 @@ import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.network.impl.*;
+import net.momirealms.craftengine.bukkit.plugin.network.impl.PacketIds1_20;
+import net.momirealms.craftengine.bukkit.plugin.network.impl.PacketIds1_20_5;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -158,7 +159,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_OBJECTIVE_1_20_3 : PacketConsumers.SET_OBJECTIVE_1_20, this.packetIds.clientboundSetObjectivePacket());
         registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
         registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
-        // registerByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());
         registerByteBufPacketConsumer(PacketConsumers.SET_ENTITY_DATA, this.packetIds.clientboundSetEntityDataPacket());
     }
 

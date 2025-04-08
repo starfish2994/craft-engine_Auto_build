@@ -241,6 +241,25 @@ public class PacketConsumers {
         }
     };
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
+        try {
+            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
+            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
+            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+            if (mapped != null) {
+                event.setCancelled(true);
+                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
+                Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
+                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
+                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
+                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
+                user.sendPacket(newSoundPacket, true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TEAM_1_20_3 = (user, event) -> {
         if (!Config.interceptTeam()) return;
         try {
@@ -1470,26 +1489,6 @@ public class PacketConsumers {
             }, player.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
-        }
-    };
-
-    // TODO USE bytebuffer
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
-        try {
-            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
-            if (mapped != null) {
-                event.setCancelled(true);
-                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
-                Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
-                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
-                user.sendPacket(newSoundPacket, true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
         }
     };
 
