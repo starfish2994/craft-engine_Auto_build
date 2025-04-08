@@ -2824,7 +2824,7 @@ public class Reflections {
 
     static {
         try {
-            if (VersionHelper.isVersionNewerThan1_20_5() && method$Registry$getHolder0 != null) {
+            if (VersionHelper.isVersionNewerThan1_20_5()) {
                 Object block_break_speed = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_break_speed" : "player.block_break_speed");
                 @SuppressWarnings("unchecked")
                 Optional<Object> breakSpeedHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_break_speed);
@@ -6245,7 +6245,7 @@ public class Reflections {
     // 1.21.2+
     static {
         try {
-            if (VersionHelper.isVersionNewerThan1_21_2() && method$ParticleStatus$values != null) {
+            if (VersionHelper.isVersionNewerThan1_21_2()) {
                 Object[] values = (Object[]) method$ParticleStatus$values.invoke(null);
                 instance$ParticleStatus$ALL = values[0];
                 instance$ParticleStatus$DECREASED = values[1];
