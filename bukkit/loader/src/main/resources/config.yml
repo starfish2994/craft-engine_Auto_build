@@ -162,7 +162,7 @@ image:
     container: true
     team: true
     scoreboard: true
-    entity-name: true
+    entity-name: false
     text-display: true
 
 emoji: {}
