@@ -1467,7 +1467,7 @@ public class PacketConsumers {
                         }
                     });
                 }
-            }, player.getWorld(), location.getBlockX() >> 4,location.getBlockZ() >> 4);
+            }, player.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
         }
@@ -1687,108 +1687,115 @@ public class PacketConsumers {
 
     @SuppressWarnings("unchecked")
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA = (user, event) -> {
-       try {
-           FriendlyByteBuf buf = event.getBuffer();
-           int id = buf.readVarInt();
-           Object entityType = user.entityView().get(id);
-           boolean isChanged = false;
-           List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-           if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
-               for (int i = 0; i < packedItems.size(); i++) {
-                   Object packedItem = packedItems.get(i);
-                   int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                   if (entityDataId == EntityDataUtils.BLOCK_STATE_DATA_ID) {
-                       Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                       int stateId = BlockStateUtils.blockStateToId(blockState);
-                       int newStateId;
-                       if (!user.clientModEnabled()) {
-                           newStateId = remap(stateId);
-                       } else {
-                           newStateId = remapMOD(stateId);
-                       }
-                       Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                       packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                               entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
-                       ));
-                       isChanged = true;
-                   } else if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
-                       Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                       if (optionalTextComponent.isPresent()) {
-                           Object textComponent = optionalTextComponent.get();
-                           String json = ComponentUtils.minecraftToJson(textComponent);
-                           Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
-                           if (!tokens.isEmpty()) {
-                               Component component = AdventureHelper.jsonToComponent(json);
-                               for (Map.Entry<String, String> token : tokens.entrySet()) {
-                                   component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
-                               }
-                               Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                               packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                                       entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))
-                               ));
-                               isChanged = true;
-                           }
-                       }
-                   }
-               }
-           } else if (entityType == Reflections.instance$EntityType$TEXT_DISPLAY) {
-               for (int i = 0; i < packedItems.size(); i++) {
-                   Object packedItem = packedItems.get(i);
-                   int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                   if (entityDataId == EntityDataUtils.TEXT_DATA_ID) {
-                       Object textComponent = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                       if (textComponent == Reflections.instance$Component$empty) break;
-                       String json = ComponentUtils.minecraftToJson(textComponent);
-                       Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
-                       if (!tokens.isEmpty()) {
-                           Component component = AdventureHelper.jsonToComponent(json);
-                           for (Map.Entry<String, String> token : tokens.entrySet()) {
-                               component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
-                           }
-                           Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                           packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                                   entityDataId, serializer, ComponentUtils.adventureToMinecraft(component)
-                           ));
-                           isChanged = true;
-                           break;
-                       }
-                   }
-               }
-           } else {
-               for (int i = 0; i < packedItems.size(); i++) {
-                   Object packedItem = packedItems.get(i);
-                   int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                   if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
-                       Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                       if (optionalTextComponent.isPresent()) {
-                           Object textComponent = optionalTextComponent.get();
-                           String json = ComponentUtils.minecraftToJson(textComponent);
-                           Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
-                           if (!tokens.isEmpty()) {
-                               Component component = AdventureHelper.jsonToComponent(json);
-                               for (Map.Entry<String, String> token : tokens.entrySet()) {
-                                   component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
-                               }
-                               Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                               packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                                       entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))
-                               ));
-                               isChanged = true;
-                               break;
-                           }
-                       }
-                   }
-               }
-           }
-           if (isChanged) {
-               event.setChanged(true);
-               buf.clear();
-               buf.writeVarInt(event.packetID());
-               buf.writeVarInt(id);
-               FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
-           }
-       } catch (Exception e) {
-           CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
-       }
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            Object entityType = user.entityView().get(id);
+            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
+                boolean isChanged = false;
+                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
+                for (int i = 0; i < packedItems.size(); i++) {
+                    Object packedItem = packedItems.get(i);
+                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+                    if (entityDataId == EntityDataUtils.BLOCK_STATE_DATA_ID) {
+                        Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                        int stateId = BlockStateUtils.blockStateToId(blockState);
+                        int newStateId;
+                        if (!user.clientModEnabled()) {
+                            newStateId = remap(stateId);
+                        } else {
+                            newStateId = remapMOD(stateId);
+                        }
+                        Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                        packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
+                                entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
+                        ));
+                        isChanged = true;
+                    } else if (Config.interceptEntityName() && entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
+                        Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                        if (optionalTextComponent.isPresent()) {
+                            Object textComponent = optionalTextComponent.get();
+                            String json = ComponentUtils.minecraftToJson(textComponent);
+                            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            if (!tokens.isEmpty()) {
+                                Component component = AdventureHelper.jsonToComponent(json);
+                                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                }
+                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
+                                        entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))
+                                ));
+                                isChanged = true;
+                            }
+                        }
+                    }
+                }
+                if (isChanged) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(id);
+                    FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
+                }
+            } else if (Config.interceptEntityName()) {
+                boolean isChanged = false;
+                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
+                if (entityType == Reflections.instance$EntityType$TEXT_DISPLAY) {
+                    for (int i = 0; i < packedItems.size(); i++) {
+                        Object packedItem = packedItems.get(i);
+                        int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+                        if (entityDataId == EntityDataUtils.TEXT_DATA_ID) {
+                            Object textComponent = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                            if (textComponent == Reflections.instance$Component$empty) break;
+                            String json = ComponentUtils.minecraftToJson(textComponent);
+                            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            if (!tokens.isEmpty()) {
+                                Component component = AdventureHelper.jsonToComponent(json);
+                                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                }
+                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, ComponentUtils.adventureToMinecraft(component)));
+                                isChanged = true;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < packedItems.size(); i++) {
+                        Object packedItem = packedItems.get(i);
+                        int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+                        if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
+                            Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                            if (optionalTextComponent.isPresent()) {
+                                Object textComponent = optionalTextComponent.get();
+                                String json = ComponentUtils.minecraftToJson(textComponent);
+                                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                                if (!tokens.isEmpty()) {
+                                    Component component = AdventureHelper.jsonToComponent(json);
+                                    for (Map.Entry<String, String> token : tokens.entrySet()) {
+                                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                    }
+                                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
+                                    isChanged = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isChanged) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(id);
+                    FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
     };
 }
