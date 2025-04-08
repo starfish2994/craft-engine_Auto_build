@@ -1095,18 +1095,26 @@ public class PacketConsumers {
         }
     };
 
-    // TODO USE bytebuffer
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> REMOVE_ENTITY = (user, event, packet) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> REMOVE_ENTITY = (user, event) -> {
         try {
-            IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean isChange = false;
+            IntList intList = buf.readIntIdList();
             for (int i = 0, size = intList.size(); i < size; i++) {
                 int entityId = intList.getInt(i);
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
                 if (entities == null) continue;
                 for (int subEntityId : entities) {
+                    isChange = true;
                     intList.add(subEntityId);
                 }
+            }
+            if (isChange) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeIntIdList(intList);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundRemoveEntitiesPacket", e);
