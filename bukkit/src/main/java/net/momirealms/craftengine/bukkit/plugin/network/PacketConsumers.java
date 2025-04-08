@@ -1100,6 +1100,7 @@ public class PacketConsumers {
         try {
             IntList intList = FastNMS.INSTANCE.field$ClientboundRemoveEntitiesPacket$entityIds(packet);
             for (int i = 0, size = intList.size(); i < size; i++) {
+                user.entityView().remove(intList.getInt(i));
                 List<Integer> entities = user.furnitureView().remove(intList.getInt(i));
                 if (entities == null) continue;
                 for (int entityId : entities) {
