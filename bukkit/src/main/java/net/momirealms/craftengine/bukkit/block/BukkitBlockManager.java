@@ -311,7 +311,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
             for (Object block : (Iterable<Object>) Reflections.instance$BuiltInRegistries$BLOCK) {
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(block);
                 if (affectedSounds.contains(soundType)) {
-                    affectedBlocks.add(block);
+                    Object state = getOnlyBlockState(block);
+                    if (BlockStateUtils.isVanillaBlock(state)) {
+                        affectedBlocks.add(block);
+                    }
                 }
             }
 

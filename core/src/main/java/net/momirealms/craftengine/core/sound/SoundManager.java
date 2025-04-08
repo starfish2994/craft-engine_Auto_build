@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface SoundManager extends Manageable {
 
+    boolean isVanillaSoundEvent(Key key);
+
     ConfigSectionParser[] parsers();
 
     Map<Key, SoundEvent> sounds();

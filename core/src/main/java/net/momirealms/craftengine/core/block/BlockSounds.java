@@ -39,7 +39,7 @@ public class BlockSounds {
         return new BlockSounds(
                 SoundData.create(map.getOrDefault("break", "minecraft:intentionally_empty"), 1f, 0.8f),
                 SoundData.create(map.getOrDefault("step", "minecraft:intentionally_empty"), 0.15f, 1f),
-                SoundData.create(map.getOrDefault("place", "minecraft:intentionally_empty"), 0f, 0.8f), // todo 0?
+                SoundData.create(map.getOrDefault("place", "minecraft:intentionally_empty"), 1f, 0.8f),
                 SoundData.create(map.getOrDefault("hit", "minecraft:intentionally_empty"), 0.5f, 0.5f),
                 SoundData.create(map.getOrDefault("fall", "minecraft:intentionally_empty"), 0.5f, 0.75f),
                 SoundData.create(map.getOrDefault("land", "minecraft:intentionally_empty"), 0.3f, 1f),

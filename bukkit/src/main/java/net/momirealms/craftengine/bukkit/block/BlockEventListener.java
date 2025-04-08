@@ -63,18 +63,20 @@ public class BlockEventListener implements Listener {
         if (Config.enableSoundSystem()) {
             Block block = event.getBlock();
             Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
-            Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
-            if (this.manager.isBlockSoundRemoved(ownerBlock)) {
-                if (player.getInventory().getItemInMainHand().getType() != Material.DEBUG_STICK) {
-                    try {
-                        Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
-                        Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
-                        player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
-                    } catch (ReflectiveOperationException e) {
-                        this.plugin.logger().warn("Failed to get sound type", e);
+            if (blockState != Reflections.instance$Blocks$AIR$defaultState) {
+                Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
+                if (this.manager.isBlockSoundRemoved(ownerBlock)) {
+                    if (player.getInventory().getItemInMainHand().getType() != Material.DEBUG_STICK) {
+                        try {
+                            Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
+                            Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
+                            player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
+                        } catch (ReflectiveOperationException e) {
+                            this.plugin.logger().warn("Failed to get sound type", e);
+                        }
                     }
+                    return;
                 }
-                return;
             }
         }
         // resend sound if the clicked block is interactable on client side
