@@ -33,4 +33,6 @@ public interface PacketIds {
     int clientboundTabListPacket();
 
     int clientboundSetPlayerTeamPacket();
+
+    int clientboundSetObjectivePacket();
 }

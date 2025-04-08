@@ -83,4 +83,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundSetPlayerTeamPacket() {
         return 96;
     }
+
+    @Override
+    public int clientboundSetObjectivePacket() {
+        return 94;
+    }
 }

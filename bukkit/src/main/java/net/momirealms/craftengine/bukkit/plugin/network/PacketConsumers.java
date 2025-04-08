@@ -498,6 +498,134 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_OBJECTIVE_1_20 = (user, event) -> {
+        if (!Config.interceptSystemChat()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String objective = buf.readUtf();
+            byte mode = buf.readByte();
+            if (mode != 0 && mode != 2) return;
+            String displayName = buf.readUtf();
+            int renderType = buf.readVarInt();
+            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName);
+            if (tokens.isEmpty()) return;
+            event.setChanged(true);
+            Component component = AdventureHelper.jsonToComponent(displayName);
+            for (Map.Entry<String, String> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeUtf(objective);
+            buf.writeByte(mode);
+            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeVarInt(renderType);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetObjectivePacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_OBJECTIVE_1_20_3 = (user, event) -> {
+        if (!Config.interceptSystemChat()) return;
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            String objective = buf.readUtf();
+            byte mode = buf.readByte();
+            if (mode != 0 && mode != 2) return;
+            Tag displayName = buf.readNbt(false);
+            if (displayName == null) return;
+            int renderType = buf.readVarInt();
+            boolean optionalNumberFormat = buf.readBoolean();
+            if (optionalNumberFormat) {
+                int format = buf.readVarInt();
+                if (format == 0) {
+                    Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    if (tokens.isEmpty()) return;
+                    event.setChanged(true);
+                    Component component = AdventureHelper.tagToComponent(displayName);
+                    for (Map.Entry<String, String> token : tokens.entrySet()) {
+                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                    }
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeUtf(objective);
+                    buf.writeByte(mode);
+                    buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    buf.writeVarInt(renderType);
+                    buf.writeBoolean(true);
+                    buf.writeVarInt(0);
+                } else if (format == 1) {
+                    Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    if (tokens.isEmpty()) return;
+                    Tag style = buf.readNbt(false);
+                    event.setChanged(true);
+                    Component component = AdventureHelper.tagToComponent(displayName);
+                    for (Map.Entry<String, String> token : tokens.entrySet()) {
+                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                    }
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeUtf(objective);
+                    buf.writeByte(mode);
+                    buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    buf.writeVarInt(renderType);
+                    buf.writeBoolean(true);
+                    buf.writeVarInt(1);
+                    buf.writeNbt(style, false);
+                } else if (format == 2) {
+                    Tag fixed = buf.readNbt(false);
+                    if (fixed == null) return;
+                    Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(fixed.getAsString());
+                    if (tokens1.isEmpty() && tokens2.isEmpty()) return;
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeUtf(objective);
+                    buf.writeByte(mode);
+                    if (!tokens1.isEmpty()) {
+                        Component component = AdventureHelper.tagToComponent(displayName);
+                        for (Map.Entry<String, String> token : tokens1.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                        }
+                        buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    } else {
+                        buf.writeNbt(displayName, false);
+                    }
+                    buf.writeVarInt(renderType);
+                    buf.writeBoolean(true);
+                    buf.writeVarInt(2);
+                    if (!tokens2.isEmpty()) {
+                        Component component = AdventureHelper.tagToComponent(fixed);
+                        for (Map.Entry<String, String> token : tokens2.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                        }
+                        buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    } else {
+                        buf.writeNbt(fixed, false);
+                    }
+                }
+            } else {
+                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                if (tokens.isEmpty()) return;
+                event.setChanged(true);
+                Component component = AdventureHelper.tagToComponent(displayName);
+                for (Map.Entry<String, String> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                }
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUtf(objective);
+                buf.writeByte(mode);
+                buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                buf.writeVarInt(renderType);
+                buf.writeBoolean(false);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetObjectivePacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SYSTEM_CHAT_1_20 = (user, event) -> {
         if (!Config.interceptSystemChat()) return;
         try {

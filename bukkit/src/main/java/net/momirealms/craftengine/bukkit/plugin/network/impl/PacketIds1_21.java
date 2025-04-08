@@ -83,4 +83,9 @@ public class PacketIds1_21 implements PacketIds {
     public int clientboundSetPlayerTeamPacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_player_team");
     }
+
+    @Override
+    public int clientboundSetObjectivePacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_objective");
+    }
 }
