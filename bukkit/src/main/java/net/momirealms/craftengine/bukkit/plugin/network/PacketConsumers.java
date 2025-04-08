@@ -241,25 +241,6 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
-        try {
-            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
-            if (mapped != null) {
-                event.setCancelled(true);
-                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
-                Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
-                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
-                user.sendPacket(newSoundPacket, true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
-        }
-    };
-
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TEAM_1_20_3 = (user, event) -> {
         if (!Config.interceptTeam()) return;
         try {
@@ -1491,6 +1472,47 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
         }
     };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SOUND = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            Key soundId = buf.readKey();
+            Float range = null;
+            if (buf.readBoolean()) {
+                range = buf.readFloat();
+            }
+            int source = buf.readVarInt();
+            int x = buf.readInt();
+            int y = buf.readInt();
+            int z = buf.readInt();
+            float volume = buf.readFloat();
+            float pitch = buf.readFloat();
+            long seed = buf.readLong();
+            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+            if (mapped != null) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(id);
+                buf.writeKey(mapped);
+                if (range != null) {
+                    buf.writeBoolean(true);
+                    buf.writeFloat(range);
+                } else {
+                    buf.writeBoolean(false);
+                }
+                buf.writeVarInt(source);
+                buf.writeInt(x);
+                buf.writeInt(y);
+                buf.writeInt(z);
+                buf.writeFloat(volume);
+                buf.writeFloat(pitch);
+                buf.writeLong(seed);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
+        }};
 
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
