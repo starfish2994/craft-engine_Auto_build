@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public abstract class AbstractSoundManager implements SoundManager {
+    protected static final Set<Key> VANILLA_SOUND_EVENTS = new HashSet<>();
     protected final CraftEngine plugin;
     protected final Map<Key, SoundEvent> byId = new HashMap<>();
     protected final Map<String, List<SoundEvent>> byNamespace = new HashMap<>();
@@ -26,6 +27,11 @@ public abstract class AbstractSoundManager implements SoundManager {
         this.plugin = plugin;
         this.soundParser = new SoundParser();
         this.songParser = new SongParser();
+    }
+
+    @Override
+    public boolean isVanillaSoundEvent(Key key) {
+        return VANILLA_SOUND_EVENTS.contains(key);
     }
 
     @Override

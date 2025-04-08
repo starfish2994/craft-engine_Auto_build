@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.sound;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -17,6 +18,7 @@ public class BukkitSoundManager extends AbstractSoundManager {
 
     public BukkitSoundManager(CraftEngine plugin) {
         super(plugin);
+        VANILLA_SOUND_EVENTS.addAll(FastNMS.INSTANCE.getAllVanillaSounds().stream().map(it -> Key.of(it.getNamespace(), it.getKey())).toList());
     }
 
     @Override
