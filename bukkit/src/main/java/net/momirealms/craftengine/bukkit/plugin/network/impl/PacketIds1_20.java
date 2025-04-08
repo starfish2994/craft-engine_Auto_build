@@ -87,6 +87,6 @@ public class PacketIds1_20 implements PacketIds {
 
     @Override
     public int clientboundSetObjectivePacket() {
-        return 88;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetObjectivePacket);
     }
 }

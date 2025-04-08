@@ -86,6 +86,6 @@ public class PacketIds1_20_5 implements PacketIds {
 
     @Override
     public int clientboundSetObjectivePacket() {
-        return 94;
+        return PacketIdFinder.clientboundByName("minecraft:set_objective");
     }
 }

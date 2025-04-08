@@ -6301,4 +6301,11 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutPlayerListHeaderFooter")
             )
     );
+
+    public static final Class<?> clazz$ClientboundSetObjectivePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetObjectivePacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardObjective")
+            )
+    );
 }
