@@ -395,14 +395,14 @@ public abstract class AbstractPackManager implements PackManager {
         for (Pack pack : loadedPacks()) {
             Pair<List<Path>, List<Path>> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
             for (Path path : files.left()) {
-                Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
                 try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
+                    Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
                     Map<String, Object> data = yaml.load(inputStream);
                     if (data == null) continue;
                     for (Map.Entry<String, Object> entry : data.entrySet()) {
                         processConfigEntry(entry, path, pack);
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     this.plugin.logger().warn(path, "Error loading config file", e);
                 }
             }
@@ -413,7 +413,7 @@ public abstract class AbstractPackManager implements PackManager {
                     for (Map.Entry<String, Object> entry : data.entrySet()) {
                         processConfigEntry(entry, path, pack);
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     this.plugin.logger().warn(path, "Error loading config file", e);
                 }
             }

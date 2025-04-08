@@ -114,6 +114,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.stateId2ImmutableBlockStates = new ImmutableBlockState[customBlockCount];
         Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.INSTANCE.defaultState());
         instance = this;
+        this.resetPacketConsumers();
     }
 
     public static BukkitBlockManager instance() {
