@@ -117,14 +117,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private PacketIds setupPacketIds() {
-        if (VersionHelper.isVersionNewerThan1_21()) {
-            return new PacketIds1_21();
-        } else if (VersionHelper.isVersionNewerThan1_20_5()) {
+        if (VersionHelper.isVersionNewerThan1_20_5()) {
             return new PacketIds1_20_5();
-        } else if (VersionHelper.isVersionNewerThan1_20_3()) {
-            return new PacketIds1_20_3();
-        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
-            return new PacketIds1_20_2();
         } else {
             return new PacketIds1_20();
         }
