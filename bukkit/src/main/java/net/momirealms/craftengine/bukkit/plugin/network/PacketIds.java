@@ -31,4 +31,8 @@ public interface PacketIds {
     int clientboundSystemChatPacket();
 
     int clientboundTabListPacket();
+
+    int clientboundSetPlayerTeamPacket();
+
+    int clientboundSetObjectivePacket();
 }

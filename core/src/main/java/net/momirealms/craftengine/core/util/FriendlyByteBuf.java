@@ -48,6 +48,22 @@ public class FriendlyByteBuf extends ByteBuf {
         return BlockPos.of(buf.readLong());
     }
 
+    public List<String> readStringList() {
+        int i = this.readVarInt();
+        List<String> list = new ArrayList<>(i);
+        for (int j = 0; j < i; ++j) {
+            list.add(readUtf());
+        }
+        return list;
+    }
+
+    public void writeStringList(List<String> list) {
+        writeVarInt(list.size());
+        for (String s : list) {
+            writeUtf(s);
+        }
+    }
+
     public FriendlyByteBuf writeBlockPos(BlockPos pos) {
         this.writeLong(pos.asLong());
         return this;

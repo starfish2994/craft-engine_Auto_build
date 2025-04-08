@@ -7,6 +7,10 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.json.JSONOptions;
+import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
+import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
 
 /**
  * Helper class for handling Adventure components and related functionalities.
@@ -16,11 +20,18 @@ public class AdventureHelper {
     private final MiniMessage miniMessage;
     private final MiniMessage miniMessageStrict;
     private final GsonComponentSerializer gsonComponentSerializer;
+    private final NBTComponentSerializer nbtComponentSerializer;
 
     private AdventureHelper() {
         this.miniMessage = MiniMessage.builder().build();
         this.miniMessageStrict = MiniMessage.builder().strict(true).build();
-        this.gsonComponentSerializer = GsonComponentSerializer.builder().build();
+        GsonComponentSerializer.Builder builder = GsonComponentSerializer.builder();
+        if (!VersionHelper.isVersionNewerThan1_20_5()) {
+            builder.legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get());
+            builder.editOptions((b) -> b.value(JSONOptions.EMIT_HOVER_SHOW_ENTITY_ID_AS_INT_ARRAY, false));
+        }
+        this.gsonComponentSerializer = builder.build();
+        this.nbtComponentSerializer = NBTComponentSerializer.builder().build();
     }
 
     private static class SingletonHolder {
@@ -52,6 +63,15 @@ public class AdventureHelper {
      */
     public static GsonComponentSerializer getGson() {
         return getInstance().gsonComponentSerializer;
+    }
+
+    /**
+     * Retrieves the NBTComponentSerializer instance.
+     *
+     * @return the NBTComponentSerializer instance
+     */
+    public static NBTComponentSerializer getNBT() {
+        return getInstance().nbtComponentSerializer;
     }
 
     /**
@@ -132,6 +152,14 @@ public class AdventureHelper {
 
     public static JsonElement componentToJsonElement(Component component) {
         return getGson().serializeToTree(component);
+    }
+
+    public static Tag componentToTag(Component component) {
+        return getNBT().serialize(component);
+    }
+
+    public static Component tagToComponent(Tag tag) {
+        return getNBT().deserialize(tag);
     }
 
     /**

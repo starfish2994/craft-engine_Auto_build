@@ -160,9 +160,10 @@ image:
     title: true
     bossbar: true
     container: true
-    # TODO: toast: true
-    # TODO: name: true
-    # TODO: team: true
+    team: true
+    scoreboard: true
+    entity-name: false
+    text-display: true
 
 emoji: {}
 

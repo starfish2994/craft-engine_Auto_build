@@ -3335,8 +3335,8 @@ public class Reflections {
             instance$ItemStack$EMPTY = requireNonNull(
                     ReflectionUtils.getDeclaredField(
                             clazz$ItemStack, clazz$ItemStack, 0
-                    ).get(null)
-            );
+                    )
+            ).get(null);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6270,27 +6270,42 @@ public class Reflections {
     );
 
     public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
+    public static final int instance$EntityType$TEXT_DISPLAY$registryId;
     public static final int instance$EntityType$FALLING_BLOCK$registryId;
 
     static {
         try {
             instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$BLOCK_DISPLAY);
+            instance$EntityType$TEXT_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TEXT_DISPLAY);
             instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    // 先注释后面再说
-    // public static final Method method$ClientboundSetEntityDataPacket$pack = requireNonNull(
-    //         ReflectionUtils.getDeclaredMethod(
-    //                 clazz$ClientboundSetEntityDataPacket, void.class, List.class, clazz$RegistryFriendlyByteBuf
-    //         )
-    // );
-    //
-    // public static final Method method$ClientboundSetEntityDataPacket$unpack = requireNonNull(
-    //         ReflectionUtils.getDeclaredMethod(
-    //                 clazz$ClientboundSetEntityDataPacket, List.class, clazz$RegistryFriendlyByteBuf
-    //         )
-    // );
+    public static final Class<?> clazz$ClientboundSetTitleTextPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetTitleTextPacket")
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundSetSubtitleTextPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetSubtitleTextPacket")
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundTabListPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundTabListPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutPlayerListHeaderFooter")
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundSetObjectivePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetObjectivePacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardObjective")
+            )
+    );
 }
