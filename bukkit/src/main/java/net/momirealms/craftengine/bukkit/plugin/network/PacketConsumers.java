@@ -499,7 +499,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_OBJECTIVE_1_20 = (user, event) -> {
-        if (!Config.interceptSystemChat()) return;
+        if (!Config.interceptScoreboard()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String objective = buf.readUtf();
@@ -526,7 +526,7 @@ public class PacketConsumers {
     };
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_OBJECTIVE_1_20_3 = (user, event) -> {
-        if (!Config.interceptSystemChat()) return;
+        if (!Config.interceptScoreboard()) return;
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String objective = buf.readUtf();
