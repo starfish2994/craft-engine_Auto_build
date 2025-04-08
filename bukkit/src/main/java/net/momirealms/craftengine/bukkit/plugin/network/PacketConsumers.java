@@ -1104,8 +1104,8 @@ public class PacketConsumers {
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
                 if (entities == null) continue;
-                for (int entityId1 : entities) {
-                    intList.add(entityId1);
+                for (int subEntityId : entities) {
+                    intList.add(subEntityId);
                 }
             }
         } catch (Exception e) {
