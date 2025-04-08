@@ -88,4 +88,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundSetObjectivePacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_objective");
     }
+
+    @Override
+    public int clientboundLevelChunkWithLightPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:level_chunk_with_light");
+    }
 }
