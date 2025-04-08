@@ -3335,8 +3335,8 @@ public class Reflections {
             instance$ItemStack$EMPTY = requireNonNull(
                     ReflectionUtils.getDeclaredField(
                             clazz$ItemStack, clazz$ItemStack, 0
-                    ).get(null)
-            );
+                    )
+            ).get(null);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6280,17 +6280,4 @@ public class Reflections {
             throw new RuntimeException(e);
         }
     }
-
-    // 先注释后面再说
-    // public static final Method method$ClientboundSetEntityDataPacket$pack = requireNonNull(
-    //         ReflectionUtils.getDeclaredMethod(
-    //                 clazz$ClientboundSetEntityDataPacket, void.class, List.class, clazz$RegistryFriendlyByteBuf
-    //         )
-    // );
-    //
-    // public static final Method method$ClientboundSetEntityDataPacket$unpack = requireNonNull(
-    //         ReflectionUtils.getDeclaredMethod(
-    //                 clazz$ClientboundSetEntityDataPacket, List.class, clazz$RegistryFriendlyByteBuf
-    //         )
-    // );
 }
