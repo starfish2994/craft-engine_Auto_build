@@ -1,87 +1,88 @@
 package net.momirealms.craftengine.bukkit.plugin.network.impl;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 
 public class PacketIds1_20 implements PacketIds {
 
     @Override
     public int clientboundBlockUpdatePacket() {
-        return 10;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundBlockUpdatePacket);
     }
 
     @Override
     public int clientboundSectionBlocksUpdatePacket() {
-        return 67;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSectionBlocksUpdatePacket);
     }
 
     @Override
     public int clientboundLevelParticlesPacket() {
-        return 38;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundLevelParticlesPacket);
     }
 
     @Override
     public int clientboundLevelEventPacket() {
-        return 37;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundLevelEventPacket);
     }
 
     @Override
     public int clientboundAddEntityPacket() {
-        return 1;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundAddEntityPacket);
     }
 
     @Override
     public int clientboundOpenScreenPacket() {
-        return 48;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundOpenScreenPacket);
     }
 
     @Override
     public int clientboundSoundPacket() {
-        return 98;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSoundPacket);
     }
 
     @Override
     public int clientboundRemoveEntitiesPacket() {
-        return 62;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundRemoveEntitiesPacket);
     }
 
     @Override
     public int clientboundSetEntityDataPacket() {
-        return 82;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetEntityDataPacket);
     }
 
     @Override
     public int clientboundSetTitleTextPacket() {
-        return 95;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetTitleTextPacket);
     }
 
     @Override
     public int clientboundSetSubtitleTextPacket() {
-        return 93;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetSubtitleTextPacket);
     }
 
     @Override
     public int clientboundSetActionBarTextPacket() {
-        return 70;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetActionBarTextPacket);
     }
 
     @Override
     public int clientboundBossEventPacket() {
-        return 11;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundBossEventPacket);
     }
 
     @Override
     public int clientboundSystemChatPacket() {
-        return 100;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSystemChatPacket);
     }
 
     @Override
     public int clientboundTabListPacket() {
-        return 101;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundTabListPacket);
     }
 
     @Override
     public int clientboundSetPlayerTeamPacket() {
-        return 90;
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetPlayerTeamPacket);
     }
 
     @Override

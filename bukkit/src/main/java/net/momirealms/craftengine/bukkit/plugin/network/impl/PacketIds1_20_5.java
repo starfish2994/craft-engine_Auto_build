@@ -6,82 +6,82 @@ public class PacketIds1_20_5 implements PacketIds {
 
     @Override
     public int clientboundBlockUpdatePacket() {
-        return 9;
+        return PacketIdFinder.clientboundByName("minecraft:block_update");
     }
 
     @Override
     public int clientboundSectionBlocksUpdatePacket() {
-        return 73;
+        return PacketIdFinder.clientboundByName("minecraft:section_blocks_update");
     }
 
     @Override
     public int clientboundLevelParticlesPacket() {
-        return 41;
+        return PacketIdFinder.clientboundByName("minecraft:level_particles");
     }
 
     @Override
     public int clientboundLevelEventPacket() {
-        return 40;
+        return PacketIdFinder.clientboundByName("minecraft:level_event");
     }
 
     @Override
     public int clientboundAddEntityPacket() {
-        return 1;
+        return PacketIdFinder.clientboundByName("minecraft:add_entity");
     }
 
     @Override
     public int clientboundOpenScreenPacket() {
-        return 51;
+        return PacketIdFinder.clientboundByName("minecraft:open_screen");
     }
 
     @Override
     public int clientboundSoundPacket() {
-        return 104;
+        return PacketIdFinder.clientboundByName("minecraft:sound");
     }
 
     @Override
     public int clientboundRemoveEntitiesPacket() {
-        return 66;
+        return PacketIdFinder.clientboundByName("minecraft:remove_entities");
     }
 
     @Override
     public int clientboundSetEntityDataPacket() {
-        return 88;
+        return PacketIdFinder.clientboundByName("minecraft:set_entity_data");
     }
 
     @Override
     public int clientboundSetTitleTextPacket() {
-        return 101;
+        return PacketIdFinder.clientboundByName("minecraft:set_title_text");
     }
 
     @Override
     public int clientboundSetSubtitleTextPacket() {
-        return 99;
+        return PacketIdFinder.clientboundByName("minecraft:set_subtitle_text");
     }
 
     @Override
     public int clientboundSetActionBarTextPacket() {
-        return 76;
+        return PacketIdFinder.clientboundByName("minecraft:set_action_bar_text");
     }
 
     @Override
     public int clientboundBossEventPacket() {
-        return 10;
+        return PacketIdFinder.clientboundByName("minecraft:boss_event");
     }
 
     @Override
     public int clientboundSystemChatPacket() {
-        return 108;
+        return PacketIdFinder.clientboundByName("minecraft:system_chat");
     }
 
     @Override
     public int clientboundTabListPacket() {
-        return 109;
+        return PacketIdFinder.clientboundByName("minecraft:tab_list");
     }
 
     @Override
     public int clientboundSetPlayerTeamPacket() {
-        return 96;
+        return PacketIdFinder.clientboundByName("minecraft:set_player_team");
     }
 
     @Override
