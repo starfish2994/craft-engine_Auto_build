@@ -8,6 +8,7 @@ repositories {
     maven("https://repo.infernalsuite.com/repository/maven-snapshots/")  // slime world
     maven("https://repo.momirealms.net/releases/")
     maven("https://mvn.lumine.io/repository/maven-public/") // model engine
+    maven("https://nexus.phoenixdevt.fr/repository/maven-public/") // mmoitems
 }
 
 dependencies {
@@ -28,6 +29,9 @@ dependencies {
     compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.8")
     // BetterModels
     compileOnly("io.github.toxicity188:BetterModel:1.4.2")
+    // MMOItems
+    compileOnly("net.Indyuce:MMOItems-API:6.10-SNAPSHOT")
+    compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT")
 }
 
 java {
