@@ -217,6 +217,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (Entity entity : entities) {
                 if (entity instanceof ItemDisplay display) {
                     handleBaseEntityLoadEarly(display);
+                } else if (entity instanceof Shulker shulker) {
+                    handleCollisionEntityLoadOnEntitiesLoad(shulker);
                 }
             }
         }
@@ -366,10 +368,19 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     }
 
     public void handleCollisionEntityLoadOnEntitiesLoad(Shulker shulker) {
-        // remove the shulker if it's on chunk load stage
+        // faster
         if (FastNMS.INSTANCE.method$CraftEntity$getHandle(shulker) instanceof CollisionEntity) {
             shulker.remove();
+            return;
         }
+
+        // not a collision entity
+        Byte flag = shulker.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
+        if (flag == null || flag != 1) {
+            return;
+        }
+
+        shulker.remove();
     }
 
     private AnchorType getAnchorType(Entity baseEntity, CustomFurniture furniture) {

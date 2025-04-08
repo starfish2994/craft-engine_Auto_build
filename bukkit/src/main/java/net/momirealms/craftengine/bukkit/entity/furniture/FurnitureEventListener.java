@@ -45,6 +45,8 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay itemDisplay) {
                 this.manager.handleBaseEntityLoadEarly(itemDisplay);
+            } else if (entity instanceof Shulker shulker) {
+                this.manager.handleCollisionEntityLoadOnEntitiesLoad(shulker);
             }
         }
     }
