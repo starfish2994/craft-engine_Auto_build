@@ -1585,7 +1585,7 @@ public class PacketConsumers {
                     event.setChanged(true);
                     buf.clear();
                     buf.writeVarInt(event.packetID());
-                    buf.writeVarInt(id);
+                    buf.writeVarInt(0);
                     buf.writeKey(mapped);
                     if (range != null) {
                         buf.writeBoolean(true);
@@ -1604,8 +1604,8 @@ public class PacketConsumers {
             } else {
                 Optional<Object> optionalSound = FastNMS.INSTANCE.method$BuiltInRegistries$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
                 if (optionalSound.isEmpty()) return;
-                Object sound = optionalSound.get();
-                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(sound));
+                Object soundEvent = optionalSound.get();
+                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(soundEvent));
                 int source = buf.readVarInt();
                 int x = buf.readInt();
                 int y = buf.readInt();
@@ -1615,20 +1615,15 @@ public class PacketConsumers {
                 long seed = buf.readLong();
                 Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
                 if (mapped != null) {
-                    Optional<Integer> mappedId = FastNMS.INSTANCE.method$BuiltInRegistries$getId(
-                            Reflections.instance$BuiltInRegistries$SOUND_EVENT,
-                            FastNMS.INSTANCE.method$SoundEvent$createVariableRangeEvent(KeyUtils.toResourceLocation(mapped))
-                    );
                     event.setChanged(true);
                     buf.clear();
                     buf.writeVarInt(event.packetID());
-                    if (mappedId.isPresent()) {
-                        buf.writeVarInt(mappedId.get() + 1);
-                    } else {
-                        buf.writeVarInt(0);
-                        buf.writeKey(mapped);
-                        buf.writeBoolean(false);
-                    }
+                    buf.writeVarInt(0);
+                    Object newId = KeyUtils.toResourceLocation(mapped);
+                    Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
+                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
+                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
+                    FastNMS.INSTANCE.method$SoundEvent$directEncode(buf, newSoundEvent);
                     buf.writeVarInt(source);
                     buf.writeInt(x);
                     buf.writeInt(y);
@@ -1640,7 +1635,8 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
-        }};
+        }
+    };
 
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
