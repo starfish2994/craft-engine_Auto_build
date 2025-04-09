@@ -39,7 +39,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
