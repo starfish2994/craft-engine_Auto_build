@@ -1620,9 +1620,7 @@ public class PacketConsumers {
                     buf.writeVarInt(event.packetID());
                     buf.writeVarInt(0);
                     Object newId = KeyUtils.toResourceLocation(mapped);
-                    Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
+                    Object newSoundEvent = FastNMS.INSTANCE.constructor$SoundEvent(newId, FastNMS.INSTANCE.method$SoundEvent$fixedRange(soundEvent));
                     FastNMS.INSTANCE.method$SoundEvent$directEncode(buf, newSoundEvent);
                     buf.writeVarInt(source);
                     buf.writeInt(x);
