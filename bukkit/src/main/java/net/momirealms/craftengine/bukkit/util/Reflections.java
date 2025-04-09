@@ -3519,6 +3519,7 @@ public class Reflections {
     public static final Object instance$Blocks$STONE;
     public static final Object instance$Blocks$STONE$defaultState;
     public static final Object instance$Blocks$FIRE;
+    public static final Object instance$Blocks$SOUL_FIRE;
     public static final Object instance$Blocks$ICE;
 
     static {
@@ -3528,6 +3529,8 @@ public class Reflections {
             instance$Blocks$AIR$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$AIR);
             Object fire = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "fire");
             instance$Blocks$FIRE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, fire);
+            Object soulFire = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "soul_fire");
+            instance$Blocks$SOUL_FIRE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, soulFire);
             Object stone = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "stone");
             instance$Blocks$STONE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, stone);
             instance$Blocks$STONE$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$STONE);

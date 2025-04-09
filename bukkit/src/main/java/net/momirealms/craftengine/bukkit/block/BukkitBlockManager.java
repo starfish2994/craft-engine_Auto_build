@@ -318,6 +318,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
+            affectedBlocks.remove(Reflections.instance$Blocks$FIRE);
+            affectedBlocks.remove(Reflections.instance$Blocks$SOUL_FIRE);
+
             this.affectedSoundBlocks = ImmutableSet.copyOf(affectedBlocks);
 
             ImmutableMap.Builder<Key, Key> soundMapperBuilder = ImmutableMap.builder();
