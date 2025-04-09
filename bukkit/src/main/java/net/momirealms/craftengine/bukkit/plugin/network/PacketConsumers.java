@@ -1555,38 +1555,76 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
-            Key soundId = buf.readKey();
-            Float range = null;
-            if (buf.readBoolean()) {
-                range = buf.readFloat();
-            }
-            int source = buf.readVarInt();
-            int x = buf.readInt();
-            int y = buf.readInt();
-            int z = buf.readInt();
-            float volume = buf.readFloat();
-            float pitch = buf.readFloat();
-            long seed = buf.readLong();
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
-            if (mapped != null) {
-                event.setChanged(true);
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                buf.writeVarInt(id);
-                buf.writeKey(mapped);
-                if (range != null) {
-                    buf.writeBoolean(true);
-                    buf.writeFloat(range);
-                } else {
-                    buf.writeBoolean(false);
+            if (id == 0) {
+                Key soundId = buf.readKey();
+                Float range = null;
+                if (buf.readBoolean()) {
+                    range = buf.readFloat();
                 }
-                buf.writeVarInt(source);
-                buf.writeInt(x);
-                buf.writeInt(y);
-                buf.writeInt(z);
-                buf.writeFloat(volume);
-                buf.writeFloat(pitch);
-                buf.writeLong(seed);
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(id);
+                    buf.writeKey(mapped);
+                    if (range != null) {
+                        buf.writeBoolean(true);
+                        buf.writeFloat(range);
+                    } else {
+                        buf.writeBoolean(false);
+                    }
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
+            } else {
+                Optional<Object> optionalSound = FastNMS.INSTANCE.method$BuiltInRegistries$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
+                if (optionalSound.isEmpty()) return;
+                Object sound = optionalSound.get();
+                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(sound));
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    Optional<Integer> mappedId = FastNMS.INSTANCE.method$BuiltInRegistries$getId(
+                            Reflections.instance$BuiltInRegistries$SOUND_EVENT,
+                            FastNMS.INSTANCE.method$SoundEvent$createVariableRangeEvent(KeyUtils.toResourceLocation(mapped))
+                    );
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    if (mappedId.isPresent()) {
+                        buf.writeVarInt(mappedId.get() + 1);
+                    } else {
+                        buf.writeVarInt(0);
+                        buf.writeKey(mapped);
+                        buf.writeBoolean(false);
+                    }
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
