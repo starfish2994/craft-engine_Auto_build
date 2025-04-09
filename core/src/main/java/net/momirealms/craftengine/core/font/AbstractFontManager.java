@@ -32,9 +32,9 @@ public abstract class AbstractFontManager implements FontManager {
 
     private OffsetFont offsetFont;
     private Trie imageTagTrie;
-    private Trie emojiKeywordTrie;
+    protected Trie emojiKeywordTrie;
     private Map<String, Component> tagMapper;
-    private Map<String, Emoji> emojiMapper;
+    protected Map<String, Emoji> emojiMapper;
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;

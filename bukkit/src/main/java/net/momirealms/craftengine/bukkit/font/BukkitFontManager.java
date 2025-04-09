@@ -5,21 +5,34 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
+import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractFontManager;
+import net.momirealms.craftengine.core.font.Emoji;
+import net.momirealms.craftengine.core.font.EmojiParameters;
 import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.CharacterUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.context.ContextHolder;
+import net.momirealms.craftengine.core.util.context.PlayerContext;
+import org.ahocorasick.trie.Token;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.view.AnvilView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.Objects;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -63,6 +76,60 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
                 event.setMessage(result.newText());
             }
         }
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onAnvilRename(PrepareAnvilEvent event) {
+        if (super.emojiKeywordTrie == null) {
+            return;
+        }
+        ItemStack result = event.getResult();
+        if (result == null) return;
+        Player player;
+        try {
+            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isVersionNewerThan1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to get inventory viewer", e);
+            return;
+        }
+
+        String renameText;
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            AnvilView anvilView = event.getView();
+            renameText = anvilView.getRenameText();
+        } else {
+            renameText = LegacyInventoryUtils.getRenameText(event.getInventory());
+        }
+
+        if (renameText == null || renameText.isEmpty()) return;
+
+        Component itemName = Component.text(renameText);
+        boolean replaced = false;
+        for (Token token : super.emojiKeywordTrie.tokenize(renameText)) {
+            if (!token.isMatch()) continue;
+            Emoji emoji = super.emojiMapper.get(token.getFragment());
+            if (emoji == null) continue;
+            if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
+                continue;
+            }
+            itemName = itemName.replaceText(builder -> {
+               builder.matchLiteral(token.getFragment())
+                       .replacement(AdventureHelper.miniMessage().deserialize(
+                               emoji.content(),
+                               PlayerContext.of(plugin.adapt(player), ContextHolder.builder()
+                                       .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                                       .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                                       .build()).tagResolvers()
+                       ))        ;
+            });
+            replaced = true;
+        }
+
+        if (!replaced) return;
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(result);
+        wrapped.customName(AdventureHelper.componentToJson(itemName));
+        event.setResult(wrapped.loadCopy());
     }
 
     @SuppressWarnings("UnstableApiUsage")

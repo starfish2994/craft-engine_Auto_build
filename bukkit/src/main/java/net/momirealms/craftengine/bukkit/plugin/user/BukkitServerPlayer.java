@@ -425,7 +425,7 @@ public class BukkitServerPlayer extends Player {
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(blockOwner);
                 Object soundEvent = Reflections.field$SoundType$hitSound.get(soundType);
                 Object soundId = Reflections.field$SoundEvent$location.get(soundEvent);
-                level().playBlockSound(new Vec3d(this.destroyPos.x(), this.destroyPos.y(), this.destroyPos.z()), Key.of(soundId.toString()), 0.5F, 0.5F);
+                player.playSound(location, soundId.toString(), SoundCategory.BLOCKS, 0.5F, 0.5F);
                 this.lastHitBlockTime = currentTick;
             }
 
