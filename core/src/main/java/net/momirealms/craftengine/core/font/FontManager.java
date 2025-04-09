@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.font;
 
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.CharacterUtils;
@@ -64,5 +65,5 @@ public interface FontManager extends Manageable {
         return createOffsets(offset, (raw, font) -> raw);
     }
 
-    Map<String, String> matchTags(String json);
+    Map<String, Component> matchTags(String json);
 }
