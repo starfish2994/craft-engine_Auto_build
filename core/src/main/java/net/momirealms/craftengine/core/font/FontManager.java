@@ -24,7 +24,9 @@ public interface FontManager extends Manageable {
 
     ConfigSectionParser[] parsers();
 
-    String replaceEmoji(String jsonText, Player player);
+    String replaceMiniMessageEmoji(String miniMessage, Player player);
+
+    String replaceJsonEmoji(String jsonText, Player player);
 
     boolean isDefaultFontInUse();
 

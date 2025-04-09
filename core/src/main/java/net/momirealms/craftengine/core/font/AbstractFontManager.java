@@ -88,7 +88,28 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public String replaceEmoji(String jsonText, Player player) {
+    public String replaceMiniMessageEmoji(String miniMessage, Player player) {
+        if (this.emojiKeywordTrie == null) {
+            return miniMessage;
+        }
+        for (Token token : this.emojiKeywordTrie.tokenize(miniMessage)) {
+            if (!token.isMatch()) continue;
+            Emoji emoji = this.emojiMapper.get(token.getFragment());
+            if (emoji == null) continue;
+            Component content = AdventureHelper.miniMessage().deserialize(
+                    emoji.content(),
+                    PlayerContext.of(player, ContextHolder.builder()
+                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                            .build()).tagResolvers()
+            );
+            miniMessage = miniMessage.replace(token.getFragment(), AdventureHelper.componentToMiniMessage(content));
+        }
+        return miniMessage;
+    }
+
+    @Override
+    public String replaceJsonEmoji(String jsonText, Player player) {
         if (this.emojiKeywordTrie == null) {
             return jsonText;
         }
@@ -108,7 +129,7 @@ public abstract class AbstractFontManager implements FontManager {
             component = component.replaceText(builder -> builder.matchLiteral(entry.getKey())
                     .replacement(
                             AdventureHelper.miniMessage().deserialize(
-                                    entry.getValue().content(),
+                                    emoji.content(),
                                     PlayerContext.of(player, ContextHolder.builder()
                                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))

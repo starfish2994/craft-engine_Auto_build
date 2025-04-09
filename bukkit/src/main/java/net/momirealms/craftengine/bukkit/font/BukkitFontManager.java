@@ -9,7 +9,6 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractFontManager;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.text.minimessage.NamedArgumentTag;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -73,7 +72,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
             String rawJsonMessage = ComponentUtils.paperAdventureToJson(originalMessage);
-            String jsonMessage = replaceEmoji(rawJsonMessage, this.plugin.adapt(player));
+            String jsonMessage = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
             boolean hasChanged = !rawJsonMessage.equals(jsonMessage);
             if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
                 IllegalCharacterProcessResult result = processIllegalCharacters(jsonMessage);
