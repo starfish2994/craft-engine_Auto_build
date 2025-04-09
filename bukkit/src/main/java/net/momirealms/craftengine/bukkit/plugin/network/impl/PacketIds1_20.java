@@ -89,4 +89,9 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundSetObjectivePacket() {
         return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetObjectivePacket);
     }
+
+    @Override
+    public int clientboundLevelChunkWithLightPacket() {
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundLevelChunkWithLightPacket);
+    }
 }

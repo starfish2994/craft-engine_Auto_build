@@ -39,7 +39,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -238,25 +237,6 @@ public class PacketConsumers {
             buf.writeBoolean(global);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelEventPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
-        try {
-            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
-            if (mapped != null) {
-                event.setCancelled(true);
-                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
-                Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
-                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
-                user.sendPacket(newSoundPacket, true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
         }
     };
 
@@ -936,28 +916,107 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            Object mcByteBuf;
-            Method writeMethod;
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                mcByteBuf = Reflections.constructor$RegistryFriendlyByteBuf.newInstance(buf, Reflections.instance$registryAccess);
-                writeMethod = Reflections.method$ClientboundLevelParticlesPacket$write;
+            if (VersionHelper.isVersionNewerThan1_21_3()) {
+                boolean overrideLimiter = buf.readBoolean();
+                boolean alwaysShow = buf.readBoolean();
+                double x = buf.readDouble();
+                double y = buf.readDouble();
+                double z = buf.readDouble();
+                float xDist = buf.readFloat();
+                float yDist = buf.readFloat();
+                float zDist = buf.readFloat();
+                float maxSpeed = buf.readFloat();
+                int count = buf.readInt();
+                Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
+                if (option == null) return;
+                if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
+                Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
+                int id = BlockStateUtils.blockStateToId(blockState);
+                int remapped = remap(id);
+                if (remapped == id) return;
+                Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+                Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeBoolean(overrideLimiter);
+                buf.writeBoolean(alwaysShow);
+                buf.writeDouble(x);
+                buf.writeDouble(y);
+                buf.writeDouble(z);
+                buf.writeFloat(xDist);
+                buf.writeFloat(yDist);
+                buf.writeFloat(zDist);
+                buf.writeFloat(maxSpeed);
+                buf.writeInt(count);
+                FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
+            } else if (VersionHelper.isVersionNewerThan1_20_5()) {
+                boolean overrideLimiter = buf.readBoolean();
+                double x = buf.readDouble();
+                double y = buf.readDouble();
+                double z = buf.readDouble();
+                float xDist = buf.readFloat();
+                float yDist = buf.readFloat();
+                float zDist = buf.readFloat();
+                float maxSpeed = buf.readFloat();
+                int count = buf.readInt();
+                Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
+                if (option == null) return;
+                if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
+                Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
+                int id = BlockStateUtils.blockStateToId(blockState);
+                int remapped = remap(id);
+                if (remapped == id) return;
+                Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+                Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeBoolean(overrideLimiter);
+                buf.writeDouble(x);
+                buf.writeDouble(y);
+                buf.writeDouble(z);
+                buf.writeFloat(xDist);
+                buf.writeFloat(yDist);
+                buf.writeFloat(zDist);
+                buf.writeFloat(maxSpeed);
+                buf.writeInt(count);
+                FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
             } else {
-                mcByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(event.getBuffer().source());
-                writeMethod = Reflections.method$Packet$write;
+                Object particleType = FastNMS.INSTANCE.method$FriendlyByteBuf$readById(buf, Reflections.instance$BuiltInRegistries$PARTICLE_TYPE);
+                boolean overrideLimiter = buf.readBoolean();
+                double x = buf.readDouble();
+                double y = buf.readDouble();
+                double z = buf.readDouble();
+                float xDist = buf.readFloat();
+                float yDist = buf.readFloat();
+                float zDist = buf.readFloat();
+                float maxSpeed = buf.readFloat();
+                int count = buf.readInt();
+                Object option = FastNMS.INSTANCE.method$ClientboundLevelParticlesPacket$readParticle(buf, particleType);
+                if (option == null) return;
+                if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
+                Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
+                int id = BlockStateUtils.blockStateToId(blockState);
+                int remapped = remap(id);
+                if (remapped == id) return;
+                Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+                Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeId(buf, remappedOption, Reflections.instance$BuiltInRegistries$PARTICLE_TYPE);
+                buf.writeBoolean(overrideLimiter);
+                buf.writeDouble(x);
+                buf.writeDouble(y);
+                buf.writeDouble(z);
+                buf.writeFloat(xDist);
+                buf.writeFloat(yDist);
+                buf.writeFloat(zDist);
+                buf.writeFloat(maxSpeed);
+                buf.writeInt(count);
+                FastNMS.INSTANCE.method$ParticleOptions$writeToNetwork(remappedOption, buf);
             }
-            Object packet = Reflections.constructor$ClientboundLevelParticlesPacket.newInstance(mcByteBuf);
-            Object option = FastNMS.INSTANCE.field$ClientboundLevelParticlesPacket$particle(packet);
-            if (option == null) return;
-            if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
-            Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
-            int id = BlockStateUtils.blockStateToId(blockState);
-            int remapped = remap(id);
-            if (remapped == id) return;
-            Reflections.field$BlockParticleOption$blockState.set(option, BlockStateUtils.idToBlockState(remapped));
-            event.setChanged(true);
-            buf.clear();
-            buf.writeVarInt(event.packetID());
-            writeMethod.invoke(packet, mcByteBuf);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
         }
@@ -1491,6 +1550,85 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
         }
     };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SOUND = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            if (id == 0) {
+                Key soundId = buf.readKey();
+                Float range = null;
+                if (buf.readBoolean()) {
+                    range = buf.readFloat();
+                }
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(id);
+                    buf.writeKey(mapped);
+                    if (range != null) {
+                        buf.writeBoolean(true);
+                        buf.writeFloat(range);
+                    } else {
+                        buf.writeBoolean(false);
+                    }
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
+            } else {
+                Optional<Object> optionalSound = FastNMS.INSTANCE.method$BuiltInRegistries$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
+                if (optionalSound.isEmpty()) return;
+                Object sound = optionalSound.get();
+                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(sound));
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    Optional<Integer> mappedId = FastNMS.INSTANCE.method$BuiltInRegistries$getId(
+                            Reflections.instance$BuiltInRegistries$SOUND_EVENT,
+                            FastNMS.INSTANCE.method$SoundEvent$createVariableRangeEvent(KeyUtils.toResourceLocation(mapped))
+                    );
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    if (mappedId.isPresent()) {
+                        buf.writeVarInt(mappedId.get() + 1);
+                    } else {
+                        buf.writeVarInt(0);
+                        buf.writeKey(mapped);
+                        buf.writeBoolean(false);
+                    }
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
+        }};
 
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
