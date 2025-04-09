@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.font;
 
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
-import io.papermc.paper.event.player.PlayerSignCommandPreprocessEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
@@ -17,11 +16,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -59,10 +57,12 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
         if (!Config.filterCommand()) return;
-        if (event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
-            return;
+        if (!event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
+            IllegalCharacterProcessResult result = processIllegalCharacters(event.getMessage());
+            if (result.has()) {
+                event.setMessage(result.newText());
+            }
         }
-        runIfContainsIllegalCharacter(event.getMessage(), event::setMessage);
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -71,23 +71,28 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         if (player == null) return;
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
-            String jsonMessage = ComponentUtils.paperAdventureToJson(originalMessage);
+            String rawJsonMessage = ComponentUtils.paperAdventureToJson(originalMessage);
+            String jsonMessage = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
+            boolean hasChanged = !rawJsonMessage.equals(jsonMessage);
             if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
-                runIfContainsIllegalCharacter(jsonMessage, (json) -> {
-                    Object component = ComponentUtils.jsonToPaperAdventure(json);
-                    try {
-                        Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
-                    } catch (ReflectiveOperationException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                IllegalCharacterProcessResult result = processIllegalCharacters(jsonMessage);
+                if (result.has()) {
+                    Object component = ComponentUtils.jsonToPaperAdventure(result.newText());
+                    Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                } else if (hasChanged) {
+                    Object component = ComponentUtils.jsonToPaperAdventure(jsonMessage);
+                    Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                }
+            } else if (hasChanged) {
+                Object component = ComponentUtils.jsonToPaperAdventure(jsonMessage);
+                Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
             }
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void runIfContainsIllegalCharacter(String raw, Consumer<String> callback) {
+    private IllegalCharacterProcessResult processIllegalCharacters(String raw) {
         boolean hasIllegal = false;
         // replace illegal image usage
         Map<String, Component> tokens = matchTags(raw);
@@ -113,11 +118,24 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
                     hasIllegal = true;
                 }
             }
+
             if (hasIllegal) {
-                callback.accept(new String(newCodepoints, 0, newCodepoints.length));
+                return IllegalCharacterProcessResult.has(new String(newCodepoints, 0, newCodepoints.length));
             }
         } else if (hasIllegal) {
-            callback.accept(raw);
+            return IllegalCharacterProcessResult.has(raw);
+        }
+        return IllegalCharacterProcessResult.not();
+    }
+
+    public record IllegalCharacterProcessResult(boolean has, String newText) {
+
+        public static IllegalCharacterProcessResult has(String newText) {
+            return new IllegalCharacterProcessResult(true, newText);
+        }
+
+        public static IllegalCharacterProcessResult not() {
+            return new IllegalCharacterProcessResult(false, null);
         }
     }
 }

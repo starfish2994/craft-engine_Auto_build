@@ -126,6 +126,10 @@ public class AdventureHelper {
         return getInstance().miniMessageStrict.serialize(getInstance().gsonComponentSerializer.deserialize(json));
     }
 
+    public static String componentToMiniMessage(Component component) {
+        return getInstance().miniMessageStrict.serialize(component);
+    }
+
     /**
      * Converts a JSON string to a Component.
      *

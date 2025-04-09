@@ -39,6 +39,9 @@ i18n:
     category.topaz: "Topaz"
     category.furniture: "Furniture"
     category.misc: "Misc"
+    emoji.tip: "Use <yellow>'<arg:keyword>'</yellow> to send the '<arg:emoji>' emoji"
+    emoji.time: "<bold>Current time: <papi:player_world_time_12></bold>"
+    emoji.location: "<bold>Current coordinates: <papi:player_x>,<papi:player_y>,<papi:player_z></bold>"
   zh_cn:
     item.chinese_lantern: "灯笼"
     item.fairy_flower: "仙灵花"
@@ -79,3 +82,6 @@ i18n:
     category.topaz: "黄玉"
     category.furniture: "家具"
     category.misc: "杂项"
+    emoji.tip: "使用<yellow>'<arg:keyword>'</yellow>来发送表情'<arg:emoji>'"
+    emoji.time: "<bold>当前时间: <papi:player_world_time_12></bold>"
+    emoji.location: "<bold>当前坐标: <papi:player_x>,<papi:player_y>,<papi:player_z></bold>"
