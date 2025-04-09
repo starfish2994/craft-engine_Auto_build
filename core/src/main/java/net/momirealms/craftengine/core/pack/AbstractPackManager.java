@@ -300,6 +300,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/pack.png");
         // templates
         plugin.saveResource("resources/default/configuration/templates.yml");
+        // emoji
+        plugin.saveResource("resources/default/configuration/emoji.yml");
         // i18n
         plugin.saveResource("resources/default/configuration/i18n.yml");
         // block_name

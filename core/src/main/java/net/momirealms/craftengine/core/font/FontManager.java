@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.font;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.util.CharacterUtils;
@@ -22,6 +23,8 @@ public interface FontManager extends Manageable {
     String stripTags(String text);
 
     ConfigSectionParser[] parsers();
+
+    String replaceEmoji(String jsonText, Player player);
 
     boolean isDefaultFontInUse();
 

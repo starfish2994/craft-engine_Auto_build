@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.font;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -8,6 +9,8 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.util.context.ContextHolder;
+import net.momirealms.craftengine.core.util.context.PlayerContext;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 
@@ -28,8 +31,10 @@ public abstract class AbstractFontManager implements FontManager {
     private final EmojiParser emojiParser;
 
     private OffsetFont offsetFont;
-    private Trie trie;
+    private Trie imageTagTrie;
+    private Trie emojiKeywordTrie;
     private Map<String, Component> tagMapper;
+    private Map<String, Emoji> emojiMapper;
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -49,15 +54,16 @@ public abstract class AbstractFontManager implements FontManager {
         this.fonts.clear();
         this.images.clear();
         this.illegalChars.clear();
+        this.emojis.clear();
     }
 
     @Override
     public Map<String, Component> matchTags(String json) {
-        if (this.trie == null) {
+        if (this.imageTagTrie == null) {
             return Collections.emptyMap();
         }
         Map<String, Component> tags = new HashMap<>();
-        for (Token token : this.trie.tokenize(json)) {
+        for (Token token : this.imageTagTrie.tokenize(json)) {
             if (token.isMatch()) {
                 tags.put(token.getFragment(), this.tagMapper.get(token.getFragment()));
             }
@@ -67,11 +73,11 @@ public abstract class AbstractFontManager implements FontManager {
 
     @Override
     public String stripTags(String text) {
-        if (this.trie == null) {
+        if (this.imageTagTrie == null) {
             return text;
         }
         StringBuilder builder = new StringBuilder();
-        for (Token token : this.trie.tokenize(text)) {
+        for (Token token : this.imageTagTrie.tokenize(text)) {
             if (token.isMatch()) {
                 builder.append("*");
             } else {
@@ -82,6 +88,37 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
+    public String replaceEmoji(String jsonText, Player player) {
+        if (this.emojiKeywordTrie == null) {
+            return jsonText;
+        }
+        Map<String, Emoji> emojis = new HashMap<>();
+        for (Token token : this.emojiKeywordTrie.tokenize(jsonText)) {
+            if (token.isMatch()) {
+                emojis.put(token.getFragment(), this.emojiMapper.get(token.getFragment()));
+            }
+        }
+        if (emojis.isEmpty()) return jsonText;
+        Component component = AdventureHelper.jsonToComponent(jsonText);
+        for (Map.Entry<String, Emoji> entry : emojis.entrySet()) {
+            Emoji emoji = entry.getValue();
+            if (player != null && emoji.permission() != null && !player.hasPermission(emoji.permission())) {
+                continue;
+            }
+            component = component.replaceText(builder -> builder.matchLiteral(entry.getKey())
+                    .replacement(
+                            AdventureHelper.miniMessage().deserialize(
+                                    entry.getValue().content(),
+                                    PlayerContext.of(player, ContextHolder.builder()
+                                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                                            .build()).tagResolvers())
+                    ));
+        }
+        return AdventureHelper.componentToJson(component);
+    }
+
+    @Override
     public ConfigSectionParser[] parsers() {
         return new ConfigSectionParser[] {this.imageParser, this.emojiParser};
     }
@@ -89,10 +126,24 @@ public abstract class AbstractFontManager implements FontManager {
     @Override
     public void delayedLoad() {
         Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
-        this.buildTrie();
+        this.buildImageTagTrie();
+        this.buildEmojiKeywordsTrie();
     }
 
-    private void buildTrie() {
+    private void buildEmojiKeywordsTrie() {
+        this.emojiMapper = new HashMap<>();
+        for (Emoji emoji : this.emojis.values()) {
+            for (String keyword : emoji.keywords()) {
+                this.emojiMapper.put(keyword, emoji);
+            }
+        }
+        this.emojiKeywordTrie = Trie.builder()
+                .ignoreOverlaps()
+                .addKeywords(this.emojiMapper.keySet())
+                .build();
+    }
+
+    private void buildImageTagTrie() {
         this.tagMapper = new HashMap<>();
         for (BitmapImage image : this.images.values()) {
             String id = image.id().toString();
@@ -109,7 +160,7 @@ public abstract class AbstractFontManager implements FontManager {
             this.tagMapper.put("<shift:" + i + ">", AdventureHelper.miniMessage().deserialize(this.offsetFont.createOffset(i, FormatUtils::miniMessageFont)));
             this.tagMapper.put("\\<shift:" + i + ">", Component.text("<shift:" + i + ">"));
         }
-        this.trie = Trie.builder()
+        this.imageTagTrie = Trie.builder()
                 .ignoreOverlaps()
                 .addKeywords(this.tagMapper.keySet())
                 .build();
@@ -180,7 +231,47 @@ public abstract class AbstractFontManager implements FontManager {
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-
+            if (emojis.containsKey(id)) {
+                TranslationManager.instance().log("warning.config.emoji.duplicated", path.toString(), id.toString());
+                return;
+            }
+            String permission = (String) section.get("permission");
+            Object keywordsRaw = section.get("keywords");
+            if (keywordsRaw == null) {
+                TranslationManager.instance().log("warning.config.emoji.lack_keywords", path.toString(), id.toString());
+                return;
+            }
+            List<String> keywords = MiscUtils.getAsStringList(keywordsRaw);
+            String content = section.getOrDefault("content", "<arg:emoji>").toString();
+            String image = null;
+            if (section.containsKey("image")) {
+                String rawImage = section.get("image").toString();
+                String[] split = rawImage.split(":");
+                if (split.length == 2) {
+                    Key imageId = new Key(split[0], split[1]);
+                    Optional<BitmapImage> bitmapImage = bitmapImageByImageId(imageId);
+                    if (bitmapImage.isPresent()) {
+                        image = bitmapImage.get().miniMessage(0, 0);
+                    } else {
+                        TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
+                        return;
+                    }
+                } else if (split.length == 4) {
+                    Key imageId = new Key(split[0], split[1]);
+                    Optional<BitmapImage> bitmapImage = bitmapImageByImageId(imageId);
+                    if (bitmapImage.isPresent()) {
+                        image = bitmapImage.get().miniMessage(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
+                    } else {
+                        TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
+                        return;
+                    }
+                } else {
+                    TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
+                    return;
+                }
+            }
+            Emoji emoji = new Emoji(content, permission, image, keywords);
+            emojis.put(id, emoji);
         }
     }
 
