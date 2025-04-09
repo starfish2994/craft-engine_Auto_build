@@ -145,7 +145,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
-        registerByteBufPacketConsumer(PacketConsumers.LEVEL_PARTICLE, this.packetIds.clientboundLevelParticlesPacket());
+        registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_21_3() ? PacketConsumers.LEVEL_PARTICLE_1_21_3 : (VersionHelper.isVersionNewerThan1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.OPEN_SCREEN_1_20_3 : PacketConsumers.OPEN_SCREEN_1_20, this.packetIds.clientboundOpenScreenPacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
