@@ -1,15 +1,13 @@
 package net.momirealms.craftengine.core.font;
 
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
-import net.momirealms.craftengine.core.util.CharacterUtils;
-import net.momirealms.craftengine.core.util.FormatUtils;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.*;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 
@@ -31,7 +29,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     private OffsetFont offsetFont;
     private Trie trie;
-    private Map<String, String> tagMapper;
+    private Map<String, Component> tagMapper;
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -54,11 +52,11 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public Map<String, String> matchTags(String json) {
+    public Map<String, Component> matchTags(String json) {
         if (this.trie == null) {
             return Collections.emptyMap();
         }
-        Map<String, String> tags = new HashMap<>();
+        Map<String, Component> tags = new HashMap<>();
         for (Token token : this.trie.tokenize(json)) {
             if (token.isMatch()) {
                 tags.put(token.getFragment(), this.tagMapper.get(token.getFragment()));
@@ -82,15 +80,18 @@ public abstract class AbstractFontManager implements FontManager {
         this.tagMapper = new HashMap<>();
         for (BitmapImage image : this.images.values()) {
             String id = image.id().toString();
-            this.tagMapper.put(addImageTag(id), image.miniMessage(0, 0));
+            this.tagMapper.put(imageTag(id), AdventureHelper.miniMessage().deserialize(image.miniMessage(0, 0)));
+            this.tagMapper.put("\\" + imageTag(id), Component.text(imageTag(id)));
             for (int i = 0; i < image.rows(); i++) {
                 for (int j = 0; j < image.columns(); j++) {
-                    this.tagMapper.put(addImageTag(id + ":" + i + ":" + j), image.miniMessage(i, j));
+                    this.tagMapper.put(imageTag(id + ":" + i + ":" + j), AdventureHelper.miniMessage().deserialize(image.miniMessage(i, j)));
+                    this.tagMapper.put(imageTag("\\" + id + ":" + i + ":" + j), Component.text(imageTag(id + ":" + i + ":" + j)));
                 }
             }
         }
         for (int i = -256; i <= 256; i++) {
-            this.tagMapper.put("<shift:" + i + ">", this.offsetFont.createOffset(i, FormatUtils::miniMessageFont));
+            this.tagMapper.put("<shift:" + i + ">", AdventureHelper.miniMessage().deserialize(this.offsetFont.createOffset(i, FormatUtils::miniMessageFont)));
+            this.tagMapper.put("\\<shift:" + i + ">", Component.text("<shift:" + i + ">"));
         }
         this.trie = Trie.builder()
                 .ignoreOverlaps()
@@ -98,7 +99,7 @@ public abstract class AbstractFontManager implements FontManager {
                 .build();
     }
 
-    private static String addImageTag(String text) {
+    private static String imageTag(String text) {
         return "<image:" + text + ">";
     }
 

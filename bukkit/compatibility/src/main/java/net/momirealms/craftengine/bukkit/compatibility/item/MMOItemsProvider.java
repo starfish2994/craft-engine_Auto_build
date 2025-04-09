@@ -14,6 +14,7 @@ import java.util.Locale;
 import static java.util.Objects.requireNonNull;
 
 public class MMOItemsProvider implements ExternalItemProvider<ItemStack> {
+
     @Override
     public String plugin() {
         return "MMOItems";

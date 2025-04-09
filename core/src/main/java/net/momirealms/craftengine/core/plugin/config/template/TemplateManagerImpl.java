@@ -222,6 +222,8 @@ public class TemplateManagerImpl implements TemplateManager {
         for (Map.Entry<String, Object> argumentEntry : rawChildArguments.entrySet()) {
             // 获取最终的string形式参数
             String placeholder = LEFT_BRACKET + argumentEntry.getKey() + RIGHT_BRACKET;
+            // 父亲参数最大
+            if (result.containsKey(placeholder)) continue;
             Object rawArgument = argumentEntry.getValue();
             if (rawArgument instanceof Map<?,?> mapArgument) {
                 // 此参数是一个map，那么对map应用模板，然后再根据map是否含有type等参数，判别其是否为带名特殊参数

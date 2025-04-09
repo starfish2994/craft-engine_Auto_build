@@ -163,6 +163,7 @@ image:
     team: true
     scoreboard: true
     entity-name: false
+    armor-stand: true
     text-display: true
 
 emoji: {}

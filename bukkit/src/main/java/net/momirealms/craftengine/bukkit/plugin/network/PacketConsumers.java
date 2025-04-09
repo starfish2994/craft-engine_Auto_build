@@ -39,7 +39,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -241,25 +240,6 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SOUND = (user, event, packet) -> {
-        try {
-            Object soundEvent = FastNMS.INSTANCE.field$ClientboundSoundPacket$soundEvent(packet);
-            Key soundId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
-            Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
-            if (mapped != null) {
-                event.setCancelled(true);
-                Object newId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(mapped.namespace(), mapped.value());
-                Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                        Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
-                Object newSoundPacket = FastNMS.INSTANCE.fastConstructor$ClientboundSoundPacket(newSoundEvent, packet);
-                user.sendPacket(newSoundPacket, true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
-        }
-    };
-
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TEAM_1_20_3 = (user, event) -> {
         if (!Config.interceptTeam()) return;
         try {
@@ -280,9 +260,9 @@ public class PacketConsumers {
             Tag suffix = buf.readNbt(false);
             if (suffix == null) return;
 
-            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
-            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix.getAsString());
-            Map<String, String> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix.getAsString());
+            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix.getAsString());
+            Map<String, Component> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix.getAsString());
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
             event.setChanged(true);
 
@@ -300,8 +280,8 @@ public class PacketConsumers {
 
             if (!tokens1.isEmpty()) {
                 Component component = AdventureHelper.tagToComponent(displayName);
-                for (Map.Entry<String, String> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeNbt(AdventureHelper.componentToTag(component), false);
             } else {
@@ -315,8 +295,8 @@ public class PacketConsumers {
 
             if (!tokens2.isEmpty()) {
                 Component component = AdventureHelper.tagToComponent(prefix);
-                for (Map.Entry<String, String> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeNbt(AdventureHelper.componentToTag(component), false);
             } else {
@@ -325,8 +305,8 @@ public class PacketConsumers {
 
             if (!tokens3.isEmpty()) {
                 Component component = AdventureHelper.tagToComponent(suffix);
-                for (Map.Entry<String, String> token : tokens3.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens3.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeNbt(AdventureHelper.componentToTag(component), false);
             } else {
@@ -358,9 +338,9 @@ public class PacketConsumers {
             String prefix = buf.readUtf();
             String suffix = buf.readUtf();
 
-            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName);
-            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix);
-            Map<String, String> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix);
+            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName);
+            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix);
+            Map<String, Component> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix);
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
             event.setChanged(true);
 
@@ -378,8 +358,8 @@ public class PacketConsumers {
 
             if (!tokens1.isEmpty()) {
                 Component component = AdventureHelper.jsonToComponent(displayName);
-                for (Map.Entry<String, String> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeUtf(AdventureHelper.componentToJson(component));
             } else {
@@ -393,8 +373,8 @@ public class PacketConsumers {
 
             if (!tokens2.isEmpty()) {
                 Component component = AdventureHelper.jsonToComponent(prefix);
-                for (Map.Entry<String, String> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeUtf(AdventureHelper.componentToJson(component));
             } else {
@@ -403,8 +383,8 @@ public class PacketConsumers {
 
             if (!tokens3.isEmpty()) {
                 Component component = AdventureHelper.jsonToComponent(suffix);
-                for (Map.Entry<String, String> token : tokens3.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens3.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeUtf(AdventureHelper.componentToJson(component));
             } else {
@@ -427,11 +407,11 @@ public class PacketConsumers {
             int actionType = buf.readVarInt();
             if (actionType == 0) {
                 String json = buf.readUtf();
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
                 if (tokens.isEmpty()) return;
                 Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 float health = buf.readFloat();
                 int color = buf.readVarInt();
@@ -449,12 +429,12 @@ public class PacketConsumers {
                 buf.writeByte(flag);
             } else if (actionType == 3) {
                 String json = buf.readUtf();
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -476,11 +456,11 @@ public class PacketConsumers {
             if (actionType == 0) {
                 Tag nbt = buf.readNbt(false);
                 if (nbt == null) return;
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
                 Component component = AdventureHelper.tagToComponent(nbt);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 float health = buf.readFloat();
                 int color = buf.readVarInt();
@@ -499,12 +479,12 @@ public class PacketConsumers {
             } else if (actionType == 3) {
                 Tag nbt = buf.readNbt(false);
                 if (nbt == null) return;
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.tagToComponent(nbt);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -526,12 +506,12 @@ public class PacketConsumers {
             if (mode != 0 && mode != 2) return;
             String displayName = buf.readUtf();
             int renderType = buf.readVarInt();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(displayName);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -558,12 +538,12 @@ public class PacketConsumers {
             if (optionalNumberFormat) {
                 int format = buf.readVarInt();
                 if (format == 0) {
-                    Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
                     if (tokens.isEmpty()) return;
                     event.setChanged(true);
                     Component component = AdventureHelper.tagToComponent(displayName);
-                    for (Map.Entry<String, String> token : tokens.entrySet()) {
-                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                     }
                     buf.clear();
                     buf.writeVarInt(event.packetID());
@@ -574,13 +554,13 @@ public class PacketConsumers {
                     buf.writeBoolean(true);
                     buf.writeVarInt(0);
                 } else if (format == 1) {
-                    Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
                     if (tokens.isEmpty()) return;
                     Tag style = buf.readNbt(false);
                     event.setChanged(true);
                     Component component = AdventureHelper.tagToComponent(displayName);
-                    for (Map.Entry<String, String> token : tokens.entrySet()) {
-                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                     }
                     buf.clear();
                     buf.writeVarInt(event.packetID());
@@ -594,8 +574,8 @@ public class PacketConsumers {
                 } else if (format == 2) {
                     Tag fixed = buf.readNbt(false);
                     if (fixed == null) return;
-                    Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
-                    Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(fixed.getAsString());
+                    Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(fixed.getAsString());
                     if (tokens1.isEmpty() && tokens2.isEmpty()) return;
                     event.setChanged(true);
                     buf.clear();
@@ -604,8 +584,8 @@ public class PacketConsumers {
                     buf.writeByte(mode);
                     if (!tokens1.isEmpty()) {
                         Component component = AdventureHelper.tagToComponent(displayName);
-                        for (Map.Entry<String, String> token : tokens1.entrySet()) {
-                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                        for (Map.Entry<String, Component> token : tokens1.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                         }
                         buf.writeNbt(AdventureHelper.componentToTag(component), false);
                     } else {
@@ -616,8 +596,8 @@ public class PacketConsumers {
                     buf.writeVarInt(2);
                     if (!tokens2.isEmpty()) {
                         Component component = AdventureHelper.tagToComponent(fixed);
-                        for (Map.Entry<String, String> token : tokens2.entrySet()) {
-                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                        for (Map.Entry<String, Component> token : tokens2.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                         }
                         buf.writeNbt(AdventureHelper.componentToTag(component), false);
                     } else {
@@ -625,12 +605,12 @@ public class PacketConsumers {
                     }
                 }
             } else {
-                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.tagToComponent(displayName);
-                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -650,13 +630,13 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String jsonOrPlainString = buf.readUtf();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(jsonOrPlainString);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(jsonOrPlainString);
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(jsonOrPlainString);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -673,13 +653,13 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -695,12 +675,12 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -716,12 +696,12 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -736,12 +716,12 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -757,12 +737,12 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -777,12 +757,12 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -798,12 +778,12 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -819,16 +799,16 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             String json1 = buf.readUtf();
             String json2 = buf.readUtf();
-            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(json1);
-            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(json2);
+            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(json1);
+            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(json2);
             if (tokens1.isEmpty() && tokens2.isEmpty()) return;
             event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
             if (!tokens1.isEmpty()) {
                 Component component = AdventureHelper.jsonToComponent(json1);
-                for (Map.Entry<String, String> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeUtf(AdventureHelper.componentToJson(component));
             } else {
@@ -836,8 +816,8 @@ public class PacketConsumers {
             }
             if (!tokens2.isEmpty()) {
                 Component component = AdventureHelper.jsonToComponent(json2);
-                for (Map.Entry<String, String> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeUtf(AdventureHelper.componentToJson(component));
             } else {
@@ -856,16 +836,16 @@ public class PacketConsumers {
             if (nbt1 == null) return;
             Tag nbt2 = buf.readNbt(false);
             if (nbt2 == null) return;
-            Map<String, String> tokens1 = CraftEngine.instance().imageManager().matchTags(nbt1.getAsString());
-            Map<String, String> tokens2 = CraftEngine.instance().imageManager().matchTags(nbt2.getAsString());
+            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(nbt1.getAsString());
+            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(nbt2.getAsString());
             if (tokens1.isEmpty() && tokens2.isEmpty()) return;
             event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
             if (!tokens1.isEmpty()) {
                 Component component = AdventureHelper.tagToComponent(nbt1);
-                for (Map.Entry<String, String> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeNbt(AdventureHelper.componentToTag(component), false);
             } else {
@@ -873,8 +853,8 @@ public class PacketConsumers {
             }
             if (!tokens2.isEmpty()) {
                 Component component = AdventureHelper.tagToComponent(nbt2);
-                for (Map.Entry<String, String> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                 }
                 buf.writeNbt(AdventureHelper.componentToTag(component), false);
             } else {
@@ -892,12 +872,12 @@ public class PacketConsumers {
             int containerId = buf.readVarInt();
             int type = buf.readVarInt();
             String json = buf.readUtf();
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -917,11 +897,11 @@ public class PacketConsumers {
             int type = buf.readVarInt();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, String> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+            for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
             }
             buf.clear();
             buf.writeVarInt(event.packetID());
@@ -933,31 +913,122 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE_1_21_3 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            Object mcByteBuf;
-            Method writeMethod;
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                mcByteBuf = Reflections.constructor$RegistryFriendlyByteBuf.newInstance(buf, Reflections.instance$registryAccess);
-                writeMethod = Reflections.method$ClientboundLevelParticlesPacket$write;
-            } else {
-                mcByteBuf = Reflections.constructor$FriendlyByteBuf.newInstance(event.getBuffer().source());
-                writeMethod = Reflections.method$Packet$write;
-            }
-            Object packet = Reflections.constructor$ClientboundLevelParticlesPacket.newInstance(mcByteBuf);
-            Object option = FastNMS.INSTANCE.field$ClientboundLevelParticlesPacket$particle(packet);
+            boolean overrideLimiter = buf.readBoolean();
+            boolean alwaysShow = buf.readBoolean();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            float xDist = buf.readFloat();
+            float yDist = buf.readFloat();
+            float zDist = buf.readFloat();
+            float maxSpeed = buf.readFloat();
+            int count = buf.readInt();
+            Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
             if (option == null) return;
             if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
             int id = BlockStateUtils.blockStateToId(blockState);
             int remapped = remap(id);
             if (remapped == id) return;
-            Reflections.field$BlockParticleOption$blockState.set(option, BlockStateUtils.idToBlockState(remapped));
+            Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+            Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
             event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
-            writeMethod.invoke(packet, mcByteBuf);
+            buf.writeBoolean(overrideLimiter);
+            buf.writeBoolean(alwaysShow);
+            buf.writeDouble(x);
+            buf.writeDouble(y);
+            buf.writeDouble(z);
+            buf.writeFloat(xDist);
+            buf.writeFloat(yDist);
+            buf.writeFloat(zDist);
+            buf.writeFloat(maxSpeed);
+            buf.writeInt(count);
+            FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE_1_20_5 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean overrideLimiter = buf.readBoolean();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            float xDist = buf.readFloat();
+            float yDist = buf.readFloat();
+            float zDist = buf.readFloat();
+            float maxSpeed = buf.readFloat();
+            int count = buf.readInt();
+            Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
+            if (option == null) return;
+            if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
+            Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
+            int id = BlockStateUtils.blockStateToId(blockState);
+            int remapped = remap(id);
+            if (remapped == id) return;
+            Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+            Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeBoolean(overrideLimiter);
+            buf.writeDouble(x);
+            buf.writeDouble(y);
+            buf.writeDouble(z);
+            buf.writeFloat(xDist);
+            buf.writeFloat(yDist);
+            buf.writeFloat(zDist);
+            buf.writeFloat(maxSpeed);
+            buf.writeInt(count);
+            FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE_1_20 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Object particleType = FastNMS.INSTANCE.method$FriendlyByteBuf$readById(buf, Reflections.instance$BuiltInRegistries$PARTICLE_TYPE);
+            boolean overrideLimiter = buf.readBoolean();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            float xDist = buf.readFloat();
+            float yDist = buf.readFloat();
+            float zDist = buf.readFloat();
+            float maxSpeed = buf.readFloat();
+            int count = buf.readInt();
+            Object option = FastNMS.INSTANCE.method$ClientboundLevelParticlesPacket$readParticle(buf, particleType);
+            if (option == null) return;
+            if (!Reflections.clazz$BlockParticleOption.isInstance(option)) return;
+            Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
+            int id = BlockStateUtils.blockStateToId(blockState);
+            int remapped = remap(id);
+            if (remapped == id) return;
+            Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
+            Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            FastNMS.INSTANCE.method$FriendlyByteBuf$writeId(buf, remappedOption, Reflections.instance$BuiltInRegistries$PARTICLE_TYPE);
+            buf.writeBoolean(overrideLimiter);
+            buf.writeDouble(x);
+            buf.writeDouble(y);
+            buf.writeDouble(z);
+            buf.writeFloat(xDist);
+            buf.writeFloat(yDist);
+            buf.writeFloat(zDist);
+            buf.writeFloat(maxSpeed);
+            buf.writeInt(count);
+            FastNMS.INSTANCE.method$ParticleOptions$writeToNetwork(remappedOption, buf);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
         }
@@ -1492,6 +1563,81 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SOUND = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            if (id == 0) {
+                Key soundId = buf.readKey();
+                Float range = null;
+                if (buf.readBoolean()) {
+                    range = buf.readFloat();
+                }
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(0);
+                    buf.writeKey(mapped);
+                    if (range != null) {
+                        buf.writeBoolean(true);
+                        buf.writeFloat(range);
+                    } else {
+                        buf.writeBoolean(false);
+                    }
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
+            } else {
+                Optional<Object> optionalSound = FastNMS.INSTANCE.method$BuiltInRegistries$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
+                if (optionalSound.isEmpty()) return;
+                Object soundEvent = optionalSound.get();
+                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(soundEvent));
+                int source = buf.readVarInt();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                float volume = buf.readFloat();
+                float pitch = buf.readFloat();
+                long seed = buf.readLong();
+                Key mapped = BukkitBlockManager.instance().replaceSoundIfExist(soundId);
+                if (mapped != null) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(0);
+                    Object newId = KeyUtils.toResourceLocation(mapped);
+                    Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
+                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
+                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
+                    FastNMS.INSTANCE.method$SoundEvent$directEncode(buf, newSoundEvent);
+                    buf.writeVarInt(source);
+                    buf.writeInt(x);
+                    buf.writeInt(y);
+                    buf.writeInt(z);
+                    buf.writeFloat(volume);
+                    buf.writeFloat(pitch);
+                    buf.writeLong(seed);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSoundPacket", e);
+        }
+    };
+
     // we handle it on packet level to prevent it from being captured by plugins
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
@@ -1715,11 +1861,11 @@ public class PacketConsumers {
                         if (optionalTextComponent.isPresent()) {
                             Object textComponent = optionalTextComponent.get();
                             String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
                             if (!tokens.isEmpty()) {
                                 Component component = AdventureHelper.jsonToComponent(json);
-                                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                                 }
                                 Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
                                 packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
@@ -1737,10 +1883,10 @@ public class PacketConsumers {
                     buf.writeVarInt(id);
                     FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
                 }
-            } else if (Config.interceptEntityName()) {
-                boolean isChanged = false;
-                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-                if (entityType == Reflections.instance$EntityType$TEXT_DISPLAY) {
+            } else if (entityType == Reflections.instance$EntityType$TEXT_DISPLAY) {
+                if (Config.interceptTextDisplay()) {
+                    boolean isChanged = false;
+                    List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
                     for (int i = 0; i < packedItems.size(); i++) {
                         Object packedItem = packedItems.get(i);
                         int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
@@ -1748,11 +1894,11 @@ public class PacketConsumers {
                             Object textComponent = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
                             if (textComponent == Reflections.instance$Component$empty) break;
                             String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
                             if (!tokens.isEmpty()) {
                                 Component component = AdventureHelper.jsonToComponent(json);
-                                for (Map.Entry<String, String> token : tokens.entrySet()) {
-                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                                 }
                                 Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
                                 packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, ComponentUtils.adventureToMinecraft(component)));
@@ -1761,7 +1907,18 @@ public class PacketConsumers {
                             }
                         }
                     }
-                } else {
+                    if (isChanged) {
+                        event.setChanged(true);
+                        buf.clear();
+                        buf.writeVarInt(event.packetID());
+                        buf.writeVarInt(id);
+                        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
+                    }
+                }
+            } else if (entityType == Reflections.instance$EntityType$ARMOR_STAND) {
+                if (Config.interceptArmorStand()) {
+                    boolean isChanged = false;
+                    List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
                     for (int i = 0; i < packedItems.size(); i++) {
                         Object packedItem = packedItems.get(i);
                         int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
@@ -1770,17 +1927,49 @@ public class PacketConsumers {
                             if (optionalTextComponent.isPresent()) {
                                 Object textComponent = optionalTextComponent.get();
                                 String json = ComponentUtils.minecraftToJson(textComponent);
-                                Map<String, String> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
                                 if (!tokens.isEmpty()) {
                                     Component component = AdventureHelper.jsonToComponent(json);
-                                    for (Map.Entry<String, String> token : tokens.entrySet()) {
-                                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(AdventureHelper.miniMessage().deserialize(token.getValue())));
+                                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                                     }
                                     Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
                                     packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
                                     isChanged = true;
                                     break;
                                 }
+                            }
+                        }
+                    }
+                    if (isChanged) {
+                        event.setChanged(true);
+                        buf.clear();
+                        buf.writeVarInt(event.packetID());
+                        buf.writeVarInt(id);
+                        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
+                    }
+                }
+            } else if (Config.interceptEntityName()) {
+                boolean isChanged = false;
+                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
+                for (int i = 0; i < packedItems.size(); i++) {
+                    Object packedItem = packedItems.get(i);
+                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+                    if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
+                        Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                        if (optionalTextComponent.isPresent()) {
+                            Object textComponent = optionalTextComponent.get();
+                            String json = ComponentUtils.minecraftToJson(textComponent);
+                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            if (!tokens.isEmpty()) {
+                                Component component = AdventureHelper.jsonToComponent(json);
+                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                                }
+                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
+                                isChanged = true;
+                                break;
                             }
                         }
                     }

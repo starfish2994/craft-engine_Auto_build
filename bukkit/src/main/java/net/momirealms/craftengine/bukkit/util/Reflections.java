@@ -3706,6 +3706,7 @@ public class Reflections {
     public static final Object instance$EntityType$TEXT_DISPLAY;
     public static final Object instance$EntityType$ITEM_DISPLAY;
     public static final Object instance$EntityType$BLOCK_DISPLAY;
+    public static final Object instance$EntityType$ARMOR_STAND;
     public static final Object instance$EntityType$FALLING_BLOCK;
     public static final Object instance$EntityType$INTERACTION;
     public static final Object instance$EntityType$SHULKER;
@@ -3724,6 +3725,8 @@ public class Reflections {
             instance$EntityType$INTERACTION = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, interaction);
             Object shulker = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "shulker");
             instance$EntityType$SHULKER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, shulker);
+            Object armorStand = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "armor_stand");
+            instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
