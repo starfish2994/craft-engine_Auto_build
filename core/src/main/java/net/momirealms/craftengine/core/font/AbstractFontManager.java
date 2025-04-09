@@ -66,6 +66,22 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
+    public String stripTags(String text) {
+        if (this.trie == null) {
+            return text;
+        }
+        StringBuilder builder = new StringBuilder();
+        for (Token token : this.trie.tokenize(text)) {
+            if (token.isMatch()) {
+                builder.append("*");
+            } else {
+                builder.append(token.getFragment());
+            }
+        }
+        return builder.toString();
+    }
+
+    @Override
     public ConfigSectionParser[] parsers() {
         return new ConfigSectionParser[] {this.imageParser, this.emojiParser};
     }

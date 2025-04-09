@@ -19,6 +19,8 @@ public interface FontManager extends Manageable {
     String BYPASS_COMMAND = "craftengine.filter.bypass.command";
     String BYPASS_ANVIL = "craftengine.filter.bypass.anvil";
 
+    String stripTags(String text);
+
     ConfigSectionParser[] parsers();
 
     boolean isDefaultFontInUse();
