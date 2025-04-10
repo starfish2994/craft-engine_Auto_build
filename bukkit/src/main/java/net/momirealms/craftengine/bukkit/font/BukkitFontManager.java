@@ -200,7 +200,8 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         Component textReplaced = text;
         Set<String> processedKeywords = new HashSet<>();
         for (Token token : super.emojiKeywordTrie.tokenize(AdventureHelper.componentToJson(text))) {
-            if (!token.isMatch() || parsedCount.value > Config.maxEmojiParsed()) continue;
+            if (!token.isMatch()) continue;
+            if (parsedCount.value++ > Config.maxEmojiParsed()) return;
             String keyword = token.getFragment();
             if (processedKeywords.contains(keyword)) continue;
             Emoji emoji = super.emojiMapper.get(keyword);
@@ -220,7 +221,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
             });
             consumer.accept(textReplaced);
             processedKeywords.add(keyword);
-            parsedCount.value++;
         }
     }
 
