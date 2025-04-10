@@ -129,13 +129,13 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         if (renameText == null || renameText.isEmpty()) return;
 
         Component itemName = Component.text(renameText);
-        final int[] parsedCount = {0};
-        processComponent(itemName, player, parsedCount[0], (text) -> {
-            if (parsedCount[0]++ >= Config.maxEmojiParsed()) return;
+        MutableInt parsedCount = new MutableInt(0);
+        processComponent(itemName, player, parsedCount, (text) -> {
+            if (parsedCount.value >= Config.maxEmojiParsed()) return;
             Item<ItemStack> wrapped = this.plugin.itemManager().wrap(result);
             wrapped.customName(AdventureHelper.componentToJson(text));
             event.setResult(wrapped.loadCopy());
-        }, (count) -> parsedCount[0]++);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -144,8 +144,8 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         Player player = event.getPlayer();
         BookMeta newBookMeta = event.getNewBookMeta();
         List<?> pages = newBookMeta.pages();
-        final boolean[] replacedBookMeta = {false};
-        final int[] parsedCount = {0};
+        MutableBoolean replacedBookMeta = new MutableBoolean(false);
+        MutableInt parsedCount = new MutableInt(0);
         for (int i = 0; i < pages.size(); i++) {
             int finalIndex = i;
             JsonElement json = ComponentUtils.paperAdventureToJsonElement(pages.get(i));
@@ -153,9 +153,9 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
                 if (primitive.isString() && primitive.getAsString().isEmpty()) continue;
             }
             Component page = AdventureHelper.jsonElementToComponent(json);
-            processComponent(page, player, parsedCount[0], (text) -> {
+            processComponent(page, player, parsedCount, (text) -> {
                 try {
-                    replacedBookMeta[0] = true;
+                    replacedBookMeta.value = true;
                     Reflections.method$BookMeta$page.invoke(
                             newBookMeta, finalIndex + 1,
                             ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(text))
@@ -163,10 +163,10 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     this.plugin.logger().warn("Failed to set book page", e);
                 }
-            }, (count) -> parsedCount[0]++);
-            if (parsedCount[0] > Config.maxEmojiParsed()) break;
+            });
+            if (parsedCount.value > Config.maxEmojiParsed()) break;
         }
-        if (replacedBookMeta[0]) {
+        if (replacedBookMeta.value) {
             event.setNewBookMeta(newBookMeta);
         }
     }
@@ -175,13 +175,13 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
         List<Component> lines = event.lines();
-        final int[] parsedCount = {0};
+        MutableInt parsedCount = new MutableInt(0);
         for (int i = 0; i < lines.size(); i++) {
             int finalIndex = i;
             JsonElement json = ComponentUtils.paperAdventureToJsonElement(lines.get(i));
             if (json.toString().isEmpty()) continue;
             Component line = AdventureHelper.jsonElementToComponent(json);
-            processComponent(line, player, parsedCount[0], (text) -> {
+            processComponent(line, player, parsedCount, (text) -> {
                 try {
                     Reflections.method$SignChangeEvent$line.invoke(
                             event, finalIndex,
@@ -190,28 +190,22 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     plugin.logger().warn("Failed to set sign line", e);
                 }
-            }, (count) -> parsedCount[0]++);
-            if (parsedCount[0] > Config.maxEmojiParsed()) break;
+            });
+            if (parsedCount.value > Config.maxEmojiParsed()) break;
         }
     }
 
-    private void processComponent(Component text, Player player, int parsedCount, Consumer<Component> consumer, Consumer<Integer> parsedCountConsumer) {
-        if (parsedCount > Config.maxEmojiParsed()) return;
+    private void processComponent(Component text, Player player, MutableInt parsedCount, Consumer<Component> consumer) {
+        if (parsedCount.value > Config.maxEmojiParsed()) return;
         Component textReplaced = text;
         Set<String> processedKeywords = new HashSet<>();
         for (Token token : super.emojiKeywordTrie.tokenize(AdventureHelper.componentToJson(text))) {
-            if (!token.isMatch()) continue;
+            if (!token.isMatch() || parsedCount.value > Config.maxEmojiParsed()) continue;
             String keyword = token.getFragment();
-            parsedCountConsumer.accept(parsedCount++);
-            if (parsedCount > Config.maxEmojiParsed()) return;
             if (processedKeywords.contains(keyword)) continue;
             Emoji emoji = super.emojiMapper.get(keyword);
-            if (emoji == null) {
-                parsedCountConsumer.accept(parsedCount--);
-                continue;
-            }
+            if (emoji == null) continue;
             if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
-                parsedCountConsumer.accept(parsedCount--);
                 continue;
             }
             textReplaced = textReplaced.replaceText(builder -> {
@@ -226,7 +220,18 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
             });
             consumer.accept(textReplaced);
             processedKeywords.add(keyword);
+            parsedCount.value++;
         }
+    }
+
+    private static final class MutableInt {
+        int value;
+        MutableInt(int value) { this.value = value; }
+    }
+
+    private static final class MutableBoolean {
+        boolean value;
+        MutableBoolean(boolean value) { this.value = value; }
     }
 
     @SuppressWarnings("UnstableApiUsage")
