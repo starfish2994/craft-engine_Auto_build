@@ -5,6 +5,7 @@ import com.google.gson.JsonPrimitive;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
@@ -31,6 +32,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
@@ -56,6 +58,23 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     public void disable() {
         super.disable();
         HandlerList.unregisterAll(this);
+    }
+
+    @Override
+    public void delayedLoad() {
+        Map<UUID, String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
+        super.delayedLoad();
+        this.oldCachedEmojiSuggestions.putAll(this.cachedEmojiSuggestions());
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            FastNMS.INSTANCE.method$ChatSuggestions$remove(oldCachedEmojiSuggestions.keySet(), player);
+            FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
+        });
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

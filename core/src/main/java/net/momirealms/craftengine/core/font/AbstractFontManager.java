@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.font;
 
+import com.google.common.collect.ImmutableMap;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
@@ -35,6 +36,9 @@ public abstract class AbstractFontManager implements FontManager {
     protected Trie emojiKeywordTrie;
     private Map<String, Component> tagMapper;
     protected Map<String, Emoji> emojiMapper;
+    // tab补全
+    protected final Map<UUID, String> cachedEmojiSuggestions = new HashMap<>();
+    protected final Map<UUID, String> oldCachedEmojiSuggestions = new HashMap<>();
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -55,6 +59,17 @@ public abstract class AbstractFontManager implements FontManager {
         this.images.clear();
         this.illegalChars.clear();
         this.emojis.clear();
+        this.cachedEmojiSuggestions.clear();
+    }
+
+    @Override
+    public Map<UUID, String> cachedEmojiSuggestions() {
+        return ImmutableMap.copyOf(this.cachedEmojiSuggestions);
+    }
+
+    @Override
+    public Map<UUID, String> oldCachedEmojiSuggestions() {
+        return ImmutableMap.copyOf(this.oldCachedEmojiSuggestions);
     }
 
     @Override
@@ -146,6 +161,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     @Override
     public void delayedLoad() {
+        this.oldCachedEmojiSuggestions.clear();
         Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
         this.buildImageTagTrie();
         this.buildEmojiKeywordsTrie();
@@ -263,6 +279,9 @@ public abstract class AbstractFontManager implements FontManager {
                 return;
             }
             List<String> keywords = MiscUtils.getAsStringList(keywordsRaw);
+            UUID uuid = UUID.randomUUID();
+            String keyword = keywords.get(0);
+            cachedEmojiSuggestions.put(uuid, keyword);
             String content = section.getOrDefault("content", "<arg:emoji>").toString();
             String image = null;
             if (section.containsKey("image")) {
