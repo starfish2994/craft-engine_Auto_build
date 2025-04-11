@@ -11,17 +11,14 @@ import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.font.AbstractFontManager;
-import net.momirealms.craftengine.core.font.Emoji;
-import net.momirealms.craftengine.core.font.EmojiParameters;
+import net.momirealms.craftengine.core.font.EmojiComponentProcessResult;
+import net.momirealms.craftengine.core.font.EmojiTextProcessResult;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerContext;
-import org.ahocorasick.trie.Token;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,10 +33,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -127,9 +125,12 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         }
 
         if (renameText == null || renameText.isEmpty()) return;
-
+        IllegalCharacterProcessResult processResult = processIllegalCharacters(renameText);
+        if (processResult.has()) {
+            renameText = processResult.newText();
+        }
         Component itemName = Component.text(renameText);
-        EmojiReplaceProcessResult replaceProcessResult = processEmojiNoCopy(player, itemName, renameText);
+        EmojiComponentProcessResult replaceProcessResult = replaceComponentEmoji(itemName, plugin.adapt(player), renameText);
         if (replaceProcessResult.changed()) {
             Item<ItemStack> wrapped = this.plugin.itemManager().wrap(result);
             wrapped.customName(AdventureHelper.componentToJson(replaceProcessResult.newText()));
@@ -145,7 +146,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
             JsonElement json = ComponentUtils.paperAdventureToJsonElement(lines.get(i));
             if (json == null) continue;
             Component line = AdventureHelper.jsonElementToComponent(json);
-            EmojiReplaceProcessResult result = processEmojiNoCopy(player, line);
+            EmojiComponentProcessResult result = replaceComponentEmoji(line, plugin.adapt(player));
             if (result.changed()) {
                 try {
                     Reflections.method$SignChangeEvent$line.invoke(event, i, ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(result.newText())));
@@ -175,7 +176,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         for (int i = 0; i < pages.size(); i++) {
             JsonElement json = ComponentUtils.paperAdventureToJsonElement(pages.get(i));
             Component page = AdventureHelper.jsonElementToComponent(json);
-            EmojiReplaceProcessResult result = processEmojiNoCopy(player, page);
+            EmojiComponentProcessResult result = replaceComponentEmoji(page, plugin.adapt(player));
             if (result.changed()) {
                 changed = true;
                 try {
@@ -197,61 +198,24 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
             String rawJsonMessage = ComponentUtils.paperAdventureToJson(originalMessage);
-            String jsonMessage = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
-            boolean hasChanged = !rawJsonMessage.equals(jsonMessage);
+            EmojiTextProcessResult processResult = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
+            boolean hasChanged = processResult.replaced();
             if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
-                IllegalCharacterProcessResult result = processIllegalCharacters(jsonMessage);
+                IllegalCharacterProcessResult result = processIllegalCharacters(processResult.text());
                 if (result.has()) {
                     Object component = ComponentUtils.jsonToPaperAdventure(result.newText());
                     Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
                 } else if (hasChanged) {
-                    Object component = ComponentUtils.jsonToPaperAdventure(jsonMessage);
+                    Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
                     Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
                 }
             } else if (hasChanged) {
-                Object component = ComponentUtils.jsonToPaperAdventure(jsonMessage);
+                Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
                 Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private EmojiReplaceProcessResult processEmojiNoCopy(Player player, Component text) {
-        return this.processEmojiNoCopy(player, text, AdventureHelper.plainTextContent(text));
-    }
-
-    private EmojiReplaceProcessResult processEmojiNoCopy(Player player, Component text, @NotNull String raw) {
-        boolean replaced = false;
-        Set<String> processed = new HashSet<>();
-        int times = 0;
-        for (Token token : super.emojiKeywordTrie.tokenize(raw)) {
-            if (!token.isMatch())
-                continue;
-            String fragment = token.getFragment();
-            if (processed.contains(fragment))
-                continue;
-            Emoji emoji = super.emojiMapper.get(token.getFragment());
-            if (emoji == null || (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))))
-                continue;
-            text = text.replaceText(builder -> builder.matchLiteral(token.getFragment())
-                    .replacement(AdventureHelper.miniMessage().deserialize(
-                            emoji.content(),
-                            PlayerContext.of(plugin.adapt(player),
-                                    ContextHolder.builder()
-                                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
-                                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                                            .build()
-                            ).tagResolvers()
-                    )));
-            replaced = true;
-            processed.add(fragment);
-            if (++times >= Config.maxEmojisPerParse()) {
-                break;
-            }
-        }
-        if (!replaced) return EmojiReplaceProcessResult.failed();
-        return EmojiReplaceProcessResult.success(text);
     }
 
     private IllegalCharacterProcessResult processIllegalCharacters(String raw) {
@@ -298,17 +262,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
         public static IllegalCharacterProcessResult not() {
             return new IllegalCharacterProcessResult(false, null);
-        }
-    }
-
-    public record EmojiReplaceProcessResult(boolean changed, Component newText) {
-
-        public static EmojiReplaceProcessResult success(Component newText) {
-            return new EmojiReplaceProcessResult(true, newText);
-        }
-
-        public static EmojiReplaceProcessResult failed() {
-            return new EmojiReplaceProcessResult(false, null);
         }
     }
 }

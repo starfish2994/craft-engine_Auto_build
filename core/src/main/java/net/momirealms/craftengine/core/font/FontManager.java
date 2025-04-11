@@ -3,10 +3,14 @@ package net.momirealms.craftengine.core.font;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.Manageable;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
 import net.momirealms.craftengine.core.util.Key;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,11 +27,33 @@ public interface FontManager extends Manageable {
 
     String stripTags(String text);
 
+    default EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player) {
+        return replaceComponentEmoji(text, player, Config.maxEmojisPerParse());
+    }
+
+    default EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player, int maxTimes) {
+        return replaceComponentEmoji(text, player, AdventureHelper.plainTextContent(text), maxTimes);
+    }
+
+    default EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player, String raw) {
+        return replaceComponentEmoji(text, player, raw, Config.maxEmojisPerParse());
+    }
+
+    EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player, @NotNull String raw, int maxTimes);
+
     ConfigSectionParser[] parsers();
 
-    String replaceMiniMessageEmoji(String miniMessage, Player player);
+    default EmojiTextProcessResult replaceMiniMessageEmoji(@NotNull String miniMessage, @Nullable Player player) {
+        return replaceMiniMessageEmoji(miniMessage, player, Config.maxEmojisPerParse());
+    }
 
-    String replaceJsonEmoji(String jsonText, Player player);
+    EmojiTextProcessResult replaceMiniMessageEmoji(@NotNull String miniMessage, @Nullable Player player, int maxTimes);
+
+    default EmojiTextProcessResult replaceJsonEmoji(@NotNull String json, @Nullable Player player) {
+        return replaceJsonEmoji(json, player, Config.maxEmojisPerParse());
+    }
+
+    EmojiTextProcessResult replaceJsonEmoji(@NotNull String jsonText, @Nullable Player player, int maxTimes);
 
     boolean isDefaultFontInUse();
 
