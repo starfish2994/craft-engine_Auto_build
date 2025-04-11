@@ -117,7 +117,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
             if (event.isCancelled()) {
                 return;
             }
-            Reflections.method$Level$removeBlock.invoke(level, blockPos, false);
+            FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
             if (isWaterLogged(immutableBlockState)) {
                 bukkitWorld.setBlockData(pos.x(), pos.y(), pos.z(), Material.WATER.createBlockData());
             }

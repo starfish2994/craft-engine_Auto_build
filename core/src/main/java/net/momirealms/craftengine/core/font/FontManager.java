@@ -12,10 +12,7 @@ import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public interface FontManager extends Manageable {
     Key DEFAULT_FONT = Key.of("minecraft:default");
@@ -105,7 +102,7 @@ public interface FontManager extends Manageable {
 
     Map<String, Component> matchTags(String json);
 
-    Map<UUID, String> cachedEmojiSuggestions();
+    List<String> cachedEmojiSuggestions();
 
-    Map<UUID, String> oldCachedEmojiSuggestions();
+    List<String> oldCachedEmojiSuggestions();
 }

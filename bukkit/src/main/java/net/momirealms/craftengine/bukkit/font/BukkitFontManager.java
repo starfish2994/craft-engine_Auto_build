@@ -32,9 +32,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -57,11 +55,11 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedLoad() {
-        Map<UUID, String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
+        List<String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
         super.delayedLoad();
-        this.oldCachedEmojiSuggestions.putAll(this.cachedEmojiSuggestions());
+        this.oldCachedEmojiSuggestions.addAll(this.cachedEmojiSuggestions());
         Bukkit.getOnlinePlayers().forEach(player -> {
-            FastNMS.INSTANCE.method$ChatSuggestions$remove(oldCachedEmojiSuggestions.keySet(), player);
+            player.removeCustomChatCompletions(oldCachedEmojiSuggestions);
             this.addEmojiSuggestions(player);
         });
     }
@@ -73,18 +71,17 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     }
 
     private void addEmojiSuggestions(Player player) {
-        Map<UUID, String> hasPermissions = new HashMap<>();
-        Map<UUID, String> cachedEmojiSuggestions = this.cachedEmojiSuggestions();
-        for (UUID uuid : cachedEmojiSuggestions.keySet()) {
-            String keyword = cachedEmojiSuggestions.get(uuid);
+        List<String> hasPermissions = new ArrayList<>();
+        List<String> cachedEmojiSuggestions = this.cachedEmojiSuggestions();
+        for (String keyword : cachedEmojiSuggestions) {
             Emoji emoji = super.emojiMapper.get(keyword);
             if (emoji == null) continue;
             if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
                 continue;
             }
-            hasPermissions.put(uuid, keyword);
+            hasPermissions.add(keyword);
         }
-        FastNMS.INSTANCE.method$ChatSuggestions$add(hasPermissions, player);
+        player.addCustomChatCompletions(hasPermissions);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
