@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network.impl;
+package net.momirealms.craftengine.bukkit.plugin.network.id;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
 
