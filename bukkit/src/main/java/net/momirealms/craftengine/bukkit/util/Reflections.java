@@ -1745,6 +1745,12 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$ClientboundPlayerInfoUpdatePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket")
+            )
+    );
+
     public static final Field field$ClientboundLevelChunkWithLightPacket$chunkData = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundLevelChunkWithLightPacket, clazz$ClientboundLevelChunkPacketData, 0
