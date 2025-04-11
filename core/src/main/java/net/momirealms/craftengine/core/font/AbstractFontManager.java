@@ -14,11 +14,15 @@ import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.util.context.PlayerContext;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public abstract class AbstractFontManager implements FontManager {
     private final CraftEngine plugin;
@@ -88,30 +92,20 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public String stripTags(String text) {
-        if (this.imageTagTrie == null) {
-            return text;
+    public EmojiTextProcessResult replaceMiniMessageEmoji(@NotNull String miniMessage, Player player, int maxTimes) {
+        if (this.emojiKeywordTrie == null || maxTimes <= 0) {
+            return EmojiTextProcessResult.notReplaced(miniMessage);
         }
-        StringBuilder builder = new StringBuilder();
-        for (Token token : this.imageTagTrie.tokenize(text)) {
-            if (token.isMatch()) {
-                builder.append("*");
-            } else {
-                builder.append(token.getFragment());
-            }
-        }
-        return builder.toString();
-    }
-
-    @Override
-    public String replaceMiniMessageEmoji(String miniMessage, Player player) {
-        if (this.emojiKeywordTrie == null) {
-            return miniMessage;
-        }
+        Map<String, String> replacements = new HashMap<>();
         for (Token token : this.emojiKeywordTrie.tokenize(miniMessage)) {
-            if (!token.isMatch()) continue;
-            Emoji emoji = this.emojiMapper.get(token.getFragment());
-            if (emoji == null) continue;
+            if (!token.isMatch())
+                continue;
+            String fragment = token.getFragment();
+            if (replacements.containsKey(fragment))
+                continue;
+            Emoji emoji = this.emojiMapper.get(fragment);
+            if (emoji == null || (player != null && emoji.permission() != null && !player.hasPermission(emoji.permission())))
+                continue;
             Component content = AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
                     PlayerContext.of(player, ContextHolder.builder()
@@ -119,40 +113,133 @@ public abstract class AbstractFontManager implements FontManager {
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
                             .build()).tagResolvers()
             );
-            miniMessage = miniMessage.replace(token.getFragment(), AdventureHelper.componentToMiniMessage(content));
+            replacements.put(fragment, AdventureHelper.componentToMiniMessage(content));
         }
-        return miniMessage;
+        if (replacements.isEmpty()) return EmojiTextProcessResult.notReplaced(miniMessage);
+        String regex = replacements.keySet().stream()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(miniMessage);
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+        while (matcher.find() && count < maxTimes) {
+            String key = matcher.group();
+            String replacement = replacements.get(key);
+            if (replacement != null) {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+                count++;
+            } else {
+                // should not reach this
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
+            }
+        }
+        matcher.appendTail(sb);
+        return EmojiTextProcessResult.replaced(sb.toString());
     }
 
     @Override
-    public String replaceJsonEmoji(String jsonText, Player player) {
+    public EmojiTextProcessResult replaceJsonEmoji(@NotNull String jsonText, Player player, int maxTimes) {
         if (this.emojiKeywordTrie == null) {
-            return jsonText;
+            return EmojiTextProcessResult.notReplaced(jsonText);
         }
-        Map<String, Emoji> emojis = new HashMap<>();
+        Map<String, Component> emojis = new HashMap<>();
         for (Token token : this.emojiKeywordTrie.tokenize(jsonText)) {
-            if (token.isMatch()) {
-                emojis.put(token.getFragment(), this.emojiMapper.get(token.getFragment()));
-            }
-        }
-        if (emojis.isEmpty()) return jsonText;
-        Component component = AdventureHelper.jsonToComponent(jsonText);
-        for (Map.Entry<String, Emoji> entry : emojis.entrySet()) {
-            Emoji emoji = entry.getValue();
-            if (player != null && emoji.permission() != null && !player.hasPermission(emoji.permission())) {
+            if (!token.isMatch())
                 continue;
-            }
-            component = component.replaceText(builder -> builder.matchLiteral(entry.getKey())
-                    .replacement(
-                            AdventureHelper.miniMessage().deserialize(
-                                    emoji.content(),
-                                    PlayerContext.of(player, ContextHolder.builder()
-                                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
-                                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                                            .build()).tagResolvers())
-                    ));
+            String fragment = token.getFragment();
+            if (emojis.containsKey(fragment)) continue;
+            Emoji emoji = this.emojiMapper.get(fragment);
+            if (emoji == null || (player != null && emoji.permission() != null && !player.hasPermission(emoji.permission())))
+                continue;
+            emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
+                    emoji.content(),
+                    PlayerContext.of(player, ContextHolder.builder()
+                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                            .build()).tagResolvers())
+            );
+            if (emojis.size() >= maxTimes) break;
         }
-        return AdventureHelper.componentToJson(component);
+        if (emojis.isEmpty()) return EmojiTextProcessResult.notReplaced(jsonText);
+        Component component = AdventureHelper.jsonToComponent(jsonText);
+        String patternString = emojis.keySet().stream()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
+        component = component.replaceText(builder -> builder.times(maxTimes)
+                .match(Pattern.compile(patternString))
+                .replacement((result, b) -> emojis.get(result.group())));
+        return EmojiTextProcessResult.replaced(AdventureHelper.componentToJson(component));
+    }
+
+    @Override
+    public EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, Player player, @NotNull String raw, int maxTimes) {
+        Map<String, Component> emojis = new HashMap<>();
+        for (Token token : this.emojiKeywordTrie.tokenize(raw)) {
+            if (!token.isMatch())
+                continue;
+            String fragment = token.getFragment();
+            if (emojis.containsKey(fragment))
+                continue;
+            Emoji emoji = this.emojiMapper.get(token.getFragment());
+            if (emoji == null || (player != null && emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))))
+                continue;
+            emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
+                    emoji.content(),
+                    PlayerContext.of(player,
+                            ContextHolder.builder()
+                                    .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                                    .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                                    .build()
+                    ).tagResolvers()
+            ));
+            if (emojis.size() >= maxTimes) break;
+        }
+        if (emojis.isEmpty()) return EmojiComponentProcessResult.failed();
+        String patternString = emojis.keySet().stream()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
+        text = text.replaceText(builder -> builder.times(maxTimes)
+                .match(Pattern.compile(patternString))
+                .replacement((result, b) -> emojis.get(result.group())));
+        return EmojiComponentProcessResult.success(text);
+    }
+
+    @Override
+    public IllegalCharacterProcessResult processIllegalCharacters(String raw, char replacement) {
+        boolean hasIllegal = false;
+        // replace illegal image usage
+        Map<String, Component> tokens = matchTags(raw);
+        if (!tokens.isEmpty()) {
+            for (Map.Entry<String, Component> entry : tokens.entrySet()) {
+                raw = raw.replace(entry.getKey(), String.valueOf(replacement));
+                hasIllegal = true;
+            }
+        }
+
+        if (this.isDefaultFontInUse()) {
+            // replace illegal codepoint
+            char[] chars = raw.toCharArray();
+            int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+            int[] newCodepoints = new int[codepoints.length];
+
+            for (int i = 0; i < codepoints.length; i++) {
+                int codepoint = codepoints[i];
+                if (!isIllegalCodepoint(codepoint)) {
+                    newCodepoints[i] = codepoint;
+                } else {
+                    newCodepoints[i] = replacement;
+                    hasIllegal = true;
+                }
+            }
+
+            if (hasIllegal) {
+                return IllegalCharacterProcessResult.has(new String(newCodepoints, 0, newCodepoints.length));
+            }
+        } else if (hasIllegal) {
+            return IllegalCharacterProcessResult.has(raw);
+        }
+        return IllegalCharacterProcessResult.not();
     }
 
     @Override
