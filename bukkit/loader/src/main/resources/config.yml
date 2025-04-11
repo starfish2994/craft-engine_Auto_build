@@ -153,18 +153,20 @@ image:
     command: true
     sign: true
   # By intercepting packets, you are allowed to use <image:...> <shift:...> in other plugins
+  # Turning off some unused options would help reduce CPU usage on async threads
   intercept-packets:
     system-chat: true
-    tab-list: true
+    tab-list: true     # Tab list header and footer
+    player-info: true  # User list in tab
     actionbar: true
     title: true
     bossbar: true
-    container: true
-    team: true
+    container: true     # GUI
+    team: true          # Team prefix, suffix and display name
     scoreboard: true
     entity-name: false
-    armor-stand: true
-    text-display: true
+    armor-stand: true   # Legacy Holograms
+    text-display: true  # Modern Holograms
 
 emoji: {}
 
