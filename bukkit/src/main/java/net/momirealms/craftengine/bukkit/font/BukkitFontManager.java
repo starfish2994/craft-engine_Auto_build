@@ -46,12 +46,12 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
         if (this.plugin.isPluginEnabled("LuckPerms")) {
             luckPermsEventListeners = new LuckPermsEventListeners(
                     plugin.bootstrap(), this::refreshEmojiSuggestions, plugin.scheduler()
             );
         }
+        Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     }
 
     private void addEmojiSuggestions(Player player) {
-        List<String> hasPermissions = cachedEmojiSuggestions().parallelStream()
+        List<String> hasPermissions = cachedEmojiSuggestions().stream()
                 .filter(keyword -> {
                     Emoji emoji = super.emojiMapper.get(keyword);
                     if (emoji == null) return false;

@@ -33,32 +33,26 @@ public class LuckPermsEventListeners {
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             this.luckPerms = provider.getProvider();
-            EventBus eventBus = this.luckPerms.getEventBus();
-            EventSubscription<UserDataRecalculateEvent> onUserPermissionChangeSubscription =
-                    eventBus.subscribe(
-                            plugin,
-                            UserDataRecalculateEvent.class,
-                            this::onUserPermissionChange
-                    );
-            EventSubscription<GroupDataRecalculateEvent> onGroupPermissionChangeSubscription =
-                    eventBus.subscribe(
-                            plugin,
-                            GroupDataRecalculateEvent.class,
-                            this::onGroupPermissionChange
-                    );
-            this.subscriptions.add(onUserPermissionChangeSubscription);
-            this.subscriptions.add(onGroupPermissionChangeSubscription);
-        } else luckPerms = null;
+            this.registerEventListeners();
+        } else {
+            throw new IllegalStateException("Unable to hook into LuckPerms");
+        }
+    }
+
+    private void registerEventListeners() {
+        EventBus eventBus = this.luckPerms.getEventBus();
+        this.subscriptions.add(eventBus.subscribe(this.plugin, UserDataRecalculateEvent.class, this::onUserPermissionChange));
+        this.subscriptions.add(eventBus.subscribe(this.plugin, GroupDataRecalculateEvent.class, this::onGroupPermissionChange));
     }
 
     public void unregisterListeners() {
-        for (EventSubscription<?> subscription : this.subscriptions) {
+        this.subscriptions.forEach(subscription -> {
             try {
                 subscription.close();
             } catch (Exception e) {
                 this.plugin.getLogger().log(Level.WARNING, "Failed to close event subscription", e);
             }
-        }
+        });
         this.subscriptions.clear();
     }
 
@@ -70,14 +64,13 @@ public class LuckPermsEventListeners {
         this.scheduler.asyncLater(() -> {
             String groupName = event.getGroup().getName();
             Bukkit.getOnlinePlayers().forEach(player -> {
-                UUID playerUUID = player.getUniqueId();
-                User onlineUser = this.luckPerms.getUserManager().getUser(playerUUID);
-                if (onlineUser == null) return;
-                boolean isInGroup = onlineUser.getInheritedGroups(onlineUser.getQueryOptions())
-                        .parallelStream()
+                UUID uuid = player.getUniqueId();
+                User user = luckPerms.getUserManager().getUser(uuid);
+                if (user == null) return;
+                boolean inGroup = user.getInheritedGroups(user.getQueryOptions()).stream()
                         .anyMatch(g -> g.getName().equals(groupName));
-                if (isInGroup) {
-                    this.consumer.accept(playerUUID, false);
+                if (inGroup) {
+                    this.consumer.accept(uuid, false);
                 }
             });
         }, 1L, TimeUnit.SECONDS);
