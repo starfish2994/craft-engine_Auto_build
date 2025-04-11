@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -6314,4 +6315,40 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardObjective")
             )
     );
+
+    public static final Class<?> clazz$SignChangeEvent = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "org.bukkit.event.block.SignChangeEvent"
+            )
+    );
+
+    public static final Method method$SignChangeEvent$line = requireNonNull(
+            ReflectionUtils.getMethod(clazz$SignChangeEvent, void.class, int.class, clazz$AdventureComponent)
+    );
+
+    public static final Class<?> clazz$BookMeta = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "org.bukkit.inventory.meta.BookMeta"
+            )
+    );
+
+    public static final Method method$BookMeta$page = requireNonNull(
+            ReflectionUtils.getMethod(clazz$BookMeta, void.class, int.class, clazz$AdventureComponent)
+    );
+
+    public static final Method method$GsonComponentSerializer$serializer = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$GsonComponentSerializer, Gson.class
+            )
+    );
+
+    public static final Gson instance$GsonComponentSerializer$Gson;
+
+    static {
+        try {
+            instance$GsonComponentSerializer$Gson = (Gson) Reflections.method$GsonComponentSerializer$serializer.invoke(instance$GsonComponentSerializer);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

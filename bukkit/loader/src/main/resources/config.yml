@@ -237,6 +237,8 @@ gui:
 performance:
   # Maximum chain update depth when fixing client visuals
   max-block-chain-update-limit: 64
+  # Maximum emoji parsed each time
+  max-emoji-parsed-limit: 100
 
 light-system:
   enable: true
