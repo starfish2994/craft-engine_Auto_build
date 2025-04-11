@@ -56,7 +56,7 @@ public class LuckPermsEventListeners {
             try {
                 subscription.close();
             } catch (Exception e) {
-                this.plugin.getLogger().log(Level.WARNING,"Failed to close event subscription", e);
+                this.plugin.getLogger().log(Level.WARNING, "Failed to close event subscription", e);
             }
         }
         this.subscriptions.clear();
