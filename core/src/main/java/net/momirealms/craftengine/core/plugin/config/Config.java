@@ -96,7 +96,7 @@ public class Config {
     protected UUID resource_pack$external_host$uuid;
 
     protected int performance$max_block_chain_update_limit;
-    protected int performance$max_emoji_parsed_limit;
+    protected int performance$max_emojis_per_parse;
 
     protected boolean light_system$force_update_light;
     protected boolean light_system$enable;
@@ -260,7 +260,7 @@ public class Config {
 
         // performance
         performance$max_block_chain_update_limit = config.getInt("performance.max-block-chain-update-limit", 64);
-        performance$max_emoji_parsed_limit = config.getInt("performance.max-emoji-parsed-limit", 100);
+        performance$max_emojis_per_parse = config.getInt("performance.max-emojis-per-parse", 32);
 
         // light
         light_system$force_update_light = config.getBoolean("light-system.force-update-light", false);
@@ -354,8 +354,8 @@ public class Config {
         return instance.performance$max_block_chain_update_limit;
     }
 
-    public static int maxEmojiParsed() {
-        return instance.performance$max_emoji_parsed_limit;
+    public static int maxEmojisPerParse() {
+        return instance.performance$max_emojis_per_parse;
     }
 
     public static boolean removeInvalidFurniture() {

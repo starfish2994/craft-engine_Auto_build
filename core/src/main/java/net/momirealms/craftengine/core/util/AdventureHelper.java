@@ -5,6 +5,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -259,5 +260,28 @@ public class AdventureHelper {
             i++;
         }
         return stringBuilder.toString();
+    }
+
+    public static String plainTextContent(Component component) {
+        StringBuilder sb = new StringBuilder();
+        if (component instanceof TextComponent textComponent) {
+            sb.append(textComponent.content());
+        }
+        for (Component child : component.children()) {
+            sb.append(plainTextContent(child));
+        }
+        return sb.toString();
+    }
+
+    public static boolean isPureTextComponent(Component component) {
+        if (!(component instanceof TextComponent textComponent)) {
+            return false;
+        }
+        for (Component child : textComponent.children()) {
+            if (!isPureTextComponent(child)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.util.context.PlayerContext;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -30,11 +31,11 @@ public abstract class AbstractFontManager implements FontManager {
     private final Set<Integer> illegalChars = new HashSet<>();
     private final ImageParser imageParser;
     private final EmojiParser emojiParser;
-
     private OffsetFont offsetFont;
-    private Trie imageTagTrie;
+
+    protected Trie imageTagTrie;
     protected Trie emojiKeywordTrie;
-    private Map<String, Component> tagMapper;
+    protected Map<String, Component> tagMapper;
     protected Map<String, Emoji> emojiMapper;
     // tab补全
     protected final Map<UUID, String> cachedEmojiSuggestions = new HashMap<>();
@@ -279,8 +280,12 @@ public abstract class AbstractFontManager implements FontManager {
                 return;
             }
             List<String> keywords = MiscUtils.getAsStringList(keywordsRaw);
-            UUID uuid = UUID.randomUUID();
+            if (keywords.isEmpty()) {
+                TranslationManager.instance().log("warning.config.emoji.lack_keywords", path.toString(), id.toString());
+                return;
+            }
             String keyword = keywords.get(0);
+            UUID uuid = UUID.nameUUIDFromBytes(keyword.getBytes(StandardCharsets.UTF_8));
             cachedEmojiSuggestions.put(uuid, keyword);
             String content = section.getOrDefault("content", "<arg:emoji>").toString();
             String image = null;

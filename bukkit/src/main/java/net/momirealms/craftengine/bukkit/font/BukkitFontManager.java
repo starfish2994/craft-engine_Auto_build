@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.bukkit.font;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonObject;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
@@ -36,10 +36,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -144,109 +144,65 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         if (renameText == null || renameText.isEmpty()) return;
 
         Component itemName = Component.text(renameText);
-        MutableInt parsedCount = new MutableInt(0);
-        processComponent(itemName, player, parsedCount, (text) -> {
-            if (parsedCount.value >= Config.maxEmojiParsed()) return;
+        EmojiReplaceProcessResult replaceProcessResult = processEmojiNoCopy(player, itemName, renameText);
+        if (replaceProcessResult.changed()) {
             Item<ItemStack> wrapped = this.plugin.itemManager().wrap(result);
-            wrapped.customName(AdventureHelper.componentToJson(text));
-            event.setResult(wrapped.loadCopy());
-        });
+            wrapped.customName(AdventureHelper.componentToJson(replaceProcessResult.newText()));
+            event.setResult(wrapped.load());
+        }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onSignChange(SignChangeEvent event) {
+        Player player = event.getPlayer();
+        List<Component> lines = event.lines();
+        for (int i = 0; i < lines.size(); i++) {
+            JsonElement json = ComponentUtils.paperAdventureToJsonElement(lines.get(i));
+            if (json == null) continue;
+            Component line = AdventureHelper.jsonElementToComponent(json);
+            EmojiReplaceProcessResult result = processEmojiNoCopy(player, line);
+            if (result.changed()) {
+                try {
+                    Reflections.method$SignChangeEvent$line.invoke(event, i, ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(result.newText())));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    plugin.logger().warn("Failed to set sign line", e);
+                }
+            } else if (AdventureHelper.isPureTextComponent(line)) {
+                String plainText = AdventureHelper.plainTextContent(line);
+                try {
+                    JsonObject jo = new JsonObject();
+                    jo.addProperty("text", plainText);
+                    Reflections.method$SignChangeEvent$line.invoke(event, i, ComponentUtils.jsonElementToPaperAdventure(jo));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    plugin.logger().warn("Failed to reset sign line", e);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerEditBook(PlayerEditBookEvent event) {
         if (!event.isSigning()) return;
         Player player = event.getPlayer();
         BookMeta newBookMeta = event.getNewBookMeta();
         List<?> pages = newBookMeta.pages();
-        MutableBoolean replacedBookMeta = new MutableBoolean(false);
-        MutableInt parsedCount = new MutableInt(0);
+        boolean changed = false;
         for (int i = 0; i < pages.size(); i++) {
-            int finalIndex = i;
             JsonElement json = ComponentUtils.paperAdventureToJsonElement(pages.get(i));
-            if (json instanceof JsonPrimitive primitive) {
-                if (primitive.isString() && primitive.getAsString().isEmpty()) continue;
-            }
             Component page = AdventureHelper.jsonElementToComponent(json);
-            processComponent(page, player, parsedCount, (text) -> {
+            EmojiReplaceProcessResult result = processEmojiNoCopy(player, page);
+            if (result.changed()) {
+                changed = true;
                 try {
-                    replacedBookMeta.value = true;
-                    Reflections.method$BookMeta$page.invoke(
-                            newBookMeta, finalIndex + 1,
-                            ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(text))
-                    );
+                    Reflections.method$BookMeta$page.invoke(newBookMeta, i + 1, ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(result.newText())));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     this.plugin.logger().warn("Failed to set book page", e);
                 }
-            });
-            if (parsedCount.value > Config.maxEmojiParsed()) break;
+            }
         }
-        if (replacedBookMeta.value) {
+        if (changed) {
             event.setNewBookMeta(newBookMeta);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onSignChange(SignChangeEvent event) {
-        Player player = event.getPlayer();
-        List<Component> lines = event.lines();
-        MutableInt parsedCount = new MutableInt(0);
-        for (int i = 0; i < lines.size(); i++) {
-            int finalIndex = i;
-            JsonElement json = ComponentUtils.paperAdventureToJsonElement(lines.get(i));
-            if (json.toString().isEmpty()) continue;
-            Component line = AdventureHelper.jsonElementToComponent(json);
-            processComponent(line, player, parsedCount, (text) -> {
-                try {
-                    Reflections.method$SignChangeEvent$line.invoke(
-                            event, finalIndex,
-                            ComponentUtils.jsonElementToPaperAdventure(AdventureHelper.componentToJsonElement(text))
-                    );
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    plugin.logger().warn("Failed to set sign line", e);
-                }
-            });
-            if (parsedCount.value > Config.maxEmojiParsed()) break;
-        }
-    }
-
-    private void processComponent(Component text, Player player, MutableInt parsedCount, Consumer<Component> consumer) {
-        if (parsedCount.value > Config.maxEmojiParsed()) return;
-        Component textReplaced = text;
-        Set<String> processedKeywords = new HashSet<>();
-        for (Token token : super.emojiKeywordTrie.tokenize(AdventureHelper.componentToJson(text))) {
-            if (!token.isMatch()) continue;
-            if (parsedCount.value++ > Config.maxEmojiParsed()) return;
-            String keyword = token.getFragment();
-            if (processedKeywords.contains(keyword)) continue;
-            Emoji emoji = super.emojiMapper.get(keyword);
-            if (emoji == null) continue;
-            if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
-                continue;
-            }
-            textReplaced = textReplaced.replaceText(builder -> {
-                builder.matchLiteral(keyword)
-                        .replacement(AdventureHelper.miniMessage().deserialize(
-                                emoji.content(),
-                                PlayerContext.of(plugin.adapt(player), ContextHolder.builder()
-                                        .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
-                                        .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                                        .build()).tagResolvers()
-                        ));
-            });
-            consumer.accept(textReplaced);
-            processedKeywords.add(keyword);
-        }
-    }
-
-    private static final class MutableInt {
-        int value;
-        MutableInt(int value) { this.value = value; }
-    }
-
-    private static final class MutableBoolean {
-        boolean value;
-        MutableBoolean(boolean value) { this.value = value; }
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -274,6 +230,43 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private EmojiReplaceProcessResult processEmojiNoCopy(Player player, Component text) {
+        return this.processEmojiNoCopy(player, text, AdventureHelper.plainTextContent(text));
+    }
+
+    private EmojiReplaceProcessResult processEmojiNoCopy(Player player, Component text, @NotNull String raw) {
+        boolean replaced = false;
+        Set<String> processed = new HashSet<>();
+        int times = 0;
+        for (Token token : super.emojiKeywordTrie.tokenize(raw)) {
+            if (!token.isMatch())
+                continue;
+            String fragment = token.getFragment();
+            if (processed.contains(fragment))
+                continue;
+            Emoji emoji = super.emojiMapper.get(token.getFragment());
+            if (emoji == null || (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))))
+                continue;
+            text = text.replaceText(builder -> builder.matchLiteral(token.getFragment())
+                    .replacement(AdventureHelper.miniMessage().deserialize(
+                            emoji.content(),
+                            PlayerContext.of(plugin.adapt(player),
+                                    ContextHolder.builder()
+                                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
+                                            .build()
+                            ).tagResolvers()
+                    )));
+            replaced = true;
+            processed.add(fragment);
+            if (++times >= Config.maxEmojisPerParse()) {
+                break;
+            }
+        }
+        if (!replaced) return EmojiReplaceProcessResult.failed();
+        return EmojiReplaceProcessResult.success(text);
     }
 
     private IllegalCharacterProcessResult processIllegalCharacters(String raw) {
@@ -320,6 +313,17 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
         public static IllegalCharacterProcessResult not() {
             return new IllegalCharacterProcessResult(false, null);
+        }
+    }
+
+    public record EmojiReplaceProcessResult(boolean changed, Component newText) {
+
+        public static EmojiReplaceProcessResult success(Component newText) {
+            return new EmojiReplaceProcessResult(true, newText);
+        }
+
+        public static EmojiReplaceProcessResult failed() {
+            return new EmojiReplaceProcessResult(false, null);
         }
     }
 }
