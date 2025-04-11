@@ -92,22 +92,6 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public String stripTags(String text) {
-        if (this.imageTagTrie == null) {
-            return text;
-        }
-        StringBuilder builder = new StringBuilder();
-        for (Token token : this.imageTagTrie.tokenize(text)) {
-            if (token.isMatch()) {
-                builder.append("*");
-            } else {
-                builder.append(token.getFragment());
-            }
-        }
-        return builder.toString();
-    }
-
-    @Override
     public EmojiTextProcessResult replaceMiniMessageEmoji(@NotNull String miniMessage, Player player, int maxTimes) {
         if (this.emojiKeywordTrie == null || maxTimes <= 0) {
             return EmojiTextProcessResult.notReplaced(miniMessage);
@@ -219,6 +203,43 @@ public abstract class AbstractFontManager implements FontManager {
                 .match(Pattern.compile(patternString))
                 .replacement((result, b) -> emojis.get(result.group())));
         return EmojiComponentProcessResult.success(text);
+    }
+
+    @Override
+    public IllegalCharacterProcessResult processIllegalCharacters(String raw, char replacement) {
+        boolean hasIllegal = false;
+        // replace illegal image usage
+        Map<String, Component> tokens = matchTags(raw);
+        if (!tokens.isEmpty()) {
+            for (Map.Entry<String, Component> entry : tokens.entrySet()) {
+                raw = raw.replace(entry.getKey(), String.valueOf(replacement));
+                hasIllegal = true;
+            }
+        }
+
+        if (this.isDefaultFontInUse()) {
+            // replace illegal codepoint
+            char[] chars = raw.toCharArray();
+            int[] codepoints = CharacterUtils.charsToCodePoints(chars);
+            int[] newCodepoints = new int[codepoints.length];
+
+            for (int i = 0; i < codepoints.length; i++) {
+                int codepoint = codepoints[i];
+                if (!isIllegalCodepoint(codepoint)) {
+                    newCodepoints[i] = codepoint;
+                } else {
+                    newCodepoints[i] = replacement;
+                    hasIllegal = true;
+                }
+            }
+
+            if (hasIllegal) {
+                return IllegalCharacterProcessResult.has(new String(newCodepoints, 0, newCodepoints.length));
+            }
+        } else if (hasIllegal) {
+            return IllegalCharacterProcessResult.has(raw);
+        }
+        return IllegalCharacterProcessResult.not();
     }
 
     @Override

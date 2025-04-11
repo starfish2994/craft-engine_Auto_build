@@ -10,10 +10,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.core.font.AbstractFontManager;
-import net.momirealms.craftengine.core.font.EmojiComponentProcessResult;
-import net.momirealms.craftengine.core.font.EmojiTextProcessResult;
-import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.font.*;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -95,7 +92,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         if (!event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
             IllegalCharacterProcessResult result = processIllegalCharacters(event.getMessage());
             if (result.has()) {
-                event.setMessage(result.newText());
+                event.setMessage(result.text());
             }
         }
     }
@@ -125,10 +122,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         }
 
         if (renameText == null || renameText.isEmpty()) return;
-        IllegalCharacterProcessResult processResult = processIllegalCharacters(renameText);
-        if (processResult.has()) {
-            renameText = processResult.newText();
-        }
         Component itemName = Component.text(renameText);
         EmojiComponentProcessResult replaceProcessResult = replaceComponentEmoji(itemName, plugin.adapt(player), renameText);
         if (replaceProcessResult.changed()) {
@@ -203,7 +196,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
             if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
                 IllegalCharacterProcessResult result = processIllegalCharacters(processResult.text());
                 if (result.has()) {
-                    Object component = ComponentUtils.jsonToPaperAdventure(result.newText());
+                    Object component = ComponentUtils.jsonToPaperAdventure(result.text());
                     Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
                 } else if (hasChanged) {
                     Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
@@ -215,53 +208,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private IllegalCharacterProcessResult processIllegalCharacters(String raw) {
-        boolean hasIllegal = false;
-        // replace illegal image usage
-        Map<String, Component> tokens = matchTags(raw);
-        if (!tokens.isEmpty()) {
-            for (Map.Entry<String, Component> entry : tokens.entrySet()) {
-                raw = raw.replace(entry.getKey(), "*");
-                hasIllegal = true;
-            }
-        }
-
-        if (this.isDefaultFontInUse()) {
-            // replace illegal codepoint
-            char[] chars = raw.toCharArray();
-            int[] codepoints = CharacterUtils.charsToCodePoints(chars);
-            int[] newCodepoints = new int[codepoints.length];
-
-            for (int i = 0; i < codepoints.length; i++) {
-                int codepoint = codepoints[i];
-                if (!isIllegalCodepoint(codepoint)) {
-                    newCodepoints[i] = codepoint;
-                } else {
-                    newCodepoints[i] = '*';
-                    hasIllegal = true;
-                }
-            }
-
-            if (hasIllegal) {
-                return IllegalCharacterProcessResult.has(new String(newCodepoints, 0, newCodepoints.length));
-            }
-        } else if (hasIllegal) {
-            return IllegalCharacterProcessResult.has(raw);
-        }
-        return IllegalCharacterProcessResult.not();
-    }
-
-    public record IllegalCharacterProcessResult(boolean has, String newText) {
-
-        public static IllegalCharacterProcessResult has(String newText) {
-            return new IllegalCharacterProcessResult(true, newText);
-        }
-
-        public static IllegalCharacterProcessResult not() {
-            return new IllegalCharacterProcessResult(false, null);
         }
     }
 }

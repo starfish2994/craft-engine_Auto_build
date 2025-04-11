@@ -25,8 +25,6 @@ public interface FontManager extends Manageable {
     String BYPASS_COMMAND = "craftengine.filter.bypass.command";
     String BYPASS_ANVIL = "craftengine.filter.bypass.anvil";
 
-    String stripTags(String text);
-
     default EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player) {
         return replaceComponentEmoji(text, player, Config.maxEmojisPerParse());
     }
@@ -40,6 +38,12 @@ public interface FontManager extends Manageable {
     }
 
     EmojiComponentProcessResult replaceComponentEmoji(@NotNull Component text, @Nullable Player player, @NotNull String raw, int maxTimes);
+
+    default IllegalCharacterProcessResult processIllegalCharacters(String raw) {
+        return processIllegalCharacters(raw, '*');
+    }
+
+    IllegalCharacterProcessResult processIllegalCharacters(String raw, char replacement);
 
     ConfigSectionParser[] parsers();
 

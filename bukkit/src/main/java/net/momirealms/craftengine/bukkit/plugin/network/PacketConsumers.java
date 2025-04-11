@@ -20,6 +20,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -1640,21 +1641,21 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
             if (!Config.filterAnvil()) return;
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
+                return;
+            }
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
-                FontManager manager = CraftEngine.instance().imageManager();
-                if (!manager.isDefaultFontInUse()) return;
                 // check bypass
-                if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
-                    return;
-                }
-                runIfContainsIllegalCharacter(message, manager, (s) -> {
+                FontManager manager = CraftEngine.instance().imageManager();
+                IllegalCharacterProcessResult result = manager.processIllegalCharacters(message);
+                if (result.has()) {
                     try {
-                        Reflections.field$ServerboundRenameItemPacket$name.set(packet, s);
+                        Reflections.field$ServerboundRenameItemPacket$name.set(packet, result.text());
                     } catch (ReflectiveOperationException e) {
                         CraftEngine.instance().logger().warn("Failed to replace chat", e);
                     }
-                });
+                }
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundRenameItemPacket", e);
@@ -1665,20 +1666,19 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
             if (!Config.filterSign()) return;
-            String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
-            FontManager manager = CraftEngine.instance().imageManager();
-            if (!manager.isDefaultFontInUse()) return;
             // check bypass
             if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_SIGN)) {
                 return;
             }
+            String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
+            FontManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (line != null && !line.isEmpty()) {
-                    try {
-                        int lineIndex = i;
-                        runIfContainsIllegalCharacter(line, manager, (s) -> lines[lineIndex] = s);
-                    } catch (Exception ignore) {
+                    IllegalCharacterProcessResult result = manager.processIllegalCharacters(line);
+                    if (result.has()) {
+                        lines[i] = result.text();
                     }
                 }
             }
@@ -1761,25 +1761,6 @@ public class PacketConsumers {
             }
         }
         return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
-    }
-
-    private static void runIfContainsIllegalCharacter(String string, FontManager manager, Consumer<String> callback) {
-        if (string.isEmpty()) return;
-        int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
-        int[] newCodepoints = new int[codepoints.length];
-        boolean hasIllegal = false;
-        for (int i = 0; i < codepoints.length; i++) {
-            int codepoint = codepoints[i];
-            if (!manager.isIllegalCodepoint(codepoint)) {
-                newCodepoints[i] = codepoint;
-            } else {
-                newCodepoints[i] = '*';
-                hasIllegal = true;
-            }
-        }
-        if (hasIllegal) {
-            callback.accept(new String(newCodepoints, 0, newCodepoints.length));
-        }
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
