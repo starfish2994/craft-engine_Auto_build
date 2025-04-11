@@ -67,14 +67,29 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         this.oldCachedEmojiSuggestions.putAll(this.cachedEmojiSuggestions());
         Bukkit.getOnlinePlayers().forEach(player -> {
             FastNMS.INSTANCE.method$ChatSuggestions$remove(oldCachedEmojiSuggestions.keySet(), player);
-            FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
+            this.addEmojiSuggestions(player);
         });
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
+        this.addEmojiSuggestions(player);
+    }
+
+    private void addEmojiSuggestions(Player player) {
+        Map<UUID, String> hasPermissions = new HashMap<>();
+        Map<UUID, String> cachedEmojiSuggestions = this.cachedEmojiSuggestions();
+        for (UUID uuid : cachedEmojiSuggestions.keySet()) {
+            String keyword = cachedEmojiSuggestions.get(uuid);
+            Emoji emoji = super.emojiMapper.get(keyword);
+            if (emoji == null) continue;
+            if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
+                continue;
+            }
+            hasPermissions.put(uuid, keyword);
+        }
+        FastNMS.INSTANCE.method$ChatSuggestions$add(hasPermissions, player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
