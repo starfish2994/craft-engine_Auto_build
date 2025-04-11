@@ -42,8 +42,8 @@ public abstract class AbstractFontManager implements FontManager {
     protected Map<String, Component> tagMapper;
     protected Map<String, Emoji> emojiMapper;
     // tab补全
-    protected final Map<UUID, String> cachedEmojiSuggestions = new HashMap<>();
-    protected final Map<UUID, String> oldCachedEmojiSuggestions = new HashMap<>();
+    protected final List<String> cachedEmojiSuggestions = new ArrayList<>();
+    protected final List<String> oldCachedEmojiSuggestions = new ArrayList<>();
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -68,13 +68,13 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public Map<UUID, String> cachedEmojiSuggestions() {
-        return ImmutableMap.copyOf(this.cachedEmojiSuggestions);
+    public List<String> cachedEmojiSuggestions() {
+        return List.copyOf(this.cachedEmojiSuggestions);
     }
 
     @Override
-    public Map<UUID, String> oldCachedEmojiSuggestions() {
-        return ImmutableMap.copyOf(this.oldCachedEmojiSuggestions);
+    public List<String> oldCachedEmojiSuggestions() {
+        return List.copyOf(this.oldCachedEmojiSuggestions);
     }
 
     @Override
@@ -372,8 +372,7 @@ public abstract class AbstractFontManager implements FontManager {
                 return;
             }
             String keyword = keywords.get(0);
-            UUID uuid = UUID.nameUUIDFromBytes(keyword.getBytes(StandardCharsets.UTF_8));
-            cachedEmojiSuggestions.put(uuid, keyword);
+            cachedEmojiSuggestions.add(keyword);
             String content = section.getOrDefault("content", "<arg:emoji>").toString();
             String image = null;
             if (section.containsKey("image")) {

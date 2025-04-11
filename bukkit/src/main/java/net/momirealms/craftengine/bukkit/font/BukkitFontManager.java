@@ -32,9 +32,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -57,19 +55,33 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedLoad() {
-        Map<UUID, String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
+        List<String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
         super.delayedLoad();
-        this.oldCachedEmojiSuggestions.putAll(this.cachedEmojiSuggestions());
+        this.oldCachedEmojiSuggestions.addAll(this.cachedEmojiSuggestions());
         Bukkit.getOnlinePlayers().forEach(player -> {
-            FastNMS.INSTANCE.method$ChatSuggestions$remove(oldCachedEmojiSuggestions.keySet(), player);
-            FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
+            player.removeCustomChatCompletions(oldCachedEmojiSuggestions);
+            this.addEmojiSuggestions(player);
         });
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        FastNMS.INSTANCE.method$ChatSuggestions$add(this.cachedEmojiSuggestions(), player);
+        this.addEmojiSuggestions(player);
+    }
+
+    private void addEmojiSuggestions(Player player) {
+        List<String> hasPermissions = new ArrayList<>();
+        List<String> cachedEmojiSuggestions = this.cachedEmojiSuggestions();
+        for (String keyword : cachedEmojiSuggestions) {
+            Emoji emoji = super.emojiMapper.get(keyword);
+            if (emoji == null) continue;
+            if (emoji.permission() != null && !player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
+                continue;
+            }
+            hasPermissions.add(keyword);
+        }
+        player.addCustomChatCompletions(hasPermissions);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

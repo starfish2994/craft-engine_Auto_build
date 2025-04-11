@@ -655,7 +655,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             jsonObject.add("components", result.components());
             Object nmsStack = ItemObject.newItem(TagCompound.newTag(jsonObject.toString()));
             try {
-                itemStack = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, nmsStack);
+                itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(nmsStack);
             } catch (Exception e) {
                 this.plugin.logger().warn("Failed to create ItemStack mirror", e);
                 return new ItemStack(Material.STICK);

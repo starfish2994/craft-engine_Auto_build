@@ -43,7 +43,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class PacketConsumers {
     private static int[] mappings;
@@ -1118,7 +1117,7 @@ public class PacketConsumers {
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (!player.isMiningBlock()) return;
-            Object hand = Reflections.field$ServerboundSwingPacket$hand.get(packet);
+            Object hand = FastNMS.INSTANCE.field$ServerboundSwingPacket$hand(packet);
             if (hand == Reflections.instance$InteractionHand$MAIN_HAND) {
                 player.onSwingHand();
             }
@@ -1150,7 +1149,7 @@ public class PacketConsumers {
                 Object commonInfo = Reflections.field$ClientboundRespawnPacket$commonPlayerSpawnInfo.get(packet);
                 dimensionKey = Reflections.field$CommonPlayerSpawnInfo$dimension.get(commonInfo);
             }
-            Object location = Reflections.field$ResourceKey$location.get(dimensionKey);
+            Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
             if (world != null) {
                 int sectionCount = (world.getMaxHeight() - world.getMinHeight()) / 16;
@@ -1175,7 +1174,7 @@ public class PacketConsumers {
                 Object commonInfo = Reflections.field$ClientboundLoginPacket$commonPlayerSpawnInfo.get(packet);
                 dimensionKey = Reflections.field$CommonPlayerSpawnInfo$dimension.get(commonInfo);
             }
-            Object location = Reflections.field$ResourceKey$location.get(dimensionKey);
+            Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
             if (world != null) {
                 int sectionCount = (world.getMaxHeight() - world.getMinHeight()) / 16;
@@ -1219,7 +1218,7 @@ public class PacketConsumers {
         if (bukkitPlayer.getGameMode() != GameMode.CREATIVE) return;
         int slot = VersionHelper.isVersionNewerThan1_20_5() ? Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getShort(packet) : Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getInt(packet);
         if (slot < 36 || slot > 44) return;
-        ItemStack item = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, Reflections.field$ServerboundSetCreativeModeSlotPacket$itemStack.get(packet));
+        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$ServerboundSetCreativeModeSlotPacket$itemStack.get(packet));
         if (ItemUtils.isEmpty(item)) return;
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
