@@ -652,6 +652,10 @@ public class Config {
         return instance.image$intercept_packets$armor_stand;
     }
 
+    public static boolean interceptPlayerInfo() {
+        return instance.image$intercept_packets$player_info;
+    }
+
     public YamlDocument loadOrCreateYamlData(String fileName) {
         File file = new File(this.plugin.dataFolderFile(), fileName);
         if (!file.exists()) {

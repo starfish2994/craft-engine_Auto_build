@@ -1766,6 +1766,36 @@ public class Reflections {
             )
     );
 
+    public static final Field field$ClientboundPlayerInfoUpdatePacket$entries = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundPlayerInfoUpdatePacket, List.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundPlayerInfoUpdatePacket$Action = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket$a")
+            )
+    );
+
+    public static final Method method$ClientboundPlayerInfoUpdatePacket$Action$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$ClientboundPlayerInfoUpdatePacket$Action, clazz$ClientboundPlayerInfoUpdatePacket$Action.arrayType()
+            )
+    );
+
+    public static final Object instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$ClientboundPlayerInfoUpdatePacket$Action$values.invoke(null);
+            instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME = values[5];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Deprecated
     public static final Field field$ClientboundLevelChunkWithLightPacket$chunkData = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -4811,17 +4841,23 @@ public class Reflections {
             .map(it -> ReflectionUtils.getConstructor(it, clazz$ItemStack))
             .orElse(null);
 
-    // 1.20.1-1.21.1
-    public static final Method method$RecipeManager$getRecipeFor0 =
-            ReflectionUtils.getMethod(
-                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$Container, clazz$Level, clazz$ResourceLocation
-            );
-
-    // 1.21.2+
-    public static final Method method$RecipeManager$getRecipeFor1 =
-            ReflectionUtils.getMethod(
-                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceKey
-            );
+//    // 1.20.1-1.20.6
+//    public static final Method method$RecipeManager$getRecipeFor0 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$Container, clazz$Level, clazz$ResourceLocation
+//            );
+//
+//    // 1.21.1
+//    public static final Method method$RecipeManager$getRecipeFor2 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceLocation
+//            );
+//
+//    // 1.21.2+
+//    public static final Method method$RecipeManager$getRecipeFor1 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceKey
+//            );
 
     // 1.21+
     public static final Field field$SingleRecipeInput$item = Optional.ofNullable(clazz$SingleRecipeInput)

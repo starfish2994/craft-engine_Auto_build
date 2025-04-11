@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network.impl;
+package net.momirealms.craftengine.bukkit.plugin.network.id;
 
 import com.google.gson.JsonElement;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;

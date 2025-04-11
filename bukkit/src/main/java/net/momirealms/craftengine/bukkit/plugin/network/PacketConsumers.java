@@ -321,6 +321,50 @@ public class PacketConsumers {
         }
     };
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PLAYER_INFO_UPDATE = (user, event, packet) -> {
+        try {
+            if (!user.isOnline()) return;
+            if (!Config.interceptPlayerInfo()) return;
+            List<Object> entries = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$entries(packet);
+            if (entries instanceof MarkedArrayList) {
+                return;
+            }
+            EnumSet<? extends Enum<?>> enums = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$actions(packet);
+            outer: {
+                for (Object entry : enums) {
+                    if (entry == Reflections.instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME) {
+                        break outer;
+                    }
+                }
+                return;
+            }
+
+            List<Object> newEntries = new MarkedArrayList<>();
+            Reflections.field$ClientboundPlayerInfoUpdatePacket$entries.set(packet, newEntries);
+            for (Object entry : entries) {
+                Object mcComponent = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$Entry$displayName(entry);
+                if (mcComponent == null) {
+                    newEntries.add(entry);
+                    continue;
+                }
+                String json = ComponentUtils.minecraftToJson(mcComponent);
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) {
+                    newEntries.add(entry);
+                    continue;
+                }
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                }
+                Object newEntry = FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket$Entry(entry, ComponentUtils.adventureToMinecraft(component));
+                newEntries.add(newEntry);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundPlayerInfoUpdatePacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> TEAM_1_20 = (user, event) -> {
         if (!Config.interceptTeam()) return;
         try {
