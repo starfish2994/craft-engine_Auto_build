@@ -343,8 +343,7 @@ public class RecipeEventListener implements Listener {
         ItemStack itemStack = event.getItem();
         if (ItemUtils.isEmpty(itemStack)) return;
         try {
-            @SuppressWarnings("unchecked")
-            Optional<Object> optionalMCRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor1.invoke(
+            Optional<Object> optionalMCRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(
                     BukkitRecipeManager.nmsRecipeManager(),
                     Reflections.instance$RecipeType$CAMPFIRE_COOKING,
                     Reflections.constructor$SingleRecipeInput.newInstance(FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack)),
