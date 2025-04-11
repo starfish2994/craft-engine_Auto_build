@@ -237,8 +237,8 @@ gui:
 performance:
   # Maximum chain update depth when fixing client visuals
   max-block-chain-update-limit: 64
-  # Maximum emoji parsed each time
-  max-emoji-parsed-limit: 100
+  # Maximum number of emojis to parse per operation
+  max-emojis-per-parse: 16
 
 light-system:
   enable: true
@@ -249,7 +249,7 @@ chunk-system:
   # 1 = NONE      |  Compression Speed | Decompress Speed | Compression Ratio | Memory Usage   |
   # 2 = DEFLATE   |     Medium-Slow           Medium          Moderate              Low        |
   # 3 = GZIP      |     Medium-Slow           Medium          Moderate              Low        |
-  # 4 = LAZ4      |     Blazing-Fast        Blazing-Fast        Low                 Low        |
+  # 4 = LZ4       |     Blazing-Fast        Blazing-Fast        Low                 Low        |
   # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
   # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
