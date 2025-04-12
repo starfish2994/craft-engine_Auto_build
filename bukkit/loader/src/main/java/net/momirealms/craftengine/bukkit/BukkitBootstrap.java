@@ -39,8 +39,6 @@ public class BukkitBootstrap extends JavaPlugin {
             }, 1, 1, TimeUnit.MINUTES);
             this.plugin.onPluginEnable();
             this.plugin.logger().warn("You're using the CraftEngine Community Edition");
-            this.plugin.logger().warn(" - Commercial use on production servers is prohibited");
-            this.plugin.logger().warn(" - You must enable server's online mode");
             this.plugin.logger().warn(" - Maximum player limit is restricted to 20");
         }
     }
