@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.plugin.network.id;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
 import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.core.util.VersionHelper;
 
 public class PacketIds1_20 implements PacketIds {
 
