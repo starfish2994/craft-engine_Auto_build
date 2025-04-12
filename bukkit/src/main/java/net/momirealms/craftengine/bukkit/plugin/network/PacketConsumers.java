@@ -2078,6 +2078,8 @@ public class PacketConsumers {
                     } else if (format == 2) {
                         buf.writeNbt(fixed, false);
                     }
+                } else {
+                    buf.writeBoolean(false);
                 }
             }
         } catch (Exception e) {
