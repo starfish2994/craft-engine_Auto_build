@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import net.momirealms.craftengine.bukkit.compatibility.worldedit.WorldEditBlockRegister;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
@@ -318,13 +319,16 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
+            affectedBlocks.remove(Reflections.instance$Blocks$FIRE);
+            affectedBlocks.remove(Reflections.instance$Blocks$SOUL_FIRE);
+
             this.affectedSoundBlocks = ImmutableSet.copyOf(affectedBlocks);
 
             ImmutableMap.Builder<Key, Key> soundMapperBuilder = ImmutableMap.builder();
             for (Object soundType : affectedSounds) {
                 for (Field field : List.of(Reflections.field$SoundType$placeSound, Reflections.field$SoundType$fallSound, Reflections.field$SoundType$hitSound, Reflections.field$SoundType$stepSound, Reflections.field$SoundType$breakSound)) {
                     Object soundEvent = field.get(soundType);
-                    Key previousId = Key.of(Reflections.field$SoundEvent$location.get(soundEvent).toString());
+                    Key previousId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
                     soundMapperBuilder.put(previousId, Key.of(previousId.namespace(), "replaced." + previousId.value()));
                 }
             }
@@ -829,8 +833,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return counter;
     }
 
-    private Object createResourceLocation(Key key) throws Exception {
-        return Reflections.method$ResourceLocation$fromNamespaceAndPath.invoke(null, key.namespace(), key.value());
+    private Object createResourceLocation(Key key) {
+        return FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(key.namespace(), key.value());
     }
 
     private Object getBlockFromRegistry(Object resourceLocation) throws Exception {

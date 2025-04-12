@@ -128,7 +128,7 @@ public class BlockStateUtils {
     public static int physicsEventToId(BlockPhysicsEvent event) throws ReflectiveOperationException {
         Object blockData = Reflections.field$BlockPhysicsEvent$changed.get(event);
         Object blockState = Reflections.field$CraftBlockData$data.get(blockData);
-        return (int) Reflections.method$IdMapper$getId.invoke(Reflections.instance$BLOCK_STATE_REGISTRY, blockState);
+        return FastNMS.INSTANCE.method$IdMapper$getId(Reflections.instance$BLOCK_STATE_REGISTRY, blockState);
     }
 
     public static Object physicsEventToState(BlockPhysicsEvent event) throws ReflectiveOperationException {

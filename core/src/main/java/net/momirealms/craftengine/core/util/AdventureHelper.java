@@ -5,7 +5,9 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
@@ -19,12 +21,14 @@ public class AdventureHelper {
     public static final String EMPTY_COMPONENT = componentToJson(Component.empty());
     private final MiniMessage miniMessage;
     private final MiniMessage miniMessageStrict;
+    private final MiniMessage miniMessageCustom;
     private final GsonComponentSerializer gsonComponentSerializer;
     private final NBTComponentSerializer nbtComponentSerializer;
 
     private AdventureHelper() {
         this.miniMessage = MiniMessage.builder().build();
         this.miniMessageStrict = MiniMessage.builder().strict(true).build();
+        this.miniMessageCustom = MiniMessage.builder().tags(TagResolver.empty()).build();
         GsonComponentSerializer.Builder builder = GsonComponentSerializer.builder();
         if (!VersionHelper.isVersionNewerThan1_20_5()) {
             builder.legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get());
@@ -54,6 +58,14 @@ public class AdventureHelper {
      */
     public static MiniMessage miniMessage() {
         return getInstance().miniMessage;
+    }
+
+    public static MiniMessage customMiniMessage() {
+        return getInstance().miniMessageCustom;
+    }
+
+    public static MiniMessage strictMiniMessage() {
+        return getInstance().miniMessageStrict;
     }
 
     /**
@@ -124,6 +136,10 @@ public class AdventureHelper {
      */
     public static String jsonToMiniMessage(String json) {
         return getInstance().miniMessageStrict.serialize(getInstance().gsonComponentSerializer.deserialize(json));
+    }
+
+    public static String componentToMiniMessage(Component component) {
+        return getInstance().miniMessageStrict.serialize(component);
     }
 
     /**
@@ -244,5 +260,28 @@ public class AdventureHelper {
             i++;
         }
         return stringBuilder.toString();
+    }
+
+    public static String plainTextContent(Component component) {
+        StringBuilder sb = new StringBuilder();
+        if (component instanceof TextComponent textComponent) {
+            sb.append(textComponent.content());
+        }
+        for (Component child : component.children()) {
+            sb.append(plainTextContent(child));
+        }
+        return sb.toString();
+    }
+
+    public static boolean isPureTextComponent(Component component) {
+        if (!(component instanceof TextComponent textComponent)) {
+            return false;
+        }
+        for (Component child : textComponent.children()) {
+            if (!isPureTextComponent(child)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

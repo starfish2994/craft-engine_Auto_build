@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.util;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 
 public class ComponentUtils {
@@ -27,19 +26,18 @@ public class ComponentUtils {
     }
 
     public static String paperAdventureToJson(Object component) {
-        try {
-            return (String) Reflections.method$ComponentSerializer$serialize.invoke(Reflections.instance$GsonComponentSerializer, component);
-        } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to serialize paper adventure component " + component, e);
-            return AdventureHelper.EMPTY_COMPONENT;
-        }
+        return Reflections.instance$GsonComponentSerializer$Gson.toJson(component);
     }
 
     public static Object jsonToPaperAdventure(String json) {
-        try {
-            return Reflections.method$ComponentSerializer$deserialize.invoke(Reflections.instance$GsonComponentSerializer, json);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to deserialize paper component from json", e);
-        }
+        return Reflections.instance$GsonComponentSerializer$Gson.fromJson(json, Reflections.clazz$AdventureComponent);
+    }
+
+    public static JsonElement paperAdventureToJsonElement(Object component) {
+        return Reflections.instance$GsonComponentSerializer$Gson.toJsonTree(component);
+    }
+
+    public static Object jsonElementToPaperAdventure(JsonElement json) {
+        return Reflections.instance$GsonComponentSerializer$Gson.fromJson(json, Reflections.clazz$AdventureComponent);
     }
 }

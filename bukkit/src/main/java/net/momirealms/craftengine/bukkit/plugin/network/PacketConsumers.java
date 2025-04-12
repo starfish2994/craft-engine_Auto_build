@@ -20,6 +20,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -42,7 +43,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class PacketConsumers {
     private static int[] mappings;
@@ -318,6 +318,54 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetPlayerTeamPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PLAYER_INFO_UPDATE = (user, event, packet) -> {
+        try {
+            if (!user.isOnline()) return;
+            if (!Config.interceptPlayerInfo()) return;
+            List<Object> entries = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$entries(packet);
+            if (entries instanceof MarkedArrayList) {
+                return;
+            }
+            EnumSet<? extends Enum<?>> enums = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$actions(packet);
+            outer: {
+                for (Object entry : enums) {
+                    if (entry == Reflections.instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME) {
+                        break outer;
+                    }
+                }
+                return;
+            }
+
+            boolean isChanged = false;
+            List<Object> newEntries = new MarkedArrayList<>();
+            for (Object entry : entries) {
+                Object mcComponent = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$Entry$displayName(entry);
+                if (mcComponent == null) {
+                    newEntries.add(entry);
+                    continue;
+                }
+                String json = ComponentUtils.minecraftToJson(mcComponent);
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                if (tokens.isEmpty()) {
+                    newEntries.add(entry);
+                    continue;
+                }
+                Component component = AdventureHelper.jsonToComponent(json);
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                }
+                Object newEntry = FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket$Entry(entry, ComponentUtils.adventureToMinecraft(component));
+                newEntries.add(newEntry);
+                isChanged = true;
+            }
+            if (isChanged) {
+                event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket(enums, newEntries));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundPlayerInfoUpdatePacket", e);
         }
     };
 
@@ -1117,7 +1165,7 @@ public class PacketConsumers {
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (!player.isMiningBlock()) return;
-            Object hand = Reflections.field$ServerboundSwingPacket$hand.get(packet);
+            Object hand = FastNMS.INSTANCE.field$ServerboundSwingPacket$hand(packet);
             if (hand == Reflections.instance$InteractionHand$MAIN_HAND) {
                 player.onSwingHand();
             }
@@ -1149,7 +1197,7 @@ public class PacketConsumers {
                 Object commonInfo = Reflections.field$ClientboundRespawnPacket$commonPlayerSpawnInfo.get(packet);
                 dimensionKey = Reflections.field$CommonPlayerSpawnInfo$dimension.get(commonInfo);
             }
-            Object location = Reflections.field$ResourceKey$location.get(dimensionKey);
+            Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
             if (world != null) {
                 int sectionCount = (world.getMaxHeight() - world.getMinHeight()) / 16;
@@ -1174,7 +1222,7 @@ public class PacketConsumers {
                 Object commonInfo = Reflections.field$ClientboundLoginPacket$commonPlayerSpawnInfo.get(packet);
                 dimensionKey = Reflections.field$CommonPlayerSpawnInfo$dimension.get(commonInfo);
             }
-            Object location = Reflections.field$ResourceKey$location.get(dimensionKey);
+            Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
             if (world != null) {
                 int sectionCount = (world.getMaxHeight() - world.getMinHeight()) / 16;
@@ -1218,7 +1266,7 @@ public class PacketConsumers {
         if (bukkitPlayer.getGameMode() != GameMode.CREATIVE) return;
         int slot = VersionHelper.isVersionNewerThan1_20_5() ? Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getShort(packet) : Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getInt(packet);
         if (slot < 36 || slot > 44) return;
-        ItemStack item = (ItemStack) Reflections.method$CraftItemStack$asCraftMirror.invoke(null, Reflections.field$ServerboundSetCreativeModeSlotPacket$itemStack.get(packet));
+        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$ServerboundSetCreativeModeSlotPacket$itemStack.get(packet));
         if (ItemUtils.isEmpty(item)) return;
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
@@ -1620,9 +1668,7 @@ public class PacketConsumers {
                     buf.writeVarInt(event.packetID());
                     buf.writeVarInt(0);
                     Object newId = KeyUtils.toResourceLocation(mapped);
-                    Object newSoundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
-                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$fixedRange.get(soundEvent)) :
-                            Reflections.constructor$SoundEvent.newInstance(newId, Reflections.field$SoundEvent$range.get(soundEvent), Reflections.field$SoundEvent$newSystem.get(soundEvent));
+                    Object newSoundEvent = FastNMS.INSTANCE.constructor$SoundEvent(newId, FastNMS.INSTANCE.method$SoundEvent$fixedRange(soundEvent));
                     FastNMS.INSTANCE.method$SoundEvent$directEncode(buf, newSoundEvent);
                     buf.writeVarInt(source);
                     buf.writeInt(x);
@@ -1642,21 +1688,21 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RENAME_ITEM = (user, event, packet) -> {
         try {
             if (!Config.filterAnvil()) return;
+            if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
+                return;
+            }
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
-                FontManager manager = CraftEngine.instance().imageManager();
-                if (!manager.isDefaultFontInUse()) return;
                 // check bypass
-                if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
-                    return;
-                }
-                runIfContainsIllegalCharacter(message, manager, (s) -> {
+                FontManager manager = CraftEngine.instance().imageManager();
+                IllegalCharacterProcessResult result = manager.processIllegalCharacters(message);
+                if (result.has()) {
                     try {
-                        Reflections.field$ServerboundRenameItemPacket$name.set(packet, s);
+                        Reflections.field$ServerboundRenameItemPacket$name.set(packet, result.text());
                     } catch (ReflectiveOperationException e) {
                         CraftEngine.instance().logger().warn("Failed to replace chat", e);
                     }
-                });
+                }
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundRenameItemPacket", e);
@@ -1667,20 +1713,19 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SIGN_UPDATE = (user, event, packet) -> {
         try {
             if (!Config.filterSign()) return;
-            String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
-            FontManager manager = CraftEngine.instance().imageManager();
-            if (!manager.isDefaultFontInUse()) return;
             // check bypass
             if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_SIGN)) {
                 return;
             }
+            String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
+            FontManager manager = CraftEngine.instance().imageManager();
+            if (!manager.isDefaultFontInUse()) return;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (line != null && !line.isEmpty()) {
-                    try {
-                        int lineIndex = i;
-                        runIfContainsIllegalCharacter(line, manager, (s) -> lines[lineIndex] = s);
-                    } catch (Exception ignore) {
+                    IllegalCharacterProcessResult result = manager.processIllegalCharacters(line);
+                    if (result.has()) {
+                        lines[i] = result.text();
                     }
                 }
             }
@@ -1728,18 +1773,12 @@ public class PacketConsumers {
             }
 
             if (changed) {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    event.setCancelled(true);
-                    Object newPacket = Reflections.constructor$ServerboundEditBookPacket.newInstance(
-                            Reflections.field$ServerboundEditBookPacket$slot.get(packet),
-                            newPages,
-                            newTitle
-                    );
-                    user.receivePacket(newPacket);
-                } else {
-                    Reflections.field$ServerboundEditBookPacket$pages.set(packet, newPages);
-                    Reflections.field$ServerboundEditBookPacket$title.set(packet, newTitle);
-                }
+                Object newPacket = Reflections.constructor$ServerboundEditBookPacket.newInstance(
+                        Reflections.field$ServerboundEditBookPacket$slot.get(packet),
+                        newPages,
+                        newTitle
+                );
+                event.replacePacket(newPacket);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundEditBookPacket", e);
@@ -1763,25 +1802,6 @@ public class PacketConsumers {
             }
         }
         return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
-    }
-
-    private static void runIfContainsIllegalCharacter(String string, FontManager manager, Consumer<String> callback) {
-        if (string.isEmpty()) return;
-        int[] codepoints = CharacterUtils.charsToCodePoints(string.toCharArray());
-        int[] newCodepoints = new int[codepoints.length];
-        boolean hasIllegal = false;
-        for (int i = 0; i < codepoints.length; i++) {
-            int codepoint = codepoints[i];
-            if (!manager.isIllegalCodepoint(codepoint)) {
-                newCodepoints[i] = codepoint;
-            } else {
-                newCodepoints[i] = '*';
-                hasIllegal = true;
-            }
-        }
-        if (hasIllegal) {
-            callback.accept(new String(newCodepoints, 0, newCodepoints.length));
-        }
     }
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {

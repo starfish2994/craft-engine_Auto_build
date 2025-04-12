@@ -406,7 +406,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Pair<Object, Object>> optionalRecipe = (Optional<Pair<Object, Object>>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
+            Optional<Pair<Object, Object>> optionalRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Pair<Object, Object> pair = optionalRecipe.get();
                 Object resourceLocation = pair.getFirst();
@@ -474,7 +474,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
                 Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
@@ -542,7 +542,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor0.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
                 Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
@@ -602,7 +602,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
             Object type = injectedCacheCheck.recipeType();
             Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) Reflections.method$RecipeManager$getRecipeFor1.invoke(mcRecipeManager, type, args[0], args[1], lastRecipe);
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
             if (optionalRecipe.isPresent()) {
                 Object holder = optionalRecipe.get();
                 Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);

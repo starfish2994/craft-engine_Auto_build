@@ -70,7 +70,7 @@ public class BlockEventListener implements Listener {
                         try {
                             Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                             Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
-                            player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
+                            player.playSound(block.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
                         } catch (ReflectiveOperationException e) {
                             this.plugin.logger().warn("Failed to get sound type", e);
                         }
@@ -87,7 +87,7 @@ public class BlockEventListener implements Listener {
                 Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                 Object placeSound = Reflections.field$SoundType$placeSound.get(soundType);
-                player.playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
+                player.playSound(block.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
             } catch (ReflectiveOperationException e) {
                 this.plugin.logger().warn("Failed to get sound type", e);
             }
@@ -179,7 +179,7 @@ public class BlockEventListener implements Listener {
                     try {
                         Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                         Object breakSound = Reflections.field$SoundType$breakSound.get(soundType);
-                        block.getWorld().playSound(block.getLocation(), Reflections.field$SoundEvent$location.get(breakSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
+                        block.getWorld().playSound(block.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(breakSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
                     } catch (ReflectiveOperationException e) {
                         this.plugin.logger().warn("Failed to get sound type", e);
                     }
@@ -251,7 +251,7 @@ public class BlockEventListener implements Listener {
                 try {
                     Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                     Object stepSound = Reflections.field$SoundType$stepSound.get(soundType);
-                    player.playSound(playerLocation, Reflections.field$SoundEvent$location.get(stepSound).toString(), SoundCategory.BLOCKS, 0.15f, 1f);
+                    player.playSound(playerLocation, FastNMS.INSTANCE.field$SoundEvent$location(stepSound).toString(), SoundCategory.BLOCKS, 0.15f, 1f);
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to get sound type", e);
                 }

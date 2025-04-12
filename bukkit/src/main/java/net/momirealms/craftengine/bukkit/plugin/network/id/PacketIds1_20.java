@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network.impl;
+package net.momirealms.craftengine.bukkit.plugin.network.id;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -93,5 +93,10 @@ public class PacketIds1_20 implements PacketIds {
     @Override
     public int clientboundLevelChunkWithLightPacket() {
         return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundLevelChunkWithLightPacket);
+    }
+
+    @Override
+    public int clientboundPlayerInfoUpdatePacket() {
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundPlayerInfoUpdatePacket);
     }
 }

@@ -103,3 +103,6 @@ warning.config.block.state.model.invalid_resource_location: "<yellow>Issue found
 warning.config.model.generation.conflict: "<yellow>Issue found in file <arg:0> - Failed to generate model for '<arg:1>' as two or more configurations attempt to generate different json models with the same path: '<arg:2>'</yellow>"
 warning.config.model.generation.texture.invalid_resource_location: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' has a '<arg:2>' texture argument [<arg:3>] that contains legal characters. Please read https://minecraft.wiki/w/Resource_location#Legal_characters</yellow>"
 warning.config.model.generation.parent.invalid_resource_location: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' has a parent argument [<arg:2>] that contains legal characters. Please read https://minecraft.wiki/w/Resource_location#Legal_characters</yellow>"
+warning.config.emoji.lack_keywords: "<yellow>Issue found in file <arg:0> - The emoji '<arg:1>' is missing the required 'keywords' argument.</yellow>"
+warning.config.emoji.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated emoji '<arg:1>'.</yellow>"
+warning.config.emoji.invalid_image: "<yellow>Issue found in file <arg:0> - The emoji '<arg:1>' has an invalid 'image' argument '<arg:2>'.</yellow>"

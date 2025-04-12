@@ -1,30 +1,36 @@
 package net.momirealms.craftengine.core.font;
 
-import net.momirealms.craftengine.core.util.Key;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class Emoji {
-    private final Key font;
-    private final String image;
+    private final String content;
     private final String permission;
+    private final String image;
+    private final List<String> keywords;
 
-    public Emoji(Key font, String image, String permission) {
-        this.font = font;
+    public Emoji(String content, String permission, String image, List<String> keywords) {
+        this.content = content;
         this.image = image;
         this.permission = permission;
+        this.keywords = keywords;
     }
 
-    public Key font() {
-        return font;
+    public String content() {
+        return content;
     }
 
-    public String image() {
+    @Nullable
+    public String emojiImage() {
         return image;
     }
 
     @Nullable
     public String permission() {
         return permission;
+    }
+
+    public List<String> keywords() {
+        return keywords;
     }
 }

@@ -153,18 +153,20 @@ image:
     command: true
     sign: true
   # By intercepting packets, you are allowed to use <image:...> <shift:...> in other plugins
+  # Turning off some unused options would help reduce CPU usage on async threads
   intercept-packets:
     system-chat: true
-    tab-list: true
+    tab-list: true     # Tab list header and footer
+    player-info: true  # User list in tab
     actionbar: true
     title: true
     bossbar: true
-    container: true
-    team: true
+    container: true     # GUI
+    team: true          # Team prefix, suffix and display name
     scoreboard: true
     entity-name: false
-    armor-stand: true
-    text-display: true
+    armor-stand: true   # Legacy Holograms
+    text-display: true  # Modern Holograms
 
 emoji: {}
 
@@ -237,6 +239,8 @@ gui:
 performance:
   # Maximum chain update depth when fixing client visuals
   max-block-chain-update-limit: 64
+  # Maximum number of emojis to parse per operation
+  max-emojis-per-parse: 16
 
 light-system:
   enable: true
@@ -247,7 +251,7 @@ chunk-system:
   # 1 = NONE      |  Compression Speed | Decompress Speed | Compression Ratio | Memory Usage   |
   # 2 = DEFLATE   |     Medium-Slow           Medium          Moderate              Low        |
   # 3 = GZIP      |     Medium-Slow           Medium          Moderate              Low        |
-  # 4 = LAZ4      |     Blazing-Fast        Blazing-Fast        Low                 Low        |
+  # 4 = LZ4       |     Blazing-Fast        Blazing-Fast        Low                 Low        |
   # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
   # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
@@ -261,7 +265,7 @@ chunk-system:
   restore-custom-blocks-on-chunk-load: true
 
 offset-characters:
-  font: minecraft:default
+  font: minecraft:offset_chars
   -1: '\uf800'
   -2: '\uf801'
   -3: '\uf802'

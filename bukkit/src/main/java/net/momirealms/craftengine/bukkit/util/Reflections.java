@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -10,6 +11,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
@@ -404,18 +406,21 @@ public class Reflections {
             BukkitReflectionUtils.assembleMCClass("core.HolderLookup$b")
     );
 
+    @Deprecated
     public static final Method method$Component$Serializer$fromJson0 = ReflectionUtils.getMethod(
             clazz$Component$Serializer,
             new String[] { "fromJson" },
             String.class, clazz$HolderLookup$Provider
     );
 
+    @Deprecated
     public static final Method method$Component$Serializer$fromJson1 = ReflectionUtils.getMethod(
             clazz$Component$Serializer,
             new String[] { "fromJson" },
             JsonElement.class, clazz$HolderLookup$Provider
     );
 
+    @Deprecated
     public static final Method method$Component$Serializer$toJson = ReflectionUtils.getMethod(
             clazz$Component$Serializer,
             new String[] { "toJson" },
@@ -487,6 +492,7 @@ public class Reflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$ServerPlayer, clazz$ServerGamePacketListenerImpl, 0)
     );
 
+    @Deprecated
     public static final Method method$ServerGamePacketListenerImpl$sendPacket = requireNonNull(
             ReflectionUtils.getMethods(clazz$ServerGamePacketListenerImpl, void.class, clazz$Packet).get(0)
     );
@@ -546,12 +552,14 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$ClientboundAddEntityPacket$data = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundAddEntityPacket, int.class, 4
             )
     );
 
+    @Deprecated
     public static final Field field$ClientboundAddEntityPacket$type = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundAddEntityPacket, clazz$EntityType, 0
@@ -576,6 +584,7 @@ public class Reflections {
 //            )
 //    );
 
+    @Deprecated
     public static final Field field$ClientboundAddEntityPacket$entityId = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundAddEntityPacket, int.class, 0
@@ -594,18 +603,21 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$Vec3$x = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$Vec3, double.class, 0
             )
     );
 
+    @Deprecated
     public static final Field field$Vec3$y = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$Vec3, double.class, 1
             )
     );
 
+    @Deprecated
     public static final Field field$Vec3$z = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$Vec3, double.class, 2
@@ -1085,6 +1097,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$ResourceKey$location = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ResourceKey, clazz$ResourceLocation, 1
@@ -1453,10 +1466,12 @@ public class Reflections {
             ReflectionUtils.getMethod(clazz$IdMapper, int.class)
     );
 
+    @Deprecated
     public static final Method method$IdMapper$getId = requireNonNull(
             ReflectionUtils.getMethod(clazz$IdMapper, int.class, Object.class)
     );
 
+    @Deprecated
     public static final Method method$IdMapper$byId = requireNonNull(
             ReflectionUtils.getMethod(clazz$IdMapper, Object.class, int.class)
     );
@@ -1642,6 +1657,7 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.RegistryFriendlyByteBuf")
             );
 
+    @Deprecated
     public static final Constructor<?> constructor$RegistryFriendlyByteBuf = Optional.ofNullable(clazz$RegistryFriendlyByteBuf)
             .map(it -> ReflectionUtils.getConstructor(it, 0))
             .orElse(null);
@@ -1744,6 +1760,43 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$ClientboundPlayerInfoUpdatePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket")
+            )
+    );
+
+    public static final Field field$ClientboundPlayerInfoUpdatePacket$entries = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundPlayerInfoUpdatePacket, List.class, 0
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundPlayerInfoUpdatePacket$Action = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundPlayerInfoUpdatePacket$a")
+            )
+    );
+
+    public static final Method method$ClientboundPlayerInfoUpdatePacket$Action$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$ClientboundPlayerInfoUpdatePacket$Action, clazz$ClientboundPlayerInfoUpdatePacket$Action.arrayType()
+            )
+    );
+
+    public static final Object instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$ClientboundPlayerInfoUpdatePacket$Action$values.invoke(null);
+            instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME = values[5];
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Deprecated
     public static final Field field$ClientboundLevelChunkWithLightPacket$chunkData = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundLevelChunkWithLightPacket, clazz$ClientboundLevelChunkPacketData, 0
@@ -1780,6 +1833,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$CraftChunk$worldServer = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$CraftChunk, clazz$ServerLevel, 0
@@ -2158,6 +2212,7 @@ public class Reflections {
         }
     }
 
+    @Deprecated
     public static final Method method$ResourceLocation$fromNamespaceAndPath = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$ResourceLocation, clazz$ResourceLocation, String.class, String.class
@@ -2436,6 +2491,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Constructor<?> constructor$AABB = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$AABB, double.class, double.class, double.class, double.class, double.class, double.class
@@ -2555,12 +2611,14 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$ClientboundLevelParticlesPacket$particle = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundLevelParticlesPacket, clazz$ParticleOptions, 0
             )
     );
 
+    @Deprecated
     public static final Field field$BlockParticleOption$blockState = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$BlockParticleOption, clazz$BlockState, 0
@@ -2627,6 +2685,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$SoundEvent$location = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$SoundEvent, clazz$ResourceLocation, 0
@@ -2666,6 +2725,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Constructor<?> constructor$ClientboundLightUpdatePacket = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$ClientboundLightUpdatePacket, clazz$ChunkPos, clazz$LevelLightEngine, BitSet.class, BitSet.class
@@ -2706,6 +2766,7 @@ public class Reflections {
     );
 
     // 1.20 ~ 1.21.4 moonrise
+    @Deprecated
     public static final Method method$ChunkHolder$getPlayers =
             ReflectionUtils.getMethod(
                     clazz$ChunkHolder, List.class, boolean.class
@@ -2785,12 +2846,14 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$ServerboundPlayerActionPacket$pos = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundPlayerActionPacket, clazz$BlockPos, 0
             )
     );
 
+    @Deprecated
     public static final Field field$ServerboundPlayerActionPacket$action = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundPlayerActionPacket, clazz$ServerboundPlayerActionPacket$Action, 0
@@ -2825,17 +2888,17 @@ public class Reflections {
     static {
         try {
             if (VersionHelper.isVersionNewerThan1_20_5()) {
-                Object block_break_speed = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_break_speed" : "player.block_break_speed");
+                Object block_break_speed = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_break_speed" : "player.block_break_speed");
                 @SuppressWarnings("unchecked")
                 Optional<Object> breakSpeedHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_break_speed);
                 instance$Holder$Attribute$block_break_speed = breakSpeedHolder.orElse(null);
 
-                Object block_interaction_range = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_interaction_range" : "player.block_interaction_range");
+                Object block_interaction_range = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_interaction_range" : "player.block_interaction_range");
                 @SuppressWarnings("unchecked")
                 Optional<Object> blockInteractionRangeHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_interaction_range);
                 instance$Holder$Attribute$block_interaction_range = blockInteractionRangeHolder.orElse(null);
 
-                Object scale = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "scale" : "generic.scale");
+                Object scale = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "scale" : "generic.scale");
                 @SuppressWarnings("unchecked")
                 Optional<Object> scaleHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, scale);
                 instance$Holder$Attribute$scale = scaleHolder.orElse(null);
@@ -2979,6 +3042,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Field field$ServerboundSwingPacket$hand = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundSwingPacket, clazz$InteractionHand, 0
@@ -3191,11 +3255,11 @@ public class Reflections {
     // for 1.20.1-1.20.4
     static {
         try {
-            Object mining_fatigue = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "mining_fatigue");
+            Object mining_fatigue = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "mining_fatigue");
             instance$MobEffecr$mining_fatigue = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, mining_fatigue);
-            Object haste = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "haste");
+            Object haste = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "haste");
             instance$MobEffecr$haste = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, haste);
-            Object invisibility = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "invisibility");
+            Object invisibility = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "invisibility");
             instance$MobEffecr$invisibility = method$Registry$get.invoke(instance$BuiltInRegistries$MOB_EFFECT, invisibility);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -3282,7 +3346,7 @@ public class Reflections {
 
     static {
         try {
-            Object key = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "intentionally_empty");
+            Object key = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "intentionally_empty");
             instance$SoundEvent$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, key);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -3354,6 +3418,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$CraftItemStack$asCraftMirror = requireNonNull(
             ReflectionUtils.getStaticMethod(
                     clazz$CraftItemStack, clazz$CraftItemStack, new String[]{"asCraftMirror"}, clazz$ItemStack
@@ -3519,19 +3584,22 @@ public class Reflections {
     public static final Object instance$Blocks$STONE;
     public static final Object instance$Blocks$STONE$defaultState;
     public static final Object instance$Blocks$FIRE;
+    public static final Object instance$Blocks$SOUL_FIRE;
     public static final Object instance$Blocks$ICE;
 
     static {
         try {
-            Object air = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "air");
+            Object air = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "air");
             instance$Blocks$AIR = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, air);
             instance$Blocks$AIR$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$AIR);
-            Object fire = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "fire");
+            Object fire = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "fire");
             instance$Blocks$FIRE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, fire);
-            Object stone = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "stone");
+            Object soulFire = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "soul_fire");
+            instance$Blocks$SOUL_FIRE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, soulFire);
+            Object stone = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "stone");
             instance$Blocks$STONE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, stone);
             instance$Blocks$STONE$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$STONE);
-            Object ice = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "ice");
+            Object ice = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "ice");
             instance$Blocks$ICE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, ice);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -3544,6 +3612,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$Level$removeBlock = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$Level, boolean.class, clazz$BlockPos, boolean.class
@@ -3713,19 +3782,19 @@ public class Reflections {
 
     static {
         try {
-            Object textDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "text_display");
+            Object textDisplay = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "text_display");
             instance$EntityType$TEXT_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, textDisplay);
-            Object itemDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "item_display");
+            Object itemDisplay = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item_display");
             instance$EntityType$ITEM_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, itemDisplay);
-            Object blockDisplay = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "block_display");
+            Object blockDisplay = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "block_display");
             instance$EntityType$BLOCK_DISPLAY = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, blockDisplay);
-            Object fallingBlock = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "falling_block");
+            Object fallingBlock = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "falling_block");
             instance$EntityType$FALLING_BLOCK = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fallingBlock);
-            Object interaction = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "interaction");
+            Object interaction = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "interaction");
             instance$EntityType$INTERACTION = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, interaction);
-            Object shulker = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "shulker");
+            Object shulker = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "shulker");
             instance$EntityType$SHULKER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, shulker);
-            Object armorStand = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "armor_stand");
+            Object armorStand = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "armor_stand");
             instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -3742,13 +3811,13 @@ public class Reflections {
 
     static {
         try {
-            instance$RecipeType$CRAFTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "crafting"));
-            instance$RecipeType$SMELTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "smelting"));
-            instance$RecipeType$BLASTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "blasting"));
-            instance$RecipeType$SMOKING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "smoking"));
-            instance$RecipeType$CAMPFIRE_COOKING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "campfire_cooking"));
-            instance$RecipeType$STONECUTTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "stonecutting"));
-            instance$RecipeType$SMITHING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "smithing"));
+            instance$RecipeType$CRAFTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "crafting"));
+            instance$RecipeType$SMELTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "smelting"));
+            instance$RecipeType$BLASTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "blasting"));
+            instance$RecipeType$SMOKING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "smoking"));
+            instance$RecipeType$CAMPFIRE_COOKING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "campfire_cooking"));
+            instance$RecipeType$STONECUTTING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "stonecutting"));
+            instance$RecipeType$SMITHING = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$RECIPE_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "smithing"));
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -3803,6 +3872,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$BlockStateBase$onPlace = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$BlockStateBase, void.class, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class
@@ -3848,10 +3918,10 @@ public class Reflections {
 
     static {
         try {
-            Object air = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "air");
+            Object air = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "air");
             instance$Items$AIR = method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ITEM, air);
             instance$ItemStack$Air = constructor$ItemStack.newInstance(instance$Items$AIR);
-            Object waterBucket = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water_bucket");
+            Object waterBucket = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "water_bucket");
             instance$Items$WATER_BUCKET = method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ITEM, waterBucket);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -4078,15 +4148,15 @@ public class Reflections {
 
     static {
         try {
-            Object waterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "water");
+            Object waterId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "water");
             instance$Fluids$WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, waterId);
-            Object flowingWaterId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_water");
+            Object flowingWaterId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "flowing_water");
             instance$Fluids$FLOWING_WATER = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingWaterId);
-            Object lavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "lava");
+            Object lavaId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "lava");
             instance$Fluids$LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, lavaId);
-            Object flowingLavaId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "flowing_lava");
+            Object flowingLavaId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "flowing_lava");
             instance$Fluids$FLOWING_LAVA = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, flowingLavaId);
-            Object emptyId = method$ResourceLocation$fromNamespaceAndPath.invoke(null, "minecraft", "empty");
+            Object emptyId = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "empty");
             instance$Fluids$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$FLUID, emptyId);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -4499,6 +4569,7 @@ public class Reflections {
             .map(it -> ReflectionUtils.getDeclaredField(it, 1))
             .orElse(null);
 
+    @Deprecated
     public static final Field field$RecipeHolder$id = Optional.ofNullable(clazz$RecipeHolder)
             .map(it -> ReflectionUtils.getDeclaredField(it, 0))
             .orElse(null);
@@ -4770,17 +4841,23 @@ public class Reflections {
             .map(it -> ReflectionUtils.getConstructor(it, clazz$ItemStack))
             .orElse(null);
 
-    // 1.20.1-1.21.1
-    public static final Method method$RecipeManager$getRecipeFor0 =
-            ReflectionUtils.getMethod(
-                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$Container, clazz$Level, clazz$ResourceLocation
-            );
-
-    // 1.21.2+
-    public static final Method method$RecipeManager$getRecipeFor1 =
-            ReflectionUtils.getMethod(
-                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceKey
-            );
+//    // 1.20.1-1.20.6
+//    public static final Method method$RecipeManager$getRecipeFor0 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$Container, clazz$Level, clazz$ResourceLocation
+//            );
+//
+//    // 1.21.1
+//    public static final Method method$RecipeManager$getRecipeFor2 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceLocation
+//            );
+//
+//    // 1.21.2+
+//    public static final Method method$RecipeManager$getRecipeFor1 =
+//            ReflectionUtils.getMethod(
+//                    clazz$RecipeManager, Optional.class, clazz$RecipeType, clazz$RecipeInput, clazz$Level, clazz$ResourceKey
+//            );
 
     // 1.21+
     public static final Field field$SingleRecipeInput$item = Optional.ofNullable(clazz$SingleRecipeInput)
@@ -5957,6 +6034,7 @@ public class Reflections {
             )
     );
 
+    @Deprecated
     public static final Method method$Entity$getId = requireNonNull(
             VersionHelper.isVersionNewerThan1_20_5()
                     ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId"})
@@ -6311,4 +6389,40 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardObjective")
             )
     );
+
+    public static final Class<?> clazz$SignChangeEvent = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "org.bukkit.event.block.SignChangeEvent"
+            )
+    );
+
+    public static final Method method$SignChangeEvent$line = requireNonNull(
+            ReflectionUtils.getMethod(clazz$SignChangeEvent, void.class, int.class, clazz$AdventureComponent)
+    );
+
+    public static final Class<?> clazz$BookMeta = requireNonNull(
+            ReflectionUtils.getClazz(
+                    "org.bukkit.inventory.meta.BookMeta"
+            )
+    );
+
+    public static final Method method$BookMeta$page = requireNonNull(
+            ReflectionUtils.getMethod(clazz$BookMeta, void.class, int.class, clazz$AdventureComponent)
+    );
+
+    public static final Method method$GsonComponentSerializer$serializer = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$GsonComponentSerializer, Gson.class
+            )
+    );
+
+    public static final Gson instance$GsonComponentSerializer$Gson;
+
+    static {
+        try {
+            instance$GsonComponentSerializer$Gson = (Gson) Reflections.method$GsonComponentSerializer$serializer.invoke(instance$GsonComponentSerializer);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

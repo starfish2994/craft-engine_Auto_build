@@ -96,6 +96,7 @@ public class Config {
     protected UUID resource_pack$external_host$uuid;
 
     protected int performance$max_block_chain_update_limit;
+    protected int performance$max_emojis_per_parse;
 
     protected boolean light_system$force_update_light;
     protected boolean light_system$enable;
@@ -133,6 +134,7 @@ public class Config {
     protected boolean image$intercept_packets$entity_name;
     protected boolean image$intercept_packets$text_display;
     protected boolean image$intercept_packets$armor_stand;
+    protected boolean image$intercept_packets$player_info;
 
     public Config(CraftEngine plugin) {
         this.plugin = plugin;
@@ -259,6 +261,7 @@ public class Config {
 
         // performance
         performance$max_block_chain_update_limit = config.getInt("performance.max-block-chain-update-limit", 64);
+        performance$max_emojis_per_parse = config.getInt("performance.max-emojis-per-parse", 32);
 
         // light
         light_system$force_update_light = config.getBoolean("light-system.force-update-light", false);
@@ -300,6 +303,7 @@ public class Config {
         image$intercept_packets$entity_name = config.getBoolean("image.intercept-packets.entity-name", false);
         image$intercept_packets$text_display = config.getBoolean("image.intercept-packets.text-display", true);
         image$intercept_packets$armor_stand = config.getBoolean("image.intercept-packets.armor-stand", true);
+        image$intercept_packets$player_info = config.getBoolean("image.intercept-packets.player-info", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -350,6 +354,10 @@ public class Config {
 
     public static int maxChainUpdate() {
         return instance.performance$max_block_chain_update_limit;
+    }
+
+    public static int maxEmojisPerParse() {
+        return instance.performance$max_emojis_per_parse;
     }
 
     public static boolean removeInvalidFurniture() {
@@ -642,6 +650,10 @@ public class Config {
 
     public static boolean interceptArmorStand() {
         return instance.image$intercept_packets$armor_stand;
+    }
+
+    public static boolean interceptPlayerInfo() {
+        return instance.image$intercept_packets$player_info;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

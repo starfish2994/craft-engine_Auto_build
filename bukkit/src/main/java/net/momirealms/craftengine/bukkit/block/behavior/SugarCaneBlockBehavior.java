@@ -59,7 +59,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
             ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (currentState != null && !currentState.isEmpty()) {
                 // break the sugar cane
-                Reflections.method$Level$removeBlock.invoke(level, blockPos, false);
+                FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
                 Vec3d vec3d = Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos));
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 ContextHolder.Builder builder = ContextHolder.builder()

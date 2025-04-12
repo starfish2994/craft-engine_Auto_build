@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
+import net.momirealms.craftengine.core.util.context.PlayerContext;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -175,7 +176,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.BROWSER_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.BROWSER_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -290,7 +291,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.CATEGORY_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.CATEGORY_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -351,7 +352,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_NONE_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_NONE_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -576,7 +577,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_SMITHING_TRANSFORM_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_SMITHING_TRANSFORM_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -709,7 +710,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_STONECUTTING_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_STONECUTTING_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -859,7 +860,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(title, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(title, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -1054,7 +1055,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_CRAFTING_TITLE, ItemBuildContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_CRAFTING_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
