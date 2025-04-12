@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.font;
 
-import com.google.common.collect.ImmutableMap;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
@@ -16,7 +15,6 @@ import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;

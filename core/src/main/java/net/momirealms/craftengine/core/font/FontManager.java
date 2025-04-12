@@ -12,7 +12,9 @@ import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 public interface FontManager extends Manageable {
     Key DEFAULT_FONT = Key.of("minecraft:default");

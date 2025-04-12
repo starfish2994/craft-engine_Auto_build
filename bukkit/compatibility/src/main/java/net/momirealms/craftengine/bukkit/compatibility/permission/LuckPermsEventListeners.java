@@ -7,9 +7,7 @@ import net.luckperms.api.event.group.GroupDataRecalculateEvent;
 import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import net.luckperms.api.model.user.User;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
