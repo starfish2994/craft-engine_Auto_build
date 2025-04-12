@@ -142,8 +142,8 @@ emoji:
 
 images:
   default:emojis:
-    height: 10
-    ascent: 8
+    height: 11
+    ascent: 9
     font: minecraft:emoji
     file: minecraft:font/image/emojis.png
     chars:
