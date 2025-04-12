@@ -99,4 +99,9 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundPlayerInfoUpdatePacket() {
         return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundPlayerInfoUpdatePacket);
     }
+
+    @Override
+    public int clientboundSetScorePacket() {
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetScorePacket);
+    }
 }

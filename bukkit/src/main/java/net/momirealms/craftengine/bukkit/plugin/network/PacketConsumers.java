@@ -33,6 +33,7 @@ import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -260,9 +261,9 @@ public class PacketConsumers {
             Tag suffix = buf.readNbt(false);
             if (suffix == null) return;
 
-            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
-            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix.getAsString());
-            Map<String, Component> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix.getAsString());
+            Map<String, Component> tokens1 = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
+            Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(prefix.getAsString());
+            Map<String, Component> tokens3 = CraftEngine.instance().fontManager().matchTags(suffix.getAsString());
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
             event.setChanged(true);
 
@@ -348,7 +349,7 @@ public class PacketConsumers {
                     continue;
                 }
                 String json = ComponentUtils.minecraftToJson(mcComponent);
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) {
                     newEntries.add(entry);
                     continue;
@@ -386,9 +387,9 @@ public class PacketConsumers {
             String prefix = buf.readUtf();
             String suffix = buf.readUtf();
 
-            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName);
-            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(prefix);
-            Map<String, Component> tokens3 = CraftEngine.instance().imageManager().matchTags(suffix);
+            Map<String, Component> tokens1 = CraftEngine.instance().fontManager().matchTags(displayName);
+            Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(prefix);
+            Map<String, Component> tokens3 = CraftEngine.instance().fontManager().matchTags(suffix);
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
             event.setChanged(true);
 
@@ -455,7 +456,7 @@ public class PacketConsumers {
             int actionType = buf.readVarInt();
             if (actionType == 0) {
                 String json = buf.readUtf();
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) return;
                 Component component = AdventureHelper.jsonToComponent(json);
                 for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -477,7 +478,7 @@ public class PacketConsumers {
                 buf.writeByte(flag);
             } else if (actionType == 3) {
                 String json = buf.readUtf();
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.jsonToComponent(json);
@@ -504,7 +505,7 @@ public class PacketConsumers {
             if (actionType == 0) {
                 Tag nbt = buf.readNbt(false);
                 if (nbt == null) return;
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
                 Component component = AdventureHelper.tagToComponent(nbt);
                 for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -527,7 +528,7 @@ public class PacketConsumers {
             } else if (actionType == 3) {
                 Tag nbt = buf.readNbt(false);
                 if (nbt == null) return;
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.tagToComponent(nbt);
@@ -554,7 +555,7 @@ public class PacketConsumers {
             if (mode != 0 && mode != 2) return;
             String displayName = buf.readUtf();
             int renderType = buf.readVarInt();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(displayName);
@@ -586,7 +587,7 @@ public class PacketConsumers {
             if (optionalNumberFormat) {
                 int format = buf.readVarInt();
                 if (format == 0) {
-                    Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                     if (tokens.isEmpty()) return;
                     event.setChanged(true);
                     Component component = AdventureHelper.tagToComponent(displayName);
@@ -602,7 +603,7 @@ public class PacketConsumers {
                     buf.writeBoolean(true);
                     buf.writeVarInt(0);
                 } else if (format == 1) {
-                    Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                     if (tokens.isEmpty()) return;
                     Tag style = buf.readNbt(false);
                     event.setChanged(true);
@@ -622,8 +623,8 @@ public class PacketConsumers {
                 } else if (format == 2) {
                     Tag fixed = buf.readNbt(false);
                     if (fixed == null) return;
-                    Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
-                    Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(fixed.getAsString());
+                    Map<String, Component> tokens1 = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
+                    Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(fixed.getAsString());
                     if (tokens1.isEmpty() && tokens2.isEmpty()) return;
                     event.setChanged(true);
                     buf.clear();
@@ -653,7 +654,7 @@ public class PacketConsumers {
                     }
                 }
             } else {
-                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
                 Component component = AdventureHelper.tagToComponent(displayName);
@@ -678,7 +679,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String jsonOrPlainString = buf.readUtf();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(jsonOrPlainString);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(jsonOrPlainString);
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
@@ -701,7 +702,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
@@ -723,7 +724,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
@@ -744,7 +745,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
@@ -764,7 +765,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
@@ -785,7 +786,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
@@ -805,7 +806,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             String json = buf.readUtf();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
@@ -826,7 +827,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.tagToComponent(nbt);
@@ -847,8 +848,8 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             String json1 = buf.readUtf();
             String json2 = buf.readUtf();
-            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(json1);
-            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(json2);
+            Map<String, Component> tokens1 = CraftEngine.instance().fontManager().matchTags(json1);
+            Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(json2);
             if (tokens1.isEmpty() && tokens2.isEmpty()) return;
             event.setChanged(true);
             buf.clear();
@@ -884,8 +885,8 @@ public class PacketConsumers {
             if (nbt1 == null) return;
             Tag nbt2 = buf.readNbt(false);
             if (nbt2 == null) return;
-            Map<String, Component> tokens1 = CraftEngine.instance().imageManager().matchTags(nbt1.getAsString());
-            Map<String, Component> tokens2 = CraftEngine.instance().imageManager().matchTags(nbt2.getAsString());
+            Map<String, Component> tokens1 = CraftEngine.instance().fontManager().matchTags(nbt1.getAsString());
+            Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(nbt2.getAsString());
             if (tokens1.isEmpty() && tokens2.isEmpty()) return;
             event.setChanged(true);
             buf.clear();
@@ -920,7 +921,7 @@ public class PacketConsumers {
             int containerId = buf.readVarInt();
             int type = buf.readVarInt();
             String json = buf.readUtf();
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
             Component component = AdventureHelper.jsonToComponent(json);
@@ -945,7 +946,7 @@ public class PacketConsumers {
             int type = buf.readVarInt();
             Tag nbt = buf.readNbt(false);
             if (nbt == null) return;
-            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(nbt.getAsString());
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             Component component = AdventureHelper.tagToComponent(nbt);
             for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -1275,7 +1276,7 @@ public class PacketConsumers {
         // do ray trace to get current block
         RayTraceResult result = bukkitPlayer.rayTraceBlocks(interactionRange, FluidCollisionMode.NEVER);
         if (result == null) return;
-        org.bukkit.block.Block hitBlock = result.getHitBlock();
+        Block hitBlock = result.getHitBlock();
         if (hitBlock == null) return;
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(hitBlock.getBlockData()));
         // not a custom block
@@ -1694,7 +1695,7 @@ public class PacketConsumers {
             String message = (String) Reflections.field$ServerboundRenameItemPacket$name.get(packet);
             if (message != null && !message.isEmpty()) {
                 // check bypass
-                FontManager manager = CraftEngine.instance().imageManager();
+                FontManager manager = CraftEngine.instance().fontManager();
                 IllegalCharacterProcessResult result = manager.processIllegalCharacters(message);
                 if (result.has()) {
                     try {
@@ -1718,7 +1719,7 @@ public class PacketConsumers {
                 return;
             }
             String[] lines = (String[]) Reflections.field$ServerboundSignUpdatePacket$lines.get(packet);
-            FontManager manager = CraftEngine.instance().imageManager();
+            FontManager manager = CraftEngine.instance().fontManager();
             if (!manager.isDefaultFontInUse()) return;
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
@@ -1739,7 +1740,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> EDIT_BOOK = (user, event, packet) -> {
         try {
             if (!Config.filterBook()) return;
-            FontManager manager = CraftEngine.instance().imageManager();
+            FontManager manager = CraftEngine.instance().fontManager();
             if (!manager.isDefaultFontInUse()) return;
             // check bypass
             if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_BOOK)) {
@@ -1881,7 +1882,7 @@ public class PacketConsumers {
                         if (optionalTextComponent.isPresent()) {
                             Object textComponent = optionalTextComponent.get();
                             String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                             if (!tokens.isEmpty()) {
                                 Component component = AdventureHelper.jsonToComponent(json);
                                 for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -1914,7 +1915,7 @@ public class PacketConsumers {
                             Object textComponent = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
                             if (textComponent == Reflections.instance$Component$empty) break;
                             String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                             if (!tokens.isEmpty()) {
                                 Component component = AdventureHelper.jsonToComponent(json);
                                 for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -1947,7 +1948,7 @@ public class PacketConsumers {
                             if (optionalTextComponent.isPresent()) {
                                 Object textComponent = optionalTextComponent.get();
                                 String json = ComponentUtils.minecraftToJson(textComponent);
-                                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                                 if (!tokens.isEmpty()) {
                                     Component component = AdventureHelper.jsonToComponent(json);
                                     for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -1980,7 +1981,7 @@ public class PacketConsumers {
                         if (optionalTextComponent.isPresent()) {
                             Object textComponent = optionalTextComponent.get();
                             String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(json);
+                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                             if (!tokens.isEmpty()) {
                                 Component component = AdventureHelper.jsonToComponent(json);
                                 for (Map.Entry<String, Component> token : tokens.entrySet()) {
@@ -2004,6 +2005,85 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_SCORE_1_20_3 = (user, event) -> {
+        try {
+            if (!Config.interceptSetScore()) return;
+            boolean isChanged = false;
+            FriendlyByteBuf buf = event.getBuffer();
+            String owner = buf.readUtf();
+            String objectiveName = buf.readUtf();
+            int score = buf.readVarInt();
+            boolean hasDisplay = buf.readBoolean();
+            Tag displayName = null;
+            if (hasDisplay) {
+                displayName = buf.readNbt(false);
+            }
+            outside : if (displayName != null) {
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
+                if (tokens.isEmpty()) break outside;
+                Component component = AdventureHelper.tagToComponent(displayName);
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                }
+                displayName = AdventureHelper.componentToTag(component);
+                isChanged = true;
+            }
+            boolean hasNumberFormat = buf.readBoolean();
+            int format = -1;
+            Tag style = null;
+            Tag fixed = null;
+            if (hasNumberFormat) {
+                format = buf.readVarInt();
+                if (format == 0) {
+                    if (displayName == null) return;
+                } else if (format == 1) {
+                    if (displayName == null) return;
+                    style = buf.readNbt(false);
+                } else if (format == 2) {
+                    fixed = buf.readNbt(false);
+                    if (fixed == null) return;
+                    Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(fixed.getAsString());
+                    if (tokens.isEmpty() && !isChanged) return;
+                    if (!tokens.isEmpty()) {
+                        Component component = AdventureHelper.tagToComponent(fixed);
+                        for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                        }
+                        fixed = AdventureHelper.componentToTag(component);
+                        isChanged = true;
+                    }
+                }
+            }
+            if (isChanged) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUtf(owner);
+                buf.writeUtf(objectiveName);
+                buf.writeVarInt(score);
+                if (hasDisplay) {
+                    buf.writeBoolean(true);
+                    buf.writeNbt(displayName, false);
+                } else {
+                    buf.writeBoolean(false);
+                }
+                if (hasNumberFormat) {
+                    buf.writeBoolean(true);
+                    buf.writeVarInt(format);
+                    if (format == 1) {
+                        buf.writeNbt(style, false);
+                    } else if (format == 2) {
+                        buf.writeNbt(fixed, false);
+                    }
+                } else {
+                    buf.writeBoolean(false);
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
         }
     };
 }

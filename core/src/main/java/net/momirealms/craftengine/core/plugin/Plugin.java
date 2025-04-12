@@ -57,7 +57,7 @@ public interface Plugin {
 
     NetworkManager networkManager();
 
-    FontManager imageManager();
+    FontManager fontManager();
 
     Config config();
 
