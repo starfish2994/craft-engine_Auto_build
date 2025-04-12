@@ -6425,4 +6425,11 @@ public class Reflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$ClientboundSetScorePacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetScorePacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardScore")
+            )
+    );
 }

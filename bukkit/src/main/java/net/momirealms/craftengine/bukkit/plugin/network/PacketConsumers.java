@@ -33,6 +33,7 @@ import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -1275,7 +1276,7 @@ public class PacketConsumers {
         // do ray trace to get current block
         RayTraceResult result = bukkitPlayer.rayTraceBlocks(interactionRange, FluidCollisionMode.NEVER);
         if (result == null) return;
-        org.bukkit.block.Block hitBlock = result.getHitBlock();
+        Block hitBlock = result.getHitBlock();
         if (hitBlock == null) return;
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(hitBlock.getBlockData()));
         // not a custom block
@@ -2004,6 +2005,83 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_SCORE_1_20_3 = (user, event) -> {
+        try {
+            if (!Config.interceptSetScore()) return;
+            boolean isChanged = false;
+            FriendlyByteBuf buf = event.getBuffer();
+            String owner = buf.readUtf();
+            String objectiveName = buf.readUtf();
+            int score = buf.readVarInt();
+            boolean hasDisplay = buf.readBoolean();
+            Tag displayName = null;
+            if (hasDisplay) {
+                displayName = buf.readNbt(false);
+            }
+            outside : if (displayName != null) {
+                Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(displayName.getAsString());
+                if (tokens.isEmpty()) break outside;
+                Component component = AdventureHelper.tagToComponent(displayName);
+                for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                }
+                displayName = AdventureHelper.componentToTag(component);
+                isChanged = true;
+            }
+            boolean hasNumberFormat = buf.readBoolean();
+            int format = -1;
+            Tag style = null;
+            Tag fixed = null;
+            if (hasNumberFormat) {
+                format = buf.readVarInt();
+                if (format == 0) {
+                    if (displayName == null) return;
+                } else if (format == 1) {
+                    if (displayName == null) return;
+                    style = buf.readNbt(false);
+                } else if (format == 2) {
+                    fixed = buf.readNbt(false);
+                    if (fixed == null) return;
+                    Map<String, Component> tokens = CraftEngine.instance().imageManager().matchTags(fixed.getAsString());
+                    if (tokens.isEmpty() && !isChanged) return;
+                    if (!tokens.isEmpty()) {
+                        Component component = AdventureHelper.tagToComponent(fixed);
+                        for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
+                        }
+                        fixed = AdventureHelper.componentToTag(component);
+                        isChanged = true;
+                    }
+                }
+            }
+            if (isChanged) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeUtf(owner);
+                buf.writeUtf(objectiveName);
+                buf.writeVarInt(score);
+                if (hasDisplay) {
+                    buf.writeBoolean(true);
+                    buf.writeNbt(displayName, false);
+                } else {
+                    buf.writeBoolean(false);
+                }
+                if (hasNumberFormat) {
+                    buf.writeBoolean(true);
+                    buf.writeVarInt(format);
+                    if (format == 1) {
+                        buf.writeNbt(style, false);
+                    } else if (format == 2) {
+                        buf.writeNbt(fixed, false);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
         }
     };
 }

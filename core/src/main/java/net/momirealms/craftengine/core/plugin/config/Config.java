@@ -135,6 +135,7 @@ public class Config {
     protected boolean image$intercept_packets$text_display;
     protected boolean image$intercept_packets$armor_stand;
     protected boolean image$intercept_packets$player_info;
+    protected boolean image$intercept_packets$set_score;
 
     public Config(CraftEngine plugin) {
         this.plugin = plugin;
@@ -304,6 +305,7 @@ public class Config {
         image$intercept_packets$text_display = config.getBoolean("image.intercept-packets.text-display", true);
         image$intercept_packets$armor_stand = config.getBoolean("image.intercept-packets.armor-stand", true);
         image$intercept_packets$player_info = config.getBoolean("image.intercept-packets.player-info", true);
+        image$intercept_packets$set_score = config.getBoolean("image.intercept-packets.set-score", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -654,6 +656,10 @@ public class Config {
 
     public static boolean interceptPlayerInfo() {
         return instance.image$intercept_packets$player_info;
+    }
+
+    public static boolean interceptSetScore() {
+        return instance.image$intercept_packets$set_score;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {
