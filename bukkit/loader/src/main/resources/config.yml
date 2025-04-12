@@ -158,6 +158,7 @@ image:
     system-chat: true
     tab-list: true     # Tab list header and footer
     player-info: true  # User list in tab
+    set-score: true
     actionbar: true
     title: true
     bossbar: true
