@@ -39,4 +39,6 @@ public interface PacketIds {
     int clientboundLevelChunkWithLightPacket();
 
     int clientboundPlayerInfoUpdatePacket();
+
+    int clientboundSetScorePacket();
 }

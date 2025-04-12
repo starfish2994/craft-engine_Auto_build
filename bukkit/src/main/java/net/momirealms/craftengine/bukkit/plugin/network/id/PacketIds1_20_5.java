@@ -98,4 +98,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundPlayerInfoUpdatePacket() {
         return PacketIdFinder.clientboundByName("minecraft:player_info_update");
     }
+
+    @Override
+    public int clientboundSetScorePacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_score");
+    }
 }

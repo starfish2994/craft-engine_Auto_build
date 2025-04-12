@@ -344,7 +344,7 @@ public abstract class CraftEngine implements Plugin {
     }
 
     @Override
-    public FontManager imageManager() {
+    public FontManager fontManager() {
         return fontManager;
     }
 
