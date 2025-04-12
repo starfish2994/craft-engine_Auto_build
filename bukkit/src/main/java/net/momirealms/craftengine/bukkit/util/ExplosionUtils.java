@@ -4,6 +4,7 @@ import org.bukkit.ExplosionResult;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ExplosionUtils {
 
     public static boolean isDroppingItems(BlockExplodeEvent event) {
