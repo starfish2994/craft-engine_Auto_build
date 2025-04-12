@@ -31,8 +31,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
@@ -47,9 +46,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     @Override
     public void delayedInit() {
         if (this.plugin.isPluginEnabled("LuckPerms")) {
-            luckPermsEventListeners = new LuckPermsEventListeners(
-                    plugin.bootstrap(), this::refreshEmojiSuggestions, plugin.scheduler()
-            );
+            luckPermsEventListeners = new LuckPermsEventListeners(plugin.bootstrap(), this::refreshEmojiSuggestions);
         }
         Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
     }
@@ -65,49 +62,46 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedLoad() {
-        List<String> oldCachedEmojiSuggestions = this.oldCachedEmojiSuggestions();
+        Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+        for (Player player : players) {
+            removeEmojiSuggestions(player);
+        }
         super.delayedLoad();
-        this.oldCachedEmojiSuggestions.addAll(this.cachedEmojiSuggestions());
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            player.removeCustomChatCompletions(oldCachedEmojiSuggestions);
-            this.addEmojiSuggestions(player);
-        });
+        for (Player player : players) {
+            this.addEmojiSuggestions(player, getEmojiSuggestion(player));
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        plugin.scheduler().async().execute(() -> {
-            Player player = event.getPlayer();
-            this.addEmojiSuggestions(player);
-        });
+        plugin.scheduler().async().execute(() -> this.addEmojiSuggestions(event.getPlayer(), getEmojiSuggestion(event.getPlayer())));
     }
 
-    public void refreshEmojiSuggestions(UUID playerUUID, boolean isAsync) {
-        if (isAsync) {
-            plugin.scheduler().async().execute(() -> {
-                Player player = Bukkit.getPlayer(playerUUID);
-                if (player == null) return;
-                player.removeCustomChatCompletions(oldCachedEmojiSuggestions);
-                this.addEmojiSuggestions(player);
-            });
-        } else {
-            Player player = Bukkit.getPlayer(playerUUID);
-            if (player == null) return;
-            player.removeCustomChatCompletions(oldCachedEmojiSuggestions);
-            this.addEmojiSuggestions(player);
+    private void refreshEmojiSuggestions(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null) return;
+        removeEmojiSuggestions(player);
+        addEmojiSuggestions(player, getEmojiSuggestion(player));
+    }
+
+    private List<String> getEmojiSuggestion(Player player) {
+        List<String> suggestions = new ArrayList<>();
+        for (Emoji emoji : super.emojiList) {
+            if (emoji.permission() == null || player.hasPermission(Objects.requireNonNull(emoji.permission()))) {
+                suggestions.addAll(emoji.keywords());
+            }
         }
+        return suggestions;
     }
 
-    private void addEmojiSuggestions(Player player) {
-        List<String> hasPermissions = cachedEmojiSuggestions().stream()
-                .filter(keyword -> {
-                    Emoji emoji = super.emojiMapper.get(keyword);
-                    if (emoji == null) return false;
-                    String permission = emoji.permission();
-                    return permission == null || player.hasPermission(permission);
-                })
-                .collect(Collectors.toList());
-        player.addCustomChatCompletions(hasPermissions);
+    private void addEmojiSuggestions(Player player, List<String> suggestions) {
+        player.addCustomChatCompletions(suggestions);
+    }
+
+    private void removeEmojiSuggestions(Player player) {
+        if (super.allEmojiSuggestions != null) {
+            player.removeCustomChatCompletions(super.allEmojiSuggestions);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

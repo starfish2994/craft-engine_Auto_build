@@ -101,8 +101,4 @@ public interface FontManager extends Manageable {
     }
 
     Map<String, Component> matchTags(String json);
-
-    List<String> cachedEmojiSuggestions();
-
-    List<String> oldCachedEmojiSuggestions();
 }

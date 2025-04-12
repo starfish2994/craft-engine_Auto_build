@@ -1,19 +1,18 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
 import net.momirealms.craftengine.core.util.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class NMSPacketEvent implements Cancellable {
-    private boolean cancelled;
-    private boolean hasNewPacket;
-    private List<Runnable> delayedTasks = null;
     private final Object packet;
-    private Object newPacket;
+    private boolean cancelled;
+    private List<Runnable> delayedTasks = null;
+    private Object newPacket = null;
 
     public NMSPacketEvent(Object packet) {
         this.packet = packet;
@@ -23,17 +22,15 @@ public class NMSPacketEvent implements Cancellable {
         return packet;
     }
 
-    public void setNewPacket(Object newPacket) {
-        hasNewPacket = true;
+    public void replacePacket(@NotNull Object newPacket) {
         this.newPacket = newPacket;
     }
 
-    public boolean hasNewPacket() {
-        return hasNewPacket;
+    public boolean isUsingNewPacket() {
+        return newPacket != null;
     }
 
-    @Nullable
-    public Object getNewPacket() {
+    public Object optionalNewPacket() {
         return newPacket;
     }
 

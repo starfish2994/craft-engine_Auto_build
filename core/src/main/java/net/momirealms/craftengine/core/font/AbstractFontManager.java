@@ -41,9 +41,9 @@ public abstract class AbstractFontManager implements FontManager {
     protected Trie emojiKeywordTrie;
     protected Map<String, Component> tagMapper;
     protected Map<String, Emoji> emojiMapper;
-    // tab补全
-    protected final List<String> cachedEmojiSuggestions = new ArrayList<>();
-    protected final List<String> oldCachedEmojiSuggestions = new ArrayList<>();
+
+    protected List<Emoji> emojiList;
+    protected List<String> allEmojiSuggestions;
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -64,17 +64,27 @@ public abstract class AbstractFontManager implements FontManager {
         this.images.clear();
         this.illegalChars.clear();
         this.emojis.clear();
-        this.cachedEmojiSuggestions.clear();
     }
 
     @Override
-    public List<String> cachedEmojiSuggestions() {
-        return List.copyOf(this.cachedEmojiSuggestions);
+    public void disable() {
+        this.unload();
     }
 
     @Override
-    public List<String> oldCachedEmojiSuggestions() {
-        return List.copyOf(this.oldCachedEmojiSuggestions);
+    public ConfigSectionParser[] parsers() {
+        return new ConfigSectionParser[] {this.imageParser, this.emojiParser};
+    }
+
+    @Override
+    public void delayedLoad() {
+        Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
+        this.buildImageTagTrie();
+        this.buildEmojiKeywordsTrie();
+        this.emojiList = new ArrayList<>(this.emojis.values());
+        this.allEmojiSuggestions = this.emojis.values().stream()
+                .flatMap(emoji -> emoji.keywords().stream())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -242,19 +252,6 @@ public abstract class AbstractFontManager implements FontManager {
         return IllegalCharacterProcessResult.not();
     }
 
-    @Override
-    public ConfigSectionParser[] parsers() {
-        return new ConfigSectionParser[] {this.imageParser, this.emojiParser};
-    }
-
-    @Override
-    public void delayedLoad() {
-        this.oldCachedEmojiSuggestions.clear();
-        Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
-        this.buildImageTagTrie();
-        this.buildEmojiKeywordsTrie();
-    }
-
     private void buildEmojiKeywordsTrie() {
         this.emojiMapper = new HashMap<>();
         for (Emoji emoji : this.emojis.values()) {
@@ -371,8 +368,6 @@ public abstract class AbstractFontManager implements FontManager {
                 TranslationManager.instance().log("warning.config.emoji.lack_keywords", path.toString(), id.toString());
                 return;
             }
-            String keyword = keywords.get(0);
-            cachedEmojiSuggestions.add(keyword);
             String content = section.getOrDefault("content", "<arg:emoji>").toString();
             String image = null;
             if (section.containsKey("image")) {

@@ -362,7 +362,7 @@ public class PacketConsumers {
                 isChanged = true;
             }
             if (isChanged) {
-                event.setNewPacket(FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket(enums, newEntries));
+                event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket(enums, newEntries));
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundPlayerInfoUpdatePacket", e);
@@ -1778,7 +1778,7 @@ public class PacketConsumers {
                         newPages,
                         newTitle
                 );
-                event.setNewPacket(newPacket);
+                event.replacePacket(newPacket);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundEditBookPacket", e);
