@@ -59,7 +59,7 @@ artifacts {
 
 tasks {
     shadowJar {
-        archiveFileName = "${rootProject.name}-plugin-${rootProject.properties["project_version"]}.jar"
+        archiveFileName = "${rootProject.name}-plugin-${rootProject.properties["project_version"]}-community-edition.jar"
         destinationDirectory.set(file("$rootDir/target"))
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")
