@@ -27,6 +27,7 @@ public class BukkitBootstrap extends JavaPlugin {
     public void onEnable() {
         if (!Bukkit.getServer().getOnlineMode()) {
             this.plugin.logger().warn("CraftEngine Community Edition requires online mode to be enabled.");
+            Bukkit.getPluginManager().disablePlugin(this);
         } else {
             this.plugin.scheduler().asyncRepeating(() -> {
                 Collection<? extends Player> players = Bukkit.getOnlinePlayers();
