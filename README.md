@@ -119,8 +119,15 @@ The code you contribute will be open-sourced under the GPLv3 license. If you pre
 2. Create a new language file in: `/bukkit/loader/src/main/resources/translations`
 3. Once done, submit a **pull request** for review. We appreciate your contributions!
 
+## Differences Between Versions
+| Version           | Official Support | Max Players | Online Mode Required | Commercial Use |
+|-------------------|------------------|-------------|----------------------|----------------|
+| Community Edition | ❌ No             | 20          | ✔️ Yes               | ✔️ Allowed     |
+| GitHub Edition    | ❌ No             | Unlimited   | ❌ No                 | ✔️ Allowed     |
+| Premium Edition   | ✔️ Yes           | Unlimited   | ❌ No                 | ✔️ Allowed     |
+
 ### 💖 Support the Developer
-If you enjoy using CraftEngine, consider supporting the developer! By supporting developers, you can get support from the development team.
+Help sustain CraftEngine's development by going Premium!
 
 - **Polymart**: [None]
 - **BuiltByBit**: [None]
