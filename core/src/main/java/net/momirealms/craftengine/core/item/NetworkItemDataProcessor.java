@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Nullable;
 public record NetworkItemDataProcessor<I>(@Nullable ItemDataModifier<I> server, @NotNull ItemDataModifier<I> client) {
 
     public static <I> NetworkItemDataProcessor<I> clientOnly(ItemDataModifier<I> client) {
-        return new NetworkItemDataProcessor<I>(null, client);
+        return new NetworkItemDataProcessor<>(null, client);
     }
 
     public static <I> NetworkItemDataProcessor<I> both(ItemDataModifier<I> server, ItemDataModifier<I> client) {
-        return new NetworkItemDataProcessor<I>(server, client);
+        return new NetworkItemDataProcessor<>(server, client);
     }
 
     public void toClient(Item<I> item, ItemBuildContext context) {
