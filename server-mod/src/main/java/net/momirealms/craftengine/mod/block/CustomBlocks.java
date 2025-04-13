@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.mod.block;
 
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -12,14 +13,15 @@ import net.momirealms.craftengine.mod.CraftEnginePlugin;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
 import net.momirealms.craftengine.mod.util.Reflections;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class CustomBlocks {
 
@@ -120,8 +122,12 @@ public class CustomBlocks {
 
     private static BlockState createBlockData(String blockState) {
         try {
-            CraftBlockData data = CraftBlockData.newData(null, blockState);
-            return data.getState();
+            Object holderLookUp = BuiltInRegistries.BLOCK;
+            if (Reflections.method$Registry$asLookup != null) {
+                holderLookUp = Reflections.method$Registry$asLookup.invoke(holderLookUp);
+            }
+            BlockStateParser.BlockResult result = (BlockStateParser.BlockResult) Reflections.method$BlockStateParser$parseForBlock.invoke(null, holderLookUp, blockState, false);
+            return result.blockState();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
