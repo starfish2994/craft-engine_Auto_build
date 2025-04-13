@@ -118,7 +118,7 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
 
     @Override
     public ItemSettings settings() {
-        return settings;
+        return this.settings;
     }
 
     @Override

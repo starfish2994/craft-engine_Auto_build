@@ -233,7 +233,6 @@ public abstract class AbstractPackManager implements PackManager {
                 Files.createDirectories(resourcesFolder);
                 this.saveDefaultConfigs();
             }
-
             try (DirectoryStream<Path> paths = Files.newDirectoryStream(resourcesFolder)) {
                 for (Path path : paths) {
                     if (!Files.isDirectory(path)) {
@@ -247,6 +246,9 @@ public abstract class AbstractPackManager implements PackManager {
                     String author = null;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
                         YamlDocument metaYML = Config.instance().loadYamlData(metaFile.toFile());
+                        if (!metaYML.getBoolean("enable", true)) {
+                            continue;
+                        }
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
                         version = metaYML.getString("version");

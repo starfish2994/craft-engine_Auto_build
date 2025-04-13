@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import com.google.gson.JsonElement;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -32,6 +33,10 @@ public interface Item<I> {
     int count();
 
     Item<I> count(int amount);
+
+    Item<I> trim(Trim trim);
+
+    Optional<Trim> trim();
 
     Item<I> customModelData(Integer data);
 
@@ -91,13 +96,19 @@ public interface Item<I> {
 
     boolean removeTag(Object... path);
 
-    boolean hasComponent(String type);
+    boolean hasComponent(Key type);
 
-    void removeComponent(String type);
+    void removeComponent(Key type);
 
-    Object getComponent(String type);
+    Object getComponent(Key type);
 
-    void setComponent(String type, Object value);
+    Object getJavaTypeComponent(Key type);
+
+    JsonElement getJsonTypeComponent(Key type);
+
+    void setComponent(Key type, Object value);
+
+    void resetComponent(Key type);
 
     I getItem();
 

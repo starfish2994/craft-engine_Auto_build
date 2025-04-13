@@ -90,26 +90,6 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, RTagIte
     }
 
     @Override
-    protected void setComponent(ItemWrapper<ItemStack> item, String type, Object value) {
-        item.setComponent(type, value);
-    }
-
-    @Override
-    protected Object getComponent(ItemWrapper<ItemStack> item, String type) {
-        return item.getComponent(type);
-    }
-
-    @Override
-    protected boolean hasComponent(ItemWrapper<ItemStack> item, String type) {
-        return item.hasComponent(type);
-    }
-
-    @Override
-    protected void removeComponent(ItemWrapper<ItemStack> item, String type) {
-       item.removeComponent(type);
-    }
-
-    @Override
     protected void update(ItemWrapper<ItemStack> item) {
         item.update();
     }

@@ -1,14 +1,18 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import com.google.gson.JsonElement;
 import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.item.ItemObject;
 import net.momirealms.craftengine.bukkit.item.RTagItemWrapper;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EnchantmentUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.ItemWrapper;
+import net.momirealms.craftengine.core.item.Trim;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.inventory.ItemStack;
@@ -27,16 +31,58 @@ public class ComponentItemFactory extends BukkitItemFactory {
     }
 
     @Override
+    protected void setComponent(ItemWrapper<ItemStack> item, Key type, Object value) {
+        if (value instanceof JsonElement jsonElement) {
+            setJsonComponentDirectly(item, type, jsonElement);
+        } else {
+            setJavaComponentDirectly(item, type, value);
+        }
+    }
+
+    @Override
+    protected void resetComponent(ItemWrapper<ItemStack> item, Key type) {
+        FastNMS.INSTANCE.resetComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type));
+    }
+
+    @Override
+    protected Object getComponent(ItemWrapper<ItemStack> item, Key type) {
+        return item.getComponent(type);
+    }
+
+    @Override
+    protected boolean hasComponent(ItemWrapper<ItemStack> item, Key type) {
+        return item.hasComponent(type);
+    }
+
+    @Override
+    protected void removeComponent(ItemWrapper<ItemStack> item, Key type) {
+        FastNMS.INSTANCE.removeComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type));
+    }
+
+    protected void setJavaComponentDirectly(ItemWrapper<ItemStack> item, Key type, Object value) {
+        ComponentType.parseJava(type, value).ifPresent(it -> FastNMS.INSTANCE.setComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type), it));
+    }
+
+    protected void setJsonComponentDirectly(ItemWrapper<ItemStack> item, Key type, JsonElement value) {
+        ComponentType.parseJson(type, value).ifPresent(it -> FastNMS.INSTANCE.setComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type), it));
+    }
+
+    @Override
     public Object encodeJava(Key componentType, @Nullable Object component) {
         return ComponentType.encodeJava(componentType, component).orElse(null);
     }
 
     @Override
+    protected JsonElement encodeJson(Key type, Object component) {
+        return ComponentType.encodeJson(type, component).orElse(null);
+    }
+
+    @Override
     protected void customModelData(ItemWrapper<ItemStack> item, Integer data) {
         if (data == null) {
-            item.removeComponent(ComponentKeys.CUSTOM_MODEL_DATA);
+            resetComponent(item, ComponentKeys.CUSTOM_MODEL_DATA);
         } else {
-            item.setComponent(ComponentKeys.CUSTOM_MODEL_DATA, data);
+            setJavaComponentDirectly(item, ComponentKeys.CUSTOM_MODEL_DATA, data);
         }
     }
 
@@ -53,9 +99,9 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void customName(ItemWrapper<ItemStack> item, String json) {
         if (json == null) {
-            item.removeComponent(ComponentKeys.CUSTOM_NAME);
+            resetComponent(item, ComponentKeys.CUSTOM_NAME);
         } else {
-            item.setComponent(ComponentKeys.CUSTOM_NAME, json);
+            setJavaComponentDirectly(item, ComponentKeys.CUSTOM_NAME, json);
         }
     }
 
@@ -73,9 +119,9 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void itemName(ItemWrapper<ItemStack> item, String json) {
         if (json == null) {
-            item.removeComponent(ComponentKeys.ITEM_NAME);
+            resetComponent(item, ComponentKeys.ITEM_NAME);
         } else {
-            item.setComponent(ComponentKeys.ITEM_NAME, json);
+            setJavaComponentDirectly(item, ComponentKeys.ITEM_NAME, json);
         }
     }
 
@@ -92,15 +138,12 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void skull(ItemWrapper<ItemStack> item, String skullData) {
-        final Map<String, Object> profile = Map.of(
-                "properties", List.of(
-                        Map.of(
-                                "name", "textures",
-                                "value", skullData
-                        )
-                )
-        );
-        item.setComponent("minecraft:profile", profile);
+        if (skullData == null) {
+            resetComponent(item, ComponentKeys.PROFILE);
+        } else {
+            Map<String, Object> profile = Map.of("properties", List.of(Map.of("name", "textures", "value", skullData)));
+            setJavaComponentDirectly(item, ComponentKeys.PROFILE, profile);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -118,9 +161,9 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void lore(ItemWrapper<ItemStack> item, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
-            item.removeComponent(ComponentKeys.LORE);
+            resetComponent(item, ComponentKeys.LORE);
         } else {
-            item.setComponent(ComponentKeys.LORE, lore);
+            setJavaComponentDirectly(item, ComponentKeys.LORE, lore);
         }
     }
 
@@ -132,9 +175,9 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void unbreakable(ItemWrapper<ItemStack> item, boolean unbreakable) {
         if (unbreakable) {
-            item.removeComponent(ComponentKeys.UNBREAKABLE);
+            resetComponent(item, ComponentKeys.UNBREAKABLE);
         } else {
-            item.setComponent(ComponentKeys.UNBREAKABLE, true);
+            setJavaComponentDirectly(item, ComponentKeys.UNBREAKABLE, true);
         }
     }
 
@@ -145,7 +188,11 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void glint(ItemWrapper<ItemStack> item, Boolean glint) {
-        item.setComponent(ComponentKeys.ENCHANTMENT_GLINT_OVERRIDE, glint);
+        if (glint == null) {
+            resetComponent(item, ComponentKeys.ENCHANTMENT_GLINT_OVERRIDE);
+        } else {
+            setJavaComponentDirectly(item, ComponentKeys.ENCHANTMENT_GLINT_OVERRIDE, glint);
+        }
     }
 
     @Override
@@ -161,8 +208,11 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void damage(ItemWrapper<ItemStack> item, Integer damage) {
-        if (damage == null) damage = 0;
-        item.setComponent(ComponentKeys.DAMAGE, damage);
+        if (damage == null) {
+            resetComponent(item, ComponentKeys.DAMAGE);
+        } else {
+            setJavaComponentDirectly(item, ComponentKeys.DAMAGE, damage);
+        }
     }
 
     @Override
@@ -179,9 +229,9 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void maxDamage(ItemWrapper<ItemStack> item, Integer damage) {
         if (damage == null) {
-            item.removeComponent(ComponentKeys.MAX_DAMAGE);
+            resetComponent(item, ComponentKeys.MAX_DAMAGE);
         } else {
-            item.setComponent(ComponentKeys.MAX_DAMAGE, damage);
+            setJavaComponentDirectly(item, ComponentKeys.MAX_DAMAGE, damage);
         }
     }
 
@@ -202,27 +252,27 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void enchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
-            item.removeComponent(ComponentKeys.ENCHANTMENTS);
-            return;
+            resetComponent(item, ComponentKeys.ENCHANTMENTS);
+        } else {
+            Map<String, Integer> enchants = new HashMap<>();
+            for (Enchantment enchantment : enchantments) {
+                enchants.put(enchantment.id().toString(), enchantment.level());
+            }
+            setJavaComponentDirectly(item, ComponentKeys.ENCHANTMENTS, enchants);
         }
-        Map<String, Integer> enchants = new HashMap<>();
-        for (Enchantment enchantment : enchantments) {
-            enchants.put(enchantment.id().toString(), enchantment.level());
-        }
-        item.setComponent(ComponentKeys.ENCHANTMENTS, enchants);
     }
 
     @Override
     protected void storedEnchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
-            item.removeComponent(ComponentKeys.STORED_ENCHANTMENTS);
-            return;
+            resetComponent(item, ComponentKeys.STORED_ENCHANTMENTS);
+        } else {
+            Map<String, Integer> enchants = new HashMap<>();
+            for (Enchantment enchantment : enchantments) {
+                enchants.put(enchantment.id().toString(), enchantment.level());
+            }
+            setJavaComponentDirectly(item, ComponentKeys.STORED_ENCHANTMENTS, enchants);
         }
-        Map<String, Integer> enchants = new HashMap<>();
-        for (Enchantment enchantment : enchantments) {
-            enchants.put(enchantment.id().toString(), enchantment.level());
-        }
-        item.setComponent(ComponentKeys.STORED_ENCHANTMENTS, enchants);
     }
 
     @Override
@@ -231,7 +281,7 @@ public class ComponentItemFactory extends BukkitItemFactory {
         try {
             Map<String, Integer> map = EnchantmentUtils.toMap(enchant);
             map.put(enchantment.toString(), enchantment.level());
-            item.setComponent(ComponentKeys.ENCHANTMENTS, map);
+            setJavaComponentDirectly(item, ComponentKeys.ENCHANTMENTS, map);
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to add enchantment", e);
         }
@@ -243,7 +293,7 @@ public class ComponentItemFactory extends BukkitItemFactory {
         try {
             Map<String, Integer> map = EnchantmentUtils.toMap(enchant);
             map.put(enchantment.toString(), enchantment.level());
-            item.setComponent(ComponentKeys.STORED_ENCHANTMENTS, map);
+            setJavaComponentDirectly(item, ComponentKeys.STORED_ENCHANTMENTS, map);
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to add stored enchantment", e);
         }
@@ -264,18 +314,18 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void maxStackSize(ItemWrapper<ItemStack> item, Integer maxStackSize) {
         if (maxStackSize == null) {
-            item.removeComponent(ComponentKeys.MAX_STACK_SIZE);
+            resetComponent(item, ComponentKeys.MAX_STACK_SIZE);
         } else {
-            item.setComponent(ComponentKeys.MAX_STACK_SIZE, maxStackSize);
+            setJavaComponentDirectly(item, ComponentKeys.MAX_STACK_SIZE, maxStackSize);
         }
     }
 
     @Override
     protected void repairCost(ItemWrapper<ItemStack> item, Integer data) {
         if (data == null) {
-            item.removeComponent(ComponentKeys.REPAIR_COST);
+            resetComponent(item, ComponentKeys.REPAIR_COST);
         } else {
-            item.setComponent(ComponentKeys.REPAIR_COST, data);
+            setJavaComponentDirectly(item, ComponentKeys.REPAIR_COST, data);
         }
     }
 
@@ -302,7 +352,6 @@ public class ComponentItemFactory extends BukkitItemFactory {
     @Override
     protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
         // load previous changes on nms items
-        item1.load();
         Object itemStack1 = item1.getLiteralObject();
         Object itemStack2 = item2.getLiteralObject();
         try {
@@ -310,5 +359,29 @@ public class ComponentItemFactory extends BukkitItemFactory {
         } catch (Exception e) {
             plugin.logger().warn("Failed to merge item", e);
         }
+    }
+
+    @Override
+    protected void trim(ItemWrapper<ItemStack> item, Trim trim) {
+        if (trim == null) {
+            resetComponent(item, ComponentKeys.TRIM);
+        } else {
+            setJavaComponentDirectly(item, ComponentKeys.TRIM, Map.of(
+                    "pattern", trim.pattern(),
+                    "material", trim.material()
+            ));
+        }
+    }
+
+    @Override
+    protected Optional<Trim> trim(ItemWrapper<ItemStack> item) {
+        if (!item.hasComponent(ComponentKeys.TRIM)) return Optional.empty();
+        Optional<Object> trim = ComponentType.encodeJava(ComponentKeys.TRIM, item.getComponent(ComponentKeys.TRIM));
+        if (trim.isEmpty()) {
+            return Optional.empty();
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, String> trimMap = (Map<String, String>) trim.get();
+        return Optional.of(new Trim(trimMap.get("pattern"), trimMap.get("material")));
     }
 }

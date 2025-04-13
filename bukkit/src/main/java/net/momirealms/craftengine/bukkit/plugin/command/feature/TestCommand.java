@@ -28,7 +28,8 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     ItemStack itemStack = new ItemStack(Material.STONE);
                     RtagItem rtagItem = new RtagItem(itemStack);
                     rtagItem.setComponent(ComponentKeys.CUSTOM_DATA, Map.of("test1", "1"));
-                    rtagItem.setComponent(ComponentKeys.CUSTOM_DATA, Map.of("test2", "2"));
+                    rtagItem.removeComponent(ComponentKeys.CUSTOM_DATA);
+                    rtagItem.removeComponent(ComponentKeys.LORE);
                     player.getInventory().addItem(rtagItem.load());
                 });
     }

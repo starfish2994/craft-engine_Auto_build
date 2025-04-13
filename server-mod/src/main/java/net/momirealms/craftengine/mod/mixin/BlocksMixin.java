@@ -11,8 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.momirealms.craftengine.mod.CraftEngineBlock;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
+import net.momirealms.craftengine.mod.block.CraftEngineBlock;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Mixin(value = Blocks.class)
-public abstract class MixinBlocks {
+public abstract class BlocksMixin {
 
     @Inject(method = "<clinit>", at = @At("RETURN"))
     private static void onBlocksInit(CallbackInfo ci) {

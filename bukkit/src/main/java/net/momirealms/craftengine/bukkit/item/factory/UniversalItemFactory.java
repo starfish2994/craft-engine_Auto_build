@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import com.google.gson.JsonElement;
 import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
@@ -8,6 +9,7 @@ import com.saicone.rtag.tag.TagList;
 import net.momirealms.craftengine.bukkit.item.RTagItemWrapper;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.ItemWrapper;
+import net.momirealms.craftengine.core.item.Trim;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
@@ -24,6 +26,36 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     public UniversalItemFactory(CraftEngine plugin) {
         super(plugin);
+    }
+
+    @Override
+    protected void resetComponent(ItemWrapper<ItemStack> item, Key type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected JsonElement encodeJson(Key type, Object component) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected void setComponent(ItemWrapper<ItemStack> item, Key type, Object value) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected Object getComponent(ItemWrapper<ItemStack> item, Key type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected boolean hasComponent(ItemWrapper<ItemStack> item, Key type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected void removeComponent(ItemWrapper<ItemStack> item, Key type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
@@ -255,5 +287,23 @@ public class UniversalItemFactory extends BukkitItemFactory {
         // load previous changes on nms items
         item1.load();
         TagCompound.merge(ItemObject.getCustomDataTag(item1.getLiteralObject()), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
+    }
+
+    @Override
+    protected void trim(ItemWrapper<ItemStack> item, Trim trim) {
+        if (trim == null) {
+            item.remove("Trim");
+            return;
+        }
+        item.set(trim.material(), "Trim", "material");
+        item.set(trim.pattern(), "Trim", "pattern");
+    }
+
+    @Override
+    protected Optional<Trim> trim(ItemWrapper<ItemStack> item) {
+        String material = item.get("Trim", "material");
+        String pattern = item.get("Trim", "pattern");
+        if (material == null || pattern == null) return Optional.empty();
+        return Optional.of(new Trim(material, pattern));
     }
 }
