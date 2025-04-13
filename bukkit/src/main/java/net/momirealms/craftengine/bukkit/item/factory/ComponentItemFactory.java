@@ -201,6 +201,10 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void enchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            item.removeComponent(ComponentKeys.ENCHANTMENTS);
+            return;
+        }
         Map<String, Integer> enchants = new HashMap<>();
         for (Enchantment enchantment : enchantments) {
             enchants.put(enchantment.id().toString(), enchantment.level());
@@ -210,6 +214,10 @@ public class ComponentItemFactory extends BukkitItemFactory {
 
     @Override
     protected void storedEnchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            item.removeComponent(ComponentKeys.STORED_ENCHANTMENTS);
+            return;
+        }
         Map<String, Integer> enchants = new HashMap<>();
         for (Enchantment enchantment : enchantments) {
             enchants.put(enchantment.id().toString(), enchantment.level());

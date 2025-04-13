@@ -16,13 +16,15 @@ public interface CustomItem<I> extends BuildableItem<I> {
 
     Key material();
 
-    List<ItemDataModifier<I>> dataModifiers();
+    NetworkItemDataProcessor<I>[] networkItemDataProcessors();
+
+    ItemDataModifier<I>[] dataModifiers();
 
     Map<String, ItemDataModifier<I>> dataModifierMap();
 
     boolean hasClientBoundDataModifier();
 
-    List<ItemDataModifier<I>> clientBoundDataModifiers();
+    ItemDataModifier<I>[] clientBoundDataModifiers();
 
     Map<String, ItemDataModifier<I>> clientBoundDataModifierMap();
 
@@ -33,7 +35,7 @@ public interface CustomItem<I> extends BuildableItem<I> {
     }
 
     default Item<I> buildItem(Player player) {
-        return buildItem(new ItemBuildContext(player, ContextHolder.EMPTY));
+        return buildItem(ItemBuildContext.of(player, ContextHolder.EMPTY));
     }
 
     Item<I> buildItem(ItemBuildContext context);

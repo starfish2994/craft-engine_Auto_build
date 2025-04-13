@@ -31,4 +31,9 @@ public class JukeboxSongModifier<I> implements ItemDataModifier<I> {
             ));
         }
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeComponent(ComponentKeys.JUKEBOX_PLAYABLE);
+    }
 }

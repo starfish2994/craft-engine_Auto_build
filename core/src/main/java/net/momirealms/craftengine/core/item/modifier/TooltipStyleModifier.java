@@ -21,4 +21,9 @@ public class TooltipStyleModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.setComponent(ComponentKeys.TOOLTIP_STYLE, argument.toString());
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeComponent(ComponentKeys.TOOLTIP_STYLE);
+    }
 }

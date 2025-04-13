@@ -17,6 +17,13 @@ public class UnbreakableModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.unbreakable(argument);
+        item.unbreakable(this.argument);
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        if (this.argument) {
+            item.unbreakable(false);
+        }
     }
 }

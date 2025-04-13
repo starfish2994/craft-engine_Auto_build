@@ -142,6 +142,10 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void enchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            item.remove("Enchantments");
+            return;
+        }
         ArrayList<Object> tags = new ArrayList<>();
         for (Enchantment enchantment : enchantments) {
             tags.add((Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level())));
@@ -151,6 +155,10 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @Override
     protected void storedEnchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            item.remove("StoredEnchantments");
+            return;
+        }
         ArrayList<Object> tags = new ArrayList<>();
         for (Enchantment enchantment : enchantments) {
             tags.add((Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level())));

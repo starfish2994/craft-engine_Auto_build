@@ -19,4 +19,9 @@ public class CustomModelDataModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.customModelData(argument);
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.customModelData(null);
+    }
 }

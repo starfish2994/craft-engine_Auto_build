@@ -24,4 +24,9 @@ public class LoreModifier<I> implements ItemDataModifier<I> {
         item.lore(argument.stream().map(it -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(
                 it, context.tagResolvers()))).toList());
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.lore(null);
+    }
 }

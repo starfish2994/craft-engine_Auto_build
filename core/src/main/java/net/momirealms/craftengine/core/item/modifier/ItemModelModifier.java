@@ -19,6 +19,11 @@ public class ItemModelModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-            item.setComponent(ComponentKeys.ITEM_MODEL, this.data.toString());
+        item.setComponent(ComponentKeys.ITEM_MODEL, this.data.toString());
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeComponent(ComponentKeys.ITEM_MODEL);
     }
 }

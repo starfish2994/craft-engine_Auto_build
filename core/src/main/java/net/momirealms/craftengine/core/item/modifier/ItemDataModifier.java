@@ -8,4 +8,6 @@ public interface ItemDataModifier<I> {
     String name();
 
     void apply(Item<I> item, ItemBuildContext context);
+
+    void remove(Item<I> item);
 }

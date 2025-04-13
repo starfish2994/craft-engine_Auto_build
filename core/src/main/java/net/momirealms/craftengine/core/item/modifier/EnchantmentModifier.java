@@ -24,4 +24,10 @@ public class EnchantmentModifier<I> implements ItemDataModifier<I> {
         if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) item.setStoredEnchantments(enchantments);
         else item.setEnchantments(enchantments);
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) item.setStoredEnchantments(null);
+        else item.setEnchantments(null);
+    }
 }

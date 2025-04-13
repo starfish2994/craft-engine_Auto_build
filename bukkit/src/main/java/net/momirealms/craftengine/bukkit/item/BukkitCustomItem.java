@@ -3,10 +3,7 @@ package net.momirealms.craftengine.bukkit.item;
 import com.google.common.collect.ImmutableMap;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
-import net.momirealms.craftengine.core.item.CustomItem;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.ItemSettings;
+import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.util.Key;
@@ -22,13 +19,15 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
     private final Key id;
     private final Key materialKey;
     private final Material material;
-    private final List<ItemDataModifier<ItemStack>> modifiers;
+    private final ItemDataModifier<ItemStack>[] modifiers;
     private final Map<String, ItemDataModifier<ItemStack>> modifierMap;
-    private final List<ItemDataModifier<ItemStack>> clientBoundModifiers;
+    private final ItemDataModifier<ItemStack>[] clientBoundModifiers;
     private final Map<String, ItemDataModifier<ItemStack>> clientBoundModifierMap;
+    private final NetworkItemDataProcessor<ItemStack>[] networkItemDataProcessors;
     private final List<ItemBehavior> behaviors;
     private final ItemSettings settings;
 
+    @SuppressWarnings("unchecked")
     public BukkitCustomItem(Key id,
                             Key materialKey,
                             Material material,
@@ -39,8 +38,10 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         this.id = id;
         this.material = material;
         this.materialKey = materialKey;
-        this.modifiers = List.copyOf(modifiers);
-        this.clientBoundModifiers = List.copyOf(clientBoundModifiers);
+        // unchecked cast
+        this.modifiers = modifiers.toArray(new ItemDataModifier[0]);
+        // unchecked cast
+        this.clientBoundModifiers = clientBoundModifiers.toArray(new ItemDataModifier[0]);
         this.behaviors = List.copyOf(behaviors);
         this.settings = settings;
         ImmutableMap.Builder<String, ItemDataModifier<ItemStack>> modifierMapBuilder = ImmutableMap.builder();
@@ -49,10 +50,19 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         }
         this.modifierMap = modifierMapBuilder.build();
         ImmutableMap.Builder<String, ItemDataModifier<ItemStack>> clientSideModifierMapBuilder = ImmutableMap.builder();
+        List<NetworkItemDataProcessor<ItemStack>> networkItemDataProcessors = new ArrayList<>();
         for (ItemDataModifier<ItemStack> modifier : clientBoundModifiers) {
-            clientSideModifierMapBuilder.put(modifier.name(), modifier);
+            String name = modifier.name();
+            clientSideModifierMapBuilder.put(name, modifier);
+            if (this.modifierMap.containsKey(name)) {
+                networkItemDataProcessors.add(NetworkItemDataProcessor.both(this.modifierMap.get(name), modifier));
+            } else {
+                networkItemDataProcessors.add(NetworkItemDataProcessor.clientOnly(modifier));
+            }
         }
         this.clientBoundModifierMap = clientSideModifierMapBuilder.build();
+        // unchecked cast
+        this.networkItemDataProcessors = networkItemDataProcessors.toArray(new NetworkItemDataProcessor[0]);
     }
 
     @Override
@@ -66,7 +76,12 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
     }
 
     @Override
-    public List<ItemDataModifier<ItemStack>> dataModifiers() {
+    public NetworkItemDataProcessor<ItemStack>[] networkItemDataProcessors() {
+        return this.networkItemDataProcessors;
+    }
+
+    @Override
+    public ItemDataModifier<ItemStack>[] dataModifiers() {
         return this.modifiers;
     }
 
@@ -77,11 +92,11 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
 
     @Override
     public boolean hasClientBoundDataModifier() {
-        return !this.clientBoundModifiers.isEmpty();
+        return this.clientBoundModifiers.length != 0;
     }
 
     @Override
-    public List<ItemDataModifier<ItemStack>> clientBoundDataModifiers() {
+    public ItemDataModifier<ItemStack>[] clientBoundDataModifiers() {
         return this.clientBoundModifiers;
     }
 
@@ -93,9 +108,6 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
     @Override
     public ItemStack buildItemStack(ItemBuildContext context, int count) {
         ItemStack item = new ItemStack(this.material);
-        if (this.modifiers.isEmpty()) {
-            return item;
-        }
         Item<ItemStack> wrapped = BukkitCraftEngine.instance().itemManager().wrap(item);
         wrapped.count(count);
         for (ItemDataModifier<ItemStack> modifier : this.modifiers) {

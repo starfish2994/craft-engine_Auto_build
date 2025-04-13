@@ -21,4 +21,9 @@ public class EquippableModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.setComponent(ComponentKeys.EQUIPPABLE, this.data.toMap());
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeComponent(ComponentKeys.EQUIPPABLE);
+    }
 }

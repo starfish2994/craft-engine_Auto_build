@@ -21,4 +21,9 @@ public class DisplayNameModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(this.argument, context.tagResolvers())));
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.customName(null);
+    }
 }

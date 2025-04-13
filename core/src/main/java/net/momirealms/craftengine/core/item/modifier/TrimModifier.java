@@ -33,4 +33,13 @@ public class TrimModifier<I> implements ItemDataModifier<I> {
             item.setTag(this.pattern, "Trim", "pattern");
         }
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        if (VersionHelper.isVersionNewerThan1_20_5()) {
+            item.removeComponent(ComponentKeys.TRIM);
+        } else {
+            item.removeTag("Trim");
+        }
+    }
 }

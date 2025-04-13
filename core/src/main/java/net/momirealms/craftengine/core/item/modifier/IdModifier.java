@@ -21,4 +21,9 @@ public class IdModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.setTag(argument.toString(), CRAFT_ENGINE_ID);
     }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeTag(CRAFT_ENGINE_ID);
+    }
 }
