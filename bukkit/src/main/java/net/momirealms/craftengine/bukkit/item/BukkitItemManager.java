@@ -35,10 +35,7 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.ResourceKey;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -50,8 +47,10 @@ import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.type.Either;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
@@ -70,13 +69,63 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
+        instance = this;
         this.plugin = plugin;
         this.factory = BukkitItemFactory.create(plugin);
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
-        instance = this;
+        if (plugin.hasMod()) {
+            Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
+            if (clazz$CustomStreamCodec != null) {
+                Field cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);
+                Field sProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 1);
+                Function<Object, Object> c = (raw) -> {
+                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
+                    Item<ItemStack> wrapped = this.wrap(itemStack.clone());
+                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+                    if (customItem.isEmpty()) {
+                        return raw;
+                    }
+                    CustomItem<ItemStack> custom = customItem.get();
+                    if (!custom.hasClientBoundDataModifier()) {
+                        return raw;
+                    }
+                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+                        processor.toClient(wrapped, ItemBuildContext.EMPTY);
+                    }
+                    wrapped.load();
+                    return wrapped.getLiteralObject();
+                };
+
+                Function<Object, Object> s = (raw) -> {
+                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
+                    Item<ItemStack> wrapped = this.wrap(itemStack);
+                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+                    if (customItem.isEmpty()) {
+                        return raw;
+                    }
+                    CustomItem<ItemStack> custom = customItem.get();
+                    if (!custom.hasClientBoundDataModifier()) {
+                        return raw;
+                    }
+                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+                        processor.toServer(wrapped, ItemBuildContext.EMPTY);
+                    }
+                    wrapped.load();
+                    return wrapped.getLiteralObject();
+                };
+                try {
+                    assert cProcessor != null;
+                    cProcessor.set(null, c);
+                    assert sProcessor != null;
+                    sProcessor.set(null, s);
+                } catch (ReflectiveOperationException e) {
+                    plugin.logger().warn("Failed to load custom stream codec", e);
+                }
+            }
+        }
     }
 
     @Override
