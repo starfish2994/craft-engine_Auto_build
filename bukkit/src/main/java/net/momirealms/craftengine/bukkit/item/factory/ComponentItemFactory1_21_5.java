@@ -28,7 +28,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (json == null) {
             resetComponent(item, ComponentKeys.CUSTOM_NAME);
         } else {
-            setJavaComponentDirectly(item, ComponentKeys.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            setNBTComponentDirectly(item, ComponentKeys.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
@@ -43,7 +43,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (json == null) {
             resetComponent(item, ComponentKeys.ITEM_NAME);
         } else {
-            setJavaComponentDirectly(item, ComponentKeys.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            setNBTComponentDirectly(item, ComponentKeys.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
@@ -77,7 +77,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
             for (String json : lore) {
                 loreTags.add(ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
             }
-            setJavaComponentDirectly(item, ComponentKeys.LORE, TagList.newTag(loreTags));
+            setNBTComponentDirectly(item, ComponentKeys.LORE, TagList.newTag(loreTags));
         }
     }
 }

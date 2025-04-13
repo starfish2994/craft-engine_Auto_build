@@ -67,6 +67,10 @@ public class ComponentItemFactory extends BukkitItemFactory {
         ComponentType.parseJson(type, value).ifPresent(it -> FastNMS.INSTANCE.setComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type), it));
     }
 
+    protected void setNBTComponentDirectly(ItemWrapper<ItemStack> item, Key type, Object value) {
+        ComponentType.parseNbt(type, value).ifPresent(it -> FastNMS.INSTANCE.setComponent(item.getLiteralObject(), KeyUtils.toResourceLocation(type), it));
+    }
+
     @Override
     public Object encodeJava(Key componentType, @Nullable Object component) {
         return ComponentType.encodeJava(componentType, component).orElse(null);
