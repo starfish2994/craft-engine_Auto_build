@@ -55,7 +55,7 @@ public class BukkitWorldBlock implements WorldBlock {
             Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(block.getWorld());
             Object fluidData = Reflections.method$Level$getFluidState.invoke(serverLevel, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
             if (fluidData == null) return false;
-            return (boolean) Reflections.method$FluidState$isSource.invoke(fluidData);
+            return Reflections.method$FluidState$getType.invoke(fluidData) == Reflections.instance$Fluids$WATER;
         } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().warn("Failed to check if water source is available", e);
             return false;

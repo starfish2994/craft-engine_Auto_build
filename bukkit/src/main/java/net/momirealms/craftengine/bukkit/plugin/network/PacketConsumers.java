@@ -1566,9 +1566,11 @@ public class PacketConsumers {
             if (actionType == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
-            if (serverPlayer.isSpectatorMode() || serverPlayer.isAdventureMode()) return;
+            if (serverPlayer.isSpectatorMode()) return;
             BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                 if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
+                    // todo 冒险模式破坏工具白名单
+                    if (serverPlayer.isAdventureMode()) return;
                     if (furniture.isValid()) {
                         if (!BukkitCraftEngine.instance().antiGrief().canBreak(player, location)) {
                             return;

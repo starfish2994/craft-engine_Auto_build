@@ -78,15 +78,15 @@ public class ItemEventListener implements Listener {
 
     @EventHandler
     public void onInteractAir(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR) return;
+        if (event.getAction() != Action.RIGHT_CLICK_AIR)
+            return;
         Player bukkitPlayer = event.getPlayer();
         BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (cancelEventIfHasInteraction(event, player, hand)) {
             return;
         }
-
-        if (player.isSpectatorMode() || player.isAdventureMode()) {
+        if (player.isSpectatorMode()) {
             return;
         }
 
@@ -149,9 +149,8 @@ public class ItemEventListener implements Listener {
                 return;
             }
 
-            // TODO We need to further investigate how to handle adventure mode
             // no spectator interactions
-            if (player.isSpectatorMode() || player.isAdventureMode()) {
+            if (player.isSpectatorMode()) {
                 return;
             }
 

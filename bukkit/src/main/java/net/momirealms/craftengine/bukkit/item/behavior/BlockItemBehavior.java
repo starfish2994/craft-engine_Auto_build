@@ -90,6 +90,8 @@ public class BlockItemBehavior extends ItemBehavior {
         Block againstBlock = world.getBlockAt(againstPos.x(), againstPos.y(), againstPos.z());
         org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
 
+        // todo adventure check
+
         // trigger event
         CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,
                 DirectionUtils.toBlockFace(context.getClickedFace()), bukkitBlock, context.getHand());
