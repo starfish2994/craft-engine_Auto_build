@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 
 import java.util.Map;
 
-public class TrimModifier<I> implements ItemModifier<I> {
+public class TrimModifier<I> implements ItemDataModifier<I> {
     private final String material;
     private final String pattern;
 

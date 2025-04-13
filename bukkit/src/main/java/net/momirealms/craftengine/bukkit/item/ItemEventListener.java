@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
@@ -138,7 +139,12 @@ public class ItemEventListener implements Listener {
             boolean interactable = InteractUtils.isInteractable(BlockStateUtils.getBlockOwnerId(clickedBlock), bukkitPlayer, clickedBlock.getBlockData(), hitResult, itemInHand);
 
             // do not allow to place block if it's a vanilla block
-            if (itemInHand.isBlockItem() && itemInHand.isCustomItem()) {
+            Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+            if (itemInHand.isBlockItem() && optionalCustomItem.isPresent()) {
+                // it's a custom item, but now it's ignored
+                if (optionalCustomItem.get().settings().canPlaceRelatedVanillaBlock()) {
+                    return;
+                }
                 if (!interactable || player.isSecondaryUseActive()) {
                     event.setCancelled(true);
                 }

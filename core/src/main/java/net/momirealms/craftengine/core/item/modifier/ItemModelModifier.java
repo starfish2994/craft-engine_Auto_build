@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.util.Key;
 
-public class ItemModelModifier<I> implements ItemModifier<I> {
+public class ItemModelModifier<I> implements ItemDataModifier<I> {
     private final Key data;
 
     public ItemModelModifier(Key data) {

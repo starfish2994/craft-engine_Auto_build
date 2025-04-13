@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.ItemBuildContext;
 
 import java.util.Map;
 
-public class ComponentModifier<I> implements ItemModifier<I> {
+public class ComponentModifier<I> implements ItemDataModifier<I> {
     private final Map<String, Object> arguments;
 
     public ComponentModifier(Map<String, Object> arguments) {

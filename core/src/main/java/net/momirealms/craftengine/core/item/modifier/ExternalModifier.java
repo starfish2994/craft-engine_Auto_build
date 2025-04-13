@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 
-public class ExternalModifier<I> implements ItemModifier<I> {
+public class ExternalModifier<I> implements ItemDataModifier<I> {
     private final String id;
     private final ExternalItemProvider<I> provider;
 

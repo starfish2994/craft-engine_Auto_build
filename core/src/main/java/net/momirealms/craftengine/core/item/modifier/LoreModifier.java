@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 
 import java.util.List;
 
-public class LoreModifier<I> implements ItemModifier<I> {
+public class LoreModifier<I> implements ItemDataModifier<I> {
     private final List<String> argument;
 
     public LoreModifier(List<String> argument) {

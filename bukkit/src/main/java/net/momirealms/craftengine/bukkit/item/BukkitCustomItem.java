@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import com.google.common.collect.ImmutableMap;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.core.item.CustomItem;
@@ -7,57 +8,97 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemSettings;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
-import net.momirealms.craftengine.core.item.modifier.ItemModifier;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class BukkitCustomItem implements CustomItem<ItemStack> {
     private final Key id;
     private final Key materialKey;
     private final Material material;
-    private final List<ItemModifier<ItemStack>> modifiers;
-    private final List<ItemBehavior> behavior;
+    private final List<ItemDataModifier<ItemStack>> modifiers;
+    private final Map<String, ItemDataModifier<ItemStack>> modifierMap;
+    private final List<ItemDataModifier<ItemStack>> clientBoundModifiers;
+    private final Map<String, ItemDataModifier<ItemStack>> clientBoundModifierMap;
+    private final List<ItemBehavior> behaviors;
     private final ItemSettings settings;
 
-    public BukkitCustomItem(Key id, Key materialKey, Material material, List<ItemModifier<ItemStack>> modifiers, List<ItemBehavior> behavior, ItemSettings settings) {
+    public BukkitCustomItem(Key id,
+                            Key materialKey,
+                            Material material,
+                            List<ItemDataModifier<ItemStack>> modifiers,
+                            List<ItemDataModifier<ItemStack>> clientBoundModifiers,
+                            List<ItemBehavior> behaviors,
+                            ItemSettings settings) {
         this.id = id;
         this.material = material;
-        this.modifiers = modifiers;
-        this.behavior = behavior;
         this.materialKey = materialKey;
+        this.modifiers = List.copyOf(modifiers);
+        this.clientBoundModifiers = List.copyOf(clientBoundModifiers);
+        this.behaviors = List.copyOf(behaviors);
         this.settings = settings;
+        ImmutableMap.Builder<String, ItemDataModifier<ItemStack>> modifierMapBuilder = ImmutableMap.builder();
+        for (ItemDataModifier<ItemStack> modifier : modifiers) {
+            modifierMapBuilder.put(modifier.name(), modifier);
+        }
+        this.modifierMap = modifierMapBuilder.build();
+        ImmutableMap.Builder<String, ItemDataModifier<ItemStack>> clientSideModifierMapBuilder = ImmutableMap.builder();
+        for (ItemDataModifier<ItemStack> modifier : clientBoundModifiers) {
+            clientSideModifierMapBuilder.put(modifier.name(), modifier);
+        }
+        this.clientBoundModifierMap = clientSideModifierMapBuilder.build();
     }
 
     @Override
     public Key id() {
-        return id;
+        return this.id;
     }
 
     @Override
     public Key material() {
-        return materialKey;
+        return this.materialKey;
     }
 
     @Override
-    public List<ItemModifier<ItemStack>> modifiers() {
-        return modifiers;
+    public List<ItemDataModifier<ItemStack>> dataModifiers() {
+        return this.modifiers;
+    }
+
+    @Override
+    public Map<String, ItemDataModifier<ItemStack>> dataModifierMap() {
+        return this.modifierMap;
+    }
+
+    @Override
+    public boolean hasClientBoundDataModifier() {
+        return !this.clientBoundModifiers.isEmpty();
+    }
+
+    @Override
+    public List<ItemDataModifier<ItemStack>> clientBoundDataModifiers() {
+        return this.clientBoundModifiers;
+    }
+
+    @Override
+    public Map<String, ItemDataModifier<ItemStack>> clientBoundDataModifierMap() {
+        return this.clientBoundModifierMap;
     }
 
     @Override
     public ItemStack buildItemStack(ItemBuildContext context, int count) {
-        ItemStack item = new ItemStack(material);
+        ItemStack item = new ItemStack(this.material);
         if (this.modifiers.isEmpty()) {
             return item;
         }
         Item<ItemStack> wrapped = BukkitCraftEngine.instance().itemManager().wrap(item);
         wrapped.count(count);
-        for (ItemModifier<ItemStack> modifier : this.modifiers) {
+        for (ItemDataModifier<ItemStack> modifier : this.modifiers) {
             modifier.apply(wrapped, context);
         }
         return wrapped.load();
@@ -70,9 +111,9 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
 
     @Override
     public Item<ItemStack> buildItem(ItemBuildContext context) {
-        ItemStack item = new ItemStack(material);
+        ItemStack item = new ItemStack(this.material);
         Item<ItemStack> wrapped = BukkitCraftEngine.instance().itemManager().wrap(item);
-        for (ItemModifier<ItemStack> modifier : modifiers()) {
+        for (ItemDataModifier<ItemStack> modifier : dataModifiers()) {
             modifier.apply(wrapped, context);
         }
         wrapped.load();
@@ -81,7 +122,7 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
 
     @Override
     public @NotNull List<ItemBehavior> behaviors() {
-        return this.behavior;
+        return this.behaviors;
     }
 
     public static Builder<ItemStack> builder() {
@@ -92,9 +133,10 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         private Key id;
         private Material material;
         private Key materialKey;
-        private List<ItemBehavior> behavior = List.of();
+        private final List<ItemBehavior> behaviors = new ArrayList<>();
         private ItemSettings settings = ItemSettings.of();
-        private final List<ItemModifier<ItemStack>> modifiers = new ArrayList<>();
+        private final List<ItemDataModifier<ItemStack>> modifiers = new ArrayList<>();
+        private final List<ItemDataModifier<ItemStack>> clientBoundModifiers = new ArrayList<>();
 
         @Override
         public Builder<ItemStack> id(Key id) {
@@ -110,26 +152,38 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         }
 
         @Override
-        public Builder<ItemStack> modifier(ItemModifier<ItemStack> modifier) {
+        public Builder<ItemStack> dataModifier(ItemDataModifier<ItemStack> modifier) {
             this.modifiers.add(modifier);
             return this;
         }
 
         @Override
-        public Builder<ItemStack> modifiers(List<ItemModifier<ItemStack>> list) {
-            this.modifiers.addAll(list);
+        public Builder<ItemStack> dataModifiers(List<ItemDataModifier<ItemStack>> modifiers) {
+            this.modifiers.addAll(modifiers);
             return this;
+        }
+
+        @Override
+        public Builder<ItemStack> clientBoundDataModifier(ItemDataModifier<ItemStack> modifier) {
+            this.clientBoundModifiers.add(modifier);
+            return this;
+        }
+
+        @Override
+        public Builder<ItemStack> clientBoundDataModifiers(List<ItemDataModifier<ItemStack>> modifiers) {
+            this.clientBoundModifiers.addAll(modifiers);
+            return null;
         }
 
         @Override
         public Builder<ItemStack> behavior(ItemBehavior behavior) {
-            this.behavior=  List.of(behavior);
+            this.behaviors.add(behavior);
             return this;
         }
 
         @Override
-        public Builder<ItemStack> behavior(List<ItemBehavior> behaviors) {
-            this.behavior = behaviors;
+        public Builder<ItemStack> behaviors(List<ItemBehavior> behaviors) {
+            this.behaviors.addAll(behaviors);
             return this;
         }
 
@@ -142,7 +196,7 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         @Override
         public CustomItem<ItemStack> build() {
             this.modifiers.addAll(this.settings.modifiers());
-            return new BukkitCustomItem(id, materialKey, material, Collections.unmodifiableList(modifiers), behavior, settings);
+            return new BukkitCustomItem(id, materialKey, material, modifiers, clientBoundModifiers, behaviors, settings);
         }
     }
 }

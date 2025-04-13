@@ -24,7 +24,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected static final Map<Key, List<Holder<Key>>> VANILLA_ITEM_TAGS = new HashMap<>();
 
     protected final Map<String, ExternalItemProvider<I>> externalItemProviders = new HashMap<>();
-    protected final Map<String, Function<Object, ItemModifier<I>>> dataFunctions = new HashMap<>();
+    protected final Map<String, Function<Object, ItemDataModifier<I>>> dataFunctions = new HashMap<>();
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
     protected final Map<Key, List<Holder<Key>>> customItemTags;
     protected final Map<Key, Map<Integer, Key>> cmdConflictChecker;
@@ -37,7 +37,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
     protected final List<Suggestion> cachedTotemSuggestions = new ArrayList<>();
 
-    protected void registerDataFunction(Function<Object, ItemModifier<I>> function, String... alias) {
+    protected void registerDataFunction(Function<Object, ItemDataModifier<I>> function, String... alias) {
         for (String a : alias) {
             dataFunctions.put(a, function);
         }

@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.item.ItemKeys;
 
 import java.util.List;
 
-public class EnchantmentModifier<I> implements ItemModifier<I> {
+public class EnchantmentModifier<I> implements ItemDataModifier<I> {
     private final List<Enchantment> enchantments;
 
     public EnchantmentModifier(List<Enchantment> enchantments) {

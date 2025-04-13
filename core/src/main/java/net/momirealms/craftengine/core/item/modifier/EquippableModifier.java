@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 
-public class EquippableModifier<I> implements ItemModifier<I> {
+public class EquippableModifier<I> implements ItemDataModifier<I> {
     private final EquipmentData data;
 
     public EquippableModifier(EquipmentData data) {

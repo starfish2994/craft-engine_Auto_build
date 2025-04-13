@@ -8,7 +8,7 @@ import net.momirealms.craftengine.core.util.TypeUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TagsModifier<I> implements ItemModifier<I> {
+public class TagsModifier<I> implements ItemDataModifier<I> {
     private final Map<String, Object> arguments;
 
     public TagsModifier(Map<String, Object> arguments) {

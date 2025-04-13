@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 
-public class ItemNameModifier<I> implements ItemModifier<I> {
+public class ItemNameModifier<I> implements ItemDataModifier<I> {
     private final String argument;
 
     public ItemNameModifier(String argument) {

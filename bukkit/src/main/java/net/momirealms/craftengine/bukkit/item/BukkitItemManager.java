@@ -235,14 +235,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             Key itemModelKey = null;
 
             CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
-            itemBuilder.modifier(new IdModifier<>(id));
+            itemBuilder.dataModifier(new IdModifier<>(id));
 
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
             // Sets some basic model info
             if (customModelData != 0) {
-                itemBuilder.modifier(new CustomModelDataModifier<>(customModelData));
+                itemBuilder.dataModifier(new CustomModelDataModifier<>(customModelData));
             }
             // Requires the item to have model before apply item-model
             else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isVersionNewerThan1_21_2()) {
@@ -250,7 +250,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // customize or use the id
                 itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
                 if (ResourceLocation.isValid(itemModelKey.toString())) {
-                    itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+                    itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
                 } else {
                     itemModelKey = null;
                 }
@@ -258,7 +258,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
             if (hasItemModelSection) {
                 itemModelKey = Key.from(section.get("item-model").toString());
-                itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+                itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
             }
 
             // Get item behaviors
@@ -270,7 +270,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 for (Map<String, Object> behaviorMap : behavior) {
                     behaviors.add(ItemBehaviors.fromMap(pack, path, id, behaviorMap));
                 }
-                itemBuilder.behavior(behaviors);
+                itemBuilder.behaviors(behaviors);
             } else if (behaviorConfig instanceof Map<?, ?>) {
                 Map<String, Object> behaviorSection = MiscUtils.castToMap(section.get("behavior"), true);
                 if (behaviorSection != null) {
@@ -284,9 +284,23 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
                     Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
                         try {
-                            itemBuilder.modifier(function.apply(dataEntry.getValue()));
+                            itemBuilder.dataModifier(function.apply(dataEntry.getValue()));
                         } catch (IllegalArgumentException e) {
                             plugin.logger().warn("Invalid data format", e);
+                        }
+                    });
+                }
+            }
+
+            // Get item data
+            Map<String, Object> clientSideDataSection = MiscUtils.castToMap(section.get("client-bound-data"), true);
+            if (clientSideDataSection != null) {
+                for (Map.Entry<String, Object> dataEntry : clientSideDataSection.entrySet()) {
+                    Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
+                        try {
+                            itemBuilder.clientBoundDataModifier(function.apply(dataEntry.getValue()));
+                        } catch (IllegalArgumentException e) {
+                            plugin.logger().warn("Invalid client bound data format", e);
                         }
                     });
                 }
