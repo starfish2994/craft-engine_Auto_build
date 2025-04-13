@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.mod.block;
 
-import com.mojang.brigadier.StringReader;
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -12,9 +10,11 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
-import net.momirealms.craftengine.mod.util.VersionHelper;
+import net.momirealms.craftengine.mod.util.Reflections;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -30,24 +30,28 @@ public class CustomBlocks {
         for (Map.Entry<ResourceLocation, Integer> entry : map.entrySet()) {
             ResourceLocation replacedBlockId = entry.getKey();
             boolean isNoteBlock = replacedBlockId.equals(noteBlock);
-            Block replacedBlock = BuiltInRegistries.BLOCK.getValue(replacedBlockId);
-            for (int i = 0; i < entry.getValue(); i++) {
-                ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
-                ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
-                BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
-                if (VersionHelper.above1_21_2()) {
-                    properties.setId(resourceKey);
+            try {
+                Block replacedBlock = (Block) Reflections.method$DefaultedRegistry$get.invoke(BuiltInRegistries.BLOCK, replacedBlockId);
+                for (int i = 0; i < entry.getValue(); i++) {
+                    ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
+                    ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
+                    BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
+                    if (Reflections.field$BlockBehaviour$Properties$id != null) {
+                        Reflections.field$BlockBehaviour$Properties$id.set(properties, resourceKey);
+                    }
+                    if (!replacedBlock.hasCollision) {
+                        properties.noCollission();
+                    }
+                    CraftEngineBlock block = new CraftEngineBlock(properties);
+                    if (isNoteBlock) {
+                        block.setNoteBlock(true);
+                        NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
+                    }
+                    Registry.register(BuiltInRegistries.BLOCK, location, block);
+                    Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
                 }
-                if (!replacedBlock.hasCollision) {
-                    properties.noCollission();
-                }
-                CraftEngineBlock block = new CraftEngineBlock(properties);
-                if (isNoteBlock) {
-                    block.setNoteBlock(true);
-                    NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
-                }
-                Registry.register(BuiltInRegistries.BLOCK, location, block);
-                Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
         NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.addAll(net.minecraft.world.level.block.Blocks.NOTE_BLOCK.getStateDefinition().getPossibleStates());
@@ -116,10 +120,10 @@ public class CustomBlocks {
 
     private static BlockState createBlockData(String blockState) {
         try {
-            StringReader reader = new StringReader(blockState);
-            BlockStateParser.BlockResult arg = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, reader, false);
-            return arg.blockState();
+            CraftBlockData data = CraftBlockData.newData(null, blockState);
+            return data.getState();
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
