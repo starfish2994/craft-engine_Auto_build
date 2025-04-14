@@ -75,7 +75,5 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract void closeInventory();
 
-    public abstract BlockHitResult rayTrace(double distance, FluidCollisionRule collisionRule);
-
     public abstract void clearView();
 }

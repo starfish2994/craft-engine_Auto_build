@@ -1127,23 +1127,17 @@ public class PacketConsumers {
                 }
                 return;
             }
-            if (player.isAdventureMode()) {
+            if (player.isAdventureMode() && !Config.simplyAdventureCheck()) {
                 Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(player.platformPlayer().getInventory().getItemInMainHand());
                 Object blockPos = LocationUtils.toBlockPos(pos);
                 Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
                 if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
-                            && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
-                            itemStack, blockInWorld
-                    )) {
+                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
                         player.preventMiningBlock();
                         return;
                     }
                 } else {
-                    if (Reflections.method$ItemStack$canDestroy != null
-                            && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
-                            itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
-                    )) {
+                    if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
                         player.preventMiningBlock();
                         return;
                     }

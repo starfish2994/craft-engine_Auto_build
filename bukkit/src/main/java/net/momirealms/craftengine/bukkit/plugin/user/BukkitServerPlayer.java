@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
@@ -213,31 +214,6 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void closeInventory() {
         platformPlayer().closeInventory();
-    }
-
-    // TODO DO NOT USE BUKKIT API
-    @Override
-    public BlockHitResult rayTrace(double distance, FluidCollisionRule collisionRule) {
-        RayTraceResult result = platformPlayer().rayTraceBlocks(distance, FluidUtils.toCollisionRule(collisionRule));
-        if (result == null) {
-            Location eyeLocation = platformPlayer().getEyeLocation();
-            Location targetLocation = eyeLocation.clone();
-            targetLocation.add(eyeLocation.getDirection().multiply(distance));
-            return BlockHitResult.miss(new Vec3d(eyeLocation.getX(), eyeLocation.getY(), eyeLocation.getZ()),
-                    Direction.getApproximateNearest(eyeLocation.getX() - targetLocation.getX(), eyeLocation.getY() - targetLocation.getY(), eyeLocation.getZ() - targetLocation.getZ()),
-                    new BlockPos(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ())
-            );
-        } else {
-            Vector hitPos = result.getHitPosition();
-            Block hitBlock = result.getHitBlock();
-            Location hitBlockLocation = hitBlock.getLocation();
-            return new BlockHitResult(
-                    new Vec3d(hitPos.getX(), hitPos.getY(), hitPos.getZ()),
-                    DirectionUtils.toDirection(result.getHitBlockFace()),
-                    new BlockPos(hitBlockLocation.getBlockX(), hitBlockLocation.getBlockY(), hitBlockLocation.getBlockZ()),
-                    false
-            );
-        }
     }
 
     @Override
@@ -463,8 +439,13 @@ public class BukkitServerPlayer extends Player {
                 }
 
                 if (this.miningProgress >= 1f) {
-                    //Reflections.method$ServerLevel$levelEvent.invoke(Reflections.field$CraftWorld$ServerLevel.get(player.getWorld()), null, 2001, blockPos, BlockStateUtils.blockStateToId(this.destroyedState));
-                    Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                    if (isAdventureMode() && Config.simplyAdventureCheck()) {
+                        player.setGameMode(GameMode.SURVIVAL);
+                        Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                        player.setGameMode(GameMode.ADVENTURE);
+                    } else {
+                        Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                    }
                     Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, id, false);
                     sendPacket(levelEventPacket, false);
                     this.stopMiningBlock();

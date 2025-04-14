@@ -111,6 +111,7 @@ public class Config {
     protected boolean furniture$hide_base_entity;
 
     protected boolean block$sound_system$enable;
+    protected boolean block$simply_adventure_break_check;
 
     protected boolean recipe$enable;
     protected boolean recipe$disable_vanilla_recipes$all;
@@ -281,6 +282,7 @@ public class Config {
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
+        block$simply_adventure_break_check = config.getBoolean("block.simplify-adventure-break-check", true);
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
@@ -388,6 +390,10 @@ public class Config {
 
     public static boolean enableSoundSystem() {
         return instance.block$sound_system$enable;
+    }
+
+    public static boolean simplyAdventureCheck() {
+        return instance.block$simply_adventure_break_check;
     }
 
     public static boolean enableRecipeSystem() {

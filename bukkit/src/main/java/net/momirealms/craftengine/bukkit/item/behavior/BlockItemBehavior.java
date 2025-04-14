@@ -76,21 +76,24 @@ public class BlockItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
         Player player = placeContext.getPlayer();
-        int gameTicks = player.gameTicks();
-        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
-            return InteractionResult.FAIL;
-        }
-
         BlockPos pos = placeContext.getClickedPos();
         BlockPos againstPos = placeContext.getAgainstPos();
         World world = (World) placeContext.getLevel().platformWorld();
         Location placeLocation = new Location(world, pos.x(), pos.y(), pos.z());
 
+        // todo adventure check
+        if (player.isAdventureMode()) {
+
+        }
+
+        int gameTicks = player.gameTicks();
+        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
+            return InteractionResult.FAIL;
+        }
+
         Block bukkitBlock = world.getBlockAt(placeLocation);
         Block againstBlock = world.getBlockAt(againstPos.x(), againstPos.y(), againstPos.z());
         org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
-
-        // todo adventure check
 
         // trigger event
         CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,
