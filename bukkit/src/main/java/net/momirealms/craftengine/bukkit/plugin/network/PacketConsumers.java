@@ -28,6 +28,7 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
@@ -221,7 +222,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int eventId = buf.readInt();
-            if (eventId != 2001) return;
+            if (eventId != WorldEvents.BLOCK_BREAK_EFFECT) return;
             BlockPos blockPos = buf.readBlockPos(buf);
             int state = buf.readInt();
             boolean global = buf.readBoolean();
@@ -1118,17 +1119,19 @@ public class PacketConsumers {
                 if (Config.enableSoundSystem()) {
                     Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
-                        player.startMiningBlock(world, pos, blockState, false, null);
+                        player.startMiningBlock(pos, blockState, null);
                         return;
                     }
                 }
-                if (player.isMiningBlock() || player.shouldSyncAttribute()) {
+                if (player.isMiningBlock()) {
                     player.stopMiningBlock();
+                } else {
+                    player.setClientSideCanBreakBlock(true);
                 }
                 return;
             }
             if (player.isAdventureMode()) {
-                if (Config.simplyAdventureCheck()) {
+                if (Config.simplifyAdventureCheck()) {
                     ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
                         player.preventMiningBlock();
@@ -1141,7 +1144,7 @@ public class PacketConsumers {
                     }
                 }
             }
-            player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
+            player.startMiningBlock(pos, blockState, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
         } else if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$ABORT_DESTROY_BLOCK) {
             if (player.isMiningBlock()) {
                 player.abortMiningBlock();

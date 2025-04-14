@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -76,7 +77,7 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
                     world.dropItemNaturally(vec3d, item);
                 }
                 world.playBlockSound(vec3d, previousState.sounds().breakSound());
-                FastNMS.INSTANCE.method$Level$levelEvent(level, 2001, blockPos, stateId);
+                FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
             }
             return Reflections.method$Block$defaultBlockState.invoke(Reflections.instance$Blocks$AIR);
         }

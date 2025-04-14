@@ -2418,6 +2418,12 @@ public class Reflections {
             )
     );
 
+    public static final Field field$BlockStateBase$requiresCorrectToolForDrops = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, boolean.class, 5
+            )
+    );
+
     public static final Field field$BlockStateBase$canOcclude = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$BlockStateBase, boolean.class, 6
@@ -2925,11 +2931,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ServerPlayer$gameMode = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
-            )
-    );
+//    public static final Field field$ServerPlayer$gameMode = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
+//            )
+//    );
 
     public static final Field field$ServerPlayerGameMode$destroyProgressStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -2937,11 +2943,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ServerPlayerGameMode, int.class, 1
-            )
-    );
+//    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ServerPlayerGameMode, int.class, 1
+//            )
+//    );
 
     public static final Field field$ServerPlayerGameMode$delayedTickStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -3009,11 +3015,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$BlockStateBase$getDestroyProgress = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(
-                    clazz$BlockStateBase, float.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos
-            )
-    );
+//    public static final Method method$BlockStateBase$getDestroyProgress = requireNonNull(
+//            ReflectionUtils.getDeclaredMethod(
+//                    clazz$BlockStateBase, float.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos
+//            )
+//    );
 
     public static final Class<?> clazz$ClientboundBlockDestructionPacket = requireNonNull(
             ReflectionUtils.getClazz(
@@ -3022,11 +3028,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundBlockDestructionPacket = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$ClientboundBlockDestructionPacket, int.class, clazz$BlockPos, int.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundBlockDestructionPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$ClientboundBlockDestructionPacket, int.class, clazz$BlockPos, int.class
+//            )
+//    );
 
     public static final Class<?> clazz$ServerboundSwingPacket = requireNonNull(
             ReflectionUtils.getClazz(
@@ -4955,11 +4961,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundLevelEventPacket = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$ClientboundLevelEventPacket, int.class, clazz$BlockPos, int.class, boolean.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundLevelEventPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$ClientboundLevelEventPacket, int.class, clazz$BlockPos, int.class, boolean.class
+//            )
+//    );
 
     public static final Field field$ClientboundLevelEventPacket$eventId = requireNonNull(
             ReflectionUtils.getDeclaredField(

@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
 import java.util.List;
@@ -69,7 +70,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
                     world.dropItemNaturally(vec3d, item);
                 }
                 world.playBlockSound(vec3d, currentState.sounds().breakSound());
-                FastNMS.INSTANCE.method$Level$levelEvent(level, 2001, blockPos, stateId);
+                FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
             }
         }
     }

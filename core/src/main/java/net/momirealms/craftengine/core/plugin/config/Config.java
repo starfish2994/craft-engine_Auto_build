@@ -111,7 +111,10 @@ public class Config {
     protected boolean furniture$hide_base_entity;
 
     protected boolean block$sound_system$enable;
-    protected boolean block$simply_adventure_break_check;
+    protected boolean block$simplify_adventure_break_check;
+    protected boolean block$predict_breaking;
+    protected int block$predict_breaking_interval;
+    protected double block$extended_interaction_range;
 
     protected boolean recipe$enable;
     protected boolean recipe$disable_vanilla_recipes$all;
@@ -282,7 +285,10 @@ public class Config {
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
-        block$simply_adventure_break_check = config.getBoolean("block.simplify-adventure-break-check", true);
+        block$simplify_adventure_break_check = config.getBoolean("block.simplify-adventure-break-check", false);
+        block$predict_breaking = config.getBoolean("block.predict-breaking.enable", true);
+        block$predict_breaking_interval = Math.max(config.getInt("block.predict-breaking.interval", 10), 1);
+        block$extended_interaction_range = Math.max(config.getDouble("block.predict-breaking.extended-interaction-range", 0.5), 0.0);
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
@@ -392,8 +398,8 @@ public class Config {
         return instance.block$sound_system$enable;
     }
 
-    public static boolean simplyAdventureCheck() {
-        return instance.block$simply_adventure_break_check;
+    public static boolean simplifyAdventureCheck() {
+        return instance.block$simplify_adventure_break_check;
     }
 
     public static boolean enableRecipeSystem() {
@@ -666,6 +672,18 @@ public class Config {
 
     public static boolean interceptSetScore() {
         return instance.image$intercept_packets$set_score;
+    }
+
+    public static boolean predictBreaking() {
+        return instance.block$predict_breaking;
+    }
+
+    public static int predictBreakingInterval() {
+        return instance.block$predict_breaking_interval;
+    }
+
+    public static double extendedInteractionRange() {
+        return instance.block$extended_interaction_range;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

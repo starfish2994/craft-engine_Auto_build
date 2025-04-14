@@ -9,20 +9,21 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
+import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.PackedBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
-import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.EquipmentSlot;
@@ -62,6 +63,7 @@ public class BukkitServerPlayer extends Player {
     private boolean swingHandAck;
     private float miningProgress;
 
+    private int lastSuccessfulBreak;
     private int resentSoundTick;
     private int resentSwingTick;
 
@@ -72,6 +74,8 @@ public class BukkitServerPlayer extends Player {
     // TODO CLEAR ENTITY VIEW
     private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
     private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
+
+    private boolean clientSideCanBreak = true;
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -108,8 +112,8 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public boolean shouldSyncAttribute() {
-        long current = System.currentTimeMillis();
-        if (current - this.lastAttributeSyncTime > 10000) {
+        long current = gameTicks();
+        if (current - this.lastAttributeSyncTime > 100) {
             this.lastAttributeSyncTime = current;
             return true;
         }
@@ -209,13 +213,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public int gameTicks() {
-        try {
-            Object serverPlayer = serverPlayer();
-            Object gameMode = Reflections.field$ServerPlayer$gameMode.get(serverPlayer);
-            return (int) Reflections.field$ServerPlayerGameMode$gameTicks.get(gameMode);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to get current tick", e);
-        }
+        return FastNMS.INSTANCE.field$MinecraftServer$currentTick();
     }
 
     @Override
@@ -264,6 +262,11 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void sendPacket(Object packet, boolean immediately) {
         this.plugin.networkManager().sendPacket(this, packet, immediately);
+    }
+
+    @Override
+    public void sendPackets(List<Object> packet, boolean immediately) {
+        this.plugin.networkManager().sendPackets(this, packet, immediately);
     }
 
     @Override
@@ -319,45 +322,75 @@ public class BukkitServerPlayer extends Player {
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }
+        // if it's not destroying custom blocks, we do predict
+        if (Config.predictBreaking()) {
+            if (!this.isDestroyingCustomBlock && (gameTicks() + entityID()) % Config.predictBreakingInterval() == 0) {
+                this.predictNextBlockToMine();
+            }
+        }
     }
 
     @Override
     public float getDestroyProgress(Object blockState, BlockPos pos) {
-        try {
-            Object serverPlayer = serverPlayer();
-            Object blockPos = LocationUtils.toBlockPos(pos.x(), pos.y(), pos.z());
-            return (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(blockState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos);
-        } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to get destroy progress for player " + platformPlayer().getName());
-            return 0f;
+        return FastNMS.INSTANCE.method$BlockStateBase$getDestroyProgress(blockState, serverPlayer(), FastNMS.INSTANCE.field$CraftWorld$ServerLevel(platformPlayer().getWorld()), LocationUtils.toBlockPos(pos));
+    }
+
+    private void predictNextBlockToMine() {
+        double range = getInteractionRange() + Config.extendedInteractionRange();
+        RayTraceResult result = platformPlayer().rayTraceBlocks(range, FluidCollisionMode.NEVER);
+        if (result == null) {
+            if (!this.clientSideCanBreak) {
+                setClientSideCanBreakBlock(true);
+            }
+            return;
+        }
+        Block hitBlock = result.getHitBlock();
+        if (hitBlock == null) {
+            if (!this.clientSideCanBreak) {
+                setClientSideCanBreakBlock(true);
+            }
+            return;
+        }
+        int stateId = BlockStateUtils.blockDataToId(hitBlock.getBlockData());
+        if (BlockStateUtils.isVanillaBlock(stateId)) {
+            if (!this.clientSideCanBreak) {
+                setClientSideCanBreakBlock(true);
+            }
+            return;
+        }
+        if (this.clientSideCanBreak) {
+            setClientSideCanBreakBlock(false);
         }
     }
 
-    public void startMiningBlock(org.bukkit.World world, BlockPos pos, Object state, boolean custom, @Nullable ImmutableBlockState immutableBlockState) {
+    public void startMiningBlock(BlockPos pos, Object state, @Nullable ImmutableBlockState immutableBlockState) {
         // instant break
+        boolean custom = immutableBlockState != null;
         if (custom && getDestroyProgress(state, pos) >= 1f) {
-            assert immutableBlockState != null;
-            // not an instant break on client side
             PackedBlockState vanillaBlockState = immutableBlockState.vanillaBlockState();
+            // if it's not an instant break on client side, we should resend level event
             if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
-                try {
-                    Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(this.destroyedState), false);
-                    sendPacket(levelEventPacket, false);
-                } catch (ReflectiveOperationException e) {
-                    this.plugin.logger().warn("Failed to send level event packet", e);
-                }
+                Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
+                        WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(this.destroyedState), false);
+                sendPacket(levelEventPacket, false);
             }
-            //ParticleUtils.addBlockBreakParticles(world, LocationUtils.toBlockPos(pos), state);
             return;
         }
-        setCanBreakBlock(!custom);
+        // if it's a custom one, we prevent it, otherwise we allow it
+        setClientSideCanBreakBlock(!custom);
+        // set some base info
         setDestroyPos(pos);
         setDestroyedState(state);
         setIsDestroyingBlock(true, custom);
     }
 
-    private void setCanBreakBlock(boolean canBreak) {
+    @Override
+    public void setClientSideCanBreakBlock(boolean canBreak) {
         try {
+            if (this.clientSideCanBreak == canBreak && !shouldSyncAttribute()) {
+                return;
+            }
+            this.clientSideCanBreak = canBreak;
             if (canBreak) {
                 if (VersionHelper.isVersionNewerThan1_20_5()) {
                     Object serverPlayer = serverPlayer();
@@ -379,8 +412,7 @@ public class BukkitServerPlayer extends Player {
                 } else {
                     Object fatiguePacket = MobEffectUtils.createPacket(Reflections.instance$MobEffecr$mining_fatigue, entityID(), (byte) 9, -1, false, false, false);
                     Object hastePacket = MobEffectUtils.createPacket(Reflections.instance$MobEffecr$haste, entityID(), (byte) 0, -1, false, false, false);
-                    sendPacket(fatiguePacket, true);
-                    sendPacket(hastePacket, true);
+                    sendPackets(List.of(fatiguePacket, hastePacket), true);
                 }
             }
         } catch (ReflectiveOperationException e) {
@@ -390,15 +422,24 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void stopMiningBlock() {
-        setCanBreakBlock(true);
+        setClientSideCanBreakBlock(true);
         setIsDestroyingBlock(false, false);
     }
 
     @Override
     public void preventMiningBlock() {
-        setCanBreakBlock(false);
+        setClientSideCanBreakBlock(false);
         setIsDestroyingBlock(false, false);
         abortMiningBlock();
+    }
+
+    @Override
+    public void abortMiningBlock() {
+        this.swingHandAck = false;
+        this.miningProgress = 0;
+        if (this.destroyPos != null) {
+            this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+        }
     }
 
     private void resetEffect(Object mobEffect) throws ReflectiveOperationException {
@@ -412,24 +453,13 @@ public class BukkitServerPlayer extends Player {
         sendPacket(packet, true);
     }
 
-    @Override
-    public void abortMiningBlock() {
-        abortDestroyProgress();
-    }
-
     private void tickBlockDestroy() {
-        // prevent server from taking over breaking blocks
-        if (this.isDestroyingCustomBlock) {
-            try {
-                Object serverPlayer = serverPlayer();
-                Object gameMode = Reflections.field$ServerPlayer$gameMode.get(serverPlayer);
-                Reflections.field$ServerPlayerGameMode$isDestroyingBlock.set(gameMode, false);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        // if player swings hand is this tick
         if (!this.swingHandAck) return;
         this.swingHandAck = false;
+        int currentTick = gameTicks();
+        // optimize break speed, otherwise it would be too fast
+        if (currentTick - this.lastSuccessfulBreak <= 5) return;
         try {
             org.bukkit.entity.Player player = platformPlayer();
             double range = getInteractionRange();
@@ -444,8 +474,8 @@ public class BukkitServerPlayer extends Player {
             }
             Object blockPos = LocationUtils.toBlockPos(hitPos);
             Object serverPlayer = serverPlayer();
-            Object gameMode = Reflections.field$ServerPlayer$gameMode.get(serverPlayer);
-            int currentTick = (int) Reflections.field$ServerPlayerGameMode$gameTicks.get(gameMode);
+
+            // send hit sound if the sound is removed
             if (currentTick - this.lastHitBlockTime > 3) {
                 Object blockOwner = Reflections.field$StateHolder$owner.get(this.destroyedState);
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(blockOwner);
@@ -457,9 +487,14 @@ public class BukkitServerPlayer extends Player {
 
             // accumulate progress (custom blocks only)
             if (this.isDestroyingCustomBlock) {
+                // prevent server from taking over breaking custom blocks
+                Object gameMode = FastNMS.INSTANCE.field$ServerPlayer$gameMode(serverPlayer);
+                Reflections.field$ServerPlayerGameMode$isDestroyingBlock.set(gameMode, false);
+                // check item in hand
                 Item<ItemStack> item = this.getItemInHand(InteractionHand.MAIN_HAND);
                 if (item != null) {
                     Material itemMaterial = item.getItem().getType();
+                    // creative mode + invalid item in hand
                     if (canInstabuild() && (itemMaterial == Material.DEBUG_STICK
                             || itemMaterial == Material.TRIDENT
                             || (VersionHelper.isVersionNewerThan1_20_5() && itemMaterial == MaterialUtils.MACE)
@@ -468,37 +503,65 @@ public class BukkitServerPlayer extends Player {
                     }
                 }
 
-                float progressToAdd = (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(this.destroyedState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos);
+                float progressToAdd = getDestroyProgress(this.destroyedState, hitPos);
                 int id = BlockStateUtils.blockStateToId(this.destroyedState);
                 ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
+                // double check custom block
                 if (customState != null && !customState.isEmpty()) {
-                    if (!customState.settings().isCorrectTool(item == null ? ItemKeys.AIR : item.id())) {
-                        progressToAdd *= customState.settings().incorrectToolSpeed();
+                    BlockSettings blockSettings = customState.settings();
+                    if (blockSettings.requireCorrectTool()) {
+                        if (item != null) {
+                            // it's correct on plugin side
+                            if (blockSettings.isCorrectTool(item.id())) {
+                                // but not on serverside
+                                if (!FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                    // we fix the speed
+                                    progressToAdd = progressToAdd * (10f / 3f);
+                                }
+                            } else {
+                                // not a correct tool on plugin side and not a correct tool on serverside
+                                if (!blockSettings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                    progressToAdd = progressToAdd * (10f / 3f) * blockSettings.incorrectToolSpeed();
+                                }
+                            }
+                        } else {
+                            // item is null, but it requires correct tool, then we reset the speed
+                            progressToAdd = progressToAdd * (10f / 3f) * blockSettings.incorrectToolSpeed();
+                        }
                     }
 
+                    // accumulate progress
                     this.miningProgress = progressToAdd + miningProgress;
                     int packetStage = (int) (this.miningProgress * 10.0F);
                     if (packetStage != this.lastSentState) {
                         this.lastSentState = packetStage;
+                        // broadcast changes
                         broadcastDestroyProgress(player, hitPos, blockPos, packetStage);
                     }
 
+                    // can break now
                     if (this.miningProgress >= 1f) {
-                        if (isAdventureMode() && Config.simplyAdventureCheck()) {
+                        // for simplified adventure break, switch mayBuild temporarily
+                        if (isAdventureMode() && Config.simplifyAdventureCheck()) {
+                            // check the appearance state
                             if (canBreak(hitPos, customState.vanillaBlockState().handle())) {
-                                player.setGameMode(GameMode.SURVIVAL);
+                                // Error might occur so we use try here
                                 try {
+                                    FastNMS.INSTANCE.setMayBuild(serverPlayer, true);
                                     Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
                                 } finally {
-                                    player.setGameMode(GameMode.ADVENTURE);
+                                    FastNMS.INSTANCE.setMayBuild(serverPlayer, false);
                                 }
                             }
                         } else {
+                            // normal break check
                             Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
                         }
-                        Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, id, false);
-                        sendPacket(levelEventPacket, false);
-                        this.stopMiningBlock();
+                        // send break particle + (removed sounds)
+                        sendPacket(FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(WorldEvents.BLOCK_BREAK_EFFECT, blockPos, id, false), false);
+                        this.lastSuccessfulBreak = currentTick;
+                        this.destroyPos = null;
+                        this.setIsDestroyingBlock(false, false);
                     }
                 }
             }
@@ -507,8 +570,8 @@ public class BukkitServerPlayer extends Player {
         }
     }
 
-    private void broadcastDestroyProgress(org.bukkit.entity.Player player, BlockPos hitPos, Object blockPos, int stage) throws ReflectiveOperationException {
-        Object packet = Reflections.constructor$ClientboundBlockDestructionPacket.newInstance(Integer.MAX_VALUE - entityID(), blockPos, stage);
+    private void broadcastDestroyProgress(org.bukkit.entity.Player player, BlockPos hitPos, Object blockPos, int stage) {
+        Object packet = FastNMS.INSTANCE.constructor$ClientboundBlockDestructionPacket(Integer.MAX_VALUE - entityID(), blockPos, stage);
         for (org.bukkit.entity.Player other : player.getWorld().getPlayers()) {
             Location otherLocation = other.getLocation();
             double d0 = (double) hitPos.x() - otherLocation.getX();
@@ -522,52 +585,22 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public double getInteractionRange() {
-        try {
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                Object attributeInstance = Reflections.method$ServerPlayer$getAttribute.invoke(serverPlayer(), Reflections.instance$Holder$Attribute$block_interaction_range);
-                if (attributeInstance == null) return 4.5d;
-                return (double) Reflections.method$AttributeInstance$getValue.invoke(attributeInstance);
-            } else {
-                return 4.5d;
-            }
-        } catch (ReflectiveOperationException e) {
-            plugin.logger().warn("Failed to get interaction range for player " + platformPlayer().getName(), e);
-            return 4.5d;
-        }
+        return FastNMS.INSTANCE.getInteractionRange(serverPlayer());
     }
 
-    public void setIsDestroyingBlock(boolean value, boolean custom) {
-        if (value) {
-            this.isDestroyingBlock = true;
-            this.isDestroyingCustomBlock = custom;
-            this.swingHandAck = true;
-            this.miningProgress = 0;
-        } else {
-            this.isDestroyingBlock = false;
-            this.swingHandAck = false;
-            if (this.destroyPos != null) {
-                try {
-                    this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
-                } catch (ReflectiveOperationException e) {
-                    plugin.logger().warn("Failed to set isDestroyingCustomBlock", e);
-                }
-            }
-            this.destroyPos = null;
-            this.miningProgress = 0;
-            this.destroyedState = null;
-            this.isDestroyingCustomBlock = false;
-        }
-    }
-
-    @Override
-    public void abortDestroyProgress() {
-        this.swingHandAck = false;
+    public void setIsDestroyingBlock(boolean is, boolean custom) {
         this.miningProgress = 0;
-        if (this.destroyPos == null) return;
-        try {
-            this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
-        } catch (ReflectiveOperationException e) {
-            plugin.logger().warn("Failed to abort destroyProgress", e);
+        this.isDestroyingBlock = is;
+        this.isDestroyingCustomBlock = custom && is;
+        if (is) {
+            this.swingHandAck = true;
+        } else {
+            this.swingHandAck = false;
+            this.destroyedState = null;
+            if (this.destroyPos != null) {
+                this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+                this.destroyPos = null;
+            }
         }
     }
 

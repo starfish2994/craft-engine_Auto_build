@@ -17,6 +17,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -183,7 +184,7 @@ public final class CraftEngineBlocks {
             world.playBlockSound(vec3d, state.sounds().breakSound());
         }
         if (sendParticles) {
-            FastNMS.INSTANCE.method$Level$levelEvent(world.serverWorld(), 2001, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), state.customBlockState().registryId());
+            FastNMS.INSTANCE.method$Level$levelEvent(world.serverWorld(), WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), state.customBlockState().registryId());
         }
         block.setType(Material.AIR, applyPhysics);
         return true;
