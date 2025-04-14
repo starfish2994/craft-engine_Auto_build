@@ -1127,10 +1127,18 @@ public class PacketConsumers {
                 }
                 return;
             }
-            if (player.isAdventureMode() && !Config.simplyAdventureCheck()) {
-                if (!player.canBreak(pos)) {
-                    player.preventMiningBlock();
-                    return;
+            if (player.isAdventureMode()) {
+                if (Config.simplyAdventureCheck()) {
+                    ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+                    if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
+                        player.preventMiningBlock();
+                        return;
+                    }
+                } else {
+                    if (!player.canBreak(pos)) {
+                        player.preventMiningBlock();
+                        return;
+                    }
                 }
             }
             player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));

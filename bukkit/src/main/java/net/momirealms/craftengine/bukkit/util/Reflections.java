@@ -5768,6 +5768,12 @@ public class Reflections {
             )
     );
 
+    public static final Field field$BlockInWorld$state = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockInWorld, clazz$BlockState, 0
+            )
+    );
+
     public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$BlockInWorld, 0

@@ -159,6 +159,29 @@ public class BukkitServerPlayer extends Player {
         return true;
     }
 
+    public boolean canBreak(BlockPos pos, Object state) {
+        Item<ItemStack> stackItem = getItemInHand(InteractionHand.MAIN_HAND);
+        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getLiteralObject();
+        Object blockPos = LocationUtils.toBlockPos(pos);
+        try {
+            Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(level().serverWorld(), blockPos, false);
+            Reflections.field$BlockInWorld$state.set(blockInWorld, state);
+            if (VersionHelper.isVersionNewerThan1_20_5()) {
+                if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
+                    return false;
+                }
+            } else {
+                if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
+                    return false;
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to run canBreak check", e);
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void sendActionBar(Component text) {
         try {
@@ -448,33 +471,35 @@ public class BukkitServerPlayer extends Player {
                 float progressToAdd = (float) Reflections.method$BlockStateBase$getDestroyProgress.invoke(this.destroyedState, serverPlayer, Reflections.method$Entity$level.invoke(serverPlayer), blockPos);
                 int id = BlockStateUtils.blockStateToId(this.destroyedState);
                 ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
-                if (customState != null && !customState.isEmpty()
-                        && !customState.settings().isCorrectTool(item == null ? ItemKeys.AIR : item.id())) {
-                    progressToAdd *= customState.settings().incorrectToolSpeed();
-                }
-
-                this.miningProgress = progressToAdd + miningProgress;
-                int packetStage = (int) (this.miningProgress * 10.0F);
-                if (packetStage != this.lastSentState) {
-                    this.lastSentState = packetStage;
-                    broadcastDestroyProgress(player, hitPos, blockPos, packetStage);
-                }
-
-                if (this.miningProgress >= 1f) {
-                    // TODO can_break component match
-                    if (isAdventureMode() && Config.simplyAdventureCheck()) {
-                        player.setGameMode(GameMode.SURVIVAL);
-                        try {
-                            Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
-                        } finally {
-                            player.setGameMode(GameMode.ADVENTURE);
-                        }
-                    } else {
-                        Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                if (customState != null && !customState.isEmpty()) {
+                    if (!customState.settings().isCorrectTool(item == null ? ItemKeys.AIR : item.id())) {
+                        progressToAdd *= customState.settings().incorrectToolSpeed();
                     }
-                    Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, id, false);
-                    sendPacket(levelEventPacket, false);
-                    this.stopMiningBlock();
+
+                    this.miningProgress = progressToAdd + miningProgress;
+                    int packetStage = (int) (this.miningProgress * 10.0F);
+                    if (packetStage != this.lastSentState) {
+                        this.lastSentState = packetStage;
+                        broadcastDestroyProgress(player, hitPos, blockPos, packetStage);
+                    }
+
+                    if (this.miningProgress >= 1f) {
+                        if (isAdventureMode() && Config.simplyAdventureCheck()) {
+                            if (canBreak(hitPos, customState.vanillaBlockState().handle())) {
+                                player.setGameMode(GameMode.SURVIVAL);
+                                try {
+                                    Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                                } finally {
+                                    player.setGameMode(GameMode.ADVENTURE);
+                                }
+                            }
+                        } else {
+                            Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                        }
+                        Object levelEventPacket = Reflections.constructor$ClientboundLevelEventPacket.newInstance(2001, blockPos, id, false);
+                        sendPacket(levelEventPacket, false);
+                        this.stopMiningBlock();
+                    }
                 }
             }
         } catch (Exception e) {
