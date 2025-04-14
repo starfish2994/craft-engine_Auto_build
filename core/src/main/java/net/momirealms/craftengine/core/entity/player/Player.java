@@ -53,6 +53,8 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract boolean updateLastSuccessfulInteractionTick(int tick);
 
+    public abstract int lastSuccessfulInteractionTick();
+
     public abstract int gameTicks();
 
     public abstract void swingHand(InteractionHand hand);

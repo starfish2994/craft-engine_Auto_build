@@ -157,6 +157,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public int lastSuccessfulInteractionTick() {
+        return lastSuccessfulInteraction;
+    }
+
+    @Override
     public int gameTicks() {
         try {
             Object serverPlayer = serverPlayer();
