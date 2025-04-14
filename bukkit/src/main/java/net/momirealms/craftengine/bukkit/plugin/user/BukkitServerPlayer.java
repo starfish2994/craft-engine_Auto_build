@@ -371,10 +371,15 @@ public class BukkitServerPlayer extends Player {
             // if it's not an instant break on client side, we should resend level event
             if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
                 Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
-                        WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(this.destroyedState), false);
+                        WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(state), false);
                 sendPacket(levelEventPacket, false);
             }
             return;
+        }
+        if (!custom && !this.clientSideCanBreak && getDestroyProgress(state, pos) >= 1f) {
+            Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
+                    WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(state), false);
+            sendPacket(levelEventPacket, false);
         }
         // if it's a custom one, we prevent it, otherwise we allow it
         setClientSideCanBreakBlock(!custom);
