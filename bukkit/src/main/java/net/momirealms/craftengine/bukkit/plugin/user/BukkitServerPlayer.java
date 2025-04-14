@@ -139,7 +139,7 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean canBreak(BlockPos pos) {
         Item<ItemStack> stackItem = getItemInHand(InteractionHand.MAIN_HAND);
-        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getItem();
+        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getLiteralObject();
         Object blockPos = LocationUtils.toBlockPos(pos);
         try {
             Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(level().serverWorld(), blockPos, false);
