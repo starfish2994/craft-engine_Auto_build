@@ -107,24 +107,9 @@ public class BlockEventListener implements Listener {
                 Location location = block.getLocation();
                 BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                 // double check to prevent dupe
-                if (serverPlayer.isAdventureMode()) {
-                    Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(player.getInventory().getItemInMainHand());
-                    Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    try {
-                        Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld()), blockPos, false);
-                        if (VersionHelper.isVersionNewerThan1_20_5()) {
-                            if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
-                                return;
-                            }
-                        } else {
-                            if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
-                                return;
-                            }
-                        }
-                    } catch (ReflectiveOperationException e) {
-                        this.plugin.logger().warn("Failed to double check adventure mode", e);
-                        return;
-                    }
+                // if simply adventure check, player would be survival mode for the moment
+                if (serverPlayer.isAdventureMode() && !serverPlayer.canBreak(LocationUtils.toBlockPos(location))) {
+                    return;
                 }
 
                 // trigger event

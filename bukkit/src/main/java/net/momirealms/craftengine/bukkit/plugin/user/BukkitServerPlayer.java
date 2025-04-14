@@ -29,7 +29,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.Reference;
@@ -135,6 +134,29 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isAdventureMode() {
         return platformPlayer().getGameMode() == GameMode.ADVENTURE;
+    }
+
+    @Override
+    public boolean canBreak(BlockPos pos) {
+        Item<ItemStack> stackItem = getItemInHand(InteractionHand.MAIN_HAND);
+        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getItem();
+        Object blockPos = LocationUtils.toBlockPos(pos);
+        try {
+            Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(level().serverWorld(), blockPos, false);
+            if (VersionHelper.isVersionNewerThan1_20_5()) {
+                if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
+                    return false;
+                }
+            } else {
+                if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
+                    return false;
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to run canBreak check", e);
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -439,10 +461,14 @@ public class BukkitServerPlayer extends Player {
                 }
 
                 if (this.miningProgress >= 1f) {
+                    // TODO can_break component match
                     if (isAdventureMode() && Config.simplyAdventureCheck()) {
                         player.setGameMode(GameMode.SURVIVAL);
-                        Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
-                        player.setGameMode(GameMode.ADVENTURE);
+                        try {
+                            Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
+                        } finally {
+                            player.setGameMode(GameMode.ADVENTURE);
+                        }
                     } else {
                         Reflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
                     }
