@@ -87,7 +87,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
-    private WorldEditCommandHelper weCommandHelper;
+    // WE support
+    private WorldEditBlockRegister weBlockRegister;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -128,18 +129,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (this.fallingBlockRemoveListener != null) {
             Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, plugin.bootstrap());
         }
-        boolean hasWE = false;
         // WorldEdit
         if (this.plugin.isPluginEnabled("FastAsyncWorldEdit")) {
             this.initFastAsyncWorldEditHook();
-            hasWE = true;
         } else if (this.plugin.isPluginEnabled("WorldEdit")) {
             this.initWorldEditHook();
-            hasWE = true;
-        }
-        if (hasWE) {
-            this.weCommandHelper = new WorldEditCommandHelper(this.plugin, this);
-            this.weCommandHelper.enable();
         }
     }
 
@@ -152,6 +146,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.modBlockStates.clear();
         if (EmptyBlock.INSTANCE != null)
             Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.INSTANCE.defaultState());
+        if (weBlockRegister != null)
+            weBlockRegister.unload();
     }
 
     @Override
@@ -159,7 +155,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.unload();
         HandlerList.unregisterAll(this.blockEventListener);
         if (this.fallingBlockRemoveListener != null) HandlerList.unregisterAll(this.fallingBlockRemoveListener);
-        if (this.weCommandHelper != null) this.weCommandHelper.disable();
     }
 
     @Override
@@ -172,6 +167,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         initSuggestions();
         resetPacketConsumers();
         clearCache();
+        loadWorldEditRegister();
     }
 
     private void clearCache() {
@@ -181,17 +177,25 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public void initFastAsyncWorldEditHook() {
-        // do nothing
+        this.weBlockRegister = new WorldEditBlockRegister(this);
+        this.weBlockRegister.enable();
     }
 
     public void initWorldEditHook() {
+        this.weBlockRegister = new WorldEditBlockRegister(this);
+        this.weBlockRegister.enable();
         try {
             for (Key newBlockId : this.blockRegisterOrder) {
-                WorldEditBlockRegister.register(newBlockId);
+                weBlockRegister.register(newBlockId);
             }
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to initialize world edit hook", e);
         }
+    }
+
+    public void loadWorldEditRegister() {
+        if (this.weBlockRegister != null)
+            this.weBlockRegister.load();
     }
 
     @Nullable
