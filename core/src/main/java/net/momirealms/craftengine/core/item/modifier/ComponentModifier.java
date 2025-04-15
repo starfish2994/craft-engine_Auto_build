@@ -30,6 +30,10 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
         this.arguments = pairs;
     }
 
+    public List<Pair<Key, Object>> arguments() {
+        return arguments;
+    }
+
     private Object parseValue(Object value) {
         if (value instanceof String string) {
             if (string.startsWith("(json) ")) {

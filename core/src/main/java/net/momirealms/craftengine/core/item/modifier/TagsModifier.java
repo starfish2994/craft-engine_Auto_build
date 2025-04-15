@@ -15,6 +15,10 @@ public class TagsModifier<I> implements ItemDataModifier<I> {
         this.arguments = mapToMap(arguments);
     }
 
+    public Map<String, Object> arguments() {
+        return arguments;
+    }
+
     @Override
     public String name() {
         return "tags";

@@ -1131,14 +1131,14 @@ public class PacketConsumers {
                 return;
             }
             if (player.isAdventureMode()) {
-                if (Config.simplifyAdventureCheck()) {
+                if (Config.simplifyAdventureBreakCheck()) {
                     ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
                         player.preventMiningBlock();
                         return;
                     }
                 } else {
-                    if (!player.canBreak(pos)) {
+                    if (!player.canBreak(pos, null)) {
                         player.preventMiningBlock();
                         return;
                     }

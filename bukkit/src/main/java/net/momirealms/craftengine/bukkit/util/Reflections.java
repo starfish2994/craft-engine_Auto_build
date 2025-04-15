@@ -14,17 +14,12 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.*;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
@@ -5780,24 +5775,24 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$BlockInWorld, 0
-            )
-    );
+//    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$BlockInWorld, 0
+//            )
+//    );
 
-    // 1.20.5+
-    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
-            ReflectionUtils.getMethod(
-                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
-            );
+//    // 1.20.5+
+//    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
+//            ReflectionUtils.getMethod(
+//                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
+//            );
 
-    // 1.20 ~ 1.20.4
-    // instance$BuiltInRegistries$BLOCK
-    public static final Method method$ItemStack$canDestroy =
-            ReflectionUtils.getMethod(
-                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
-            );
+//    // 1.20 ~ 1.20.4
+//    // instance$BuiltInRegistries$BLOCK
+//    public static final Method method$ItemStack$canDestroy =
+//            ReflectionUtils.getMethod(
+//                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
+//            );
 
     public static final Method method$BlockStateBase$getBlock = requireNonNull(
             ReflectionUtils.getMethod(

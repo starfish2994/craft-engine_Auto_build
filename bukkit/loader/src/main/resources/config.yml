@@ -148,6 +148,8 @@ block:
   #   - Use `client-bound-item-data` to safely sync custom block data to clients.
   #   Documentation: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/add-new-contents/items/item-data/client-bound-item-data
   simplify-adventure-break-check: false
+  # Similar to the option above, but designed for block placement
+  simplify-adventure-place-check: false
   # Whether plugin should predict the next block to break
   # This can help improve mining experience to some extent at the cost of performance
   predict-breaking:

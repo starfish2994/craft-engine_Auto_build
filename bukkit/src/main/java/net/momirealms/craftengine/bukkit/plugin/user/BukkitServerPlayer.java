@@ -157,49 +157,13 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public boolean canBreak(BlockPos pos) {
-        Item<ItemStack> stackItem = getItemInHand(InteractionHand.MAIN_HAND);
-        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getLiteralObject();
-        Object blockPos = LocationUtils.toBlockPos(pos);
-        try {
-            Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(level().serverWorld(), blockPos, false);
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
-                    return false;
-                }
-            } else {
-                if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
-                    return false;
-                }
-            }
-        } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to run canBreak check", e);
-            return false;
-        }
-        return true;
+    public boolean canBreak(BlockPos pos, @Nullable Object state) {
+        return AdventureModeUtils.canBreak(platformPlayer().getInventory().getItemInMainHand(), new Location(platformPlayer().getWorld(), pos.x(), pos.y(), pos.z()), state);
     }
 
-    public boolean canBreak(BlockPos pos, Object state) {
-        Item<ItemStack> stackItem = getItemInHand(InteractionHand.MAIN_HAND);
-        Object itemStack = stackItem == null ? Reflections.instance$ItemStack$EMPTY : stackItem.getLiteralObject();
-        Object blockPos = LocationUtils.toBlockPos(pos);
-        try {
-            Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(level().serverWorld(), blockPos, false);
-            Reflections.field$BlockInWorld$state.set(blockInWorld, state);
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(itemStack, blockInWorld)) {
-                    return false;
-                }
-            } else {
-                if (Reflections.method$ItemStack$canDestroy != null && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld)) {
-                    return false;
-                }
-            }
-        } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to run canBreak check", e);
-            return false;
-        }
-        return true;
+    @Override
+    public boolean canPlace(BlockPos pos, @Nullable Object state) {
+        return AdventureModeUtils.canPlace(platformPlayer().getInventory().getItemInMainHand(), new Location(platformPlayer().getWorld(), pos.x(), pos.y(), pos.z()), state);
     }
 
     @Override
@@ -569,7 +533,7 @@ public class BukkitServerPlayer extends Player {
                     // can break now
                     if (this.miningProgress >= 1f) {
                         // for simplified adventure break, switch mayBuild temporarily
-                        if (isAdventureMode() && Config.simplifyAdventureCheck()) {
+                        if (isAdventureMode() && Config.simplifyAdventureBreakCheck()) {
                             // check the appearance state
                             if (canBreak(hitPos, customState.vanillaBlockState().handle())) {
                                 // Error might occur so we use try here

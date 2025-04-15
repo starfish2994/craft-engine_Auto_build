@@ -145,8 +145,8 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         private Key id;
         private Material material;
         private Key materialKey;
+        private ItemSettings settings;
         private final List<ItemBehavior> behaviors = new ArrayList<>();
-        private ItemSettings settings = ItemSettings.of();
         private final List<ItemDataModifier<ItemStack>> modifiers = new ArrayList<>();
         private final List<ItemDataModifier<ItemStack>> clientBoundModifiers = new ArrayList<>();
 
@@ -208,7 +208,7 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         @Override
         public CustomItem<ItemStack> build() {
             this.modifiers.addAll(this.settings.modifiers());
-            return new BukkitCustomItem(id, materialKey, material, modifiers, clientBoundModifiers, behaviors, settings);
+            return new BukkitCustomItem(this.id, this.materialKey, this.material, this.modifiers, this.clientBoundModifiers, this.behaviors, this.settings);
         }
     }
 }

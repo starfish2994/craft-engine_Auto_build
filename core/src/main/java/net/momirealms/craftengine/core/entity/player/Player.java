@@ -51,7 +51,9 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract boolean isAdventureMode();
 
-    public abstract boolean canBreak(BlockPos pos);
+    public abstract boolean canBreak(BlockPos pos, Object state);
+
+    public abstract boolean canPlace(BlockPos pos, Object state);
 
     public abstract void sendActionBar(Component text);
 

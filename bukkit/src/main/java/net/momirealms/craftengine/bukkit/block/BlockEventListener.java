@@ -105,7 +105,7 @@ public class BlockEventListener implements Listener {
                 Location location = block.getLocation();
                 BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                 // double check adventure mode to prevent dupe
-                if (!FastNMS.INSTANCE.mayBuild(serverPlayer.serverPlayer()) && !serverPlayer.canBreak(LocationUtils.toBlockPos(location))) {
+                if (!FastNMS.INSTANCE.mayBuild(serverPlayer.serverPlayer()) && !serverPlayer.canBreak(LocationUtils.toBlockPos(location), null)) {
                     return;
                 }
 
