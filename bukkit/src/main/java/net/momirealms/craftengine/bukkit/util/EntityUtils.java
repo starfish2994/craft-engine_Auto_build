@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -8,6 +9,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+
+import java.util.function.Consumer;
 
 public class EntityUtils {
 
@@ -23,12 +26,11 @@ public class EntityUtils {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    public static Entity spawnEntity(World world, Location loc, EntityType type, org.bukkit.util.Consumer<Entity> function) {
-        try {
-            return (Entity) Reflections.method$World$spawnEntity.invoke(world, loc, type, CreatureSpawnEvent.SpawnReason.CUSTOM, function);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to spawn entity", e);
+    public static Entity spawnEntity(World world, Location loc, EntityType type, Consumer<Entity> function) {
+        if (VersionHelper.isVersionNewerThan1_20_2()) {
+            return world.spawnEntity(loc, type, CreatureSpawnEvent.SpawnReason.CUSTOM, function);
+        } else {
+            return LegacyEntityUtils.spawnEntity(world, loc, type, function);
         }
     }
 }

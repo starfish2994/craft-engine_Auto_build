@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.item.ItemKeys;
 
 import java.util.List;
 
-public class EnchantmentModifier<I> implements ItemModifier<I> {
+public class EnchantmentModifier<I> implements ItemDataModifier<I> {
     private final List<Enchantment> enchantments;
 
     public EnchantmentModifier(List<Enchantment> enchantments) {
@@ -23,5 +23,11 @@ public class EnchantmentModifier<I> implements ItemModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) item.setStoredEnchantments(enchantments);
         else item.setEnchantments(enchantments);
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) item.setStoredEnchantments(null);
+        else item.setEnchantments(null);
     }
 }

@@ -15,7 +15,7 @@ repositories {
 dependencies {
     implementation(project(":shared"))
     remapper("net.fabricmc:tiny-remapper:${rootProject.properties["tiny_remapper_version"]}:fat")
-    paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:${rootProject.properties["latest_minecraft_version"]}-R0.1-SNAPSHOT")
+    paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:1.21.5-R0.1-SNAPSHOT")
     compileOnly("space.vectrix.ignite:ignite-api:${rootProject.properties["ignite_version"]}")
     compileOnly("net.fabricmc:sponge-mixin:${rootProject.properties["mixin_version"]}")
     compileOnly("io.github.llamalad7:mixinextras-common:${rootProject.properties["mixinextras_version"]}")
@@ -44,7 +44,7 @@ artifacts {
 tasks {
     shadowJar {
         archiveClassifier = ""
-        archiveFileName = "${rootProject.name}-ignite-mod-${rootProject.properties["project_version"]}+${rootProject.properties["latest_minecraft_version"]}.jar"
+        archiveFileName = "${rootProject.name}-ignite-mod-${rootProject.properties["project_version"]}+mc1.21.5-mojmap.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }
 }

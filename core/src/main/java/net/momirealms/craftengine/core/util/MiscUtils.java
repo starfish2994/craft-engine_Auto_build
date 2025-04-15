@@ -21,7 +21,7 @@ public class MiscUtils {
         if (obj instanceof Map<?, ?> map) {
             return (Map<String, Object>) map;
         }
-        throw new IllegalArgumentException("Expected Map, got: " + obj.getClass().getSimpleName());
+        throw new IllegalArgumentException("Expected Map, got: " + (obj == null ? null : obj.getClass().getSimpleName()));
     }
 
     @SuppressWarnings("unchecked")

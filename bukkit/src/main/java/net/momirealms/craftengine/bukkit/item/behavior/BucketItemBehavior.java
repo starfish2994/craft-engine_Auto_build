@@ -34,6 +34,7 @@ public class BucketItemBehavior extends ItemBehavior {
     @SuppressWarnings("unchecked")
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
+        if (context.getPlayer().isAdventureMode()) return InteractionResult.PASS;
         BukkitWorldBlock clicked = (BukkitWorldBlock) context.getLevel().getBlockAt(context.getClickedPos());
         Block block = clicked.block();
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));

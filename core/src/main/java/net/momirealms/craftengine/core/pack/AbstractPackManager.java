@@ -52,17 +52,7 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
-
-    private final CraftEngine plugin;
-    private final BiConsumer<Path, Path> eventDispatcher;
-    private final Map<String, Pack> loadedPacks = new HashMap<>();
-    private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
-    private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
-    private static final byte[] emptyImage;
-    protected BiConsumer<Path, Path> zipGenerator;
-    protected String packHash;
-    protected UUID packUUID;
-
+    private static final byte[] EMPTY_IMAGE;
     static {
         var stream = new ByteArrayOutputStream();
         try {
@@ -70,8 +60,18 @@ public abstract class AbstractPackManager implements PackManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        emptyImage = stream.toByteArray();
+        EMPTY_IMAGE = stream.toByteArray();
     }
+
+    private final CraftEngine plugin;
+    private final BiConsumer<Path, Path> eventDispatcher;
+    private final Map<String, Pack> loadedPacks = new HashMap<>();
+    private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
+    private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+
+    protected BiConsumer<Path, Path> zipGenerator;
+    protected String packHash;
+    protected UUID packUUID;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -233,7 +233,6 @@ public abstract class AbstractPackManager implements PackManager {
                 Files.createDirectories(resourcesFolder);
                 this.saveDefaultConfigs();
             }
-
             try (DirectoryStream<Path> paths = Files.newDirectoryStream(resourcesFolder)) {
                 for (Path path : paths) {
                     if (!Files.isDirectory(path)) {
@@ -245,14 +244,16 @@ public abstract class AbstractPackManager implements PackManager {
                     String description = null;
                     String version = null;
                     String author = null;
+                    boolean enable = true;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
                         YamlDocument metaYML = Config.instance().loadYamlData(metaFile.toFile());
+                        enable = metaYML.getBoolean("enable", true);
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
                         version = metaYML.getString("version");
                         author = metaYML.getString("author");
                     }
-                    Pack pack = new Pack(path, new PackMeta(author, description, version, namespace));
+                    Pack pack = new Pack(path, new PackMeta(author, description, version, namespace), enable);
                     this.loadedPacks.put(path.getFileName().toString(), pack);
                     this.plugin.logger().info("Loaded pack: " + pack.folder().getFileName() + ". Default namespace: " + namespace);
                 }
@@ -396,6 +397,7 @@ public abstract class AbstractPackManager implements PackManager {
     private void loadResourceConfigs(Predicate<ConfigSectionParser> predicate) {
         long o1 = System.nanoTime();
         for (Pack pack : loadedPacks()) {
+            if (!pack.enabled()) continue;
             Pair<List<Path>, List<Path>> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
             for (Path path : files.left()) {
                 try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
@@ -571,7 +573,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
         try {
             GsonHelper.writeJsonFile(json, jsonPath);
-            Files.write(pngPath, emptyImage);
+            Files.write(pngPath, EMPTY_IMAGE);
         } catch (IOException e) {
             this.plugin.logger().severe("Error writing particles file", e);
         }

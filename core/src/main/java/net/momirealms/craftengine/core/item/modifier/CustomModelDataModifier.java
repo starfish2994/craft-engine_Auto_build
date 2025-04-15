@@ -3,7 +3,7 @@ package net.momirealms.craftengine.core.item.modifier;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 
-public class CustomModelDataModifier<I> implements ItemModifier<I> {
+public class CustomModelDataModifier<I> implements ItemDataModifier<I> {
     private final int argument;
 
     public CustomModelDataModifier(int argument) {
@@ -18,5 +18,10 @@ public class CustomModelDataModifier<I> implements ItemModifier<I> {
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
         item.customModelData(argument);
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.customModelData(null);
     }
 }

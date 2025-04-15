@@ -5,10 +5,10 @@ import net.momirealms.craftengine.core.entity.Entity;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.FluidCollisionRule;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public abstract class Player extends Entity implements NetWorkUser {
 
@@ -23,7 +23,11 @@ public abstract class Player extends Entity implements NetWorkUser {
     @Override
     public abstract Object serverPlayer();
 
+    public abstract void sendPackets(List<Object> packet, boolean immediately);
+
     public abstract float getDestroyProgress(Object blockState, BlockPos pos);
+
+    public abstract void setClientSideCanBreakBlock(boolean canBreak);
 
     public abstract void stopMiningBlock();
 
@@ -31,9 +35,7 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract void abortMiningBlock();
 
-    public abstract double getInteractionRange();
-
-    public abstract void abortDestroyProgress();
+    public abstract double getCachedInteractionRange();
 
     public abstract void onSwingHand();
 
@@ -49,9 +51,15 @@ public abstract class Player extends Entity implements NetWorkUser {
 
     public abstract boolean isAdventureMode();
 
+    public abstract boolean canBreak(BlockPos pos, Object state);
+
+    public abstract boolean canPlace(BlockPos pos, Object state);
+
     public abstract void sendActionBar(Component text);
 
     public abstract boolean updateLastSuccessfulInteractionTick(int tick);
+
+    public abstract int lastSuccessfulInteractionTick();
 
     public abstract int gameTicks();
 
@@ -72,8 +80,6 @@ public abstract class Player extends Entity implements NetWorkUser {
     public abstract void giveItem(Item<?> item);
 
     public abstract void closeInventory();
-
-    public abstract BlockHitResult rayTrace(double distance, FluidCollisionRule collisionRule);
 
     public abstract void clearView();
 }

@@ -217,9 +217,9 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         @Override
         public void accept(Item<?> item1, Item<?> item2, Item<?> item3) {
             for (Key component : this.components) {
-                Object componentObj = item1.getComponent(component.toString());
+                Object componentObj = item1.getComponent(component);
                 if (componentObj != null) {
-                    item3.setComponent(component.toString(), CraftEngine.instance().itemManager().encodeJava(component, componentObj));
+                    item3.setComponent(component, componentObj);
                 }
             }
         }

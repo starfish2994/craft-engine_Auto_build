@@ -1,6 +1,5 @@
-package net.momirealms.craftengine.mod.mixin;
+package net.momirealms.craftengine.mod.block;
 
-import com.mojang.brigadier.StringReader;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -8,54 +7,54 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.momirealms.craftengine.mod.CraftEngineBlock;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
+import net.momirealms.craftengine.mod.util.Reflections;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Mixin(value = Blocks.class)
-public abstract class MixinBlocks {
+public class CustomBlocks {
 
-    @Inject(method = "<clinit>", at = @At("RETURN"))
-    private static void onBlocksInit(CallbackInfo ci) {
+    public static void register() {
         CraftEnginePlugin.setVanillaRegistrySize(Block.BLOCK_STATE_REGISTRY.size());
         ResourceLocation noteBlock = ResourceLocation.fromNamespaceAndPath("minecraft", "note_block");
         Map<ResourceLocation, Integer> map = loadMappingsAndAdditionalBlocks();
         for (Map.Entry<ResourceLocation, Integer> entry : map.entrySet()) {
             ResourceLocation replacedBlockId = entry.getKey();
             boolean isNoteBlock = replacedBlockId.equals(noteBlock);
-            Block replacedBlock = BuiltInRegistries.BLOCK.getValue(replacedBlockId);
-            for (int i = 0; i < entry.getValue(); i++) {
-                ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
-                ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
-                BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
-                        .setId(resourceKey);
-                if (!replacedBlock.hasCollision) {
-                    properties.noCollission();
+            try {
+                Block replacedBlock = (Block) Reflections.method$DefaultedRegistry$get.invoke(BuiltInRegistries.BLOCK, replacedBlockId);
+                for (int i = 0; i < entry.getValue(); i++) {
+                    ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
+                    ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
+                    BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
+                    if (Reflections.field$BlockBehaviour$Properties$id != null) {
+                        Reflections.field$BlockBehaviour$Properties$id.set(properties, resourceKey);
+                    }
+                    if (!replacedBlock.hasCollision) {
+                        properties.noCollission();
+                    }
+                    CraftEngineBlock block = new CraftEngineBlock(properties);
+                    if (isNoteBlock) {
+                        block.setNoteBlock(true);
+                        NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
+                    }
+                    Registry.register(BuiltInRegistries.BLOCK, location, block);
+                    Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
                 }
-                CraftEngineBlock block = new CraftEngineBlock(properties);
-                if (isNoteBlock) {
-                    block.setNoteBlock(true);
-                    NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
-                }
-                Registry.register(BuiltInRegistries.BLOCK, location, block);
-                Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
-        NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.addAll(Blocks.NOTE_BLOCK.getStateDefinition().getPossibleStates());
+        NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.addAll(net.minecraft.world.level.block.Blocks.NOTE_BLOCK.getStateDefinition().getPossibleStates());
         if (!map.isEmpty()) {
             CraftEnginePlugin.setIsSuccessfullyRegistered(true);
         }
@@ -121,10 +120,14 @@ public abstract class MixinBlocks {
 
     private static BlockState createBlockData(String blockState) {
         try {
-            StringReader reader = new StringReader(blockState);
-            BlockStateParser.BlockResult arg = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, reader, false);
-            return arg.blockState();
+            Object holderLookUp = BuiltInRegistries.BLOCK;
+            if (Reflections.method$Registry$asLookup != null) {
+                holderLookUp = Reflections.method$Registry$asLookup.invoke(holderLookUp);
+            }
+            BlockStateParser.BlockResult result = (BlockStateParser.BlockResult) Reflections.method$BlockStateParser$parseForBlock.invoke(null, holderLookUp, blockState, false);
+            return result.blockState();
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

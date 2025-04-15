@@ -67,6 +67,11 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         Player player = context.getPlayer();
+        // todo adventure check
+        if (player.isAdventureMode()) {
+            return InteractionResult.FAIL;
+        }
+
         int gameTicks = player.gameTicks();
         if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
             return InteractionResult.FAIL;

@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
@@ -78,15 +79,15 @@ public class ItemEventListener implements Listener {
 
     @EventHandler
     public void onInteractAir(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR) return;
+        if (event.getAction() != Action.RIGHT_CLICK_AIR)
+            return;
         Player bukkitPlayer = event.getPlayer();
         BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (cancelEventIfHasInteraction(event, player, hand)) {
             return;
         }
-
-        if (player.isSpectatorMode() || player.isAdventureMode()) {
+        if (player.isSpectatorMode()) {
             return;
         }
 
@@ -138,7 +139,12 @@ public class ItemEventListener implements Listener {
             boolean interactable = InteractUtils.isInteractable(BlockStateUtils.getBlockOwnerId(clickedBlock), bukkitPlayer, clickedBlock.getBlockData(), hitResult, itemInHand);
 
             // do not allow to place block if it's a vanilla block
-            if (itemInHand.isBlockItem() && itemInHand.isCustomItem()) {
+            Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+            if (itemInHand.isBlockItem() && optionalCustomItem.isPresent()) {
+                // it's a custom item, but now it's ignored
+                if (optionalCustomItem.get().settings().canPlaceRelatedVanillaBlock()) {
+                    return;
+                }
                 if (!interactable || player.isSecondaryUseActive()) {
                     event.setCancelled(true);
                 }
@@ -149,9 +155,8 @@ public class ItemEventListener implements Listener {
                 return;
             }
 
-            // TODO We need to further investigate how to handle adventure mode
             // no spectator interactions
-            if (player.isSpectatorMode() || player.isAdventureMode()) {
+            if (player.isSpectatorMode()) {
                 return;
             }
 
@@ -214,7 +219,7 @@ public class ItemEventListener implements Listener {
             int currentTicks = player.gameTicks();
             // The client will send multiple packets to the server if the client thinks it should
             // However, if the main hand item interaction is successful, the off-hand item should be blocked.
-            if (!player.updateLastSuccessfulInteractionTick(currentTicks)) {
+            if (player.lastSuccessfulInteractionTick() == currentTicks) {
                 event.setCancelled(true);
                 return true;
             }

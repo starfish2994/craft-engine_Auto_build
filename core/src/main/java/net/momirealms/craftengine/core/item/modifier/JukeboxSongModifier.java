@@ -8,7 +8,7 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 
 import java.util.Map;
 
-public class JukeboxSongModifier<I> implements ItemModifier<I> {
+public class JukeboxSongModifier<I> implements ItemDataModifier<I> {
     private final Key song;
 
     public JukeboxSongModifier(Key song) {
@@ -30,5 +30,10 @@ public class JukeboxSongModifier<I> implements ItemModifier<I> {
                     "show_in_tooltip", true
             ));
         }
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.removeComponent(ComponentKeys.JUKEBOX_PLAYABLE);
     }
 }

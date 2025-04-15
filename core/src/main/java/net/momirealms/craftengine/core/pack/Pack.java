@@ -15,14 +15,24 @@ import java.nio.file.Path;
 public class Pack {
     private final Path folder;
     private final PackMeta meta;
+    private final boolean enabled;
 
-    public Pack(Path folder, PackMeta meta) {
+    public Pack(Path folder, PackMeta meta, boolean enabled) {
         this.folder = folder;
         this.meta = meta;
+        this.enabled = enabled;
+    }
+
+    public String name() {
+        return folder.getFileName().toString();
     }
 
     public String namespace() {
         return meta.namespace();
+    }
+
+    public boolean enabled() {
+        return enabled;
     }
 
     public PackMeta meta() {

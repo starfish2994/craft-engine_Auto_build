@@ -31,6 +31,7 @@ public class WaterBucketItemBehavior extends ItemBehavior {
     @SuppressWarnings("unchecked")
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
+        if (context.getPlayer().isAdventureMode()) return InteractionResult.PASS;
         BlockPos pos = context.getClickedPos();
         BukkitWorldBlock clicked = (BukkitWorldBlock) context.getLevel().getBlockAt(pos);
         Block block = clicked.block();

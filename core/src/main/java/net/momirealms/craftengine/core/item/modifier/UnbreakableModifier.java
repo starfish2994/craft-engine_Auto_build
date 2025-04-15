@@ -3,7 +3,7 @@ package net.momirealms.craftengine.core.item.modifier;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 
-public class UnbreakableModifier<I> implements ItemModifier<I> {
+public class UnbreakableModifier<I> implements ItemDataModifier<I> {
     private final boolean argument;
 
     public UnbreakableModifier(boolean argument) {
@@ -17,6 +17,13 @@ public class UnbreakableModifier<I> implements ItemModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.unbreakable(argument);
+        item.unbreakable(this.argument);
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        if (this.argument) {
+            item.unbreakable(false);
+        }
     }
 }

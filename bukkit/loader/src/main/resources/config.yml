@@ -130,30 +130,61 @@ item:
   non-italic-tag: false
 
 block:
+  # Enables the sound system, which prevents the client from hearing some non-custom block sounds and improves the client experience.
   sound-system:
     enable: true
+  # In Adventure Mode, players need the correct tool to break custom blocks.
+  # Vanilla clients DO NOT recognize custom block IDs (e.g., craftengine:note_block_0).
+  #
+  # - When ENABLED:
+  #   - Players can break custom blocks if their tools can mine their VANILLA EQUIVALENTS.
+  #     Example: A tool for "note_block" can break "craftengine:note_block_0".
+  #
+  # - When DISABLED:
+  #   ⚠️ WARNING:
+  #   - Server MUST list ACTUAL CUSTOM BLOCK IDs in item's `can_break` component.
+  #   - Sending custom IDs (e.g., craftengine:note_block_0) to vanilla clients WILL CRASH THEM!
+  #   ✅ Solution:
+  #   - Use `client-bound-item-data` to safely sync custom block data to clients.
+  #   Documentation: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/add-new-contents/items/item-data/client-bound-item-data
+  simplify-adventure-break-check: false
+  # Similar to the option above, but designed for block placement
+  simplify-adventure-place-check: false
+  # Whether plugin should predict the next block to break
+  # This can help improve mining experience to some extent at the cost of performance
+  predict-breaking:
+    enable: false
+    interval: 10
+    extended-interaction-range: 0.5
 
 furniture:
-  # Should the plugin remove invalid furniture on chunk load
+  # Automatically remove outdated furniture entities when a chunk is loaded.
   remove-invalid-furniture-on-chunk-load:
+    # Enable/disable the cleanup system
     enable: false
-    # If you want to remove all invalid furniture, please set this list to empty, otherwise only furniture in the list will be removed.
+    # - When EMPTY: Remove ALL invalid furniture entities
+    # - When POPULATED: Only remove specified furniture types
+    # Example for targeted removal:
+    # list: [ "xxx:invalid_furniture", "yyy:broken_sofa" ]
     list:
       - "xxx:invalid_furniture"
-  # Whether to hide the entity containing metadata
+  # Hide technical entities used for storing furniture metadata.
+  # NOTE:
+  # - These are INVISIBLE entities used internally for tracking furniture states
+  # - Recommended to keep enabled for better performance
   hide-base-entity: true
 
 image:
-  # Prevent players from using images set in minecraft:default font
-  # Players with `craftengine.filter.bypass.xxx` would ignore the limitation
+  # Block image tags using minecraft:default font in these interfaces
+  # Permission bypass: craftengine.filter.bypass.xxx (replace xxx with context: anvil/book/chat/etc)
   illegal-characters-filter:
     anvil: true
     book: true
     chat: true
     command: true
     sign: true
-  # By intercepting packets, you are allowed to use <image:...> <shift:...> in other plugins
-  # Turning off some unused options would help reduce CPU usage on async threads
+  # Allow <image:...> and <shift:...> tags in third-party plugins via packet manipulation
+  # ⚠️ Disable unused handlers to reduce async thread workload
   intercept-packets:
     system-chat: true
     tab-list: true     # Tab list header and footer
@@ -168,17 +199,69 @@ image:
     entity-name: false
     armor-stand: true   # Legacy Holograms
     text-display: true  # Modern Holograms
+  # Defines Unicode characters used for <shift:xxx> positioning
+  # - Must match the font defined in resource packs
+  # - Do NOT modify unless you understand text rendering mechanics
+  offset-characters:
+    font: minecraft:offset_chars
+    -1: '\uf800'
+    -2: '\uf801'
+    -3: '\uf802'
+    -4: '\uf803'
+    -5: '\uf804'
+    -6: '\uf805'
+    -7: '\uf806'
+    -8: '\uf807'
+    -9: '\uf808'
+    -10: '\uf809'
+    -11: '\uf80a'
+    -12: '\uf80b'
+    -13: '\uf80c'
+    -14: '\uf80d'
+    -15: '\uf80e'
+    -16: '\uf80f'
+    -24: '\uf810'
+    -32: '\uf811'
+    -48: '\uf812'
+    -64: '\uf813'
+    -128: '\uf814'
+    -256: '\uf815'
+    1: '\uf830'
+    2: '\uf831'
+    3: '\uf832'
+    4: '\uf833'
+    5: '\uf834'
+    6: '\uf835'
+    7: '\uf836'
+    8: '\uf837'
+    9: '\uf838'
+    10: '\uf839'
+    11: '\uf83a'
+    12: '\uf83b'
+    13: '\uf83c'
+    14: '\uf83d'
+    15: '\uf83e'
+    16: '\uf83f'
+    24: '\uf840'
+    32: '\uf841'
+    48: '\uf842'
+    64: '\uf843'
+    128: '\uf844'
+    256: '\uf845'
 
 emoji: {}
 
 recipe:
-  # Enable the plugin's recipe system
+  # Master switch for custom recipes
+  # NOTE: When enabled, plugin recipes will OVERRIDE vanilla recipes
   enable: true
-  # Disable vanilla recipes
+  # Manage Minecraft's default recipe behavior
   disable-vanilla-recipes:
-    # Disable all vanilla recipes
+    # ⚠️ WARNING: When true, DISABLES ALL VANILLA RECIPES
+    # - Conflicts with 'list' option (list will be ignored)
     all: false
-    # Disable the recipes in list
+    # Selective recipe disabling (safer alternative to 'all: true')
+    # Example: ["minecraft:wooden_sword", "minecraft:stone_hoe"]
     list: []
 
 gui:
@@ -240,12 +323,13 @@ gui:
 performance:
   # Maximum chain update depth when fixing client visuals
   max-block-chain-update-limit: 64
-  # Maximum number of emojis to parse per operation
+  # Prevent lag or oversized packet when processing emoji-heavy content
   max-emojis-per-parse: 16
 
 light-system:
+  # Required for custom light-emitting blocks
   enable: true
-  # Turning this option on will reduce lighting system issues to some extent, but will increase server bandwidth consumption
+  # Turning this option on will reduce lighting system issues to some extent, but will increase server bandwidth consumption.
   force-update-light: false
 
 chunk-system:
@@ -255,59 +339,28 @@ chunk-system:
   # 4 = LZ4       |     Blazing-Fast        Blazing-Fast        Low                 Low        |
   # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
-  # Disabling this option prevents the plugin from converting custom blocks to vanilla states when chunks are unloaded.
-  # While this can improve performance, custom blocks will turn into air if the plugin is uninstalled.
+  # Auto-convert custom blocks -> vanilla blocks when unloading chunks
+  #
+  # - When ENABLED (true):
+  #   - Prevents custom blocks becoming AIR if plugin is uninstalled
+  #   - Ensures world portability for vanilla environments
+  #
+  # - When DISABLED (false):
+  #   ⚠️ IRREVERSIBLE DATA LOSS WARNING:
+  #   - Custom blocks permanently turn to AIR without plugin
+  #   - Recommended for temporary/test worlds only
   restore-vanilla-blocks-on-chunk-unload: true
+  # Convert vanilla blocks -> custom blocks when loading chunks
+  #
+  # - Performance Mode (false):
+  #   ⚠️ REQUIRED CONDITIONS:
+  #     1. Must disable restore-vanilla-blocks-on-chunk-unload
+  #     2. Accept risk of custom block data loss on plugin removal
+  #
+  # - Compatibility Mode (true):
+  #   - Full state recovery with minor performance cost
+  restore-custom-blocks-on-chunk-load: true
   # When you edit a map locally using CraftEngine fabric mod, the custom block data is not immediately synchronized with the
   # server's CraftEngine internal data. Enabling this option will synchronize the data when the chunk is loaded.
   # (This option only slightly impacts performance, which has been fully optimized, so you don't need to worry too much.)
   sync-custom-blocks-on-chunk-load: false
-  # If you disable this, it's a must to disable the above option.
-  restore-custom-blocks-on-chunk-load: true
-
-offset-characters:
-  font: minecraft:offset_chars
-  -1: '\uf800'
-  -2: '\uf801'
-  -3: '\uf802'
-  -4: '\uf803'
-  -5: '\uf804'
-  -6: '\uf805'
-  -7: '\uf806'
-  -8: '\uf807'
-  -9: '\uf808'
-  -10: '\uf809'
-  -11: '\uf80a'
-  -12: '\uf80b'
-  -13: '\uf80c'
-  -14: '\uf80d'
-  -15: '\uf80e'
-  -16: '\uf80f'
-  -24: '\uf810'
-  -32: '\uf811'
-  -48: '\uf812'
-  -64: '\uf813'
-  -128: '\uf814'
-  -256: '\uf815'
-  1: '\uf830'
-  2: '\uf831'
-  3: '\uf832'
-  4: '\uf833'
-  5: '\uf834'
-  6: '\uf835'
-  7: '\uf836'
-  8: '\uf837'
-  9: '\uf838'
-  10: '\uf839'
-  11: '\uf83a'
-  12: '\uf83b'
-  13: '\uf83c'
-  14: '\uf83d'
-  15: '\uf83e'
-  16: '\uf83f'
-  24: '\uf840'
-  32: '\uf841'
-  48: '\uf842'
-  64: '\uf843'
-  128: '\uf844'
-  256: '\uf845'

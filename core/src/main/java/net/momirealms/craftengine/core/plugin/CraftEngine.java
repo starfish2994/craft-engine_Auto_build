@@ -32,6 +32,7 @@ import net.momirealms.craftengine.core.sound.SoundManager;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.WorldManager;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,8 +91,8 @@ public abstract class CraftEngine implements Plugin {
     }
 
     public void onPluginLoad() {
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
+        ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
+        ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
         this.dependencyManager = new DependencyManagerImpl(this);
         ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
         dependenciesToLoad.addAll(commonDependencies());
@@ -115,72 +116,77 @@ public abstract class CraftEngine implements Plugin {
     public CompletableFuture<ReloadResult> reloadPlugin(Executor asyncExecutor, Executor syncExecutor, boolean reloadRecipe) {
         CompletableFuture<ReloadResult> future = new CompletableFuture<>();
         asyncExecutor.execute(() -> {
-            if (this.isReloading) {
-                future.complete(ReloadResult.failure());
-                return;
-            }
-            this.isReloading = true;
-            long time1 = System.currentTimeMillis();
-            // firstly reload main config
-            this.config.load();
-            // reset debugger
-            this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
-            // now we reload the translations
-            this.translationManager.reload();
-            // clear the outdated cache by reloading the managers
-            this.templateManager.reload();
-            this.furnitureManager.reload();
-            this.fontManager.reload();
-            this.itemManager.reload();
-            this.soundManager.reload();
-            this.itemBrowserManager.reload();
-            this.blockManager.reload();
-            this.worldManager.reload();
-            this.vanillaLootManager.reload();
-            this.guiManager.reload();
-            this.packManager.reload();
-            if (reloadRecipe) {
-                this.recipeManager.reload();
-            }
+            long asyncTime = -1;
             try {
-                // now we load resources
-                this.packManager.loadResources(reloadRecipe);
-            } catch (Exception e) {
-                this.logger().warn("Failed to load resources folder", e);
-            }
-            // init suggestions and packet mapper
-            this.blockManager.delayedLoad();
-            // handle some special client lang for instance block_name
-            this.translationManager.delayedLoad();
-            // init suggestions
-            this.furnitureManager.delayedLoad();
-            // sort the categories
-            this.itemBrowserManager.delayedLoad();
-            // collect illegal characters from minecraft:default font
-            this.fontManager.delayedLoad();
-            if (reloadRecipe) {
-                // convert data pack recipes
-                this.recipeManager.delayedLoad();
-            }
-            long time2 = System.currentTimeMillis();
-            long asyncTime = time2 - time1;
-            syncExecutor.execute(() -> {
-                try {
-                    long time3 = System.currentTimeMillis();
-                    // register songs
-                    this.soundManager.runDelayedSyncTasks();
-                    // register recipes
-                    if (reloadRecipe) {
-                        this.recipeManager.runDelayedSyncTasks();
-                    }
-                    long time4 = System.currentTimeMillis();
-                    long syncTime = time4 - time3;
-                    this.reloadEventDispatcher.accept(this);
-                    future.complete(ReloadResult.success(asyncTime, syncTime));
-                } finally {
-                    this.isReloading = false;
+                if (this.isReloading) {
+                    future.complete(ReloadResult.failure());
+                    return;
                 }
-            });
+                this.isReloading = true;
+                long time1 = System.currentTimeMillis();
+                // firstly reload main config
+                this.config.load();
+                // reset debugger
+                this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
+                // now we reload the translations
+                this.translationManager.reload();
+                // clear the outdated cache by reloading the managers
+                this.templateManager.reload();
+                this.furnitureManager.reload();
+                this.fontManager.reload();
+                this.itemManager.reload();
+                this.soundManager.reload();
+                this.itemBrowserManager.reload();
+                this.blockManager.reload();
+                this.worldManager.reload();
+                this.vanillaLootManager.reload();
+                this.guiManager.reload();
+                this.packManager.reload();
+                if (reloadRecipe) {
+                    this.recipeManager.reload();
+                }
+                try {
+                    // now we load resources
+                    this.packManager.loadResources(reloadRecipe);
+                } catch (Exception e) {
+                    this.logger().warn("Failed to load resources folder", e);
+                }
+                // init suggestions and packet mapper
+                this.blockManager.delayedLoad();
+                // handle some special client lang for instance block_name
+                this.translationManager.delayedLoad();
+                // init suggestions
+                this.furnitureManager.delayedLoad();
+                // sort the categories
+                this.itemBrowserManager.delayedLoad();
+                // collect illegal characters from minecraft:default font
+                this.fontManager.delayedLoad();
+                if (reloadRecipe) {
+                    // convert data pack recipes
+                    this.recipeManager.delayedLoad();
+                }
+                long time2 = System.currentTimeMillis();
+                asyncTime = time2 - time1;
+            } finally {
+                long finalAsyncTime = asyncTime;
+                syncExecutor.execute(() -> {
+                    try {
+                        long time3 = System.currentTimeMillis();
+                        // register songs
+                        this.soundManager.runDelayedSyncTasks();
+                        // register recipes
+                        if (reloadRecipe) {
+                            this.recipeManager.runDelayedSyncTasks();
+                        }
+                        long time4 = System.currentTimeMillis();
+                        long syncTime = time4 - time3;
+                        this.reloadEventDispatcher.accept(this);
+                        future.complete(ReloadResult.success(finalAsyncTime, syncTime));
+                    } finally {
+                        this.isReloading = false;
+                    }
+                });
+            }
         });
         return future;
     }

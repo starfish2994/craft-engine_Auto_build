@@ -33,9 +33,9 @@ public class ComponentItemFactory1_21_4 extends ComponentItemFactory {
     @Override
     protected void customModelData(ItemWrapper<ItemStack> item, Integer data) {
         if (data == null) {
-            item.removeComponent(ComponentKeys.CUSTOM_MODEL_DATA);
+            resetComponent(item, ComponentKeys.CUSTOM_MODEL_DATA);
         } else {
-            item.setComponent(ComponentKeys.CUSTOM_MODEL_DATA, Map.of("floats", List.of(data.floatValue())));
+            setComponent(item, ComponentKeys.CUSTOM_MODEL_DATA, Map.of("floats", List.of(data.floatValue())));
         }
     }
 }

@@ -661,7 +661,7 @@ templates#settings#blocks:
       - "default:sound/stone"
       - "default:pickaxe_power/level_{break_power}"
     overrides:
-      hardness: 4.5
+      hardness: 3.0
       resistance: 3.0
       push-reaction: NORMAL
       is-redstone-conductor: true
@@ -677,7 +677,7 @@ templates#settings#blocks:
       - "default:sound/deepslate"
       - "default:pickaxe_power/level_{break_power}"
     overrides:
-      hardness: 6.0
+      hardness: 4.5
       resistance: 3.0
       push-reaction: NORMAL
       is-redstone-conductor: true

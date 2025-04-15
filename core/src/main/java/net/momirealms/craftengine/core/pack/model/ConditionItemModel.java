@@ -64,8 +64,8 @@ public class ConditionItemModel implements ItemModel {
         @Override
         public ItemModel create(Map<String, Object> arguments) {
             ConditionProperty property = ConditionProperties.fromMap(arguments);
-            Map<String, Object> onTrue = Objects.requireNonNull((Map<String, Object>) arguments.get("on-true"));
-            Map<String, Object> onFalse = Objects.requireNonNull((Map<String, Object>) arguments.get("on-false"));
+            Map<String, Object> onTrue = Objects.requireNonNull((Map<String, Object>) arguments.get("on-true"), "No 'on-true' set for 'minecraft:condition'");
+            Map<String, Object> onFalse = Objects.requireNonNull((Map<String, Object>) arguments.get("on-false"), "No 'on-false' set for 'minecraft:condition'");
             return new ConditionItemModel(property, ItemModels.fromMap(onTrue), ItemModels.fromMap(onFalse));
         }
     }

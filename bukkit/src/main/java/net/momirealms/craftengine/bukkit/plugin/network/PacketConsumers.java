@@ -28,6 +28,7 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
@@ -221,7 +222,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int eventId = buf.readInt();
-            if (eventId != 2001) return;
+            if (eventId != WorldEvents.BLOCK_BREAK_EFFECT) return;
             BlockPos blockPos = buf.readBlockPos(buf);
             int state = buf.readInt();
             boolean global = buf.readBoolean();
@@ -1118,38 +1119,32 @@ public class PacketConsumers {
                 if (Config.enableSoundSystem()) {
                     Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
-                        player.startMiningBlock(world, pos, blockState, false, null);
+                        player.startMiningBlock(pos, blockState, null);
                         return;
                     }
                 }
-                if (player.isMiningBlock() || player.shouldSyncAttribute()) {
+                if (player.isMiningBlock()) {
                     player.stopMiningBlock();
+                } else {
+                    player.setClientSideCanBreakBlock(true);
                 }
                 return;
             }
             if (player.isAdventureMode()) {
-                Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(player.platformPlayer().getInventory().getItemInMainHand());
-                Object blockPos = LocationUtils.toBlockPos(pos);
-                Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
-                            && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
-                            itemStack, blockInWorld
-                    )) {
+                if (Config.simplifyAdventureBreakCheck()) {
+                    ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+                    if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
                         player.preventMiningBlock();
                         return;
                     }
                 } else {
-                    if (Reflections.method$ItemStack$canDestroy != null
-                            && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
-                            itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
-                    )) {
+                    if (!player.canBreak(pos, null)) {
                         player.preventMiningBlock();
                         return;
                     }
                 }
             }
-            player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
+            player.startMiningBlock(pos, blockState, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
         } else if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$ABORT_DESTROY_BLOCK) {
             if (player.isMiningBlock()) {
                 player.abortMiningBlock();
@@ -1272,7 +1267,7 @@ public class PacketConsumers {
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
         }
-        double interactionRange = player.getInteractionRange();
+        double interactionRange = player.getCachedInteractionRange();
         // do ray trace to get current block
         RayTraceResult result = bukkitPlayer.rayTraceBlocks(interactionRange, FluidCollisionMode.NEVER);
         if (result == null) return;
@@ -1566,9 +1561,11 @@ public class PacketConsumers {
             if (actionType == null) return;
             Location location = furniture.baseEntity().getLocation();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
-            if (serverPlayer.isSpectatorMode() || serverPlayer.isAdventureMode()) return;
+            if (serverPlayer.isSpectatorMode()) return;
             BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                 if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
+                    // todo 冒险模式破坏工具白名单
+                    if (serverPlayer.isAdventureMode()) return;
                     if (furniture.isValid()) {
                         if (!BukkitCraftEngine.instance().antiGrief().canBreak(player, location)) {
                             return;
