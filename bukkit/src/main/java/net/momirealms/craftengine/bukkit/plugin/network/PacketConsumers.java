@@ -1267,7 +1267,7 @@ public class PacketConsumers {
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
         }
-        double interactionRange = player.getInteractionRange();
+        double interactionRange = player.getCachedInteractionRange();
         // do ray trace to get current block
         RayTraceResult result = bukkitPlayer.rayTraceBlocks(interactionRange, FluidCollisionMode.NEVER);
         if (result == null) return;

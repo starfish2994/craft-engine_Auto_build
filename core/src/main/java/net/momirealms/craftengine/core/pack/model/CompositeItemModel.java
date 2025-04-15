@@ -53,6 +53,9 @@ public class CompositeItemModel implements ItemModel {
         @Override
         public ItemModel create(Map<String, Object> arguments) {
             List<Map<String, Object>> models = (List<Map<String, Object>>) arguments.get("models");
+            if (models == null || models.isEmpty()) {
+                throw new IllegalArgumentException("No 'models' specified for 'minecraft:composite'");
+            }
             List<ItemModel> modelList = new ArrayList<>();
             for (Map<String, Object> model : models) {
                 modelList.add(ItemModels.fromMap(model));

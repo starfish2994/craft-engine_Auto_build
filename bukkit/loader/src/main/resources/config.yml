@@ -149,10 +149,10 @@ block:
   #   Documentation: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/add-new-contents/items/item-data/client-bound-item-data
   simplify-adventure-break-check: false
   # Whether plugin should predict the next block to break
-  # This can help improve mining experience to some extent
+  # This can help improve mining experience to some extent at the cost of performance
   predict-breaking:
-    enable: true
-    interval: 5
+    enable: false
+    interval: 10
     extended-interaction-range: 0.5
 
 furniture:

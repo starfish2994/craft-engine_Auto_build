@@ -40,20 +40,22 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitServerPlayer extends Player {
-    private final Channel channel;
     private final BukkitCraftEngine plugin;
-
+    // connection state
+    private final Channel channel;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
-
+    // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
-
+    // client side dimension info
     private int sectionCount;
-    private int lastSuccessfulInteraction;
-    private long lastAttributeSyncTime;
     private Key clientSideDimension;
-
+    // check main hand/offhand interaction
+    private int lastSuccessfulInteraction;
+    // re-sync attribute timely to prevent some bugs
+    private long lastAttributeSyncTime;
+    // for breaking blocks
     private int lastSentState = -1;
     private int lastHitBlockTime;
     private BlockPos destroyPos;
@@ -62,20 +64,27 @@ public class BukkitServerPlayer extends Player {
     private boolean isDestroyingCustomBlock;
     private boolean swingHandAck;
     private float miningProgress;
-
-    private int lastSuccessfulBreak;
+    // for client visual sync
     private int resentSoundTick;
     private int resentSwingTick;
-
+    // cache used recipe
     private Key lastUsedRecipe = null;
-
+    // has fabric client mod or not
     private boolean hasClientMod = false;
+    // cache if player can break blocks
+    private boolean clientSideCanBreak = true;
+    // prevent AFK players from consuming too much CPU resource on predicting
+    private Location previousEyeLocation;
+    // a cooldown for better breaking experience
+    private int lastSuccessfulBreak;
+    // player's game tick
+    private int gameTicks;
+    // cache interaction range here
+    private int lastUpdateInteractionRangeTick;
+    private double cachedInteractionRange;
     // for better fake furniture visual sync
-    // TODO CLEAR ENTITY VIEW
     private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
     private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
-
-    private boolean clientSideCanBreak = true;
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -213,7 +222,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public int gameTicks() {
-        return FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        return this.gameTicks;
     }
 
     @Override
@@ -319,12 +328,18 @@ public class BukkitServerPlayer extends Player {
     public void tick() {
         // not fully online
         if (serverPlayer() == null) return;
+        this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }
-        // if it's not destroying custom blocks, we do predict
-        if (Config.predictBreaking()) {
-            if (!this.isDestroyingCustomBlock && (gameTicks() + entityID()) % Config.predictBreakingInterval() == 0) {
+        if (Config.predictBreaking() && !this.isDestroyingCustomBlock) {
+            // if it's not destroying blocks, we do predict
+            if ((gameTicks() + entityID()) % Config.predictBreakingInterval() == 0) {
+                Location eyeLocation = platformPlayer().getEyeLocation();
+                if (eyeLocation.equals(this.previousEyeLocation)) {
+                    return;
+                }
+                this.previousEyeLocation = eyeLocation;
                 this.predictNextBlockToMine();
             }
         }
@@ -336,7 +351,7 @@ public class BukkitServerPlayer extends Player {
     }
 
     private void predictNextBlockToMine() {
-        double range = getInteractionRange() + Config.extendedInteractionRange();
+        double range = getCachedInteractionRange() + Config.extendedInteractionRange();
         RayTraceResult result = platformPlayer().rayTraceBlocks(range, FluidCollisionMode.NEVER);
         if (result == null) {
             if (!this.clientSideCanBreak) {
@@ -467,7 +482,7 @@ public class BukkitServerPlayer extends Player {
         if (currentTick - this.lastSuccessfulBreak <= 5) return;
         try {
             org.bukkit.entity.Player player = platformPlayer();
-            double range = getInteractionRange();
+            double range = getCachedInteractionRange();
             RayTraceResult result = player.rayTraceBlocks(range, FluidCollisionMode.NEVER);
             if (result == null) return;
             Block hitBlock = result.getHitBlock();
@@ -589,8 +604,13 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public double getInteractionRange() {
-        return FastNMS.INSTANCE.getInteractionRange(serverPlayer());
+    public double getCachedInteractionRange() {
+        if (this.lastUpdateInteractionRangeTick + 20 > gameTicks()) {
+            return this.cachedInteractionRange;
+        }
+        this.cachedInteractionRange = FastNMS.INSTANCE.getInteractionRange(serverPlayer());
+        this.lastUpdateInteractionRangeTick = gameTicks();
+        return this.cachedInteractionRange;
     }
 
     public void setIsDestroyingBlock(boolean is, boolean custom) {
