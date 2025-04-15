@@ -5,7 +5,8 @@ include(":bukkit")
 include(":bukkit:legacy")
 include(":bukkit:compatibility")
 include(":bukkit:loader")
-include(":server-mod")
+include(":server-mod:v1_20_5")
+include(":server-mod:v1_21_5")
 include(":client-mod")
 pluginManagement {
     plugins {

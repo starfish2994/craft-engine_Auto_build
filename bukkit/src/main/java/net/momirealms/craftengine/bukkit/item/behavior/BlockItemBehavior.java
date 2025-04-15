@@ -83,7 +83,7 @@ public class BlockItemBehavior extends ItemBehavior {
 
         // todo adventure check
         if (player.isAdventureMode()) {
-
+            return InteractionResult.FAIL;
         }
 
         int gameTicks = player.gameTicks();
