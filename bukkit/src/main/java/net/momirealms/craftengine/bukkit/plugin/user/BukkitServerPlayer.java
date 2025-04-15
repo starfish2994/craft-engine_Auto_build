@@ -92,8 +92,15 @@ public class BukkitServerPlayer extends Player {
     }
 
     public void setPlayer(org.bukkit.entity.Player player) {
-        playerRef = new WeakReference<>(player);
-        serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
+        this.playerRef = new WeakReference<>(player);
+        this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
+        if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
+            try {
+                Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
+            } catch (Exception e) {
+                this.plugin.logger().warn("Failed to setSimplifyContainerDesyncCheck", e);
+            }
+        }
     }
 
     @Override

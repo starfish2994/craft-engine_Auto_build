@@ -4000,12 +4000,12 @@ public class Reflections {
             )
     );
 
-    @SuppressWarnings("deprecation")
-    public static final Method method$World$spawnEntity = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
-                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, Consumer.class) :
-                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, org.bukkit.util.Consumer.class)
-    );
+//    @SuppressWarnings("deprecation")
+//    public static final Method method$World$spawnEntity = requireNonNull(
+//            VersionHelper.isVersionNewerThan1_20_2() ?
+//                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, Consumer.class) :
+//                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, org.bukkit.util.Consumer.class)
+//    );
 
     // 1.21.4+
     public static final Class<?> clazz$ServerboundPickItemFromEntityPacket =
@@ -6444,4 +6444,9 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardScore")
             )
     );
+
+    public static final Method method$CraftPlayer$setSimplifyContainerDesyncCheck =
+            ReflectionUtils.getMethod(
+                    clazz$CraftPlayer, new String[]{"setSimplifyContainerDesyncCheck"}, boolean.class
+            );
 }
