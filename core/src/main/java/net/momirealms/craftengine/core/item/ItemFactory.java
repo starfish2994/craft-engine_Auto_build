@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import com.google.gson.JsonElement;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +23,8 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
 
     public abstract Object encodeJava(Key componentType, @Nullable Object component);
 
+    protected abstract JsonElement encodeJson(Key type, Object component);
+
     protected abstract ItemWrapper<I> wrapInternal(I item);
 
     protected abstract Object getTag(ItemWrapper<I> item, Object... path);
@@ -32,13 +35,15 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
 
     protected abstract boolean removeTag(ItemWrapper<I> item, Object... path);
 
-    protected abstract void setComponent(ItemWrapper<I> item, String type, Object value);
+    protected abstract void setComponent(ItemWrapper<I> item, Key type, Object value);
 
-    protected abstract Object getComponent(ItemWrapper<I> item, String type);
+    protected abstract Object getComponent(ItemWrapper<I> item, Key type);
 
-    protected abstract boolean hasComponent(ItemWrapper<I> item, String type);
+    protected abstract boolean hasComponent(ItemWrapper<I> item, Key type);
 
-    protected abstract void removeComponent(ItemWrapper<I> item, String type);
+    protected abstract void removeComponent(ItemWrapper<I> item, Key type);
+
+    protected abstract void resetComponent(ItemWrapper<I> item, Key type);
 
     protected abstract void update(ItemWrapper<I> item);
 
@@ -111,6 +116,10 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
     protected abstract void repairCost(ItemWrapper<I> item, Integer data);
 
     protected abstract Optional<Integer> repairCost(ItemWrapper<I> item);
+
+    protected abstract void trim(ItemWrapper<I> item, Trim trim);
+
+    protected abstract Optional<Trim> trim(ItemWrapper<I> item);
 
     protected abstract ItemWrapper<I> mergeCopy(ItemWrapper<I> item1, ItemWrapper<I> item2);
 

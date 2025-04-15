@@ -26,9 +26,9 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
     @Override
     protected void customName(ItemWrapper<ItemStack> item, String json) {
         if (json == null) {
-            item.removeComponent(ComponentKeys.CUSTOM_NAME);
+            resetComponent(item, ComponentKeys.CUSTOM_NAME);
         } else {
-            item.setComponent(ComponentKeys.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            setNBTComponentDirectly(item, ComponentKeys.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
@@ -41,9 +41,9 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
     @Override
     protected void itemName(ItemWrapper<ItemStack> item, String json) {
         if (json == null) {
-            item.removeComponent(ComponentKeys.ITEM_NAME);
+            resetComponent(item, ComponentKeys.ITEM_NAME);
         } else {
-            item.setComponent(ComponentKeys.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            setNBTComponentDirectly(item, ComponentKeys.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
@@ -71,13 +71,13 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
     @Override
     protected void lore(ItemWrapper<ItemStack> item, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
-            item.removeComponent(ComponentKeys.LORE);
+            resetComponent(item, ComponentKeys.LORE);
         } else {
             List<Object> loreTags = new ArrayList<>();
             for (String json : lore) {
                 loreTags.add(ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
             }
-            item.setComponent(ComponentKeys.LORE, TagList.newTag(loreTags));
+            setNBTComponentDirectly(item, ComponentKeys.LORE, TagList.newTag(loreTags));
         }
     }
 }

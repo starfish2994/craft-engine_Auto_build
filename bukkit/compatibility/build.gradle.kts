@@ -15,7 +15,7 @@ dependencies {
     compileOnly(project(":core"))
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
     // Platform
-    compileOnly("dev.folia:folia-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
     // NeigeItems
     compileOnly("pers.neige.neigeitems:NeigeItems:1.21.42")
     // Placeholder

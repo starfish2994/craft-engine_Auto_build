@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.util;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ArrayUtils {
@@ -58,5 +59,15 @@ public class ArrayUtils {
 
     public static boolean isEmpty(Object[] array) {
         return array == null || array.length == 0;
+    }
+
+    public static <T> T[] collectionToArray(Collection<T> array, Class<T> clazz) {
+        @SuppressWarnings("unchecked")
+        T[] res = (T[]) Array.newInstance(clazz, array.size());
+        int i = 0;
+        for (T item : array) {
+            res[i++] = item;
+        }
+        return res;
     }
 }

@@ -51,7 +51,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     @Override
     public void load() {
-        this.offsetFont = Optional.ofNullable(plugin.config().settings().getSection("offset-characters"))
+        this.offsetFont = Optional.ofNullable(plugin.config().settings().getSection("image.offset-characters"))
                 .map(OffsetFont::new)
                 .orElse(null);
     }

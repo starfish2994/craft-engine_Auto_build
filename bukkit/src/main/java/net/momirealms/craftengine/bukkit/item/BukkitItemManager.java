@@ -35,10 +35,7 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.ResourceKey;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -50,8 +47,10 @@ import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.type.Either;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
@@ -70,13 +69,63 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
+        instance = this;
         this.plugin = plugin;
         this.factory = BukkitItemFactory.create(plugin);
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
-        instance = this;
+        if (plugin.hasMod() && VersionHelper.isVersionNewerThan1_20_5()) {
+            Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
+            if (clazz$CustomStreamCodec != null) {
+                Field s2cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);
+                Field c2sProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 1);
+                Function<Object, Object> s2c = (raw) -> {
+                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
+                    Item<ItemStack> wrapped = this.wrap(itemStack.clone());
+                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+                    if (customItem.isEmpty()) {
+                        return raw;
+                    }
+                    CustomItem<ItemStack> custom = customItem.get();
+                    if (!custom.hasClientBoundDataModifier()) {
+                        return raw;
+                    }
+                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+                        processor.toClient(wrapped, ItemBuildContext.EMPTY);
+                    }
+                    wrapped.load();
+                    return wrapped.getLiteralObject();
+                };
+
+                Function<Object, Object> c2s = (raw) -> {
+                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
+                    Item<ItemStack> wrapped = this.wrap(itemStack);
+                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+                    if (customItem.isEmpty()) {
+                        return raw;
+                    }
+                    CustomItem<ItemStack> custom = customItem.get();
+                    if (!custom.hasClientBoundDataModifier()) {
+                        return raw;
+                    }
+                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+                        processor.toServer(wrapped, ItemBuildContext.EMPTY);
+                    }
+                    wrapped.load();
+                    return wrapped.getLiteralObject();
+                };
+                try {
+                    assert s2cProcessor != null;
+                    s2cProcessor.set(null, s2c);
+                    assert c2sProcessor != null;
+                    c2sProcessor.set(null, c2s);
+                } catch (ReflectiveOperationException e) {
+                    plugin.logger().warn("Failed to load custom stream codec", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -218,7 +267,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                             .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
+            boolean isVanillaItem = id.namespace().equals("minecraft") && Registry.MATERIAL.get(new NamespacedKey(id.namespace(), id.value())) != null;
             String materialStringId = (String) section.get("material");
+            if (isVanillaItem)
+                materialStringId = id.value();
             if (materialStringId == null) {
                 TranslationManager.instance().log("warning.config.item.lack_material", path.toString(), id.toString());
                 return;
@@ -235,14 +287,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             Key itemModelKey = null;
 
             CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
-            itemBuilder.modifier(new IdModifier<>(id));
-
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
             // Sets some basic model info
             if (customModelData != 0) {
-                itemBuilder.modifier(new CustomModelDataModifier<>(customModelData));
+                itemBuilder.dataModifier(new CustomModelDataModifier<>(customModelData));
             }
             // Requires the item to have model before apply item-model
             else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isVersionNewerThan1_21_2()) {
@@ -250,7 +300,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // customize or use the id
                 itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
                 if (ResourceLocation.isValid(itemModelKey.toString())) {
-                    itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+                    itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
                 } else {
                     itemModelKey = null;
                 }
@@ -258,7 +308,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
             if (hasItemModelSection) {
                 itemModelKey = Key.from(section.get("item-model").toString());
-                itemBuilder.modifier(new ItemModelModifier<>(itemModelKey));
+                itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
             }
 
             // Get item behaviors
@@ -270,7 +320,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 for (Map<String, Object> behaviorMap : behavior) {
                     behaviors.add(ItemBehaviors.fromMap(pack, path, id, behaviorMap));
                 }
-                itemBuilder.behavior(behaviors);
+                itemBuilder.behaviors(behaviors);
             } else if (behaviorConfig instanceof Map<?, ?>) {
                 Map<String, Object> behaviorSection = MiscUtils.castToMap(section.get("behavior"), true);
                 if (behaviorSection != null) {
@@ -284,7 +334,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
                     Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
                         try {
-                            itemBuilder.modifier(function.apply(dataEntry.getValue()));
+                            itemBuilder.dataModifier(function.apply(dataEntry.getValue()));
                         } catch (IllegalArgumentException e) {
                             plugin.logger().warn("Invalid data format", e);
                         }
@@ -292,10 +342,35 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
 
+            // Add it here to make sure that ce id is always applied
+            if (!isVanillaItem)
+                itemBuilder.dataModifier(new IdModifier<>(id));
+
+            // Get item data
+            Map<String, Object> clientSideDataSection = MiscUtils.castToMap(section.get("client-bound-data"), true);
+            if (clientSideDataSection != null) {
+                for (Map.Entry<String, Object> dataEntry : clientSideDataSection.entrySet()) {
+                    Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
+                        try {
+                            itemBuilder.clientBoundDataModifier(function.apply(dataEntry.getValue()));
+                        } catch (IllegalArgumentException e) {
+                            plugin.logger().warn("Invalid client bound data format", e);
+                        }
+                    });
+                }
+            }
+
+            ItemSettings itemSettings;
             if (section.containsKey("settings")) {
                 Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
-                itemBuilder.settings(ItemSettings.fromMap(settings));
+                itemSettings = ItemSettings.fromMap(settings);
+            } else {
+                itemSettings = ItemSettings.of();
             }
+            if (isVanillaItem) {
+                itemSettings.canPlaceRelatedVanillaBlock(true);
+            }
+            itemBuilder.settings(itemSettings);
 
             CustomItem<ItemStack> customItem = itemBuilder.build();
             customItems.put(id, customItem);

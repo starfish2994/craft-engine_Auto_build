@@ -8,11 +8,15 @@ import net.momirealms.craftengine.core.util.TypeUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TagsModifier<I> implements ItemModifier<I> {
+public class TagsModifier<I> implements ItemDataModifier<I> {
     private final Map<String, Object> arguments;
 
     public TagsModifier(Map<String, Object> arguments) {
         this.arguments = mapToMap(arguments);
+    }
+
+    public Map<String, Object> arguments() {
+        return arguments;
     }
 
     @Override
@@ -26,6 +30,13 @@ public class TagsModifier<I> implements ItemModifier<I> {
             String key = entry.getKey();
             Object value = entry.getValue();
             item.setTag(value, key);
+        }
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        for (Map.Entry<String, Object> entry : arguments.entrySet()) {
+            item.removeTag(entry.getKey());
         }
     }
 

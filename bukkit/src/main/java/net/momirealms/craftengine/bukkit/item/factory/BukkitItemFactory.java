@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
@@ -43,7 +44,10 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, RTagIte
     @Override
     protected Key id(ItemWrapper<ItemStack> item) {
         Object id = item.get(IdModifier.CRAFT_ENGINE_ID);
-        if (id == null) return Key.of(item.getItem().getType().getKey().asString());
+        if (id == null) {
+            NamespacedKey key = item.getItem().getType().getKey();
+            return Key.of(key.getNamespace(), key.getKey());
+        }
         return Key.of(id.toString());
     }
 
@@ -87,26 +91,6 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, RTagIte
     @Override
     protected boolean removeTag(ItemWrapper<ItemStack> item, Object... path) {
         return item.remove(path);
-    }
-
-    @Override
-    protected void setComponent(ItemWrapper<ItemStack> item, String type, Object value) {
-        item.setComponent(type, value);
-    }
-
-    @Override
-    protected Object getComponent(ItemWrapper<ItemStack> item, String type) {
-        return item.getComponent(type);
-    }
-
-    @Override
-    protected boolean hasComponent(ItemWrapper<ItemStack> item, String type) {
-        return item.hasComponent(type);
-    }
-
-    @Override
-    protected void removeComponent(ItemWrapper<ItemStack> item, String type) {
-       item.removeComponent(type);
     }
 
     @Override

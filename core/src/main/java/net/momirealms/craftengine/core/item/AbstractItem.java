@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import com.google.gson.JsonElement;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -93,6 +94,17 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     public Item<I> count(int amount) {
         this.item.count(amount);
         return this;
+    }
+
+    @Override
+    public Item<I> trim(Trim trim) {
+        this.factory.trim(this.item, trim);
+        return this;
+    }
+
+    @Override
+    public Optional<Trim> trim() {
+        return this.factory.trim(this.item);
     }
 
     @Override
@@ -224,23 +236,38 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
-    public boolean hasComponent(String type) {
+    public boolean hasComponent(Key type) {
         return this.factory.hasComponent(this.item, type);
     }
 
     @Override
-    public void removeComponent(String type) {
+    public void removeComponent(Key type) {
         this.factory.removeComponent(this.item, type);
     }
 
     @Override
-    public Object getComponent(String type) {
+    public Object getComponent(Key type) {
         return this.factory.getComponent(this.item, type);
     }
 
     @Override
-    public void setComponent(String type, Object value) {
+    public Object getJavaTypeComponent(Key type) {
+        return this.factory.encodeJava(type, getComponent(type));
+    }
+
+    @Override
+    public JsonElement getJsonTypeComponent(Key type) {
+        return this.factory.encodeJson(type, getComponent(type));
+    }
+
+    @Override
+    public void setComponent(Key type, Object value) {
         this.factory.setComponent(this.item, type, value);
+    }
+
+    @Override
+    public void resetComponent(Key type) {
+        this.factory.resetComponent(this.item, type);
     }
 
     @Override

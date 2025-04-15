@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 
-public class ItemNameModifier<I> implements ItemModifier<I> {
+public class ItemNameModifier<I> implements ItemDataModifier<I> {
     private final String argument;
 
     public ItemNameModifier(String argument) {
@@ -20,5 +20,10 @@ public class ItemNameModifier<I> implements ItemModifier<I> {
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
         item.itemName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(this.argument, context.tagResolvers())));
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.itemName(null);
     }
 }

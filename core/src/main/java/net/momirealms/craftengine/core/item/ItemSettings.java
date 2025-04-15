@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
-import net.momirealms.craftengine.core.item.modifier.ItemModifier;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -19,13 +19,14 @@ public class ItemSettings {
     boolean canRepair = true;
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
+    boolean canPlaceRelatedVanillaBlock = false;
 
     private ItemSettings() {}
 
-    public <I> List<ItemModifier<I>> modifiers() {
-        ArrayList<ItemModifier<I>> modifiers = new ArrayList<>();
+    public <I> List<ItemDataModifier<I>> modifiers() {
+        ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
         if (VersionHelper.isVersionNewerThan1_21_2() && this.equipment != null && this.equipment.modernData() != null) modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
-        // TODO 1.20
+        // TODO 1.20 leather armor
         return modifiers;
     }
 
@@ -45,6 +46,7 @@ public class ItemSettings {
         newSettings.canRepair = settings.canRepair;
         newSettings.anvilRepairItems = settings.anvilRepairItems;
         newSettings.renameable = settings.renameable;
+        newSettings.canPlaceRelatedVanillaBlock = settings.canPlaceRelatedVanillaBlock;
         return newSettings;
     }
 
@@ -58,6 +60,10 @@ public class ItemSettings {
             }
         }
         return settings;
+    }
+
+    public boolean canPlaceRelatedVanillaBlock() {
+        return canPlaceRelatedVanillaBlock;
     }
 
     public boolean canRepair() {
@@ -97,6 +103,11 @@ public class ItemSettings {
 
     public ItemSettings renameable(boolean renameable) {
         this.renameable = renameable;
+        return this;
+    }
+
+    public ItemSettings canPlaceRelatedVanillaBlock(boolean canPlaceRelatedVanillaBlock) {
+        this.canPlaceRelatedVanillaBlock = canPlaceRelatedVanillaBlock;
         return this;
     }
 
@@ -174,6 +185,10 @@ public class ItemSettings {
                         MiscUtils.getAsInt(args.getOrDefault("trim", -1))
                 );
                 return settings -> settings.equipment(equipment);
+            }));
+            registerFactory("can-place", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.canPlaceRelatedVanillaBlock(bool);
             }));
         }
 

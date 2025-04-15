@@ -53,6 +53,10 @@ public class AxeItemBehavior extends ItemBehavior {
         }
 
         Player player = context.getPlayer();
+        // no adventure mode
+        if (player.isAdventureMode()) {
+            return InteractionResult.PASS;
+        }
 
         Item<ItemStack> offHandItem = (Item<ItemStack>) player.getItemInHand(InteractionHand.OFF_HAND);
         // is using a shield

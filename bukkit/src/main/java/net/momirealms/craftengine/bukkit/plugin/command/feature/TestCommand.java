@@ -1,16 +1,15 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
-import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Shulker;
+import org.bukkit.inventory.ItemStack;
 import org.incendo.cloud.Command;
-
-import java.util.Collection;
 
 public class TestCommand extends BukkitCommandFeature<CommandSender> {
 
@@ -24,16 +23,10 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .senderType(Player.class)
                 .handler(context -> {
                     Player player = context.sender();
-                    Location location = player.getLocation();
-                    try {
-                        Collection<Entity> entities = player.getLocation().getNearbyEntities(2,2,2);
-                        for (Entity entity : entities) {
-                            if (entity instanceof Shulker) {
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    ItemStack itemStack = new ItemStack(Material.STONE);
+                    Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
+                    wrapped.lore(null);
+                    player.getInventory().addItem(wrapped.load());
                 });
     }
 

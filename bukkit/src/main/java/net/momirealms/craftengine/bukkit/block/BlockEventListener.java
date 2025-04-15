@@ -7,15 +7,14 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
+import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -38,7 +37,6 @@ import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.Optional;
 
 public class BlockEventListener implements Listener {
     private final BukkitCraftEngine plugin;
@@ -95,7 +93,7 @@ public class BlockEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR) // I forget why it's LOW before
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerBreak(BlockBreakEvent event) {
         org.bukkit.block.Block block = event.getBlock();
         Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
@@ -105,6 +103,11 @@ public class BlockEventListener implements Listener {
             ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
             if (!state.isEmpty()) {
                 Location location = block.getLocation();
+                BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+                // double check adventure mode to prevent dupe
+                if (!FastNMS.INSTANCE.mayBuild(serverPlayer.serverPlayer()) && !serverPlayer.canBreak(LocationUtils.toBlockPos(location), null)) {
+                    return;
+                }
 
                 // trigger event
                 CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(event.getPlayer(), location, block, state);
@@ -127,16 +130,19 @@ public class BlockEventListener implements Listener {
                 // play sound
                 Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 world.playBlockSound(vec3d, state.sounds().breakSound());
-                if (player.getGameMode() == GameMode.CREATIVE) {
+                if (player.getGameMode() == GameMode.CREATIVE || !customBreakEvent.dropItems()) {
                     return;
                 }
 
-                BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                 Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
-                Key itemId = Optional.ofNullable(itemInHand).map(Item::id).orElse(ItemKeys.AIR);
                 // do not drop if it's not the correct tool
-                if (!state.settings().isCorrectTool(itemId) || !customBreakEvent.dropItems()) {
-                    return;
+                BlockSettings settings = state.settings();
+                if (settings.requireCorrectTool()) {
+                    if (itemInHand == null) return;
+                    if (!settings.isCorrectTool(itemInHand.id()) &&
+                            (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()))) {
+                        return;
+                    }
                 }
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder();

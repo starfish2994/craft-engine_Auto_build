@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 
 import java.util.List;
 
-public class LoreModifier<I> implements ItemModifier<I> {
+public class LoreModifier<I> implements ItemDataModifier<I> {
     private final List<String> argument;
 
     public LoreModifier(List<String> argument) {
@@ -23,5 +23,10 @@ public class LoreModifier<I> implements ItemModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.lore(argument.stream().map(it -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(
                 it, context.tagResolvers()))).toList());
+    }
+
+    @Override
+    public void remove(Item<I> item) {
+        item.lore(null);
     }
 }

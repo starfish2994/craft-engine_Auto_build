@@ -5,10 +5,7 @@ import net.momirealms.craftengine.bukkit.api.event.CustomBlockAttemptPlaceEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockPlaceEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
-import net.momirealms.craftengine.bukkit.util.EventUtils;
-import net.momirealms.craftengine.bukkit.util.LocationUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
@@ -22,6 +19,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -76,19 +74,35 @@ public class BlockItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
         Player player = placeContext.getPlayer();
-        int gameTicks = player.gameTicks();
-        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
-            return InteractionResult.FAIL;
-        }
-
         BlockPos pos = placeContext.getClickedPos();
         BlockPos againstPos = placeContext.getAgainstPos();
         World world = (World) placeContext.getLevel().platformWorld();
         Location placeLocation = new Location(world, pos.x(), pos.y(), pos.z());
 
+        int gameTicks = player.gameTicks();
+        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
+            return InteractionResult.FAIL;
+        }
+
         Block bukkitBlock = world.getBlockAt(placeLocation);
         Block againstBlock = world.getBlockAt(againstPos.x(), againstPos.y(), againstPos.z());
         org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
+
+        if (player.isAdventureMode()) {
+            Object againstBlockState = BlockStateUtils.blockDataToBlockState(againstBlock.getBlockData());
+            int stateId = BlockStateUtils.blockStateToId(againstBlockState);
+            if (BlockStateUtils.isVanillaBlock(stateId)) {
+                if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, againstBlockState)) {
+                    return InteractionResult.FAIL;
+                }
+            } else {
+                ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+                // custom block
+                if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, Config.simplifyAdventurePlaceCheck() ? customState.vanillaBlockState().handle() : againstBlockState)) {
+                    return InteractionResult.FAIL;
+                }
+            }
+        }
 
         // trigger event
         CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,

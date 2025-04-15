@@ -34,7 +34,7 @@ public class IndexedArgumentTag implements TagResolver {
             throw ctx.newException("Invalid argument number", arguments);
         }
 
-        return Tag.inserting(argumentComponents.get(index));
+        return Tag.selfClosingInserting(argumentComponents.get(index));
     }
 
     @Override

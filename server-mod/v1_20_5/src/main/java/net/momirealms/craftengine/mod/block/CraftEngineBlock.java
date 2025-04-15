@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.mod;
+package net.momirealms.craftengine.mod.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.momirealms.craftengine.mod.CraftEnginePlugin;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
 import net.momirealms.craftengine.shared.ObjectHolder;
 import net.momirealms.craftengine.shared.block.*;
