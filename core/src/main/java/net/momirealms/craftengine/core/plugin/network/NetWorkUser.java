@@ -49,4 +49,6 @@ public interface NetWorkUser {
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);
+
+    
 }

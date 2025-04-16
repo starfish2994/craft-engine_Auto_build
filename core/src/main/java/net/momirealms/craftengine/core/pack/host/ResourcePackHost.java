@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ResourcePackHost {
 
-    CompletableFuture<ResourcePackDownloadData> requestOneTimeUrl(UUID player);
+    CompletableFuture<ResourcePackDownloadData> requestResourcePackDownloadLink(UUID player);
 
-    ResourcePackDownloadData getResourcePackUrl(UUID player);
+    ResourcePackDownloadData getResourcePackDownloadLink(UUID player);
 }

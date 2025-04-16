@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.modifier.*;
-import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenerator;

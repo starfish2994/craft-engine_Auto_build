@@ -20,7 +20,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.CustomModelDataModifier;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemModelModifier;
-import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
