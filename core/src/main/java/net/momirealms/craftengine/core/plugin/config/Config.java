@@ -13,7 +13,6 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.dejvokep.boostedyaml.utils.format.NodeRole;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
-import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
@@ -79,7 +78,6 @@ public class Config {
     protected float resource_pack$supported_version$min;
     protected float resource_pack$supported_version$max;
 
-    protected HostMode resource_pack$send$mode;
     protected boolean resource_pack$send$kick_if_declined;
     protected boolean resource_pack$send$send_on_join;
     protected boolean resource_pack$send$send_on_reload;
@@ -215,7 +213,7 @@ public class Config {
         resource_pack$supported_version$min = getVersion(config.get("resource-pack.supported-version.min", "1.20").toString());
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
-        resource_pack$send$mode = HostMode.valueOf(config.getString("resource-pack.send.mode", "self-host").replace("-", "_").toUpperCase(Locale.ENGLISH));
+        //resource_pack$send$mode = HostMode.valueOf(config.getString("resource-pack.send.mode", "self-host").replace("-", "_").toUpperCase(Locale.ENGLISH));
         resource_pack$send$self_host$port = config.getInt("resource-pack.send.self-host.port", 8163);
         resource_pack$send$self_host$ip = config.getString("resource-pack.send.self-host.ip", "localhost");
         resource_pack$self_host$local_file_path = config.getString("resource-pack.send.self-host.local-file-path", "./generated/resource_pack.zip");
@@ -457,10 +455,6 @@ public class Config {
 
     public static List<String> foldersToMerge() {
         return instance.resource_pack$merge_external_folders;
-    }
-
-    public static HostMode hostMode() {
-        return instance.resource_pack$send$mode;
     }
 
     public static String hostIP() {

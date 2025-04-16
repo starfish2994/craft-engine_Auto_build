@@ -7,8 +7,6 @@ import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
-import net.momirealms.craftengine.core.pack.host.HostMode;
-import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
@@ -151,13 +149,6 @@ public abstract class AbstractPackManager implements PackManager {
     @Override
     public void load() {
         this.calculateHash();
-        if (Config.hostMode() == HostMode.SELF_HOST) {
-            Path path = Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
-            ResourcePackHost.instance().enable(Config.hostIP(), Config.hostPort(), path);
-            ResourcePackHost.instance().setRateLimit(Config.requestRate(), Config.requestInterval(), TimeUnit.SECONDS);
-        } else {
-            ResourcePackHost.instance().disable();
-        }
     }
 
     @Override

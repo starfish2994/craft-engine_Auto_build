@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.pack.PackManager;
-import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -243,7 +242,6 @@ public abstract class CraftEngine implements Plugin {
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.senderFactory != null) this.senderFactory.close();
         if (this.dependencyManager != null) this.dependencyManager.close();
-        ResourcePackHost.instance().disable();
     }
 
     protected void registerDefaultParsers() {
