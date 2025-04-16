@@ -36,6 +36,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,6 +48,7 @@ public class BukkitServerPlayer extends Player {
     private UUID uuid;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
+    private UUID resourcePackUUID;
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -743,8 +745,30 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void setCurrentResourcePackUUID(UUID uuid) {
+        this.resourcePackUUID = uuid;
+    }
+
+    @Override
+    public @Nullable UUID currentResourcePackUUID() {
+        return this.resourcePackUUID;
+    }
+
+    @Override
     public void clearView() {
         this.entityTypeView.clear();
         this.furnitureView.clear();
+    }
+
+    @Override
+    public void unloadCurrentResourcePack() {
+        if (decoderState() == ConnectionState.PLAY && this.resourcePackUUID != null && VersionHelper.isVersionNewerThan1_20_3()) {
+            try {
+                sendPacket(Reflections.constructor$ClientboundResourcePackPopPacket.newInstance(Optional.of(this.resourcePackUUID)), true);
+                this.resourcePackUUID = null;
+            } catch (ReflectiveOperationException e) {
+                this.plugin.logger().warn("Failed to unload resource pack for player " + name());
+            }
+        }
     }
 }
