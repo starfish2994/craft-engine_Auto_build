@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -7,45 +9,74 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class SelfHostHttpServer {
     private static SelfHostHttpServer instance;
+    private Cache<UUID, String> oneTimePackUrls = Caffeine.newBuilder()
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build();
     private HttpServer server;
-    private String ip;
-    private int port;
-    private Path resourcePackPath;
     private final ConcurrentHashMap<String, IpAccessRecord> ipAccessMap = new ConcurrentHashMap<>();
     private int rateLimit = 1;
     private long rateLimitInterval = 1000;
+    private String ip = "localhost";
+    private int port = -1;
+    private Path resourcePackPath;
+    private String packHash;
+    private UUID packUUID;
+
+    public String generateOneTimeUrl(UUID player) {
+
+    }
 
     public String url() {
         return Config.hostProtocol() + "://" + ip + ":" + port + "/";
     }
 
-    public void enable(String ip, int port, Path resourcePackPath) {
-        if (isAlive() && ip.equals(this.ip) && port == this.port && resourcePackPath.equals(this.resourcePackPath)) {
+    public void setResourcePackPath(Path resourcePackPath) {
+        this.resourcePackPath = resourcePackPath;
+    }
+
+    private void calculateHash() {
+        if (Files.exists(this.resourcePackPath)) {
+            try {
+                this.packHash = computeSHA1(this.resourcePackPath);
+                this.packUUID = UUID.nameUUIDFromBytes(this.packHash.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException | NoSuchAlgorithmException e) {
+                CraftEngine.instance().logger().severe("Error calculating resource pack hash", e);
+            }
+        } else {
+            this.packHash = "";
+            this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    public void updatePort(int port) {
+        if (port == this.port) {
             return;
         }
         if (server != null) {
             disable();
         }
-        this.ip = ip;
         this.port = port;
-        this.resourcePackPath = resourcePackPath;
-
         try {
             server = HttpServer.create(new InetSocketAddress("::", port), 0);
             server.createContext("/", new ResourcePackHandler());
             server.setExecutor(Executors.newCachedThreadPool());
             server.start();
-            CraftEngine.instance().logger().info("HTTP resource pack server running on " + ip + ":" + port);
+            CraftEngine.instance().logger().info("HTTP resource pack server running on port: " + port);
         } catch (IOException e) {
             CraftEngine.instance().logger().warn("Failed to start HTTP server", e);
         }
@@ -72,6 +103,27 @@ public class SelfHostHttpServer {
     public void setRateLimit(int rateLimit, long rateLimitInterval, TimeUnit timeUnit) {
         this.rateLimit = rateLimit;
         this.rateLimitInterval = timeUnit.toMillis(rateLimitInterval);
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    private String computeSHA1(Path path) throws IOException, NoSuchAlgorithmException {
+        InputStream file = Files.newInputStream(path);
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = file.read(buffer)) != -1) {
+            digest.update(buffer, 0, bytesRead);
+        }
+        file.close();
+
+        StringBuilder hexString = new StringBuilder(40);
+        for (byte b : digest.digest()) {
+            hexString.append(String.format("%02x", b));
+        }
+        return hexString.toString();
     }
 
     private class ResourcePackHandler implements HttpHandler {

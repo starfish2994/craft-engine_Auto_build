@@ -33,8 +33,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -66,10 +64,7 @@ public abstract class AbstractPackManager implements PackManager {
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
-
     protected BiConsumer<Path, Path> zipGenerator;
-    protected String packHash;
-    protected UUID packUUID;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -519,22 +514,6 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
 
         this.eventDispatcher.accept(generatedPackPath, zipFile);
-        this.calculateHash();
-    }
-
-    private void calculateHash() {
-        Path zipFile = selfHostPackPath();
-        if (Files.exists(zipFile)) {
-            try {
-                this.packHash = computeSHA1(zipFile);
-                this.packUUID = UUID.nameUUIDFromBytes(this.packHash.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException | NoSuchAlgorithmException e) {
-                this.plugin.logger().severe("Error calculating resource pack hash", e);
-            }
-        } else {
-            this.packHash = "";
-            this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
-        }
     }
 
     private void generateParticle(Path generatedPackPath) {
@@ -1126,23 +1105,6 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
         }
-    }
-
-    protected String computeSHA1(Path path) throws IOException, NoSuchAlgorithmException {
-        InputStream file = Files.newInputStream(path);
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        while ((bytesRead = file.read(buffer)) != -1) {
-            digest.update(buffer, 0, bytesRead);
-        }
-        file.close();
-
-        StringBuilder hexString = new StringBuilder(40);
-        for (byte b : digest.digest()) {
-            hexString.append(String.format("%02x", b));
-        }
-        return hexString.toString();
     }
 
     private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {
