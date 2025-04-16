@@ -76,7 +76,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.debugStickListener = new DebugStickListener(plugin);
         this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
-        if (plugin.hasMod() && VersionHelper.isVersionNewerThan1_20_5()) {
+        if (plugin.hasMod()) {
             Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
             if (clazz$CustomStreamCodec != null) {
                 Field s2cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);

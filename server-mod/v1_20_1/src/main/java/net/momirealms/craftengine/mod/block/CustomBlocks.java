@@ -23,17 +23,16 @@ public class CustomBlocks {
 
     public static void register() {
         CraftEnginePlugin.setVanillaRegistrySize(Block.BLOCK_STATE_REGISTRY.size());
-        ResourceLocation noteBlock = ResourceLocation.fromNamespaceAndPath("minecraft", "note_block");
+        ResourceLocation noteBlock = new ResourceLocation("minecraft", "note_block");
         Map<ResourceLocation, Integer> map = loadMappingsAndAdditionalBlocks();
         for (Map.Entry<ResourceLocation, Integer> entry : map.entrySet()) {
             ResourceLocation replacedBlockId = entry.getKey();
             boolean isNoteBlock = replacedBlockId.equals(noteBlock);
-            Block replacedBlock = BuiltInRegistries.BLOCK.getValue(replacedBlockId);
+            Block replacedBlock = BuiltInRegistries.BLOCK.get(replacedBlockId);
             for (int i = 0; i < entry.getValue(); i++) {
-                ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
+                ResourceLocation location = new ResourceLocation("craftengine", replacedBlockId.getPath() + "_" + i);
                 ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
                 BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
-                properties.setId(resourceKey);
                 if (!replacedBlock.hasCollision) {
                     properties.noCollission();
                 }
@@ -112,7 +111,7 @@ public class CustomBlocks {
 
     private static BlockState createBlockData(String blockState) {
         try {
-            BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, blockState, false);
+            BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), blockState, false);
             return result.blockState();
         } catch (Exception e) {
             e.printStackTrace();
