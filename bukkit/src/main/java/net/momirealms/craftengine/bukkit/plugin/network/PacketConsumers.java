@@ -1156,6 +1156,19 @@ public class PacketConsumers {
         }
     }
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
+        try {
+            if (!user.isOnline()) return;
+            BukkitServerPlayer player = (BukkitServerPlayer) user;
+            String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
+            UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+            player.setName(name);
+            player.setUUID(uuid);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundHelloPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SWING_HAND = (user, event, packet) -> {
         try {
             if (!user.isOnline()) return;

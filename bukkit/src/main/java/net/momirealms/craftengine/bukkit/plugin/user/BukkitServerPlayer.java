@@ -43,6 +43,8 @@ public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
     // connection state
     private final Channel channel;
+    private String name;
+    private UUID uuid;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
     // some references
@@ -94,6 +96,8 @@ public class BukkitServerPlayer extends Player {
     public void setPlayer(org.bukkit.entity.Player player) {
         this.playerRef = new WeakReference<>(player);
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
+        this.uuid = player.getUniqueId();
+        this.name = player.getName();
         if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
             try {
                 Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
@@ -219,9 +223,24 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public String name() {
-        org.bukkit.entity.Player player = platformPlayer();
-        if (player == null) return "Unknown";
-        return player.getName();
+        return this.name;
+    }
+
+    @Override
+    public void setName(String name) {
+        if (this.name != null) return;
+        this.name = name;
+    }
+
+    @Override
+    public UUID uuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public void setUUID(UUID uuid) {
+        if (this.uuid != null) return;
+        this.uuid = uuid;
     }
 
     @Override

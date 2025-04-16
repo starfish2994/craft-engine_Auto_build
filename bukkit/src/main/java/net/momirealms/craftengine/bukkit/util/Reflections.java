@@ -6437,4 +6437,23 @@ public class Reflections {
             ReflectionUtils.getMethod(
                     clazz$CraftPlayer, new String[]{"setSimplifyContainerDesyncCheck"}, boolean.class
             );
+
+    public static final Class<?> clazz$ServerboundHelloPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundHelloPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketLoginInStart")
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, String.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$uuid = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, UUID.class, 0
+            )
+    );
 }
