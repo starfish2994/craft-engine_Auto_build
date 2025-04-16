@@ -1522,7 +1522,6 @@ public class Reflections {
     public static final Object instance$Direction$WEST;
     public static final Object instance$Direction$EAST;
     public static final Object[] instance$Directions;
-    private static final Map<Object, Object> oppositeDirections = new HashMap<>();
 
     static {
         try {
@@ -1533,20 +1532,14 @@ public class Reflections {
             instance$Direction$SOUTH = instance$Directions[3];
             instance$Direction$WEST = instance$Directions[4];
             instance$Direction$EAST = instance$Directions[5];
-            oppositeDirections.put(instance$Direction$DOWN, instance$Direction$UP);
-            oppositeDirections.put(instance$Direction$UP, instance$Direction$DOWN);
-            oppositeDirections.put(instance$Direction$NORTH, instance$Direction$SOUTH);
-            oppositeDirections.put(instance$Direction$SOUTH, instance$Direction$NORTH);
-            oppositeDirections.put(instance$Direction$WEST, instance$Direction$EAST);
-            oppositeDirections.put(instance$Direction$EAST, instance$Direction$WEST);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Object getOppositeDirection(Object direction) {
-        return oppositeDirections.get(direction);
-    }
+//    public static Object getOppositeDirection(Object direction) {
+//        return oppositeDirections.get(direction);
+//    }
 
     public static final Class<?> clazz$CraftBlock = requireNonNull(
             ReflectionUtils.getClazz(

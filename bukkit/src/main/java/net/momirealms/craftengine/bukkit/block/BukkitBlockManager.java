@@ -794,7 +794,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 newBlockState = getOnlyBlockState(newRealBlock);
 
                 @SuppressWarnings("unchecked")
-                Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder0.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
+                Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$BLOCK, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$BLOCK, resourceLocation));
                 blockHolder = optionalHolder.get();
             } else {
                 try {

@@ -167,7 +167,7 @@ furniture:
       - "xxx:invalid_furniture"
     # Converts the invalid furniture to a valid one
     convert:
-      "xxx:invalid_furniture": "xxx:valid_furniture"
+      "namespace:furniture_a": "namespace:furniture_b"
 
   # Hide technical entities used for storing furniture metadata.
   # NOTE:
