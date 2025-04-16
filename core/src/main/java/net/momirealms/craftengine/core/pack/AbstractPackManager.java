@@ -143,7 +143,6 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        this.calculateHash();
     }
 
     @Override

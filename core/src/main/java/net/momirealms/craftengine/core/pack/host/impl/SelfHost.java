@@ -9,18 +9,24 @@ import java.util.concurrent.CompletableFuture;
 
 public class SelfHost implements ResourcePackHost {
 
+    public SelfHost(String ip, int port) {
+        SelfHostHttpServer.instance().setIp(ip);
+        SelfHostHttpServer.instance().updatePort(port);
+    }
+
     @Override
     public CompletableFuture<ResourcePackDownloadData> requestResourcePackDownloadLink(UUID player) {
-        return null;
+        return CompletableFuture.completedFuture(SelfHostHttpServer.instance().generateOneTimeUrl(player));
     }
 
     @Override
     public ResourcePackDownloadData getResourcePackDownloadLink(UUID player) {
-        return null;
+        return SelfHostHttpServer.instance().getCachedOneTimeUrl(player);
     }
 
     @Override
     public CompletableFuture<Boolean> upload(Path resourcePackPath) {
-        return null;
+        SelfHostHttpServer.instance().setResourcePackPath(resourcePackPath);
+        return CompletableFuture.completedFuture(true);
     }
 }
