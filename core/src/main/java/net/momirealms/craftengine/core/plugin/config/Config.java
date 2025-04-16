@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.plugin.config;
 
+import com.google.common.collect.ImmutableMap;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.libs.org.snakeyaml.engine.v2.common.ScalarStyle;
 import dev.dejvokep.boostedyaml.libs.org.snakeyaml.engine.v2.nodes.Tag;
@@ -106,8 +108,8 @@ public class Config {
     protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
     protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
 
-    protected boolean furniture$remove_invalid_furniture_on_chunk_load$enable;
-    protected Set<String> furniture$remove_invalid_furniture_on_chunk_load$list;
+    protected boolean furniture$handle_invalid_furniture_on_chunk_load$enable;
+    protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
     protected boolean furniture$hide_base_entity;
 
     protected boolean block$sound_system$enable;
@@ -280,8 +282,21 @@ public class Config {
         chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
 
         // furniture
-        furniture$remove_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.remove-invalid-furniture-on-chunk-load.enable", false);
-        furniture$remove_invalid_furniture_on_chunk_load$list = new HashSet<>(config.getStringList("furniture.remove-invalid-furniture-on-chunk-load.list"));
+        furniture$handle_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.handle-invalid-furniture-on-chunk-load.enable", false);
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+        for (String furniture : config.getStringList("furniture.handle-invalid-furniture-on-chunk-load.remove")) {
+            builder.put(furniture, "");
+        }
+        if (config.contains("furniture.handle-invalid-furniture-on-chunk-load.convert")) {
+            Section section = config.getSection("furniture.handle-invalid-furniture-on-chunk-load.convert");
+            if (section != null) {
+                for (Map.Entry<String, Object> entry : section.getStringRouteMappedValues(false).entrySet()) {
+                    builder.put(entry.getKey(), entry.getValue().toString());
+                }
+            }
+        }
+        this.furniture$handle_invalid_furniture_on_chunk_load$mapping = builder.build();
+
         furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
 
         // block
@@ -372,12 +387,12 @@ public class Config {
         return instance.performance$max_emojis_per_parse;
     }
 
-    public static boolean removeInvalidFurniture() {
-        return instance.furniture$remove_invalid_furniture_on_chunk_load$enable;
+    public static boolean handleInvalidFurniture() {
+        return instance.furniture$handle_invalid_furniture_on_chunk_load$enable;
     }
 
-    public static Set<String> furnitureToRemove() {
-        return instance.furniture$remove_invalid_furniture_on_chunk_load$list;
+    public static Map<String, String> furnitureMappings() {
+        return instance.furniture$handle_invalid_furniture_on_chunk_load$mapping;
     }
 
     public static boolean forceUpdateLight() {

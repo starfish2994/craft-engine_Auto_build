@@ -159,15 +159,16 @@ block:
 
 furniture:
   # Automatically remove outdated furniture entities when a chunk is loaded.
-  remove-invalid-furniture-on-chunk-load:
+  handle-invalid-furniture-on-chunk-load:
     # Enable/disable the cleanup system
     enable: false
-    # - When EMPTY: Remove ALL invalid furniture entities
-    # - When POPULATED: Only remove specified furniture types
-    # Example for targeted removal:
-    # list: [ "xxx:invalid_furniture", "yyy:broken_sofa" ]
-    list:
+    # Removes the specified invalid furniture
+    remove:
       - "xxx:invalid_furniture"
+    # Converts the invalid furniture to a valid one
+    convert:
+      "xxx:invalid_furniture": "xxx:valid_furniture"
+
   # Hide technical entities used for storing furniture metadata.
   # NOTE:
   # - These are INVISIBLE entities used internally for tracking furniture states
