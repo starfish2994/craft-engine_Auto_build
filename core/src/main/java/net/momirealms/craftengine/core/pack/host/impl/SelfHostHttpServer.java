@@ -32,10 +32,6 @@ public class SelfHostHttpServer {
             .maximumSize(256)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build();
-    private final Cache<UUID, String> playerTokens = Caffeine.newBuilder()
-            .maximumSize(256)
-            .expireAfterAccess(1, TimeUnit.MINUTES)
-            .build();
     private final Cache<String, IpAccessRecord> ipAccessCache = Caffeine.newBuilder()
             .maximumSize(256)
             .expireAfterAccess(10, TimeUnit.MINUTES)
@@ -64,18 +60,6 @@ public class SelfHostHttpServer {
     public ResourcePackDownloadData generateOneTimeUrl(UUID player) {
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
-        this.playerTokens.put(player, token);
-        return new ResourcePackDownloadData(
-                url() + "download?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8),
-                packUUID,
-                packHash
-        );
-    }
-
-    @Nullable
-    public ResourcePackDownloadData getCachedOneTimeUrl(UUID player) {
-        String token = this.playerTokens.getIfPresent(player);
-        if (token == null) return null;
         return new ResourcePackDownloadData(
                 url() + "download?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8),
                 packUUID,

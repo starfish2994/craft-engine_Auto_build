@@ -8,7 +8,5 @@ public interface ResourcePackHost {
 
     CompletableFuture<ResourcePackDownloadData> requestResourcePackDownloadLink(UUID player);
 
-    ResourcePackDownloadData getResourcePackDownloadLink(UUID player);
-
     CompletableFuture<Boolean> upload(Path resourcePackPath);
 }
