@@ -75,6 +75,8 @@ public class BukkitServerPlayer extends Player {
     private Key lastUsedRecipe = null;
     // has fabric client mod or not
     private boolean hasClientMod = false;
+    // resource pack
+    private boolean handleResourcePackPush = false;
     // cache if player can break blocks
     private boolean clientSideCanBreak = true;
     // prevent AFK players from consuming too much CPU resource on predicting
@@ -752,6 +754,14 @@ public class BukkitServerPlayer extends Player {
     @Override
     public @Nullable UUID currentResourcePackUUID() {
         return this.resourcePackUUID;
+    }
+
+    public boolean handleResourcePackPush() {
+        return this.handleResourcePackPush;
+    }
+
+    public void setHandleResourcePackPush(boolean handleResourcePackPush) {
+        this.handleResourcePackPush = handleResourcePackPush;
     }
 
     @Override

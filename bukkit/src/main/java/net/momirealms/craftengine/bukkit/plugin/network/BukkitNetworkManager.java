@@ -145,6 +145,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, Reflections.clazz$ServerboundSignUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
+        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, Reflections.clazz$ClientboundResourcePackPushPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_21_3() ? PacketConsumers.LEVEL_PARTICLE_1_21_3 : (VersionHelper.isVersionNewerThan1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
