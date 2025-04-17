@@ -59,8 +59,11 @@ public class LobFileHost implements ResourcePackHost {
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
+        long totalStartTime = System.currentTimeMillis();
+
         if (this.forcedPackPath != null) resourcePackPath = forcedPackPath;
         Path finalResourcePackPath = resourcePackPath;
+
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try {
                 Map<String, String> hashes = calculateHashes(finalResourcePackPath);
@@ -77,14 +80,29 @@ public class LobFileHost implements ResourcePackHost {
                             .POST(buildMultipartBody(finalResourcePackPath, sha256Hash, boundary))
                             .build();
 
+                    long uploadStart = System.currentTimeMillis();
+                    CraftEngine.instance().logger().info("[LobFile] Starting file upload...");
+
                     client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                            .thenAccept(response -> handleUploadResponse(response, future, sha1Hash))
+                            .thenAccept(response -> {
+                                long uploadTime = System.currentTimeMillis() - uploadStart;
+                                CraftEngine.instance().logger().info(
+                                        "[LobFile] Upload request completed in " + uploadTime + "ms");
+
+                                handleUploadResponse(response, future, sha1Hash);
+                            })
                             .exceptionally(ex -> {
+                                long totalTime = System.currentTimeMillis() - totalStartTime;
+                                CraftEngine.instance().logger().severe(
+                                        "[LobFile] Upload failed after " + totalTime + "ms", ex);
                                 future.completeExceptionally(ex);
                                 return null;
                             });
                 }
             } catch (IOException | NoSuchAlgorithmException e) {
+                long totalTime = System.currentTimeMillis() - totalStartTime;
+                CraftEngine.instance().logger().severe(
+                        "[LobFile] Upload preparation failed after " + totalTime + "ms", e);
                 future.completeExceptionally(e);
             }
         });
