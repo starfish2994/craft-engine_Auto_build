@@ -9,9 +9,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
 
 import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -118,7 +116,7 @@ public class CustomApiHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             String apiUrl = (String) arguments.get("api-url");
-            String authKey = (String) arguments.get("auth-key");
+            String authKey = (String) arguments.getOrDefault("auth-key", "");
             if (apiUrl == null || apiUrl.isEmpty()) {
                 throw new IllegalArgumentException("'api-url' cannot be empty for custom api host");
             }
