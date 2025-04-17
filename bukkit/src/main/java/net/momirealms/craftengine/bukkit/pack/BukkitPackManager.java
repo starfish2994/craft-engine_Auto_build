@@ -2,10 +2,13 @@ package net.momirealms.craftengine.bukkit.pack;
 
 import net.momirealms.craftengine.bukkit.api.event.AsyncResourcePackGenerateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.util.ResourcePackUtils;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
+import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
@@ -18,6 +21,7 @@ import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class BukkitPackManager extends AbstractPackManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -53,6 +57,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
     @Override
     public void load() {
+        super.load();
         if (Config.sendPackOnJoin()) {
             this.modifyServerSettings();
         }
@@ -64,9 +69,9 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
             Object properties = Reflections.field$DedicatedServerSettings$properties.get(settings);
             Object info;
             if (VersionHelper.isVersionNewerThan1_20_3()) {
-                info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), "", "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), "https://127.0.0.1:65536", "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
             } else {
-                info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                info = Reflections.constructor$ServerResourcePackInfo.newInstance("https://127.0.0.1:65536", "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
             }
             Reflections.field$DedicatedServerProperties$serverResourcePackInfo.set(properties, Optional.of(info));
         } catch (Exception e) {
@@ -101,5 +106,24 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     public void generateResourcePack() {
         // generate pack
         super.generateResourcePack();
+    }
+
+    @EventHandler
+    public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            BukkitServerPlayer user = this.plugin.adapt(p);
+            CompletableFuture<ResourcePackDownloadData> future = resourcePackHost().requestResourcePackDownloadLink(user.uuid());
+            if (future.isDone()) {
+                try {
+                    ResourcePackDownloadData data = future.get();
+                    user.sendPacket(ResourcePackUtils.createPacket(
+                            data.uuid(), data.url(), data.sha1()
+                    ), true);
+                    user.setCurrentResourcePackUUID(data.uuid());
+                } catch (Exception e) {
+                    plugin.logger().warn("Failed to send resource pack to player " + p.getName(), e);
+                }
+            }
+        });
     }
 }

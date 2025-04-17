@@ -9,7 +9,6 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,7 +22,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SelfHostHttpServer {
@@ -37,7 +38,7 @@ public class SelfHostHttpServer {
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build();
 
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(1);
+    private ExecutorService threadPool;
     private HttpServer server;
 
     private final AtomicLong totalRequests = new AtomicLong();
@@ -57,7 +58,7 @@ public class SelfHostHttpServer {
     }
 
     @NotNull
-    public ResourcePackDownloadData generateOneTimeUrl(UUID player) {
+    public ResourcePackDownloadData generateOneTimeUrl() {
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
         return new ResourcePackDownloadData(
@@ -102,11 +103,15 @@ public class SelfHostHttpServer {
     }
 
     public void updatePort(int port) {
+        if (port <= 0 || port > 65535) {
+            throw new IllegalArgumentException("Invalid port number: " + port);
+        }
         if (port == this.port) return;
         if (server != null) disable();
         this.port = port;
         try {
-            server = HttpServer.create(new InetSocketAddress("::", port), 0);
+            threadPool = Executors.newFixedThreadPool(1);
+            server = HttpServer.create(new InetSocketAddress(port), 0);
             server.createContext("/download", new ResourcePackHandler());
             server.createContext("/metrics", this::handleMetrics);
             server.setExecutor(threadPool);
@@ -134,7 +139,9 @@ public class SelfHostHttpServer {
         if (server != null) {
             server.stop(0);
             server = null;
-            threadPool.shutdownNow();
+            if (threadPool != null) {
+                threadPool.shutdownNow();
+            }
         }
     }
 

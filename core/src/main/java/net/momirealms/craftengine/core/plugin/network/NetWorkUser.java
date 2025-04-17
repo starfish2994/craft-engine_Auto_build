@@ -55,4 +55,8 @@ public interface NetWorkUser {
 
     @Nullable
     UUID currentResourcePackUUID();
+
+    boolean handleResourcePackPush();
+
+    void setHandleResourcePackPush(boolean handleFinishConfiguration);
 }

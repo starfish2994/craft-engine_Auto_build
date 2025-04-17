@@ -7,6 +7,8 @@ import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.host.impl.SelfHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
@@ -65,6 +67,7 @@ public abstract class AbstractPackManager implements PackManager {
     private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
     protected BiConsumer<Path, Path> zipGenerator;
+    protected ResourcePackHost resourcePackHost;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -143,6 +146,15 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
+        this.resourcePackHost = new SelfHost(Config.hostIP(), Config.hostPort());
+        if (Files.exists(resourcePackPath())) {
+            this.resourcePackHost.upload(resourcePackPath());
+        }
+    }
+
+    @Override
+    public ResourcePackHost resourcePackHost() {
+        return this.resourcePackHost;
     }
 
     @Override
@@ -512,6 +524,7 @@ public abstract class AbstractPackManager implements PackManager {
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
 
+        this.resourcePackHost.upload(zipFile);
         this.eventDispatcher.accept(generatedPackPath, zipFile);
     }
 

@@ -20,11 +20,6 @@ public class SimpleExternalHost implements ResourcePackHost {
     }
 
     @Override
-    public ResourcePackDownloadData getResourcePackDownloadLink(UUID player) {
-        return this.downloadData;
-    }
-
-    @Override
     public CompletableFuture<Boolean> upload(Path resourcePackPath) {
         return CompletableFuture.completedFuture(true);
     }

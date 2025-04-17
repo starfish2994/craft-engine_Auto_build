@@ -16,7 +16,7 @@ public class SelfHost implements ResourcePackHost {
 
     @Override
     public CompletableFuture<ResourcePackDownloadData> requestResourcePackDownloadLink(UUID player) {
-        return CompletableFuture.completedFuture(SelfHostHttpServer.instance().generateOneTimeUrl(player));
+        return CompletableFuture.completedFuture(SelfHostHttpServer.instance().generateOneTimeUrl());
     }
 
     @Override

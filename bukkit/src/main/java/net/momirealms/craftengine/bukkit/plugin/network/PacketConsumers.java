@@ -21,11 +21,14 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.WorldEvents;
@@ -44,6 +47,8 @@ import org.bukkit.util.RayTraceResult;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
@@ -51,6 +56,7 @@ public class PacketConsumers {
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
+    private static final UUID EMPTY_UUID = new UUID(0, 0);
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
@@ -1158,7 +1164,6 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
         try {
-            if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
             UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
@@ -2094,6 +2099,47 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isVersionNewerThan1_20_2()) return;
+            if (user.handleResourcePackPush()) return;
+            event.setCancelled(true);
+            if (VersionHelper.isVersionNewerThan1_20_3()) {
+                user.receivePacket(Reflections.constructor$ServerboundResourcePackPacket.newInstance(
+                        EMPTY_UUID, Reflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED
+                ));
+            } else {
+                user.receivePacket(Reflections.constructor$ServerboundResourcePackPacket.newInstance(
+                        Reflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED
+                ));
+            }
+
+            SchedulerTask timeoutTask = CraftEngine.instance().scheduler().asyncLater(() -> {
+                Thread.currentThread().interrupt();
+            }, 27, TimeUnit.SECONDS);
+
+            Object newPacket = packet;
+            out : try {
+                ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
+                CompletableFuture<ResourcePackDownloadData> future = host.requestResourcePackDownloadLink(user.uuid());
+                if (!future.isDone()) break out;
+                ResourcePackDownloadData data = future.get();
+                newPacket = ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1());
+                user.setCurrentResourcePackUUID(data.uuid());
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to get resource pack url", e);
+            } finally {
+                timeoutTask.cancel();
+            }
+
+            if (!user.nettyChannel().isActive()) return;
+            user.setHandleResourcePackPush(true);
+            user.nettyChannel().writeAndFlush(newPacket);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
         }
     };
 }

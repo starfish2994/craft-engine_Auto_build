@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack;
 
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import org.jetbrains.annotations.NotNull;
@@ -33,4 +34,6 @@ public interface PackManager extends Manageable {
     void generateResourcePack();
 
     Path resourcePackPath();
+
+    ResourcePackHost resourcePackHost();
 }
