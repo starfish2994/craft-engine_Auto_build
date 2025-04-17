@@ -41,6 +41,7 @@ public class S3Host implements ResourcePackHost {
     private final String cdnDomain;
     private final String cdnProtocol;
     private final Duration validity;
+    private final Path localFilePath;
 
     public S3Host(
             S3AsyncClient s3AsyncClient,
@@ -50,7 +51,8 @@ public class S3Host implements ResourcePackHost {
             String uploadFileName,
             String cdnDomain,
             String cdnProtocol,
-            Duration validity
+            Duration validity,
+            String localFilePath
     ) {
         this.s3AsyncClient = s3AsyncClient;
         this.presigner = presigner;
@@ -60,6 +62,7 @@ public class S3Host implements ResourcePackHost {
         this.cdnDomain = cdnDomain;
         this.cdnProtocol = cdnProtocol;
         this.validity = validity;
+        this.localFilePath = localFilePath == null ? null : ResourcePackHost.customPackPath(localFilePath);
     }
 
     @Override
@@ -90,6 +93,7 @@ public class S3Host implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
+        if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         String objectKey = uploadPath + uploadFileName;
         String sha1 = calculateLocalFileSha1(resourcePackPath);
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -152,6 +156,7 @@ public class S3Host implements ResourcePackHost {
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "");
             String uploadFileName = (String) arguments.getOrDefault("upload-file-name", "resource_pack.zip");
+            String localFilePath = (String) arguments.get("local-file-path");
             boolean useLegacySignature = (boolean) arguments.getOrDefault("use-legacy-signature", true);
             Duration validity = Duration.ofSeconds((int) arguments.getOrDefault("validity", 10));
 
@@ -193,7 +198,8 @@ public class S3Host implements ResourcePackHost {
                     uploadFileName,
                     cdnDomain,
                     cdnProtocol,
-                    validity
+                    validity,
+                    localFilePath
             );
         }
     }
