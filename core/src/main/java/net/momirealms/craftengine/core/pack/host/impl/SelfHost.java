@@ -2,26 +2,69 @@ package net.momirealms.craftengine.core.pack.host.impl;
 
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SelfHost implements ResourcePackHost {
+    public static final Factory FACTORY = new Factory();
+    private static final SelfHost INSTANCE = new SelfHost();
 
-    public SelfHost(String ip, int port) {
-        SelfHostHttpServer.instance().setIp(ip);
-        SelfHostHttpServer.instance().updatePort(port);
+    @Override
+    public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
+        ResourcePackDownloadData data = SelfHostHttpServer.instance().generateOneTimeUrl();
+        if (data == null) return CompletableFuture.completedFuture(List.of());
+        return CompletableFuture.completedFuture(List.of(data));
     }
 
     @Override
-    public CompletableFuture<ResourcePackDownloadData> requestResourcePackDownloadLink(UUID player) {
-        return CompletableFuture.completedFuture(SelfHostHttpServer.instance().generateOneTimeUrl());
+    public CompletableFuture<Void> upload(Path resourcePackPath) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        CraftEngine.instance().scheduler().executeAsync(() -> {
+            try {
+                SelfHostHttpServer.instance().readResourcePack();
+                future.complete(null);
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
     }
 
-    @Override
-    public CompletableFuture<Boolean> upload(Path resourcePackPath) {
-        SelfHostHttpServer.instance().setResourcePackPath(resourcePackPath);
-        return CompletableFuture.completedFuture(true);
+    public static class Factory implements ResourcePackHostFactory {
+
+        @Override
+        public ResourcePackHost create(Map<String, Object> arguments) {
+            SelfHostHttpServer selfHostHttpServer = SelfHostHttpServer.instance();
+            String ip = (String) arguments.get("ip");
+            if (ip == null) {
+                throw new IllegalArgumentException("'ip' argument missing for self host");
+            }
+            int port = (int) arguments.get("port");
+            if (port < 0 || port > 65535) {
+                throw new IllegalArgumentException("Illegal port: '" + port + "' for self host");
+            }
+            String protocol = (String) arguments.getOrDefault("protocol", "http");
+            boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
+            String localFilePath = (String) arguments.get("local-file-path");
+            if (localFilePath == null) {
+                throw new IllegalArgumentException("'local-file-path' argument missing for self host");
+            }
+            Map<String, Object> rateMap = MiscUtils.castToMap(arguments.get("rate-map"), true);
+            int maxRequests = 5;
+            int resetInterval = 20_000;
+            if (rateMap != null) {
+                maxRequests = (int) rateMap.getOrDefault("max-requests", 5);
+                resetInterval = (int) rateMap.getOrDefault("reset-interval", 20) * 1000;
+            }
+            selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, localFilePath, maxRequests, resetInterval);
+            return INSTANCE;
+        }
     }
 }

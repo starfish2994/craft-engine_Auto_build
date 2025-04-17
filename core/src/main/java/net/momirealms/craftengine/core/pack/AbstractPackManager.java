@@ -8,7 +8,8 @@ import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
-import net.momirealms.craftengine.core.pack.host.impl.SelfHost;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
+import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
@@ -146,9 +147,11 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        this.resourcePackHost = new SelfHost(Config.hostIP(), Config.hostPort());
-        if (Files.exists(resourcePackPath())) {
-            this.resourcePackHost.upload(resourcePackPath());
+        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.send.host");
+        if (list == null || list.isEmpty()) {
+            this.resourcePackHost = NoneHost.INSTANCE;
+        } else {
+            this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
         }
     }
 
@@ -217,10 +220,6 @@ public abstract class AbstractPackManager implements PackManager {
         if (!this.sectionParsers.containsKey(id)) return false;
         this.sectionParsers.remove(id);
         return true;
-    }
-
-    public Path selfHostPackPath() {
-        return Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
     }
 
     private void loadPacks() {

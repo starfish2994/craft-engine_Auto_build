@@ -34,10 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitServerPlayer extends Player {
@@ -48,7 +45,7 @@ public class BukkitServerPlayer extends Player {
     private UUID uuid;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
-    private UUID resourcePackUUID;
+    private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -75,8 +72,6 @@ public class BukkitServerPlayer extends Player {
     private Key lastUsedRecipe = null;
     // has fabric client mod or not
     private boolean hasClientMod = false;
-    // resource pack
-    private boolean handleResourcePackPush = false;
     // cache if player can break blocks
     private boolean clientSideCanBreak = true;
     // prevent AFK players from consuming too much CPU resource on predicting
@@ -273,8 +268,8 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void receivePacket(Object packet) {
-        this.plugin.networkManager().receivePacket(this, packet);
+    public void simulatePacket(Object packet) {
+        this.plugin.networkManager().simulatePacket(this, packet);
     }
 
     @Override
@@ -747,21 +742,10 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void setCurrentResourcePackUUID(UUID uuid) {
-        this.resourcePackUUID = uuid;
-    }
-
-    @Override
-    public @Nullable UUID currentResourcePackUUID() {
-        return this.resourcePackUUID;
-    }
-
-    public boolean handleResourcePackPush() {
-        return this.handleResourcePackPush;
-    }
-
-    public void setHandleResourcePackPush(boolean handleResourcePackPush) {
-        this.handleResourcePackPush = handleResourcePackPush;
+    public void addResourcePackUUID(UUID uuid) {
+        if (VersionHelper.isVersionNewerThan1_20_3()) {
+            this.resourcePackUUID.add(uuid);
+        }
     }
 
     @Override
@@ -772,13 +756,14 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void unloadCurrentResourcePack() {
-        if (decoderState() == ConnectionState.PLAY && this.resourcePackUUID != null && VersionHelper.isVersionNewerThan1_20_3()) {
-            try {
-                sendPacket(Reflections.constructor$ClientboundResourcePackPopPacket.newInstance(Optional.of(this.resourcePackUUID)), true);
-                this.resourcePackUUID = null;
-            } catch (ReflectiveOperationException e) {
-                this.plugin.logger().warn("Failed to unload resource pack for player " + name());
+        if (!VersionHelper.isVersionNewerThan1_20_3()) {
+            return;
+        }
+        if (decoderState() == ConnectionState.PLAY && !this.resourcePackUUID.isEmpty()) {
+            for (UUID u : this.resourcePackUUID) {
+                sendPacket(FastNMS.INSTANCE.constructor$ClientboundResourcePackPopPacket(u), true);
             }
+            this.resourcePackUUID.clear();
         }
     }
 }

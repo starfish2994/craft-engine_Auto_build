@@ -7,8 +7,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.config.Config;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,17 +48,59 @@ public class SelfHostHttpServer {
     private long rateLimitInterval = 1000;
     private String ip = "localhost";
     private int port = -1;
+    private String protocol = "http";
+    private boolean denyNonMinecraft = true;
 
     private volatile byte[] resourcePackBytes;
     private String packHash;
     private UUID packUUID;
+    private Path localFilePath = null;
 
-    public void setIp(String ip) {
+    public void updateProperties(String ip,
+                                 int port,
+                                 boolean denyNonMinecraft,
+                                 String protocol,
+                                 String localFile,
+                                 int maxRequests,
+                                 int resetInternal) {
         this.ip = ip;
+        this.port = port;
+        this.localFilePath = selfHostPackPath(localFile);
+        this.denyNonMinecraft = denyNonMinecraft;
+        this.protocol = protocol;
+        this.rateLimit = maxRequests;
+        this.rateLimitInterval = resetInternal;
+        if (port <= 0 || port > 65535) {
+            throw new IllegalArgumentException("Invalid port number: " + port);
+        }
+        if (port == this.port && server != null) return;
+        if (server != null) disable();
+        this.port = port;
+        try {
+            threadPool = Executors.newFixedThreadPool(1);
+            server = HttpServer.create(new InetSocketAddress("::", port), 0);
+            server.createContext("/download", new ResourcePackHandler());
+            server.createContext("/metrics", this::handleMetrics);
+            server.setExecutor(threadPool);
+            server.start();
+            CraftEngine.instance().logger().info("HTTP server started on port: " + port);
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to start HTTP server", e);
+        }
     }
 
-    @NotNull
+    public static SelfHostHttpServer instance() {
+        if (instance == null) {
+            instance = new SelfHostHttpServer();
+        }
+        return instance;
+    }
+
+    @Nullable
     public ResourcePackDownloadData generateOneTimeUrl() {
+        if (this.resourcePackBytes == null) {
+            return null;
+        }
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
         return new ResourcePackDownloadData(
@@ -68,17 +110,21 @@ public class SelfHostHttpServer {
         );
     }
 
-    public String url() {
-        return Config.hostProtocol() + "://" + ip + ":" + port + "/";
+    private Path selfHostPackPath(String path) {
+        return path.startsWith(".") ? CraftEngine.instance().dataFolderPath().resolve(path) : Path.of(path);
     }
 
-    public void setResourcePackPath(Path resourcePackPath) {
+    public String url() {
+        return protocol + "://" + ip + ":" + port + "/";
+    }
+
+    public void readResourcePack() {
         try {
-            if (Files.exists(resourcePackPath)) {
-                this.resourcePackBytes = Files.readAllBytes(resourcePackPath);
+            if (Files.exists(this.localFilePath)) {
+                this.resourcePackBytes = Files.readAllBytes(this.localFilePath);
                 calculateHash();
             } else {
-                CraftEngine.instance().logger().warn("Resource pack file not found: " + resourcePackPath);
+                this.resourcePackBytes = null;
             }
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to load resource pack", e);
@@ -99,26 +145,6 @@ public class SelfHostHttpServer {
             this.packUUID = UUID.nameUUIDFromBytes(packHash.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             CraftEngine.instance().logger().severe("SHA-1 algorithm not available", e);
-        }
-    }
-
-    public void updatePort(int port) {
-        if (port <= 0 || port > 65535) {
-            throw new IllegalArgumentException("Invalid port number: " + port);
-        }
-        if (port == this.port) return;
-        if (server != null) disable();
-        this.port = port;
-        try {
-            threadPool = Executors.newFixedThreadPool(1);
-            server = HttpServer.create(new InetSocketAddress(port), 0);
-            server.createContext("/download", new ResourcePackHandler());
-            server.createContext("/metrics", this::handleMetrics);
-            server.setExecutor(threadPool);
-            server.start();
-            CraftEngine.instance().logger().info("HTTP server started on port: " + port);
-        } catch (IOException e) {
-            CraftEngine.instance().logger().warn("Failed to start HTTP server", e);
         }
     }
 
@@ -145,40 +171,29 @@ public class SelfHostHttpServer {
         }
     }
 
-    public void adjustRateLimit(int requestsPerSecond, int rateLimitInterval) {
-        this.rateLimit = requestsPerSecond;
-        this.rateLimitInterval = rateLimitInterval;
-        CraftEngine.instance().logger().info("Updated rate limit to " + requestsPerSecond + "/s");
-    }
-
     private class ResourcePackHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             totalRequests.incrementAndGet();
 
             String clientIp = getClientIp(exchange);
-
             if (checkRateLimit(clientIp)) {
                 handleBlockedRequest(exchange, 429, "Rate limit exceeded");
                 return;
             }
-
             String token = parseToken(exchange);
             if (!validateToken(token)) {
                 handleBlockedRequest(exchange, 403, "Invalid token");
                 return;
             }
-
             if (!validateClient(exchange)) {
                 handleBlockedRequest(exchange, 403, "Invalid client");
                 return;
             }
-
             if (resourcePackBytes == null) {
                 handleBlockedRequest(exchange, 404, "Resource pack missing");
                 return;
             }
-
             sendResourcePack(exchange);
         }
 
@@ -220,7 +235,7 @@ public class SelfHostHttpServer {
         }
 
         private boolean validateClient(HttpExchange exchange) {
-            if (!Config.denyNonMinecraftRequest()) return true;
+            if (!denyNonMinecraft) return true;
 
             String userAgent = exchange.getRequestHeaders().getFirst("User-Agent");
             return userAgent != null && userAgent.startsWith("Minecraft Java/");
@@ -273,12 +288,5 @@ public class SelfHostHttpServer {
             this.lastAccessTime = lastAccessTime;
             this.accessCount = accessCount;
         }
-    }
-
-    public static SelfHostHttpServer instance() {
-        if (instance == null) {
-            instance = new SelfHostHttpServer();
-        }
-        return instance;
     }
 }

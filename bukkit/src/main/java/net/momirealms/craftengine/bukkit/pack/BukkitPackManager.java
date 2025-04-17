@@ -2,13 +2,17 @@ package net.momirealms.craftengine.bukkit.pack;
 
 import net.momirealms.craftengine.bukkit.api.event.AsyncResourcePackGenerateEvent;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.command.feature.ReloadCommand;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.util.ResourcePackUtils;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
@@ -19,11 +23,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class BukkitPackManager extends AbstractPackManager implements Listener {
+    public static final String FAKE_URL = "https://127.0.0.1:65536";
     private final BukkitCraftEngine plugin;
 
     public BukkitPackManager(BukkitCraftEngine plugin) {
@@ -42,7 +49,10 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // todo 1.20.1 资源包发送
+        if (Config.sendPackOnJoin() && !VersionHelper.isVersionNewerThan1_20_2()) {
+            Player player = plugin.adapt(event.getPlayer());
+            this.sendResourcePack(player);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -57,9 +67,14 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
     @Override
     public void load() {
-        super.load();
-        if (Config.sendPackOnJoin()) {
-            this.modifyServerSettings();
+        if (ReloadCommand.RELOAD_PACK_FLAG || CraftEngine.instance().isInitializing()) {
+            super.load();
+            if (Config.sendPackOnJoin() && VersionHelper.isVersionNewerThan1_20_2() && !(resourcePackHost() instanceof NoneHost)) {
+                this.modifyServerSettings();
+            }
+        }
+        if (CraftEngine.instance().isInitializing()) {
+            resourcePackHost().upload(this.resourcePackPath());
         }
     }
 
@@ -69,9 +84,9 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
             Object properties = Reflections.field$DedicatedServerSettings$properties.get(settings);
             Object info;
             if (VersionHelper.isVersionNewerThan1_20_3()) {
-                info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), "https://127.0.0.1:65536", "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), FAKE_URL, "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
             } else {
-                info = Reflections.constructor$ServerResourcePackInfo.newInstance("https://127.0.0.1:65536", "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                info = Reflections.constructor$ServerResourcePackInfo.newInstance(FAKE_URL, "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
             }
             Reflections.field$DedicatedServerProperties$serverResourcePackInfo.set(properties, Optional.of(info));
         } catch (Exception e) {
@@ -82,7 +97,11 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     @Override
     public void unload() {
         super.unload();
-        this.resetServerSettings();
+        if (ReloadCommand.RELOAD_PACK_FLAG) {
+            if (VersionHelper.isVersionNewerThan1_20_2()) {
+                this.resetServerSettings();
+            }
+        }
     }
 
     @Override
@@ -102,26 +121,39 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
         }
     }
 
-    @Override
-    public void generateResourcePack() {
-        // generate pack
-        super.generateResourcePack();
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
+        resourcePackHost().upload(event.zipFilePath()).whenComplete((d, e) -> {
+            if (e != null) {
+                CraftEngine.instance().logger().warn("Failed to upload resource pack", e);
+                return;
+            }
+            if (!Config.sendPackOnReload()) return;
+            for (BukkitServerPlayer player : this.plugin.networkManager().onlineUsers()) {
+                sendResourcePack(player);
+            }
+        });
     }
 
-    @EventHandler
-    public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
-        Bukkit.getOnlinePlayers().forEach(p -> {
-            BukkitServerPlayer user = this.plugin.adapt(p);
-            CompletableFuture<ResourcePackDownloadData> future = resourcePackHost().requestResourcePackDownloadLink(user.uuid());
-            if (future.isDone()) {
-                try {
-                    ResourcePackDownloadData data = future.get();
-                    user.sendPacket(ResourcePackUtils.createPacket(
-                            data.uuid(), data.url(), data.sha1()
-                    ), true);
-                    user.setCurrentResourcePackUUID(data.uuid());
-                } catch (Exception e) {
-                    plugin.logger().warn("Failed to send resource pack to player " + p.getName(), e);
+    private void sendResourcePack(Player player) {
+        CompletableFuture<List<ResourcePackDownloadData>> future = resourcePackHost().requestResourcePackDownloadLink(player.uuid());
+        future.thenAccept(dataList -> {
+            if (player.isOnline()) {
+                player.unloadCurrentResourcePack();
+                if (dataList.isEmpty()) {
+                    return;
+                }
+                if (dataList.size() == 1) {
+                    ResourcePackDownloadData data = dataList.get(0);
+                    player.sendPacket(ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1()), true);
+                    player.addResourcePackUUID(data.uuid());
+                } else {
+                    List<Object> packets = new ArrayList<>();
+                    for (ResourcePackDownloadData data : dataList) {
+                        packets.add(ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1()));
+                        player.addResourcePackUUID(data.uuid());
+                    }
+                    player.sendPackets(packets, true);
                 }
             }
         });

@@ -69,6 +69,7 @@ public abstract class CraftEngine implements Plugin {
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
+    private boolean isInitializing;
 
     private String buildByBit = "%%__BUILTBYBIT__%%";
     private String polymart = "%%__POLYMART__%%";
@@ -191,6 +192,7 @@ public abstract class CraftEngine implements Plugin {
     }
 
     public void onPluginEnable() {
+        this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
@@ -219,6 +221,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.delayedInit();
             // set up some platform extra tasks
             this.platformDelayedEnable();
+            this.isInitializing = false;
         });
     }
 
@@ -322,6 +325,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public boolean isReloading() {
         return isReloading;
+    }
+
+    @Override
+    public boolean isInitializing() {
+        return isInitializing;
     }
 
     public abstract boolean hasPlaceholderAPI();

@@ -35,7 +35,6 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                     }
                     if (argument == ReloadArgument.CONFIG) {
                         try {
-                            RELOAD_PACK_FLAG = true;
                             plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), false).thenAccept(reloadResult -> {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_SUCCESS,
                                         Component.text(reloadResult.asyncTime() + reloadResult.syncTime()),
@@ -49,19 +48,20 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                         }
                     } else if (argument == ReloadArgument.RECIPE) {
                         try {
-                            RELOAD_PACK_FLAG = true;
                             plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), true).thenAccept(reloadResult -> {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_SUCCESS,
                                         Component.text(reloadResult.asyncTime() + reloadResult.syncTime()),
                                         Component.text(reloadResult.asyncTime()),
                                         Component.text(reloadResult.syncTime())
                                 );
+
                             });
                         } catch (Exception e) {
                             handleFeedback(context, MessageConstants.COMMAND_RELOAD_CONFIG_FAILURE);
                             plugin().logger().warn("Failed to reload config", e);
                         }
                     } else if (argument == ReloadArgument.PACK) {
+                        RELOAD_PACK_FLAG = true;
                         plugin().scheduler().executeAsync(() -> {
                             try {
                                 long time1 = System.currentTimeMillis();
@@ -69,24 +69,32 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                                 long time2 = System.currentTimeMillis();
                                 long packTime = time2 - time1;
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_SUCCESS, Component.text(packTime));
+
                             } catch (Exception e) {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
                                 plugin().logger().warn("Failed to generate resource pack", e);
+                            } finally {
+                                RELOAD_PACK_FLAG = false;
                             }
                         });
                     } else if (argument == ReloadArgument.ALL) {
+                        RELOAD_PACK_FLAG = true;
                         try {
                             plugin().reloadPlugin(plugin().scheduler().async(), r -> plugin().scheduler().sync().run(r), true).thenAcceptAsync(reloadResult -> {
-                                long time1 = System.currentTimeMillis();
-                                plugin().packManager().generateResourcePack();
-                                long time2 = System.currentTimeMillis();
-                                long packTime = time2 - time1;
-                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS,
-                                        Component.text(reloadResult.asyncTime() + reloadResult.syncTime() + packTime),
-                                        Component.text(reloadResult.asyncTime()),
-                                        Component.text(reloadResult.syncTime()),
-                                        Component.text(packTime)
-                                );
+                                try {
+                                    long time1 = System.currentTimeMillis();
+                                    plugin().packManager().generateResourcePack();
+                                    long time2 = System.currentTimeMillis();
+                                    long packTime = time2 - time1;
+                                    handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_SUCCESS,
+                                            Component.text(reloadResult.asyncTime() + reloadResult.syncTime() + packTime),
+                                            Component.text(reloadResult.asyncTime()),
+                                            Component.text(reloadResult.syncTime()),
+                                            Component.text(packTime)
+                                    );
+                                } finally {
+                                    RELOAD_PACK_FLAG = false;
+                                }
                             }, plugin().scheduler().async());
                         } catch (Exception e) {
                             handleFeedback(context, MessageConstants.COMMAND_RELOAD_ALL_FAILURE);

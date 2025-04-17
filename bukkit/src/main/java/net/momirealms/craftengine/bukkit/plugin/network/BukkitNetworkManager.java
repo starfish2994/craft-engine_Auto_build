@@ -288,7 +288,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         return hasModelEngine;
     }
 
-    public void receivePacket(@NotNull NetWorkUser player, Object packet) {
+    public void simulatePacket(@NotNull NetWorkUser player, Object packet) {
         Channel channel = player.nettyChannel();
         if (channel.isOpen()) {
             List<String> handlerNames = channel.pipeline().names();
