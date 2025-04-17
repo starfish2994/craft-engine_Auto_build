@@ -26,6 +26,7 @@ public class LobFileHost implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
     private final Path forcedPackPath;
     private final String apiKey;
+    private AccountInfo accountInfo;
 
     private String url;
     private String sha1;
@@ -34,6 +35,19 @@ public class LobFileHost implements ResourcePackHost {
     public LobFileHost(String localFile, String apiKey) {
         this.forcedPackPath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.apiKey = apiKey;
+    }
+
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
+    }
+
+    public String getSpaceUsageText() {
+        if (accountInfo == null) return "Usage data not available";
+        return String.format("Storage: %d/%d MB (%.1f%% used)",
+                accountInfo.getSpaceUsed() / 1_000_000,
+                accountInfo.getSpaceQuota() / 1_000_000,
+                (accountInfo.getSpaceUsed() * 100.0) / accountInfo.getSpaceQuota()
+        );
     }
 
     @Override
@@ -75,6 +89,28 @@ public class LobFileHost implements ResourcePackHost {
             }
         });
         return future;
+    }
+
+    public CompletableFuture<AccountInfo> fetchAccountInfo() {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://lobfile.com/api/v3/rest/get-account-info"))
+                    .header("X-API-Key", apiKey)
+                    .GET()
+                    .build();
+
+            return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() == 200) {
+                            AccountInfo info = GsonHelper.get().fromJson(response.body(), AccountInfo.class);
+                            if (info.isSuccess()) {
+                                this.accountInfo = info;
+                                return info;
+                            }
+                        }
+                        throw new RuntimeException("Failed to fetch account info: " + response.statusCode());
+                    });
+        }
     }
 
     private Map<String, String> calculateHashes(Path path) throws IOException, NoSuchAlgorithmException {
@@ -123,13 +159,21 @@ public class LobFileHost implements ResourcePackHost {
         try {
             if (response.statusCode() == 200) {
                 Map<String, Object> json = parseJson(response.body());
-
                 if (Boolean.TRUE.equals(json.get("success"))) {
                     this.url = (String) json.get("url");
                     this.sha1 = localSha1;
                     this.uuid = UUID.randomUUID();
                     CraftEngine.instance().logger().info("[LobFile] Upload success! Resource pack URL: " + this.url);
-                    future.complete(null);
+                    fetchAccountInfo()
+                            .thenAccept(info -> {
+                                CraftEngine.instance().logger().info("[LobFile] Account Usage Updated: " + getSpaceUsageText());
+                                future.complete(null);
+                            })
+                            .exceptionally(ex -> {
+                                CraftEngine.instance().logger().warn("[LobFile] Usage check failed (upload still succeeded): ", ex);
+                                future.complete(null);
+                                return null;
+                            });
                 } else {
                     future.completeExceptionally(new RuntimeException((String) json.get("error")));
                 }
@@ -170,6 +214,33 @@ public class LobFileHost implements ResourcePackHost {
                 throw new RuntimeException("Missing 'api-key' for LobFileHost");
             }
             return new LobFileHost(localFilePath, apiKey);
+        }
+    }
+
+    public static class AccountInfo {
+        private boolean success;
+        private Map<String, Object> account_info;
+        private Map<String, Integer> account_limits;
+        private Map<String, Integer> account_usage;
+
+        public String getEmail() {
+            return (String) account_info.get("email");
+        }
+
+        public int getSpaceQuota() {
+            return account_limits.getOrDefault("space_quota", 0);
+        }
+
+        public int getSpaceUsed() {
+            return account_usage.getOrDefault("space_used", 0);
+        }
+
+        public int getSlotsUsed() {
+            return account_usage.getOrDefault("slots_used", 0);
+        }
+
+        public boolean isSuccess() {
+            return success;
         }
     }
 }
