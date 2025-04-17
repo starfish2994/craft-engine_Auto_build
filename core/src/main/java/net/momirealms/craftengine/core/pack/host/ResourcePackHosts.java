@@ -1,10 +1,6 @@
 package net.momirealms.craftengine.core.pack.host;
 
-import net.momirealms.craftengine.core.pack.host.impl.ExternalHost;
-import net.momirealms.craftengine.core.pack.host.impl.LobFileHost;
-import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
-import net.momirealms.craftengine.core.pack.host.impl.S3Host;
-import net.momirealms.craftengine.core.pack.host.impl.SelfHost;
+import net.momirealms.craftengine.core.pack.host.impl.*;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -20,6 +16,7 @@ public class ResourcePackHosts {
     public static final Key EXTERNAL_HOST = Key.of("craftengine:external_host");
     public static final Key LOBFILE = Key.of("craftengine:lobfile");
     public static final Key S3_HOST = Key.of("craftengine:s3_host");
+    public static final Key CUSTOM_API_HOST = Key.of("craftengine:custom_api_host");
 
     static {
         register(NONE, NoneHost.FACTORY);
@@ -27,6 +24,7 @@ public class ResourcePackHosts {
         register(EXTERNAL_HOST, ExternalHost.FACTORY);
         register(LOBFILE, LobFileHost.FACTORY);
         register(S3_HOST, S3Host.FACTORY);
+        register(CUSTOM_API_HOST, CustomApiHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {

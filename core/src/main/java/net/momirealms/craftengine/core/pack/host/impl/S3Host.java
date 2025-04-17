@@ -14,6 +14,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -30,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class S3Host implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
@@ -73,10 +75,18 @@ public class S3Host implements ResourcePackHost {
                         .bucket(bucket)
                         .key(objectKey)
                         .build())
-                .thenApply(headResponse -> {
+                .handle((headResponse, exception) -> {
+                    if (exception != null) {
+                        Throwable cause = exception.getCause();
+                        if (cause instanceof NoSuchKeyException) {
+                            return Collections.emptyList();
+                        } else {
+                            throw new CompletionException("Failed to request resource pack", cause);
+                        }
+                    }
                     String sha1 = headResponse.metadata().get("sha1");
                     if (sha1 == null) {
-                        throw new IllegalStateException("SHA1 metadata missing for object: " + objectKey);
+                        throw new CompletionException(new IllegalStateException("SHA1 metadata missing for object: " + objectKey));
                     }
                     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                             .signatureDuration(validity)
@@ -85,7 +95,8 @@ public class S3Host implements ResourcePackHost {
                     return Collections.singletonList(
                             ResourcePackDownloadData.of(
                                     replaceWithCdnUrl(presigner.presignGetObject(presignRequest).url()),
-                                    UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8)), sha1
+                                    UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8)),
+                                    sha1
                             )
                     );
                 });
@@ -101,9 +112,24 @@ public class S3Host implements ResourcePackHost {
                 .key(objectKey)
                 .metadata(Map.of("sha1", sha1))
                 .build();
+        long uploadStart = System.currentTimeMillis();
+        CraftEngine.instance().logger().info("[S3] Starting file upload...");
         return s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromFile(resourcePackPath))
-                .thenApply(response -> {
-                    CraftEngine.instance().logger().info("Uploaded resource pack to S3: " + objectKey);
+                .handle((response, exception) -> {
+                    if (exception != null) {
+                        Throwable cause = exception instanceof CompletionException ?
+                                exception.getCause() :
+                                exception;
+                        CraftEngine.instance().logger().warn(
+                                "[S3] Upload to " + objectKey + " failed! Reason: " +
+                                        cause.getClass().getSimpleName() + " - " + cause.getMessage()
+                        );
+                        throw new CompletionException("Resource pack upload failed", cause);
+                    }
+                    CraftEngine.instance().logger().info(
+                            "[S3] Upload to " + objectKey + " complete! Took " +
+                                    (System.currentTimeMillis() - uploadStart) + "ms"
+                    );
                     return null;
                 });
     }
