@@ -6452,8 +6452,12 @@ public class Reflections {
     );
 
     public static final Field field$ServerboundHelloPacket$uuid = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundHelloPacket, UUID.class, 0
+            ) :
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, Optional.class, 0
             )
     );
 

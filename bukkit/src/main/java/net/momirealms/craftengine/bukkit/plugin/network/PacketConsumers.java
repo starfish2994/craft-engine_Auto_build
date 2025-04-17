@@ -1164,9 +1164,19 @@ public class PacketConsumers {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
-            UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
             player.setName(name);
-            player.setUUID(uuid);
+            if (VersionHelper.isVersionNewerThan1_20_2()) {
+                UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                player.setUUID(uuid);
+            } else {
+                @SuppressWarnings("unchecked")
+                Optional<UUID> uuid = (Optional<UUID>) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                if (uuid.isPresent()) {
+                    player.setUUID(uuid.get());
+                } else {
+                    player.setUUID(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)));
+                }
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundHelloPacket", e);
         }
