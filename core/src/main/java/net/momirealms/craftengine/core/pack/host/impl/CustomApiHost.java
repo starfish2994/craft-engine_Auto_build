@@ -23,11 +23,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class CustomApiHost implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
-    private final URL apiUrl;
+    private final String apiUrl;
+    private final String authKey;
     private final Path localFilePath;
 
-    public CustomApiHost(URL apiUrl, String localFilePath) {
+    public CustomApiHost(String apiUrl, String authKey, String localFilePath) {
         this.apiUrl = apiUrl;
+        this.authKey = authKey;
         this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
     }
 
@@ -38,6 +40,7 @@ public class CustomApiHost implements ResourcePackHost {
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/get-download-link?uuid=" + player))
+                        .header("Authorization", authKey)
                         .GET()
                         .build();
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
@@ -69,6 +72,7 @@ public class CustomApiHost implements ResourcePackHost {
             try (HttpClient client = HttpClient.newHttpClient()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/upload-resource-pack"))
+                        .header("Authorization", authKey)
                         .header("Content-Type", "application/octet-stream")
                         .PUT(HttpRequest.BodyPublishers.ofFile(finalResourcePackPath))
                         .build();
@@ -114,15 +118,12 @@ public class CustomApiHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             String apiUrl = (String) arguments.get("api-url");
-            String localFilePath = (String) arguments.get("local-file-path");
+            String authKey = (String) arguments.get("auth-key");
             if (apiUrl == null || apiUrl.isEmpty()) {
                 throw new IllegalArgumentException("'api-url' cannot be empty for custom api host");
             }
-            try {
-                return new CustomApiHost(URI.create(apiUrl).toURL(), localFilePath);
-            } catch (MalformedURLException e) {
-                throw new IllegalArgumentException("Invalid 'api-url' for custom api host: " + apiUrl, e);
-            }
+            String localFilePath = (String) arguments.get("local-file-path");
+            return new CustomApiHost(apiUrl, authKey, localFilePath);
         }
     }
 }
