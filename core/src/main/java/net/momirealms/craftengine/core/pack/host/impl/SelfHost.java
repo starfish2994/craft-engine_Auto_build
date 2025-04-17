@@ -28,7 +28,7 @@ public class SelfHost implements ResourcePackHost {
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try {
-                SelfHostHttpServer.instance().readResourcePack();
+                SelfHostHttpServer.instance().readResourcePack(resourcePackPath);
                 future.complete(null);
             } catch (Exception e) {
                 future.completeExceptionally(e);
@@ -53,9 +53,6 @@ public class SelfHost implements ResourcePackHost {
             String protocol = (String) arguments.getOrDefault("protocol", "http");
             boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
             String localFilePath = (String) arguments.get("local-file-path");
-            if (localFilePath == null) {
-                throw new IllegalArgumentException("'local-file-path' argument missing for self host");
-            }
             Map<String, Object> rateMap = MiscUtils.castToMap(arguments.get("rate-map"), true);
             int maxRequests = 5;
             int resetInterval = 20_000;

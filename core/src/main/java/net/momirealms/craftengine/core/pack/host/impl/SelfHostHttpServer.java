@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +66,7 @@ public class SelfHostHttpServer {
                                  int resetInternal) {
         this.ip = ip;
         this.port = port;
-        this.localFilePath = selfHostPackPath(localFile);
+        this.localFilePath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.denyNonMinecraft = denyNonMinecraft;
         this.protocol = protocol;
         this.rateLimit = maxRequests;
@@ -110,18 +111,15 @@ public class SelfHostHttpServer {
         );
     }
 
-    private Path selfHostPackPath(String path) {
-        return path.startsWith(".") ? CraftEngine.instance().dataFolderPath().resolve(path) : Path.of(path);
-    }
-
     public String url() {
         return protocol + "://" + ip + ":" + port + "/";
     }
 
-    public void readResourcePack() {
+    public void readResourcePack(Path path) {
+        if (this.localFilePath != null) path = this.localFilePath;
         try {
-            if (Files.exists(this.localFilePath)) {
-                this.resourcePackBytes = Files.readAllBytes(this.localFilePath);
+            if (Files.exists(path)) {
+                this.resourcePackBytes = Files.readAllBytes(path);
                 calculateHash();
             } else {
                 this.resourcePackBytes = null;
