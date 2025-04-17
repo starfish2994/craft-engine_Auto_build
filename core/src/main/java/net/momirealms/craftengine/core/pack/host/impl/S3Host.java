@@ -79,6 +79,7 @@ public class S3Host implements ResourcePackHost {
                     if (exception != null) {
                         Throwable cause = exception.getCause();
                         if (cause instanceof NoSuchKeyException) {
+                            CraftEngine.instance().logger().warn("[S3] Resource pack not found! Upload it first.");
                             return Collections.emptyList();
                         } else {
                             CraftEngine.instance().logger().warn(
