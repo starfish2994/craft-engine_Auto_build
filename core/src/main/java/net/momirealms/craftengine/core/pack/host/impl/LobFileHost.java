@@ -10,12 +10,14 @@ import net.momirealms.craftengine.core.util.GsonHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,10 +37,52 @@ public class LobFileHost implements ResourcePackHost {
     public LobFileHost(String localFile, String apiKey) {
         this.forcedPackPath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.apiKey = apiKey;
+        this.readCacheFromDisk();
     }
 
-    public AccountInfo getAccountInfo() {
-        return accountInfo;
+    public void readCacheFromDisk() {
+        Path cachePath = CraftEngine.instance().dataFolderPath().resolve("lobfile.cache");
+        if (!Files.exists(cachePath)) return;
+
+        try (InputStream is = Files.newInputStream(cachePath)) {
+            Map<String, String> cache = GsonHelper.get().fromJson(
+                    new InputStreamReader(is),
+                    new TypeToken<Map<String, String>>(){}.getType()
+            );
+
+            this.url = cache.get("url");
+            this.sha1 = cache.get("sha1");
+
+            String uuidString = cache.get("uuid");
+            if (uuidString != null && !uuidString.isEmpty()) {
+                this.uuid = UUID.fromString(uuidString);
+            }
+
+            CraftEngine.instance().logger().info("[LobFile] Loaded cached resource pack info");
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn(
+                    "[LobFile] Failed to read cache file: " + e.getMessage());
+        }
+    }
+
+    public void saveCacheToDisk() {
+        Map<String, String> cache = new HashMap<>();
+        cache.put("url", this.url);
+        cache.put("sha1", this.sha1);
+        cache.put("uuid", this.uuid != null ? this.uuid.toString() : "");
+
+        Path cachePath = CraftEngine.instance().dataFolderPath().resolve("lobfile.cache");
+        try {
+            Files.writeString(
+                    cachePath,
+                    GsonHelper.get().toJson(cache),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn(
+                    "[LobFile] Failed to save cache: " + e.getMessage());
+        }
     }
 
     public String getSpaceUsageText() {
@@ -181,10 +225,11 @@ public class LobFileHost implements ResourcePackHost {
                     this.url = (String) json.get("url");
                     this.sha1 = localSha1;
                     this.uuid = UUID.randomUUID();
+                    saveCacheToDisk();
                     CraftEngine.instance().logger().info("[LobFile] Upload success! Resource pack URL: " + this.url);
                     fetchAccountInfo()
                             .thenAccept(info -> {
-                                CraftEngine.instance().logger().info("[LobFile] Account Usage Updated: " + getSpaceUsageText());
+                                CraftEngine.instance().logger().info("[LobFile] Account usage updated: " + getSpaceUsageText());
                                 future.complete(null);
                             })
                             .exceptionally(ex -> {

@@ -16,6 +16,10 @@ public class SelfHost implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
     private static final SelfHost INSTANCE = new SelfHost();
 
+    public SelfHost() {
+        SelfHostHttpServer.instance().readResourcePack(CraftEngine.instance().packManager().resourcePackPath());
+    }
+
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         ResourcePackDownloadData data = SelfHostHttpServer.instance().generateOneTimeUrl();

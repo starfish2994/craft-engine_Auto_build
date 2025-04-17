@@ -73,9 +73,6 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
                 this.modifyServerSettings();
             }
         }
-        if (CraftEngine.instance().isInitializing()) {
-            resourcePackHost().upload(this.resourcePackPath());
-        }
     }
 
     public void modifyServerSettings() {
