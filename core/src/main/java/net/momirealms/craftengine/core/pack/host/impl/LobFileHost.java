@@ -1,7 +1,12 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.GsonHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +23,9 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class LobFileHost implements ResourcePackHost {
-    private Path forcedPackPath;
-    private String apiKey;
+    public static final Factory FACTORY = new Factory();
+    private final Path forcedPackPath;
+    private final String apiKey;
 
     private String url;
     private String sha1;
@@ -40,35 +46,34 @@ public class LobFileHost implements ResourcePackHost {
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         if (this.forcedPackPath != null) resourcePackPath = forcedPackPath;
+        Path finalResourcePackPath = resourcePackPath;
+        CraftEngine.instance().scheduler().executeAsync(() -> {
+            try {
+                Map<String, String> hashes = calculateHashes(finalResourcePackPath);
+                String sha1Hash = hashes.get("SHA-1");
+                String sha256Hash = hashes.get("SHA-256");
 
-        try {
-            // 计算文件的 SHA1 和 SHA256
-            Map<String, String> hashes = calculateHashes(resourcePackPath);
-            String sha1Hash = hashes.get("SHA-1");
-            String sha256Hash = hashes.get("SHA-256");
+                try (HttpClient client = HttpClient.newHttpClient()) {
+                    String boundary = UUID.randomUUID().toString();
 
-            // 构建 multipart/form-data 请求
-            HttpClient client = HttpClient.newHttpClient();
-            String boundary = UUID.randomUUID().toString();
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .uri(URI.create("https://lobfile.com/api/v3/upload.php"))
+                            .header("X-API-Key", apiKey)
+                            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                            .POST(buildMultipartBody(finalResourcePackPath, sha256Hash, boundary))
+                            .build();
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://lobfile.com/api/v3/upload.php"))
-                    .header("X-API-Key", apiKey)
-                    .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                    .POST(buildMultipartBody(resourcePackPath, sha256Hash, boundary))
-                    .build();
-
-            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenAccept(response -> handleUploadResponse(response, future, sha1Hash))
-                    .exceptionally(ex -> {
-                        future.completeExceptionally(ex);
-                        return null;
-                    });
-
-        } catch (IOException | NoSuchAlgorithmException e) {
-            future.completeExceptionally(e);
-        }
-
+                    client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                            .thenAccept(response -> handleUploadResponse(response, future, sha1Hash))
+                            .exceptionally(ex -> {
+                                future.completeExceptionally(ex);
+                                return null;
+                            });
+                }
+            } catch (IOException | NoSuchAlgorithmException e) {
+                future.completeExceptionally(e);
+            }
+        });
         return future;
     }
 
@@ -79,11 +84,8 @@ public class LobFileHost implements ResourcePackHost {
 
         try (InputStream is = Files.newInputStream(path);
              DigestInputStream dis = new DigestInputStream(is, sha1Digest)) {
-
-            // 同时计算 SHA-256
             DigestInputStream dis2 = new DigestInputStream(dis, sha256Digest);
 
-            // 读取文件流触发摘要计算
             while (dis2.read() != -1) ;
 
             hashes.put("SHA-1", bytesToHex(sha1Digest.digest()));
@@ -120,13 +122,13 @@ public class LobFileHost implements ResourcePackHost {
     ) {
         try {
             if (response.statusCode() == 200) {
-                // 解析 JSON 响应
                 Map<String, Object> json = parseJson(response.body());
 
                 if (Boolean.TRUE.equals(json.get("success"))) {
                     this.url = (String) json.get("url");
                     this.sha1 = localSha1;
                     this.uuid = UUID.randomUUID();
+                    CraftEngine.instance().logger().info("[LobFile] Upload success! Resource pack URL: " + this.url);
                     future.complete(null);
                 } else {
                     future.completeExceptionally(new RuntimeException((String) json.get("error")));
@@ -139,7 +141,6 @@ public class LobFileHost implements ResourcePackHost {
         }
     }
 
-    // 辅助方法
     private String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
@@ -148,23 +149,27 @@ public class LobFileHost implements ResourcePackHost {
         return sb.toString();
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> parseJson(String json) {
-        // 这里使用简单解析（实际项目建议使用 JSON 库）
-        Map<String, Object> map = new HashMap<>();
-        json = json.replaceAll("[{}\"]", "");
-        for (String pair : json.split(",")) {
-            String[] kv = pair.split(":", 2);
-            if (kv.length == 2) {
-                String key = kv[0].trim();
-                String value = kv[1].trim();
-                if (key.equals("success")) {
-                    map.put(key, Boolean.parseBoolean(value));
-                } else {
-                    map.put(key, value);
-                }
-            }
+        try {
+            return GsonHelper.get().fromJson(
+                    json,
+                    new TypeToken<Map<String, Object>>() {}.getType()
+            );
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Invalid JSON response: " + json, e);
         }
-        return map;
+    }
+
+    public static class Factory implements ResourcePackHostFactory {
+
+        @Override
+        public ResourcePackHost create(Map<String, Object> arguments) {
+            String localFilePath = (String) arguments.get("local-file-path");
+            String apiKey = (String) arguments.get("api-key");
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new RuntimeException("Missing 'api-key' for LobFileHost");
+            }
+            return new LobFileHost(localFilePath, apiKey);
+        }
     }
 }

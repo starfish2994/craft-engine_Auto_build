@@ -522,8 +522,6 @@ public abstract class AbstractPackManager implements PackManager {
 
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-
-        this.resourcePackHost.upload(zipFile);
         this.eventDispatcher.accept(generatedPackPath, zipFile);
     }
 
