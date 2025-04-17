@@ -81,11 +81,16 @@ public class S3Host implements ResourcePackHost {
                         if (cause instanceof NoSuchKeyException) {
                             return Collections.emptyList();
                         } else {
+                            CraftEngine.instance().logger().warn(
+                                    "[S3] Requesting resource pack failed! Reason: " +
+                                            cause.getClass().getSimpleName() + " - " + cause.getMessage()
+                            );
                             throw new CompletionException("Failed to request resource pack", cause);
                         }
                     }
                     String sha1 = headResponse.metadata().get("sha1");
                     if (sha1 == null) {
+                        CraftEngine.instance().logger().warn("[S3] SHA1 metadata missing for object: " + objectKey);
                         throw new CompletionException(new IllegalStateException("SHA1 metadata missing for object: " + objectKey));
                     }
                     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
