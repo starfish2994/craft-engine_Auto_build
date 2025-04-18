@@ -36,6 +36,7 @@ public class AlistHost implements ResourcePackHost {
     private final String otpCode;
     private final Duration jwtTokenExpiration;
     private final String filePath;
+    private final boolean disabledUpload;
     private final Path localFilePath;
     private Pair<String, Date> jwtToken;
     private String cacheSha1;
@@ -47,6 +48,7 @@ public class AlistHost implements ResourcePackHost {
                      String otpCode,
                      Duration jwtTokenExpiration,
                      String filePath,
+                     boolean disabledUpload,
                      String localFilePath) {
         this.apiUrl = apiUrl;
         this.userName = userName;
@@ -55,6 +57,7 @@ public class AlistHost implements ResourcePackHost {
         this.otpCode = otpCode;
         this.jwtTokenExpiration = jwtTokenExpiration;
         this.filePath = filePath;
+        this.disabledUpload = disabledUpload;
         this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         this.readCacheFromDisk();
     }
@@ -103,6 +106,11 @@ public class AlistHost implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
+        if (disabledUpload) {
+            cacheSha1 = "";
+            saveCacheToDisk();
+            return CompletableFuture.completedFuture(null);
+        }
         CompletableFuture<Void> future = new CompletableFuture<>();
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         Path finalResourcePackPath = resourcePackPath;
@@ -212,7 +220,33 @@ public class AlistHost implements ResourcePackHost {
                     boolean isDir = dataObj.getAsJsonPrimitive("is_dir").getAsBoolean();
                     if (!isDir) {
                         String url = dataObj.getAsJsonPrimitive("raw_url").getAsString();
-                        UUID uuid = UUID.nameUUIDFromBytes(cacheSha1.getBytes(StandardCharsets.UTF_8));
+                        if ((cacheSha1 == null || cacheSha1.isEmpty()) && disabledUpload) {
+                            try (HttpClient client = HttpClient.newHttpClient()) {
+                                HttpRequest request = HttpRequest.newBuilder()
+                                        .uri(URI.create(url))
+                                        .GET()
+                                        .build();
+                                HttpResponse<InputStream> responseHash = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                                try (InputStream inputStream = responseHash.body()) {
+                                    MessageDigest md = MessageDigest.getInstance("SHA-1");
+                                    byte[] buffer = new byte[8192];
+                                    int len;
+                                    while ((len = inputStream.read(buffer)) != -1) {
+                                        md.update(buffer, 0, len);
+                                    }
+                                    byte[] digest = md.digest();
+                                    cacheSha1 = HexFormat.of().formatHex(digest);
+                                    saveCacheToDisk();
+                                } catch (NoSuchAlgorithmException e) {
+                                    future.completeExceptionally(new RuntimeException("Failed to get resource pack hash"));
+                                    return;
+                                }
+                            } catch (IOException | InterruptedException e) {
+                                future.completeExceptionally(new RuntimeException("Failed to get resource pack hash"));
+                                return;
+                            }
+                        }
+                        UUID uuid = UUID.nameUUIDFromBytes(Objects.requireNonNull(cacheSha1).getBytes(StandardCharsets.UTF_8));
                         future.complete(List.of(new ResourcePackDownloadData(url, uuid, cacheSha1)));
                         return;
                     }
@@ -272,8 +306,9 @@ public class AlistHost implements ResourcePackHost {
             if (filePath == null || filePath.isEmpty()) {
                 throw new IllegalArgumentException("'file-path' cannot be empty for Alist host");
             }
+            boolean disabledUpload = (boolean) arguments.getOrDefault("disabled-upload", false);
             String localFilePath = (String) arguments.get("local-file-path");
-            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, localFilePath);
+            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, localFilePath);
         }
     }
 }
