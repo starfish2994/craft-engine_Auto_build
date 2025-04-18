@@ -4,6 +4,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -171,5 +172,20 @@ public class MiscUtils {
         } else {
             throw new RuntimeException("Cannot convert " + o + " to Quaternionf");
         }
+    }
+
+    public static ProxySelector getProxySelector(Object o) {
+        Map<String, Object> proxySetting = castToMap(o, true);
+        ProxySelector proxy = ProxySelector.getDefault();
+        if (proxySetting != null) {
+            String proxyHost = (String) proxySetting.get("host");
+            int proxyPort = (int) proxySetting.get("port");
+            if (proxyHost == null || proxyHost.isEmpty() || proxyPort <= 0 || proxyPort > 65535) {
+                throw new IllegalArgumentException("Invalid proxy setting");
+            } else {
+                proxy = ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort));
+            }
+        }
+        return proxy;
     }
 }

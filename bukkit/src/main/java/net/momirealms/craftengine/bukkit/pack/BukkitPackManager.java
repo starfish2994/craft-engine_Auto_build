@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.pack;
 
 import net.momirealms.craftengine.bukkit.api.event.AsyncResourcePackGenerateEvent;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.command.feature.ReloadCommand;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -153,6 +154,9 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
                     player.sendPackets(packets, true);
                 }
             }
+        }).exceptionally(throwable -> {
+            CraftEngine.instance().logger().warn("Failed to send resource pack to player " + player.name(), throwable);
+            return null;
         });
     }
 }

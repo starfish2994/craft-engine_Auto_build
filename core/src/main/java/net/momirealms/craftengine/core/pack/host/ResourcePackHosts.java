@@ -1,9 +1,6 @@
 package net.momirealms.craftengine.core.pack.host;
 
-import net.momirealms.craftengine.core.pack.host.impl.ExternalHost;
-import net.momirealms.craftengine.core.pack.host.impl.LobFileHost;
-import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
-import net.momirealms.craftengine.core.pack.host.impl.SelfHost;
+import net.momirealms.craftengine.core.pack.host.impl.*;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -18,12 +15,22 @@ public class ResourcePackHosts {
     public static final Key SELF_HOST = Key.of("craftengine:self_host");
     public static final Key EXTERNAL_HOST = Key.of("craftengine:external_host");
     public static final Key LOBFILE = Key.of("craftengine:lobfile");
+    public static final Key S3_HOST = Key.of("craftengine:s3_host");
+    public static final Key CUSTOM_API_HOST = Key.of("craftengine:custom_api_host");
+    public static final Key ALIST_HOST = Key.of("craftengine:alist_host");
+    public static final Key DROPBOX_HOST = Key.of("craftengine:dropbox_host");
+    public static final Key ONEDRIVE_HOST = Key.of("craftengine:onedrive_host");
 
     static {
         register(NONE, NoneHost.FACTORY);
         register(SELF_HOST, SelfHost.FACTORY);
         register(EXTERNAL_HOST, ExternalHost.FACTORY);
         register(LOBFILE, LobFileHost.FACTORY);
+        register(S3_HOST, S3Host.FACTORY);
+        register(CUSTOM_API_HOST, CustomApiHost.FACTORY);
+        register(ALIST_HOST, AlistHost.FACTORY);
+        register(DROPBOX_HOST, DropboxHost.FACTORY);
+        register(ONEDRIVE_HOST, OneDriveHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {

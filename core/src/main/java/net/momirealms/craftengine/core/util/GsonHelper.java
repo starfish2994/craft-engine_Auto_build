@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.util;
 
 import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -77,5 +78,27 @@ public class GsonHelper {
             }
         }
         return merged;
+    }
+
+    public static JsonObject parseJsonToJsonObject(String json) {
+        try {
+            return get().fromJson(
+                    json,
+                    JsonObject.class
+            );
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Invalid JSON response: " + json, e);
+        }
+    }
+
+    public static Map<String, Object> parseJsonToMap(String json) {
+        try {
+            return GsonHelper.get().fromJson(
+                    json,
+                    new TypeToken<Map<String, Object>>() {}.getType()
+            );
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Invalid JSON response: " + json, e);
+        }
     }
 }

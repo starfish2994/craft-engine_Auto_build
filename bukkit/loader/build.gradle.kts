@@ -75,5 +75,7 @@ tasks {
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.jpountz", "net.momirealms.craftengine.libraries.jpountz")
+        relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk")
+        relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream")
     }
 }

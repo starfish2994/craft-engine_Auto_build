@@ -228,4 +228,339 @@ public class Dependencies {
             "lz4-java",
             List.of(Relocation.of("jpountz", "net{}jpountz"))
     );
+
+    public static final Dependency NETTY_HTTP2 = new Dependency(
+            "netty-codec-http2",
+            "io{}netty",
+            "netty-codec-http2",
+            "netty-codec-http2",
+            Collections.emptyList()
+    );
+
+    public static final Dependency REACTIVE_STREAMS = new Dependency(
+            "reactive-streams",
+            "org{}reactivestreams",
+            "reactive-streams",
+            "reactive-streams",
+            List.of(Relocation.of("reactivestreams", "org{}reactivestreams"))
+    );
+
+    public static final Dependency AMAZON_AWSSDK_S3 = new Dependency(
+            "amazon-sdk-s3",
+            "software{}amazon{}awssdk",
+            "s3",
+            "amazon-s3",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_NETTY_NIO_CLIENT = new Dependency(
+            "amazon-sdk-netty-nio-client",
+            "software{}amazon{}awssdk",
+            "netty-nio-client",
+            "amazon-netty-nio-client",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_SDK_CORE = new Dependency(
+            "amazon-sdk-core",
+            "software{}amazon{}awssdk",
+            "sdk-core",
+            "amazon-sdk-core",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_AUTH = new Dependency(
+            "amazon-sdk-auth",
+            "software{}amazon{}awssdk",
+            "auth",
+            "amazon-auth",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_REGIONS = new Dependency(
+            "amazon-sdk-regions",
+            "software{}amazon{}awssdk",
+            "regions",
+            "amazon-regions",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_IDENTITY_SPI = new Dependency(
+            "amazon-sdk-identity-spi",
+            "software{}amazon{}awssdk",
+            "identity-spi",
+            "amazon-identity-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_HTTP_CLIENT_SPI = new Dependency(
+            "amazon-sdk-http-client-spi",
+            "software{}amazon{}awssdk",
+            "http-client-spi",
+            "amazon-http-client-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_PROTOCOL_CORE = new Dependency(
+            "amazon-sdk-protocol-core",
+            "software{}amazon{}awssdk",
+            "protocol-core",
+            "amazon-protocol-core",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_AWS_XML_PROTOCOL = new Dependency(
+            "amazon-sdk-aws-xml-protocol",
+            "software{}amazon{}awssdk",
+            "aws-xml-protocol",
+            "amazon-aws-xml-protocol",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_JSON_UTILS = new Dependency(
+            "amazon-sdk-json-utils",
+            "software{}amazon{}awssdk",
+            "json-utils",
+            "amazon-json-utils",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_AWS_CORE = new Dependency(
+            "amazon-sdk-aws-core",
+            "software{}amazon{}awssdk",
+            "aws-core",
+            "amazon-aws-core",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_UTILS = new Dependency(
+            "amazon-sdk-utils",
+            "software{}amazon{}awssdk",
+            "utils",
+            "amazon-utils",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_ANNOTATIONS = new Dependency(
+            "amazon-sdk-annotations",
+            "software{}amazon{}awssdk",
+            "annotations",
+            "amazon-annotations",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_CRT_CORE = new Dependency(
+            "amazon-sdk-crt-core",
+            "software{}amazon{}awssdk",
+            "crt-core",
+            "amazon-crt-core",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_CHECKSUMS = new Dependency(
+            "amazon-sdk-checksums",
+            "software{}amazon{}awssdk",
+            "checksums",
+            "amazon-checksums",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_EVENTSTREAM = new Dependency(
+            "amazon-sdk-eventstream",
+            "software{}amazon{}eventstream",
+            "eventstream",
+            "amazon-eventstream",
+            List.of(
+                    Relocation.of("eventstream", "software{}amazon{}eventstream"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_PROFILES = new Dependency(
+            "amazon-sdk-profiles",
+            "software{}amazon{}awssdk",
+            "profiles",
+            "amazon-profiles",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_RETRIES = new Dependency(
+            "amazon-sdk-retries",
+            "software{}amazon{}awssdk",
+            "retries",
+            "amazon-retries",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_ENDPOINTS_SPI = new Dependency(
+            "amazon-sdk-endpoints-spi",
+            "software{}amazon{}awssdk",
+            "endpoints-spi",
+            "amazon-endpoints-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_ARNS = new Dependency(
+            "amazon-sdk-arns",
+            "software{}amazon{}awssdk",
+            "arns",
+            "amazon-arns",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_AWS_QUERY_PROTOCOL = new Dependency(
+            "amazon-sdk-aws-query-protocol",
+            "software{}amazon{}awssdk",
+            "aws-query-protocol",
+            "amazon-aws-query-protocol",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_HTTP_AUTH_AWS = new Dependency(
+            "amazon-sdk-http-auth-aws",
+            "software{}amazon{}awssdk",
+            "http-auth-aws",
+            "amazon-http-auth-aws",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_HTTP_AUTH_SPI = new Dependency(
+            "amazon-sdk-http-auth-spi",
+            "software{}amazon{}awssdk",
+            "http-auth-spi",
+            "amazon-http-auth-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_HTTP_AUTH = new Dependency(
+            "amazon-sdk-http-auth",
+            "software{}amazon{}awssdk",
+            "http-auth",
+            "amazon-http-auth",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_HTTP_AUTH_AWS_EVENTSTREAM = new Dependency(
+            "amazon-sdk-http-auth-aws-eventstream",
+            "software{}amazon{}awssdk",
+            "http-auth-aws-eventstream",
+            "amazon-http-auth-aws-eventstream",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_CHECKSUMS_SPI = new Dependency(
+            "amazon-sdk-checksums-spi",
+            "software{}amazon{}awssdk",
+            "checksums-spi",
+            "amazon-checksums-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_RETRIES_SPI = new Dependency(
+            "amazon-sdk-retries-spi",
+            "software{}amazon{}awssdk",
+            "retries-spi",
+            "amazon-retries-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_METRICS_SPI = new Dependency(
+            "amazon-sdk-metrics-spi",
+            "software{}amazon{}awssdk",
+            "metrics-spi",
+            "amazon-metrics-spi",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
+
+    public static final Dependency AMAZON_AWSSDK_THIRD_PARTY_JACKSON_CORE = new Dependency(
+            "amazon-sdk-third-party-jackson-core",
+            "software{}amazon{}awssdk",
+            "third-party-jackson-core",
+            "amazon-third-party-jackson-core",
+            List.of(
+                    Relocation.of("awssdk", "software{}amazon{}awssdk"),
+                    Relocation.of("reactivestreams", "org{}reactivestreams")
+            )
+    );
 }

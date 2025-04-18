@@ -1,16 +1,17 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -28,15 +29,17 @@ public class LobFileHost implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
     private final Path forcedPackPath;
     private final String apiKey;
+    private final ProxySelector proxy;
     private AccountInfo accountInfo;
 
     private String url;
     private String sha1;
     private UUID uuid;
 
-    public LobFileHost(String localFile, String apiKey) {
+    public LobFileHost(String localFile, String apiKey, ProxySelector proxy) {
         this.forcedPackPath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.apiKey = apiKey;
+        this.proxy = proxy;
         this.readCacheFromDisk();
     }
 
@@ -114,7 +117,7 @@ public class LobFileHost implements ResourcePackHost {
                 String sha1Hash = hashes.get("SHA-1");
                 String sha256Hash = hashes.get("SHA-256");
 
-                try (HttpClient client = HttpClient.newHttpClient()) {
+                try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                     String boundary = UUID.randomUUID().toString();
 
                     HttpRequest request = HttpRequest.newBuilder()
@@ -154,7 +157,7 @@ public class LobFileHost implements ResourcePackHost {
     }
 
     public CompletableFuture<AccountInfo> fetchAccountInfo() {
-        try (HttpClient client = HttpClient.newHttpClient()) {
+        try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://lobfile.com/api/v3/rest/get-account-info"))
                     .header("X-API-Key", apiKey)
@@ -220,7 +223,7 @@ public class LobFileHost implements ResourcePackHost {
     ) {
         try {
             if (response.statusCode() == 200) {
-                Map<String, Object> json = parseJson(response.body());
+                Map<String, Object> json = GsonHelper.parseJsonToMap(response.body());
                 if (Boolean.TRUE.equals(json.get("success"))) {
                     this.url = (String) json.get("url");
                     this.sha1 = localSha1;
@@ -256,17 +259,6 @@ public class LobFileHost implements ResourcePackHost {
         return sb.toString();
     }
 
-    private Map<String, Object> parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    new TypeToken<Map<String, Object>>() {}.getType()
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
-    }
-
     public static class Factory implements ResourcePackHostFactory {
 
         @Override
@@ -276,7 +268,8 @@ public class LobFileHost implements ResourcePackHost {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new RuntimeException("Missing 'api-key' for LobFileHost");
             }
-            return new LobFileHost(localFilePath, apiKey);
+            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            return new LobFileHost(localFilePath, apiKey, proxy);
         }
     }
 
