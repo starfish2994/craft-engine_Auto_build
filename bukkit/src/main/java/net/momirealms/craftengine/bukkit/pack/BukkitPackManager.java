@@ -121,7 +121,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
         if (!Config.autoUpload()) return;
-
+        uploadResourcePack();
     }
 
     @Override
