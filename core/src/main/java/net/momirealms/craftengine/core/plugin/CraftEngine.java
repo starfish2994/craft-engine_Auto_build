@@ -279,7 +279,6 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.BSTATS_BASE,
                 Dependencies.CAFFEINE,
                 Dependencies.GEANTY_REF,
-                Dependencies.NETTY_HTTP,
                 Dependencies.CLOUD_CORE, Dependencies.CLOUD_SERVICES,
                 Dependencies.GSON,
                 Dependencies.SLF4J_API, Dependencies.SLF4J_SIMPLE,
