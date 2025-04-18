@@ -33,7 +33,7 @@ public class OneDriveHost implements ResourcePackHost {
     private final String clientId;
     private final String clientSecret;
     private final ProxySelector proxy;
-    private final String filePath;
+    private final String uploadPath;
     private Tuple<String, String, Date> refreshToken;
     private String sha1;
     private String fileId;
@@ -41,12 +41,12 @@ public class OneDriveHost implements ResourcePackHost {
     public OneDriveHost(String clientId,
                         String clientSecret,
                         String refreshToken,
-                        String filePath,
+                        String uploadPath,
                         ProxySelector proxy) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.proxy = proxy;
-        this.filePath = filePath;
+        this.uploadPath = uploadPath;
         this.refreshToken = Tuple.of(refreshToken, "", new Date());
         readCacheFromDisk();
     }
@@ -71,7 +71,7 @@ public class OneDriveHost implements ResourcePackHost {
             CraftEngine.instance().logger().info("[OneDrive] Loaded cached resource pack info");
         } catch (Exception e) {
             CraftEngine.instance().logger().warn(
-                    "[OneDrive] Failed to read cache file: " + e.getMessage());
+                    "[OneDrive] Failed to load cache from disk: " + e.getMessage());
         }
     }
 
@@ -93,7 +93,7 @@ public class OneDriveHost implements ResourcePackHost {
             );
         } catch (IOException e) {
             CraftEngine.instance().logger().warn(
-                    "[OneDrive] Failed to save cache: " + e.getMessage());
+                    "[OneDrive] Failed to persist cache to disk: " + e.getMessage());
         }
     }
 
@@ -101,11 +101,11 @@ public class OneDriveHost implements ResourcePackHost {
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 String accessToken = getOrRefreshJwtToken();
                 saveCacheToDisk();
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://graph.microsoft.com/v1.0/drive/items/" + fileId))
+                        .uri(URI.create("https://graph.microsoft.com/v1.0/drive/items/" + this.fileId))
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Content-Type", "application/octet-stream")
                         .GET()
@@ -113,19 +113,19 @@ public class OneDriveHost implements ResourcePackHost {
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> {
                             if (response.statusCode() != 200) {
-                                CraftEngine.instance().logger().severe("[OneDrive] Failed to request resource pack download link: " + response.body());
-                                future.completeExceptionally(new IOException("Failed to request resource pack download link: " + response.body()));
+                                CraftEngine.instance().logger().severe("[OneDrive] Failed to retrieve download URL (HTTP " + response.statusCode() + "): " + response.body());
+                                future.completeExceptionally(new IOException("HTTP " + response.statusCode() + ": " + response.body()));
                                 return;
                             }
                             String downloadUrl = GsonHelper.parseJsonToJsonObject(response.body()).get("@microsoft.graph.downloadUrl").getAsString();
                             future.complete(List.of(new ResourcePackDownloadData(
                                     downloadUrl,
-                                    UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8)),
-                                    sha1
+                                    UUID.nameUUIDFromBytes(this.sha1.getBytes(StandardCharsets.UTF_8)),
+                                    this.sha1
                             )));
                         })
                         .exceptionally(ex -> {
-                            CraftEngine.instance().logger().severe("[OneDrive] Failed to request resource pack download link", ex);
+                            CraftEngine.instance().logger().severe("[OneDrive] Error retrieving download link: " + ex.getMessage());
                             future.completeExceptionally(ex);
                             return null;
                         });
@@ -138,36 +138,37 @@ public class OneDriveHost implements ResourcePackHost {
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
+            this.sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
             String accessToken = getOrRefreshJwtToken();
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://graph.microsoft.com/v1.0/drive/root:/" + filePath + ":/content"))
+                        .uri(URI.create("https://graph.microsoft.com/v1.0/drive/root:/" + this.uploadPath + ":/content"))
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Content-Type", "application/octet-stream")
                         .PUT(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
                 long uploadStart = System.currentTimeMillis();
-                CraftEngine.instance().logger().info("[OneDrive] Starting file upload...");
+                CraftEngine.instance().logger().info("[OneDrive] Initiating resource pack upload...");
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> {
+                            long elapsedTime = System.currentTimeMillis() - uploadStart;
                             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                                CraftEngine.instance().logger().info("[OneDrive] Uploaded resource pack in " + (System.currentTimeMillis() - uploadStart) + "ms");
-                                fileId = GsonHelper.parseJsonToJsonObject(response.body()).get("id").getAsString();
+                                CraftEngine.instance().logger().info("[OneDrive] Successfully uploaded resource pack in " + elapsedTime + " ms");
+                                this.fileId = GsonHelper.parseJsonToJsonObject(response.body()).get("id").getAsString();
                                 saveCacheToDisk();
                                 future.complete(null);
                             } else {
-                                CraftEngine.instance().logger().warn("[OneDrive] Failed to upload resource pack: " + response.statusCode());
-                                future.completeExceptionally(new RuntimeException("Failed to upload resource pack: " + response.statusCode()));
+                                CraftEngine.instance().logger().severe("[OneDrive] Upload failed (HTTP " + response.statusCode() + "): " + response.body());
+                                future.completeExceptionally(new RuntimeException("HTTP " + response.statusCode() + ": " + response.body()));
                             }
                         })
                         .exceptionally(ex -> {
-                            CraftEngine.instance().logger().warn("[OneDrive] Failed to upload resource pack", ex);
+                            CraftEngine.instance().logger().severe("[OneDrive] Upload operation failed: " + ex.getMessage());
                             future.completeExceptionally(ex);
                             return null;
                         });
             } catch (FileNotFoundException e) {
-                CraftEngine.instance().logger().warn("[OneDrive] File not found: " + e.getMessage());
+                CraftEngine.instance().logger().warn("[OneDrive] Resource pack file not found: " + e.getMessage());
                 future.completeExceptionally(e);
             }
         });
@@ -175,12 +176,12 @@ public class OneDriveHost implements ResourcePackHost {
     }
 
     private String getOrRefreshJwtToken() {
-        if (refreshToken == null || refreshToken.mid().isEmpty() || refreshToken.right().before(new Date())) {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
-                String formData = "client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
-                        "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +
+        if (this.refreshToken == null || this.refreshToken.mid().isEmpty() || this.refreshToken.right().before(new Date())) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
+                String formData = "client_id=" + URLEncoder.encode(this.clientId, StandardCharsets.UTF_8) +
+                        "&client_secret=" + URLEncoder.encode(this.clientSecret, StandardCharsets.UTF_8) +
                         "&redirect_uri=" + URLEncoder.encode("https://alist.nn.ci/tool/onedrive/callback", StandardCharsets.UTF_8) +
-                        "&refresh_token=" + URLEncoder.encode(refreshToken.left(), StandardCharsets.UTF_8) +
+                        "&refresh_token=" + URLEncoder.encode(this.refreshToken.left(), StandardCharsets.UTF_8) +
                         "&grant_type=refresh_token" +
                         "&scope=Files.ReadWrite.All+offline_access";
 
@@ -193,28 +194,28 @@ public class OneDriveHost implements ResourcePackHost {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() != 200) {
-                    CraftEngine.instance().logger().warn("[OneDrive] Failed to refresh JWT token: " + response.body());
-                    return refreshToken != null ? refreshToken.mid() : "";
+                    CraftEngine.instance().logger().severe("[OneDrive] Authentication failed (HTTP " + response.statusCode() + "): " + response.body());
+                    return this.refreshToken != null ? this.refreshToken.mid() : "";
                 }
 
                 JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
                 if (jsonData.has("error")) {
                     CraftEngine.instance().logger().warn("[OneDrive] Token refresh error: " + jsonData);
-                    throw new RuntimeException("Token refresh failed: " + jsonData);
+                    throw new RuntimeException("Authentication error: " + jsonData);
                 }
                 long expiresInMillis = jsonData.get("expires_in").getAsInt() * 1000L;
-                refreshToken = Tuple.of(
+                this.refreshToken = Tuple.of(
                         jsonData.get("refresh_token").getAsString(),
                         jsonData.get("access_token").getAsString(),
                         new Date(System.currentTimeMillis() + expiresInMillis - 10_000)
                 );
             } catch (IOException | InterruptedException e) {
-                CraftEngine.instance().logger().warn("[OneDrive] Token refresh failed: " + e.getMessage());
-                throw new RuntimeException("Token refresh failed", e);
+                CraftEngine.instance().logger().severe("[OneDrive] Token refresh failure: " + e.getMessage());
+                throw new RuntimeException("Authentication process failed", e);
             }
         }
 
-        return refreshToken.mid();
+        return this.refreshToken.mid();
     }
 
     public static class Factory implements ResourcePackHostFactory {
@@ -223,22 +224,22 @@ public class OneDriveHost implements ResourcePackHost {
         public ResourcePackHost create(Map<String, Object> arguments) {
             String clientId = (String) arguments.get("client-id");
             if (clientId == null || clientId.isEmpty()) {
-                throw new RuntimeException("Missing 'client-id' for OneDriveHost");
+                throw new IllegalArgumentException("Missing required 'client-id' configuration");
             }
             String clientSecret = (String) arguments.get("client-secret");
             if (clientSecret == null || clientSecret.isEmpty()) {
-                throw new RuntimeException("Missing 'client-secret' for OneDriveHost");
+                throw new IllegalArgumentException("Missing required 'client-secret' configuration");
             }
             String refreshToken = (String) arguments.get("refresh-token");
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new RuntimeException("Missing 'refresh-token' for OneDriveHost");
+                throw new IllegalArgumentException("Missing required 'refresh-token' configuration");
             }
-            String filePath = (String) arguments.getOrDefault("file-path", "resource_pack.zip");
-            if (filePath == null || filePath.isEmpty()) {
-                throw new RuntimeException("Missing 'file-path' for OneDriveHost");
+            String uploadPath = (String) arguments.getOrDefault("upload-path", "resource_pack.zip");
+            if (uploadPath == null || uploadPath.isEmpty()) {
+                throw new IllegalArgumentException("Invalid 'upload-path' configuration");
             }
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new OneDriveHost(clientId, clientSecret, refreshToken, filePath, proxy);
+            return new OneDriveHost(clientId, clientSecret, refreshToken, uploadPath, proxy);
         }
     }
 }

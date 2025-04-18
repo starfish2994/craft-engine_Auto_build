@@ -62,10 +62,10 @@ public class DropboxHost implements ResourcePackHost {
                 this.uuid = UUID.fromString(uuidString);
             }
 
-            CraftEngine.instance().logger().info("[DropBox] Loaded cached resource pack info");
+            CraftEngine.instance().logger().info("[Dropbox] Loaded cached resource pack info");
         } catch (Exception e) {
             CraftEngine.instance().logger().warn(
-                    "[DropBox] Failed to read cache file: " + e.getMessage());
+                    "[Dropbox] Failed to load cache from disk: " + e.getMessage());
         }
     }
 
@@ -85,14 +85,14 @@ public class DropboxHost implements ResourcePackHost {
             );
         } catch (IOException e) {
             CraftEngine.instance().logger().warn(
-                    "[DropBox] Failed to save cache: " + e.getMessage());
+                    "[Dropbox] Failed to persist cache to disk: " + e.getMessage());
         }
     }
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
-        if (url == null) return CompletableFuture.completedFuture(Collections.emptyList());
-        return CompletableFuture.completedFuture(List.of(ResourcePackDownloadData.of(url, uuid, sha1)));
+        if (this.url == null) return CompletableFuture.completedFuture(Collections.emptyList());
+        return CompletableFuture.completedFuture(List.of(ResourcePackDownloadData.of(this.url, this.uuid, this.sha1)));
     }
 
     @Override
@@ -100,25 +100,25 @@ public class DropboxHost implements ResourcePackHost {
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
             String sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 JsonObject apiArg = new JsonObject();
-                apiArg.addProperty("path", uploadPath);
+                apiArg.addProperty("path", this.uploadPath);
                 apiArg.addProperty("mode", "overwrite");
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://content.dropboxapi.com/2/files/upload"))
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", "Bearer " + this.accessToken)
                         .header("Content-Type", "application/octet-stream")
                         .header("Dropbox-API-Arg", apiArg.toString())
                         .POST(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
 
                 long uploadStart = System.currentTimeMillis();
-                CraftEngine.instance().logger().info("[DropBox] Starting file upload...");
+                CraftEngine.instance().logger().info("[Dropbox] Initiating resource pack upload");
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> {
                             long uploadTime = System.currentTimeMillis() - uploadStart;
                             CraftEngine.instance().logger().info(
-                                    "[DropBox] Upload request completed in " + uploadTime + "ms");
+                                    "[Dropbox] Upload completed in " + uploadTime + " ms");
                             if (response.statusCode() == 200) {
                                 this.sha1 = sha1;
                                 this.uuid = UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8));
@@ -128,16 +128,16 @@ public class DropboxHost implements ResourcePackHost {
                                 return;
                             }
                             CraftEngine.instance().logger().warn(
-                                    "[DropBox] Upload resource pack failed: " + response.body());
+                                    "[Dropbox] Upload failed (HTTP " + response.statusCode() + "): " + response.body());
                             future.completeExceptionally(new RuntimeException(response.body()));
                         })
                         .exceptionally(ex -> {
-                            CraftEngine.instance().logger().warn("[DropBox] Upload resource pack failed", ex);
+                            CraftEngine.instance().logger().warn("[Dropbox] Upload operation failed: " + ex.getMessage());
                             future.completeExceptionally(ex);
                             return null;
                         });
             } catch (FileNotFoundException e) {
-                CraftEngine.instance().logger().warn("[DropBox] Failed to upload resource pack: " + e.getMessage());
+                CraftEngine.instance().logger().warn("[Dropbox] Resource pack file not found: " + e.getMessage());
                 future.completeExceptionally(e);
             }
         });
@@ -178,13 +178,13 @@ public class DropboxHost implements ResourcePackHost {
                         }
                     }
                 } else if (response.statusCode() != 200) {
-                    CraftEngine.instance().logger().warn("[DropBox] Failed to get download url: " + response.body());
+                    CraftEngine.instance().logger().warn("[Dropbox] Failed to retrieve download URL (HTTP " + response.statusCode() + "): " + response.body());
                     return null;
                 }
                 JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
                 return jsonData.getAsJsonPrimitive("url").getAsString().replace("dl=0", "dl=1");
             } catch (IOException | InterruptedException e) {
-                CraftEngine.instance().logger().warn("[DropBox] Failed to get download url: " + e.getMessage());
+                CraftEngine.instance().logger().warn("[Dropbox] Error generating download link: " + e.getMessage());
                 return null;
             }
         }
@@ -196,11 +196,11 @@ public class DropboxHost implements ResourcePackHost {
         public ResourcePackHost create(Map<String, Object> arguments) {
             String accessToken = (String) arguments.get("access-token");
             if (accessToken == null || accessToken.isEmpty()) {
-                throw new RuntimeException("Missing 'access-token' for DropboxHost");
+                throw new IllegalArgumentException("Missing required 'access-token' configuration");
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "/resource_pack.zip");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new DropboxHost(accessToken, uploadPath, proxy);
+            return new DropboxHost(accessToken, "/" + uploadPath, proxy);
         }
     }
 }

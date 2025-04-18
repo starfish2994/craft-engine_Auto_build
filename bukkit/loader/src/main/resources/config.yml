@@ -74,7 +74,7 @@ resource-pack:
     # If using BungeeCord or Velocity, consider using a proxy-side plugin to handle resource pack delivery.
     # Read this page for more host types: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host
     hosting:
-      - type: "self_host"
+      - type: "self"
         ip: "localhost"
         port: 8163
         protocol: "http"

@@ -61,7 +61,6 @@ public class SelfHostHttpServer {
                                  int maxRequests,
                                  int resetInternal) {
         this.ip = ip;
-        this.port = port;
         this.denyNonMinecraft = denyNonMinecraft;
         this.protocol = protocol;
         this.rateLimit = maxRequests;

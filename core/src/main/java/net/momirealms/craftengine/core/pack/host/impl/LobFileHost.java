@@ -87,18 +87,18 @@ public class LobFileHost implements ResourcePackHost {
     }
 
     public String getSpaceUsageText() {
-        if (accountInfo == null) return "Usage data not available";
+        if (this.accountInfo == null) return "Usage data not available";
         return String.format("Storage: %d/%d MB (%.1f%% used)",
-                accountInfo.getSpaceUsed() / 1_000_000,
-                accountInfo.getSpaceQuota() / 1_000_000,
-                (accountInfo.getSpaceUsed() * 100.0) / accountInfo.getSpaceQuota()
+                this.accountInfo.getSpaceUsed() / 1_000_000,
+                this.accountInfo.getSpaceQuota() / 1_000_000,
+                (this.accountInfo.getSpaceUsed() * 100.0) / this.accountInfo.getSpaceQuota()
         );
     }
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         if (url == null) return CompletableFuture.completedFuture(Collections.emptyList());
-        return CompletableFuture.completedFuture(List.of(ResourcePackDownloadData.of(url, uuid, sha1)));
+        return CompletableFuture.completedFuture(List.of(ResourcePackDownloadData.of(this.url, this.uuid, this.sha1)));
     }
 
     @Override
@@ -111,12 +111,12 @@ public class LobFileHost implements ResourcePackHost {
                 String sha1Hash = hashes.get("SHA-1");
                 String sha256Hash = hashes.get("SHA-256");
 
-                try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+                try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                     String boundary = UUID.randomUUID().toString();
 
                     HttpRequest request = HttpRequest.newBuilder()
                             .uri(URI.create("https://lobfile.com/api/v3/upload.php"))
-                            .header("X-API-Key", apiKey)
+                            .header("X-API-Key", this.apiKey)
                             .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                             .POST(buildMultipartBody(resourcePackPath, sha256Hash, boundary))
                             .build();
@@ -151,10 +151,10 @@ public class LobFileHost implements ResourcePackHost {
     }
 
     public CompletableFuture<AccountInfo> fetchAccountInfo() {
-        try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+        try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://lobfile.com/api/v3/rest/get-account-info"))
-                    .header("X-API-Key", apiKey)
+                    .header("X-API-Key", this.apiKey)
                     .GET()
                     .build();
 
@@ -273,23 +273,23 @@ public class LobFileHost implements ResourcePackHost {
         private Map<String, Integer> account_usage;
 
         public String getEmail() {
-            return (String) account_info.get("email");
+            return (String) this.account_info.get("email");
         }
 
         public int getSpaceQuota() {
-            return account_limits.getOrDefault("space_quota", 0);
+            return this.account_limits.getOrDefault("space_quota", 0);
         }
 
         public int getSpaceUsed() {
-            return account_usage.getOrDefault("space_used", 0);
+            return this.account_usage.getOrDefault("space_used", 0);
         }
 
         public int getSlotsUsed() {
-            return account_usage.getOrDefault("slots_used", 0);
+            return this.account_usage.getOrDefault("slots_used", 0);
         }
 
         public boolean isSuccess() {
-            return success;
+            return this.success;
         }
     }
 }

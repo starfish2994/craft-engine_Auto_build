@@ -73,20 +73,20 @@ public class S3Host implements ResourcePackHost {
                     if (exception != null) {
                         Throwable cause = exception.getCause();
                         if (cause instanceof NoSuchKeyException) {
-                            CraftEngine.instance().logger().warn("[S3] Resource pack not found! Upload it first.");
+                            CraftEngine.instance().logger().warn("[S3] Resource pack not found in bucket '" + this.bucket + "'. Path: " + this.uploadPath);
                             return Collections.emptyList();
                         } else {
                             CraftEngine.instance().logger().warn(
-                                    "[S3] Requesting resource pack failed! Reason: " +
+                                    "[S3] Failed to retrieve resource pack metadata. Reason: " +
                                             cause.getClass().getSimpleName() + " - " + cause.getMessage()
                             );
-                            throw new CompletionException("Failed to request resource pack", cause);
+                            throw new CompletionException("Metadata request failed for path: " + this.uploadPath, cause);
                         }
                     }
                     String sha1 = headResponse.metadata().get("sha1");
                     if (sha1 == null) {
-                        CraftEngine.instance().logger().warn("[S3] SHA1 metadata missing for object: " + this.uploadPath);
-                        throw new CompletionException(new IllegalStateException("SHA1 metadata missing for object: " + this.uploadPath));
+                        CraftEngine.instance().logger().warn("[S3] Missing SHA-1 checksum in object metadata. Path: " + this.uploadPath);
+                        throw new CompletionException(new IllegalStateException("Missing SHA-1 metadata for S3 object: " + this.uploadPath));
                     }
                     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                             .signatureDuration(this.validity)
@@ -111,7 +111,7 @@ public class S3Host implements ResourcePackHost {
                 .metadata(Map.of("sha1", sha1))
                 .build();
         long uploadStart = System.currentTimeMillis();
-        CraftEngine.instance().logger().info("[S3] Starting file upload...");
+        CraftEngine.instance().logger().info("[S3] Initiating resource pack upload to '" + this.uploadPath + "'");
         return this.s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromFile(resourcePackPath))
                 .handle((response, exception) -> {
                     if (exception != null) {
@@ -119,14 +119,14 @@ public class S3Host implements ResourcePackHost {
                                 exception.getCause() :
                                 exception;
                         CraftEngine.instance().logger().warn(
-                                "[S3] Upload to " + this.uploadPath + " failed! Reason: " +
+                                "[S3] Upload failed for path '" + this.uploadPath + "'. Error: " +
                                         cause.getClass().getSimpleName() + " - " + cause.getMessage()
                         );
-                        throw new CompletionException("Resource pack upload failed", cause);
+                        throw new CompletionException("Failed to upload to S3 path: " + this.uploadPath, cause);
                     }
                     CraftEngine.instance().logger().info(
-                            "[S3] Upload to " + this.uploadPath + " complete! Took " +
-                                    (System.currentTimeMillis() - uploadStart) + "ms"
+                            "[S3] Successfully uploaded resource pack to '" + this.uploadPath + "' in " +
+                                    (System.currentTimeMillis() - uploadStart) + " ms"
                     );
                     return null;
                 });
@@ -200,7 +200,7 @@ public class S3Host implements ResourcePackHost {
                 String username = (String) proxySetting.get("username");
                 String password = (String) proxySetting.get("password");
                 if (host == null || host.isEmpty() || port <= 0 || port > 65535 || scheme == null || scheme.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid proxy setting");
+                    throw new IllegalArgumentException("Invalid proxy configuration");
                 }
                 ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);
                 if (username != null) builder.username(username);

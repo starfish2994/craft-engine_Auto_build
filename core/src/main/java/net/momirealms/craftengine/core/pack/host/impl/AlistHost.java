@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.pack.host.impl;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
@@ -14,6 +15,7 @@ import net.momirealms.craftengine.core.util.Pair;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -23,6 +25,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -41,7 +44,7 @@ public class AlistHost implements ResourcePackHost {
     private final boolean disabledUpload;
     private final ProxySelector proxy;
     private Pair<String, Date> jwtToken;
-    private String cacheSha1;
+    private String cachedSha1;
 
     public AlistHost(String apiUrl,
                      String userName,
@@ -67,19 +70,37 @@ public class AlistHost implements ResourcePackHost {
     private void readCacheFromDisk() {
         Path cachePath = CraftEngine.instance().dataFolderPath().resolve("alist.cache");
         if (!Files.exists(cachePath)) return;
+
         try (InputStream is = Files.newInputStream(cachePath)) {
-            cacheSha1 = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            CraftEngine.instance().logger().warn("[Alist] Failed to read cache file", e);
+            Map<String, String> cache = GsonHelper.get().fromJson(
+                    new InputStreamReader(is),
+                    new TypeToken<Map<String, String>>(){}.getType()
+            );
+
+            this.cachedSha1 = cache.get("sha1");
+
+            CraftEngine.instance().logger().info("[Alist] Loaded cached resource pack metadata");
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn(
+                    "[Alist] Failed to load cache from disk: " + e.getMessage());
         }
     }
 
     private void saveCacheToDisk() {
+        Map<String, String> cache = new HashMap<>();
+        cache.put("sha1", this.cachedSha1 != null ? this.cachedSha1 : "");
+
         Path cachePath = CraftEngine.instance().dataFolderPath().resolve("alist.cache");
         try {
-            Files.writeString(cachePath, cacheSha1);
+            Files.writeString(
+                    cachePath,
+                    GsonHelper.get().toJson(cache),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
         } catch (IOException e) {
-            CraftEngine.instance().logger().warn("[Alist] Failed to write cache file", e);
+            CraftEngine.instance().logger().warn(
+                    "[Alist] Failed to persist cache to disk: " + e.getMessage());
         }
     }
 
@@ -87,9 +108,9 @@ public class AlistHost implements ResourcePackHost {
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(apiUrl + "/api/fs/get"))
+                        .uri(URI.create(this.apiUrl + "/api/fs/get"))
                         .header("Authorization", getOrRefreshJwtToken())
                         .header("Content-Type", "application/json")
                         .POST(getRequestResourcePackDownloadLinkPost())
@@ -97,7 +118,7 @@ public class AlistHost implements ResourcePackHost {
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> handleResourcePackDownloadLinkResponse(response, future))
                         .exceptionally(ex -> {
-                            CraftEngine.instance().logger().severe("[Alist] Failed to request resource pack download link", ex);
+                            CraftEngine.instance().logger().severe("[Alist] Failed to retrieve resource pack download URL", ex);
                             future.completeExceptionally(ex);
                             return null;
                         });
@@ -108,33 +129,33 @@ public class AlistHost implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
-        if (disabledUpload) {
-            cacheSha1 = "";
+        if (this.disabledUpload) {
+            this.cachedSha1 = "";
             saveCacheToDisk();
             return CompletableFuture.completedFuture(null);
         }
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(apiUrl + "/api/fs/put"))
+                        .uri(URI.create(this.apiUrl + "/api/fs/put"))
                         .header("Authorization", getOrRefreshJwtToken())
-                        .header("File-Path", URLEncoder.encode(filePath, StandardCharsets.UTF_8)
+                        .header("File-Path", URLEncoder.encode(this.filePath, StandardCharsets.UTF_8)
                                 .replace("/", "%2F"))
                         .header("overwrite", "true")
-                        .header("password", filePassword)
+                        .header("password", this.filePassword)
                         .header("Content-Type", "application/x-zip-compressed")
                         .PUT(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
                 long requestStart = System.currentTimeMillis();
-                CraftEngine.instance().logger().info("[Alist] Starting file upload...");
+                CraftEngine.instance().logger().info("[Alist] Initiating resource pack upload...");
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> {
                             long uploadTime = System.currentTimeMillis() - requestStart;
                             if (response.statusCode() == 200) {
-                                cacheSha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
+                                this.cachedSha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
                                 saveCacheToDisk();
-                                CraftEngine.instance().logger().info("[Alist] Upload resource pack successfully in " + uploadTime + "ms");
+                                CraftEngine.instance().logger().info("[Alist] Successfully uploaded resource pack in " + uploadTime + " ms");
                                 future.complete(null);
                             } else {
                                 future.completeExceptionally(new RuntimeException("Upload failed with status code: " + response.statusCode()));
@@ -143,7 +164,7 @@ public class AlistHost implements ResourcePackHost {
                         .exceptionally(ex -> {
                             long uploadTime = System.currentTimeMillis() - requestStart;
                             CraftEngine.instance().logger().severe(
-                                    "[Alist] Failed to upload resource pack after " + uploadTime + "ms", ex);
+                                    "[Alist] Resource pack upload failed after " + uploadTime + " ms", ex);
                             future.completeExceptionally(ex);
                             return null;
                         });
@@ -157,16 +178,16 @@ public class AlistHost implements ResourcePackHost {
 
     @Nullable
     private String getOrRefreshJwtToken() {
-        if (jwtToken == null || jwtToken.right().before(new Date())) {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+        if (this.jwtToken == null || this.jwtToken.right().before(new Date())) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(apiUrl + "/api/auth/login"))
+                        .uri(URI.create(this.apiUrl + "/api/auth/login"))
                         .header("Content-Type", "application/json")
                         .POST(getLoginPost())
                         .build();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() != 200) {
-                    CraftEngine.instance().logger().warn("[Alist] Failed to get JWT token: " + response.body());
+                    CraftEngine.instance().logger().warn("[Alist] Authentication failed (HTTP " + response.statusCode() + "): " + response.body());
                     return null;
                 }
                 JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
@@ -175,36 +196,36 @@ public class AlistHost implements ResourcePackHost {
                     JsonElement data = jsonData.get("data");
                     if (data.isJsonObject()) {
                         JsonObject jsonObj = data.getAsJsonObject();
-                        jwtToken = Pair.of(
+                        this.jwtToken = Pair.of(
                                 jsonObj.getAsJsonPrimitive("token").getAsString(),
-                                new Date(System.currentTimeMillis() + jwtTokenExpiration.toMillis())
+                                new Date(System.currentTimeMillis() + this.jwtTokenExpiration.toMillis())
                         );
-                        return jwtToken.left();
+                        return this.jwtToken.left();
                     }
-                    CraftEngine.instance().logger().warn("[Alist] Failed to get JWT token: " + response.body());
+                    CraftEngine.instance().logger().warn("[Alist] Invalid JWT response format: " + response.body());
                     return null;
                 }
-                CraftEngine.instance().logger().warn("[Alist] Failed to get JWT token: " + response.body());
+                CraftEngine.instance().logger().warn("[Alist] Authentication rejected: " + response.body());
                 return null;
             } catch (IOException | InterruptedException e) {
-                CraftEngine.instance().logger().warn("[Alist] Failed to get JWT token", e);
+                CraftEngine.instance().logger().warn("[Alist] JWT token acquisition failed", e);
                 return null;
             }
         }
-        return jwtToken.left();
+        return this.jwtToken.left();
     }
 
     private HttpRequest.BodyPublisher getLoginPost() {
-        String body = "{\"username\":\"" + userName + "\",\"password\":\"" + password + "\"";
-        if (otpCode != null && !otpCode.isEmpty()) {
-            body += ",\"otp_code\":\"" + otpCode + "\"";
+        String body = "{\"username\":\"" + this.userName + "\",\"password\":\"" + this.password + "\"";
+        if (this.otpCode != null && !this.otpCode.isEmpty()) {
+            body += ",\"otp_code\":\"" + this.otpCode + "\"";
         }
         body += "}";
         return HttpRequest.BodyPublishers.ofString(body);
     }
 
     private HttpRequest.BodyPublisher getRequestResourcePackDownloadLinkPost() {
-        String body = "{\"path\":\"" + filePath + "\",\"password\":\"" + filePassword + "\"}";
+        String body = "{\"path\":\"" + this.filePath + "\",\"password\":\"" + this.filePassword + "\"}";
         return HttpRequest.BodyPublishers.ofString(body);
     }
 
@@ -220,8 +241,8 @@ public class AlistHost implements ResourcePackHost {
                     boolean isDir = dataObj.getAsJsonPrimitive("is_dir").getAsBoolean();
                     if (!isDir) {
                         String url = dataObj.getAsJsonPrimitive("raw_url").getAsString();
-                        if ((cacheSha1 == null || cacheSha1.isEmpty()) && disabledUpload) {
-                            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+                        if ((this.cachedSha1 == null || this.cachedSha1.isEmpty()) && this.disabledUpload) {
+                            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                                 HttpRequest request = HttpRequest.newBuilder()
                                         .uri(URI.create(url))
                                         .GET()
@@ -235,26 +256,26 @@ public class AlistHost implements ResourcePackHost {
                                         md.update(buffer, 0, len);
                                     }
                                     byte[] digest = md.digest();
-                                    cacheSha1 = HexFormat.of().formatHex(digest);
+                                    this.cachedSha1 = HexFormat.of().formatHex(digest);
                                     saveCacheToDisk();
                                 } catch (NoSuchAlgorithmException e) {
-                                    future.completeExceptionally(new RuntimeException("Failed to get resource pack hash"));
+                                    future.completeExceptionally(new RuntimeException("Failed to calculate SHA-1 hash algorithm", e));
                                     return;
                                 }
                             } catch (IOException | InterruptedException e) {
-                                future.completeExceptionally(new RuntimeException("Failed to get resource pack hash"));
+                                future.completeExceptionally(new RuntimeException("Failed to retrieve remote resource pack for hashing", e));
                                 return;
                             }
                         }
-                        UUID uuid = UUID.nameUUIDFromBytes(Objects.requireNonNull(cacheSha1).getBytes(StandardCharsets.UTF_8));
-                        future.complete(List.of(new ResourcePackDownloadData(url, uuid, cacheSha1)));
+                        UUID uuid = UUID.nameUUIDFromBytes(Objects.requireNonNull(this.cachedSha1).getBytes(StandardCharsets.UTF_8));
+                        future.complete(List.of(new ResourcePackDownloadData(url, uuid, this.cachedSha1)));
                         return;
                     }
                 }
             }
         }
         future.completeExceptionally(
-                new RuntimeException("Failed to request resource pack download link: " + response.body()));
+                new RuntimeException("Failed to obtain resource pack download URL (HTTP " + response.statusCode() + "): " + response.body()));
     }
 
     public static class Factory implements ResourcePackHostFactory {
