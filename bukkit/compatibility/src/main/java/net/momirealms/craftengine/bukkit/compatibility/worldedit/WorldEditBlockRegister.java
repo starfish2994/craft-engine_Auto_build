@@ -16,35 +16,18 @@ import net.momirealms.craftengine.core.util.ReflectionUtils;
 import org.bukkit.Material;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class WorldEditBlockRegister {
     private final Field field$BlockType$blockMaterial;
     private final AbstractBlockManager manager;
-    private final Set<String> cachedSuggestions = new HashSet<>();
 
     public WorldEditBlockRegister(AbstractBlockManager manager) {
         field$BlockType$blockMaterial = ReflectionUtils.getDeclaredField(BlockType.class, "blockMaterial");
         this.manager = manager;
-    }
-
-    public void enable() {
         CEBlockParser blockParser = new CEBlockParser(WorldEdit.getInstance());
         WorldEdit.getInstance().getBlockFactory().register(blockParser);
-    }
-
-    public void load() {
-        Collection<?> cachedSuggestions = manager.cachedSuggestions();
-        for (Object o : cachedSuggestions) {
-            this.cachedSuggestions.add(o.toString());
-        }
-    }
-
-    public void unload() {
-        cachedSuggestions.clear();
     }
 
     public void register(Key id) throws ReflectiveOperationException {
@@ -53,9 +36,9 @@ public class WorldEditBlockRegister {
         BlockType.REGISTRY.register(id.toString(), blockType);
     }
 
-    private class CEBlockParser extends InputParser<BaseBlock> {
+    private final class CEBlockParser extends InputParser<BaseBlock> {
 
-        protected CEBlockParser(WorldEdit worldEdit) {
+        private CEBlockParser(WorldEdit worldEdit) {
             super(worldEdit);
         }
 
@@ -68,22 +51,25 @@ public class WorldEditBlockRegister {
             }
 
             if (input.startsWith(":")) {
-                String term = input.substring(1).toLowerCase();
-                return cachedSuggestions.stream().filter(s -> s.toLowerCase().contains(term));
+                String term = input.substring(1);
+                return BlockStateParser.fillSuggestions(term).stream();
             }
 
             if (!input.contains(":")) {
                 String lowerSearch = input.toLowerCase();
                 return Stream.concat(
                         namespacesInUse.stream().filter(n -> n.startsWith(lowerSearch)).map(n -> n + ":"),
-                        cachedSuggestions.stream().filter(s -> s.toLowerCase().startsWith(lowerSearch))
+                        BlockStateParser.fillSuggestions(input).stream()
                 );
             }
-            return cachedSuggestions.stream().filter(s -> s.toLowerCase().startsWith(input.toLowerCase()));
+            return BlockStateParser.fillSuggestions(input).stream();
         }
 
         @Override
         public BaseBlock parseFromInput(String input, ParserContext context) {
+            int index = input.indexOf("[");
+            if (input.charAt(index+1) == ']') return null;
+
             int colonIndex = input.indexOf(':');
             if (colonIndex == -1) return null;
 

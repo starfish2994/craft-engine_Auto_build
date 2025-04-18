@@ -87,8 +87,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
-    // WE support
-    private WorldEditBlockRegister weBlockRegister;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -146,8 +144,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.modBlockStates.clear();
         if (EmptyBlock.INSTANCE != null)
             Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.INSTANCE.defaultState());
-        if (weBlockRegister != null)
-            weBlockRegister.unload();
     }
 
     @Override
@@ -167,7 +163,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         initSuggestions();
         resetPacketConsumers();
         clearCache();
-        loadWorldEditRegister();
     }
 
     private void clearCache() {
@@ -177,13 +172,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public void initFastAsyncWorldEditHook() {
-        this.weBlockRegister = new WorldEditBlockRegister(this);
-        this.weBlockRegister.enable();
+        new WorldEditBlockRegister(this);
     }
 
     public void initWorldEditHook() {
-        this.weBlockRegister = new WorldEditBlockRegister(this);
-        this.weBlockRegister.enable();
+        WorldEditBlockRegister weBlockRegister = new WorldEditBlockRegister(this);
         try {
             for (Key newBlockId : this.blockRegisterOrder) {
                 weBlockRegister.register(newBlockId);
@@ -191,11 +184,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to initialize world edit hook", e);
         }
-    }
-
-    public void loadWorldEditRegister() {
-        if (this.weBlockRegister != null)
-            this.weBlockRegister.load();
     }
 
     @Nullable
