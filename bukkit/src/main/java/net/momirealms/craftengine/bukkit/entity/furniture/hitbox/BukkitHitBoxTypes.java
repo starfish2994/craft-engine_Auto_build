@@ -10,5 +10,6 @@ public class BukkitHitBoxTypes extends HitBoxTypes {
         register(INTERACTION, InteractionHitBox.FACTORY);
         register(SHULKER, ShulkerHitBox.FACTORY);
         register(HAPPY_GHAST, HappyGhastHitBox.FACTORY);
+        register(CUSTOM, CustomHitBox.FACTORY);
     }
 }

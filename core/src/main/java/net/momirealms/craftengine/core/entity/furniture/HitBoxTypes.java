@@ -14,6 +14,7 @@ public class HitBoxTypes {
     public static final Key INTERACTION = Key.of("minecraft:interaction");
     public static final Key SHULKER = Key.of("minecraft:shulker");
     public static final Key HAPPY_GHAST = Key.of("minecraft:happy_ghast");
+    public static final Key CUSTOM = Key.of("minecraft:custom");
 
     public static void register(Key key, HitBoxFactory factory) {
         Holder.Reference<HitBoxFactory> holder = ((WritableRegistry<HitBoxFactory>) BuiltInRegistries.HITBOX_FACTORY)

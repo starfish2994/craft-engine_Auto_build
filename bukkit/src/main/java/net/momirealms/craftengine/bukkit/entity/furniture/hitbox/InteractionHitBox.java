@@ -55,7 +55,7 @@ public class InteractionHitBox extends AbstractHitBox {
             ), true);
             packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId[0], List.copyOf(this.cachedValues)), true);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to construct hitbox spawn packet", e);
+            throw new RuntimeException("Failed to construct interaction hitbox spawn packet", e);
         }
     }
 
