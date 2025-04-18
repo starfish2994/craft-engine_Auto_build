@@ -28,21 +28,19 @@ public class CustomApiHost implements ResourcePackHost {
     private final String authKey;
     private final Path localFilePath;
     private final ProxySelector proxy;
-    private final Authenticator auth;
 
-    public CustomApiHost(String apiUrl, String authKey, String localFilePath, ProxySelector proxy, Authenticator auth) {
+    public CustomApiHost(String apiUrl, String authKey, String localFilePath, ProxySelector proxy) {
         this.apiUrl = apiUrl;
         this.authKey = authKey;
         this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         this.proxy = proxy;
-        this.auth = auth;
     }
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/get-download-link?uuid=" + player))
                         .header("Authorization", authKey)
@@ -74,7 +72,7 @@ public class CustomApiHost implements ResourcePackHost {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/upload-resource-pack"))
                         .header("Authorization", authKey)
@@ -129,8 +127,7 @@ public class CustomApiHost implements ResourcePackHost {
             }
             String localFilePath = (String) arguments.get("local-file-path");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            Authenticator proxyAuth = MiscUtils.getAuthenticator(arguments.get("proxy"));
-            return new CustomApiHost(apiUrl, authKey, localFilePath, proxy, proxyAuth);
+            return new CustomApiHost(apiUrl, authKey, localFilePath, proxy);
         }
     }
 }

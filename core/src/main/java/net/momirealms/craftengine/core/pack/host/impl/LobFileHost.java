@@ -32,18 +32,16 @@ public class LobFileHost implements ResourcePackHost {
     private final Path forcedPackPath;
     private final String apiKey;
     private final ProxySelector proxy;
-    private final Authenticator auth;
     private AccountInfo accountInfo;
 
     private String url;
     private String sha1;
     private UUID uuid;
 
-    public LobFileHost(String localFile, String apiKey, ProxySelector proxy, Authenticator auth) {
+    public LobFileHost(String localFile, String apiKey, ProxySelector proxy) {
         this.forcedPackPath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.apiKey = apiKey;
         this.proxy = proxy;
-        this.auth = auth;
         this.readCacheFromDisk();
     }
 
@@ -121,7 +119,7 @@ public class LobFileHost implements ResourcePackHost {
                 String sha1Hash = hashes.get("SHA-1");
                 String sha256Hash = hashes.get("SHA-256");
 
-                try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+                try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                     String boundary = UUID.randomUUID().toString();
 
                     HttpRequest request = HttpRequest.newBuilder()
@@ -161,7 +159,7 @@ public class LobFileHost implements ResourcePackHost {
     }
 
     public CompletableFuture<AccountInfo> fetchAccountInfo() {
-        try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+        try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://lobfile.com/api/v3/rest/get-account-info"))
                     .header("X-API-Key", apiKey)
@@ -284,8 +282,7 @@ public class LobFileHost implements ResourcePackHost {
                 throw new RuntimeException("Missing 'api-key' for LobFileHost");
             }
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            Authenticator proxyAuth = MiscUtils.getAuthenticator(arguments.get("proxy"));
-            return new LobFileHost(localFilePath, apiKey, proxy, proxyAuth);
+            return new LobFileHost(localFilePath, apiKey, proxy);
         }
     }
 

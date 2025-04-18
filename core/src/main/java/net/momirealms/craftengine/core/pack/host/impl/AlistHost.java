@@ -14,7 +14,6 @@ import net.momirealms.craftengine.core.util.Pair;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -42,7 +41,6 @@ public class AlistHost implements ResourcePackHost {
     private final boolean disabledUpload;
     private final Path localFilePath;
     private final ProxySelector proxy;
-    private final Authenticator auth;
     private Pair<String, Date> jwtToken;
     private String cacheSha1;
 
@@ -55,8 +53,7 @@ public class AlistHost implements ResourcePackHost {
                      String filePath,
                      boolean disabledUpload,
                      String localFilePath,
-                     ProxySelector proxy,
-                     Authenticator auth) {
+                     ProxySelector proxy) {
         this.apiUrl = apiUrl;
         this.userName = userName;
         this.password = password;
@@ -67,7 +64,6 @@ public class AlistHost implements ResourcePackHost {
         this.disabledUpload = disabledUpload;
         this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         this.proxy = proxy;
-        this.auth = auth;
         this.readCacheFromDisk();
     }
 
@@ -94,7 +90,7 @@ public class AlistHost implements ResourcePackHost {
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/fs/get"))
                         .header("Authorization", getOrRefreshJwtToken())
@@ -124,7 +120,7 @@ public class AlistHost implements ResourcePackHost {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/fs/put"))
                         .header("Authorization", getOrRefreshJwtToken())
@@ -167,7 +163,7 @@ public class AlistHost implements ResourcePackHost {
     @Nullable
     private String getOrRefreshJwtToken() {
         if (jwtToken == null || jwtToken.right().before(new Date())) {
-            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/auth/login"))
                         .header("Content-Type", "application/json")
@@ -230,7 +226,7 @@ public class AlistHost implements ResourcePackHost {
                     if (!isDir) {
                         String url = dataObj.getAsJsonPrimitive("raw_url").getAsString();
                         if ((cacheSha1 == null || cacheSha1.isEmpty()) && disabledUpload) {
-                            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
+                            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                                 HttpRequest request = HttpRequest.newBuilder()
                                         .uri(URI.create(url))
                                         .GET()
@@ -318,8 +314,7 @@ public class AlistHost implements ResourcePackHost {
             boolean disabledUpload = (boolean) arguments.getOrDefault("disabled-upload", false);
             String localFilePath = (String) arguments.get("local-file-path");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            Authenticator proxyAuth = MiscUtils.getAuthenticator(arguments.get("proxy"));
-            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, localFilePath, proxy, proxyAuth);
+            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, localFilePath, proxy);
         }
     }
 }

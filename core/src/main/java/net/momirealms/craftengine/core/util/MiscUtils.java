@@ -188,26 +188,4 @@ public class MiscUtils {
         }
         return proxy;
     }
-
-    public static Authenticator getAuthenticator(Object o) {
-        Map<String, Object> proxySetting = castToMap(o, true);
-        Authenticator auth = Authenticator.getDefault();
-        if (proxySetting != null) {
-            String username = (String) proxySetting.get("username");
-            String password = (String) proxySetting.get("password");
-            auth = new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType() == RequestorType.PROXY) {
-                        return new PasswordAuthentication(
-                                username,
-                                password.toCharArray()
-                        );
-                    }
-                    return null;
-                }
-            };
-        }
-        return auth;
-    }
 }

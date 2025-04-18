@@ -18,6 +18,7 @@ public class ResourcePackHosts {
     public static final Key S3_HOST = Key.of("craftengine:s3_host");
     public static final Key CUSTOM_API_HOST = Key.of("craftengine:custom_api_host");
     public static final Key ALIST_HOST = Key.of("craftengine:alist_host");
+    public static final Key DROPBOX_HOST = Key.of("craftengine:dropbox_host");
 
     static {
         register(NONE, NoneHost.FACTORY);
@@ -27,6 +28,7 @@ public class ResourcePackHosts {
         register(S3_HOST, S3Host.FACTORY);
         register(CUSTOM_API_HOST, CustomApiHost.FACTORY);
         register(ALIST_HOST, AlistHost.FACTORY);
+        register(DROPBOX_HOST, DropboxHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {

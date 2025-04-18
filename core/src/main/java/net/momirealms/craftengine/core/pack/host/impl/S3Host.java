@@ -42,7 +42,6 @@ public class S3Host implements ResourcePackHost {
     private final S3Presigner presigner;
     private final String bucket;
     private final String uploadPath;
-    private final String uploadFileName;
     private final String cdnDomain;
     private final String cdnProtocol;
     private final Duration validity;
@@ -53,7 +52,6 @@ public class S3Host implements ResourcePackHost {
             S3Presigner presigner,
             String bucket,
             String uploadPath,
-            String uploadFileName,
             String cdnDomain,
             String cdnProtocol,
             Duration validity,
@@ -63,7 +61,6 @@ public class S3Host implements ResourcePackHost {
         this.presigner = presigner;
         this.bucket = bucket;
         this.uploadPath = uploadPath;
-        this.uploadFileName = uploadFileName;
         this.cdnDomain = cdnDomain;
         this.cdnProtocol = cdnProtocol;
         this.validity = validity;
@@ -72,7 +69,7 @@ public class S3Host implements ResourcePackHost {
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
-        String objectKey = uploadPath + uploadFileName;
+        String objectKey = uploadPath;
 
         return s3AsyncClient.headObject(HeadObjectRequest.builder()
                         .bucket(bucket)
@@ -114,7 +111,7 @@ public class S3Host implements ResourcePackHost {
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
-        String objectKey = uploadPath + uploadFileName;
+        String objectKey = uploadPath;
         String sha1 = calculateLocalFileSha1(resourcePackPath);
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -189,8 +186,10 @@ public class S3Host implements ResourcePackHost {
             if (accessKeySecret == null || accessKeySecret.isEmpty()) {
                 throw new IllegalArgumentException("'access-key-secret' cannot be empty for S3 host");
             }
-            String uploadPath = (String) arguments.getOrDefault("upload-path", "");
-            String uploadFileName = (String) arguments.getOrDefault("upload-file-name", "resource_pack.zip");
+            String uploadPath = (String) arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip");
+            if (uploadPath == null || uploadPath.isEmpty()) {
+                throw new IllegalArgumentException("'upload-path' cannot be empty for S3 host");
+            }
             String localFilePath = (String) arguments.get("local-file-path");
             boolean useLegacySignature = (boolean) arguments.getOrDefault("use-legacy-signature", true);
             Duration validity = Duration.ofSeconds((int) arguments.getOrDefault("validity", 10));
@@ -247,7 +246,6 @@ public class S3Host implements ResourcePackHost {
                     presigner,
                     bucket,
                     uploadPath,
-                    uploadFileName,
                     cdnDomain,
                     cdnProtocol,
                     validity,
