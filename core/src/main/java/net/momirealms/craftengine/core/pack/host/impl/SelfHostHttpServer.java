@@ -100,7 +100,7 @@ public class SelfHostHttpServer {
             return null;
         }
         if (!this.useToken) {
-            return new ResourcePackDownloadData(url(), packUUID, packHash);
+            return new ResourcePackDownloadData(url() + "download", packUUID, packHash);
         }
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
