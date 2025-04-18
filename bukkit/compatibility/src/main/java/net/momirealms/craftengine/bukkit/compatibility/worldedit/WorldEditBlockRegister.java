@@ -22,10 +22,12 @@ import java.util.stream.Stream;
 public class WorldEditBlockRegister {
     private final Field field$BlockType$blockMaterial;
     private final AbstractBlockManager manager;
+    private final boolean isFAWE;
 
-    public WorldEditBlockRegister(AbstractBlockManager manager) {
+    public WorldEditBlockRegister(AbstractBlockManager manager, boolean isFAWE) {
         field$BlockType$blockMaterial = ReflectionUtils.getDeclaredField(BlockType.class, "blockMaterial");
         this.manager = manager;
+        this.isFAWE = isFAWE;
         CEBlockParser blockParser = new CEBlockParser(WorldEdit.getInstance());
         WorldEdit.getInstance().getBlockFactory().register(blockParser);
     }
@@ -67,8 +69,10 @@ public class WorldEditBlockRegister {
 
         @Override
         public BaseBlock parseFromInput(String input, ParserContext context) {
-            int index = input.indexOf("[");
-            if (input.charAt(index+1) == ']') return null;
+            if (isFAWE) {
+                int index = input.indexOf("[");
+                if (input.charAt(index+1) == ']') return null;
+            }
 
             int colonIndex = input.indexOf(':');
             if (colonIndex == -1) return null;

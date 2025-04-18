@@ -172,11 +172,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public void initFastAsyncWorldEditHook() {
-        new WorldEditBlockRegister(this);
+        new WorldEditBlockRegister(this, true);
     }
 
     public void initWorldEditHook() {
-        WorldEditBlockRegister weBlockRegister = new WorldEditBlockRegister(this);
+        WorldEditBlockRegister weBlockRegister = new WorldEditBlockRegister(this, false);
         try {
             for (Key newBlockId : this.blockRegisterOrder) {
                 weBlockRegister.register(newBlockId);
