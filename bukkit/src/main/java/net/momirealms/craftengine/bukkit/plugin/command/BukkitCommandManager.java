@@ -49,7 +49,8 @@ public class BukkitCommandManager extends AbstractCommandManager<CommandSender> 
                 new TotemAnimationCommand(this, plugin),
                 new EnableResourceCommand(this, plugin),
                 new DisableResourceCommand(this, plugin),
-                new ListResourceCommand(this, plugin)
+                new ListResourceCommand(this, plugin),
+                new UploadPackCommand(this, plugin)
         ));
         final LegacyPaperCommandManager<CommandSender> manager = (LegacyPaperCommandManager<CommandSender>) getCommandManager();
         manager.settings().set(ManagerSetting.ALLOW_UNSAFE_REGISTRATION, true);

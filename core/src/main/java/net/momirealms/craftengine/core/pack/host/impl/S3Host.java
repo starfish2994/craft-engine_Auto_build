@@ -3,8 +3,10 @@ package net.momirealms.craftengine.core.pack.host.impl;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.HashUtils;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -61,6 +63,16 @@ public class S3Host implements ResourcePackHost {
         this.cdnDomain = cdnDomain;
         this.cdnProtocol = cdnProtocol;
         this.validity = validity;
+    }
+
+    @Override
+    public boolean canUpload() {
+        return true;
+    }
+
+    @Override
+    public Key type() {
+        return ResourcePackHosts.S3;
     }
 
     @Override

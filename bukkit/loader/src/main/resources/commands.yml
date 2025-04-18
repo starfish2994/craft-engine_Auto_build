@@ -16,6 +16,13 @@ reload:
     - /craftengine reload
     - /ce reload
 
+upload:
+  enable: true
+  permission: ce.command.admin.upload
+  usage:
+    - /craftengine upload
+    - /ce upload
+
 get_item:
   enable: true
   permission: ce.command.admin.get_item

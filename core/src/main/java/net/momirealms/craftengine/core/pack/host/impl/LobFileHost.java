@@ -4,8 +4,10 @@ import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.io.IOException;
@@ -39,6 +41,16 @@ public class LobFileHost implements ResourcePackHost {
         this.apiKey = apiKey;
         this.proxy = proxy;
         this.readCacheFromDisk();
+    }
+
+    @Override
+    public boolean canUpload() {
+        return true;
+    }
+
+    @Override
+    public Key type() {
+        return ResourcePackHosts.LOBFILE;
     }
 
     public void readCacheFromDisk() {

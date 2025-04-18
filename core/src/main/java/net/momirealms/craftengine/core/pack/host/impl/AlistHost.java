@@ -6,11 +6,9 @@ import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.util.GsonHelper;
-import net.momirealms.craftengine.core.util.HashUtils;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.Pair;
+import net.momirealms.craftengine.core.util.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -26,8 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -40,8 +36,7 @@ public class AlistHost implements ResourcePackHost {
     private final String filePassword;
     private final String otpCode;
     private final Duration jwtTokenExpiration;
-    private final String filePath;
-    private final boolean disabledUpload;
+    private final String uploadPath;
     private final ProxySelector proxy;
     private Pair<String, Date> jwtToken;
     private String cachedSha1;
@@ -52,8 +47,7 @@ public class AlistHost implements ResourcePackHost {
                      String filePassword,
                      String otpCode,
                      Duration jwtTokenExpiration,
-                     String filePath,
-                     boolean disabledUpload,
+                     String uploadPath,
                      ProxySelector proxy) {
         this.apiUrl = apiUrl;
         this.userName = userName;
@@ -61,10 +55,19 @@ public class AlistHost implements ResourcePackHost {
         this.filePassword = filePassword;
         this.otpCode = otpCode;
         this.jwtTokenExpiration = jwtTokenExpiration;
-        this.filePath = filePath;
-        this.disabledUpload = disabledUpload;
+        this.uploadPath = uploadPath;
         this.proxy = proxy;
         this.readCacheFromDisk();
+    }
+
+    @Override
+    public boolean canUpload() {
+        return true;
+    }
+
+    @Override
+    public Key type() {
+        return ResourcePackHosts.ALIST;
     }
 
     private void readCacheFromDisk() {
@@ -129,18 +132,13 @@ public class AlistHost implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
-        if (this.disabledUpload) {
-            this.cachedSha1 = "";
-            saveCacheToDisk();
-            return CompletableFuture.completedFuture(null);
-        }
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(this.apiUrl + "/api/fs/put"))
                         .header("Authorization", getOrRefreshJwtToken())
-                        .header("File-Path", URLEncoder.encode(this.filePath, StandardCharsets.UTF_8)
+                        .header("File-Path", URLEncoder.encode(this.uploadPath, StandardCharsets.UTF_8)
                                 .replace("/", "%2F"))
                         .header("overwrite", "true")
                         .header("password", this.filePassword)
@@ -225,7 +223,7 @@ public class AlistHost implements ResourcePackHost {
     }
 
     private HttpRequest.BodyPublisher getRequestResourcePackDownloadLinkPost() {
-        String body = "{\"path\":\"" + this.filePath + "\",\"password\":\"" + this.filePassword + "\"}";
+        String body = "{\"path\":\"" + this.uploadPath + "\",\"password\":\"" + this.filePassword + "\"}";
         return HttpRequest.BodyPublishers.ofString(body);
     }
 
@@ -241,32 +239,6 @@ public class AlistHost implements ResourcePackHost {
                     boolean isDir = dataObj.getAsJsonPrimitive("is_dir").getAsBoolean();
                     if (!isDir) {
                         String url = dataObj.getAsJsonPrimitive("raw_url").getAsString();
-                        if ((this.cachedSha1 == null || this.cachedSha1.isEmpty()) && this.disabledUpload) {
-                            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
-                                HttpRequest request = HttpRequest.newBuilder()
-                                        .uri(URI.create(url))
-                                        .GET()
-                                        .build();
-                                HttpResponse<InputStream> responseHash = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-                                try (InputStream inputStream = responseHash.body()) {
-                                    MessageDigest md = MessageDigest.getInstance("SHA-1");
-                                    byte[] buffer = new byte[8192];
-                                    int len;
-                                    while ((len = inputStream.read(buffer)) != -1) {
-                                        md.update(buffer, 0, len);
-                                    }
-                                    byte[] digest = md.digest();
-                                    this.cachedSha1 = HexFormat.of().formatHex(digest);
-                                    saveCacheToDisk();
-                                } catch (NoSuchAlgorithmException e) {
-                                    future.completeExceptionally(new RuntimeException("Failed to calculate SHA-1 hash algorithm", e));
-                                    return;
-                                }
-                            } catch (IOException | InterruptedException e) {
-                                future.completeExceptionally(new RuntimeException("Failed to retrieve remote resource pack for hashing", e));
-                                return;
-                            }
-                        }
                         UUID uuid = UUID.nameUUIDFromBytes(Objects.requireNonNull(this.cachedSha1).getBytes(StandardCharsets.UTF_8));
                         future.complete(List.of(new ResourcePackDownloadData(url, uuid, this.cachedSha1)));
                         return;
@@ -297,13 +269,12 @@ public class AlistHost implements ResourcePackHost {
             String filePassword = (String) arguments.getOrDefault("file-password", "");
             String otpCode = (String) arguments.get("otp-code");
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
-            String filePath = (String) arguments.get("file-path");
-            if (filePath == null || filePath.isEmpty()) {
-                throw new IllegalArgumentException("'file-path' cannot be empty for Alist host");
+            String uploadPath = (String) arguments.get("upload-path");
+            if (uploadPath == null || uploadPath.isEmpty()) {
+                throw new IllegalArgumentException("'upload-path' cannot be empty for Alist host");
             }
-            boolean disabledUpload = (boolean) arguments.getOrDefault("disabled-upload", false);
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, proxy);
+            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, proxy);
         }
     }
 }

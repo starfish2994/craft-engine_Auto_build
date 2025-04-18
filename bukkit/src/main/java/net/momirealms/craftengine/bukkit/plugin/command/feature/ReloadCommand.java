@@ -61,7 +61,6 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                             plugin().logger().warn("Failed to reload config", e);
                         }
                     } else if (argument == ReloadArgument.PACK) {
-                        RELOAD_PACK_FLAG = true;
                         plugin().scheduler().executeAsync(() -> {
                             try {
                                 long time1 = System.currentTimeMillis();
@@ -73,8 +72,6 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                             } catch (Exception e) {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
                                 plugin().logger().warn("Failed to generate resource pack", e);
-                            } finally {
-                                RELOAD_PACK_FLAG = false;
                             }
                         });
                     } else if (argument == ReloadArgument.ALL) {

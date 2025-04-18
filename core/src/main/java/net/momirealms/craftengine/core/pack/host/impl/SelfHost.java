@@ -3,8 +3,10 @@ package net.momirealms.craftengine.core.pack.host.impl;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.nio.file.Path;
@@ -40,6 +42,16 @@ public class SelfHost implements ResourcePackHost {
             }
         });
         return future;
+    }
+
+    @Override
+    public boolean canUpload() {
+        return true;
+    }
+
+    @Override
+    public Key type() {
+        return ResourcePackHosts.SELF;
     }
 
     public static class Factory implements ResourcePackHostFactory {

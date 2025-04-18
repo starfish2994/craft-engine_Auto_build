@@ -5,11 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.util.GsonHelper;
-import net.momirealms.craftengine.core.util.HashUtils;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.Tuple;
+import net.momirealms.craftengine.core.util.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +47,16 @@ public class OneDriveHost implements ResourcePackHost {
         this.uploadPath = uploadPath;
         this.refreshToken = Tuple.of(refreshToken, "", new Date());
         readCacheFromDisk();
+    }
+
+    @Override
+    public boolean canUpload() {
+        return true;
+    }
+
+    @Override
+    public Key type() {
+        return ResourcePackHosts.ONEDRIVE;
     }
 
     public void readCacheFromDisk() {
