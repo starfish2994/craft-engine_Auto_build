@@ -49,6 +49,7 @@ public class SelfHostHttpServer {
     private int port = -1;
     private String protocol = "http";
     private boolean denyNonMinecraft = true;
+    private boolean useToken;
 
     private volatile byte[] resourcePackBytes;
     private String packHash;
@@ -59,12 +60,14 @@ public class SelfHostHttpServer {
                                  boolean denyNonMinecraft,
                                  String protocol,
                                  int maxRequests,
-                                 int resetInternal) {
+                                 int resetInternal,
+                                 boolean token) {
         this.ip = ip;
         this.denyNonMinecraft = denyNonMinecraft;
         this.protocol = protocol;
         this.rateLimit = maxRequests;
         this.rateLimitInterval = resetInternal;
+        this.useToken = token;
         if (port <= 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port number: " + port);
         }
@@ -95,6 +98,9 @@ public class SelfHostHttpServer {
     public ResourcePackDownloadData generateOneTimeUrl() {
         if (this.resourcePackBytes == null) {
             return null;
+        }
+        if (!this.useToken) {
+            return new ResourcePackDownloadData(url(), packUUID, packHash);
         }
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
@@ -172,10 +178,12 @@ public class SelfHostHttpServer {
                 handleBlockedRequest(exchange, 429, "Rate limit exceeded");
                 return;
             }
-            String token = parseToken(exchange);
-            if (!validateToken(token)) {
-                handleBlockedRequest(exchange, 403, "Invalid token");
-                return;
+            if (useToken) {
+                String token = parseToken(exchange);
+                if (!validateToken(token)) {
+                    handleBlockedRequest(exchange, 403, "Invalid token");
+                    return;
+                }
             }
             if (!validateClient(exchange)) {
                 handleBlockedRequest(exchange, 403, "Invalid client");

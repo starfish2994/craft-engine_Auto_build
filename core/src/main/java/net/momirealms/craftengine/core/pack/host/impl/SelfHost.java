@@ -67,6 +67,7 @@ public class SelfHost implements ResourcePackHost {
             if (port < 0 || port > 65535) {
                 throw new IllegalArgumentException("Illegal port: '" + port + "' for self host");
             }
+            boolean oneTimeToken = (boolean) arguments.getOrDefault("one-time-token", true);
             String protocol = (String) arguments.getOrDefault("protocol", "http");
             boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
             Map<String, Object> rateMap = MiscUtils.castToMap(arguments.get("rate-map"), true);
@@ -76,7 +77,7 @@ public class SelfHost implements ResourcePackHost {
                 maxRequests = (int) rateMap.getOrDefault("max-requests", 5);
                 resetInterval = (int) rateMap.getOrDefault("reset-interval", 20) * 1000;
             }
-            selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, maxRequests, resetInterval);
+            selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, maxRequests, resetInterval, oneTimeToken);
             return INSTANCE;
         }
     }
