@@ -79,6 +79,7 @@ resource-pack:
         port: 8163
         protocol: "http"
         deny-non-minecraft-request: true
+        one-time-token: true
         rate-limit:
           max-requests: 3
           reset-interval: 20
