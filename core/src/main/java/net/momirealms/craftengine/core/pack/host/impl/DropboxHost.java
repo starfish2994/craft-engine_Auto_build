@@ -2,13 +2,13 @@ package net.momirealms.craftengine.core.pack.host.impl;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.io.FileNotFoundException;
@@ -24,8 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -107,7 +105,7 @@ public class DropboxHost implements ResourcePackHost {
         Path finalResourcePackPath = resourcePackPath;
 
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            String sha1 = calculateLocalFileSha1(finalResourcePackPath);
+            String sha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
             try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 JsonObject apiArg = new JsonObject();
                 apiArg.addProperty("path", uploadPath);
@@ -179,7 +177,7 @@ public class DropboxHost implements ResourcePackHost {
                             .build();
                     HttpResponse<String> listResponse = client.send(listLinksRequest, HttpResponse.BodyHandlers.ofString());
                     if (listResponse.statusCode() == 200) {
-                        JsonObject responseJson = parseJson(listResponse.body());
+                        JsonObject responseJson = GsonHelper.parseJsonToJsonObject(listResponse.body());
                         JsonArray links = responseJson.getAsJsonArray("links");
                         if (!links.isEmpty()) {
                             return links.get(0).getAsJsonObject().get("url").getAsString().replace("dl=0", "dl=1");
@@ -189,38 +187,12 @@ public class DropboxHost implements ResourcePackHost {
                     CraftEngine.instance().logger().warn("[DropBox] Failed to get download url: " + response.body());
                     return null;
                 }
-                JsonObject jsonData = parseJson(response.body());
+                JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
                 return jsonData.getAsJsonPrimitive("url").getAsString().replace("dl=0", "dl=1");
             } catch (IOException | InterruptedException e) {
                 CraftEngine.instance().logger().warn("[DropBox] Failed to get download url: " + e.getMessage());
                 return null;
             }
-        }
-    }
-
-    private JsonObject parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    JsonObject.class
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
-    }
-
-    private String calculateLocalFileSha1(Path filePath) {
-        try (InputStream is = Files.newInputStream(filePath)) {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = is.read(buffer)) != -1) {
-                md.update(buffer, 0, len);
-            }
-            byte[] digest = md.digest();
-            return HexFormat.of().formatHex(digest);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to calculate SHA1", e);
         }
     }
 

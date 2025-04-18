@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
@@ -12,7 +11,6 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -225,7 +223,7 @@ public class LobFileHost implements ResourcePackHost {
     ) {
         try {
             if (response.statusCode() == 200) {
-                Map<String, Object> json = parseJson(response.body());
+                Map<String, Object> json = GsonHelper.parseJsonToMap(response.body());
                 if (Boolean.TRUE.equals(json.get("success"))) {
                     this.url = (String) json.get("url");
                     this.sha1 = localSha1;
@@ -259,17 +257,6 @@ public class LobFileHost implements ResourcePackHost {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
-    }
-
-    private Map<String, Object> parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    new TypeToken<Map<String, Object>>() {}.getType()
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
     }
 
     public static class Factory implements ResourcePackHostFactory {

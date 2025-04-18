@@ -1,13 +1,13 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.Tuple;
 
@@ -25,8 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -122,7 +120,7 @@ public class OneDriveHost implements ResourcePackHost {
                                 future.completeExceptionally(new IOException("Failed to request resource pack download link: " + response.body()));
                                 return;
                             }
-                            String downloadUrl = parseJson(response.body()).get("@microsoft.graph.downloadUrl").getAsString();
+                            String downloadUrl = GsonHelper.parseJsonToJsonObject(response.body()).get("@microsoft.graph.downloadUrl").getAsString();
                             future.complete(List.of(new ResourcePackDownloadData(
                                     downloadUrl,
                                     UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8)),
@@ -145,7 +143,7 @@ public class OneDriveHost implements ResourcePackHost {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            sha1 = calculateLocalFileSha1(finalResourcePackPath);
+            sha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
             String accessToken = getOrRefreshJwtToken();
             try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
@@ -160,7 +158,7 @@ public class OneDriveHost implements ResourcePackHost {
                         .thenAccept(response -> {
                             if (response.statusCode() == 200 || response.statusCode() == 201) {
                                 CraftEngine.instance().logger().info("[OneDrive] Uploaded resource pack in " + (System.currentTimeMillis() - uploadStart) + "ms");
-                                fileId = parseJson(response.body()).get("id").getAsString();
+                                fileId = GsonHelper.parseJsonToJsonObject(response.body()).get("id").getAsString();
                                 saveCacheToDisk();
                                 future.complete(null);
                             } else {
@@ -204,7 +202,7 @@ public class OneDriveHost implements ResourcePackHost {
                     return refreshToken != null ? refreshToken.mid() : "";
                 }
 
-                JsonObject jsonData = parseJson(response.body());
+                JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
                 if (jsonData.has("error")) {
                     CraftEngine.instance().logger().warn("[OneDrive] Token refresh error: " + jsonData);
                     throw new RuntimeException("Token refresh failed: " + jsonData);
@@ -222,32 +220,6 @@ public class OneDriveHost implements ResourcePackHost {
         }
 
         return refreshToken.mid();
-    }
-
-    private JsonObject parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    JsonObject.class
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
-    }
-
-    private String calculateLocalFileSha1(Path filePath) {
-        try (InputStream is = Files.newInputStream(filePath)) {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = is.read(buffer)) != -1) {
-                md.update(buffer, 0, len);
-            }
-            byte[] digest = md.digest();
-            return HexFormat.of().formatHex(digest);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to calculate SHA1", e);
-        }
     }
 
     public static class Factory implements ResourcePackHostFactory {

@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -22,17 +23,15 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -112,7 +111,7 @@ public class S3Host implements ResourcePackHost {
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         String objectKey = uploadPath;
-        String sha1 = calculateLocalFileSha1(resourcePackPath);
+        String sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(objectKey)
@@ -145,21 +144,6 @@ public class S3Host implements ResourcePackHost {
         return cdnProtocol + "://" + cdnDomain
                 + originalUrl.getPath()
                 + (originalUrl.getQuery() != null ? "?" + originalUrl.getQuery() : "");
-    }
-
-    private String calculateLocalFileSha1(Path filePath) {
-        try (InputStream is = Files.newInputStream(filePath)) {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = is.read(buffer)) != -1) {
-                md.update(buffer, 0, len);
-            }
-            byte[] digest = md.digest();
-            return HexFormat.of().formatHex(digest);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to calculate SHA1", e);
-        }
     }
 
     public static class Factory implements ResourcePackHostFactory {

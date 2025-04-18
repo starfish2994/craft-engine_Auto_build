@@ -2,12 +2,12 @@ package net.momirealms.craftengine.core.pack.host.impl;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.Pair;
 
@@ -137,7 +137,7 @@ public class AlistHost implements ResourcePackHost {
                         .thenAccept(response -> {
                             long uploadTime = System.currentTimeMillis() - requestStart;
                             if (response.statusCode() == 200) {
-                                cacheSha1 = calculateLocalFileSha1(finalResourcePackPath);
+                                cacheSha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
                                 saveCacheToDisk();
                                 CraftEngine.instance().logger().info("[Alist] Upload resource pack success after " + uploadTime + "ms");
                                 future.complete(null);
@@ -174,7 +174,7 @@ public class AlistHost implements ResourcePackHost {
                     CraftEngine.instance().logger().warn("[Alist] Failed to get JWT token: " + response.body());
                     return null;
                 }
-                JsonObject jsonData = parseJson(response.body());
+                JsonObject jsonData = GsonHelper.parseJsonToJsonObject(response.body());
                 JsonElement code = jsonData.get("code");
                 if (code.isJsonPrimitive() && code.getAsJsonPrimitive().isNumber() && code.getAsJsonPrimitive().getAsInt() == 200) {
                     JsonElement data = jsonData.get("data");
@@ -216,7 +216,7 @@ public class AlistHost implements ResourcePackHost {
     private void handleResourcePackDownloadLinkResponse(
             HttpResponse<String> response, CompletableFuture<List<ResourcePackDownloadData>> future) {
         if (response.statusCode() == 200) {
-            JsonObject json = parseJson(response.body());
+            JsonObject json = GsonHelper.parseJsonToJsonObject(response.body());
             JsonElement code = json.get("code");
             if (code.isJsonPrimitive() && code.getAsJsonPrimitive().isNumber() && code.getAsJsonPrimitive().getAsInt() == 200) {
                 JsonElement data = json.get("data");
@@ -260,32 +260,6 @@ public class AlistHost implements ResourcePackHost {
         }
         future.completeExceptionally(
                 new RuntimeException("Failed to request resource pack download link: " + response.body()));
-    }
-
-    private JsonObject parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    JsonObject.class
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
-    }
-
-    private String calculateLocalFileSha1(Path filePath) {
-        try (InputStream is = Files.newInputStream(filePath)) {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = is.read(buffer)) != -1) {
-                md.update(buffer, 0, len);
-            }
-            byte[] digest = md.digest();
-            return HexFormat.of().formatHex(digest);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to calculate SHA1", e);
-        }
     }
 
     public static class Factory implements ResourcePackHostFactory {

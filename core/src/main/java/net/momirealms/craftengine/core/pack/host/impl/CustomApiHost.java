@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.pack.host.impl;
 
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
@@ -10,7 +8,6 @@ import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.io.FileNotFoundException;
-import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -49,7 +46,7 @@ public class CustomApiHost implements ResourcePackHost {
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenAccept(response -> {
                             if (response.statusCode() == 200) {
-                                Map<String, Object> jsonData = parseJson(response.body());
+                                Map<String, Object> jsonData = GsonHelper.parseJsonToMap(response.body());
                                 String url = (String) jsonData.get("url");
                                 String sha1 = (String) jsonData.get("sha1");
                                 UUID uuid = UUID.fromString(sha1);
@@ -103,17 +100,6 @@ public class CustomApiHost implements ResourcePackHost {
             }
         });
         return future;
-    }
-
-    private Map<String, Object> parseJson(String json) {
-        try {
-            return GsonHelper.get().fromJson(
-                    json,
-                    new TypeToken<Map<String, Object>>() {}.getType()
-            );
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON response: " + json, e);
-        }
     }
 
     public static class Factory implements ResourcePackHostFactory {
