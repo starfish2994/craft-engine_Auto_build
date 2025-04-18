@@ -36,4 +36,6 @@ public interface PackManager extends Manageable {
     Path resourcePackPath();
 
     ResourcePackHost resourcePackHost();
+
+    void uploadResourcePack();
 }

@@ -5,7 +5,6 @@ import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
-import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.locale.MessageConstants;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.Command;
@@ -23,7 +22,7 @@ public class UploadPackCommand extends BukkitCommandFeature<CommandSender> {
                     ResourcePackHost host = plugin().packManager().resourcePackHost();
                     if (host.canUpload()) {
                         handleFeedback(context, MessageConstants.COMMAND_UPLOAD_ON_PROGRESS);
-                        host.upload(Config.fileToUpload());
+                        plugin().packManager().uploadResourcePack();
                     } else {
                         handleFeedback(context, MessageConstants.COMMAND_UPLOAD_FAILURE_NOT_SUPPORTED, Component.text(host.type().value()));
                     }

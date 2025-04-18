@@ -121,6 +121,11 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
         if (!Config.autoUpload()) return;
+
+    }
+
+    @Override
+    public void uploadResourcePack() {
         resourcePackHost().upload(Config.fileToUpload()).whenComplete((d, e) -> {
             if (e != null) {
                 CraftEngine.instance().logger().warn("Failed to upload resource pack", e);
