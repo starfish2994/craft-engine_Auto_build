@@ -39,6 +39,7 @@ import java.util.function.BiConsumer;
 public class BukkitNetworkManager implements NetworkManager, Listener, PluginMessageListener {
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
+    // only for game stage for the moment
     private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
 
     private static void registerNMSPacketConsumer(final TriConsumer<NetWorkUser, NMSPacketEvent, Object> function, @Nullable Class<?> packet) {

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.CropBlockBehavior;
 import net.momirealms.craftengine.bukkit.block.behavior.SaplingBlockBehavior;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -15,6 +16,7 @@ import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.block.Block;
 
 import java.nio.file.Path;
@@ -51,7 +53,7 @@ public class BoneMealItemBehavior extends ItemBehavior {
             Object visualState = state.vanillaBlockState().handle();
             Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
             if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
-                boolean is = (boolean) Reflections.method$BonemealableBlock$isValidBonemealTarget.invoke(visualStateBlock, context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), visualState);
+                boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), visualState);
                 if (!is) {
                     sendSwing = true;
                 }

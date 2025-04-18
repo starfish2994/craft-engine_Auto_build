@@ -108,7 +108,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         Object visualState = immutableBlockState.vanillaBlockState().handle();
         Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
         if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
-            boolean is = (boolean) Reflections.method$BonemealableBlock$isValidBonemealTarget.invoke(visualStateBlock, level, blockPos, visualState);
+            boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, level, blockPos, visualState);
             if (!is) {
                 sendParticles = true;
             }
