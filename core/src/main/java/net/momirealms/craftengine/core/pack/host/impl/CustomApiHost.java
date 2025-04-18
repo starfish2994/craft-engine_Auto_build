@@ -7,8 +7,11 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.io.FileNotFoundException;
+import java.net.Authenticator;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -24,18 +27,22 @@ public class CustomApiHost implements ResourcePackHost {
     private final String apiUrl;
     private final String authKey;
     private final Path localFilePath;
+    private final ProxySelector proxy;
+    private final Authenticator auth;
 
-    public CustomApiHost(String apiUrl, String authKey, String localFilePath) {
+    public CustomApiHost(String apiUrl, String authKey, String localFilePath, ProxySelector proxy, Authenticator auth) {
         this.apiUrl = apiUrl;
         this.authKey = authKey;
         this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
+        this.proxy = proxy;
+        this.auth = auth;
     }
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/get-download-link?uuid=" + player))
                         .header("Authorization", authKey)
@@ -67,7 +74,7 @@ public class CustomApiHost implements ResourcePackHost {
         if (this.localFilePath != null) resourcePackPath = this.localFilePath;
         Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            try (HttpClient client = HttpClient.newHttpClient()) {
+            try (HttpClient client = HttpClient.newBuilder().proxy(proxy).authenticator(auth).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl + "/api/v1/upload-resource-pack"))
                         .header("Authorization", authKey)
@@ -121,7 +128,9 @@ public class CustomApiHost implements ResourcePackHost {
                 throw new IllegalArgumentException("'api-url' cannot be empty for custom api host");
             }
             String localFilePath = (String) arguments.get("local-file-path");
-            return new CustomApiHost(apiUrl, authKey, localFilePath);
+            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            Authenticator proxyAuth = MiscUtils.getAuthenticator(arguments.get("proxy"));
+            return new CustomApiHost(apiUrl, authKey, localFilePath, proxy, proxyAuth);
         }
     }
 }

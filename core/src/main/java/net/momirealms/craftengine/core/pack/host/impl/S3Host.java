@@ -10,6 +10,9 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
+import software.amazon.awssdk.http.nio.netty.ProxyConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
@@ -212,6 +215,23 @@ public class S3Host implements ResourcePackHost {
                 s3AsyncClientBuilder.overrideConfiguration(b -> b
                         .putAdvancedOption(SdkAdvancedClientOption.SIGNER, AwsS3V4Signer.create())
                 );
+            }
+
+            Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
+            if (proxySetting != null) {
+                String host = (String) proxySetting.get("host");
+                int port = (Integer) proxySetting.get("port");
+                String scheme = (String) proxySetting.get("scheme");
+                String username = (String) proxySetting.get("username");
+                String password = (String) proxySetting.get("password");
+                if (host == null || host.isEmpty() || port <= 0 || port > 65535 || scheme == null || scheme.isEmpty()) {
+                    throw new IllegalArgumentException("Invalid proxy setting");
+                }
+                ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);
+                if (username != null) builder.username(username);
+                if (password != null) builder.password(password);
+                SdkAsyncHttpClient httpClient = NettyNioAsyncHttpClient.builder().proxyConfiguration(builder.build()).build();
+                s3AsyncClientBuilder.httpClient(httpClient);
             }
 
             S3AsyncClient s3AsyncClient = s3AsyncClientBuilder.build();
