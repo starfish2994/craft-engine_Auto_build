@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -37,6 +39,7 @@ public class AlistHost implements ResourcePackHost {
     private final String otpCode;
     private final Duration jwtTokenExpiration;
     private final String uploadPath;
+    private final boolean disableUpload;
     private final ProxySelector proxy;
     private Pair<String, Date> jwtToken;
     private String cachedSha1;
@@ -48,6 +51,7 @@ public class AlistHost implements ResourcePackHost {
                      String otpCode,
                      Duration jwtTokenExpiration,
                      String uploadPath,
+                     boolean disableUpload,
                      ProxySelector proxy) {
         this.apiUrl = apiUrl;
         this.userName = userName;
@@ -56,6 +60,7 @@ public class AlistHost implements ResourcePackHost {
         this.otpCode = otpCode;
         this.jwtTokenExpiration = jwtTokenExpiration;
         this.uploadPath = uploadPath;
+        this.disableUpload = disableUpload;
         this.proxy = proxy;
         this.readCacheFromDisk();
     }
@@ -132,6 +137,11 @@ public class AlistHost implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
+        if (this.disableUpload) {
+            this.cachedSha1 = "";
+            saveCacheToDisk();
+            return CompletableFuture.completedFuture(null);
+        }
         CompletableFuture<Void> future = new CompletableFuture<>();
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
@@ -239,6 +249,32 @@ public class AlistHost implements ResourcePackHost {
                     boolean isDir = dataObj.getAsJsonPrimitive("is_dir").getAsBoolean();
                     if (!isDir) {
                         String url = dataObj.getAsJsonPrimitive("raw_url").getAsString();
+                        if ((this.cachedSha1 == null || this.cachedSha1.isEmpty()) && this.disableUpload) {
+                            try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
+                                HttpRequest request = HttpRequest.newBuilder()
+                                        .uri(URI.create(url))
+                                        .GET()
+                                        .build();
+                                HttpResponse<InputStream> responseHash = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                                try (InputStream inputStream = responseHash.body()) {
+                                    MessageDigest md = MessageDigest.getInstance("SHA-1");
+                                    byte[] buffer = new byte[8192];
+                                    int len;
+                                    while ((len = inputStream.read(buffer)) != -1) {
+                                        md.update(buffer, 0, len);
+                                    }
+                                    byte[] digest = md.digest();
+                                    this.cachedSha1 = HexFormat.of().formatHex(digest);
+                                    saveCacheToDisk();
+                                } catch (NoSuchAlgorithmException e) {
+                                    future.completeExceptionally(new RuntimeException("Failed to calculate SHA-1 hash algorithm", e));
+                                    return;
+                                }
+                            } catch (IOException | InterruptedException e) {
+                                future.completeExceptionally(new RuntimeException("Failed to retrieve remote resource pack for hashing", e));
+                                return;
+                            }
+                        }
                         UUID uuid = UUID.nameUUIDFromBytes(Objects.requireNonNull(this.cachedSha1).getBytes(StandardCharsets.UTF_8));
                         future.complete(List.of(new ResourcePackDownloadData(url, uuid, this.cachedSha1)));
                         return;
@@ -273,8 +309,9 @@ public class AlistHost implements ResourcePackHost {
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new IllegalArgumentException("'upload-path' cannot be empty for Alist host");
             }
+            boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, proxy);
+            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, disableUpload, proxy);
         }
     }
 }
