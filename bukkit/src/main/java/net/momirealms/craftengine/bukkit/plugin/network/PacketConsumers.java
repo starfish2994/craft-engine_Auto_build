@@ -2132,6 +2132,10 @@ public class PacketConsumers {
                     user.nettyChannel().writeAndFlush(newPacket);
                     user.addResourcePackUUID(data.uuid());
                 }
+            }).exceptionally(throwable -> {
+                CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", throwable);
+                user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                return null;
             });
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
