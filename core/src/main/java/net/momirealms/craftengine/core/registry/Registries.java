@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
 import net.momirealms.craftengine.core.loot.number.NumberProviderFactory;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcherFactory;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionFactory;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.model.ItemModelFactory;
 import net.momirealms.craftengine.core.pack.model.condition.ConditionPropertyFactory;
 import net.momirealms.craftengine.core.pack.model.rangedisptach.RangeDispatchPropertyFactory;
@@ -48,4 +49,5 @@ public class Registries {
     public static final ResourceKey<Registry<ResolutionFactory>> RESOLUTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resolution_factory"));
     public static final ResourceKey<Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory>> SMITHING_RESULT_PROCESSOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("smithing_result_processor_factory"));
     public static final ResourceKey<Registry<HitBoxFactory>> HITBOX_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("hitbox_factory"));
+    public static final ResourceKey<Registry<ResourcePackHostFactory>> RESOURCE_PACK_HOST_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resource_pack_host_factory"));
 }

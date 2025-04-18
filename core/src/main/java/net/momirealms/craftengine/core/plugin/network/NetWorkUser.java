@@ -7,6 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public interface NetWorkUser {
     boolean isOnline();
@@ -17,9 +18,15 @@ public interface NetWorkUser {
 
     String name();
 
+    void setName(String name);
+
+    UUID uuid();
+
+    void setUUID(UUID uuid);
+
     void sendPacket(Object packet, boolean immediately);
 
-    void receivePacket(Object packet);
+    void simulatePacket(Object packet);
 
     @ApiStatus.Internal
     ConnectionState decoderState();
@@ -42,4 +49,6 @@ public interface NetWorkUser {
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);
+
+    void addResourcePackUUID(UUID uuid);
 }

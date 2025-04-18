@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     // Platform
-    compileOnly("dev.folia:folia-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
 
     implementation(project(":shared"))
     implementation(project(":core"))
@@ -75,5 +75,7 @@ tasks {
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.jpountz", "net.momirealms.craftengine.libraries.jpountz")
+        relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk")
+        relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream")
     }
 }

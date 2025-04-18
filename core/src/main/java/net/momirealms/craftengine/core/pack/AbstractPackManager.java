@@ -7,10 +7,12 @@ import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
-import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
+import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
+import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
@@ -34,10 +36,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -52,17 +51,7 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
-
-    private final CraftEngine plugin;
-    private final BiConsumer<Path, Path> eventDispatcher;
-    private final Map<String, Pack> loadedPacks = new HashMap<>();
-    private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
-    private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
-    private static final byte[] emptyImage;
-    protected BiConsumer<Path, Path> zipGenerator;
-    protected String packHash;
-    protected UUID packUUID;
-
+    private static final byte[] EMPTY_IMAGE;
     static {
         var stream = new ByteArrayOutputStream();
         try {
@@ -70,8 +59,16 @@ public abstract class AbstractPackManager implements PackManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        emptyImage = stream.toByteArray();
+        EMPTY_IMAGE = stream.toByteArray();
     }
+
+    private final CraftEngine plugin;
+    private final BiConsumer<Path, Path> eventDispatcher;
+    private final Map<String, Pack> loadedPacks = new HashMap<>();
+    private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
+    private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+    protected BiConsumer<Path, Path> zipGenerator;
+    protected ResourcePackHost resourcePackHost;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -150,14 +147,17 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        this.calculateHash();
-        if (Config.hostMode() == HostMode.SELF_HOST) {
-            Path path = Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
-            ResourcePackHost.instance().enable(Config.hostIP(), Config.hostPort(), path);
-            ResourcePackHost.instance().setRateLimit(Config.requestRate(), Config.requestInterval(), TimeUnit.SECONDS);
+        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
+        if (list == null || list.isEmpty()) {
+            this.resourcePackHost = NoneHost.INSTANCE;
         } else {
-            ResourcePackHost.instance().disable();
+            this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
         }
+    }
+
+    @Override
+    public ResourcePackHost resourcePackHost() {
+        return this.resourcePackHost;
     }
 
     @Override
@@ -222,10 +222,6 @@ public abstract class AbstractPackManager implements PackManager {
         return true;
     }
 
-    public Path selfHostPackPath() {
-        return Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
-    }
-
     private void loadPacks() {
         Path resourcesFolder = this.plugin.dataFolderPath().resolve("resources");
         try {
@@ -244,17 +240,16 @@ public abstract class AbstractPackManager implements PackManager {
                     String description = null;
                     String version = null;
                     String author = null;
+                    boolean enable = true;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
                         YamlDocument metaYML = Config.instance().loadYamlData(metaFile.toFile());
-                        if (!metaYML.getBoolean("enable", true)) {
-                            continue;
-                        }
+                        enable = metaYML.getBoolean("enable", true);
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
                         version = metaYML.getString("version");
                         author = metaYML.getString("author");
                     }
-                    Pack pack = new Pack(path, new PackMeta(author, description, version, namespace));
+                    Pack pack = new Pack(path, new PackMeta(author, description, version, namespace), enable);
                     this.loadedPacks.put(path.getFileName().toString(), pack);
                     this.plugin.logger().info("Loaded pack: " + pack.folder().getFileName() + ". Default namespace: " + namespace);
                 }
@@ -398,6 +393,7 @@ public abstract class AbstractPackManager implements PackManager {
     private void loadResourceConfigs(Predicate<ConfigSectionParser> predicate) {
         long o1 = System.nanoTime();
         for (Pack pack : loadedPacks()) {
+            if (!pack.enabled()) continue;
             Pair<List<Path>, List<Path>> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
             for (Path path : files.left()) {
                 try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
@@ -526,24 +522,7 @@ public abstract class AbstractPackManager implements PackManager {
 
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-
         this.eventDispatcher.accept(generatedPackPath, zipFile);
-        this.calculateHash();
-    }
-
-    private void calculateHash() {
-        Path zipFile = selfHostPackPath();
-        if (Files.exists(zipFile)) {
-            try {
-                this.packHash = computeSHA1(zipFile);
-                this.packUUID = UUID.nameUUIDFromBytes(this.packHash.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException | NoSuchAlgorithmException e) {
-                this.plugin.logger().severe("Error calculating resource pack hash", e);
-            }
-        } else {
-            this.packHash = "";
-            this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
-        }
     }
 
     private void generateParticle(Path generatedPackPath) {
@@ -573,7 +552,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
         try {
             GsonHelper.writeJsonFile(json, jsonPath);
-            Files.write(pngPath, emptyImage);
+            Files.write(pngPath, EMPTY_IMAGE);
         } catch (IOException e) {
             this.plugin.logger().severe("Error writing particles file", e);
         }
@@ -1135,23 +1114,6 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
         }
-    }
-
-    protected String computeSHA1(Path path) throws IOException, NoSuchAlgorithmException {
-        InputStream file = Files.newInputStream(path);
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        while ((bytesRead = file.read(buffer)) != -1) {
-            digest.update(buffer, 0, bytesRead);
-        }
-        file.close();
-
-        StringBuilder hexString = new StringBuilder(40);
-        for (byte b : digest.digest()) {
-            hexString.append(String.format("%02x", b));
-        }
-        return hexString.toString();
     }
 
     private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {

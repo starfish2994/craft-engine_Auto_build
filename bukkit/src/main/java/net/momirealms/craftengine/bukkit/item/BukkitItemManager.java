@@ -20,7 +20,6 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.CustomModelDataModifier;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemModelModifier;
-import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -79,9 +78,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         if (plugin.hasMod()) {
             Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
             if (clazz$CustomStreamCodec != null) {
-                Field cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);
-                Field sProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 1);
-                Function<Object, Object> c = (raw) -> {
+                Field s2cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);
+                Field c2sProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 1);
+                Function<Object, Object> s2c = (raw) -> {
                     ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
                     Item<ItemStack> wrapped = this.wrap(itemStack.clone());
                     Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
@@ -99,7 +98,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     return wrapped.getLiteralObject();
                 };
 
-                Function<Object, Object> s = (raw) -> {
+                Function<Object, Object> c2s = (raw) -> {
                     ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
                     Item<ItemStack> wrapped = this.wrap(itemStack);
                     Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
@@ -117,10 +116,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     return wrapped.getLiteralObject();
                 };
                 try {
-                    assert cProcessor != null;
-                    cProcessor.set(null, c);
-                    assert sProcessor != null;
-                    sProcessor.set(null, s);
+                    assert s2cProcessor != null;
+                    s2cProcessor.set(null, s2c);
+                    assert c2sProcessor != null;
+                    c2sProcessor.set(null, c2s);
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to load custom stream codec", e);
                 }
@@ -267,7 +266,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                             .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
+            boolean isVanillaItem = id.namespace().equals("minecraft") && Registry.MATERIAL.get(new NamespacedKey(id.namespace(), id.value())) != null;
             String materialStringId = (String) section.get("material");
+            if (isVanillaItem)
+                materialStringId = id.value();
             if (materialStringId == null) {
                 TranslationManager.instance().log("warning.config.item.lack_material", path.toString(), id.toString());
                 return;
@@ -284,8 +286,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             Key itemModelKey = null;
 
             CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
-            itemBuilder.dataModifier(new IdModifier<>(id));
-
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
@@ -341,6 +341,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
 
+            // Add it here to make sure that ce id is always applied
+            if (!isVanillaItem)
+                itemBuilder.dataModifier(new IdModifier<>(id));
+
             // Get item data
             Map<String, Object> clientSideDataSection = MiscUtils.castToMap(section.get("client-bound-data"), true);
             if (clientSideDataSection != null) {
@@ -355,10 +359,17 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
 
+            ItemSettings itemSettings;
             if (section.containsKey("settings")) {
                 Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
-                itemBuilder.settings(ItemSettings.fromMap(settings));
+                itemSettings = ItemSettings.fromMap(settings);
+            } else {
+                itemSettings = ItemSettings.of();
             }
+            if (isVanillaItem) {
+                itemSettings.canPlaceRelatedVanillaBlock(true);
+            }
+            itemBuilder.settings(itemSettings);
 
             CustomItem<ItemStack> customItem = itemBuilder.build();
             customItems.put(id, customItem);

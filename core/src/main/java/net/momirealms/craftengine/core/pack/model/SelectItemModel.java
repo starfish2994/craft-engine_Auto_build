@@ -117,7 +117,7 @@ public class SelectItemModel implements ItemModel {
                 }
                 return new SelectItemModel(property, whenMap, fallback == null ? null : ItemModels.fromMap(fallback));
             }
-            throw new IllegalArgumentException("No cases set for select");
+            throw new IllegalArgumentException("No 'cases' set for 'minecraft:select'");
         }
     }
 }

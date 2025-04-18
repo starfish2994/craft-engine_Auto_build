@@ -349,6 +349,20 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public void handleBaseEntityLoadEarly(ItemDisplay display) {
         String id = display.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
         if (id == null) return;
+        // Remove the entity if it's not a valid furniture
+        if (Config.handleInvalidFurniture()) {
+            String mapped = Config.furnitureMappings().get(id);
+            if (mapped != null) {
+                if (mapped.isEmpty()) {
+                    display.remove();
+                    return;
+                } else {
+                    id = mapped;
+                    display.getPersistentDataContainer().set(FURNITURE_KEY, PersistentDataType.STRING, id);
+                }
+            }
+        }
+
         Key key = Key.of(id);
         Optional<CustomFurniture> optionalFurniture = furnitureById(key);
         if (optionalFurniture.isPresent()) {
@@ -357,13 +371,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             if (previous != null) return;
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             furniture.initializeColliders(); // safely do it here
-            return;
-        }
-        // Remove the entity if it's not a valid furniture
-        if (Config.removeInvalidFurniture()) {
-            if (Config.furnitureToRemove().isEmpty() || Config.furnitureToRemove().contains(id)) {
-                display.remove();
-            }
         }
     }
 

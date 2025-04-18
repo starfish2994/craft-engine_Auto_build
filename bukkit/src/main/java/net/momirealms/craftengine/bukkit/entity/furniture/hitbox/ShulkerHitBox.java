@@ -140,9 +140,9 @@ public class ShulkerHitBox extends AbstractHitBox {
                         entityIds[1], (short) 0, ya, (short) 0, true
                 ), false);
             }
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
+            if (VersionHelper.isVersionNewerThan1_20_5() && this.scale != 1) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
-                Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, scale);
+                Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, this.scale);
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
             if (this.interactionEntity) {

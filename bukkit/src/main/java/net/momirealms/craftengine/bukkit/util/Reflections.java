@@ -14,17 +14,12 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.*;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
@@ -1527,7 +1522,6 @@ public class Reflections {
     public static final Object instance$Direction$WEST;
     public static final Object instance$Direction$EAST;
     public static final Object[] instance$Directions;
-    private static final Map<Object, Object> oppositeDirections = new HashMap<>();
 
     static {
         try {
@@ -1538,20 +1532,14 @@ public class Reflections {
             instance$Direction$SOUTH = instance$Directions[3];
             instance$Direction$WEST = instance$Directions[4];
             instance$Direction$EAST = instance$Directions[5];
-            oppositeDirections.put(instance$Direction$DOWN, instance$Direction$UP);
-            oppositeDirections.put(instance$Direction$UP, instance$Direction$DOWN);
-            oppositeDirections.put(instance$Direction$NORTH, instance$Direction$SOUTH);
-            oppositeDirections.put(instance$Direction$SOUTH, instance$Direction$NORTH);
-            oppositeDirections.put(instance$Direction$WEST, instance$Direction$EAST);
-            oppositeDirections.put(instance$Direction$EAST, instance$Direction$WEST);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Object getOppositeDirection(Object direction) {
-        return oppositeDirections.get(direction);
-    }
+//    public static Object getOppositeDirection(Object direction) {
+//        return oppositeDirections.get(direction);
+//    }
 
     public static final Class<?> clazz$CraftBlock = requireNonNull(
             ReflectionUtils.getClazz(
@@ -2418,6 +2406,12 @@ public class Reflections {
             )
     );
 
+    public static final Field field$BlockStateBase$requiresCorrectToolForDrops = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, boolean.class, 5
+            )
+    );
+
     public static final Field field$BlockStateBase$canOcclude = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$BlockStateBase, boolean.class, 6
@@ -2925,11 +2919,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ServerPlayer$gameMode = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
-            )
-    );
+//    public static final Field field$ServerPlayer$gameMode = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
+//            )
+//    );
 
     public static final Field field$ServerPlayerGameMode$destroyProgressStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -2937,11 +2931,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ServerPlayerGameMode, int.class, 1
-            )
-    );
+//    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$ServerPlayerGameMode, int.class, 1
+//            )
+//    );
 
     public static final Field field$ServerPlayerGameMode$delayedTickStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -3009,11 +3003,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$BlockStateBase$getDestroyProgress = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(
-                    clazz$BlockStateBase, float.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos
-            )
-    );
+//    public static final Method method$BlockStateBase$getDestroyProgress = requireNonNull(
+//            ReflectionUtils.getDeclaredMethod(
+//                    clazz$BlockStateBase, float.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos
+//            )
+//    );
 
     public static final Class<?> clazz$ClientboundBlockDestructionPacket = requireNonNull(
             ReflectionUtils.getClazz(
@@ -3022,11 +3016,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundBlockDestructionPacket = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$ClientboundBlockDestructionPacket, int.class, clazz$BlockPos, int.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundBlockDestructionPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$ClientboundBlockDestructionPacket, int.class, clazz$BlockPos, int.class
+//            )
+//    );
 
     public static final Class<?> clazz$ServerboundSwingPacket = requireNonNull(
             ReflectionUtils.getClazz(
@@ -3994,12 +3988,12 @@ public class Reflections {
             )
     );
 
-    @SuppressWarnings("deprecation")
-    public static final Method method$World$spawnEntity = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
-                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, Consumer.class) :
-                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, org.bukkit.util.Consumer.class)
-    );
+//    @SuppressWarnings("deprecation")
+//    public static final Method method$World$spawnEntity = requireNonNull(
+//            VersionHelper.isVersionNewerThan1_20_2() ?
+//                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, Consumer.class) :
+//                    ReflectionUtils.getMethod(World.class, Entity.class, Location.class, EntityType.class, CreatureSpawnEvent.SpawnReason.class, org.bukkit.util.Consumer.class)
+//    );
 
     // 1.21.4+
     public static final Class<?> clazz$ServerboundPickItemFromEntityPacket =
@@ -4955,11 +4949,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundLevelEventPacket = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$ClientboundLevelEventPacket, int.class, clazz$BlockPos, int.class, boolean.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundLevelEventPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$ClientboundLevelEventPacket, int.class, clazz$BlockPos, int.class, boolean.class
+//            )
+//    );
 
     public static final Field field$ClientboundLevelEventPacket$eventId = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -5768,24 +5762,30 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$BlockInWorld, 0
+    public static final Field field$BlockInWorld$state = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockInWorld, clazz$BlockState, 0
             )
     );
 
-    // 1.20.5+
-    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
-            ReflectionUtils.getMethod(
-                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
-            );
+//    public static final Constructor<?> constructor$BlockInWorld = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$BlockInWorld, 0
+//            )
+//    );
 
-    // 1.20 ~ 1.20.4
-    // instance$BuiltInRegistries$BLOCK
-    public static final Method method$ItemStack$canDestroy =
-            ReflectionUtils.getMethod(
-                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
-            );
+//    // 1.20.5+
+//    public static final Method method$ItemStack$canBreakBlockInAdventureMode =
+//            ReflectionUtils.getMethod(
+//                    clazz$ItemStack, new String[]{"canBreakBlockInAdventureMode"}, clazz$BlockInWorld
+//            );
+
+//    // 1.20 ~ 1.20.4
+//    // instance$BuiltInRegistries$BLOCK
+//    public static final Method method$ItemStack$canDestroy =
+//            ReflectionUtils.getMethod(
+//                    clazz$ItemStack,new String[]{"b"}, clazz$Registry, clazz$BlockInWorld
+//            );
 
     public static final Method method$BlockStateBase$getBlock = requireNonNull(
             ReflectionUtils.getMethod(
@@ -6431,5 +6431,85 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetScorePacket"),
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayOutScoreboardScore")
             )
+    );
+
+    public static final Method method$CraftPlayer$setSimplifyContainerDesyncCheck =
+            ReflectionUtils.getMethod(
+                    clazz$CraftPlayer, new String[]{"setSimplifyContainerDesyncCheck"}, boolean.class
+            );
+
+    public static final Class<?> clazz$ServerboundHelloPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.login.ServerboundHelloPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.login.PacketLoginInStart")
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, String.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$uuid = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, UUID.class, 0
+            ) :
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, Optional.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundResourcePackPushPacket$id =
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundResourcePackPushPacket, UUID.class, 0
+            );
+
+    public static final Field field$ClientboundResourcePackPushPacket$prompt = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundResourcePackPushPacket,
+                    VersionHelper.isVersionNewerThan1_20_5() ? Optional.class : clazz$Component,
+                    0
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundResourcePackPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInResourcePackStatus")
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundResourcePackPacket$Action = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket$a"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundResourcePackPacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInResourcePackStatus$EnumResourcePackStatus")
+            )
+    );
+
+    public static final Method method$ServerboundResourcePackPacket$Action$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$ServerboundResourcePackPacket$Action, clazz$ServerboundResourcePackPacket$Action.arrayType()
+            )
+    );
+
+    public static final Object instance$ServerboundResourcePackPacket$Action$ACCEPTED;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$ServerboundResourcePackPacket$Action$values.invoke(null);
+            instance$ServerboundResourcePackPacket$Action$ACCEPTED = values[3];
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Constructor<?> constructor$ServerboundResourcePackPacket = requireNonNull(
+            field$ClientboundResourcePackPushPacket$id != null
+                    ? ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, UUID.class, clazz$ServerboundResourcePackPacket$Action)
+                    : ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action)
     );
 }

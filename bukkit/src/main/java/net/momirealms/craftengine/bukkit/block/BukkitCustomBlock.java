@@ -133,6 +133,7 @@ public class BukkitCustomBlock extends CustomBlock {
                 if (settings.burnable()) {
                     Reflections.method$FireBlock$setFlammable.invoke(Reflections.instance$Blocks$FIRE, mcBlock, settings.burnChance(), settings.fireSpreadChance());
                 }
+                Reflections.field$BlockStateBase$requiresCorrectToolForDrops.set(mcBlockState, settings.requireCorrectTool());
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init block settings", e);

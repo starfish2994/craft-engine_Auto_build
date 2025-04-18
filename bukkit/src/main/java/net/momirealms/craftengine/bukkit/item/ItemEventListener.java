@@ -219,7 +219,7 @@ public class ItemEventListener implements Listener {
             int currentTicks = player.gameTicks();
             // The client will send multiple packets to the server if the client thinks it should
             // However, if the main hand item interaction is successful, the off-hand item should be blocked.
-            if (!player.updateLastSuccessfulInteractionTick(currentTicks)) {
+            if (player.lastSuccessfulInteractionTick() == currentTicks) {
                 event.setCancelled(true);
                 return true;
             }

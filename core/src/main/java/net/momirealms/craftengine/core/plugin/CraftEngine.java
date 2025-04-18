@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.pack.PackManager;
-import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -32,6 +31,7 @@ import net.momirealms.craftengine.core.sound.SoundManager;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.WorldManager;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +69,7 @@ public abstract class CraftEngine implements Plugin {
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
+    private boolean isInitializing;
 
     private String buildByBit = "%%__BUILTBYBIT__%%";
     private String polymart = "%%__POLYMART__%%";
@@ -90,8 +91,8 @@ public abstract class CraftEngine implements Plugin {
     }
 
     public void onPluginLoad() {
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
+        ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
+        ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
         this.dependencyManager = new DependencyManagerImpl(this);
         ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
         dependenciesToLoad.addAll(commonDependencies());
@@ -115,77 +116,83 @@ public abstract class CraftEngine implements Plugin {
     public CompletableFuture<ReloadResult> reloadPlugin(Executor asyncExecutor, Executor syncExecutor, boolean reloadRecipe) {
         CompletableFuture<ReloadResult> future = new CompletableFuture<>();
         asyncExecutor.execute(() -> {
-            if (this.isReloading) {
-                future.complete(ReloadResult.failure());
-                return;
-            }
-            this.isReloading = true;
-            long time1 = System.currentTimeMillis();
-            // firstly reload main config
-            this.config.load();
-            // reset debugger
-            this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
-            // now we reload the translations
-            this.translationManager.reload();
-            // clear the outdated cache by reloading the managers
-            this.templateManager.reload();
-            this.furnitureManager.reload();
-            this.fontManager.reload();
-            this.itemManager.reload();
-            this.soundManager.reload();
-            this.itemBrowserManager.reload();
-            this.blockManager.reload();
-            this.worldManager.reload();
-            this.vanillaLootManager.reload();
-            this.guiManager.reload();
-            this.packManager.reload();
-            if (reloadRecipe) {
-                this.recipeManager.reload();
-            }
+            long asyncTime = -1;
             try {
-                // now we load resources
-                this.packManager.loadResources(reloadRecipe);
-            } catch (Exception e) {
-                this.logger().warn("Failed to load resources folder", e);
-            }
-            // init suggestions and packet mapper
-            this.blockManager.delayedLoad();
-            // handle some special client lang for instance block_name
-            this.translationManager.delayedLoad();
-            // init suggestions
-            this.furnitureManager.delayedLoad();
-            // sort the categories
-            this.itemBrowserManager.delayedLoad();
-            // collect illegal characters from minecraft:default font
-            this.fontManager.delayedLoad();
-            if (reloadRecipe) {
-                // convert data pack recipes
-                this.recipeManager.delayedLoad();
-            }
-            long time2 = System.currentTimeMillis();
-            long asyncTime = time2 - time1;
-            syncExecutor.execute(() -> {
-                try {
-                    long time3 = System.currentTimeMillis();
-                    // register songs
-                    this.soundManager.runDelayedSyncTasks();
-                    // register recipes
-                    if (reloadRecipe) {
-                        this.recipeManager.runDelayedSyncTasks();
-                    }
-                    long time4 = System.currentTimeMillis();
-                    long syncTime = time4 - time3;
-                    this.reloadEventDispatcher.accept(this);
-                    future.complete(ReloadResult.success(asyncTime, syncTime));
-                } finally {
-                    this.isReloading = false;
+                if (this.isReloading) {
+                    future.complete(ReloadResult.failure());
+                    return;
                 }
-            });
+                this.isReloading = true;
+                long time1 = System.currentTimeMillis();
+                // firstly reload main config
+                this.config.load();
+                // reset debugger
+                this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
+                // now we reload the translations
+                this.translationManager.reload();
+                // clear the outdated cache by reloading the managers
+                this.templateManager.reload();
+                this.furnitureManager.reload();
+                this.fontManager.reload();
+                this.itemManager.reload();
+                this.soundManager.reload();
+                this.itemBrowserManager.reload();
+                this.blockManager.reload();
+                this.worldManager.reload();
+                this.vanillaLootManager.reload();
+                this.guiManager.reload();
+                this.packManager.reload();
+                if (reloadRecipe) {
+                    this.recipeManager.reload();
+                }
+                try {
+                    // now we load resources
+                    this.packManager.loadResources(reloadRecipe);
+                } catch (Exception e) {
+                    this.logger().warn("Failed to load resources folder", e);
+                }
+                // init suggestions and packet mapper
+                this.blockManager.delayedLoad();
+                // handle some special client lang for instance block_name
+                this.translationManager.delayedLoad();
+                // init suggestions
+                this.furnitureManager.delayedLoad();
+                // sort the categories
+                this.itemBrowserManager.delayedLoad();
+                // collect illegal characters from minecraft:default font
+                this.fontManager.delayedLoad();
+                if (reloadRecipe) {
+                    // convert data pack recipes
+                    this.recipeManager.delayedLoad();
+                }
+                long time2 = System.currentTimeMillis();
+                asyncTime = time2 - time1;
+            } finally {
+                long finalAsyncTime = asyncTime;
+                syncExecutor.execute(() -> {
+                    try {
+                        long time3 = System.currentTimeMillis();
+                        // register songs
+                        this.soundManager.runDelayedSyncTasks();
+                        // register recipes
+                        if (reloadRecipe) {
+                            this.recipeManager.runDelayedSyncTasks();
+                        }
+                        long time4 = System.currentTimeMillis();
+                        long syncTime = time4 - time3;
+                        this.reloadEventDispatcher.accept(this);
+                        future.complete(ReloadResult.success(finalAsyncTime, syncTime));
+                    } finally {
+                        this.isReloading = false;
+                    }
+                });
+            }
         });
         return future;
     }
 
     public void onPluginEnable() {
+        this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
@@ -214,6 +221,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.delayedInit();
             // set up some platform extra tasks
             this.platformDelayedEnable();
+            this.isInitializing = false;
         });
     }
 
@@ -237,7 +245,6 @@ public abstract class CraftEngine implements Plugin {
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.senderFactory != null) this.senderFactory.close();
         if (this.dependencyManager != null) this.dependencyManager.close();
-        ResourcePackHost.instance().disable();
     }
 
     protected void registerDefaultParsers() {
@@ -272,7 +279,6 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.BSTATS_BASE,
                 Dependencies.CAFFEINE,
                 Dependencies.GEANTY_REF,
-                Dependencies.NETTY_HTTP,
                 Dependencies.CLOUD_CORE, Dependencies.CLOUD_SERVICES,
                 Dependencies.GSON,
                 Dependencies.SLF4J_API, Dependencies.SLF4J_SIMPLE,
@@ -285,7 +291,38 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.TEXT_SERIALIZER_GSON, Dependencies.TEXT_SERIALIZER_GSON_LEGACY,
                 Dependencies.TEXT_SERIALIZER_JSON,
                 Dependencies.AHO_CORASICK,
-                Dependencies.LZ4
+                Dependencies.LZ4,
+                Dependencies.NETTY_HTTP2,
+                Dependencies.REACTIVE_STREAMS,
+                Dependencies.AMAZON_AWSSDK_S3,
+                Dependencies.AMAZON_AWSSDK_NETTY_NIO_CLIENT,
+                Dependencies.AMAZON_AWSSDK_SDK_CORE,
+                Dependencies.AMAZON_AWSSDK_AUTH,
+                Dependencies.AMAZON_AWSSDK_REGIONS,
+                Dependencies.AMAZON_AWSSDK_IDENTITY_SPI,
+                Dependencies.AMAZON_AWSSDK_HTTP_CLIENT_SPI,
+                Dependencies.AMAZON_AWSSDK_PROTOCOL_CORE,
+                Dependencies.AMAZON_AWSSDK_AWS_XML_PROTOCOL,
+                Dependencies.AMAZON_AWSSDK_JSON_UTILS,
+                Dependencies.AMAZON_AWSSDK_AWS_CORE,
+                Dependencies.AMAZON_AWSSDK_UTILS,
+                Dependencies.AMAZON_AWSSDK_ANNOTATIONS,
+                Dependencies.AMAZON_AWSSDK_CRT_CORE,
+                Dependencies.AMAZON_AWSSDK_CHECKSUMS,
+                Dependencies.AMAZON_EVENTSTREAM,
+                Dependencies.AMAZON_AWSSDK_PROFILES,
+                Dependencies.AMAZON_AWSSDK_RETRIES,
+                Dependencies.AMAZON_AWSSDK_ENDPOINTS_SPI,
+                Dependencies.AMAZON_AWSSDK_ARNS,
+                Dependencies.AMAZON_AWSSDK_AWS_QUERY_PROTOCOL,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_AWS,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_SPI,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_AWS_EVENTSTREAM,
+                Dependencies.AMAZON_AWSSDK_CHECKSUMS_SPI,
+                Dependencies.AMAZON_AWSSDK_RETRIES_SPI,
+                Dependencies.AMAZON_AWSSDK_METRICS_SPI,
+                Dependencies.AMAZON_AWSSDK_THIRD_PARTY_JACKSON_CORE
         );
     }
 
@@ -318,6 +355,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public boolean isReloading() {
         return isReloading;
+    }
+
+    @Override
+    public boolean isInitializing() {
+        return isInitializing;
     }
 
     public abstract boolean hasPlaceholderAPI();

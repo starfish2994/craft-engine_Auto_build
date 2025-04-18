@@ -17,6 +17,8 @@ public class BlockSettings {
     float resistance = 2f;
     boolean canOcclude;
     boolean fluidState;
+    boolean requireCorrectTools;
+    boolean respectToolComponent;
     Tristate isRedstoneConductor = Tristate.UNDEFINED;
     Tristate isSuffocating = Tristate.UNDEFINED;
     Tristate isViewBlocking = Tristate.UNDEFINED;
@@ -74,6 +76,8 @@ public class BlockSettings {
         newSettings.itemId = settings.itemId;
         newSettings.tags = settings.tags;
         newSettings.burnChance = settings.burnChance;
+        newSettings.requireCorrectTools = settings.requireCorrectTools;
+        newSettings.respectToolComponent = settings.respectToolComponent;
         newSettings.fireSpreadChance = settings.fireSpreadChance;
         newSettings.isRedstoneConductor = settings.isRedstoneConductor;
         newSettings.isSuffocating = settings.isSuffocating;
@@ -130,6 +134,10 @@ public class BlockSettings {
         return incorrectToolSpeed;
     }
 
+    public boolean requireCorrectTool() {
+        return requireCorrectTools || !correctTools.isEmpty();
+    }
+
     public String name() {
         return name;
     }
@@ -175,8 +183,11 @@ public class BlockSettings {
     }
 
     public boolean isCorrectTool(Key key) {
-        if (this.correctTools.isEmpty()) return true;
         return this.correctTools.contains(key);
+    }
+
+    public boolean respectToolComponent() {
+        return respectToolComponent;
     }
 
     public BlockSettings correctTools(Set<Key> correctTools) {
@@ -246,6 +257,16 @@ public class BlockSettings {
 
     public BlockSettings canOcclude(boolean canOcclude) {
         this.canOcclude = canOcclude;
+        return this;
+    }
+
+    public BlockSettings requireCorrectTool(boolean requireCorrectTool) {
+        this.requireCorrectTools = requireCorrectTool;
+        return this;
+    }
+
+    public BlockSettings respectToolComponent(boolean respectToolComponent) {
+        this.respectToolComponent = respectToolComponent;
         return this;
     }
 
@@ -391,6 +412,14 @@ public class BlockSettings {
             registerFactory("correct-tools", (value -> {
                 List<String> tools = MiscUtils.getAsStringList(value);
                 return settings -> settings.correctTools(tools.stream().map(Key::of).collect(Collectors.toSet()));
+            }));
+            registerFactory("require-correct-tools", (value -> {
+                boolean booleanValue = (boolean) value;
+                return settings -> settings.requireCorrectTool(booleanValue);
+            }));
+            registerFactory("respect-tool-component", (value -> {
+                boolean booleanValue = (boolean) value;
+                return settings -> settings.respectToolComponent(booleanValue);
             }));
             registerFactory("incorrect-tool-dig-speed", (value -> {
                 float floatValue = MiscUtils.getAsFloat(value);

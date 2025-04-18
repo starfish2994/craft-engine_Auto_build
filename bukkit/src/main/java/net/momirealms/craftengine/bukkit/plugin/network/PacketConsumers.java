@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUt
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -21,6 +22,8 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -28,6 +31,7 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
@@ -50,6 +54,7 @@ public class PacketConsumers {
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
+    private static final UUID EMPTY_UUID = new UUID(0, 0);
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
@@ -221,7 +226,7 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int eventId = buf.readInt();
-            if (eventId != 2001) return;
+            if (eventId != WorldEvents.BLOCK_BREAK_EFFECT) return;
             BlockPos blockPos = buf.readBlockPos(buf);
             int state = buf.readInt();
             boolean global = buf.readBoolean();
@@ -1118,38 +1123,32 @@ public class PacketConsumers {
                 if (Config.enableSoundSystem()) {
                     Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
-                        player.startMiningBlock(world, pos, blockState, false, null);
+                        player.startMiningBlock(pos, blockState, null);
                         return;
                     }
                 }
-                if (player.isMiningBlock() || player.shouldSyncAttribute()) {
+                if (player.isMiningBlock()) {
                     player.stopMiningBlock();
+                } else {
+                    player.setClientSideCanBreakBlock(true);
                 }
                 return;
             }
             if (player.isAdventureMode()) {
-                Object itemStack = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(player.platformPlayer().getInventory().getItemInMainHand());
-                Object blockPos = LocationUtils.toBlockPos(pos);
-                Object blockInWorld = Reflections.constructor$BlockInWorld.newInstance(serverLevel, blockPos, false);
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    if (Reflections.method$ItemStack$canBreakBlockInAdventureMode != null
-                            && !(boolean) Reflections.method$ItemStack$canBreakBlockInAdventureMode.invoke(
-                            itemStack, blockInWorld
-                    )) {
+                if (Config.simplifyAdventureBreakCheck()) {
+                    ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+                    if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
                         player.preventMiningBlock();
                         return;
                     }
                 } else {
-                    if (Reflections.method$ItemStack$canDestroy != null
-                            && !(boolean) Reflections.method$ItemStack$canDestroy.invoke(
-                            itemStack, Reflections.instance$BuiltInRegistries$BLOCK, blockInWorld
-                    )) {
+                    if (!player.canBreak(pos, null)) {
                         player.preventMiningBlock();
                         return;
                     }
                 }
             }
-            player.startMiningBlock(world, pos, blockState, true, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
+            player.startMiningBlock(pos, blockState, BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId));
         } else if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$ABORT_DESTROY_BLOCK) {
             if (player.isMiningBlock()) {
                 player.abortMiningBlock();
@@ -1160,6 +1159,28 @@ public class PacketConsumers {
             }
         }
     }
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
+        try {
+            BukkitServerPlayer player = (BukkitServerPlayer) user;
+            String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
+            player.setName(name);
+            if (VersionHelper.isVersionNewerThan1_20_2()) {
+                UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                player.setUUID(uuid);
+            } else {
+                @SuppressWarnings("unchecked")
+                Optional<UUID> uuid = (Optional<UUID>) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                if (uuid.isPresent()) {
+                    player.setUUID(uuid.get());
+                } else {
+                    player.setUUID(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)));
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundHelloPacket", e);
+        }
+    };
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SWING_HAND = (user, event, packet) -> {
         try {
@@ -1272,7 +1293,7 @@ public class PacketConsumers {
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
         }
-        double interactionRange = player.getInteractionRange();
+        double interactionRange = player.getCachedInteractionRange();
         // do ray trace to get current block
         RayTraceResult result = bukkitPlayer.rayTraceBlocks(interactionRange, FluidCollisionMode.NEVER);
         if (result == null) return;
@@ -2086,6 +2107,38 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isVersionNewerThan1_20_2()) return;
+            // we should only handle fake urls
+            String url = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$url(packet);
+            if (!url.equals(BukkitPackManager.FAKE_URL)) {
+                return;
+            }
+
+            event.setCancelled(true);
+            UUID packUUID = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$uuid(packet);
+            ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
+            host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
+                if (dataList.isEmpty()) {
+                    user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                    return;
+                }
+                for (ResourcePackDownloadData data : dataList) {
+                    Object newPacket = ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1());
+                    user.nettyChannel().writeAndFlush(newPacket);
+                    user.addResourcePackUUID(data.uuid());
+                }
+            }).exceptionally(throwable -> {
+                CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", throwable);
+                user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                return null;
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
         }
     };
 }

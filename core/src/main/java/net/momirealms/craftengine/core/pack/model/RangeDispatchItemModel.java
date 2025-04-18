@@ -108,7 +108,7 @@ public class RangeDispatchItemModel implements ItemModel {
                 }
                 return new RangeDispatchItemModel(property, scale, fallback == null ? null : ItemModels.fromMap(fallback), entryMap);
             }
-            throw new IllegalArgumentException("No entries set for range dispatch");
+            throw new IllegalArgumentException("No 'entries' set for 'minecraft:range_dispatch'");
         }
     }
 }
