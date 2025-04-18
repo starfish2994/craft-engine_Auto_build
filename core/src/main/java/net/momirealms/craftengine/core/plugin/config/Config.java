@@ -79,9 +79,11 @@ public class Config {
     protected float resource_pack$supported_version$min;
     protected float resource_pack$supported_version$max;
 
-    protected boolean resource_pack$send$kick_if_declined;
-    protected boolean resource_pack$send$send_on_join;
-    protected boolean resource_pack$send$send_on_reload;
+    protected boolean resource_pack$delivery$kick_if_declined;
+    protected boolean resource_pack$delivery$send_on_join;
+    protected boolean resource_pack$delivery$resend_on_upload;
+    protected boolean resource_pack$delivery$auto_upload;
+    protected Path resource_pack$delivery$file_to_upload;
     protected Component resource_pack$send$prompt;
 
     protected int performance$max_block_chain_update_limit;
@@ -202,11 +204,12 @@ public class Config {
         resource_pack$supported_version$min = getVersion(config.get("resource-pack.supported-version.min", "1.20").toString());
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
-        //resource_pack$send$mode = HostMode.valueOf(config.getString("resource-pack.send.mode", "self-host").replace("-", "_").toUpperCase(Locale.ENGLISH));
-        resource_pack$send$send_on_join = config.getBoolean("resource-pack.send.send-on-join", true);
-        resource_pack$send$send_on_reload = config.getBoolean("resource-pack.send.send-on-reload", true);
-        resource_pack$send$kick_if_declined = config.getBoolean("resource-pack.send.kick-if-declined", true);
-        resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.send.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
+        resource_pack$delivery$send_on_join = config.getBoolean("resource-pack.delivery.send-on-join", true);
+        resource_pack$delivery$resend_on_upload = config.getBoolean("resource-pack.delivery.resend-on-upload", true);
+        resource_pack$delivery$kick_if_declined = config.getBoolean("resource-pack.delivery.kick-if-declined", true);
+        resource_pack$delivery$auto_upload = config.getBoolean("resource-pack.delivery.auto-upload", true);
+        resource_pack$delivery$file_to_upload = resolvePath(config.getString("resource-pack.delivery.file-to-upload", "./generated/resource_pack.zip"));
+        resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.delivery.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
         resource_pack$protection$crash_tools$method_1 = config.getBoolean("resource-pack.protection.crash-tools.method-1", false);
         resource_pack$protection$crash_tools$method_2 = config.getBoolean("resource-pack.protection.crash-tools.method-2", false);
         resource_pack$protection$crash_tools$method_3 = config.getBoolean("resource-pack.protection.crash-tools.method-3", false);
@@ -430,7 +433,7 @@ public class Config {
     }
 
     public static boolean kickOnDeclined() {
-        return instance.resource_pack$send$kick_if_declined;
+        return instance.resource_pack$delivery$kick_if_declined;
     }
 
     public static Component resourcePackPrompt() {
@@ -438,11 +441,19 @@ public class Config {
     }
 
     public static boolean sendPackOnJoin() {
-        return instance.resource_pack$send$send_on_join;
+        return instance.resource_pack$delivery$send_on_join;
     }
 
-    public static boolean sendPackOnReload() {
-        return instance.resource_pack$send$send_on_reload;
+    public static boolean sendPackOnUpload() {
+        return instance.resource_pack$delivery$resend_on_upload;
+    }
+
+    public static boolean autoUpload() {
+        return instance.resource_pack$delivery$auto_upload;
+    }
+
+    public static Path fileToUpload() {
+        return instance.resource_pack$delivery$file_to_upload;
     }
 
     public static List<ConditionalResolution> resolutions() {
@@ -685,6 +696,10 @@ public class Config {
             }
         }
         return configFile;
+    }
+
+    private Path resolvePath(String path) {
+        return path.startsWith(".") ? CraftEngine.instance().dataFolderPath().resolve(path) : Path.of(path);
     }
 
     public YamlDocument settings() {

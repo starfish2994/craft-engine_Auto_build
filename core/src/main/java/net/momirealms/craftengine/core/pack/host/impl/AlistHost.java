@@ -39,7 +39,6 @@ public class AlistHost implements ResourcePackHost {
     private final Duration jwtTokenExpiration;
     private final String filePath;
     private final boolean disabledUpload;
-    private final Path localFilePath;
     private final ProxySelector proxy;
     private Pair<String, Date> jwtToken;
     private String cacheSha1;
@@ -52,7 +51,6 @@ public class AlistHost implements ResourcePackHost {
                      Duration jwtTokenExpiration,
                      String filePath,
                      boolean disabledUpload,
-                     String localFilePath,
                      ProxySelector proxy) {
         this.apiUrl = apiUrl;
         this.userName = userName;
@@ -62,7 +60,6 @@ public class AlistHost implements ResourcePackHost {
         this.jwtTokenExpiration = jwtTokenExpiration;
         this.filePath = filePath;
         this.disabledUpload = disabledUpload;
-        this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         this.proxy = proxy;
         this.readCacheFromDisk();
     }
@@ -117,8 +114,6 @@ public class AlistHost implements ResourcePackHost {
             return CompletableFuture.completedFuture(null);
         }
         CompletableFuture<Void> future = new CompletableFuture<>();
-        if (this.localFilePath != null) resourcePackPath = this.localFilePath;
-        Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
@@ -129,7 +124,7 @@ public class AlistHost implements ResourcePackHost {
                         .header("overwrite", "true")
                         .header("password", filePassword)
                         .header("Content-Type", "application/x-zip-compressed")
-                        .PUT(HttpRequest.BodyPublishers.ofFile(finalResourcePackPath))
+                        .PUT(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
                 long requestStart = System.currentTimeMillis();
                 CraftEngine.instance().logger().info("[Alist] Starting file upload...");
@@ -137,9 +132,9 @@ public class AlistHost implements ResourcePackHost {
                         .thenAccept(response -> {
                             long uploadTime = System.currentTimeMillis() - requestStart;
                             if (response.statusCode() == 200) {
-                                cacheSha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
+                                cacheSha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
                                 saveCacheToDisk();
-                                CraftEngine.instance().logger().info("[Alist] Upload resource pack success after " + uploadTime + "ms");
+                                CraftEngine.instance().logger().info("[Alist] Upload resource pack successfully in " + uploadTime + "ms");
                                 future.complete(null);
                             } else {
                                 future.completeExceptionally(new RuntimeException("Upload failed with status code: " + response.statusCode()));
@@ -286,9 +281,8 @@ public class AlistHost implements ResourcePackHost {
                 throw new IllegalArgumentException("'file-path' cannot be empty for Alist host");
             }
             boolean disabledUpload = (boolean) arguments.getOrDefault("disabled-upload", false);
-            String localFilePath = (String) arguments.get("local-file-path");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, localFilePath, proxy);
+            return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, filePath, disabledUpload, proxy);
         }
     }
 }

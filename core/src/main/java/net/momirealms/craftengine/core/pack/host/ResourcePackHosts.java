@@ -12,25 +12,23 @@ import java.util.Map;
 
 public class ResourcePackHosts {
     public static final Key NONE = Key.of("craftengine:none");
-    public static final Key SELF_HOST = Key.of("craftengine:self_host");
-    public static final Key EXTERNAL_HOST = Key.of("craftengine:external_host");
+    public static final Key SELF = Key.of("craftengine:self");
+    public static final Key EXTERNAL = Key.of("craftengine:external");
     public static final Key LOBFILE = Key.of("craftengine:lobfile");
-    public static final Key S3_HOST = Key.of("craftengine:s3_host");
-    public static final Key CUSTOM_API_HOST = Key.of("craftengine:custom_api_host");
-    public static final Key ALIST_HOST = Key.of("craftengine:alist_host");
-    public static final Key DROPBOX_HOST = Key.of("craftengine:dropbox_host");
-    public static final Key ONEDRIVE_HOST = Key.of("craftengine:onedrive_host");
+    public static final Key S3 = Key.of("craftengine:s3");
+    public static final Key ALIST = Key.of("craftengine:alist");
+    public static final Key DROPBOX = Key.of("craftengine:dropbox");
+    public static final Key ONEDRIVE = Key.of("craftengine:onedrive");
 
     static {
         register(NONE, NoneHost.FACTORY);
-        register(SELF_HOST, SelfHost.FACTORY);
-        register(EXTERNAL_HOST, ExternalHost.FACTORY);
+        register(SELF, SelfHost.FACTORY);
+        register(EXTERNAL, ExternalHost.FACTORY);
         register(LOBFILE, LobFileHost.FACTORY);
-        register(S3_HOST, S3Host.FACTORY);
-        register(CUSTOM_API_HOST, CustomApiHost.FACTORY);
-        register(ALIST_HOST, AlistHost.FACTORY);
-        register(DROPBOX_HOST, DropboxHost.FACTORY);
-        register(ONEDRIVE_HOST, OneDriveHost.FACTORY);
+        register(S3, S3Host.FACTORY);
+        register(ALIST, AlistHost.FACTORY);
+        register(DROPBOX, DropboxHost.FACTORY);
+        register(ONEDRIVE, OneDriveHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {

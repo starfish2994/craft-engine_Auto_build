@@ -38,41 +38,36 @@ import java.util.concurrent.CompletionException;
 public class S3Host implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
     private final S3AsyncClient s3AsyncClient;
-    private final S3Presigner presigner;
+    private final S3Presigner preSigner;
     private final String bucket;
     private final String uploadPath;
     private final String cdnDomain;
     private final String cdnProtocol;
     private final Duration validity;
-    private final Path localFilePath;
 
     public S3Host(
             S3AsyncClient s3AsyncClient,
-            S3Presigner presigner,
+            S3Presigner preSigner,
             String bucket,
             String uploadPath,
             String cdnDomain,
             String cdnProtocol,
-            Duration validity,
-            String localFilePath
+            Duration validity
     ) {
         this.s3AsyncClient = s3AsyncClient;
-        this.presigner = presigner;
+        this.preSigner = preSigner;
         this.bucket = bucket;
         this.uploadPath = uploadPath;
         this.cdnDomain = cdnDomain;
         this.cdnProtocol = cdnProtocol;
         this.validity = validity;
-        this.localFilePath = localFilePath == null ? null : ResourcePackHost.customPackPath(localFilePath);
     }
 
     @Override
     public CompletableFuture<List<ResourcePackDownloadData>> requestResourcePackDownloadLink(UUID player) {
-        String objectKey = uploadPath;
-
-        return s3AsyncClient.headObject(HeadObjectRequest.builder()
-                        .bucket(bucket)
-                        .key(objectKey)
+        return this.s3AsyncClient.headObject(HeadObjectRequest.builder()
+                        .bucket(this.bucket)
+                        .key(this.uploadPath)
                         .build())
                 .handle((headResponse, exception) -> {
                     if (exception != null) {
@@ -90,16 +85,16 @@ public class S3Host implements ResourcePackHost {
                     }
                     String sha1 = headResponse.metadata().get("sha1");
                     if (sha1 == null) {
-                        CraftEngine.instance().logger().warn("[S3] SHA1 metadata missing for object: " + objectKey);
-                        throw new CompletionException(new IllegalStateException("SHA1 metadata missing for object: " + objectKey));
+                        CraftEngine.instance().logger().warn("[S3] SHA1 metadata missing for object: " + this.uploadPath);
+                        throw new CompletionException(new IllegalStateException("SHA1 metadata missing for object: " + this.uploadPath));
                     }
                     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                            .signatureDuration(validity)
-                            .getObjectRequest(b -> b.bucket(bucket).key(objectKey))
+                            .signatureDuration(this.validity)
+                            .getObjectRequest(b -> b.bucket(this.bucket).key(this.uploadPath))
                             .build();
                     return Collections.singletonList(
                             ResourcePackDownloadData.of(
-                                    replaceWithCdnUrl(presigner.presignGetObject(presignRequest).url()),
+                                    replaceWithCdnUrl(this.preSigner.presignGetObject(presignRequest).url()),
                                     UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.UTF_8)),
                                     sha1
                             )
@@ -109,30 +104,28 @@ public class S3Host implements ResourcePackHost {
 
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
-        if (this.localFilePath != null) resourcePackPath = this.localFilePath;
-        String objectKey = uploadPath;
         String sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(objectKey)
+                .bucket(this.bucket)
+                .key(this.uploadPath)
                 .metadata(Map.of("sha1", sha1))
                 .build();
         long uploadStart = System.currentTimeMillis();
         CraftEngine.instance().logger().info("[S3] Starting file upload...");
-        return s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromFile(resourcePackPath))
+        return this.s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromFile(resourcePackPath))
                 .handle((response, exception) -> {
                     if (exception != null) {
                         Throwable cause = exception instanceof CompletionException ?
                                 exception.getCause() :
                                 exception;
                         CraftEngine.instance().logger().warn(
-                                "[S3] Upload to " + objectKey + " failed! Reason: " +
+                                "[S3] Upload to " + this.uploadPath + " failed! Reason: " +
                                         cause.getClass().getSimpleName() + " - " + cause.getMessage()
                         );
                         throw new CompletionException("Resource pack upload failed", cause);
                     }
                     CraftEngine.instance().logger().info(
-                            "[S3] Upload to " + objectKey + " complete! Took " +
+                            "[S3] Upload to " + this.uploadPath + " complete! Took " +
                                     (System.currentTimeMillis() - uploadStart) + "ms"
                     );
                     return null;
@@ -140,8 +133,8 @@ public class S3Host implements ResourcePackHost {
     }
 
     private String replaceWithCdnUrl(URL originalUrl) {
-        if (cdnDomain == null) return originalUrl.toString();
-        return cdnProtocol + "://" + cdnDomain
+        if (this.cdnDomain == null) return originalUrl.toString();
+        return this.cdnProtocol + "://" + this.cdnDomain
                 + originalUrl.getPath()
                 + (originalUrl.getQuery() != null ? "?" + originalUrl.getQuery() : "");
     }
@@ -174,7 +167,6 @@ public class S3Host implements ResourcePackHost {
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new IllegalArgumentException("'upload-path' cannot be empty for S3 host");
             }
-            String localFilePath = (String) arguments.get("local-file-path");
             boolean useLegacySignature = (boolean) arguments.getOrDefault("use-legacy-signature", true);
             Duration validity = Duration.ofSeconds((int) arguments.getOrDefault("validity", 10));
 
@@ -219,22 +211,13 @@ public class S3Host implements ResourcePackHost {
 
             S3AsyncClient s3AsyncClient = s3AsyncClientBuilder.build();
 
-            S3Presigner presigner = S3Presigner.builder()
+            S3Presigner preSigner = S3Presigner.builder()
                     .endpointOverride(URI.create(protocol + "://" + endpoint))
                     .region(Region.of(region))
                     .credentialsProvider(StaticCredentialsProvider.create(credentials))
                     .build();
 
-            return new S3Host(
-                    s3AsyncClient,
-                    presigner,
-                    bucket,
-                    uploadPath,
-                    cdnDomain,
-                    cdnProtocol,
-                    validity,
-                    localFilePath
-            );
+            return new S3Host(s3AsyncClient, preSigner, bucket, uploadPath, cdnDomain, cdnProtocol, validity);
         }
     }
 }

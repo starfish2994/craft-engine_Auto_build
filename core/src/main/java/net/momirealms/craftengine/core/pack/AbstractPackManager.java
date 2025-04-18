@@ -147,7 +147,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.send.host");
+        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
         if (list == null || list.isEmpty()) {
             this.resourcePackHost = NoneHost.INSTANCE;
         } else {

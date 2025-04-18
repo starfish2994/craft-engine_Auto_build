@@ -32,17 +32,15 @@ public class DropboxHost implements ResourcePackHost {
     private final String accessToken;
     private final String uploadPath;
     private final ProxySelector proxy;
-    private final Path localFilePath;
 
     private String url;
     private String sha1;
     private UUID uuid;
 
-    public DropboxHost(String accessToken, String uploadPath, ProxySelector proxy, String localFilePath) {
+    public DropboxHost(String accessToken, String uploadPath, ProxySelector proxy) {
         this.accessToken = accessToken;
         this.uploadPath = uploadPath;
         this.proxy = proxy;
-        this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         readCacheFromDisk();
     }
 
@@ -100,12 +98,8 @@ public class DropboxHost implements ResourcePackHost {
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        if (this.localFilePath != null) resourcePackPath = this.localFilePath;
-
-        Path finalResourcePackPath = resourcePackPath;
-
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            String sha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
+            String sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
             try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 JsonObject apiArg = new JsonObject();
                 apiArg.addProperty("path", uploadPath);
@@ -115,7 +109,7 @@ public class DropboxHost implements ResourcePackHost {
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Content-Type", "application/octet-stream")
                         .header("Dropbox-API-Arg", apiArg.toString())
-                        .POST(HttpRequest.BodyPublishers.ofFile(finalResourcePackPath))
+                        .POST(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
 
                 long uploadStart = System.currentTimeMillis();
@@ -152,26 +146,26 @@ public class DropboxHost implements ResourcePackHost {
     }
 
     private String getDownloadUrl() {
-        try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
+        try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
             try {
                 JsonObject requestJson = new JsonObject();
-                requestJson.addProperty("path", uploadPath);
+                requestJson.addProperty("path", this.uploadPath);
                 JsonObject settingsJson = new JsonObject();
                 settingsJson.addProperty("requested_visibility", "public");
                 requestJson.add("settings", settingsJson);
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings"))
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", "Bearer " + this.accessToken)
                         .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(requestJson.toString()))
                         .build();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() == 409) {
                     JsonObject listJson = new JsonObject();
-                    listJson.addProperty("path", uploadPath);
+                    listJson.addProperty("path", this.uploadPath);
                     HttpRequest listLinksRequest = HttpRequest.newBuilder()
                             .uri(URI.create("https://api.dropboxapi.com/2/sharing/list_shared_links"))
-                            .header("Authorization", "Bearer " + accessToken)
+                            .header("Authorization", "Bearer " + this.accessToken)
                             .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(listJson.toString()))
                             .build();
@@ -200,14 +194,13 @@ public class DropboxHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            String localFilePath = (String) arguments.get("local-file-path");
             String accessToken = (String) arguments.get("access-token");
             if (accessToken == null || accessToken.isEmpty()) {
                 throw new RuntimeException("Missing 'access-token' for DropboxHost");
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "/resource_pack.zip");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new DropboxHost(accessToken, uploadPath, proxy, localFilePath);
+            return new DropboxHost(accessToken, uploadPath, proxy);
         }
     }
 }

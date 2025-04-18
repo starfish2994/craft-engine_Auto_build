@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.pack;
 
 import net.momirealms.craftengine.bukkit.api.event.AsyncResourcePackGenerateEvent;
-import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.command.feature.ReloadCommand;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -121,12 +120,13 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAsyncResourcePackGenerate(AsyncResourcePackGenerateEvent event) {
-        resourcePackHost().upload(event.zipFilePath()).whenComplete((d, e) -> {
+        if (!Config.autoUpload()) return;
+        resourcePackHost().upload(Config.fileToUpload()).whenComplete((d, e) -> {
             if (e != null) {
                 CraftEngine.instance().logger().warn("Failed to upload resource pack", e);
                 return;
             }
-            if (!Config.sendPackOnReload()) return;
+            if (!Config.sendPackOnUpload()) return;
             for (BukkitServerPlayer player : this.plugin.networkManager().onlineUsers()) {
                 sendResourcePack(player);
             }

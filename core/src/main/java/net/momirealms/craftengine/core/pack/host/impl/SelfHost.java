@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.nio.file.Path;
@@ -17,7 +18,7 @@ public class SelfHost implements ResourcePackHost {
     private static final SelfHost INSTANCE = new SelfHost();
 
     public SelfHost() {
-        SelfHostHttpServer.instance().readResourcePack(CraftEngine.instance().packManager().resourcePackPath());
+        SelfHostHttpServer.instance().readResourcePack(Config.fileToUpload());
     }
 
     @Override
@@ -56,7 +57,6 @@ public class SelfHost implements ResourcePackHost {
             }
             String protocol = (String) arguments.getOrDefault("protocol", "http");
             boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
-            String localFilePath = (String) arguments.get("local-file-path");
             Map<String, Object> rateMap = MiscUtils.castToMap(arguments.get("rate-map"), true);
             int maxRequests = 5;
             int resetInterval = 20_000;
@@ -64,7 +64,7 @@ public class SelfHost implements ResourcePackHost {
                 maxRequests = (int) rateMap.getOrDefault("max-requests", 5);
                 resetInterval = (int) rateMap.getOrDefault("reset-interval", 20) * 1000;
             }
-            selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, localFilePath, maxRequests, resetInterval);
+            selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, maxRequests, resetInterval);
             return INSTANCE;
         }
     }

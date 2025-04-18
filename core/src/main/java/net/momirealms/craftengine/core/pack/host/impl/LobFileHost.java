@@ -27,7 +27,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class LobFileHost implements ResourcePackHost {
     public static final Factory FACTORY = new Factory();
-    private final Path forcedPackPath;
     private final String apiKey;
     private final ProxySelector proxy;
     private AccountInfo accountInfo;
@@ -36,8 +35,7 @@ public class LobFileHost implements ResourcePackHost {
     private String sha1;
     private UUID uuid;
 
-    public LobFileHost(String localFile, String apiKey, ProxySelector proxy) {
-        this.forcedPackPath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
+    public LobFileHost(String apiKey, ProxySelector proxy) {
         this.apiKey = apiKey;
         this.proxy = proxy;
         this.readCacheFromDisk();
@@ -107,13 +105,9 @@ public class LobFileHost implements ResourcePackHost {
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         long totalStartTime = System.currentTimeMillis();
-
-        if (this.forcedPackPath != null) resourcePackPath = forcedPackPath;
-        Path finalResourcePackPath = resourcePackPath;
-
         CraftEngine.instance().scheduler().executeAsync(() -> {
             try {
-                Map<String, String> hashes = calculateHashes(finalResourcePackPath);
+                Map<String, String> hashes = calculateHashes(resourcePackPath);
                 String sha1Hash = hashes.get("SHA-1");
                 String sha256Hash = hashes.get("SHA-256");
 
@@ -124,7 +118,7 @@ public class LobFileHost implements ResourcePackHost {
                             .uri(URI.create("https://lobfile.com/api/v3/upload.php"))
                             .header("X-API-Key", apiKey)
                             .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                            .POST(buildMultipartBody(finalResourcePackPath, sha256Hash, boundary))
+                            .POST(buildMultipartBody(resourcePackPath, sha256Hash, boundary))
                             .build();
 
                     long uploadStart = System.currentTimeMillis();
@@ -263,13 +257,12 @@ public class LobFileHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            String localFilePath = (String) arguments.get("local-file-path");
             String apiKey = (String) arguments.get("api-key");
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new RuntimeException("Missing 'api-key' for LobFileHost");
             }
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new LobFileHost(localFilePath, apiKey, proxy);
+            return new LobFileHost(apiKey, proxy);
         }
     }
 

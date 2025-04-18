@@ -6,9 +6,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
-import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -55,18 +53,15 @@ public class SelfHostHttpServer {
     private volatile byte[] resourcePackBytes;
     private String packHash;
     private UUID packUUID;
-    private Path localFilePath = null;
 
     public void updateProperties(String ip,
                                  int port,
                                  boolean denyNonMinecraft,
                                  String protocol,
-                                 String localFile,
                                  int maxRequests,
                                  int resetInternal) {
         this.ip = ip;
         this.port = port;
-        this.localFilePath = localFile == null ? null : ResourcePackHost.customPackPath(localFile);
         this.denyNonMinecraft = denyNonMinecraft;
         this.protocol = protocol;
         this.rateLimit = maxRequests;
@@ -116,7 +111,6 @@ public class SelfHostHttpServer {
     }
 
     public void readResourcePack(Path path) {
-        if (this.localFilePath != null) path = this.localFilePath;
         try {
             if (Files.exists(path)) {
                 this.resourcePackBytes = Files.readAllBytes(path);

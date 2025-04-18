@@ -34,7 +34,6 @@ public class OneDriveHost implements ResourcePackHost {
     private final String clientSecret;
     private final ProxySelector proxy;
     private final String filePath;
-    private final Path localFilePath;
     private Tuple<String, String, Date> refreshToken;
     private String sha1;
     private String fileId;
@@ -43,13 +42,11 @@ public class OneDriveHost implements ResourcePackHost {
                         String clientSecret,
                         String refreshToken,
                         String filePath,
-                        String localFilePath,
                         ProxySelector proxy) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.proxy = proxy;
         this.filePath = filePath;
-        this.localFilePath = localFilePath == null ? null : Path.of(localFilePath);
         this.refreshToken = Tuple.of(refreshToken, "", new Date());
         readCacheFromDisk();
     }
@@ -140,17 +137,15 @@ public class OneDriveHost implements ResourcePackHost {
     @Override
     public CompletableFuture<Void> upload(Path resourcePackPath) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        if (this.localFilePath != null) resourcePackPath = this.localFilePath;
-        Path finalResourcePackPath = resourcePackPath;
         CraftEngine.instance().scheduler().executeAsync(() -> {
-            sha1 = HashUtils.calculateLocalFileSha1(finalResourcePackPath);
+            sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
             String accessToken = getOrRefreshJwtToken();
             try (HttpClient client = HttpClient.newBuilder().proxy(proxy).build()) {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://graph.microsoft.com/v1.0/drive/root:/" + filePath + ":/content"))
                         .header("Authorization", "Bearer " + accessToken)
                         .header("Content-Type", "application/octet-stream")
-                        .PUT(HttpRequest.BodyPublishers.ofFile(finalResourcePackPath))
+                        .PUT(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
                         .build();
                 long uploadStart = System.currentTimeMillis();
                 CraftEngine.instance().logger().info("[OneDrive] Starting file upload...");
@@ -242,9 +237,8 @@ public class OneDriveHost implements ResourcePackHost {
             if (filePath == null || filePath.isEmpty()) {
                 throw new RuntimeException("Missing 'file-path' for OneDriveHost");
             }
-            String localFilePath = (String) arguments.get("local-file-path");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
-            return new OneDriveHost(clientId, clientSecret, refreshToken, filePath, localFilePath, proxy);
+            return new OneDriveHost(clientId, clientSecret, refreshToken, filePath, proxy);
         }
     }
 }
