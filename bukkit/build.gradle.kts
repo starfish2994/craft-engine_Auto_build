@@ -16,7 +16,7 @@ dependencies {
     compileOnly(project(":bukkit:compatibility"))
     compileOnly(project(":bukkit:legacy"))
     // Anti Grief
-    compileOnly("com.github.Xiao-MoMi:AntiGriefLib:${rootProject.properties["anti_grief_version"]}")
+    compileOnly("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
     // NBT
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
