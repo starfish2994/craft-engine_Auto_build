@@ -5,7 +5,6 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Pose;
 import org.incendo.cloud.Command;
 
 public class TestCommand extends BukkitCommandFeature<CommandSender> {

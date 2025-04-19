@@ -25,8 +25,7 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final boolean interactionEntity;
     private final Direction direction;
     private final List<Object> cachedShulkerValues = new ArrayList<>();
-    private final List<Object> cachedInteractionValues = new ArrayList<>();
-    private final float yOffset;
+    private final DirectionalShulkerSpawner spawner;
 
     public ShulkerHitBox(Seat[] seats, Vector3f position, Direction direction, float scale, byte peek, boolean interactionEntity, boolean interactive) {
         super(seats, position);
@@ -40,22 +39,67 @@ public class ShulkerHitBox extends AbstractHitBox {
         ShulkerData.Color.addEntityDataIfNotDefaultValue((byte) 0, this.cachedShulkerValues);
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
-        ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedShulkerValues); // 无ai
-//        ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
+        ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedShulkerValues); // NO AI
+        ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // Invisible
 
         float shulkerHeight = (getPhysicalPeek(peek * 0.01F) + 1) * scale;
-
-        if (this.interactionEntity) {
-            // make it a litter bigger
+        List<Object> cachedInteractionValues = new ArrayList<>();
+        if (this.direction == Direction.UP) {
+            Collider c = createCollider(Direction.UP);
             InteractionEntityData.Height.addEntityDataIfNotDefaultValue(shulkerHeight + 0.01f, cachedInteractionValues);
             InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
-        }
-
-        if (this.direction == Direction.DOWN) {
-            this.yOffset = -shulkerHeight + 1;
+            this.spawner = (entityIds, x, y, z, yaw, offset, packets, collider) -> {
+                collider.accept(c);
+                if (interactionEntity) {
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
+                }
+            };
+        } else if (this.direction == Direction.DOWN) {
+            Collider c = createCollider(Direction.DOWN);
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(shulkerHeight + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
+            InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
+            this.spawner = (entityIds, x, y, z, yaw, offset, packets, collider) -> {
+                collider.accept(c);
+                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
+                if (interactionEntity) {
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f - shulkerHeight, z - offset.z, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
+                }
+            };
         } else {
-            this.yOffset = 0;
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(scale + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
+            InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
+            this.spawner = (entityIds, x, y, z, yaw, offset, packets, collider) -> {
+                Direction shulkerAnchor = getOriginalDirection(direction, Direction.fromYaw(yaw));
+                Direction shulkerDirection = shulkerAnchor.opposite();
+                collider.accept(this.createCollider(shulkerDirection));
+                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(shulkerAnchor)))), false);
+                if (interactionEntity) {
+                    // first interaction
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
+                    // second interaction
+                    float distance = shulkerHeight - scale;
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
+                            entityIds[3], UUID.randomUUID(), x + offset.x + shulkerDirection.stepX() * distance, y + offset.y - 0.005f, z - offset.z + shulkerDirection.stepZ() * distance, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[3], List.copyOf(cachedInteractionValues)), true);
+                }
+            };
         }
     }
 
@@ -156,40 +200,28 @@ public class ShulkerHitBox extends AbstractHitBox {
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, this.scale);
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
-            if (this.direction == Direction.UP) {
-                collider.accept(this.createCollider(this.direction));
-                if (this.interactionEntity) {
-                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
-                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                    ), true);
-                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
-                }
-            } else if (this.direction == Direction.DOWN) {
-                collider.accept(this.createCollider(this.direction));
-                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
-                if (this.interactionEntity) {
-                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f + this.yOffset, z - offset.z, 0, yaw,
-                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                    ), true);
-                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
-                }
-            } else {
-                Direction shulkerAnchor = getOriginalDirection(this.direction, Direction.fromYaw(yaw));
-                collider.accept(this.createCollider(shulkerAnchor.opposite()));
-                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(shulkerAnchor)))), false);
-            }
+            this.spawner.accept(entityIds, x, y, z, yaw, offset, packets, collider);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
         }
     }
 
+    @FunctionalInterface
+    interface DirectionalShulkerSpawner {
+
+        void accept(int[] entityIds, double x, double y, double z, float yaw, Vector3f offset, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider);
+    }
+
     @Override
     public int[] acquireEntityIds(Supplier<Integer> entityIdSupplier) {
         if (this.interactionEntity) {
-                            // 展示实体                 // 潜影贝               // 交互实体
-            return new int[] {entityIdSupplier.get(), entityIdSupplier.get(), entityIdSupplier.get()};
+            if (this.direction.stepY() != 0) {
+                                // 展示实体                 // 潜影贝               // 交互实体
+                return new int[] {entityIdSupplier.get(), entityIdSupplier.get(), entityIdSupplier.get()};
+            } else {
+                                // 展示实体                 // 潜影贝               // 交互实体1              // 交互实体2
+                return new int[] {entityIdSupplier.get(), entityIdSupplier.get(), entityIdSupplier.get(), entityIdSupplier.get()};
+            }
         } else {
                             // 展示实体                 // 潜影贝
             return new int[] {entityIdSupplier.get(), entityIdSupplier.get()};
