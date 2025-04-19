@@ -31,7 +31,7 @@ public class HangingBlockBehavior extends BushBlockBehavior {
 
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, true);
             return new HangingBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right());
         }
     }

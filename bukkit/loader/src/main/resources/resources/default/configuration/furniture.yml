@@ -19,7 +19,7 @@ items:
           ground:
             rules:
               # ANY / FOUR / EIGHT / SIXTEEN / NORTH / EAST / WEST / SOUTH
-              rotation: EIGHT
+              rotation: FOUR
               # ANY / CENTER / HALF / QUARTER / CORNER
               alignment: CENTER
             elements:

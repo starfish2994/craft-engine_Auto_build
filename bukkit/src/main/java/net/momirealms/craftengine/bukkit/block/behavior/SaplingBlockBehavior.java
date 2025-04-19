@@ -149,7 +149,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
                 throw new IllegalArgumentException("stage property not set for sapling");
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             return new SaplingBlockBehavior(block, Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
                     MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0)));
         }
