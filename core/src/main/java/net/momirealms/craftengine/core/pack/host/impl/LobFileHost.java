@@ -184,6 +184,7 @@ public class LobFileHost implements ResourcePackHost {
         }
     }
 
+    @SuppressWarnings("all")
     private Map<String, String> calculateHashes(Path path) throws IOException, NoSuchAlgorithmException {
         Map<String, String> hashes = new HashMap<>();
         MessageDigest sha1Digest = MessageDigest.getInstance("SHA-1");
@@ -278,6 +279,7 @@ public class LobFileHost implements ResourcePackHost {
         }
     }
 
+    @SuppressWarnings({"all"})
     public static class AccountInfo {
         private boolean success;
         private Map<String, Object> account_info;

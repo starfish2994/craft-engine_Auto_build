@@ -71,16 +71,16 @@ public class SelfHostHttpServer {
         if (port <= 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port number: " + port);
         }
-        if (port == this.port && server != null) return;
-        if (server != null) disable();
+        if (port == this.port && this.server != null) return;
+        if (this.server != null) disable();
         this.port = port;
         try {
-            threadPool = Executors.newFixedThreadPool(1);
-            server = HttpServer.create(new InetSocketAddress("::", port), 0);
-            server.createContext("/download", new ResourcePackHandler());
-            server.createContext("/metrics", this::handleMetrics);
-            server.setExecutor(threadPool);
-            server.start();
+            this.threadPool = Executors.newFixedThreadPool(1);
+            this.server = HttpServer.create(new InetSocketAddress("::", port), 0);
+            this.server.createContext("/download", new ResourcePackHandler());
+            this.server.createContext("/metrics", this::handleMetrics);
+            this.server.setExecutor(this.threadPool);
+            this.server.start();
             CraftEngine.instance().logger().info("HTTP server started on port: " + port);
         } catch (IOException e) {
             CraftEngine.instance().logger().warn("Failed to start HTTP server", e);
@@ -100,19 +100,19 @@ public class SelfHostHttpServer {
             return null;
         }
         if (!this.useToken) {
-            return new ResourcePackDownloadData(url() + "download", packUUID, packHash);
+            return new ResourcePackDownloadData(url() + "download", this.packUUID, this.packHash);
         }
         String token = UUID.randomUUID().toString();
         this.oneTimePackUrls.put(token, true);
         return new ResourcePackDownloadData(
                 url() + "download?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8),
-                packUUID,
-                packHash
+                this.packUUID,
+                this.packHash
         );
     }
 
     public String url() {
-        return protocol + "://" + ip + ":" + port + "/";
+        return this.protocol + "://" + this.ip + ":" + this.port + "/";
     }
 
     public void readResourcePack(Path path) {
@@ -131,7 +131,7 @@ public class SelfHostHttpServer {
     private void calculateHash() {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            digest.update(resourcePackBytes);
+            digest.update(this.resourcePackBytes);
             byte[] hashBytes = digest.digest();
 
             StringBuilder hexString = new StringBuilder();
@@ -139,7 +139,7 @@ public class SelfHostHttpServer {
                 hexString.append(String.format("%02x", b));
             }
             this.packHash = hexString.toString();
-            this.packUUID = UUID.nameUUIDFromBytes(packHash.getBytes(StandardCharsets.UTF_8));
+            this.packUUID = UUID.nameUUIDFromBytes(this.packHash.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             CraftEngine.instance().logger().severe("SHA-1 algorithm not available", e);
         }
@@ -159,11 +159,11 @@ public class SelfHostHttpServer {
     }
 
     public void disable() {
-        if (server != null) {
-            server.stop(0);
-            server = null;
-            if (threadPool != null) {
-                threadPool.shutdownNow();
+        if (this.server != null) {
+            this.server.stop(0);
+            this.server = null;
+            if (this.threadPool != null) {
+                this.threadPool.shutdownNow();
             }
         }
     }
