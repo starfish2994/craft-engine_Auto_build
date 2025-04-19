@@ -138,7 +138,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
         });
     }
 
-    private void sendResourcePack(Player player) {
+    public void sendResourcePack(Player player) {
         CompletableFuture<List<ResourcePackDownloadData>> future = resourcePackHost().requestResourcePackDownloadLink(player.uuid());
         future.thenAccept(dataList -> {
             if (player.isOnline()) {

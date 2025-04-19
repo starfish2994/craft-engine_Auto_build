@@ -28,4 +28,5 @@ public interface MessageConstants {
     TranslatableComponent.Builder COMMAND_RESOURCE_LIST = Component.translatable().key("command.resource.list");
     TranslatableComponent.Builder COMMAND_UPLOAD_FAILURE_NOT_SUPPORTED = Component.translatable().key("command.upload.failure.not_supported");
     TranslatableComponent.Builder COMMAND_UPLOAD_ON_PROGRESS = Component.translatable().key("command.upload.on_progress");
+    TranslatableComponent.Builder COMMAND_SEND_RESOURCE_PACK_SUCCESS = Component.translatable().key("command.send_resource_pack.success");
 }
