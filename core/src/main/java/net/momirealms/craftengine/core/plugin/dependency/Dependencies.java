@@ -248,6 +248,14 @@ public class Dependencies {
             List.of(Relocation.of("jpountz", "net{}jpountz"))
     );
 
+    public static final Dependency NETTY_HTTP = new Dependency(
+            "netty-codec-http",
+            "io{}netty",
+            "netty-codec-http",
+            "netty-codec-http",
+            Collections.emptyList()
+    );
+
     public static final Dependency NETTY_HTTP2 = new Dependency(
             "netty-codec-http2",
             "io{}netty",

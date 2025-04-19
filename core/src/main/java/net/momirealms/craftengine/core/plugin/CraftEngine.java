@@ -292,6 +292,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.TEXT_SERIALIZER_JSON,
                 Dependencies.AHO_CORASICK,
                 Dependencies.LZ4,
+                Dependencies.NETTY_HTTP,
                 Dependencies.NETTY_HTTP2,
                 Dependencies.REACTIVE_STREAMS,
                 Dependencies.AMAZON_AWSSDK_S3,
