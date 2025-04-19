@@ -32,6 +32,7 @@ public class FurnitureSettings {
     }
 
     public static FurnitureSettings applyModifiers(FurnitureSettings settings, Map<String, Object> map) {
+        if (map == null) return settings;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             FurnitureSettings.Modifier.Factory factory = FurnitureSettings.Modifiers.FACTORIES.get(entry.getKey());
             if (factory != null) {

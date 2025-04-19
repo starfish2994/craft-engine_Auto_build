@@ -55,6 +55,34 @@ public enum Direction {
         this.adjZ = vector.z();
     }
 
+    public static Direction fromYaw(float yaw) {
+        yaw = normalizeAngle(yaw);
+        if (yaw < 45) {
+            if (yaw > -45) {
+                return NORTH;
+            } else if (yaw > -135) {
+                return EAST;
+            } else {
+                return SOUTH;
+            }
+        } else {
+            if (yaw < 135) {
+                return WEST;
+            } else {
+                return SOUTH;
+            }
+        }
+    }
+
+    private static float normalizeAngle(float angle) {
+        angle %= 360;
+        angle = (angle + 360) % 360;
+        if (angle > 180) {
+            angle -= 360;
+        }
+        return angle;
+    }
+
     public HorizontalDirection toHorizontalDirection() {
         return switch (this) {
             case DOWN, UP -> null;

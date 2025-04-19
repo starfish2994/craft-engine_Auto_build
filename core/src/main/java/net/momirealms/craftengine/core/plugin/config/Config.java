@@ -13,7 +13,6 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.dejvokep.boostedyaml.utils.format.NodeRole;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
-import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
@@ -30,10 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -79,23 +79,12 @@ public class Config {
     protected float resource_pack$supported_version$min;
     protected float resource_pack$supported_version$max;
 
-    protected HostMode resource_pack$send$mode;
-    protected boolean resource_pack$send$kick_if_declined;
-    protected boolean resource_pack$send$send_on_join;
-    protected boolean resource_pack$send$send_on_reload;
+    protected boolean resource_pack$delivery$kick_if_declined;
+    protected boolean resource_pack$delivery$send_on_join;
+    protected boolean resource_pack$delivery$resend_on_upload;
+    protected boolean resource_pack$delivery$auto_upload;
+    protected Path resource_pack$delivery$file_to_upload;
     protected Component resource_pack$send$prompt;
-
-    protected int resource_pack$send$self_host$port;
-    protected String resource_pack$send$self_host$ip;
-    protected String resource_pack$send$self_host$protocol;
-    protected boolean resource_pack$send$self_host$deny_non_minecraft_request;
-    protected int resource_pack$send$self_host$rate_limit$max_requests;
-    protected long resource_pack$send$self_host$rate_limit$reset_interval;
-    protected String resource_pack$self_host$local_file_path;
-
-    protected String resource_pack$external_host$url;
-    protected String resource_pack$external_host$sha1;
-    protected UUID resource_pack$external_host$uuid;
 
     protected int performance$max_block_chain_update_limit;
     protected int performance$max_emojis_per_parse;
@@ -215,23 +204,12 @@ public class Config {
         resource_pack$supported_version$min = getVersion(config.get("resource-pack.supported-version.min", "1.20").toString());
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
-        resource_pack$send$mode = HostMode.valueOf(config.getString("resource-pack.send.mode", "self-host").replace("-", "_").toUpperCase(Locale.ENGLISH));
-        resource_pack$send$self_host$port = config.getInt("resource-pack.send.self-host.port", 8163);
-        resource_pack$send$self_host$ip = config.getString("resource-pack.send.self-host.ip", "localhost");
-        resource_pack$self_host$local_file_path = config.getString("resource-pack.send.self-host.local-file-path", "./generated/resource_pack.zip");
-        resource_pack$send$self_host$protocol = config.getString("resource-pack.send.self-host.protocol", "http");
-        resource_pack$send$send_on_join = config.getBoolean("resource-pack.send.send-on-join", true);
-        resource_pack$send$send_on_reload = config.getBoolean("resource-pack.send.send-on-reload", true);
-        resource_pack$send$kick_if_declined = config.getBoolean("resource-pack.send.kick-if-declined", true);
-        resource_pack$external_host$url = config.getString("resource-pack.send.external-host.url", "");
-        resource_pack$external_host$sha1 = config.getString("resource-pack.send.external-host.sha1", "");
-        String packUUIDStr = config.getString("resource-pack.send.external-host.uuid", "");
-        resource_pack$external_host$uuid = packUUIDStr.isEmpty() ? UUID.nameUUIDFromBytes(resource_pack$external_host$url.getBytes(StandardCharsets.UTF_8)) : UUID.fromString(packUUIDStr);
-        resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.send.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
-        resource_pack$send$self_host$rate_limit$reset_interval = config.getLong("resource-pack.send.self-host.rate-limit.reset-interval", 30L);
-        resource_pack$send$self_host$rate_limit$max_requests = config.getInt("resource-pack.send.self-host.rate-limit.max-requests", 3);
-        resource_pack$send$self_host$deny_non_minecraft_request = config.getBoolean("resource-pack.send.deny-non-minecraft-request", true);
-
+        resource_pack$delivery$send_on_join = config.getBoolean("resource-pack.delivery.send-on-join", true);
+        resource_pack$delivery$resend_on_upload = config.getBoolean("resource-pack.delivery.resend-on-upload", true);
+        resource_pack$delivery$kick_if_declined = config.getBoolean("resource-pack.delivery.kick-if-declined", true);
+        resource_pack$delivery$auto_upload = config.getBoolean("resource-pack.delivery.auto-upload", true);
+        resource_pack$delivery$file_to_upload = resolvePath(config.getString("resource-pack.delivery.file-to-upload", "./generated/resource_pack.zip"));
+        resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.delivery.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
         resource_pack$protection$crash_tools$method_1 = config.getBoolean("resource-pack.protection.crash-tools.method-1", false);
         resource_pack$protection$crash_tools$method_2 = config.getBoolean("resource-pack.protection.crash-tools.method-2", false);
         resource_pack$protection$crash_tools$method_3 = config.getBoolean("resource-pack.protection.crash-tools.method-3", false);
@@ -240,7 +218,6 @@ public class Config {
         resource_pack$protection$obfuscation$fake_directory = config.getBoolean("resource-pack.protection.obfuscation.fake-directory", false);
         resource_pack$protection$obfuscation$escape_unicode = config.getBoolean("resource-pack.protection.obfuscation.escape-unicode", false);
         resource_pack$protection$obfuscation$break_json = config.getBoolean("resource-pack.protection.obfuscation.break-json", false);
-
         resource_pack$protection$obfuscation$resource_location$enable = config.getBoolean("resource-pack.protection.obfuscation.resource-location.enable", false);
         resource_pack$protection$obfuscation$resource_location$random_namespace$amount = config.getInt("resource-pack.protection.obfuscation.resource-location.random-namespace.amount", 32);
         resource_pack$protection$obfuscation$resource_location$random_namespace$length = config.getInt("resource-pack.protection.obfuscation.resource-location.random-namespace.length", 8);
@@ -443,10 +420,6 @@ public class Config {
         return instance.chunk_system$restore_vanilla_blocks_on_chunk_unload && instance.chunk_system$restore_custom_blocks_on_chunk_load;
     }
 
-    public static boolean denyNonMinecraftRequest() {
-        return instance.resource_pack$send$self_host$deny_non_minecraft_request;
-    }
-
     public static boolean restoreCustomBlocks() {
         return instance.chunk_system$restore_custom_blocks_on_chunk_load;
     }
@@ -459,60 +432,28 @@ public class Config {
         return instance.resource_pack$merge_external_folders;
     }
 
-    public static HostMode hostMode() {
-        return instance.resource_pack$send$mode;
-    }
-
-    public static String hostIP() {
-        return instance.resource_pack$send$self_host$ip;
-    }
-
-    public static int hostPort() {
-        return instance.resource_pack$send$self_host$port;
-    }
-
     public static boolean kickOnDeclined() {
-        return instance.resource_pack$send$kick_if_declined;
+        return instance.resource_pack$delivery$kick_if_declined;
     }
 
     public static Component resourcePackPrompt() {
         return instance.resource_pack$send$prompt;
     }
 
-    public static String hostProtocol() {
-        return instance.resource_pack$send$self_host$protocol;
-    }
-
-    public static String externalPackUrl() {
-        return instance.resource_pack$external_host$url;
-    }
-
-    public static String externalPackSha1() {
-        return instance.resource_pack$external_host$sha1;
-    }
-
-    public static UUID externalPackUUID() {
-        return instance.resource_pack$external_host$uuid;
-    }
-
     public static boolean sendPackOnJoin() {
-        return instance.resource_pack$send$send_on_join;
+        return instance.resource_pack$delivery$send_on_join;
     }
 
-    public static boolean sendPackOnReload() {
-        return instance.resource_pack$send$send_on_reload;
+    public static boolean sendPackOnUpload() {
+        return instance.resource_pack$delivery$resend_on_upload;
     }
 
-    public static int requestRate() {
-        return instance.resource_pack$send$self_host$rate_limit$max_requests;
+    public static boolean autoUpload() {
+        return instance.resource_pack$delivery$auto_upload;
     }
 
-    public static long requestInterval() {
-        return instance.resource_pack$send$self_host$rate_limit$reset_interval;
-    }
-
-    public static String hostResourcePackPath() {
-        return instance.resource_pack$self_host$local_file_path;
+    public static Path fileToUpload() {
+        return instance.resource_pack$delivery$file_to_upload;
     }
 
     public static List<ConditionalResolution> resolutions() {
@@ -755,6 +696,10 @@ public class Config {
             }
         }
         return configFile;
+    }
+
+    private Path resolvePath(String path) {
+        return path.startsWith(".") ? CraftEngine.instance().dataFolderPath().resolve(path) : Path.of(path);
     }
 
     public YamlDocument settings() {

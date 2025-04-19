@@ -23,7 +23,7 @@ dependencies {
     implementation("net.kyori:adventure-platform-bukkit:${rootProject.properties["adventure_platform_version"]}")
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
-    implementation("com.github.Xiao-MoMi:AntiGriefLib:${rootProject.properties["anti_grief_version"]}")
+    implementation("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
     implementation("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
 }
 
@@ -75,5 +75,7 @@ tasks {
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.jpountz", "net.momirealms.craftengine.libraries.jpountz")
+        relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk")
+        relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream")
     }
 }

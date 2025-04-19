@@ -58,7 +58,6 @@ public class CustomFurniture {
 
     public record Placement(FurnitureElement[] elements,
                             HitBox[] hitBoxes,
-                            Collider[] colliders,
                             RotationRule rotationRule,
                             AlignmentRule alignmentRule,
                             Optional<ExternalModel> externalModel) {

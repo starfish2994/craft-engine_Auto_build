@@ -90,10 +90,12 @@ public class LoadedFurniture implements Furniture {
 
         List<Object> packets = new ArrayList<>();
         List<Object> minimizedPackets = new ArrayList<>();
+        List<Collider> colliders = new ArrayList<>();
+
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packet -> {
+            element.initPackets(entityId, x, y, z, yaw, conjugated, packet -> {
                 packets.add(packet);
                 if (this.minimized) minimizedPackets.add(packet);
             });
@@ -105,12 +107,12 @@ public class LoadedFurniture implements Furniture {
                 mainEntityIds.add(entityId);
                 this.hitBoxes.put(entityId, hitBox);
             }
-            hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+            hitBox.initPacketsAndColliders(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
                 packets.add(packet);
                 if (this.minimized && !canBeMinimized) {
                     minimizedPackets.add(packet);
                 }
-            });
+            }, colliders::add);
         }
         try {
             this.cachedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
@@ -122,13 +124,12 @@ public class LoadedFurniture implements Furniture {
         }
         this.fakeEntityIds = fakeEntityIds;
         this.entityIds = mainEntityIds;
-        int colliderSize = placement.colliders().length;
+        int colliderSize = colliders.size();
         this.collisionEntities = new CollisionEntity[colliderSize];
         if (colliderSize != 0) {
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
             for (int i = 0; i < colliderSize; i++) {
-                // TODO better shulker hitbox
-                Collider collider = placement.colliders()[i];
+                Collider collider = colliders.get(i);
                 Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
                 Vector3d offset1 = collider.point1();
                 Vector3d offset2 = collider.point2();

@@ -19,6 +19,7 @@ import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.suggestion.SuggestionProvider;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class DebugSetBlockCommand extends BukkitCommandFeature<CommandSender> {
 
@@ -33,7 +34,7 @@ public class DebugSetBlockCommand extends BukkitCommandFeature<CommandSender> {
                 .required("id", StringParser.stringComponent(StringParser.StringMode.GREEDY_FLAG_YIELDING).suggestionProvider(new SuggestionProvider<>() {
                     @Override
                     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
-                        return CompletableFuture.completedFuture(plugin().blockManager().cachedSuggestions());
+                        return CompletableFuture.completedFuture(BlockStateParser.fillSuggestions(input.input(), input.cursor()).stream().map(Suggestion::suggestion).collect(Collectors.toList()));
                     }
                 }))
                 .handler(context -> {

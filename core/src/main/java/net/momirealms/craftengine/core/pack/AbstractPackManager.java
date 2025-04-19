@@ -7,10 +7,12 @@ import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
-import net.momirealms.craftengine.core.pack.host.HostMode;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
+import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
+import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
@@ -34,10 +36,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -68,10 +67,8 @@ public abstract class AbstractPackManager implements PackManager {
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
-
     protected BiConsumer<Path, Path> zipGenerator;
-    protected String packHash;
-    protected UUID packUUID;
+    protected ResourcePackHost resourcePackHost;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -150,14 +147,17 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        this.calculateHash();
-        if (Config.hostMode() == HostMode.SELF_HOST) {
-            Path path = Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
-            ResourcePackHost.instance().enable(Config.hostIP(), Config.hostPort(), path);
-            ResourcePackHost.instance().setRateLimit(Config.requestRate(), Config.requestInterval(), TimeUnit.SECONDS);
+        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
+        if (list == null || list.isEmpty()) {
+            this.resourcePackHost = NoneHost.INSTANCE;
         } else {
-            ResourcePackHost.instance().disable();
+            this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
         }
+    }
+
+    @Override
+    public ResourcePackHost resourcePackHost() {
+        return this.resourcePackHost;
     }
 
     @Override
@@ -222,10 +222,6 @@ public abstract class AbstractPackManager implements PackManager {
         return true;
     }
 
-    public Path selfHostPackPath() {
-        return Config.hostResourcePackPath().startsWith(".") ? plugin.dataFolderPath().resolve(Config.hostResourcePackPath()) : Path.of(Config.hostResourcePackPath());
-    }
-
     private void loadPacks() {
         Path resourcesFolder = this.plugin.dataFolderPath().resolve("resources");
         try {
@@ -264,6 +260,9 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void saveDefaultConfigs() {
+        // internal
+        plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/textures/entity/shulker/shulker_white.png");
+        plugin.saveResource("resources/remove_shulker_head/pack.yml");
         // internal
         plugin.saveResource("resources/internal/resourcepack/assets/minecraft/models/block/default_chorus_plant.json");
         plugin.saveResource("resources/internal/pack.yml");
@@ -310,6 +309,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/configuration/block_name.yml");
         // categories
         plugin.saveResource("resources/default/configuration/categories.yml");
+        // for mods
+        plugin.saveResource("resources/default/configuration/fix_client_visual.yml");
         // icons
         plugin.saveResource("resources/default/configuration/icons.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/font/image/icons.png");
@@ -526,24 +527,7 @@ public abstract class AbstractPackManager implements PackManager {
 
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-
         this.eventDispatcher.accept(generatedPackPath, zipFile);
-        this.calculateHash();
-    }
-
-    private void calculateHash() {
-        Path zipFile = selfHostPackPath();
-        if (Files.exists(zipFile)) {
-            try {
-                this.packHash = computeSHA1(zipFile);
-                this.packUUID = UUID.nameUUIDFromBytes(this.packHash.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException | NoSuchAlgorithmException e) {
-                this.plugin.logger().severe("Error calculating resource pack hash", e);
-            }
-        } else {
-            this.packHash = "";
-            this.packUUID = UUID.nameUUIDFromBytes("EMPTY".getBytes(StandardCharsets.UTF_8));
-        }
     }
 
     private void generateParticle(Path generatedPackPath) {
@@ -1135,23 +1119,6 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
         }
-    }
-
-    protected String computeSHA1(Path path) throws IOException, NoSuchAlgorithmException {
-        InputStream file = Files.newInputStream(path);
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        while ((bytesRead = file.read(buffer)) != -1) {
-            digest.update(buffer, 0, bytesRead);
-        }
-        file.close();
-
-        StringBuilder hexString = new StringBuilder(40);
-        for (byte b : digest.digest()) {
-            hexString.append(String.format("%02x", b));
-        }
-        return hexString.toString();
     }
 
     private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {

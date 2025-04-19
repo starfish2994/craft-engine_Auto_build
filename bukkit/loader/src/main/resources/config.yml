@@ -65,29 +65,31 @@ resource-pack:
     - CustomNameplates/ResourcePack
     - BetterModel/build
     - BetterHud/build
-  send:
+  delivery:
+    # Send the resource pack on joining the server
     send-on-join: true
-    send-on-reload: true
     kick-if-declined: true
     prompt: "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"
     # If you are hosting the resource pack by yourself, replace `localhost` with your server ip otherwise it would only work on your local pc
     # If using BungeeCord or Velocity, consider using a proxy-side plugin to handle resource pack delivery.
-    mode: self-host # self-host/external-host/none
-    self-host:
-      ip: localhost
-      port: 8163
-      protocol: http
-      deny-non-minecraft-request: true
-      # If the path begins with `./` or `../`, it is treated as a relative path to the plugin folder.
-      # Otherwise, it is considered an absolute path.
-      local-file-path: "./generated/resource_pack.zip"
-      rate-limit:
-        max-requests: 3
-        reset-interval: 30 # seconds
-    external-host:
-      url: ""
-      sha1: ""
-      uuid: ""
+    # Read this page for more host types: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host
+    hosting:
+      - type: "self"
+        ip: "localhost"
+        port: 8163
+        protocol: "http"
+        deny-non-minecraft-request: true
+        one-time-token: true
+        rate-limit:
+          max-requests: 3
+          reset-interval: 20
+    # Upload the resource pack automatically on generation
+    # When disabled, you must manually trigger uploads using the /ce upload command
+    auto-upload: true
+    # The file to upload
+    file-to-upload: "./generated/resource_pack.zip"
+    # Resend the resource pack to players upon successful upload
+    resend-on-upload: true
   duplicated-files-handler:
     - term:
         type: any_of

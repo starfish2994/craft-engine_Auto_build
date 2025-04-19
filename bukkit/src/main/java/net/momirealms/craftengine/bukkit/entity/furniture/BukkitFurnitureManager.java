@@ -143,9 +143,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     elements.add(furnitureElement);
                 }
 
-                // add colliders
-                List<Collider> colliders = new ArrayList<>();
-
                 // external model providers
                 Optional<ExternalModel> externalModel;
                 if (placementArguments.containsKey("model-engine")) {
@@ -162,7 +159,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> config : hitboxConfigs) {
                     HitBox hitBox = HitBoxTypes.fromMap(config);
                     hitboxes.add(hitBox);
-                    hitBox.optionalCollider().ifPresent(colliders::add);
                 }
                 if (hitboxes.isEmpty() && externalModel.isEmpty()) {
                     hitboxes.add(InteractionHitBox.DEFAULT);
@@ -180,7 +176,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     placements.put(anchorType, new CustomFurniture.Placement(
                             elements.toArray(new FurnitureElement[0]),
                             hitboxes.toArray(new HitBox[0]),
-                            colliders.toArray(new Collider[0]),
                             rotationRule,
                             alignmentRule,
                             externalModel
@@ -189,7 +184,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     placements.put(anchorType, new CustomFurniture.Placement(
                             elements.toArray(new FurnitureElement[0]),
                             hitboxes.toArray(new HitBox[0]),
-                            colliders.toArray(new Collider[0]),
                             RotationRule.ANY,
                             AlignmentRule.CENTER,
                             externalModel

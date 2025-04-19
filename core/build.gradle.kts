@@ -51,6 +51,9 @@ dependencies {
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
     // Aho-Corasick java implementation
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
+    // Amazon S3
+    compileOnly("software.amazon.awssdk:s3:${rootProject.properties["amazon_awssdk_version"]}")
+    compileOnly("software.amazon.awssdk:netty-nio-client:${rootProject.properties["amazon_awssdk_version"]}")
 }
 
 java {
@@ -80,6 +83,8 @@ tasks {
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")
         relocate("net.jpountz", "net.momirealms.craftengine.libraries.jpountz") // lz4
+        relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk") // awssdk
+        relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream") // awssdk
     }
 }
 

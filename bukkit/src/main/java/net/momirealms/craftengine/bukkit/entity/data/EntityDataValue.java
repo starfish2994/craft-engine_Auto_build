@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.data;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -98,11 +99,7 @@ public class EntityDataValue {
     }
 
     public static Object create(int id, Object serializer, Object value) {
-        try {
-            Object entityDataAccessor = Reflections.constructor$EntityDataAccessor.newInstance(id, serializer);
-            return Reflections.method$SynchedEntityData$DataValue$create.invoke(null, entityDataAccessor, value);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
+        Object entityDataAccessor = FastNMS.INSTANCE.constructor$EntityDataAccessor(id, serializer);
+        return FastNMS.INSTANCE.method$SynchedEntityData$DataValue$create(entityDataAccessor, value);
     }
 }

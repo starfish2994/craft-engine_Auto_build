@@ -1,8 +1,5 @@
 package net.momirealms.craftengine.mod;
 
-import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
@@ -11,7 +8,6 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.Buffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;

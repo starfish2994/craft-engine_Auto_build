@@ -41,6 +41,8 @@ public interface Plugin {
 
     boolean isReloading();
 
+    boolean isInitializing();
+
     DependencyManager dependencyManager();
 
     <W> SchedulerAdapter<W> scheduler();

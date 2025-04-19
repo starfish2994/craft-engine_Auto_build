@@ -1,6 +1,6 @@
 items:
   default:fairy_flower:
-    material: paper
+    material: nether_brick
     custom-model-data: 4000
     data:
       item-name: "<!i><i18n:item.fairy_flower>"
@@ -12,7 +12,7 @@ items:
       type: block_item
       block: default:fairy_flower
   default:reed:
-    material: paper
+    material: nether_brick
     custom-model-data: 4001
     data:
       item-name: "<!i><i18n:item.reed>"
@@ -24,7 +24,7 @@ items:
       type: liquid_collision_block_item
       block: default:reed
   default:flame_cane:
-    material: paper
+    material: nether_brick
     custom-model-data: 4002
     data:
       item-name: "<!i><i18n:item.flame_cane>"
@@ -36,7 +36,7 @@ items:
       type: block_item
       block: default:flame_cane
   default:ender_pearl_flower_seeds:
-    material: paper
+    material: nether_brick
     custom-model-data: 4003
     data:
       item-name: "<!i><i18n:item.ender_pearl_flower_seeds>"

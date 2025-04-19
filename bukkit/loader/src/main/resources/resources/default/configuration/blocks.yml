@@ -1,6 +1,6 @@
 items#misc:
   default:chinese_lantern:
-    material: paper
+    material: nether_brick
     custom-model-data: 3000
     data:
       item-name: "<!i><i18n:item.chinese_lantern>"
@@ -41,7 +41,7 @@ items#misc:
                 "end": "minecraft:block/custom/chinese_lantern_top"
                 "side": "minecraft:block/custom/chinese_lantern"
   default:netherite_anvil:
-    material: paper
+    material: nether_brick
     custom-model-data: 3001
     data:
       item-name: "<!i><i18n:item.netherite_anvil>"
@@ -113,7 +113,7 @@ items#misc:
               appearance: axisZ
               id: 3
   default:gunpowder_block:
-    material: paper
+    material: nether_brick
     custom-model-data: 3002
     data:
       item-name: "<!i><i18n:item.gunpowder_block>"
@@ -154,7 +154,7 @@ items#misc:
               textures:
                 "all": "minecraft:block/custom/gunpowder_block"
   default:solid_gunpowder_block:
-    material: paper
+    material: nether_brick
     custom-model-data: 3003
     data:
       item-name: "<!i><i18n:item.solid_gunpowder_block>"

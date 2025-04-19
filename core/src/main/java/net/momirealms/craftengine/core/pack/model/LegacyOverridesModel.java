@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.pack;
+package net.momirealms.craftengine.core.pack.model;
 
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;

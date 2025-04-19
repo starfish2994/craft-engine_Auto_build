@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUt
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -21,6 +22,8 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
@@ -51,6 +54,7 @@ public class PacketConsumers {
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
+    private static final UUID EMPTY_UUID = new UUID(0, 0);
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
@@ -1156,6 +1160,28 @@ public class PacketConsumers {
         }
     }
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
+        try {
+            BukkitServerPlayer player = (BukkitServerPlayer) user;
+            String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
+            player.setName(name);
+            if (VersionHelper.isVersionNewerThan1_20_2()) {
+                UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                player.setUUID(uuid);
+            } else {
+                @SuppressWarnings("unchecked")
+                Optional<UUID> uuid = (Optional<UUID>) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                if (uuid.isPresent()) {
+                    player.setUUID(uuid.get());
+                } else {
+                    player.setUUID(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)));
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundHelloPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SWING_HAND = (user, event, packet) -> {
         try {
             if (!user.isOnline()) return;
@@ -2081,6 +2107,38 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isVersionNewerThan1_20_2()) return;
+            // we should only handle fake urls
+            String url = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$url(packet);
+            if (!url.equals(BukkitPackManager.FAKE_URL)) {
+                return;
+            }
+
+            event.setCancelled(true);
+            UUID packUUID = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$uuid(packet);
+            ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
+            host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
+                if (dataList.isEmpty()) {
+                    user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                    return;
+                }
+                for (ResourcePackDownloadData data : dataList) {
+                    Object newPacket = ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1());
+                    user.nettyChannel().writeAndFlush(newPacket);
+                    user.addResourcePackUUID(data.uuid());
+                }
+            }).exceptionally(throwable -> {
+                CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", throwable);
+                user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                return null;
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
         }
     };
 }
