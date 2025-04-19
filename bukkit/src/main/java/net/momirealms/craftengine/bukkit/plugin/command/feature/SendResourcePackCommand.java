@@ -36,7 +36,13 @@ public class SendResourcePackCommand extends BukkitCommandFeature<CommandSender>
                         if (bukkitServerPlayer == null) continue;
                         BukkitCraftEngine.instance().packManager().sendResourcePack(bukkitServerPlayer);
                     }
-                    handleFeedback(context, MessageConstants.COMMAND_SEND_RESOURCE_PACK_SUCCESS, Component.text(players.size()));
+                    int size = players.size();
+                    if (size == 1) {
+                        String name = players.iterator().next().getName();
+                        handleFeedback(context, MessageConstants.COMMAND_SEND_RESOURCE_PACK_SUCCESS_SINGLE, Component.text(name));
+                    } else {
+                        handleFeedback(context, MessageConstants.COMMAND_SEND_RESOURCE_PACK_SUCCESS_MULTIPLE, Component.text(size));
+                    }
                 });
     }
 
