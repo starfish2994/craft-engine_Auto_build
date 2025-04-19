@@ -41,7 +41,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedShulkerValues); // 无ai
-        ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
+//        ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
 
         float shulkerHeight = (getPhysicalPeek(peek * 0.01F) + 1) * scale;
 
@@ -59,8 +59,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         }
     }
 
-    @Override
-    public Optional<Collider> optionalCollider() {
+    public Collider createCollider(Direction d) {
         float peek = getPhysicalPeek(this.peek() * 0.01F);
         double x1 = -this.scale * 0.5;
         double y1 = 0.0;
@@ -69,30 +68,30 @@ public class ShulkerHitBox extends AbstractHitBox {
         double y2 = this.scale;
         double z2 = this.scale * 0.5;
 
-        double dx = (double) this.direction.stepX() * peek * (double) scale;
+        double dx = (double) d.stepX() * peek * (double) this.scale;
         if (dx > 0) {
             x2 += dx;
         } else if (dx < 0) {
             x1 += dx;
         }
-        double dy = (double) this.direction.stepY() * peek * (double) scale;
+        double dy = (double) d.stepY() * peek * (double) this.scale;
         if (dy > 0) {
             y2 += dy;
         } else if (dy < 0) {
             y1 += dy;
         }
-        double dz = (double) this.direction.stepZ() * peek * (double) scale;
+        double dz = (double) d.stepZ() * peek * (double) this.scale;
         if (dz > 0) {
             z2 += dz;
         } else if (dz < 0) {
             z1 += dz;
         }
-        return Optional.of(new Collider(
+        return new Collider(
                 true,
-                position,
+                this.position,
                 new Vector3d(x1, y1, z1),
                 new Vector3d(x2, y2, z2)
-        ));
+        );
     }
 
     private static float getPhysicalPeek(float peek) {
@@ -125,22 +124,22 @@ public class ShulkerHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityIds, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
+    public void initPacketsAndColliders(int[] entityIds, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             double originalY = y + offset.y;
             double integerPart = Math.floor(originalY);
             double fractionalPart = originalY - integerPart;
             double processedY = (fractionalPart >= 0.5) ? integerPart + 1 : originalY;
-            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                     entityIds[0], UUID.randomUUID(), x + offset.x, originalY, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$ITEM_DISPLAY, 0, Reflections.instance$Vec3$Zero, 0
             ), false);
-            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                     entityIds[1], UUID.randomUUID(), x + offset.x, processedY, z - offset.z, 0, yaw,
                     Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
             ), false);
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
             // add passengers
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]), false);
             // fix some special occasions
@@ -158,25 +157,28 @@ public class ShulkerHitBox extends AbstractHitBox {
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
             if (this.direction == Direction.UP) {
+                collider.accept(this.createCollider(this.direction));
                 if (this.interactionEntity) {
-                    packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
                             Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
                     ), true);
-                    packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
                 }
             } else if (this.direction == Direction.DOWN) {
-                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
+                collider.accept(this.createCollider(this.direction));
+                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
                 if (this.interactionEntity) {
-                    packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f + this.yOffset, z - offset.z, 0, yaw,
                             Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
                     ), true);
-                    packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
+                    packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
                 }
             } else {
-                Direction shulkerDirection = getOriginalDirection(this.direction, Direction.fromYaw(yaw));
-                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(shulkerDirection)))), false);
+                Direction shulkerAnchor = getOriginalDirection(this.direction, Direction.fromYaw(yaw));
+                collider.accept(this.createCollider(shulkerAnchor.opposite()));
+                packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(shulkerAnchor)))), false);
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
