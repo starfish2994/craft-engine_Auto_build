@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 import net.momirealms.craftengine.bukkit.entity.data.InteractionEntityData;
 import net.momirealms.craftengine.bukkit.entity.data.ShulkerData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.*;
@@ -22,13 +23,14 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final byte peek;
     private final boolean interactive;
     private final boolean interactionEntity;
-    // todo或许还能做个方向，但是会麻烦点，和 yaw 有关
-    private final Direction direction = Direction.UP;
+    private final Direction direction;
     private final List<Object> cachedShulkerValues = new ArrayList<>();
     private final List<Object> cachedInteractionValues = new ArrayList<>();
+    private final float yOffset;
 
-    public ShulkerHitBox(Seat[] seats, Vector3f position, float scale, byte peek, boolean interactionEntity, boolean interactive) {
+    public ShulkerHitBox(Seat[] seats, Vector3f position, Direction direction, float scale, byte peek, boolean interactionEntity, boolean interactive) {
         super(seats, position);
+        this.direction = direction;
         this.scale = scale;
         this.peek = peek;
         this.interactive = interactive;
@@ -36,17 +38,24 @@ public class ShulkerHitBox extends AbstractHitBox {
 
         ShulkerData.Peek.addEntityDataIfNotDefaultValue(peek, this.cachedShulkerValues);
         ShulkerData.Color.addEntityDataIfNotDefaultValue((byte) 0, this.cachedShulkerValues);
-        // ShulkerData.AttachFace.addEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(direction), this.cachedShulkerValues);
         ShulkerData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.Silent.addEntityDataIfNotDefaultValue(true, this.cachedShulkerValues);
         ShulkerData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, this.cachedShulkerValues); // 无ai
         ShulkerData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, this.cachedShulkerValues); // 不可见
 
+        float shulkerHeight = (getPhysicalPeek(peek * 0.01F) + 1) * scale;
+
         if (this.interactionEntity) {
             // make it a litter bigger
-            InteractionEntityData.Height.addEntityDataIfNotDefaultValue((getPhysicalPeek(peek * 0.01F) + 1) * scale + 0.01f, cachedInteractionValues);
+            InteractionEntityData.Height.addEntityDataIfNotDefaultValue(shulkerHeight + 0.01f, cachedInteractionValues);
             InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
             InteractionEntityData.Responsive.addEntityDataIfNotDefaultValue(interactive, cachedInteractionValues);
+        }
+
+        if (this.direction == Direction.DOWN) {
+            this.yOffset = -shulkerHeight + 1;
+        } else {
+            this.yOffset = 0;
         }
     }
 
@@ -60,19 +69,19 @@ public class ShulkerHitBox extends AbstractHitBox {
         double y2 = this.scale;
         double z2 = this.scale * 0.5;
 
-        double dx = (double) direction.stepX() * peek * (double) scale;
+        double dx = (double) this.direction.stepX() * peek * (double) scale;
         if (dx > 0) {
             x2 += dx;
         } else if (dx < 0) {
             x1 += dx;
         }
-        double dy = (double) direction.stepY() * peek * (double) scale;
+        double dy = (double) this.direction.stepY() * peek * (double) scale;
         if (dy > 0) {
             y2 += dy;
         } else if (dy < 0) {
             y1 += dy;
         }
-        double dz = (double) direction.stepZ() * peek * (double) scale;
+        double dz = (double) this.direction.stepZ() * peek * (double) scale;
         if (dz > 0) {
             z2 += dz;
         } else if (dz < 0) {
@@ -132,7 +141,9 @@ public class ShulkerHitBox extends AbstractHitBox {
                     Reflections.instance$EntityType$SHULKER, 0, Reflections.instance$Vec3$Zero, 0
             ), false);
             packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
+            // add passengers
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(entityIds[0], entityIds[1]), false);
+            // fix some special occasions
             if (originalY != processedY) {
                 double deltaY = originalY - processedY;
                 short ya = (short) (deltaY * 8192);
@@ -140,18 +151,32 @@ public class ShulkerHitBox extends AbstractHitBox {
                         entityIds[1], (short) 0, ya, (short) 0, true
                 ), false);
             }
+            // set shulker scale
             if (VersionHelper.isVersionNewerThan1_20_5() && this.scale != 1) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, this.scale);
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityIds[1], Collections.singletonList(attributeInstance)), false);
             }
-            if (this.interactionEntity) {
-                // make it a litter lower
-                packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                        entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
-                        Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-                ), true);
-                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
+            if (this.direction == Direction.UP) {
+                if (this.interactionEntity) {
+                    packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
+                }
+            } else if (this.direction == Direction.DOWN) {
+                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
+                if (this.interactionEntity) {
+                    packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f + this.yOffset, z - offset.z, 0, yaw,
+                            Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+                    ), true);
+                    packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[2], List.copyOf(this.cachedInteractionValues)), true);
+                }
+            } else {
+                Direction shulkerDirection = getOriginalDirection(this.direction, Direction.fromYaw(yaw));
+                packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(DirectionUtils.toNMSDirection(shulkerDirection)))), false);
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to construct shulker hitbox spawn packet", e);
@@ -181,9 +206,51 @@ public class ShulkerHitBox extends AbstractHitBox {
             boolean interactionEntity = (boolean) arguments.getOrDefault("interaction-entity", true);
             return new ShulkerHitBox(
                     HitBoxFactory.getSeats(arguments),
-                    position,
+                    position, directionEnum,
                     scale, peek, interactionEntity, interactive
             );
+        }
+    }
+
+    public static Direction getOriginalDirection(Direction newDirection, Direction oldDirection) {
+        switch (newDirection) {
+            case NORTH -> {
+                return switch (oldDirection) {
+                    case NORTH -> Direction.NORTH;
+                    case SOUTH -> Direction.SOUTH;
+                    case WEST -> Direction.EAST;
+                    case EAST -> Direction.WEST;
+                    default -> throw new IllegalStateException("Unexpected value: " + oldDirection);
+                };
+            }
+            case SOUTH -> {
+                return switch (oldDirection) {
+                    case SOUTH -> Direction.NORTH;
+                    case WEST -> Direction.WEST;
+                    case EAST -> Direction.EAST;
+                    case NORTH -> Direction.SOUTH;
+                    default -> throw new IllegalStateException("Unexpected value: " + oldDirection);
+                };
+            }
+            case WEST -> {
+                return switch (oldDirection) {
+                    case SOUTH -> Direction.EAST;
+                    case WEST -> Direction.NORTH;
+                    case EAST -> Direction.SOUTH;
+                    case NORTH -> Direction.WEST;
+                    default -> throw new IllegalStateException("Unexpected value: " + oldDirection);
+                };
+            }
+            case EAST -> {
+                return switch (oldDirection) {
+                    case SOUTH -> Direction.WEST;
+                    case WEST -> Direction.SOUTH;
+                    case EAST -> Direction.NORTH;
+                    case NORTH -> Direction.EAST;
+                    default -> throw new IllegalStateException("Unexpected value: " + oldDirection);
+                };
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + newDirection);
         }
     }
 }

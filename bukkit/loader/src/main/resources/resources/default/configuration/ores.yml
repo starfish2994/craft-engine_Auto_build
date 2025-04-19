@@ -1,6 +1,6 @@
 items:
   default:topaz_ore:
-    material: paper
+    material: nether_brick
     custom-model-data: 1010
     data:
       item-name: "<!i><i18n:item.topaz_ore>"
@@ -13,7 +13,7 @@ items:
       type: block_item
       block: default:topaz_ore
   default:deepslate_topaz_ore:
-    material: paper
+    material: nether_brick
     custom-model-data: 1011
     data:
       item-name: "<!i><i18n:item.deepslate_topaz_ore>"
@@ -26,7 +26,7 @@ items:
       type: block_item
       block: default:deepslate_topaz_ore
   default:topaz:
-    material: paper
+    material: nether_brick
     custom-model-data: 1012
     settings:
       anvil-repair-item:

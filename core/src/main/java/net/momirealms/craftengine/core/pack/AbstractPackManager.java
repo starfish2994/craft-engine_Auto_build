@@ -306,6 +306,8 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/configuration/block_name.yml");
         // categories
         plugin.saveResource("resources/default/configuration/categories.yml");
+        // for mods
+        plugin.saveResource("resources/default/configuration/fix_client_visual.yml");
         // icons
         plugin.saveResource("resources/default/configuration/icons.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/font/image/icons.png");

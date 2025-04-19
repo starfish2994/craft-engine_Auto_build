@@ -1,6 +1,6 @@
 items:
   default:palm_log:
-    material: paper
+    material: oak_log
     custom-model-data: 1000
     settings:
       fuel-time: 300
@@ -46,8 +46,8 @@ items:
               from: 0
               to: 2
   default:stripped_palm_log:
-    material: paper
-    custom-model-data: 1001
+    material: stripped_oak_log
+    custom-model-data: 1000
     settings:
       fuel-time: 300
       tags:
@@ -89,8 +89,8 @@ items:
               from: 3
               to: 5
   default:palm_wood:
-    material: paper
-    custom-model-data: 1002
+    material: oak_wood
+    custom-model-data: 1000
     settings:
       fuel-time: 300
       tags:
@@ -135,8 +135,8 @@ items:
               from: 6
               to: 8
   default:stripped_palm_wood:
-    material: paper
-    custom-model-data: 1003
+    material: stripped_oak_wood
+    custom-model-data: 1000
     settings:
       fuel-time: 300
       tags:
@@ -178,8 +178,8 @@ items:
               from: 9
               to: 11
   default:palm_planks:
-    material: paper
-    custom-model-data: 1004
+    material: oak_planks
+    custom-model-data: 1000
     settings:
       fuel-time: 300
       tags:
@@ -211,8 +211,8 @@ items:
           id: 12
           state: note_block:12
   default:palm_sapling:
-    material: paper
-    custom-model-data: 1005
+    material: nether_brick
+    custom-model-data: 1000
     settings:
       fuel-time: 100
     data:
