@@ -250,15 +250,19 @@ public class DropboxHost implements ResourcePackHost {
     public static class Factory implements ResourcePackHostFactory {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
+            boolean useEnv = (boolean) arguments.getOrDefault("use-env", false);
             String appKey = (String) arguments.get("app-key");
+            if (useEnv) appKey = System.getenv("CE_DROPBOX_APP_KEY");
             if (appKey == null || appKey.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'app-key' configuration");
             }
             String appSecret = (String) arguments.get("app-secret");
+            if (useEnv) appSecret = System.getenv("CE_DROPBOX_APP_SECRET");
             if (appSecret == null || appSecret.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'app-secret' configuration");
             }
             String refreshToken = (String) arguments.get("refresh-token");
+            if (useEnv) refreshToken = System.getenv("CE_DROPBOX_REFRESH_TOKEN");
             if (refreshToken == null || refreshToken.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'refresh-token' configuration");
             }

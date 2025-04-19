@@ -230,15 +230,19 @@ public class OneDriveHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
+            boolean useEnv = (boolean) arguments.getOrDefault("use-env", false);
             String clientId = (String) arguments.get("client-id");
+            if (useEnv) clientId = System.getenv("CE_ONEDRIVE_CLIENT_ID");
             if (clientId == null || clientId.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'client-id' configuration");
             }
             String clientSecret = (String) arguments.get("client-secret");
+            if (useEnv) clientSecret = System.getenv("CE_ONEDRIVE_CLIENT_SECRET");
             if (clientSecret == null || clientSecret.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'client-secret' configuration");
             }
             String refreshToken = (String) arguments.get("refresh-token");
+            if (useEnv) refreshToken = System.getenv("CE_ONEDRIVE_REFRESH_TOKEN");
             if (refreshToken == null || refreshToken.isEmpty()) {
                 throw new IllegalArgumentException("Missing required 'refresh-token' configuration");
             }

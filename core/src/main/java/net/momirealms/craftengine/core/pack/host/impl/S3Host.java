@@ -156,6 +156,7 @@ public class S3Host implements ResourcePackHost {
         @Override
         @SuppressWarnings("deprecation")
         public ResourcePackHost create(Map<String, Object> arguments) {
+            boolean useEnv = (boolean) arguments.getOrDefault("use-env", false);
             String endpoint = (String) arguments.get("endpoint");
             if (endpoint == null || endpoint.isEmpty()) {
                 throw new IllegalArgumentException("'endpoint' cannot be empty for S3 host");
@@ -168,10 +169,12 @@ public class S3Host implements ResourcePackHost {
             }
             String region = (String) arguments.getOrDefault("region", "auto");
             String accessKeyId = (String) arguments.get("access-key-id");
+            if (useEnv) accessKeyId = System.getenv("CE_S3_ACCESS_KEY_ID");
             if (accessKeyId == null || accessKeyId.isEmpty()) {
                 throw new IllegalArgumentException("'access-key-id' cannot be empty for S3 host");
             }
             String accessKeySecret = (String) arguments.get("access-key-secret");
+            if (useEnv) accessKeySecret = System.getenv("CE_S3_ACCESS_KEY_SECRET");
             if (accessKeySecret == null || accessKeySecret.isEmpty()) {
                 throw new IllegalArgumentException("'access-key-secret' cannot be empty for S3 host");
             }
