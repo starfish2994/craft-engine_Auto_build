@@ -69,7 +69,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                 packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.of(ShulkerData.AttachFace.createEntityDataIfNotDefaultValue(Reflections.instance$Direction$UP))), false);
                 if (interactionEntity) {
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f - shulkerHeight, z - offset.z, 0, yaw,
+                            entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f - shulkerHeight + scale, z - offset.z, 0, yaw,
                             Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
