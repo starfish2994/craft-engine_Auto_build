@@ -127,7 +127,6 @@ public class LoadedFurniture implements Furniture {
         if (colliderSize != 0) {
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
             for (int i = 0; i < colliderSize; i++) {
-                // TODO better shulker hitbox
                 Collider collider = placement.colliders()[i];
                 Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
                 Vector3d offset1 = collider.point1();

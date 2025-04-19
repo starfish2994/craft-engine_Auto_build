@@ -1,6 +1,6 @@
 items:
   default:bench:
-    material: paper
+    material: nether_brick
     custom-model-data: 2000
     data:
       item-name: "<!i><i18n:item.bench>"
@@ -46,7 +46,7 @@ items:
           arguments:
             item: default:bench
   default:table_lamp:
-    material: paper
+    material: nether_brick
     custom-model-data: 2001
     data:
       item-name: "<!i><i18n:item.table_lamp>"
@@ -90,7 +90,7 @@ items:
           arguments:
             item: default:table_lamp
   default:wooden_chair:
-    material: paper
+    material: nether_brick
     custom-model-data: 2002
     data:
       item-name: "<!i><i18n:item.wooden_chair>"
