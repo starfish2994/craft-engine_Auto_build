@@ -625,15 +625,15 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundAddEntityPacket = requireNonNull(
-            ReflectionUtils.getConstructor(clazz$ClientboundAddEntityPacket,
-                    int.class, UUID.class,
-                    double.class, double.class, double.class,
-                    float.class, float.class,
-                    clazz$EntityType,
-                    int.class, clazz$Vec3, double.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundAddEntityPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(clazz$ClientboundAddEntityPacket,
+//                    int.class, UUID.class,
+//                    double.class, double.class, double.class,
+//                    float.class, float.class,
+//                    clazz$EntityType,
+//                    int.class, clazz$Vec3, double.class
+//            )
+//    );
 
     public static final Constructor<?> constructor$ClientboundRemoveEntitiesPacket = requireNonNull(
             ReflectionUtils.getConstructor(clazz$ClientboundRemoveEntitiesPacket, int[].class)
@@ -685,10 +685,10 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundSetEntityDataPacket = requireNonNull(
-            ReflectionUtils.getConstructor(clazz$ClientboundSetEntityDataPacket,
-                    int.class, List.class)
-    );
+//    public static final Constructor<?> constructor$ClientboundSetEntityDataPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(clazz$ClientboundSetEntityDataPacket,
+//                    int.class, List.class)
+//    );
 
     public static final Class<?> clazz$EntityDataSerializers = requireNonNull(
             ReflectionUtils.getClazz(
@@ -711,11 +711,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$EntityDataAccessor = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$EntityDataAccessor, int.class, clazz$EntityDataSerializer
-            )
-    );
+//    public static final Constructor<?> constructor$EntityDataAccessor = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$EntityDataAccessor, int.class, clazz$EntityDataSerializer
+//            )
+//    );
 
     public static final Class<?> clazz$SynchedEntityData = requireNonNull(
             ReflectionUtils.getClazz(
@@ -737,11 +737,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$SynchedEntityData$DataValue$create = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$SynchedEntityData$DataValue, clazz$SynchedEntityData$DataValue, clazz$EntityDataAccessor, Object.class
-            )
-    );
+//    public static final Method method$SynchedEntityData$DataValue$create = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$SynchedEntityData$DataValue, clazz$SynchedEntityData$DataValue, clazz$EntityDataAccessor, Object.class
+//            )
+//    );
 
     public static final Method method$Component$empty = requireNonNull(
             ReflectionUtils.getStaticMethod(

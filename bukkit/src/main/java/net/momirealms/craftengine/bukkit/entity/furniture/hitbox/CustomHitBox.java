@@ -48,14 +48,14 @@ public class CustomHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
+    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
-            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                     entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                     FastNMS.INSTANCE.toNMSEntityType(this.entityType), 0, Reflections.instance$Vec3$Zero, 0
             ), true);
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId[0], List.copyOf(this.cachedValues)), true);
+            packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId[0], List.copyOf(this.cachedValues)), true);
             if (VersionHelper.isVersionNewerThan1_20_5() && this.scale != 1) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, this.scale);

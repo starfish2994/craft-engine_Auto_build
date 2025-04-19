@@ -8,6 +8,7 @@ import org.joml.Vector3f;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class HappyGhastHitBox extends AbstractHitBox {
@@ -29,7 +30,7 @@ public class HappyGhastHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
+    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
         // todo 乐魂
     }
 

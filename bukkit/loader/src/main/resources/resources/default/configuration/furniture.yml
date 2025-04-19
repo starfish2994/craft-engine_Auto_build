@@ -30,16 +30,13 @@ items:
                 translation: 0,0.5,0
             hitboxes:
               - position: 0,0,0
-                width: 1
-                height: 1
+                type: shulker
+                direction: east
+                peek: 100
                 interactive: true
+                interaction-entity: true
                 seats:
                   - 0,0,-0.1 0
-              - position: 1,0,0
-                width: 1
-                height: 1
-                interactive: true
-                seats:
                   - 1,0,-0.1 0
         loot:
           template: "default:loot_table/basic"

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
 import net.momirealms.craftengine.bukkit.entity.data.InteractionEntityData;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class InteractionHitBox extends AbstractHitBox {
@@ -46,17 +48,13 @@ public class InteractionHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets) {
+    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
-        try {
-            packets.accept(Reflections.constructor$ClientboundAddEntityPacket.newInstance(
-                    entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
-                    Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
-            ), true);
-            packets.accept(Reflections.constructor$ClientboundSetEntityDataPacket.newInstance(entityId[0], List.copyOf(this.cachedValues)), true);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to construct interaction hitbox spawn packet", e);
-        }
+        packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
+                entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
+                Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
+        ), true);
+        packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId[0], List.copyOf(this.cachedValues)), true);
     }
 
     @Override
