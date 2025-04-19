@@ -270,9 +270,8 @@ public class LobFileHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            boolean useEnv = (boolean) arguments.getOrDefault("use-env", false);
-            String apiKey = (String) arguments.get("api-key");
-            if (useEnv) apiKey = System.getenv("CE_LOBFILE_API_KEY");
+            boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
+            String apiKey = useEnv ? System.getenv("CE_LOBFILE_API_KEY") : (String) arguments.get("api-key");
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new RuntimeException("Missing 'api-key' for LobFileHost");
             }

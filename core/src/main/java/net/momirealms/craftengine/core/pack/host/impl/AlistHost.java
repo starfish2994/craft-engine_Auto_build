@@ -290,23 +290,20 @@ public class AlistHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            boolean useEnv = (boolean) arguments.getOrDefault("use-env", false);
+            boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String apiUrl = (String) arguments.get("api-url");
             if (apiUrl == null || apiUrl.isEmpty()) {
                 throw new IllegalArgumentException("'api-url' cannot be empty for Alist host");
             }
-            String userName = (String) arguments.get("username");
-            if (useEnv) userName = System.getenv("CE_ALIST_USERNAME");
+            String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : (String) arguments.get("username");
             if (userName == null || userName.isEmpty()) {
                 throw new IllegalArgumentException("'username' cannot be empty for Alist host");
             }
-            String password = (String) arguments.get("password");
-            if (useEnv) password = System.getenv("CE_ALIST_PASSWORD");
+            String password =  useEnv ? System.getenv("CE_ALIST_PASSWORD") : (String) arguments.get("password");
             if (password == null || password.isEmpty()) {
                 throw new IllegalArgumentException("'password' cannot be empty for Alist host");
             }
-            String filePassword = (String) arguments.getOrDefault("file-password", "");
-            if (useEnv) filePassword = System.getenv("CE_ALIST_FILE_PASSWORD");
+            String filePassword = useEnv ? System.getenv("CE_ALIST_FILE_PASSWORD") : (String) arguments.getOrDefault("file-password", "");
             String otpCode = (String) arguments.get("otp-code");
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
             String uploadPath = (String) arguments.get("upload-path");

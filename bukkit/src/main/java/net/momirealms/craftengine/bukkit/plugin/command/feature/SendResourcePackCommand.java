@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -35,7 +36,7 @@ public class SendResourcePackCommand extends BukkitCommandFeature<CommandSender>
                         if (bukkitServerPlayer == null) continue;
                         BukkitCraftEngine.instance().packManager().sendResourcePack(bukkitServerPlayer);
                     }
-                    handleFeedback(context, MessageConstants.COMMAND_SEND_RESOURCE_PACK_SUCCESS);
+                    handleFeedback(context, MessageConstants.COMMAND_SEND_RESOURCE_PACK_SUCCESS, Component.text(players.size()));
                 });
     }
 
