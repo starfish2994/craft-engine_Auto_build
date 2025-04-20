@@ -260,10 +260,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (int sub : furniture.entityIds()) {
                 this.furnitureByEntityId.remove(sub);
             }
-//            for (CollisionEntity collision : furniture.collisionEntities()) {
-//                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
-//                if (!isPreventing) collision.destroy();
-//            }
         }
     }
 
@@ -406,8 +402,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         for (int entityId : loadedFurniture.entityIds()) {
             this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
-        for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
-            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
+        for (Collider collisionEntity : loadedFurniture.collisionEntities()) {
+            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity.handle());
             this.furnitureByRealEntityId.put(collisionEntityId, loadedFurniture);
         }
         return loadedFurniture;

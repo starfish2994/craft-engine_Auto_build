@@ -7,6 +7,8 @@ import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.entity.EntityType;
@@ -25,7 +27,7 @@ public class CustomHitBox extends AbstractHitBox {
     private final List<Object> cachedValues = new ArrayList<>();
 
     public CustomHitBox(Seat[] seats, Vector3f position, EntityType type, float scale) {
-        super(seats, position);
+        super(seats, position, false);
         this.scale = scale;
         this.entityType = type;
         BaseEntityData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedValues);
@@ -47,7 +49,7 @@ public class CustomHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
+    public void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(

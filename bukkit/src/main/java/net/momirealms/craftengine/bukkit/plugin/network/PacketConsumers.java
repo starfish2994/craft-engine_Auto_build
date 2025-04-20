@@ -12,6 +12,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -22,6 +23,9 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -30,19 +34,21 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.*;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -1621,13 +1627,36 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
-                    if (player.isSneaking())
-                        return;
-                    furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
-                        if (furniture.tryOccupySeat(seatPos)) {
-                            furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
-                        }
-                    });
+                    if (player.isSneaking()) {
+                        // try placing another furniture above it
+                        AABB hitBox = furniture.aabbByEntityId(entityId);
+                        if (hitBox == null) return;
+                        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                        if (itemInHand == null) return;
+                        itemInHand.getCustomItem().ifPresent(customItem -> {
+                            Location eyeLocation = player.getEyeLocation();
+                            Vector direction = eyeLocation.getDirection();
+                            Location endLocation = eyeLocation.clone();
+                            endLocation.add(direction.multiply(serverPlayer.getCachedInteractionRange()));
+                            Optional<EntityHitResult> result = hitBox.clip(LocationUtils.toVec3d(eyeLocation), LocationUtils.toVec3d(endLocation));
+                            if (result.isPresent()) {
+                                EntityHitResult hitResult = result.get();
+                                Vec3d vec3d = hitResult.position();
+                                for (ItemBehavior behavior : customItem.behaviors()) {
+                                    if (behavior instanceof FurnitureItemBehavior) {
+                                        behavior.useOnBlock(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND, new BlockHitResult(vec3d, hitResult.direction(), BlockPos.fromVec3d(vec3d), false)));
+                                        return;
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                            if (furniture.tryOccupySeat(seatPos)) {
+                                furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
+                            }
+                        });
+                    }
                 }
             }, player.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         } catch (Exception e) {
