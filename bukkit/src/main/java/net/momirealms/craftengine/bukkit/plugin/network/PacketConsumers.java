@@ -1653,6 +1653,7 @@ public class PacketConsumers {
                             }
                         }
                         // now simulate vanilla item behavior
+                        serverPlayer.setResendSound();
                         FastNMS.INSTANCE.simulateInteraction(serverPlayer.serverPlayer(), DirectionUtils.toNMSDirection(hitResult.direction()), hitResult.hitLocation().x, hitResult.hitLocation().y, hitResult.hitLocation().z, LocationUtils.toBlockPos(hitResult.blockPos()));
                     } else {
                         furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
