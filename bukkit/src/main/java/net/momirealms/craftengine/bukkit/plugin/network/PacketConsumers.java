@@ -23,6 +23,7 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
@@ -1633,23 +1634,26 @@ public class PacketConsumers {
                         if (hitBox == null) return;
                         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
                         if (itemInHand == null) return;
-                        itemInHand.getCustomItem().ifPresent(customItem -> {
-                            Location eyeLocation = player.getEyeLocation();
-                            Vector direction = eyeLocation.getDirection();
-                            Location endLocation = eyeLocation.clone();
-                            endLocation.add(direction.multiply(serverPlayer.getCachedInteractionRange()));
-                            Optional<EntityHitResult> result = hitBox.clip(LocationUtils.toVec3d(eyeLocation), LocationUtils.toVec3d(endLocation));
-                            if (result.isPresent()) {
-                                EntityHitResult hitResult = result.get();
-                                Vec3d vec3d = hitResult.position();
-                                for (ItemBehavior behavior : customItem.behaviors()) {
-                                    if (behavior instanceof FurnitureItemBehavior) {
-                                        behavior.useOnBlock(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND, new BlockHitResult(vec3d, hitResult.direction(), BlockPos.fromVec3d(vec3d), false)));
-                                        return;
-                                    }
+                        Optional<CustomItem<ItemStack>> optionalCustomitem = itemInHand.getCustomItem();
+                        Location eyeLocation = player.getEyeLocation();
+                        Vector direction = eyeLocation.getDirection();
+                        Location endLocation = eyeLocation.clone();
+                        endLocation.add(direction.multiply(serverPlayer.getCachedInteractionRange()));
+                        Optional<EntityHitResult> result = hitBox.clip(LocationUtils.toVec3d(eyeLocation), LocationUtils.toVec3d(endLocation));
+                        if (result.isEmpty()) {
+                            return;
+                        }
+                        EntityHitResult hitResult = result.get();
+                        if (optionalCustomitem.isPresent() && !optionalCustomitem.get().behaviors().isEmpty()) {
+                            for (ItemBehavior behavior : optionalCustomitem.get().behaviors()) {
+                                if (behavior instanceof FurnitureItemBehavior) {
+                                    behavior.useOnBlock(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND, new BlockHitResult(hitResult.hitLocation(), hitResult.direction(), BlockPos.fromVec3d(hitResult.hitLocation()), false)));
+                                    return;
                                 }
                             }
-                        });
+                        }
+                        // now simulate vanilla item behavior
+                        FastNMS.INSTANCE.simulateInteraction(serverPlayer.serverPlayer(), DirectionUtils.toNMSDirection(hitResult.direction()), hitResult.hitLocation().x, hitResult.hitLocation().y, hitResult.hitLocation().z, LocationUtils.toBlockPos(hitResult.blockPos()));
                     } else {
                         furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
                             if (furniture.tryOccupySeat(seatPos)) {

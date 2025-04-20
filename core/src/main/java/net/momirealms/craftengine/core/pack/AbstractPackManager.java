@@ -489,7 +489,7 @@ public abstract class AbstractPackManager implements PackManager {
         // firstly merge existing folders
         try {
             List<Path> folders = new ArrayList<>();
-            folders.addAll(loadedPacks().stream().map(Pack::resourcePackFolder).toList());
+            folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
             folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
 
             List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);

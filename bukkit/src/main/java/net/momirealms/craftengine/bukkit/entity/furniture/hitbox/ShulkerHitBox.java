@@ -99,7 +99,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
                     // second interaction
-                    float distance = shulkerHeight - scale;
+                    double distance = shulkerHeight - scale;
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[3], UUID.randomUUID(), x + offset.x + shulkerDirection.stepX() * distance, y + offset.y - 0.005f, z - offset.z + shulkerDirection.stepZ() * distance, 0, yaw,
                             Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0

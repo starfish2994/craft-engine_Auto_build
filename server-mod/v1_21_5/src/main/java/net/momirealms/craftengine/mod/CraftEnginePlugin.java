@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.mod;
 
+import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
