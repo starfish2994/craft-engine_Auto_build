@@ -28,6 +28,10 @@ public record Key(String namespace, String value) {
         return of(decompose(namespacedId, "minecraft"));
     }
 
+    public String[] decompose() {
+        return new String[] { namespace, value };
+    }
+
     @Override
     public int hashCode() {
         return toString().hashCode();
