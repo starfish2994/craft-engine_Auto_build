@@ -63,7 +63,7 @@ public class BitmapImage implements FontProvider {
 
     public int codepointAt(int row, int column) {
         if (!isValidCoordinate(row, column)) {
-            throw new IndexOutOfBoundsException("Invalid index: (" + row + ", " + column + ")");
+            throw new IndexOutOfBoundsException("Invalid index: (" + row + ", " + column + ") for image " + id());
         }
         return codepointGrid[row][column];
     }

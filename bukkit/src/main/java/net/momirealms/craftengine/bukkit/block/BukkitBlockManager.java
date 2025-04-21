@@ -87,7 +87,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
-    private WorldEditCommandHelper weCommandHelper;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -128,18 +127,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (this.fallingBlockRemoveListener != null) {
             Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, plugin.bootstrap());
         }
-        boolean hasWE = false;
         // WorldEdit
         if (this.plugin.isPluginEnabled("FastAsyncWorldEdit")) {
             this.initFastAsyncWorldEditHook();
-            hasWE = true;
         } else if (this.plugin.isPluginEnabled("WorldEdit")) {
             this.initWorldEditHook();
-            hasWE = true;
-        }
-        if (hasWE) {
-            this.weCommandHelper = new WorldEditCommandHelper(this.plugin, this);
-            this.weCommandHelper.enable();
         }
     }
 
@@ -159,7 +151,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.unload();
         HandlerList.unregisterAll(this.blockEventListener);
         if (this.fallingBlockRemoveListener != null) HandlerList.unregisterAll(this.fallingBlockRemoveListener);
-        if (this.weCommandHelper != null) this.weCommandHelper.disable();
     }
 
     @Override
@@ -181,13 +172,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public void initFastAsyncWorldEditHook() {
-        // do nothing
+        new WorldEditBlockRegister(this, true);
     }
 
     public void initWorldEditHook() {
+        WorldEditBlockRegister weBlockRegister = new WorldEditBlockRegister(this, false);
         try {
             for (Key newBlockId : this.blockRegisterOrder) {
-                WorldEditBlockRegister.register(newBlockId);
+                weBlockRegister.register(newBlockId);
             }
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to initialize world edit hook", e);
@@ -794,7 +786,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 newBlockState = getOnlyBlockState(newRealBlock);
 
                 @SuppressWarnings("unchecked")
-                Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder0.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
+                Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$BLOCK, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$BLOCK, resourceLocation));
                 blockHolder = optionalHolder.get();
             } else {
                 try {

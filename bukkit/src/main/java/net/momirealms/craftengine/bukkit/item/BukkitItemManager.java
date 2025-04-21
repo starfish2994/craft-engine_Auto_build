@@ -20,7 +20,6 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.CustomModelDataModifier;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemModelModifier;
-import net.momirealms.craftengine.core.pack.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -76,7 +75,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.debugStickListener = new DebugStickListener(plugin);
         this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
-        if (plugin.hasMod() && VersionHelper.isVersionNewerThan1_20_5()) {
+        if (plugin.hasMod()) {
             Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
             if (clazz$CustomStreamCodec != null) {
                 Field s2cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);

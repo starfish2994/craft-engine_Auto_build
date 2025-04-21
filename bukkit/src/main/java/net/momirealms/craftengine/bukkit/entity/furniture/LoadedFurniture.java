@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import net.momirealms.craftengine.bukkit.entity.BukkitEntity;
-import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
@@ -15,13 +14,14 @@ import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 
 import java.lang.ref.WeakReference;
@@ -37,16 +37,17 @@ public class LoadedFurniture implements Furniture {
     private final WeakReference<Entity> baseEntity;
     private final int baseEntityId;
     // colliders
-    private final CollisionEntity[] collisionEntities;
+    private final Collider[] colliderEntities;
     // cache
     private final List<Integer> fakeEntityIds;
     private final List<Integer> entityIds;
-    private final Map<Integer, HitBox> hitBoxes;
+    private final Map<Integer, HitBox> hitBoxes  = new HashMap<>();
+    private final Map<Integer, AABB> aabb = new HashMap<>();
     private final boolean minimized;
     private final boolean hasExternalModel;
     // seats
     private final Set<Vector3f> occupiedSeats = Collections.synchronizedSet(new HashSet<>());
-    private final Vector<Entity> seats = new Vector<>();
+    private final Vector<WeakReference<Entity>> seats = new Vector<>();
     // cached spawn packet
     private Object cachedSpawnPacket;
     private Object cachedMinimizedSpawnPacket;
@@ -60,7 +61,6 @@ public class LoadedFurniture implements Furniture {
         this.location = baseEntity.getLocation();
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
-        this.hitBoxes = new HashMap<>();
         this.minimized = furniture.settings().minimized();
         List<Integer> fakeEntityIds = new ArrayList<>();
         List<Integer> mainEntityIds = new ArrayList<>();
@@ -80,20 +80,22 @@ public class LoadedFurniture implements Furniture {
             hasExternalModel = false;
         }
 
-        double yawInRadius = Math.toRadians(180 - this.location.getYaw());
-        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, yawInRadius, 0).conjugate();
+        float yaw = this.location.getYaw();
+        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - yaw), 0).conjugate();
 
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
-        float yaw = this.location.getYaw();
 
         List<Object> packets = new ArrayList<>();
         List<Object> minimizedPackets = new ArrayList<>();
+        List<Collider> colliders = new ArrayList<>();
+
+        World world = world();
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.addSpawnPackets(entityId, x, y, z, yaw, conjugated, packet -> {
+            element.initPackets(entityId, world, x, y, z, yaw, conjugated, packet -> {
                 packets.add(packet);
                 if (this.minimized) minimizedPackets.add(packet);
             });
@@ -105,12 +107,12 @@ public class LoadedFurniture implements Furniture {
                 mainEntityIds.add(entityId);
                 this.hitBoxes.put(entityId, hitBox);
             }
-            hitBox.addSpawnPackets(ids, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+            hitBox.initPacketsAndColliders(ids, world, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
                 packets.add(packet);
                 if (this.minimized && !canBeMinimized) {
                     minimizedPackets.add(packet);
                 }
-            });
+            }, colliders::add, this.aabb::put);
         }
         try {
             this.cachedSpawnPacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
@@ -122,35 +124,15 @@ public class LoadedFurniture implements Furniture {
         }
         this.fakeEntityIds = fakeEntityIds;
         this.entityIds = mainEntityIds;
-        int colliderSize = placement.colliders().length;
-        this.collisionEntities = new CollisionEntity[colliderSize];
-        if (colliderSize != 0) {
-            Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
-            for (int i = 0; i < colliderSize; i++) {
-                // TODO better shulker hitbox
-                Collider collider = placement.colliders()[i];
-                Vector3f offset = conjugated.transform(new Vector3f(collider.position()));
-                Vector3d offset1 = collider.point1();
-                Vector3d offset2 = collider.point2();
-                double x1 = x + offset1.x() + offset.x();
-                double x2 = x + offset2.x() + offset.x();
-                double y1 = y + offset1.y() + offset.y();
-                double y2 = y + offset2.y() + offset.y();
-                double z1 = z + offset1.z() - offset.z();
-                double z2 = z + offset2.z() - offset.z();
-                Object aabb = FastNMS.INSTANCE.constructor$AABB(x1, y1, z1, x2, y2, z2);
-                CollisionEntity entity = FastNMS.INSTANCE.createCollisionShulker(world, aabb, x, y, z, collider.canBeHitByProjectile());
-                this.collisionEntities[i] = entity;
-            }
-        }
+        this.colliderEntities = colliders.toArray(new Collider[0]);
     }
 
     @Override
     public void initializeColliders() {
         Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.location.getWorld());
-        for (CollisionEntity entity : this.collisionEntities) {
-            FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity);
-            Entity bukkitEntity = FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity);
+        for (Collider entity : this.colliderEntities) {
+            FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(world, entity.handle());
+            Entity bukkitEntity = FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity.handle());
             bukkitEntity.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_COLLISION, PersistentDataType.BYTE, (byte) 1);
         }
     }
@@ -200,11 +182,13 @@ public class LoadedFurniture implements Furniture {
             return;
         }
         this.baseEntity().remove();
-        for (CollisionEntity entity : this.collisionEntities) {
+        for (Collider entity : this.colliderEntities) {
             if (entity != null)
                 entity.destroy();
         }
-        for (Entity entity : this.seats) {
+        for (WeakReference<Entity> r : this.seats) {
+            Entity entity = r.get();
+            if (entity == null) continue;
             for (Entity passenger : entity.getPassengers()) {
                 entity.removePassenger(passenger);
             }
@@ -215,8 +199,11 @@ public class LoadedFurniture implements Furniture {
 
     @Override
     public void destroySeats() {
-        for (Entity entity : this.seats) {
-            entity.remove();
+        for (WeakReference<Entity> entity : this.seats) {
+            Entity e = entity.get();
+            if (e != null) {
+                e.remove();
+            }
         }
         this.seats.clear();
     }
@@ -268,8 +255,18 @@ public class LoadedFurniture implements Furniture {
         return Collections.unmodifiableList(this.fakeEntityIds);
     }
 
-    public CollisionEntity[] collisionEntities() {
-        return this.collisionEntities;
+    public Collider[] collisionEntities() {
+        return this.colliderEntities;
+    }
+
+    @Nullable
+    public HitBox hitBoxByEntityId(int id) {
+        return this.hitBoxes.get(id);
+    }
+
+    @Nullable
+    public AABB aabbByEntityId(int id) {
+        return this.aabb.get(id);
     }
 
     @Override
@@ -325,7 +322,7 @@ public class LoadedFurniture implements Furniture {
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER, this.baseEntityId());
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 });
-        this.seats.add(seatEntity);
+        this.seats.add(new WeakReference<>(seatEntity));
         seatEntity.addPassenger(player);
     }
 

@@ -96,19 +96,19 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
 
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             return new BushBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right());
         }
     }
 
-    public static Tuple<List<Object>, Set<Object>, Set<String>> readTagsAndState(Map<String, Object> arguments) {
+    public static Tuple<List<Object>, Set<Object>, Set<String>> readTagsAndState(Map<String, Object> arguments, boolean aboveOrBelow) {
         List<Object> mcTags = new ArrayList<>();
-        for (String tag : MiscUtils.getAsStringList(arguments.getOrDefault("bottom-block-tags", List.of()))) {
+        for (String tag : MiscUtils.getAsStringList(arguments.getOrDefault((aboveOrBelow ? "above" : "bottom") + "-block-tags", List.of()))) {
             mcTags.add(BlockTags.getOrCreate(Key.of(tag)));
         }
         Set<Object> mcBlocks = new HashSet<>();
         Set<String> customBlocks = new HashSet<>();
-        for (String blockStateStr : MiscUtils.getAsStringList(arguments.getOrDefault("bottom-blocks", List.of()))) {
+        for (String blockStateStr : MiscUtils.getAsStringList(arguments.getOrDefault((aboveOrBelow ? "above" : "bottom") + "-blocks", List.of()))) {
             int index = blockStateStr.indexOf('[');
             Key blockType = index != -1 ? Key.from(blockStateStr.substring(0, index)) : Key.from(blockStateStr);
             Material material = Registry.MATERIAL.get(new NamespacedKey(blockType.namespace(), blockType.value()));

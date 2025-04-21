@@ -200,7 +200,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         @SuppressWarnings("unchecked")
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
             if (ageProperty == null) {
                 throw new IllegalArgumentException("age property not set for sugar cane");

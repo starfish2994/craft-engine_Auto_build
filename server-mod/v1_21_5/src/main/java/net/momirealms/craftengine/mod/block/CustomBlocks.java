@@ -11,10 +11,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
 import net.momirealms.craftengine.mod.util.NoteBlockUtils;
-import net.momirealms.craftengine.mod.util.Reflections;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -30,28 +28,22 @@ public class CustomBlocks {
         for (Map.Entry<ResourceLocation, Integer> entry : map.entrySet()) {
             ResourceLocation replacedBlockId = entry.getKey();
             boolean isNoteBlock = replacedBlockId.equals(noteBlock);
-            try {
-                Block replacedBlock = (Block) Reflections.method$DefaultedRegistry$get.invoke(BuiltInRegistries.BLOCK, replacedBlockId);
-                for (int i = 0; i < entry.getValue(); i++) {
-                    ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
-                    ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
-                    BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
-                    if (Reflections.field$BlockBehaviour$Properties$id != null) {
-                        Reflections.field$BlockBehaviour$Properties$id.set(properties, resourceKey);
-                    }
-                    if (!replacedBlock.hasCollision) {
-                        properties.noCollission();
-                    }
-                    CraftEngineBlock block = new CraftEngineBlock(properties);
-                    if (isNoteBlock) {
-                        block.setNoteBlock(true);
-                        NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
-                    }
-                    Registry.register(BuiltInRegistries.BLOCK, location, block);
-                    Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
+            Block replacedBlock = BuiltInRegistries.BLOCK.getValue(replacedBlockId);
+            for (int i = 0; i < entry.getValue(); i++) {
+                ResourceLocation location = ResourceLocation.fromNamespaceAndPath("craftengine", replacedBlockId.getPath() + "_" + i);
+                ResourceKey<Block> resourceKey = ResourceKey.create(Registries.BLOCK, location);
+                BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
+                properties.setId(resourceKey);
+                if (!replacedBlock.hasCollision) {
+                    properties.noCollission();
                 }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+                CraftEngineBlock block = new CraftEngineBlock(properties);
+                if (isNoteBlock) {
+                    block.setNoteBlock(true);
+                    NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.add(block.defaultBlockState());
+                }
+                Registry.register(BuiltInRegistries.BLOCK, location, block);
+                Block.BLOCK_STATE_REGISTRY.add(block.defaultBlockState());
             }
         }
         NoteBlockUtils.CLIENT_SIDE_NOTE_BLOCKS.addAll(net.minecraft.world.level.block.Blocks.NOTE_BLOCK.getStateDefinition().getPossibleStates());
@@ -120,11 +112,7 @@ public class CustomBlocks {
 
     private static BlockState createBlockData(String blockState) {
         try {
-            Object holderLookUp = BuiltInRegistries.BLOCK;
-            if (Reflections.method$Registry$asLookup != null) {
-                holderLookUp = Reflections.method$Registry$asLookup.invoke(holderLookUp);
-            }
-            BlockStateParser.BlockResult result = (BlockStateParser.BlockResult) Reflections.method$BlockStateParser$parseForBlock.invoke(null, holderLookUp, blockState, false);
+            BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK, blockState, false);
             return result.blockState();
         } catch (Exception e) {
             e.printStackTrace();

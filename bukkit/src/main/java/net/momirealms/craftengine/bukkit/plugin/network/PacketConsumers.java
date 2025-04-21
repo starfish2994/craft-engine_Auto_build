@@ -12,7 +12,9 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -21,17 +23,26 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
+import net.momirealms.craftengine.core.item.CustomItem;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.EntityHitResult;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -40,6 +51,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +63,7 @@ public class PacketConsumers {
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
+    private static final UUID EMPTY_UUID = new UUID(0, 0);
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
@@ -1156,6 +1169,28 @@ public class PacketConsumers {
         }
     }
 
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
+        try {
+            BukkitServerPlayer player = (BukkitServerPlayer) user;
+            String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
+            player.setName(name);
+            if (VersionHelper.isVersionNewerThan1_20_2()) {
+                UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                player.setUUID(uuid);
+            } else {
+                @SuppressWarnings("unchecked")
+                Optional<UUID> uuid = (Optional<UUID>) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
+                if (uuid.isPresent()) {
+                    player.setUUID(uuid.get());
+                } else {
+                    player.setUUID(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)));
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundHelloPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SWING_HAND = (user, event, packet) -> {
         try {
             if (!user.isOnline()) return;
@@ -1595,13 +1630,41 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
-                    if (player.isSneaking())
-                        return;
-                    furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
-                        if (furniture.tryOccupySeat(seatPos)) {
-                            furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
+
+                    if (player.isSneaking()) {
+                        // try placing another furniture above it
+                        AABB hitBox = furniture.aabbByEntityId(entityId);
+                        if (hitBox == null) return;
+                        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                        if (itemInHand == null) return;
+                        Optional<CustomItem<ItemStack>> optionalCustomitem = itemInHand.getCustomItem();
+                        Location eyeLocation = player.getEyeLocation();
+                        Vector direction = eyeLocation.getDirection();
+                        Location endLocation = eyeLocation.clone();
+                        endLocation.add(direction.multiply(serverPlayer.getCachedInteractionRange()));
+                        Optional<EntityHitResult> result = hitBox.clip(LocationUtils.toVec3d(eyeLocation), LocationUtils.toVec3d(endLocation));
+                        if (result.isEmpty()) {
+                            return;
                         }
-                    });
+                        EntityHitResult hitResult = result.get();
+                        if (optionalCustomitem.isPresent() && !optionalCustomitem.get().behaviors().isEmpty()) {
+                            for (ItemBehavior behavior : optionalCustomitem.get().behaviors()) {
+                                if (behavior instanceof FurnitureItemBehavior) {
+                                    behavior.useOnBlock(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND, new BlockHitResult(hitResult.hitLocation(), hitResult.direction(), BlockPos.fromVec3d(hitResult.hitLocation()), false)));
+                                    return;
+                                }
+                            }
+                        }
+                        // now simulate vanilla item behavior
+                        serverPlayer.setResendSound();
+                        FastNMS.INSTANCE.simulateInteraction(serverPlayer.serverPlayer(), DirectionUtils.toNMSDirection(hitResult.direction()), hitResult.hitLocation().x, hitResult.hitLocation().y, hitResult.hitLocation().z, LocationUtils.toBlockPos(hitResult.blockPos()));
+                    } else {
+                        furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                            if (furniture.tryOccupySeat(seatPos)) {
+                                furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
+                            }
+                        });
+                    }
                 }
             }, player.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         } catch (Exception e) {
@@ -2081,6 +2144,38 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isVersionNewerThan1_20_2()) return;
+            // we should only handle fake urls
+            String url = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$url(packet);
+            if (!url.equals(BukkitPackManager.FAKE_URL)) {
+                return;
+            }
+
+            event.setCancelled(true);
+            UUID packUUID = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$uuid(packet);
+            ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
+            host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
+                if (dataList.isEmpty()) {
+                    user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                    return;
+                }
+                for (ResourcePackDownloadData data : dataList) {
+                    Object newPacket = ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1());
+                    user.nettyChannel().writeAndFlush(newPacket);
+                    user.addResourcePackUUID(data.uuid());
+                }
+            }).exceptionally(throwable -> {
+                CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", throwable);
+                user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
+                return null;
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
         }
     };
 }

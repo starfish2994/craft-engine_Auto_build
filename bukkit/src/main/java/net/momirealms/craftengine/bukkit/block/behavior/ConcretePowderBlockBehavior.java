@@ -142,7 +142,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
             if (direction != Reflections.instance$Direction$DOWN || canSolidify(blockState)) {
                 Reflections.method$MutableBlockPos$setWithOffset.invoke(mutablePos, pos, direction);
                 blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, mutablePos);
-                if (canSolidify(blockState) && !(boolean) Reflections.method$BlockStateBase$isFaceSturdy.invoke(blockState, level, pos, Reflections.getOppositeDirection(direction), Reflections.instance$SupportType$FULL)) {
+                if (canSolidify(blockState) && !(boolean) Reflections.method$BlockStateBase$isFaceSturdy.invoke(blockState, level, pos, FastNMS.INSTANCE.method$Direction$getOpposite(direction), Reflections.instance$SupportType$FULL)) {
                     flag = true;
                     break;
                 }

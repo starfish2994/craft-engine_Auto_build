@@ -1,18 +1,23 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface HitBox {
 
     Key type();
 
-    void addSpawnPackets(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets);
+    void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated,
+                                 BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb);
+
+    void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs);
 
     int[] acquireEntityIds(Supplier<Integer> entityIdSupplier);
 
@@ -20,7 +25,9 @@ public interface HitBox {
 
     Vector3f position();
 
-    default Optional<Collider> optionalCollider() {
-        return Optional.empty();
-    }
+    boolean blocksBuilding();
+
+    boolean canBeHitByProjectile();
+
+    boolean canUseItemOn();
 }

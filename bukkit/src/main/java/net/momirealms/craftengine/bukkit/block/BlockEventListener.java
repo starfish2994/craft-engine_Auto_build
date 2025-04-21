@@ -342,25 +342,21 @@ public class BlockEventListener implements Listener {
         if (!this.enableNoteBlockCheck) return;
         // for vanilla blocks
         if (event.getChangedType() == Material.NOTE_BLOCK) {
-            try {
-                Block block = event.getBlock();
-                World world = block.getWorld();
-                Location location = block.getLocation();
-                Block sourceBlock = event.getSourceBlock();
-                BlockFace direction = sourceBlock.getFace(block);
-                if (direction == BlockFace.UP || direction == BlockFace.DOWN) {
-                    Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
-                    Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
-                    Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
-                    if (direction == BlockFace.UP) {
-                        NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$UP, blockPos, 0);
-                    } else {
-                        NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$DOWN, blockPos, 0);
-                    }
+            Block block = event.getBlock();
+            World world = block.getWorld();
+            Location location = block.getLocation();
+            Block sourceBlock = event.getSourceBlock();
+            BlockFace direction = sourceBlock.getFace(block);
+            if (direction == BlockFace.UP || direction == BlockFace.DOWN) {
+                Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
+                Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
+                Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
+                if (direction == BlockFace.UP) {
+                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$UP, blockPos, 0);
+                } else {
+                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$DOWN, blockPos, 0);
                 }
-            } catch (ReflectiveOperationException e) {
-                plugin.logger().warn("Failed to sync note block states", e);
             }
         }
     }

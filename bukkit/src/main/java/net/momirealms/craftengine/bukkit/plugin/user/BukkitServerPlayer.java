@@ -34,17 +34,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
     // connection state
     private final Channel channel;
+    private String name;
+    private UUID uuid;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
+    private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -94,6 +95,8 @@ public class BukkitServerPlayer extends Player {
     public void setPlayer(org.bukkit.entity.Player player) {
         this.playerRef = new WeakReference<>(player);
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
+        this.uuid = player.getUniqueId();
+        this.name = player.getName();
         if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
             try {
                 Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
@@ -219,9 +222,24 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public String name() {
-        org.bukkit.entity.Player player = platformPlayer();
-        if (player == null) return "Unknown";
-        return player.getName();
+        return this.name;
+    }
+
+    @Override
+    public void setName(String name) {
+        if (this.name != null) return;
+        this.name = name;
+    }
+
+    @Override
+    public UUID uuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public void setUUID(UUID uuid) {
+        if (this.uuid != null) return;
+        this.uuid = uuid;
     }
 
     @Override
@@ -250,8 +268,8 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void receivePacket(Object packet) {
-        this.plugin.networkManager().receivePacket(this, packet);
+    public void simulatePacket(Object packet) {
+        this.plugin.networkManager().simulatePacket(this, packet);
     }
 
     @Override
@@ -724,8 +742,28 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void addResourcePackUUID(UUID uuid) {
+        if (VersionHelper.isVersionNewerThan1_20_3()) {
+            this.resourcePackUUID.add(uuid);
+        }
+    }
+
+    @Override
     public void clearView() {
         this.entityTypeView.clear();
         this.furnitureView.clear();
+    }
+
+    @Override
+    public void unloadCurrentResourcePack() {
+        if (!VersionHelper.isVersionNewerThan1_20_3()) {
+            return;
+        }
+        if (decoderState() == ConnectionState.PLAY && !this.resourcePackUUID.isEmpty()) {
+            for (UUID u : this.resourcePackUUID) {
+                sendPacket(FastNMS.INSTANCE.constructor$ClientboundResourcePackPopPacket(u), true);
+            }
+            this.resourcePackUUID.clear();
+        }
     }
 }

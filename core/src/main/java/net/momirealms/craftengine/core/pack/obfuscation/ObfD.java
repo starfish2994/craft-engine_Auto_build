@@ -130,6 +130,7 @@ public final class ObfD {
         long 原始大小;
         byte[] 编码路径;
         int 压缩方法;
+        boolean 兄弟别搞;
     }
 
     private static class 文件条目注册表<E> extends ArrayList<E> {
@@ -201,6 +202,7 @@ public final class ObfD {
         描述.存储偏移 = 上下文.获取当前偏移();
         描述.编码路径 = 虚拟路径.getBytes(StandardCharsets.UTF_8);
         描述.压缩方法 = 结果.大小减少 ? Deflater.DEFLATED : Deflater.NO_COMPRESSION;
+        描述.兄弟别搞 = (虚拟路径.getBytes(StandardCharsets.UTF_8).length >= 0xFFFF);
     }
 
     private static void 完成压缩包结构(压缩元数据写入器 上下文,
@@ -221,6 +223,7 @@ public final class ObfD {
 
     private static void 写入中央目录条目(压缩元数据写入器 上下文,
                                          文件条目描述 条目) throws IOException {
+        if(条目.兄弟别搞) return;
         写入签名头(上下文, 压缩头验证器.中央目录标记);
     }
 

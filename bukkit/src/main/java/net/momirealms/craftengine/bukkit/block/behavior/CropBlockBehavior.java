@@ -134,7 +134,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         Object visualState = immutableBlockState.vanillaBlockState().handle();
         Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
         if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
-            boolean is = (boolean) Reflections.method$BonemealableBlock$isValidBonemealTarget.invoke(visualStateBlock, level, pos, visualState);
+            boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, level, pos, visualState);
             if (!is) {
                 sendParticles = true;
             }
@@ -167,7 +167,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         @SuppressWarnings("unchecked")
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments);
+            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
             if (ageProperty == null) {
                 throw new IllegalArgumentException("age property not set for crop");

@@ -40,7 +40,7 @@ tasks.remapJar {
     inputFile.set(tasks.shadowJar.get().archiveFile)
 
     destinationDirectory.set(file("$rootDir/target"))
-    archiveFileName.set("${base.archivesName.get()}-${project.version}+${rootProject.properties["latest_minecraft_version"]}.jar")
+    archiveFileName.set("${base.archivesName.get()}-${project.version}+mc${rootProject.properties["latest_minecraft_version"]}.jar")
 }
 
 loom {

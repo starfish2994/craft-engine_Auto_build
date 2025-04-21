@@ -143,9 +143,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     elements.add(furnitureElement);
                 }
 
-                // add colliders
-                List<Collider> colliders = new ArrayList<>();
-
                 // external model providers
                 Optional<ExternalModel> externalModel;
                 if (placementArguments.containsKey("model-engine")) {
@@ -162,7 +159,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> config : hitboxConfigs) {
                     HitBox hitBox = HitBoxTypes.fromMap(config);
                     hitboxes.add(hitBox);
-                    hitBox.optionalCollider().ifPresent(colliders::add);
                 }
                 if (hitboxes.isEmpty() && externalModel.isEmpty()) {
                     hitboxes.add(InteractionHitBox.DEFAULT);
@@ -180,7 +176,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     placements.put(anchorType, new CustomFurniture.Placement(
                             elements.toArray(new FurnitureElement[0]),
                             hitboxes.toArray(new HitBox[0]),
-                            colliders.toArray(new Collider[0]),
                             rotationRule,
                             alignmentRule,
                             externalModel
@@ -189,7 +184,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     placements.put(anchorType, new CustomFurniture.Placement(
                             elements.toArray(new FurnitureElement[0]),
                             hitboxes.toArray(new HitBox[0]),
-                            colliders.toArray(new Collider[0]),
                             RotationRule.ANY,
                             AlignmentRule.CENTER,
                             externalModel
@@ -266,10 +260,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (int sub : furniture.entityIds()) {
                 this.furnitureByEntityId.remove(sub);
             }
-//            for (CollisionEntity collision : furniture.collisionEntities()) {
-//                this.furnitureByRealEntityId.remove(FastNMS.INSTANCE.method$Entity$getId(collision));
-//                if (!isPreventing) collision.destroy();
-//            }
         }
     }
 
@@ -349,6 +339,20 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public void handleBaseEntityLoadEarly(ItemDisplay display) {
         String id = display.getPersistentDataContainer().get(FURNITURE_KEY, PersistentDataType.STRING);
         if (id == null) return;
+        // Remove the entity if it's not a valid furniture
+        if (Config.handleInvalidFurniture()) {
+            String mapped = Config.furnitureMappings().get(id);
+            if (mapped != null) {
+                if (mapped.isEmpty()) {
+                    display.remove();
+                    return;
+                } else {
+                    id = mapped;
+                    display.getPersistentDataContainer().set(FURNITURE_KEY, PersistentDataType.STRING, id);
+                }
+            }
+        }
+
         Key key = Key.of(id);
         Optional<CustomFurniture> optionalFurniture = furnitureById(key);
         if (optionalFurniture.isPresent()) {
@@ -357,13 +361,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             if (previous != null) return;
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             furniture.initializeColliders(); // safely do it here
-            return;
-        }
-        // Remove the entity if it's not a valid furniture
-        if (Config.removeInvalidFurniture()) {
-            if (Config.furnitureToRemove().isEmpty() || Config.furnitureToRemove().contains(id)) {
-                display.remove();
-            }
         }
     }
 
@@ -405,8 +402,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         for (int entityId : loadedFurniture.entityIds()) {
             this.furnitureByEntityId.put(entityId, loadedFurniture);
         }
-        for (CollisionEntity collisionEntity : loadedFurniture.collisionEntities()) {
-            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity);
+        for (Collider collisionEntity : loadedFurniture.collisionEntities()) {
+            int collisionEntityId = FastNMS.INSTANCE.method$Entity$getId(collisionEntity.handle());
             this.furnitureByRealEntityId.put(collisionEntityId, loadedFurniture);
         }
         return loadedFurniture;

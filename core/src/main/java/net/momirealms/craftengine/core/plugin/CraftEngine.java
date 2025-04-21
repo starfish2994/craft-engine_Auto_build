@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.pack.PackManager;
-import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -70,6 +69,7 @@ public abstract class CraftEngine implements Plugin {
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
+    private boolean isInitializing;
 
     private String buildByBit = "%%__BUILTBYBIT__%%";
     private String polymart = "%%__POLYMART__%%";
@@ -192,6 +192,7 @@ public abstract class CraftEngine implements Plugin {
     }
 
     public void onPluginEnable() {
+        this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
@@ -220,6 +221,7 @@ public abstract class CraftEngine implements Plugin {
             this.furnitureManager.delayedInit();
             // set up some platform extra tasks
             this.platformDelayedEnable();
+            this.isInitializing = false;
         });
     }
 
@@ -243,7 +245,6 @@ public abstract class CraftEngine implements Plugin {
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
         if (this.senderFactory != null) this.senderFactory.close();
         if (this.dependencyManager != null) this.dependencyManager.close();
-        ResourcePackHost.instance().disable();
     }
 
     protected void registerDefaultParsers() {
@@ -278,7 +279,6 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.BSTATS_BASE,
                 Dependencies.CAFFEINE,
                 Dependencies.GEANTY_REF,
-                Dependencies.NETTY_HTTP,
                 Dependencies.CLOUD_CORE, Dependencies.CLOUD_SERVICES,
                 Dependencies.GSON,
                 Dependencies.SLF4J_API, Dependencies.SLF4J_SIMPLE,
@@ -291,7 +291,39 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.TEXT_SERIALIZER_GSON, Dependencies.TEXT_SERIALIZER_GSON_LEGACY,
                 Dependencies.TEXT_SERIALIZER_JSON,
                 Dependencies.AHO_CORASICK,
-                Dependencies.LZ4
+                Dependencies.LZ4,
+                Dependencies.NETTY_HTTP,
+                Dependencies.NETTY_HTTP2,
+                Dependencies.REACTIVE_STREAMS,
+                Dependencies.AMAZON_AWSSDK_S3,
+                Dependencies.AMAZON_AWSSDK_NETTY_NIO_CLIENT,
+                Dependencies.AMAZON_AWSSDK_SDK_CORE,
+                Dependencies.AMAZON_AWSSDK_AUTH,
+                Dependencies.AMAZON_AWSSDK_REGIONS,
+                Dependencies.AMAZON_AWSSDK_IDENTITY_SPI,
+                Dependencies.AMAZON_AWSSDK_HTTP_CLIENT_SPI,
+                Dependencies.AMAZON_AWSSDK_PROTOCOL_CORE,
+                Dependencies.AMAZON_AWSSDK_AWS_XML_PROTOCOL,
+                Dependencies.AMAZON_AWSSDK_JSON_UTILS,
+                Dependencies.AMAZON_AWSSDK_AWS_CORE,
+                Dependencies.AMAZON_AWSSDK_UTILS,
+                Dependencies.AMAZON_AWSSDK_ANNOTATIONS,
+                Dependencies.AMAZON_AWSSDK_CRT_CORE,
+                Dependencies.AMAZON_AWSSDK_CHECKSUMS,
+                Dependencies.AMAZON_EVENTSTREAM,
+                Dependencies.AMAZON_AWSSDK_PROFILES,
+                Dependencies.AMAZON_AWSSDK_RETRIES,
+                Dependencies.AMAZON_AWSSDK_ENDPOINTS_SPI,
+                Dependencies.AMAZON_AWSSDK_ARNS,
+                Dependencies.AMAZON_AWSSDK_AWS_QUERY_PROTOCOL,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_AWS,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_SPI,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH,
+                Dependencies.AMAZON_AWSSDK_HTTP_AUTH_AWS_EVENTSTREAM,
+                Dependencies.AMAZON_AWSSDK_CHECKSUMS_SPI,
+                Dependencies.AMAZON_AWSSDK_RETRIES_SPI,
+                Dependencies.AMAZON_AWSSDK_METRICS_SPI,
+                Dependencies.AMAZON_AWSSDK_THIRD_PARTY_JACKSON_CORE
         );
     }
 
@@ -324,6 +356,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public boolean isReloading() {
         return isReloading;
+    }
+
+    @Override
+    public boolean isInitializing() {
+        return isInitializing;
     }
 
     public abstract boolean hasPlaceholderAPI();

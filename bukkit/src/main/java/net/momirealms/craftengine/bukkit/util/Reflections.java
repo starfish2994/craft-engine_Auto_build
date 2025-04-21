@@ -625,15 +625,15 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundAddEntityPacket = requireNonNull(
-            ReflectionUtils.getConstructor(clazz$ClientboundAddEntityPacket,
-                    int.class, UUID.class,
-                    double.class, double.class, double.class,
-                    float.class, float.class,
-                    clazz$EntityType,
-                    int.class, clazz$Vec3, double.class
-            )
-    );
+//    public static final Constructor<?> constructor$ClientboundAddEntityPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(clazz$ClientboundAddEntityPacket,
+//                    int.class, UUID.class,
+//                    double.class, double.class, double.class,
+//                    float.class, float.class,
+//                    clazz$EntityType,
+//                    int.class, clazz$Vec3, double.class
+//            )
+//    );
 
     public static final Constructor<?> constructor$ClientboundRemoveEntitiesPacket = requireNonNull(
             ReflectionUtils.getConstructor(clazz$ClientboundRemoveEntitiesPacket, int[].class)
@@ -685,10 +685,10 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$ClientboundSetEntityDataPacket = requireNonNull(
-            ReflectionUtils.getConstructor(clazz$ClientboundSetEntityDataPacket,
-                    int.class, List.class)
-    );
+//    public static final Constructor<?> constructor$ClientboundSetEntityDataPacket = requireNonNull(
+//            ReflectionUtils.getConstructor(clazz$ClientboundSetEntityDataPacket,
+//                    int.class, List.class)
+//    );
 
     public static final Class<?> clazz$EntityDataSerializers = requireNonNull(
             ReflectionUtils.getClazz(
@@ -711,11 +711,11 @@ public class Reflections {
             )
     );
 
-    public static final Constructor<?> constructor$EntityDataAccessor = requireNonNull(
-            ReflectionUtils.getConstructor(
-                    clazz$EntityDataAccessor, int.class, clazz$EntityDataSerializer
-            )
-    );
+//    public static final Constructor<?> constructor$EntityDataAccessor = requireNonNull(
+//            ReflectionUtils.getConstructor(
+//                    clazz$EntityDataAccessor, int.class, clazz$EntityDataSerializer
+//            )
+//    );
 
     public static final Class<?> clazz$SynchedEntityData = requireNonNull(
             ReflectionUtils.getClazz(
@@ -737,11 +737,11 @@ public class Reflections {
             )
     );
 
-    public static final Method method$SynchedEntityData$DataValue$create = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$SynchedEntityData$DataValue, clazz$SynchedEntityData$DataValue, clazz$EntityDataAccessor, Object.class
-            )
-    );
+//    public static final Method method$SynchedEntityData$DataValue$create = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$SynchedEntityData$DataValue, clazz$SynchedEntityData$DataValue, clazz$EntityDataAccessor, Object.class
+//            )
+//    );
 
     public static final Method method$Component$empty = requireNonNull(
             ReflectionUtils.getStaticMethod(
@@ -1522,7 +1522,6 @@ public class Reflections {
     public static final Object instance$Direction$WEST;
     public static final Object instance$Direction$EAST;
     public static final Object[] instance$Directions;
-    private static final Map<Object, Object> oppositeDirections = new HashMap<>();
 
     static {
         try {
@@ -1533,20 +1532,14 @@ public class Reflections {
             instance$Direction$SOUTH = instance$Directions[3];
             instance$Direction$WEST = instance$Directions[4];
             instance$Direction$EAST = instance$Directions[5];
-            oppositeDirections.put(instance$Direction$DOWN, instance$Direction$UP);
-            oppositeDirections.put(instance$Direction$UP, instance$Direction$DOWN);
-            oppositeDirections.put(instance$Direction$NORTH, instance$Direction$SOUTH);
-            oppositeDirections.put(instance$Direction$SOUTH, instance$Direction$NORTH);
-            oppositeDirections.put(instance$Direction$WEST, instance$Direction$EAST);
-            oppositeDirections.put(instance$Direction$EAST, instance$Direction$WEST);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Object getOppositeDirection(Object direction) {
-        return oppositeDirections.get(direction);
-    }
+//    public static Object getOppositeDirection(Object direction) {
+//        return oppositeDirections.get(direction);
+//    }
 
     public static final Class<?> clazz$CraftBlock = requireNonNull(
             ReflectionUtils.getClazz(
@@ -6444,4 +6437,79 @@ public class Reflections {
             ReflectionUtils.getMethod(
                     clazz$CraftPlayer, new String[]{"setSimplifyContainerDesyncCheck"}, boolean.class
             );
+
+    public static final Class<?> clazz$ServerboundHelloPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.login.ServerboundHelloPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.login.PacketLoginInStart")
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, String.class, 0
+            )
+    );
+
+    public static final Field field$ServerboundHelloPacket$uuid = requireNonNull(
+            VersionHelper.isVersionNewerThan1_20_2() ?
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, UUID.class, 0
+            ) :
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundHelloPacket, Optional.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundResourcePackPushPacket$id =
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundResourcePackPushPacket, UUID.class, 0
+            );
+
+    public static final Field field$ClientboundResourcePackPushPacket$prompt = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundResourcePackPushPacket,
+                    VersionHelper.isVersionNewerThan1_20_5() ? Optional.class : clazz$Component,
+                    0
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundResourcePackPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInResourcePackStatus")
+            )
+    );
+
+    public static final Class<?> clazz$ServerboundResourcePackPacket$Action = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundResourcePackPacket$a"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ServerboundResourcePackPacket$Action"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.PacketPlayInResourcePackStatus$EnumResourcePackStatus")
+            )
+    );
+
+    public static final Method method$ServerboundResourcePackPacket$Action$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$ServerboundResourcePackPacket$Action, clazz$ServerboundResourcePackPacket$Action.arrayType()
+            )
+    );
+
+    public static final Object instance$ServerboundResourcePackPacket$Action$ACCEPTED;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$ServerboundResourcePackPacket$Action$values.invoke(null);
+            instance$ServerboundResourcePackPacket$Action$ACCEPTED = values[3];
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Constructor<?> constructor$ServerboundResourcePackPacket = requireNonNull(
+            field$ClientboundResourcePackPushPacket$id != null
+                    ? ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, UUID.class, clazz$ServerboundResourcePackPacket$Action)
+                    : ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action)
+    );
 }
