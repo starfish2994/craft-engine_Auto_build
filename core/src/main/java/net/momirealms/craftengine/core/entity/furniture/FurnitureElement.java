@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -21,5 +22,5 @@ public interface FurnitureElement {
 
     Vector3f position();
 
-    void initPackets(int entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets);
+    void initPackets(int entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets);
 }

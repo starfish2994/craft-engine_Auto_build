@@ -7,6 +7,8 @@ import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.entity.EntityType;
@@ -24,8 +26,8 @@ public class CustomHitBox extends AbstractHitBox {
     private final EntityType entityType;
     private final List<Object> cachedValues = new ArrayList<>();
 
-    public CustomHitBox(Seat[] seats, Vector3f position, EntityType type, float scale) {
-        super(seats, position);
+    public CustomHitBox(Seat[] seats, Vector3f position, EntityType type, float scale, boolean blocksBuilding, boolean canBeHitByProjectile) {
+        super(seats, position, false, blocksBuilding, canBeHitByProjectile);
         this.scale = scale;
         this.entityType = type;
         BaseEntityData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedValues);
@@ -47,7 +49,7 @@ public class CustomHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
+    public void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         try {
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
@@ -66,6 +68,10 @@ public class CustomHitBox extends AbstractHitBox {
     }
 
     @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
+    }
+
+    @Override
     public int[] acquireEntityIds(Supplier<Integer> entityIdSupplier) {
         return new int[] {entityIdSupplier.get()};
     }
@@ -80,7 +86,9 @@ public class CustomHitBox extends AbstractHitBox {
             if (entityType == null) {
                 throw new IllegalArgumentException("EntityType not found: " + arguments.get("entity-type"));
             }
-            return new CustomHitBox(HitBoxFactory.getSeats(arguments), position, entityType, scale);
+            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
+            return new CustomHitBox(HitBoxFactory.getSeats(arguments), position, entityType, scale, blocksBuilding, canBeHitByProjectile);
         }
     }
 }

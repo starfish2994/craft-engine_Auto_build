@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.world;
 
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.MCUtils;
 
 public class BlockPos extends Vec3i {
 
@@ -18,6 +19,10 @@ public class BlockPos extends Vec3i {
             case WEST -> new BlockPos(this.x() - 1, this.y(), this.z());
             case EAST -> new BlockPos(this.x() + 1, this.y(), this.z());
         };
+    }
+
+    public static BlockPos fromVec3d(Vec3d vec) {
+        return new BlockPos(MCUtils.fastFloor(vec.x), MCUtils.fastFloor(vec.y), MCUtils.fastFloor(vec.z));
     }
 
     public static BlockPos of(long packedPos) {

@@ -1,11 +1,15 @@
 package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 
 import net.momirealms.craftengine.bukkit.entity.data.InteractionEntityData;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitCollider;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -19,14 +23,14 @@ import java.util.function.Supplier;
 
 public class InteractionHitBox extends AbstractHitBox {
     public static final Factory FACTORY = new Factory();
-    public static final InteractionHitBox DEFAULT = new InteractionHitBox(new Seat[0], new Vector3f(), new Vector3f(1,1,1), true);
+    public static final InteractionHitBox DEFAULT = new InteractionHitBox(new Seat[0], new Vector3f(), new Vector3f(1,1,1), true, false, false, false);
 
     private final Vector3f size;
     private final boolean responsive;
     private final List<Object> cachedValues = new ArrayList<>();
 
-    public InteractionHitBox(Seat[] seats, Vector3f position, Vector3f size, boolean responsive) {
-        super(seats, position);
+    public InteractionHitBox(Seat[] seats, Vector3f position, Vector3f size, boolean responsive, boolean canUseOn, boolean blocksBuilding, boolean canBeHitByProjectile) {
+        super(seats, position, canUseOn, blocksBuilding, canBeHitByProjectile);
         this.size = size;
         this.responsive = responsive;
         InteractionEntityData.Height.addEntityDataIfNotDefaultValue(size.y, cachedValues);
@@ -48,13 +52,33 @@ public class InteractionHitBox extends AbstractHitBox {
     }
 
     @Override
-    public void initPacketsAndColliders(int[] entityId, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider) {
+    public void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                 entityId[0], UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,
                 Reflections.instance$EntityType$INTERACTION, 0, Reflections.instance$Vec3$Zero, 0
         ), true);
         packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId[0], List.copyOf(this.cachedValues)), true);
+        if (canUseItemOn()) {
+            aabb.accept(entityId[0], AABB.fromInteraction(new Vec3d(x + offset.x, y + offset.y, z - offset.z), this.size.x, this.size.y));
+        }
+        if (blocksBuilding() || this.canBeHitByProjectile()) {
+            AABB ceAABB = AABB.fromInteraction(new Vec3d(x + offset.x, y + offset.y, z - offset.z), this.size.x, this.size.y);
+            Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(ceAABB.minX, ceAABB.minY, ceAABB.minZ, ceAABB.maxX, ceAABB.maxY, ceAABB.maxZ);
+            collider.accept(new BukkitCollider(
+                    FastNMS.INSTANCE.createCollisionShulker(world.serverWorld(), nmsAABB, x, y, z, this.canBeHitByProjectile(), false, this.blocksBuilding()),
+                    ColliderType.SHULKER
+            ));
+        }
+    }
+
+    @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
+        if (blocksBuilding()) {
+            Vector3f offset = conjugated.transform(new Vector3f(position()));
+            AABB ceAABB = AABB.fromInteraction(new Vec3d(x + offset.x, y + offset.y, z - offset.z), this.size.x, this.size.y);
+            aabbs.accept(ceAABB);
+        }
     }
 
     @Override
@@ -77,11 +101,15 @@ public class InteractionHitBox extends AbstractHitBox {
                 width = MiscUtils.getAsFloat(arguments.getOrDefault("width", "1"));
                 height = MiscUtils.getAsFloat(arguments.getOrDefault("height", "1"));
             }
+            boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
+            boolean interactive = (boolean) arguments.getOrDefault("interactive", true);
+            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
             return new InteractionHitBox(
                     HitBoxFactory.getSeats(arguments),
                     position,
                     new Vector3f(width, height, width),
-                    (boolean) arguments.getOrDefault("interactive", true)
+                    interactive, canUseOn, blocksBuilding, canBeHitByProjectile
             );
         }
     }

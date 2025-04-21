@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.entity.furniture.ItemDisplayContext;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.joml.Quaternionf;
@@ -34,7 +35,7 @@ public class BukkitFurnitureElement extends AbstractFurnitureElement {
     }
 
     @Override
-    public void initPackets(int entityId, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
+    public void initPackets(int entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<Object> packets) {
         Vector3f offset = conjugated.transform(new Vector3f(position()));
         packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                 entityId, UUID.randomUUID(), x + offset.x, y + offset.y, z - offset.z, 0, yaw,

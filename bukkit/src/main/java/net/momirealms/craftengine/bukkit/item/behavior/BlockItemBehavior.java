@@ -190,7 +190,12 @@ public class BlockItemBehavior extends ItemBehavior {
                 throw new IllegalArgumentException("Missing required parameter 'block' for block_item behavior");
             }
             if (id instanceof Map<?, ?> map) {
-                BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                if (map.containsKey(key.toString())) {
+                    // 防呆
+                    BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map.get(key.toString()), false));
+                } else {
+                    BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                }
                 return new BlockItemBehavior(key);
             } else {
                 return new BlockItemBehavior(Key.of(id.toString()));

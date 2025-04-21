@@ -3,9 +3,9 @@ package net.momirealms.craftengine.core.world;
 import net.momirealms.craftengine.core.util.MCUtils;
 
 public class Vec3d implements Position {
-    private final double x;
-    private final double y;
-    private final double z;
+    public final double x;
+    public final double y;
+    public final double z;
 
     public Vec3d(double x, double y, double z) {
         this.x = x;
@@ -15,6 +15,14 @@ public class Vec3d implements Position {
 
     public Vec3d toCenter() {
         return new Vec3d(MCUtils.fastFloor(x) + 0.5, MCUtils.fastFloor(y) + 0.5, MCUtils.fastFloor(z) + 0.5);
+    }
+
+    public Vec3d add(Vec3d vec) {
+        return new Vec3d(x + vec.x, y + vec.y, z + vec.z);
+    }
+
+    public Vec3d add(double x, double y, double z) {
+        return new Vec3d(x + this.x, y + this.y, z + this.z);
     }
 
     public static Vec3d atLowerCornerOf(Vec3i vec) {
