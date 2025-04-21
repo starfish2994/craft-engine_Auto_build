@@ -19,6 +19,7 @@ public class ResourcePackHosts {
     public static final Key ALIST = Key.of("craftengine:alist");
     public static final Key DROPBOX = Key.of("craftengine:dropbox");
     public static final Key ONEDRIVE = Key.of("craftengine:onedrive");
+    public static final Key GITLAB = Key.of("craftengine:gitlab");
 
     static {
         register(NONE, NoneHost.FACTORY);
@@ -29,6 +30,7 @@ public class ResourcePackHosts {
         register(ALIST, AlistHost.FACTORY);
         register(DROPBOX, DropboxHost.FACTORY);
         register(ONEDRIVE, OneDriveHost.FACTORY);
+        register(GITLAB, GitLabHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {

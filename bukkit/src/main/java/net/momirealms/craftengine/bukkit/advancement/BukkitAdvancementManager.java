@@ -26,6 +26,10 @@ public class BukkitAdvancementManager extends AbstractAdvancementManager {
         this.advancementParser = new AdvancementParser();
     }
 
+    public void unload() {
+        advancements.clear();
+    }
+
     @Override
     public ConfigSectionParser parser() {
         return this.advancementParser;
