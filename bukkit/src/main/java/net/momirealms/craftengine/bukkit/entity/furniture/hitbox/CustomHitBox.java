@@ -68,6 +68,10 @@ public class CustomHitBox extends AbstractHitBox {
     }
 
     @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
+    }
+
+    @Override
     public int[] acquireEntityIds(Supplier<Integer> entityIdSupplier) {
         return new int[] {entityIdSupplier.get()};
     }

@@ -80,13 +80,12 @@ public class LoadedFurniture implements Furniture {
             hasExternalModel = false;
         }
 
-        double yawInRadius = Math.toRadians(180 - this.location.getYaw());
-        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, yawInRadius, 0).conjugate();
+        float yaw = this.location.getYaw();
+        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - yaw), 0).conjugate();
 
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
-        float yaw = this.location.getYaw();
 
         List<Object> packets = new ArrayList<>();
         List<Object> minimizedPackets = new ArrayList<>();

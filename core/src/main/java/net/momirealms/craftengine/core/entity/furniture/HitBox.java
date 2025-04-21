@@ -17,6 +17,8 @@ public interface HitBox {
     void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated,
                                  BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb);
 
+    void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs);
+
     int[] acquireEntityIds(Supplier<Integer> entityIdSupplier);
 
     Seat[] seats();

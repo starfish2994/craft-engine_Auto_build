@@ -29,6 +29,7 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final Direction direction;
     private final List<Object> cachedShulkerValues = new ArrayList<>();
     private final DirectionalShulkerSpawner spawner;
+    private final AABBCreator aabbCreator;
 
     public ShulkerHitBox(Seat[] seats, Vector3f position, Direction direction, float scale, byte peek, boolean interactionEntity, boolean interactive, boolean canUseOn, boolean blocksBuilding, boolean canBeHitByProjectile) {
         super(seats, position, canUseOn, blocksBuilding, canBeHitByProjectile);
@@ -64,6 +65,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                     }
                 }
             };
+            this.aabbCreator = (x, y, z, yaw, offset) -> createAABB(Direction.UP, offset, x, y, z);
         } else if (this.direction == Direction.DOWN) {
             InteractionEntityData.Height.addEntityDataIfNotDefaultValue(shulkerHeight + 0.01f, cachedInteractionValues);
             InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
@@ -82,6 +84,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                     }
                 }
             };
+            this.aabbCreator = (x, y, z, yaw, offset) -> createAABB(Direction.DOWN, offset, x, y, z);
         } else {
             InteractionEntityData.Height.addEntityDataIfNotDefaultValue(scale + 0.01f, cachedInteractionValues);
             InteractionEntityData.Width.addEntityDataIfNotDefaultValue(scale + 0.005f, cachedInteractionValues);
@@ -111,10 +114,26 @@ public class ShulkerHitBox extends AbstractHitBox {
                     }
                 }
             };
+            this.aabbCreator = (x, y, z, yaw, offset) -> {
+                Direction shulkerAnchor = getOriginalDirection(direction, Direction.fromYaw(yaw));
+                Direction shulkerDirection = shulkerAnchor.opposite();
+                return createAABB(shulkerDirection, offset, x, y, z);
+            };
         }
     }
 
     public Collider createCollider(Direction direction, World world, Vector3f offset, double x, double y, double z, int entityId, BiConsumer<Integer, AABB> aabb) {
+        AABB ceAABB = createAABB(direction, offset, x, y, z);
+        Object level = world.serverWorld();
+        Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(ceAABB.minX, ceAABB.minY, ceAABB.minZ, ceAABB.maxX, ceAABB.maxY, ceAABB.maxZ);
+        aabb.accept(entityId, ceAABB);
+        return new BukkitCollider(
+            FastNMS.INSTANCE.createCollisionShulker(level, nmsAABB, x, y, z, this.canBeHitByProjectile(), true, this.blocksBuilding()),
+            ColliderType.SHULKER
+        );
+    }
+
+    public AABB createAABB(Direction direction, Vector3f offset, double x, double y, double z) {
         float peek = getPhysicalPeek(this.peek() * 0.01F);
         double x1 = -this.scale * 0.5;
         double y1 = 0.0;
@@ -141,20 +160,13 @@ public class ShulkerHitBox extends AbstractHitBox {
         } else if (dz < 0) {
             z1 += dz;
         }
-
-        Object level = world.serverWorld();
         double minX = x + x1 + offset.x();
         double maxX = x + x2 + offset.x();
         double minY = y + y1 + offset.y();
         double maxY = y + y2 + offset.y();
         double minZ = z + z1 - offset.z();
         double maxZ = z + z2 - offset.z();
-        Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(minX, minY, minZ, maxX, maxY, maxZ);
-        aabb.accept(entityId, new AABB(minX, minY, minZ, maxX, maxY, maxZ));
-        return new BukkitCollider(
-            FastNMS.INSTANCE.createCollisionShulker(level, nmsAABB, x, y, z, this.canBeHitByProjectile(), true, this.blocksBuilding()),
-            ColliderType.SHULKER
-        );
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     private static float getPhysicalPeek(float peek) {
@@ -225,10 +237,22 @@ public class ShulkerHitBox extends AbstractHitBox {
         }
     }
 
+    @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
+        Vector3f offset = conjugated.transform(new Vector3f(position()));
+        aabbs.accept(this.aabbCreator.create(x, y, z, yaw, offset));
+    }
+
     @FunctionalInterface
     interface DirectionalShulkerSpawner {
 
         void accept(int[] entityIds, World world, double x, double y, double z, float yaw, Vector3f offset, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb);
+    }
+
+    @FunctionalInterface
+    interface AABBCreator {
+
+        AABB create(double x, double y, double z, float yaw, Vector3f offset);
     }
 
     @Override
