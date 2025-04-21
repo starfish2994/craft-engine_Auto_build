@@ -11,7 +11,6 @@ import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -115,10 +114,12 @@ public class GitLabHost implements ResourcePackHost {
             this.sha1 = HashUtils.calculateLocalFileSha1(resourcePackPath);
             this.uuid = UUID.nameUUIDFromBytes(this.sha1.getBytes(StandardCharsets.UTF_8));
             try (HttpClient client = HttpClient.newBuilder().proxy(this.proxy).build()) {
+                String boundary = UUID.randomUUID().toString();
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(this.gitlabUrl + "/api/v4/projects/" + this.projectId + "/uploads"))
                         .header("PRIVATE-TOKEN", this.accessToken)
-                        .POST(HttpRequest.BodyPublishers.ofFile(resourcePackPath))
+                        .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                        .POST(buildMultipartBody(resourcePackPath, boundary))
                         .build();
                 long uploadStart = System.currentTimeMillis();
                 CraftEngine.instance().logger().info(
@@ -131,7 +132,7 @@ public class GitLabHost implements ResourcePackHost {
                             if (response.statusCode() == 200 || response.statusCode() == 201) {
                                 Map<String, Object> json = GsonHelper.parseJsonToMap(response.body());
                                 if (json.containsKey("full_path")) {
-                                    this.url = (String) json.get("full_path");
+                                    this.url = this.gitlabUrl + json.get("full_path");
                                     future.complete(null);
                                     saveCacheToDisk();
                                     return;
@@ -146,12 +147,28 @@ public class GitLabHost implements ResourcePackHost {
                             future.completeExceptionally(ex);
                             return null;
                         });
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 CraftEngine.instance().logger().warn(
                         "[GitLab] Failed to upload resource pack: " + e.getMessage());
             }
         });
         return future;
+    }
+
+    private HttpRequest.BodyPublisher buildMultipartBody(Path filePath, String boundary) throws IOException {
+        List<byte[]> parts = new ArrayList<>();
+        String filePartHeader = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"" + filePath.getFileName() + "\"\r\n" +
+                "Content-Type: application/octet-stream\r\n\r\n";
+        parts.add(filePartHeader.getBytes());
+
+        parts.add(Files.readAllBytes(filePath));
+        parts.add("\r\n".getBytes());
+
+        String endBoundary = "--" + boundary + "--\r\n";
+        parts.add(endBoundary.getBytes());
+
+        return HttpRequest.BodyPublishers.ofByteArrays(parts);
     }
 
     public static class Factory implements ResourcePackHostFactory {
