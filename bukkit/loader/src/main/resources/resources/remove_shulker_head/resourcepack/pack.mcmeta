@@ -4,7 +4,7 @@
     "description": "CraftEngine Remove Shulker Head for Some Versions",
     "supported_formats": {
       "min_inclusive": 15,
-      "max_inclusive": 33
+      "max_inclusive": 99
     }
   },
   "overlays": {
