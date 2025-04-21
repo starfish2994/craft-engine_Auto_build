@@ -144,7 +144,12 @@ public class FurnitureItemBehavior extends ItemBehavior {
                 throw new IllegalArgumentException("Missing required parameter 'furniture' for furniture_item behavior");
             }
             if (id instanceof Map<?,?> map) {
-                BukkitFurnitureManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                if (map.containsKey(key.toString())) {
+                    // 防呆
+                    BukkitFurnitureManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map.get(key.toString()), false));
+                } else {
+                    BukkitFurnitureManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                }
                 return new FurnitureItemBehavior(key);
             } else {
                 return new FurnitureItemBehavior(Key.of(id.toString()));
