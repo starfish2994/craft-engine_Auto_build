@@ -17,8 +17,8 @@ public class HappyGhastHitBox extends AbstractHitBox {
     public static final Factory FACTORY = new Factory();
     private final double scale;
 
-    public HappyGhastHitBox(Seat[] seats, Vector3f position, double scale, boolean canUseOn) {
-        super(seats, position, canUseOn);
+    public HappyGhastHitBox(Seat[] seats, Vector3f position, double scale, boolean canUseOn, boolean blocksBuilding, boolean canBeHitByProjectile) {
+        super(seats, position, canUseOn, blocksBuilding, canBeHitByProjectile);
         this.scale = scale;
     }
 
@@ -47,10 +47,12 @@ public class HappyGhastHitBox extends AbstractHitBox {
         public HitBox create(Map<String, Object> arguments) {
             double scale = MiscUtils.getAsDouble(arguments.getOrDefault("scale", "1"));
             boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
+            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", false);
             return new HappyGhastHitBox(
                     HitBoxFactory.getSeats(arguments),
                     MiscUtils.getVector3f(arguments.getOrDefault("position", "0")),
-                    scale, canUseOn
+                    scale, canUseOn, blocksBuilding, canBeHitByProjectile
             );
         }
     }

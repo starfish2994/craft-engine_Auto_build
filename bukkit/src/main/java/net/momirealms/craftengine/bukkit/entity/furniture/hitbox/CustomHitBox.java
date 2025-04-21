@@ -26,8 +26,8 @@ public class CustomHitBox extends AbstractHitBox {
     private final EntityType entityType;
     private final List<Object> cachedValues = new ArrayList<>();
 
-    public CustomHitBox(Seat[] seats, Vector3f position, EntityType type, float scale) {
-        super(seats, position, false);
+    public CustomHitBox(Seat[] seats, Vector3f position, EntityType type, float scale, boolean blocksBuilding, boolean canBeHitByProjectile) {
+        super(seats, position, false, blocksBuilding, canBeHitByProjectile);
         this.scale = scale;
         this.entityType = type;
         BaseEntityData.NoGravity.addEntityDataIfNotDefaultValue(true, this.cachedValues);
@@ -82,7 +82,9 @@ public class CustomHitBox extends AbstractHitBox {
             if (entityType == null) {
                 throw new IllegalArgumentException("EntityType not found: " + arguments.get("entity-type"));
             }
-            return new CustomHitBox(HitBoxFactory.getSeats(arguments), position, entityType, scale);
+            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
+            return new CustomHitBox(HitBoxFactory.getSeats(arguments), position, entityType, scale, blocksBuilding, canBeHitByProjectile);
         }
     }
 }

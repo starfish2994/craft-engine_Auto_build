@@ -30,8 +30,8 @@ public class ShulkerHitBox extends AbstractHitBox {
     private final List<Object> cachedShulkerValues = new ArrayList<>();
     private final DirectionalShulkerSpawner spawner;
 
-    public ShulkerHitBox(Seat[] seats, Vector3f position, Direction direction, float scale, byte peek, boolean interactionEntity, boolean interactive, boolean canUseOn) {
-        super(seats, position, canUseOn);
+    public ShulkerHitBox(Seat[] seats, Vector3f position, Direction direction, float scale, byte peek, boolean interactionEntity, boolean interactive, boolean canUseOn, boolean blocksBuilding, boolean canBeHitByProjectile) {
+        super(seats, position, canUseOn, blocksBuilding, canBeHitByProjectile);
         this.direction = direction;
         this.scale = scale;
         this.peek = peek;
@@ -152,7 +152,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(minX, minY, minZ, maxX, maxY, maxZ);
         aabb.accept(entityId, new AABB(minX, minY, minZ, maxX, maxY, maxZ));
         return new BukkitCollider(
-            FastNMS.INSTANCE.createCollisionShulker(level, nmsAABB, x, y, z, true),
+            FastNMS.INSTANCE.createCollisionShulker(level, nmsAABB, x, y, z, this.canBeHitByProjectile(), true, this.blocksBuilding()),
             ColliderType.SHULKER
         );
     }
@@ -258,10 +258,12 @@ public class ShulkerHitBox extends AbstractHitBox {
             boolean interactive = (boolean) arguments.getOrDefault("interactive", true);
             boolean interactionEntity = (boolean) arguments.getOrDefault("interaction-entity", true);
             boolean canUseItemOn = (boolean) arguments.getOrDefault("can-use-item-on", true);
+            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", true);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
             return new ShulkerHitBox(
                     HitBoxFactory.getSeats(arguments),
                     position, directionEnum,
-                    scale, peek, interactionEntity, interactive, canUseItemOn
+                    scale, peek, interactionEntity, interactive, canUseItemOn, blocksBuilding, canBeHitByProjectile
             );
         }
     }
