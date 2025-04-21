@@ -6,11 +6,15 @@ public abstract class AbstractHitBox implements HitBox {
     protected final Seat[] seats;
     protected final Vector3f position;
     protected final boolean canUseItemOn;
+    protected final boolean blocksBuilding;
+    protected final boolean canBeHitByProjectile;
 
-    public AbstractHitBox(Seat[] seats, Vector3f position, boolean canUseItemOn) {
+    public AbstractHitBox(Seat[] seats, Vector3f position, boolean canUseItemOn, boolean blocksBuilding, boolean canBeHitByProjectile) {
         this.seats = seats;
         this.position = position;
         this.canUseItemOn = canUseItemOn;
+        this.blocksBuilding = blocksBuilding;
+        this.canBeHitByProjectile = canBeHitByProjectile;
     }
 
     @Override
@@ -24,7 +28,17 @@ public abstract class AbstractHitBox implements HitBox {
     }
 
     @Override
-    public boolean canPlaceAgainst() {
-        return this.canUseItemOn;
+    public boolean blocksBuilding() {
+        return blocksBuilding;
+    }
+
+    @Override
+    public boolean canBeHitByProjectile() {
+        return canBeHitByProjectile;
+    }
+
+    @Override
+    public boolean canUseItemOn() {
+        return canUseItemOn;
     }
 }

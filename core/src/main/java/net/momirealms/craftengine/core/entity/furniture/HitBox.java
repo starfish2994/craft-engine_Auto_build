@@ -23,5 +23,9 @@ public interface HitBox {
 
     Vector3f position();
 
-    boolean canPlaceAgainst();
+    boolean blocksBuilding();
+
+    boolean canBeHitByProjectile();
+
+    boolean canUseItemOn();
 }

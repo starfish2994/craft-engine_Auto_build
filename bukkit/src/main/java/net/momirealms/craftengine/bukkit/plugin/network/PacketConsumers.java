@@ -35,14 +35,16 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.BlockHitResult;
+import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.EntityHitResult;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -1628,6 +1630,7 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
+
                     if (player.isSneaking()) {
                         // try placing another furniture above it
                         AABB hitBox = furniture.aabbByEntityId(entityId);
