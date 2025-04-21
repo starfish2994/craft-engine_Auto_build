@@ -33,7 +33,10 @@ public class HappyGhastHitBox extends AbstractHitBox {
 
     @Override
     public void initPacketsAndColliders(int[] entityId, World world, double x, double y, double z, float yaw, Quaternionf conjugated, BiConsumer<Object, Boolean> packets, Consumer<Collider> collider, BiConsumer<Integer, AABB> aabb) {
-        // todo 乐魂
+    }
+
+    @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
     }
 
     @Override

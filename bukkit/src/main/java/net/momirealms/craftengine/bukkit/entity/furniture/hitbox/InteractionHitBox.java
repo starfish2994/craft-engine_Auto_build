@@ -73,6 +73,15 @@ public class InteractionHitBox extends AbstractHitBox {
     }
 
     @Override
+    public void initShapeForPlacement(double x, double y, double z, float yaw, Quaternionf conjugated, Consumer<AABB> aabbs) {
+        if (blocksBuilding()) {
+            Vector3f offset = conjugated.transform(new Vector3f(position()));
+            AABB ceAABB = AABB.fromInteraction(new Vec3d(x + offset.x, y + offset.y, z - offset.z), this.size.x, this.size.y);
+            aabbs.accept(ceAABB);
+        }
+    }
+
+    @Override
     public int[] acquireEntityIds(Supplier<Integer> entityIdSupplier) {
         return new int[] {entityIdSupplier.get()};
     }
@@ -95,7 +104,7 @@ public class InteractionHitBox extends AbstractHitBox {
             boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
             boolean interactive = (boolean) arguments.getOrDefault("interactive", true);
             boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
-            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", false);
+            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
             return new InteractionHitBox(
                     HitBoxFactory.getSeats(arguments),
                     position,
