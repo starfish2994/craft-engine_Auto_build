@@ -91,7 +91,7 @@ Given the extensive and intricate nature of plugin configurations, a modular tem
 The plugin enables model inheritance and texture overrides through configuration, while supporting [all item models](https://misode.github.io/assets/item/) from version 1.21.4 onward. It incorporates a version migration system that automatically downgrades 1.21.4+ item models to legacy formats with maximum backward compatibility.
 
 ### Breaking Changes You Have to Know & Possible Incompatibility with Other Plugins
-- CraftEngine injects into PalettedContainer to ensure efficient storage and synchronization of plugin block data. This may cause conflicts with some other plugins that modify the palette.
+- CraftEngine injects into PalettedContainer to ensure efficient storage and synchronization of plugin block data. This may cause conflicts with some other plugins that modify the palette. When analyzing server performance using Spark, palette operation overhead will be attributed to the CraftEngine plugin in the profiling results..
 - CraftEngine injects into FurnaceBlockEntity to modify its recipe fetching logic.
 - CraftEngine uses real server-side blocks, any plugin relying on Bukkit's Material class will fail to correctly identify custom block types. The proper approach is to use alternatives like BlockState#getBlock (mojmap) instead of the Material class.
 - CraftEngine implements 0-tick collision entities by extending certain Minecraft entities, ensuring hard collision works correctly on the server side (e.g., making a pig stand on a chair). However, some anti-cheat plugins do not check entity AABB (Axis-Aligned Bounding Box) properly when detecting player movement, which may lead to false flags.
