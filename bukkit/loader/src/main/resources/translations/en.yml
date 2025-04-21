@@ -115,3 +115,4 @@ warning.config.model.generation.parent.invalid_resource_location: "<yellow>Issue
 warning.config.emoji.lack_keywords: "<yellow>Issue found in file <arg:0> - The emoji '<arg:1>' is missing the required 'keywords' argument.</yellow>"
 warning.config.emoji.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated emoji '<arg:1>'.</yellow>"
 warning.config.emoji.invalid_image: "<yellow>Issue found in file <arg:0> - The emoji '<arg:1>' has an invalid 'image' argument '<arg:2>'.</yellow>"
+warning.config.advancement.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated advancement '<arg:1>'.</yellow>"

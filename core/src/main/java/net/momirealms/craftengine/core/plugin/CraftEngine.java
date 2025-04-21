@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.plugin;
 
+import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
 import net.momirealms.craftengine.core.font.FontManager;
@@ -66,6 +67,7 @@ public abstract class CraftEngine implements Plugin {
     protected GuiManager guiManager;
     protected SoundManager soundManager;
     protected VanillaLootManager vanillaLootManager;
+    protected AdvancementManager advancementManager;
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
@@ -142,6 +144,7 @@ public abstract class CraftEngine implements Plugin {
                 this.vanillaLootManager.reload();
                 this.guiManager.reload();
                 this.packManager.reload();
+                this.advancementManager.reload();
                 if (reloadRecipe) {
                     this.recipeManager.reload();
                 }
@@ -161,6 +164,7 @@ public abstract class CraftEngine implements Plugin {
                 this.itemBrowserManager.delayedLoad();
                 // collect illegal characters from minecraft:default font
                 this.fontManager.delayedLoad();
+                this.advancementManager.delayedLoad();
                 if (reloadRecipe) {
                     // convert data pack recipes
                     this.recipeManager.delayedLoad();
@@ -210,6 +214,7 @@ public abstract class CraftEngine implements Plugin {
             this.packManager.delayedInit();
             this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
+            this.advancementManager.delayedInit();
             // reload the plugin
             try {
                 this.reloadPlugin(Runnable::run, Runnable::run, true);
@@ -228,6 +233,7 @@ public abstract class CraftEngine implements Plugin {
     public void onPluginDisable() {
         if (this.networkManager != null) this.networkManager.disable();
         if (this.fontManager != null) this.fontManager.disable();
+        if (this.advancementManager != null) this.advancementManager.disable();
         if (this.packManager != null) this.packManager.disable();
         if (this.itemManager != null) this.itemManager.disable();
         if (this.blockManager != null) this.blockManager.disable();
@@ -268,6 +274,8 @@ public abstract class CraftEngine implements Plugin {
         this.packManager.registerConfigSectionParsers(this.soundManager.parsers());
         // register vanilla loot parser
         this.packManager.registerConfigSectionParser(this.vanillaLootManager.parser());
+        // register advancement parser
+        this.packManager.registerConfigSectionParser(this.advancementManager.parser());
     }
 
     protected abstract void platformDelayedEnable();
@@ -389,6 +397,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public FontManager fontManager() {
         return fontManager;
+    }
+
+    @Override
+    public AdvancementManager advancementManager() {
+        return advancementManager;
     }
 
     @Override
