@@ -131,7 +131,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onAnvilRename(PrepareAnvilEvent event) {
-        if (super.emojiKeywordTrie == null) {
+        if (!Config.allowEmojiAnvil() || super.emojiKeywordTrie == null) {
             return;
         }
         ItemStack result = event.getResult();
@@ -164,6 +164,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
+        if (!Config.allowEmojiSign()) return;
         Player player = event.getPlayer();
         List<Component> lines = event.lines();
         for (int i = 0; i < lines.size(); i++) {
@@ -193,6 +194,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerEditBook(PlayerEditBookEvent event) {
         if (!event.isSigning()) return;
+        if (!Config.allowEmojiBook()) return;
         Player player = event.getPlayer();
         BookMeta newBookMeta = event.getNewBookMeta();
         List<?> pages = newBookMeta.pages();
@@ -222,20 +224,30 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         try {
             Object originalMessage = Reflections.field$AsyncChatDecorateEvent$originalMessage.get(event);
             String rawJsonMessage = ComponentUtils.paperAdventureToJson(originalMessage);
-            EmojiTextProcessResult processResult = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
-            boolean hasChanged = processResult.replaced();
-            if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
-                IllegalCharacterProcessResult result = processIllegalCharacters(processResult.text());
-                if (result.has()) {
-                    Object component = ComponentUtils.jsonToPaperAdventure(result.text());
-                    Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+            if (Config.allowEmojiChat()) {
+                EmojiTextProcessResult processResult = replaceJsonEmoji(rawJsonMessage, this.plugin.adapt(player));
+                boolean hasChanged = processResult.replaced();
+                if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
+                    IllegalCharacterProcessResult result = processIllegalCharacters(processResult.text());
+                    if (result.has()) {
+                        Object component = ComponentUtils.jsonToPaperAdventure(result.text());
+                        Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                    } else if (hasChanged) {
+                        Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
+                        Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                    }
                 } else if (hasChanged) {
                     Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
                     Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
                 }
-            } else if (hasChanged) {
-                Object component = ComponentUtils.jsonToPaperAdventure(processResult.text());
-                Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+            } else {
+                if (!player.hasPermission(FontManager.BYPASS_CHAT))  {
+                    IllegalCharacterProcessResult result = processIllegalCharacters(rawJsonMessage);
+                    if (result.has()) {
+                        Object component = ComponentUtils.jsonToPaperAdventure(result.text());
+                        Reflections.method$AsyncChatDecorateEvent$result.invoke(event, component);
+                    }
+                }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);

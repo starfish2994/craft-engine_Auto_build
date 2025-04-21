@@ -133,6 +133,11 @@ public class Config {
     protected boolean image$intercept_packets$player_info;
     protected boolean image$intercept_packets$set_score;
 
+    protected boolean emoji$chat;
+    protected boolean emoji$book;
+    protected boolean emoji$anvil;
+    protected boolean emoji$sign;
+
     public Config(CraftEngine plugin) {
         this.plugin = plugin;
         this.configVersion = PluginProperties.getValue("config");
@@ -308,6 +313,12 @@ public class Config {
         image$intercept_packets$armor_stand = config.getBoolean("image.intercept-packets.armor-stand", true);
         image$intercept_packets$player_info = config.getBoolean("image.intercept-packets.player-info", true);
         image$intercept_packets$set_score = config.getBoolean("image.intercept-packets.set-score", true);
+
+        // emoji
+        emoji$chat = config.getBoolean("emoji.chat", true);
+        emoji$anvil = config.getBoolean("emoji.anvil", true);
+        emoji$book = config.getBoolean("emoji.book", true);
+        emoji$sign = config.getBoolean("emoji.sign", true);
 
         Class<?> modClazz = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
         if (modClazz != null) {
@@ -646,6 +657,22 @@ public class Config {
 
     public static double extendedInteractionRange() {
         return instance.block$extended_interaction_range;
+    }
+
+    public static boolean allowEmojiSign() {
+        return instance.emoji$sign;
+    }
+
+    public static boolean allowEmojiChat() {
+        return instance.emoji$chat;
+    }
+
+    public static boolean allowEmojiAnvil() {
+        return instance.emoji$anvil;
+    }
+
+    public static boolean allowEmojiBook() {
+        return instance.emoji$book;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

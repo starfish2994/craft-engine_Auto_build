@@ -177,6 +177,12 @@ furniture:
   # - Recommended to keep enabled for better performance
   hide-base-entity: true
 
+emoji:
+  chat: true
+  book: true
+  anvil: true
+  sign: true
+
 image:
   # Block image tags using minecraft:default font in these interfaces
   # Permission bypass: craftengine.filter.bypass.xxx (replace xxx with context: anvil/book/chat/etc)
@@ -251,8 +257,6 @@ image:
     64: '\uf843'
     128: '\uf844'
     256: '\uf845'
-
-emoji: {}
 
 recipe:
   # Master switch for custom recipes
