@@ -116,3 +116,6 @@ warning.config.emoji.lack_keywords: "<yellow>Issue found in file <arg:0> - The e
 warning.config.emoji.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated emoji '<arg:1>'.</yellow>"
 warning.config.emoji.invalid_image: "<yellow>Issue found in file <arg:0> - The emoji '<arg:1>' has an invalid 'image' argument '<arg:2>'.</yellow>"
 warning.config.advancement.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated advancement '<arg:1>'.</yellow>"
+warning.config.host.lack_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing require argument 'type' for host."
+warning.config.host.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Host 'type' [<arg:0>] is invalid. Please read https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host"
+warning.config.host.external.lack_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing require argument 'url' for external host."

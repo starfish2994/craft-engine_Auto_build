@@ -21,6 +21,8 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
 import net.momirealms.craftengine.core.plugin.locale.I18NData;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.AbstractSoundManager;
 import net.momirealms.craftengine.core.sound.SoundEvent;
 import net.momirealms.craftengine.core.util.*;
@@ -151,7 +153,12 @@ public abstract class AbstractPackManager implements PackManager {
         if (list == null || list.isEmpty()) {
             this.resourcePackHost = NoneHost.INSTANCE;
         } else {
-            this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
+            try {
+                this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
+            } catch (LocalizedException e) {
+                TranslationManager.instance().log(e.node(), e.arguments());
+                this.resourcePackHost = NoneHost.INSTANCE;
+            }
         }
     }
 

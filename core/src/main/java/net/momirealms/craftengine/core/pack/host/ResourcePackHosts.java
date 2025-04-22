@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.pack.host;
 
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.pack.host.impl.*;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -42,12 +44,12 @@ public class ResourcePackHosts {
     public static ResourcePackHost fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("host type cannot be null");
+            throw new LocalizedException("warning.config.host.external.lack_url");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         ResourcePackHostFactory factory = BuiltInRegistries.RESOURCE_PACK_HOST_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown resource pack host type: " + type);
+            throw new LocalizedException("warning.config.host.invalid_type", type);
         }
         return factory.create(map);
     }
