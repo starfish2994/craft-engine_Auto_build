@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, RTagItemWrapper, ItemStack> {
+public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, ItemWrapper<ItemStack>, ItemStack> {
 
     protected BukkitItemFactory(CraftEngine plugin) {
         super(plugin);
