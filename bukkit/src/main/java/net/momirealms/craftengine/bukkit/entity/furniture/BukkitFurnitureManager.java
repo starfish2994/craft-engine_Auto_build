@@ -39,6 +39,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public static final NamespacedKey FURNITURE_SEAT_BASE_ENTITY_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:seat_to_base_entity"));
     public static final NamespacedKey FURNITURE_SEAT_VECTOR_3F_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:seat_vector"));
     public static final NamespacedKey FURNITURE_COLLISION = Objects.requireNonNull(NamespacedKey.fromString("craftengine:collision"));
+    public static Class<?> COLLISION_ENTITY_CLASS = Interaction.class;
+    public static Object NMS_COLLISION_ENTITY_TYPE = Reflections.instance$EntityType$INTERACTION;
+    public static ColliderType COLLISION_ENTITY_TYPE = ColliderType.INTERACTION;
     private static BukkitFurnitureManager instance;
     private final BukkitCraftEngine plugin;
     private final FurnitureParser furnitureParser;
@@ -204,6 +207,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
 
     @Override
     public void delayedInit() {
+        COLLISION_ENTITY_CLASS = Config.colliderType() == ColliderType.INTERACTION ? Interaction.class : Boat.class;
+        NMS_COLLISION_ENTITY_TYPE = Config.colliderType() == ColliderType.INTERACTION ? Reflections.instance$EntityType$INTERACTION : Reflections.instance$EntityType$OAK_BOAT;
+        COLLISION_ENTITY_TYPE = Config.colliderType();
         Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.bootstrap());
         Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.bootstrap());
         for (World world : Bukkit.getWorlds()) {
@@ -211,8 +217,11 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (Entity entity : entities) {
                 if (entity instanceof ItemDisplay display) {
                     handleBaseEntityLoadEarly(display);
-                } else if (entity instanceof Interaction interaction) {
-                    handleCollisionEntityLoadOnEntitiesLoad(interaction);
+                } else if (COLLISION_ENTITY_CLASS.isInstance(entity)) {
+                    handleCollisionEntityLoadOnEntitiesLoad(entity);
+                } else if (entity instanceof Shulker shulker) {
+                    // TODO 移除这一行，预计过一个月
+                    handleCollisionEntityLoadOnEntitiesLoad(shulker);
                 }
             }
         }
@@ -310,29 +319,29 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         this.plugin.scheduler().sync().runLater(() -> handleBaseEntityLoadLate(display, depth + 1), 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
     }
 
-    protected void handleCollisionEntityLoadLate(Interaction interaction, int depth) {
-        // remove the interaction if it's not a collision entity, it might be wrongly copied by WorldEdit
-        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(interaction) instanceof CollisionEntity) {
+    protected void handleCollisionEntityLoadLate(Entity entity, int depth) {
+        // remove the entity if it's not a collision entity, it might be wrongly copied by WorldEdit
+        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(entity) instanceof CollisionEntity) {
             return;
         }
         // not a collision entity
-        Byte flag = interaction.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
+        Byte flag = entity.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
         if (flag == null || flag != 1) {
             return;
         }
 
-        Location location = interaction.getLocation();
+        Location location = entity.getLocation();
         World world = location.getWorld();
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
         if (!FastNMS.INSTANCE.isPreventingStatusUpdates(world, chunkX, chunkZ)) {
-            interaction.remove();
+            entity.remove();
             return;
         }
 
         if (depth > 2) return;
         plugin.scheduler().sync().runLater(() -> {
-            handleCollisionEntityLoadLate(interaction, depth + 1);
+            handleCollisionEntityLoadLate(entity, depth + 1);
         }, 1, world, chunkX, chunkZ);
     }
 
@@ -364,20 +373,20 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         }
     }
 
-    public void handleCollisionEntityLoadOnEntitiesLoad(Interaction interaction) {
+    public void handleCollisionEntityLoadOnEntitiesLoad(Entity collisionEntity) {
         // faster
-        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(interaction) instanceof CollisionEntity) {
-            interaction.remove();
+        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(collisionEntity) instanceof CollisionEntity) {
+            collisionEntity.remove();
             return;
         }
 
         // not a collision entity
-        Byte flag = interaction.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
+        Byte flag = collisionEntity.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
         if (flag == null || flag != 1) {
             return;
         }
 
-        interaction.remove();
+        collisionEntity.remove();
     }
 
     private AnchorType getAnchorType(Entity baseEntity, CustomFurniture furniture) {

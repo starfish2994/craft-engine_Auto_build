@@ -6,7 +6,5 @@ public interface Collider {
 
     int entityId();
 
-    ColliderType type();
-
     Object handle();
 }

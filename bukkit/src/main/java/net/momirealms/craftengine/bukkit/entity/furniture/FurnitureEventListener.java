@@ -2,7 +2,10 @@ package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,8 +36,8 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay itemDisplay) {
                 this.manager.handleBaseEntityLoadEarly(itemDisplay);
-            } else if (entity instanceof Interaction interaction) {
-                this.manager.handleCollisionEntityLoadOnEntitiesLoad(interaction);
+            } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
+                this.manager.handleCollisionEntityLoadOnEntitiesLoad(entity);
             }
         }
     }
@@ -45,8 +48,8 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay itemDisplay) {
                 this.manager.handleBaseEntityLoadEarly(itemDisplay);
-            } else if (entity instanceof Interaction interaction) {
-                this.manager.handleCollisionEntityLoadOnEntitiesLoad(interaction);
+            } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
+                this.manager.handleCollisionEntityLoadOnEntitiesLoad(entity);
             }
         }
     }
@@ -56,8 +59,8 @@ public class FurnitureEventListener implements Listener {
         Entity entity = event.getEntity();
         if (entity instanceof ItemDisplay itemDisplay) {
             this.manager.handleBaseEntityLoadLate(itemDisplay, 0);
-        } else if (entity instanceof Interaction interaction) {
-            this.manager.handleCollisionEntityLoadLate(interaction, 0);
+        } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
+            this.manager.handleCollisionEntityLoadLate(entity, 0);
         }
     }
 
@@ -70,7 +73,7 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
                 this.manager.handleBaseEntityUnload(entity);
-            } else if (entity instanceof Interaction) {
+            } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
                 this.manager.handleCollisionEntityUnload(entity);
             }
         }
@@ -82,7 +85,7 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay) {
                 this.manager.handleBaseEntityUnload(entity);
-            } else if (entity instanceof Interaction) {
+            } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
                 this.manager.handleCollisionEntityUnload(entity);
             }
         }
@@ -93,7 +96,7 @@ public class FurnitureEventListener implements Listener {
         Entity entity = event.getEntity();
         if (entity instanceof ItemDisplay) {
             this.manager.handleBaseEntityUnload(entity);
-        } else if (entity instanceof Interaction) {
+        } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
             this.manager.handleCollisionEntityUnload(entity);
         }
     }

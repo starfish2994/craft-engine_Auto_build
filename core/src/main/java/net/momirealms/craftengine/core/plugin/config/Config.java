@@ -12,6 +12,7 @@ import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.dejvokep.boostedyaml.utils.format.NodeRole;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.entity.furniture.ColliderType;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
@@ -32,6 +33,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -100,6 +102,7 @@ public class Config {
     protected boolean furniture$handle_invalid_furniture_on_chunk_load$enable;
     protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
     protected boolean furniture$hide_base_entity;
+    protected ColliderType furniture$collision_entity_type;
 
     protected boolean block$sound_system$enable;
     protected boolean block$simplify_adventure_break_check;
@@ -277,9 +280,10 @@ public class Config {
                 }
             }
         }
-        this.furniture$handle_invalid_furniture_on_chunk_load$mapping = builder.build();
 
+        furniture$handle_invalid_furniture_on_chunk_load$mapping = builder.build();
         furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
+        furniture$collision_entity_type = ColliderType.valueOf(config.getString("furniture.collision-entity-type", "interaction").toUpperCase(Locale.ENGLISH));
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -673,6 +677,10 @@ public class Config {
 
     public static boolean allowEmojiBook() {
         return instance.emoji$book;
+    }
+
+    public static ColliderType colliderType() {
+        return instance.furniture$collision_entity_type;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

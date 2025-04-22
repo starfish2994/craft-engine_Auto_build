@@ -170,12 +170,15 @@ furniture:
     # Converts the invalid furniture to a valid one
     convert:
       "namespace:furniture_a": "namespace:furniture_b"
-
   # Hide technical entities used for storing furniture metadata.
   # NOTE:
   # - These are INVISIBLE entities used internally for tracking furniture states
   # - Recommended to keep enabled for better performance
   hide-base-entity: true
+  # Requires a restart to apply
+  # interaction (best performance)
+  # boat (better compatibility with some anti-cheat plugin)
+  collision-entity-type: interaction
 
 emoji:
   chat: true

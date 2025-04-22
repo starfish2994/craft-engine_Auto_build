@@ -65,10 +65,7 @@ public class InteractionHitBox extends AbstractHitBox {
         if (blocksBuilding() || this.canBeHitByProjectile()) {
             AABB ceAABB = AABB.fromInteraction(new Vec3d(x + offset.x, y + offset.y, z - offset.z), this.size.x, this.size.y);
             Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(ceAABB.minX, ceAABB.minY, ceAABB.minZ, ceAABB.maxX, ceAABB.maxY, ceAABB.maxZ);
-            collider.accept(new BukkitCollider(
-                    FastNMS.INSTANCE.createCollisionInteraction(world.serverWorld(), nmsAABB, x, y, z, this.canBeHitByProjectile(), false, this.blocksBuilding()),
-                    ColliderType.SHULKER
-            ));
+            collider.accept(new BukkitCollider(world.serverWorld(), nmsAABB, x, y, z, this.canBeHitByProjectile(), false, this.blocksBuilding()));
         }
     }
 
