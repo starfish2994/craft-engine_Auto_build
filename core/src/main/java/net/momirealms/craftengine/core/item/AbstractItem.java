@@ -281,16 +281,6 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
-    public I loadCopy() {
-        return this.factory.loadCopy(this.item);
-    }
-
-    @Override
-    public void update() {
-        this.factory.update(this.item);
-    }
-
-    @Override
     public Item<I> copyWithCount(int count) {
         return new AbstractItem<>(this.factory, this.item.copyWithCount(count));
     }

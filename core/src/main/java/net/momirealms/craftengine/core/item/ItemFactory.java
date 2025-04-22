@@ -45,13 +45,9 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
 
     protected abstract void resetComponent(ItemWrapper<I> item, Key type);
 
-    protected abstract void update(ItemWrapper<I> item);
-
     protected abstract I load(ItemWrapper<I> item);
 
     protected abstract I getItem(ItemWrapper<I> item);
-
-    protected abstract I loadCopy(ItemWrapper<I> item);
 
     protected abstract void customModelData(ItemWrapper<I> item, Integer data);
 

@@ -94,11 +94,6 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, ItemWra
     }
 
     @Override
-    protected void update(ItemWrapper<ItemStack> item) {
-        item.update();
-    }
-
-    @Override
     protected ItemStack load(ItemWrapper<ItemStack> item) {
         return item.load();
     }
@@ -106,11 +101,6 @@ public abstract class BukkitItemFactory extends ItemFactory<CraftEngine, ItemWra
     @Override
     protected ItemStack getItem(ItemWrapper<ItemStack> item) {
         return item.getItem();
-    }
-
-    @Override
-    protected ItemStack loadCopy(ItemWrapper<ItemStack> item) {
-        return item.loadCopy();
     }
 
     @Override

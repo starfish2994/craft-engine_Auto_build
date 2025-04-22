@@ -511,7 +511,7 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
-        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
+        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first.clone());
 
         int maxDamage = wrappedFirst.maxDamage().orElse(0);
         int damage = wrappedFirst.damage().orElse(0);
@@ -639,7 +639,7 @@ public class RecipeEventListener implements Listener {
             }
             afterPenalty = calculateIncreasedRepairCost(afterPenalty);
             wrappedFirst.repairCost(afterPenalty);
-            event.setResult(wrappedFirst.loadCopy());
+            event.setResult(wrappedFirst.load());
         }
     }
 

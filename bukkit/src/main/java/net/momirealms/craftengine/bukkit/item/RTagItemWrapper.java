@@ -75,11 +75,6 @@ public class RTagItemWrapper implements ItemWrapper<ItemStack> {
     }
 
     @Override
-    public void update() {
-        this.rtagItem.update();
-    }
-
-    @Override
     public boolean remove(Object... path) {
         return this.rtagItem.remove(path);
     }
@@ -92,13 +87,6 @@ public class RTagItemWrapper implements ItemWrapper<ItemStack> {
     @Override
     public ItemStack load() {
         ItemStack itemStack = this.rtagItem.load();
-        itemStack.setAmount(this.count);
-        return itemStack;
-    }
-
-    @Override
-    public ItemStack loadCopy() {
-        ItemStack itemStack = this.rtagItem.loadCopy();
         itemStack.setAmount(this.count);
         return itemStack;
     }

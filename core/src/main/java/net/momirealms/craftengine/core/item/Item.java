@@ -114,10 +114,6 @@ public interface Item<I> {
 
     I load();
 
-    I loadCopy();
-
-    void update();
-
     int maxStackSize();
 
     Item<I> maxStackSize(int amount);

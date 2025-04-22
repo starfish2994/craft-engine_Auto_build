@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import com.google.common.collect.ImmutableMap;
+import com.saicone.rtag.RtagItem;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.core.item.*;

@@ -6,11 +6,7 @@ public interface ItemWrapper<I> {
 
     I getItem();
 
-    void update();
-
     I load();
-
-    I loadCopy();
 
     Object getLiteralObject();
 
