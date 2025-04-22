@@ -447,7 +447,7 @@ public class RecipeEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onAnvilCombineItems(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
@@ -490,7 +490,7 @@ public class RecipeEventListener implements Listener {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onAnvilRepairItems(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
@@ -644,7 +644,7 @@ public class RecipeEventListener implements Listener {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onAnvilRenameItem(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();

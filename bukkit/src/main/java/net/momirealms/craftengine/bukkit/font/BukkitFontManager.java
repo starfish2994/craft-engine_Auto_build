@@ -129,7 +129,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onAnvilRename(PrepareAnvilEvent event) {
         if (!Config.allowEmojiAnvil() || super.emojiKeywordTrie == null) {
             return;

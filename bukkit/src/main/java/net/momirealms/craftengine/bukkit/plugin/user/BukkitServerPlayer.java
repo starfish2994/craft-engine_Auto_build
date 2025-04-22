@@ -320,7 +320,7 @@ public class BukkitServerPlayer extends Player {
         if (VersionHelper.isFolia()) {
             try {
                 Object serverPlayer = serverPlayer();
-                Object gameMode = Reflections.field$ServerPlayer$gameMode.get(serverPlayer);
+                Object gameMode = FastNMS.INSTANCE.field$ServerPlayer$gameMode(serverPlayer);
                 this.gameTicks = (int) Reflections.field$ServerPlayerGameMode$gameTicks.get(gameMode);
             } catch (ReflectiveOperationException e) {
                 CraftEngine.instance().logger().warn("Failed to get game tick for " + name(), e);

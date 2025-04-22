@@ -340,32 +340,6 @@ public class ComponentItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected ItemWrapper<ItemStack> mergeCopy(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
-        Object itemStack1 = item1.getLiteralObject();
-        Object itemStack2 = item2.getLiteralObject();
-        try {
-            Object itemStack3 = Reflections.method$ItemStack$transmuteCopy.invoke(itemStack1, Reflections.method$ItemStack$getItem.invoke(itemStack2), 1);
-            Reflections.method$ItemStack$applyComponents.invoke(itemStack3, Reflections.method$ItemStack$getComponentsPatch.invoke(itemStack2));
-            return new RTagItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack3)), item2.count());
-        } catch (Exception e) {
-            this.plugin.logger().warn("Failed to merge item", e);
-        }
-        return null;
-    }
-
-    @Override
-    protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
-        // load previous changes on nms items
-        Object itemStack1 = item1.getLiteralObject();
-        Object itemStack2 = item2.getLiteralObject();
-        try {
-            Reflections.method$ItemStack$applyComponents.invoke(itemStack1, Reflections.method$ItemStack$getComponentsPatch.invoke(itemStack2));
-        } catch (Exception e) {
-            plugin.logger().warn("Failed to merge item", e);
-        }
-    }
-
-    @Override
     protected void trim(ItemWrapper<ItemStack> item, Trim trim) {
         if (trim == null) {
             resetComponent(item, ComponentKeys.TRIM);
@@ -387,5 +361,31 @@ public class ComponentItemFactory extends BukkitItemFactory {
         @SuppressWarnings("unchecked")
         Map<String, String> trimMap = (Map<String, String>) trim.get();
         return Optional.of(new Trim(trimMap.get("pattern"), trimMap.get("material")));
+    }
+
+    @Override
+    protected ItemWrapper<ItemStack> mergeCopy(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
+        Object itemStack1 = item1.getLiteralObject();
+        Object itemStack2 = item2.getLiteralObject();
+        try {
+            Object itemStack3 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, itemStack2);
+            FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack3, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
+            return new RTagItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack3)), item2.count());
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to merge item", e);
+        }
+        return null;
+    }
+
+    @Override
+    protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
+        // load previous changes on nms items
+        Object itemStack1 = item1.getLiteralObject();
+        Object itemStack2 = item2.getLiteralObject();
+        try {
+            FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack1, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
+        } catch (Exception e) {
+            plugin.logger().warn("Failed to merge item", e);
+        }
     }
 }
