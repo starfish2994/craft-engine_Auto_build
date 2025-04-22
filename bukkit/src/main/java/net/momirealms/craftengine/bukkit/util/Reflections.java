@@ -2919,11 +2919,11 @@ public class Reflections {
             )
     );
 
-//    public static final Field field$ServerPlayer$gameMode = requireNonNull(
-//            ReflectionUtils.getDeclaredField(
-//                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
-//            )
-//    );
+    public static final Field field$ServerPlayer$gameMode = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
+            )
+    );
 
     public static final Field field$ServerPlayerGameMode$destroyProgressStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -2931,11 +2931,11 @@ public class Reflections {
             )
     );
 
-//    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
-//            ReflectionUtils.getDeclaredField(
-//                    clazz$ServerPlayerGameMode, int.class, 1
-//            )
-//    );
+    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerPlayerGameMode, int.class, 1
+            )
+    );
 
     public static final Field field$ServerPlayerGameMode$delayedTickStart = requireNonNull(
             ReflectionUtils.getDeclaredField(

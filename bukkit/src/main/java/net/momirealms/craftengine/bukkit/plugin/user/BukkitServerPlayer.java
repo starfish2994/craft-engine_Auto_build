@@ -317,7 +317,17 @@ public class BukkitServerPlayer extends Player {
     public void tick() {
         // not fully online
         if (serverPlayer() == null) return;
-        this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        if (VersionHelper.isFolia()) {
+            try {
+                Object serverPlayer = serverPlayer();
+                Object gameMode = Reflections.field$ServerPlayer$gameMode.get(serverPlayer);
+                this.gameTicks = (int) Reflections.field$ServerPlayerGameMode$gameTicks.get(gameMode);
+            } catch (ReflectiveOperationException e) {
+                CraftEngine.instance().logger().warn("Failed to get game tick for " + name(), e);
+            }
+        } else {
+            this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }
