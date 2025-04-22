@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -159,26 +160,26 @@ public class S3Host implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String endpoint = (String) arguments.get("endpoint");
             if (endpoint == null || endpoint.isEmpty()) {
-                throw new IllegalArgumentException("'endpoint' cannot be empty for S3 host");
+                throw new LocalizedException("warning.config.host.s3.lack_endpoint");
             }
             String protocol = (String) arguments.getOrDefault("protocol", "https");
             boolean usePathStyle = (boolean) arguments.getOrDefault("path-style", false);
             String bucket = (String) arguments.get("bucket");
             if (bucket == null || bucket.isEmpty()) {
-                throw new IllegalArgumentException("'bucket' cannot be empty for S3 host");
+                throw new LocalizedException("warning.config.host.s3.lack_bucket");
             }
             String region = (String) arguments.getOrDefault("region", "auto");
             String accessKeyId = useEnv ? System.getenv("CE_S3_ACCESS_KEY_ID") : (String) arguments.get("access-key-id");
             if (accessKeyId == null || accessKeyId.isEmpty()) {
-                throw new IllegalArgumentException("'access-key-id' cannot be empty for S3 host");
+                throw new LocalizedException("warning.config.host.s3.lack_access_key_id");
             }
             String accessKeySecret = useEnv ? System.getenv("CE_S3_ACCESS_KEY_SECRET") : (String) arguments.get("access-key-secret");
             if (accessKeySecret == null || accessKeySecret.isEmpty()) {
-                throw new IllegalArgumentException("'access-key-secret' cannot be empty for S3 host");
+                throw new LocalizedException("warning.config.host.s3.lack_access_key_secret");
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new IllegalArgumentException("'upload-path' cannot be empty for S3 host");
+                throw new LocalizedException("warning.config.host.s3.lack_upload_path");
             }
             boolean useLegacySignature = (boolean) arguments.getOrDefault("use-legacy-signature", true);
             Duration validity = Duration.ofSeconds((int) arguments.getOrDefault("validity", 10));

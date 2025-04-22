@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
@@ -61,11 +62,11 @@ public class SelfHost implements ResourcePackHost {
             SelfHostHttpServer selfHostHttpServer = SelfHostHttpServer.instance();
             String ip = (String) arguments.get("ip");
             if (ip == null) {
-                throw new IllegalArgumentException("'ip' argument missing for self host");
+                throw new LocalizedException("warning.config.host.self.lack_ip");
             }
-            int port = (int) arguments.get("port");
+            int port = MiscUtils.getAsInt(arguments.getOrDefault("port", 8163));
             if (port < 0 || port > 65535) {
-                throw new IllegalArgumentException("Illegal port: '" + port + "' for self host");
+                throw new LocalizedException("warning.config.host.self.invalid_port", String.valueOf(port));
             }
             boolean oneTimeToken = (boolean) arguments.getOrDefault("one-time-token", true);
             String protocol = (String) arguments.getOrDefault("protocol", "http");
@@ -74,8 +75,8 @@ public class SelfHost implements ResourcePackHost {
             int maxRequests = 5;
             int resetInterval = 20_000;
             if (rateMap != null) {
-                maxRequests = (int) rateMap.getOrDefault("max-requests", 5);
-                resetInterval = (int) rateMap.getOrDefault("reset-interval", 20) * 1000;
+                maxRequests = MiscUtils.getAsInt(rateMap.getOrDefault("max-requests", 5));
+                resetInterval = MiscUtils.getAsInt(rateMap.getOrDefault("reset-interval", 20)) * 1000;
             }
             selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, maxRequests, resetInterval, oneTimeToken);
             return INSTANCE;

@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -273,7 +274,7 @@ public class LobFileHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String apiKey = useEnv ? System.getenv("CE_LOBFILE_API_KEY") : (String) arguments.get("api-key");
             if (apiKey == null || apiKey.isEmpty()) {
-                throw new RuntimeException("Missing 'api-key' for LobFileHost");
+                throw new LocalizedException("warning.config.host.lobfile.lack_api_key");
             }
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
             return new LobFileHost(apiKey, proxy);

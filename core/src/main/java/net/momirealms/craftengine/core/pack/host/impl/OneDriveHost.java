@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.*;
 
 import java.io.FileNotFoundException;
@@ -233,19 +234,19 @@ public class OneDriveHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String clientId = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_ID") : (String) arguments.get("client-id");
             if (clientId == null || clientId.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'client-id' configuration");
+                throw new LocalizedException("warning.config.host.onedrive.lack_client_id");
             }
             String clientSecret = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_SECRET") : (String) arguments.get("client-secret");
             if (clientSecret == null || clientSecret.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'client-secret' configuration");
+                throw new LocalizedException("warning.config.host.onedrive.lack_client_secret");
             }
             String refreshToken = useEnv ? System.getenv("CE_ONEDRIVE_REFRESH_TOKEN") : (String) arguments.get("refresh-token");
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'refresh-token' configuration");
+                throw new LocalizedException("warning.config.host.onedrive.lack_refresh_token");
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "resource_pack.zip");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new IllegalArgumentException("Invalid 'upload-path' configuration");
+                throw new LocalizedException("warning.config.host.onedrive.lack_upload_path");
             }
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
             return new OneDriveHost(clientId, clientSecret, refreshToken, uploadPath, proxy);

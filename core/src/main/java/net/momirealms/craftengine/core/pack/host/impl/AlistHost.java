@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.*;
 
 import javax.annotation.Nullable;
@@ -293,22 +294,22 @@ public class AlistHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String apiUrl = (String) arguments.get("api-url");
             if (apiUrl == null || apiUrl.isEmpty()) {
-                throw new IllegalArgumentException("'api-url' cannot be empty for Alist host");
+                throw new LocalizedException("warning.config.host.alist.lack_api_url");
             }
             String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : (String) arguments.get("username");
             if (userName == null || userName.isEmpty()) {
-                throw new IllegalArgumentException("'username' cannot be empty for Alist host");
+                throw new LocalizedException("warning.config.host.alist.lack_username");
             }
             String password =  useEnv ? System.getenv("CE_ALIST_PASSWORD") : (String) arguments.get("password");
             if (password == null || password.isEmpty()) {
-                throw new IllegalArgumentException("'password' cannot be empty for Alist host");
+                throw new LocalizedException("warning.config.host.alist.lack_password");
             }
             String filePassword = useEnv ? System.getenv("CE_ALIST_FILE_PASSWORD") : (String) arguments.getOrDefault("file-password", "");
             String otpCode = (String) arguments.get("otp-code");
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
             String uploadPath = (String) arguments.get("upload-path");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new IllegalArgumentException("'upload-path' cannot be empty for Alist host");
+                throw new LocalizedException("warning.config.host.alist.lack_upload_path");
             }
             boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));

@@ -154,6 +154,7 @@ public abstract class AbstractPackManager implements PackManager {
             this.resourcePackHost = NoneHost.INSTANCE;
         } else {
             try {
+                // we might add multiple host methods in future versions
                 this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
             } catch (LocalizedException e) {
                 TranslationManager.instance().log(e.node(), e.arguments());
