@@ -43,7 +43,6 @@ public class BlockEventListener implements Listener {
     private final BukkitCraftEngine plugin;
     private final boolean enableNoteBlockCheck;
     private final BukkitBlockManager manager;
-//    private static final Set<Material> WATER_BUCKETS = Arrays.stream(ItemKeys.WATER_BUCKETS).map(it -> Registry.MATERIAL.get(new NamespacedKey(it.namespace(), it.value()))).collect(Collectors.toSet());
 
     public BlockEventListener(BukkitCraftEngine plugin, BukkitBlockManager manager, boolean enableNoteBlockCheck) {
         this.plugin = plugin;
