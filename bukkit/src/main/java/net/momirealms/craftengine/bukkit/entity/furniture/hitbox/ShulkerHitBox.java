@@ -127,10 +127,7 @@ public class ShulkerHitBox extends AbstractHitBox {
         Object level = world.serverWorld();
         Object nmsAABB = FastNMS.INSTANCE.constructor$AABB(ceAABB.minX, ceAABB.minY, ceAABB.minZ, ceAABB.maxX, ceAABB.maxY, ceAABB.maxZ);
         aabb.accept(entityId, ceAABB);
-        return new BukkitCollider(
-            FastNMS.INSTANCE.createCollisionShulker(level, nmsAABB, x, y, z, this.canBeHitByProjectile(), true, this.blocksBuilding()),
-            ColliderType.SHULKER
-        );
+        return new BukkitCollider(level, nmsAABB, x, y, z, this.canBeHitByProjectile(), true, this.blocksBuilding());
     }
 
     public AABB createAABB(Direction direction, Vector3f offset, double x, double y, double z) {

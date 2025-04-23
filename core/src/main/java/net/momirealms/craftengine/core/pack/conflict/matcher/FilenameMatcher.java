@@ -30,7 +30,7 @@ public class FilenameMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             String name = (String) arguments.get("name");
             if (name == null) {
-                throw new IllegalArgumentException("The name argument must not be null");
+                throw new IllegalArgumentException("The 'name' argument must not be null");
             }
             return new FilenameMatcher(name);
         }

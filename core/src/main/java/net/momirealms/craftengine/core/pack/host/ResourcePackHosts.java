@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.host;
 
 import net.momirealms.craftengine.core.pack.host.impl.*;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -19,6 +20,7 @@ public class ResourcePackHosts {
     public static final Key ALIST = Key.of("craftengine:alist");
     public static final Key DROPBOX = Key.of("craftengine:dropbox");
     public static final Key ONEDRIVE = Key.of("craftengine:onedrive");
+    public static final Key GITLAB = Key.of("craftengine:gitlab");
 
     static {
         register(NONE, NoneHost.FACTORY);
@@ -29,6 +31,7 @@ public class ResourcePackHosts {
         register(ALIST, AlistHost.FACTORY);
         register(DROPBOX, DropboxHost.FACTORY);
         register(ONEDRIVE, OneDriveHost.FACTORY);
+        register(GITLAB, GitLabHost.FACTORY);
     }
 
     public static void register(Key key, ResourcePackHostFactory factory) {
@@ -40,12 +43,12 @@ public class ResourcePackHosts {
     public static ResourcePackHost fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("host type cannot be null");
+            throw new LocalizedException("warning.config.host.external.lack_url");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         ResourcePackHostFactory factory = BuiltInRegistries.RESOURCE_PACK_HOST_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown resource pack host type: " + type);
+            throw new LocalizedException("warning.config.host.invalid_type", type);
         }
         return factory.create(map);
     }

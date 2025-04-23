@@ -5,12 +5,12 @@ import com.google.gson.JsonElement;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
+import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
+import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
-import net.momirealms.craftengine.core.item.ComponentKeys;
-import net.momirealms.craftengine.core.item.ItemWrapper;
+import net.momirealms.craftengine.core.item.JukeboxPlayable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,41 +24,41 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
     }
 
     @Override
-    protected void customName(ItemWrapper<ItemStack> item, String json) {
+    protected void customName(ComponentItemWrapper item, String json) {
         if (json == null) {
-            resetComponent(item, ComponentKeys.CUSTOM_NAME);
+            item.resetComponent(ComponentTypes.CUSTOM_NAME);
         } else {
-            setNBTComponentDirectly(item, ComponentKeys.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            item.setNBTComponent(ComponentTypes.CUSTOM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
     @Override
-    protected Optional<String> customName(ItemWrapper<ItemStack> item) {
-        if (!item.hasComponent(ComponentKeys.CUSTOM_NAME)) return Optional.empty();
-        return ComponentType.encodeJson(ComponentKeys.CUSTOM_NAME, item.getComponent(ComponentKeys.CUSTOM_NAME)).map(jsonElement -> GsonHelper.get().toJson(jsonElement));
+    protected Optional<String> customName(ComponentItemWrapper item) {
+        if (!item.hasComponent(ComponentTypes.CUSTOM_NAME)) return Optional.empty();
+        return ComponentType.encodeJson(ComponentTypes.CUSTOM_NAME, item.getComponent(ComponentTypes.CUSTOM_NAME)).map(jsonElement -> GsonHelper.get().toJson(jsonElement));
     }
 
     @Override
-    protected void itemName(ItemWrapper<ItemStack> item, String json) {
+    protected void itemName(ComponentItemWrapper item, String json) {
         if (json == null) {
-            resetComponent(item, ComponentKeys.ITEM_NAME);
+            item.resetComponent(ComponentTypes.ITEM_NAME);
         } else {
-            setNBTComponentDirectly(item, ComponentKeys.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
+            item.setNBTComponent(ComponentTypes.ITEM_NAME, ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
         }
     }
 
     @Override
-    protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
-        if (!item.hasComponent(ComponentKeys.ITEM_NAME)) return Optional.empty();
-        return ComponentType.encodeJson(ComponentKeys.ITEM_NAME, item.getComponent(ComponentKeys.ITEM_NAME)).map(jsonElement -> GsonHelper.get().toJson(jsonElement));
+    protected Optional<String> itemName(ComponentItemWrapper item) {
+        if (!item.hasComponent(ComponentTypes.ITEM_NAME)) return Optional.empty();
+        return ComponentType.encodeJson(ComponentTypes.ITEM_NAME, item.getComponent(ComponentTypes.ITEM_NAME)).map(jsonElement -> GsonHelper.get().toJson(jsonElement));
     }
 
     @Override
-    protected Optional<List<String>> lore(ItemWrapper<ItemStack> item) {
-        if (!item.hasComponent(ComponentKeys.LORE)) return Optional.empty();
+    protected Optional<List<String>> lore(ComponentItemWrapper item) {
+        if (!item.hasComponent(ComponentTypes.LORE)) return Optional.empty();
         return ComponentType.encodeJson(
-                ComponentKeys.LORE,
-                item.getComponent(ComponentKeys.LORE)
+                ComponentTypes.LORE,
+                item.getComponent(ComponentTypes.LORE)
         ).map(list -> {
            List<String> lore = new ArrayList<>();
            for (JsonElement jsonElement : (JsonArray) list) {
@@ -69,15 +69,30 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
     }
 
     @Override
-    protected void lore(ItemWrapper<ItemStack> item, List<String> lore) {
+    protected void lore(ComponentItemWrapper item, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
-            resetComponent(item, ComponentKeys.LORE);
+            item.resetComponent(ComponentTypes.LORE);
         } else {
             List<Object> loreTags = new ArrayList<>();
             for (String json : lore) {
                 loreTags.add(ChatComponent.toTag(ComponentUtils.jsonToMinecraft(json)));
             }
-            setNBTComponentDirectly(item, ComponentKeys.LORE, TagList.newTag(loreTags));
+            item.setNBTComponent(ComponentTypes.LORE, TagList.newTag(loreTags));
         }
+    }
+
+    @Override
+    protected Optional<JukeboxPlayable> jukeboxSong(ComponentItemWrapper item) {
+        if (!item.hasComponent(ComponentTypes.JUKEBOX_PLAYABLE)) return Optional.empty();
+        String song = (String) ComponentType.encodeJava(
+                ComponentTypes.JUKEBOX_PLAYABLE,
+                item.getComponent(ComponentTypes.JUKEBOX_PLAYABLE)).orElse(null);
+        if (song == null) return Optional.empty();
+        return Optional.of(new JukeboxPlayable(song, true));
+    }
+
+    @Override
+    protected void jukeboxSong(ComponentItemWrapper item, JukeboxPlayable data) {
+        item.setJavaComponent(ComponentTypes.JUKEBOX_PLAYABLE, data.song());
     }
 }

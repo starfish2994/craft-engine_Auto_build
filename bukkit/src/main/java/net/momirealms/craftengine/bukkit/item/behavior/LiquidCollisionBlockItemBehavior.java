@@ -63,11 +63,16 @@ public class LiquidCollisionBlockItemBehavior extends BlockItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
-                throw new IllegalArgumentException("Missing required parameter 'block' for on_liquid_block_item behavior");
+                throw new IllegalArgumentException("Missing required parameter 'block' for liquid_collision_block_item behavior");
             }
             int offset = MiscUtils.getAsInt(arguments.getOrDefault("y-offset", 1));
             if (id instanceof Map<?, ?> map) {
-                BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                if (map.containsKey(key.toString())) {
+                    // 防呆
+                    BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map.get(key.toString()), false));
+                } else {
+                    BukkitBlockManager.instance().parser().parseSection(pack, path, key, MiscUtils.castToMap(map, false));
+                }
                 return new LiquidCollisionBlockItemBehavior(key, offset);
             } else {
                 return new LiquidCollisionBlockItemBehavior(Key.of(id.toString()), offset);

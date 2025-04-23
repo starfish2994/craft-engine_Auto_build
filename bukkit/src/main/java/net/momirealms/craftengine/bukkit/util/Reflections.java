@@ -2919,11 +2919,11 @@ public class Reflections {
             )
     );
 
-//    public static final Field field$ServerPlayer$gameMode = requireNonNull(
-//            ReflectionUtils.getDeclaredField(
-//                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
-//            )
-//    );
+    public static final Field field$ServerPlayer$gameMode = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerPlayer, clazz$ServerPlayerGameMode, 0
+            )
+    );
 
     public static final Field field$ServerPlayerGameMode$destroyProgressStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -2931,11 +2931,11 @@ public class Reflections {
             )
     );
 
-//    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
-//            ReflectionUtils.getDeclaredField(
-//                    clazz$ServerPlayerGameMode, int.class, 1
-//            )
-//    );
+    public static final Field field$ServerPlayerGameMode$gameTicks = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerPlayerGameMode, int.class, 1
+            )
+    );
 
     public static final Field field$ServerPlayerGameMode$delayedTickStart = requireNonNull(
             ReflectionUtils.getDeclaredField(
@@ -3773,6 +3773,7 @@ public class Reflections {
     public static final Object instance$EntityType$FALLING_BLOCK;
     public static final Object instance$EntityType$INTERACTION;
     public static final Object instance$EntityType$SHULKER;
+    public static final Object instance$EntityType$OAK_BOAT;
 
     static {
         try {
@@ -3790,6 +3791,8 @@ public class Reflections {
             instance$EntityType$SHULKER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, shulker);
             Object armorStand = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "armor_stand");
             instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
+            Object oakBoat = VersionHelper.isVersionNewerThan1_21_2() ? FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "oak_boat") : FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "boat");
+            instance$EntityType$OAK_BOAT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, oakBoat);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -5294,25 +5297,25 @@ public class Reflections {
             )
     );
 
-    // 1.20.5+
-    public static final Method method$ItemStack$transmuteCopy = ReflectionUtils.getMethod(
-            clazz$ItemStack, clazz$ItemStack, clazz$ItemLike, int.class
-    );
+//    // 1.20.5+
+//    public static final Method method$ItemStack$transmuteCopy = ReflectionUtils.getMethod(
+//            clazz$ItemStack, clazz$ItemStack, clazz$ItemLike, int.class
+//    );
 
     // 1.20.5+
     public static final Class<?> clazz$DataComponentPatch = ReflectionUtils.getClazz(
             BukkitReflectionUtils.assembleMCClass("core.component.DataComponentPatch")
     );
 
-    // 1.20.5+
-    public static final Method method$ItemStack$getComponentsPatch = Optional.ofNullable(clazz$DataComponentPatch)
-            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, it))
-            .orElse(null);
-
-    // 1.20.5+
-    public static final Method method$ItemStack$applyComponents = Optional.ofNullable(clazz$DataComponentPatch)
-            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, void.class, it))
-            .orElse(null);
+//    // 1.20.5+
+//    public static final Method method$ItemStack$getComponentsPatch = Optional.ofNullable(clazz$DataComponentPatch)
+//            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, it))
+//            .orElse(null);
+//
+//    // 1.20.5+  WRONG!!!
+//    public static final Method method$ItemStack$applyComponents = Optional.ofNullable(clazz$DataComponentPatch)
+//            .map(it -> ReflectionUtils.getMethod(clazz$ItemStack, void.class, it))
+//            .orElse(null);
 
     public static final Method method$ItemStack$getItem = requireNonNull(
             ReflectionUtils.getMethod(
@@ -6511,5 +6514,11 @@ public class Reflections {
             field$ClientboundResourcePackPushPacket$id != null
                     ? ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, UUID.class, clazz$ServerboundResourcePackPacket$Action)
                     : ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action)
+    );
+
+    public static final Class<?> clazz$DataComponentType = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass(
+                    "core.component.DataComponentType"
+            )
     );
 }

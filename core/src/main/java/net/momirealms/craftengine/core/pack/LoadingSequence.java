@@ -14,4 +14,5 @@ public class LoadingSequence {
     public static final int JUKEBOX_SONG = 100;
     public static final int VANILLA_LOOTS = 110;
     public static final int EMOJI = 120;
+    public static final int ADVANCEMENT = 130;
 }

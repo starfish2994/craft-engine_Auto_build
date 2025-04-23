@@ -60,7 +60,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     private static BukkitItemManager instance;
-    private final BukkitItemFactory factory;
+    private final BukkitItemFactory<? extends ItemWrapper<ItemStack>> factory;
     private final BukkitCraftEngine plugin;
     private final ItemEventListener itemEventListener;
     private final DebugStickListener debugStickListener;
@@ -141,11 +141,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         if (this.plugin.isPluginEnabled("MMOItems")) {
             registerExternalItemProvider(new MMOItemsProvider());
         }
-    }
-
-    @Override
-    public Object encodeJava(Key componentType, @Nullable Object component) {
-        return this.factory.encodeJava(componentType, component);
     }
 
     public static BukkitItemManager instance() {

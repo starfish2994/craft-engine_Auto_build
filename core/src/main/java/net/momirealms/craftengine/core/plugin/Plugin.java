@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.plugin;
 
+import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -60,6 +61,8 @@ public interface Plugin {
     NetworkManager networkManager();
 
     FontManager fontManager();
+
+    AdvancementManager advancementManager();
 
     Config config();
 

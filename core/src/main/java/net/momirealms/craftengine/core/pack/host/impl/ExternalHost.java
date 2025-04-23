@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -46,7 +47,7 @@ public class ExternalHost implements ResourcePackHost {
         public ResourcePackHost create(Map<String, Object> arguments) {
             String url = (String) arguments.get("url");
             if (url == null || url.isEmpty()) {
-                throw new IllegalArgumentException("'url' cannot be empty for external host");
+                throw new LocalizedException("warning.config.host.external.lack_url");
             }
             String uuid = (String) arguments.get("uuid");
             if (uuid == null || uuid.isEmpty()) {

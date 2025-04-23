@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
 import net.momirealms.antigrieflib.AntiGriefLib;
+import net.momirealms.craftengine.bukkit.advancement.BukkitAdvancementManager;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
@@ -156,6 +157,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.soundManager = new BukkitSoundManager(this);
         super.vanillaLootManager = new BukkitVanillaLootManager(this);
         super.fontManager = new BukkitFontManager(this);
+        super.advancementManager = new BukkitAdvancementManager(this);
         super.onPluginEnable();
         // compatibility
         // register expansion
@@ -243,6 +245,11 @@ public class BukkitCraftEngine extends CraftEngine {
     @Override
     public BukkitBlockManager blockManager() {
         return (BukkitBlockManager) blockManager;
+    }
+
+    @Override
+    public BukkitAdvancementManager advancementManager() {
+        return (BukkitAdvancementManager) advancementManager;
     }
 
     @Override

@@ -78,6 +78,4 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
     Collection<Suggestion> cachedSuggestions();
 
     Collection<Suggestion> cachedTotemSuggestions();
-
-    Object encodeJava(Key componentType, @Nullable Object component);
 }
