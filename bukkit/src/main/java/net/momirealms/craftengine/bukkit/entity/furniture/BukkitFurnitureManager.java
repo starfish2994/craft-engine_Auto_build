@@ -217,8 +217,10 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             for (Entity entity : entities) {
                 if (entity instanceof ItemDisplay display) {
                     handleBaseEntityLoadEarly(display);
-                } else if (COLLISION_ENTITY_CLASS.isInstance(entity)) {
-                    handleCollisionEntityLoadOnEntitiesLoad(entity);
+                } else if (entity instanceof Interaction interaction) {
+                    handleCollisionEntityLoadOnEntitiesLoad(interaction);
+                } else if (entity instanceof Boat boat) {
+                    handleCollisionEntityLoadOnEntitiesLoad(boat);
                 } else if (entity instanceof Shulker shulker) {
                     // TODO 移除这一行，预计过一个月
                     handleCollisionEntityLoadOnEntitiesLoad(shulker);

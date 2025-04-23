@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.item.modifier;
 
-import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.EquipmentData;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
@@ -19,11 +18,11 @@ public class EquippableModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.setComponent(ComponentKeys.EQUIPPABLE, this.data.toMap());
+        item.equippable(this.data);
     }
 
     @Override
     public void remove(Item<I> item) {
-        item.removeComponent(ComponentKeys.EQUIPPABLE);
+        item.equippable(null);
     }
 }

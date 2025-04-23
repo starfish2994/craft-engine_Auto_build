@@ -6515,4 +6515,10 @@ public class Reflections {
                     ? ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, UUID.class, clazz$ServerboundResourcePackPacket$Action)
                     : ReflectionUtils.getConstructor(clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action)
     );
+
+    public static final Class<?> clazz$DataComponentType = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass(
+                    "core.component.DataComponentType"
+            )
+    );
 }

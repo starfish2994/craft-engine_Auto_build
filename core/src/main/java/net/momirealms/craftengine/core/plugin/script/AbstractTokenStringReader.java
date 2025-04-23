@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.plugin.script;
 
-import java.io.EOFException;
-
 public abstract class AbstractTokenStringReader implements TokenStringReader {
     protected final char[] chars;
     protected int index;

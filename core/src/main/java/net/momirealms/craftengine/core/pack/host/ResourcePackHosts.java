@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.pack.host;
 
-import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.pack.host.impl.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;

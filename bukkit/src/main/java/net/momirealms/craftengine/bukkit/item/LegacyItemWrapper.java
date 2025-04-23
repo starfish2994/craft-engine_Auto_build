@@ -4,14 +4,11 @@ import com.saicone.rtag.RtagItem;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Map;
-
-@SuppressWarnings("UnstableApiUsage")
-public class RTagItemWrapper implements ItemWrapper<ItemStack> {
+public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     private final RtagItem rtagItem;
     private int count;
 
-    public RTagItemWrapper(RtagItem rtagItem, int count) {
+    public LegacyItemWrapper(RtagItem rtagItem, int count) {
         this.rtagItem = rtagItem;
         this.count = count;
     }
@@ -23,65 +20,41 @@ public class RTagItemWrapper implements ItemWrapper<ItemStack> {
         return itemStack;
     }
 
-    @Override
     public boolean set(Object value, Object... path) {
         return this.rtagItem.set(value, path);
     }
 
-    @Override
     public boolean add(Object value, Object... path) {
         return this.rtagItem.add(value, path);
     }
 
-    @Override
     public <V> V get(Object... path) {
         return this.rtagItem.get(path);
     }
 
-    @Override
-    public void setComponent(Object path, Object value) {
-        this.rtagItem.setComponent(path, value);
-    }
-
-    @Override
-    public Object getComponent(Object path) {
-        return this.rtagItem.getComponent(path);
-    }
-
-    @Override
     public int count() {
         return this.count;
     }
 
-    @Override
     public void count(int amount) {
         if (amount < 0) amount = 0;
         this.count = amount;
     }
 
-    @Override
     public <V> V getExact(Object... path) {
         return this.rtagItem.get(path);
     }
 
-    @Override
-    public void removeComponent(Object path) {
-        this.rtagItem.removeComponent(path);
-    }
-
-    @Override
-    public boolean hasComponent(Object path) {
-        return this.rtagItem.hasComponent(path);
-    }
-
-    @Override
     public boolean remove(Object... path) {
         return this.rtagItem.remove(path);
     }
 
-    @Override
     public boolean hasTag(Object... path) {
         return this.rtagItem.hasTag(path);
+    }
+
+    public void update() {
+        this.rtagItem.update();
     }
 
     @Override
@@ -98,11 +71,6 @@ public class RTagItemWrapper implements ItemWrapper<ItemStack> {
 
     @Override
     public ItemWrapper<ItemStack> copyWithCount(int count) {
-        return new RTagItemWrapper(new RtagItem(this.rtagItem.loadCopy()), count);
-    }
-
-    @Override
-    public Map<String, Object> getData() {
-        return this.rtagItem.get();
+        return new LegacyItemWrapper(new RtagItem(this.rtagItem.loadCopy()), count);
     }
 }

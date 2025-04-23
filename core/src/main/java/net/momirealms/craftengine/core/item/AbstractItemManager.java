@@ -238,7 +238,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         if (VersionHelper.isVersionNewerThan1_21()) {
             registerDataFunction((obj) -> {
                 String song = obj.toString();
-                return new JukeboxSongModifier<>(Key.of(song));
+                return new JukeboxSongModifier<>(new JukeboxPlayable(song, true));
             }, "jukebox-playable");
         }
         if (VersionHelper.isVersionNewerThan1_21_2()) {

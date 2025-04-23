@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
-import net.momirealms.craftengine.core.plugin.Plugin;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I> {
-    protected final P plugin;
+public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
+    protected final CraftEngine plugin;
 
-    protected ItemFactory(P plugin) {
+    protected ItemFactory(CraftEngine plugin) {
         this.plugin = plugin;
     }
 
@@ -21,103 +21,121 @@ public abstract class ItemFactory<P extends Plugin, W extends ItemWrapper<I>, I>
         return new AbstractItem<>(this, wrapInternal(item));
     }
 
-    public abstract Object encodeJava(Key componentType, @Nullable Object component);
+    protected abstract W mergeCopy(W item1, W item2);
 
-    protected abstract JsonElement encodeJson(Key type, Object component);
+    protected abstract void merge(W item1, W item2);
 
-    protected abstract ItemWrapper<I> wrapInternal(I item);
+    protected abstract Object encodeJava(Object type, @Nullable Object component);
 
-    protected abstract Object getTag(ItemWrapper<I> item, Object... path);
+    protected abstract JsonElement encodeJson(Object type, Object component);
 
-    protected abstract void setTag(ItemWrapper<I> item, Object value, Object... path);
+    protected abstract W wrapInternal(I item);
 
-    protected abstract boolean hasTag(ItemWrapper<I> item, Object... path);
+    protected abstract Object getTag(W item, Object... path);
 
-    protected abstract boolean removeTag(ItemWrapper<I> item, Object... path);
+    protected abstract void setTag(W item, Object value, Object... path);
 
-    protected abstract void setComponent(ItemWrapper<I> item, Key type, Object value);
+    protected abstract boolean hasTag(W item, Object... path);
 
-    protected abstract Object getComponent(ItemWrapper<I> item, Key type);
+    protected abstract boolean removeTag(W item, Object... path);
 
-    protected abstract boolean hasComponent(ItemWrapper<I> item, Key type);
+    protected abstract void setComponent(W item, Object type, Object value);
 
-    protected abstract void removeComponent(ItemWrapper<I> item, Key type);
+    protected abstract Object getComponent(W item, Object type);
 
-    protected abstract void resetComponent(ItemWrapper<I> item, Key type);
+    protected abstract boolean hasComponent(W item, Object type);
 
-    protected abstract I load(ItemWrapper<I> item);
+    protected abstract void removeComponent(W item, Object type);
 
-    protected abstract I getItem(ItemWrapper<I> item);
+    protected abstract void resetComponent(W item, Object type);
 
-    protected abstract void customModelData(ItemWrapper<I> item, Integer data);
+    protected abstract I load(W item);
 
-    protected abstract Optional<Integer> customModelData(ItemWrapper<I> item);
+    protected abstract I getItem(W item);
 
-    protected abstract void customName(ItemWrapper<I> item, String json);
+    protected abstract void customModelData(W item, Integer data);
 
-    protected abstract Optional<String> customName(ItemWrapper<I> item);
+    protected abstract Optional<Integer> customModelData(W item);
 
-    protected abstract void itemName(ItemWrapper<I> item, String json);
+    protected abstract void customName(W item, String json);
 
-    protected abstract Optional<String> itemName(ItemWrapper<I> item);
+    protected abstract Optional<String> customName(W item);
 
-    protected abstract void skull(ItemWrapper<I> item, String skullData);
+    protected abstract void itemName(W item, String json);
 
-    protected abstract Optional<List<String>> lore(ItemWrapper<I> item);
+    protected abstract Optional<String> itemName(W item);
 
-    protected abstract void lore(ItemWrapper<I> item, List<String> lore);
+    protected abstract void skull(W item, String skullData);
 
-    protected abstract boolean unbreakable(ItemWrapper<I> item);
+    protected abstract Optional<List<String>> lore(W item);
 
-    protected abstract void unbreakable(ItemWrapper<I> item, boolean unbreakable);
+    protected abstract void lore(W item, List<String> lore);
 
-    protected abstract Optional<Boolean> glint(ItemWrapper<I> item);
+    protected abstract boolean unbreakable(W item);
 
-    protected abstract void glint(ItemWrapper<I> item, Boolean glint);
+    protected abstract void unbreakable(W item, boolean unbreakable);
 
-    protected abstract Optional<Integer> damage(ItemWrapper<I> item);
+    protected abstract Optional<Boolean> glint(W item);
 
-    protected abstract void damage(ItemWrapper<I> item, Integer damage);
+    protected abstract void glint(W item, Boolean glint);
 
-    protected abstract Optional<Integer> maxDamage(ItemWrapper<I> item);
+    protected abstract Optional<Integer> damage(W item);
 
-    protected abstract void maxDamage(ItemWrapper<I> item, Integer damage);
+    protected abstract void damage(W item, Integer damage);
 
-    protected abstract void enchantments(ItemWrapper<I> item, List<Enchantment> enchantments);
+    protected abstract Optional<Integer> maxDamage(W item);
 
-    protected abstract void storedEnchantments(ItemWrapper<I> item, List<Enchantment> enchantments);
+    protected abstract void maxDamage(W item, Integer damage);
 
-    protected abstract void addEnchantment(ItemWrapper<I> item, Enchantment enchantment);
+    protected abstract void enchantments(W item, List<Enchantment> enchantments);
 
-    protected abstract void addStoredEnchantment(ItemWrapper<I> item, Enchantment enchantment);
+    protected abstract void storedEnchantments(W item, List<Enchantment> enchantments);
 
-    protected abstract Optional<Enchantment> getEnchantment(ItemWrapper<I> item, Key key);
+    protected abstract void addEnchantment(W item, Enchantment enchantment);
 
-    protected abstract void itemFlags(ItemWrapper<I> item, List<String> flags);
+    protected abstract void addStoredEnchantment(W item, Enchantment enchantment);
 
-    protected abstract Key id(ItemWrapper<I> item);
+    protected abstract Optional<Enchantment> getEnchantment(W item, Key key);
 
-    protected abstract Optional<Key> customId(ItemWrapper<I> item);
+    protected abstract void itemFlags(W item, List<String> flags);
 
-    protected abstract Key vanillaId(ItemWrapper<I> item);
+    protected abstract Key id(W item);
 
-    protected abstract int maxStackSize(ItemWrapper<I> item);
+    protected abstract Optional<Key> customId(W item);
 
-    protected abstract void maxStackSize(ItemWrapper<I> item, Integer maxStackSize);
+    protected abstract void customId(W item, Key id);
 
-    protected abstract boolean is(ItemWrapper<I> item, Key itemTag);
+    protected abstract Key vanillaId(W item);
 
-    protected abstract boolean isBlockItem(ItemWrapper<I> item);
+    protected abstract int maxStackSize(W item);
 
-    protected abstract void repairCost(ItemWrapper<I> item, Integer data);
+    protected abstract void maxStackSize(W item, Integer maxStackSize);
 
-    protected abstract Optional<Integer> repairCost(ItemWrapper<I> item);
+    protected abstract boolean is(W item, Key itemTag);
 
-    protected abstract void trim(ItemWrapper<I> item, Trim trim);
+    protected abstract boolean isBlockItem(W item);
 
-    protected abstract Optional<Trim> trim(ItemWrapper<I> item);
+    protected abstract void repairCost(W item, Integer data);
 
-    protected abstract ItemWrapper<I> mergeCopy(ItemWrapper<I> item1, ItemWrapper<I> item2);
+    protected abstract Optional<Integer> repairCost(W item);
 
-    protected abstract void merge(ItemWrapper<I> item1, ItemWrapper<I> item2);
+    protected abstract void trim(W item, Trim trim);
+
+    protected abstract Optional<Trim> trim(W item);
+
+    protected abstract void tooltipStyle(W item, String data);
+
+    protected abstract Optional<String> tooltipStyle(W item);
+
+    protected abstract void jukeboxSong(W item, JukeboxPlayable data);
+
+    protected abstract Optional<JukeboxPlayable> jukeboxSong(W item);
+
+    protected abstract void itemModel(W item, String data);
+
+    protected abstract Optional<String> itemModel(W item);
+
+    protected abstract void equippable(W item, EquipmentData data);
+
+    protected abstract Optional<EquipmentData> equippable(W item);
 }

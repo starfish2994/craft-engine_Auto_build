@@ -30,6 +30,8 @@ public interface Item<I> {
 
     Optional<Key> customId();
 
+    Item<I> customId(Key id);
+
     int count();
 
     Item<I> count(int amount);
@@ -66,7 +68,23 @@ public interface Item<I> {
 
     Optional<String> itemName();
 
+    Item<I> itemModel(String itemModel);
+
+    Optional<String> itemModel();
+
+    Item<I> tooltipStyle(String tooltipStyle);
+
+    Optional<String> tooltipStyle();
+
     Item<I> lore(List<String> lore);
+
+    Optional<JukeboxPlayable> jukeboxSong();
+
+    Item<I> jukeboxSong(JukeboxPlayable song);
+
+    Optional<EquipmentData> equippable();
+
+    Item<I> equippable(EquipmentData equipmentData);
 
     Optional<List<String>> lore();
 
@@ -96,19 +114,19 @@ public interface Item<I> {
 
     boolean removeTag(Object... path);
 
-    boolean hasComponent(Key type);
+    boolean hasComponent(Object type);
 
-    void removeComponent(Key type);
+    void removeComponent(Object type);
 
-    Object getComponent(Key type);
+    Object getComponent(Object type);
 
-    Object getJavaTypeComponent(Key type);
+    Object getJavaTypeComponent(Object type);
 
-    JsonElement getJsonTypeComponent(Key type);
+    JsonElement getJsonTypeComponent(Object type);
 
-    void setComponent(Key type, Object value);
+    void setComponent(Object type, Object value);
 
-    void resetComponent(Key type);
+    void resetComponent(Object type);
 
     I getItem();
 

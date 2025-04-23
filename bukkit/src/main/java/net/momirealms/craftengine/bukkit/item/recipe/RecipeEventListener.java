@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -587,7 +588,7 @@ public class RecipeEventListener implements Listener {
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to get hover name", e);
             }
-        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentKeys.CUSTOM_NAME)) {
+        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentTypes.CUSTOM_NAME)) {
             repairCost += 1;
             wrappedFirst.customName(null);
         } else if (!VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasTag("display", "Name")) {
