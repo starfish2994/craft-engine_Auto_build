@@ -1,18 +1,12 @@
 package net.momirealms.craftengine.core.plugin.script;
 
-public interface TokenStringReader {
+import net.momirealms.craftengine.core.util.StringReader;
 
-    char peek();
+public interface TokenStringReader extends StringReader {
 
-    char peek(int n);
-
-    void skip(int n);
-
-    int index();
-
-    boolean hasNext();
+    static TokenStringReader of(String input) {
+        return new DefaultTokenStringReader(input);
+    }
 
     String nextToken();
-
-    void skipWhitespace();
 }

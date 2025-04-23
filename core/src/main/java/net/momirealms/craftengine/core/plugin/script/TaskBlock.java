@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.plugin.script;
 
 import net.momirealms.craftengine.core.util.Key;
 
-public interface Block {
+public interface TaskBlock {
 
     int size();
 
@@ -16,15 +16,15 @@ public interface Block {
 
     boolean contains(Action<?> action);
 
-    static Block create(Key id, Action<?>... actions) {
-        return new BlockImpl(id, actions);
+    static TaskBlock create(Key id, Action<?>... actions) {
+        return new TaskBlockImpl(id, actions);
     }
 
-    class BlockImpl implements Block {
+    class TaskBlockImpl implements TaskBlock {
         private final Key id;
         private final Action<?>[] actions;
 
-        public BlockImpl(Key id, Action<?>[] actions) {
+        public TaskBlockImpl(Key id, Action<?>[] actions) {
             this.actions = actions;
             this.id = id;
         }

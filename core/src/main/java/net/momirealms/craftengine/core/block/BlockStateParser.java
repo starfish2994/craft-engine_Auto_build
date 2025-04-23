@@ -31,7 +31,7 @@ public class BlockStateParser {
     private Property<?> property;
 
     public BlockStateParser(String data, int cursor) {
-        this.reader = new StringReader(data.toLowerCase());
+        this.reader = StringReader.simple(data.toLowerCase());
         this.reader.setCursor(cursor);
         this.cursor = cursor;
         this.replaceCursor = cursor;
@@ -188,7 +188,7 @@ public class BlockStateParser {
 
     @Nullable
     public static ImmutableBlockState deserialize(@NotNull String data) {
-        StringReader reader = new StringReader(data);
+        StringReader reader = StringReader.simple(data);
         String blockIdString = reader.readUnquotedString();
         if (reader.canRead() && reader.peek() == ':') {
             reader.skip();

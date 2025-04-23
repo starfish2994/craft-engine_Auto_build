@@ -9,37 +9,37 @@ import java.util.Map;
 
 public interface Task {
 
-    Map<Key, Block> blocks();
+    Map<Key, TaskBlock> blocks();
 
     Key id();
 
     @Nullable
-    Block byId(Key id);
+    TaskBlock byId(Key id);
 
     @Nullable
-    Block byAction(Action<?> action);
+    TaskBlock byAction(Action<?> action);
 
-    static Task create(Key key, Map<Key, Block> blocks) {
+    static Task create(Key key, Map<Key, TaskBlock> blocks) {
         return new TaskImpl(key, blocks);
     }
 
     class TaskImpl implements Task {
         private final Key id;
-        private final Map<Key, Block> blocks = new LinkedHashMap<>();
+        private final Map<Key, TaskBlock> blocks = new LinkedHashMap<>();
 
-        public TaskImpl(Key id, Map<Key, Block> blocks) {
+        public TaskImpl(Key id, Map<Key, TaskBlock> blocks) {
             this.blocks.putAll(blocks);
             this.id = id;
         }
 
         @Nullable
         @Override
-        public Block byId(Key id) {
+        public TaskBlock byId(Key id) {
             return this.blocks.get(id);
         }
 
         @Override
-        public Map<Key, Block> blocks() {
+        public Map<Key, TaskBlock> blocks() {
             return Collections.unmodifiableMap(this.blocks);
         }
 
@@ -49,8 +49,8 @@ public interface Task {
         }
 
         @Override
-        public @Nullable Block byAction(Action<?> action) {
-            for (Block block : blocks.values()) {
+        public @Nullable TaskBlock byAction(Action<?> action) {
+            for (TaskBlock block : blocks.values()) {
                 if (block.contains(action)) {
                     return block;
                 }
