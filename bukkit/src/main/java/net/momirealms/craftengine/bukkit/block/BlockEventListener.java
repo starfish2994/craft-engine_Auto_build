@@ -32,6 +32,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
@@ -48,6 +49,16 @@ public class BlockEventListener implements Listener {
         this.plugin = plugin;
         this.manager = manager;
         this.enableNoteBlockCheck = enableNoteBlockCheck;
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerAttack(EntityDamageByEntityEvent event) {
+        if (!VersionHelper.isVersionNewerThan1_20_5()) {
+            if (event.getDamager() instanceof Player player) {
+                BukkitServerPlayer serverPlayer = plugin.adapt(player);
+                serverPlayer.setClientSideCanBreakBlock(true);
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
