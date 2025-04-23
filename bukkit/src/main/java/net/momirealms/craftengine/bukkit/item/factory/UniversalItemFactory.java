@@ -1,15 +1,14 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
-import com.google.gson.JsonElement;
 import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
-import net.momirealms.craftengine.bukkit.item.RTagItemWrapper;
+import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.core.item.Enchantment;
-import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.Trim;
+import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
@@ -17,54 +16,55 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class UniversalItemFactory extends BukkitItemFactory {
+public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
 
     public UniversalItemFactory(CraftEngine plugin) {
         super(plugin);
     }
 
     @Override
-    protected void resetComponent(ItemWrapper<ItemStack> item, Key type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected LegacyItemWrapper wrapInternal(ItemStack item) {
+        return new LegacyItemWrapper(new RtagItem(item), item.getAmount());
     }
 
     @Override
-    protected JsonElement encodeJson(Key type, Object component) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected void setTag(LegacyItemWrapper item, Object value, Object... path) {
+        item.set(value, path);
     }
 
     @Override
-    protected void setComponent(ItemWrapper<ItemStack> item, Key type, Object value) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected Object getTag(LegacyItemWrapper item, Object... path) {
+        return item.get(path);
     }
 
     @Override
-    protected Object getComponent(ItemWrapper<ItemStack> item, Key type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected boolean hasTag(LegacyItemWrapper item, Object... path) {
+        return item.hasTag(path);
     }
 
     @Override
-    protected boolean hasComponent(ItemWrapper<ItemStack> item, Key type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected boolean removeTag(LegacyItemWrapper item, Object... path) {
+        return item.remove(path);
     }
 
     @Override
-    protected void removeComponent(ItemWrapper<ItemStack> item, Key type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected Optional<Key> customId(LegacyItemWrapper item) {
+        Object id = item.get(IdModifier.CRAFT_ENGINE_ID);
+        if (id == null) return Optional.empty();
+        return Optional.of(Key.of(id.toString()));
     }
 
     @Override
-    public Object encodeJava(Key componentType, @Nullable Object component) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    protected void customId(LegacyItemWrapper item, Key id) {
+        item.set(id.toString(), IdModifier.CRAFT_ENGINE_ID);
     }
 
     @Override
-    protected void customName(ItemWrapper<ItemStack> item, String json) {
+    protected void customName(LegacyItemWrapper item, String json) {
         if (json != null) {
             item.set(json, "display", "Name");
         } else {
@@ -73,23 +73,23 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<String> customName(ItemWrapper<ItemStack> item) {
+    protected Optional<String> customName(LegacyItemWrapper item) {
         if (!item.hasTag("display", "Name")) return Optional.empty();
         return Optional.of(item.get("display", "Name"));
     }
 
     @Override
-    protected void itemName(ItemWrapper<ItemStack> item, String json) {
+    protected void itemName(LegacyItemWrapper item, String json) {
         customName(item, json);
     }
 
     @Override
-    protected Optional<String> itemName(ItemWrapper<ItemStack> item) {
+    protected Optional<String> itemName(LegacyItemWrapper item) {
         return customName(item);
     }
 
     @Override
-    protected void customModelData(ItemWrapper<ItemStack> item, Integer data) {
+    protected void customModelData(LegacyItemWrapper item, Integer data) {
         if (data == null) {
             item.remove("CustomModelData");
         } else {
@@ -98,13 +98,13 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<Integer> customModelData(ItemWrapper<ItemStack> item) {
+    protected Optional<Integer> customModelData(LegacyItemWrapper item) {
         if (!item.hasTag("CustomModelData")) return Optional.empty();
         return Optional.of(item.get("CustomModelData"));
     }
 
     @Override
-    protected void skull(ItemWrapper<ItemStack> item, String skullData) {
+    protected void skull(LegacyItemWrapper item, String skullData) {
         if (skullData == null) {
             item.remove("SkullOwner");
         } else {
@@ -117,13 +117,13 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<List<String>> lore(ItemWrapper<ItemStack> item) {
+    protected Optional<List<String>> lore(LegacyItemWrapper item) {
         if (!item.hasTag("display", "Lore")) return Optional.empty();
         return Optional.of(item.get("display", "Lore"));
     }
 
     @Override
-    protected void lore(ItemWrapper<ItemStack> item, List<String> lore) {
+    protected void lore(LegacyItemWrapper item, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
             item.remove("display", "Lore");
         } else {
@@ -132,48 +132,38 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected boolean unbreakable(ItemWrapper<ItemStack> item) {
+    protected boolean unbreakable(LegacyItemWrapper item) {
         return Optional.ofNullable((Boolean) item.get("Unbreakable")).orElse(false);
     }
 
     @Override
-    protected void unbreakable(ItemWrapper<ItemStack> item, boolean unbreakable) {
+    protected void unbreakable(LegacyItemWrapper item, boolean unbreakable) {
         item.set(unbreakable, "Unbreakable");
     }
 
     @Override
-    protected Optional<Boolean> glint(ItemWrapper<ItemStack> item) {
-        return Optional.of(false);
-    }
-
-    @Override
-    protected void glint(ItemWrapper<ItemStack> item, Boolean glint) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
-    }
-
-    @Override
-    protected Optional<Integer> damage(ItemWrapper<ItemStack> item) {
+    protected Optional<Integer> damage(LegacyItemWrapper item) {
         if (!item.hasTag("Damage")) return Optional.empty();
         return Optional.of(item.get("Damage"));
     }
 
     @Override
-    protected void damage(ItemWrapper<ItemStack> item, Integer damage) {
+    protected void damage(LegacyItemWrapper item, Integer damage) {
         item.set(damage, "Damage");
     }
 
     @Override
-    protected Optional<Integer> maxDamage(ItemWrapper<ItemStack> item) {
+    protected Optional<Integer> maxDamage(LegacyItemWrapper item) {
         return Optional.of((int) item.getItem().getType().getMaxDurability());
     }
 
     @Override
-    protected void maxDamage(ItemWrapper<ItemStack> item, Integer damage) {
+    protected void maxDamage(LegacyItemWrapper item, Integer damage) {
         throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
-    protected void enchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+    protected void enchantments(LegacyItemWrapper item, List<Enchantment> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             item.remove("Enchantments");
             return;
@@ -186,7 +176,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected void storedEnchantments(ItemWrapper<ItemStack> item, List<Enchantment> enchantments) {
+    protected void storedEnchantments(LegacyItemWrapper item, List<Enchantment> enchantments) {
         if (enchantments == null || enchantments.isEmpty()) {
             item.remove("StoredEnchantments");
             return;
@@ -199,7 +189,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected void addEnchantment(ItemWrapper<ItemStack> item, Enchantment enchantment) {
+    protected void addEnchantment(LegacyItemWrapper item, Enchantment enchantment) {
         Object enchantments = item.getExact("Enchantments");
         if (enchantments != null) {
             for (Object enchant : TagList.getValue(enchantments)) {
@@ -215,7 +205,7 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected void addStoredEnchantment(ItemWrapper<ItemStack> item, Enchantment enchantment) {
+    protected void addStoredEnchantment(LegacyItemWrapper item, Enchantment enchantment) {
         Object enchantments = item.getExact("StoredEnchantments");
         if (enchantments != null) {
             for (Object enchant : TagList.getValue(enchantments)) {
@@ -232,14 +222,14 @@ public class UniversalItemFactory extends BukkitItemFactory {
 
     @SuppressWarnings("deprecation")
     @Override
-    protected Optional<Enchantment> getEnchantment(ItemWrapper<ItemStack> item, Key key) {
+    protected Optional<Enchantment> getEnchantment(LegacyItemWrapper item, Key key) {
         int level = item.getItem().getEnchantmentLevel(Objects.requireNonNull(Registry.ENCHANTMENT.get(new NamespacedKey(key.namespace(), key.value()))));
         if (level <= 0) return Optional.empty();
         return Optional.of(new Enchantment(key, level));
     }
 
     @Override
-    protected void itemFlags(ItemWrapper<ItemStack> item, List<String> flags) {
+    protected void itemFlags(LegacyItemWrapper item, List<String> flags) {
         if (flags == null || flags.isEmpty()) {
             item.remove("HideFlags");
             return;
@@ -253,44 +243,28 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected int maxStackSize(ItemWrapper<ItemStack> item) {
+    protected int maxStackSize(LegacyItemWrapper item) {
         return item.getItem().getType().getMaxStackSize();
     }
 
     @Override
-    protected void maxStackSize(ItemWrapper<ItemStack> item, Integer maxStackSize) {
+    protected void maxStackSize(LegacyItemWrapper item, Integer maxStackSize) {
         throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
-    protected void repairCost(ItemWrapper<ItemStack> item, Integer data) {
+    protected void repairCost(LegacyItemWrapper item, Integer data) {
         item.set(data, "RepairCost");
     }
 
     @Override
-    protected Optional<Integer> repairCost(ItemWrapper<ItemStack> item) {
+    protected Optional<Integer> repairCost(LegacyItemWrapper item) {
         if (!item.hasTag("RepairCost")) return Optional.empty();
         return Optional.of(item.get("RepairCost"));
     }
 
     @Override
-    protected ItemWrapper<ItemStack> mergeCopy(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
-        Object itemStack = ItemObject.copy(item2.getLiteralObject());
-        ItemObject.setCustomDataTag(itemStack, TagCompound.clone(ItemObject.getCustomDataTag(item1.getLiteralObject())));
-        // one more step than vanilla
-        TagCompound.merge(ItemObject.getCustomDataTag(itemStack), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
-        return new RTagItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack)), item2.count());
-    }
-
-    @Override
-    protected void merge(ItemWrapper<ItemStack> item1, ItemWrapper<ItemStack> item2) {
-        // load previous changes on nms items
-        item1.load();
-        TagCompound.merge(ItemObject.getCustomDataTag(item1.getLiteralObject()), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
-    }
-
-    @Override
-    protected void trim(ItemWrapper<ItemStack> item, Trim trim) {
+    protected void trim(LegacyItemWrapper item, Trim trim) {
         if (trim == null) {
             item.remove("Trim");
             return;
@@ -300,10 +274,28 @@ public class UniversalItemFactory extends BukkitItemFactory {
     }
 
     @Override
-    protected Optional<Trim> trim(ItemWrapper<ItemStack> item) {
+    protected Optional<Trim> trim(LegacyItemWrapper item) {
         String material = item.get("Trim", "material");
         String pattern = item.get("Trim", "pattern");
         if (material == null || pattern == null) return Optional.empty();
         return Optional.of(new Trim(material, pattern));
+    }
+
+    @Override
+    protected LegacyItemWrapper mergeCopy(LegacyItemWrapper item1, LegacyItemWrapper item2) {
+        Object itemStack = ItemObject.copy(item2.getLiteralObject());
+        ItemObject.setCustomDataTag(itemStack, TagCompound.clone(ItemObject.getCustomDataTag(item1.getLiteralObject())));
+        // one more step than vanilla
+        TagCompound.merge(ItemObject.getCustomDataTag(itemStack), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
+        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack)), item2.count());
+    }
+
+    @Override
+    protected void merge(LegacyItemWrapper item1, LegacyItemWrapper item2) {
+        // load previous changes on nms items
+        item1.load();
+        TagCompound.merge(ItemObject.getCustomDataTag(item1.getLiteralObject()), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
+        // update wrapped item
+        item1.update();
     }
 }

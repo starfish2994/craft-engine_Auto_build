@@ -128,8 +128,7 @@ public class BukkitCustomItem implements CustomItem<ItemStack> {
         for (ItemDataModifier<ItemStack> modifier : dataModifiers()) {
             modifier.apply(wrapped, context);
         }
-        wrapped.load();
-        return wrapped;
+        return BukkitCraftEngine.instance().itemManager().wrap(wrapped.load());
     }
 
     @Override

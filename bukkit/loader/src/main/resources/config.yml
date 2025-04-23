@@ -170,12 +170,21 @@ furniture:
     # Converts the invalid furniture to a valid one
     convert:
       "namespace:furniture_a": "namespace:furniture_b"
-
   # Hide technical entities used for storing furniture metadata.
   # NOTE:
   # - These are INVISIBLE entities used internally for tracking furniture states
   # - Recommended to keep enabled for better performance
   hide-base-entity: true
+  # Requires a restart to apply
+  # interaction (best performance)
+  # boat (better compatibility with some anti-cheat plugin)
+  collision-entity-type: interaction
+
+emoji:
+  chat: true
+  book: true
+  anvil: true
+  sign: true
 
 image:
   # Block image tags using minecraft:default font in these interfaces
@@ -251,8 +260,6 @@ image:
     64: '\uf843'
     128: '\uf844'
     256: '\uf845'
-
-emoji: {}
 
 recipe:
   # Master switch for custom recipes

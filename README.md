@@ -90,13 +90,19 @@ Given the extensive and intricate nature of plugin configurations, a modular tem
 ### 🛠️ Models
 The plugin enables model inheritance and texture overrides through configuration, while supporting [all item models](https://misode.github.io/assets/item/) from version 1.21.4 onward. It incorporates a version migration system that automatically downgrades 1.21.4+ item models to legacy formats with maximum backward compatibility.
 
+### Breaking Changes You Have to Know & Possible Incompatibility with Other Plugins
+- CraftEngine injects into PalettedContainer to ensure efficient storage and synchronization of plugin block data. This may cause conflicts with some other plugins that modify the palette. When analyzing server performance using Spark, palette operation overhead will be attributed to the CraftEngine plugin in the profiling results..
+- CraftEngine injects into FurnaceBlockEntity to modify its recipe fetching logic.
+- CraftEngine uses real server-side blocks, any plugin relying on Bukkit's Material class will fail to correctly identify custom block types. The proper approach is to use alternatives like BlockState#getBlock (mojmap) instead of the Material class.
+- CraftEngine implements 0-tick collision entities by extending certain Minecraft entities, ensuring hard collision works correctly on the server side (e.g., making a pig stand on a chair). However, some anti-cheat plugins do not check entity AABB (Axis-Aligned Bounding Box) properly when detecting player movement, which may lead to false flags.
+- CraftEngine's custom recipe handling may not be fully compatible with other recipe-managing plugins.
+
 ## Inspired Projects
-This project draws inspiration from the following open-source works:
+This project draws inspiration and refers to some implementations from the following open-source works:
 + [Paper](https://github.com/PaperMC/Paper)
 + [LuckPerms](https://github.com/LuckPerms/LuckPerms)
 + [Fabric](https://github.com/FabricMC/fabric)
 + [packetevents](https://github.com/retrooper/packetevents)
-+ [NBT](https://github.com/Querz/NBT)
 + [DataFixerUpper](https://github.com/Mojang/DataFixerUpper)
 + [ViaVersion](https://github.com/ViaVersion/ViaVersion)
 
@@ -142,7 +148,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    compileOnly("net.momirealms:craft-engine-core:0.0.48")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.48")
+    compileOnly("net.momirealms:craft-engine-core:0.0.49")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.49")
 }
 ```

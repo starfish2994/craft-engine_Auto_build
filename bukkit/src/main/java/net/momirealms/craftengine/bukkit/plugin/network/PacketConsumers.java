@@ -1516,7 +1516,7 @@ public class PacketConsumers {
                         event.setCancelled(true);
                     }
                 }
-            } else if (entityType == Reflections.instance$EntityType$SHULKER) {
+            } else if (entityType == BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE) {
                 // Cancel collider entity packet
                 int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);

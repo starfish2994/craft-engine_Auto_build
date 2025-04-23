@@ -97,13 +97,13 @@ public class BukkitServerPlayer extends Player {
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
         this.uuid = player.getUniqueId();
         this.name = player.getName();
-        if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
-            try {
-                Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
-            } catch (Exception e) {
-                this.plugin.logger().warn("Failed to setSimplifyContainerDesyncCheck", e);
-            }
-        }
+//        if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
+//            try {
+//                Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
+//            } catch (Exception e) {
+//                this.plugin.logger().warn("Failed to setSimplifyContainerDesyncCheck", e);
+//            }
+//        }
     }
 
     @Override
@@ -317,7 +317,17 @@ public class BukkitServerPlayer extends Player {
     public void tick() {
         // not fully online
         if (serverPlayer() == null) return;
-        this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        if (VersionHelper.isFolia()) {
+            try {
+                Object serverPlayer = serverPlayer();
+                Object gameMode = FastNMS.INSTANCE.field$ServerPlayer$gameMode(serverPlayer);
+                this.gameTicks = (int) Reflections.field$ServerPlayerGameMode$gameTicks.get(gameMode);
+            } catch (ReflectiveOperationException e) {
+                CraftEngine.instance().logger().warn("Failed to get game tick for " + name(), e);
+            }
+        } else {
+            this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }

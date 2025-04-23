@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -447,7 +448,7 @@ public class RecipeEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onAnvilCombineItems(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
@@ -490,7 +491,7 @@ public class RecipeEventListener implements Listener {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onAnvilRepairItems(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
@@ -511,7 +512,7 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
-        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
+        Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first.clone());
 
         int maxDamage = wrappedFirst.maxDamage().orElse(0);
         int damage = wrappedFirst.damage().orElse(0);
@@ -587,7 +588,7 @@ public class RecipeEventListener implements Listener {
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to get hover name", e);
             }
-        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentKeys.CUSTOM_NAME)) {
+        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentTypes.CUSTOM_NAME)) {
             repairCost += 1;
             wrappedFirst.customName(null);
         } else if (!VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasTag("display", "Name")) {
@@ -639,12 +640,12 @@ public class RecipeEventListener implements Listener {
             }
             afterPenalty = calculateIncreasedRepairCost(afterPenalty);
             wrappedFirst.repairCost(afterPenalty);
-            event.setResult(wrappedFirst.loadCopy());
+            event.setResult(wrappedFirst.load());
         }
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onAnvilRenameItem(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
