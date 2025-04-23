@@ -23,7 +23,7 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
     }
 
     public void resetComponent(Object type) {
-        FastNMS.INSTANCE.resetComponent(this.getLiteralObject(), type);
+        FastNMS.INSTANCE.resetComponent(this.getLiteralObject(), ensureDataComponentType(type));
     }
 
     public void setComponent(Object type, final Object value) {
