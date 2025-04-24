@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.core.util.context;
 
-import org.jetbrains.annotations.Contract;
-
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +36,6 @@ public class ContextHolder {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    @Contract("_,!null->!null; _,_->_")
     public <T> T getOrDefault(ContextKey<T> parameter, @Nullable T defaultValue) {
         return (T) this.params.getOrDefault(parameter, defaultValue);
     }

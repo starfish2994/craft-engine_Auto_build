@@ -77,14 +77,18 @@ public abstract class CEWorld {
     }
 
     @Nullable
-    public CEChunk getLoadedChunkImmediately(int x, int z) {
-        long longKey = ChunkPos.asLong(x, z);
+    public CEChunk getChunkAtIfLoaded(long chunkPos) {
         this.loadedChunkMapLock.readLock().lock();
         try {
-            return this.loadedChunkMap.get(longKey);
+            return getChunkAtIfLoadedMainThread(chunkPos);
         } finally {
             this.loadedChunkMapLock.readLock().unlock();
         }
+    }
+
+    @Nullable
+    public CEChunk getChunkAtIfLoaded(int x, int z) {
+        return getChunkAtIfLoaded(ChunkPos.asLong(x, z));
     }
 
     @Nullable
@@ -103,12 +107,6 @@ public abstract class CEWorld {
     @Nullable
     public CEChunk getChunkAtIfLoadedMainThread(int x, int z) {
         return getChunkAtIfLoadedMainThread(ChunkPos.asLong(x, z));
-    }
-
-    @Nullable
-    public CEChunk getChunkAtIfLoaded(int x, int z) {
-        long chunkPos = ChunkPos.asLong(x, z);
-        return this.getChunkAtIfLoadedMainThread(chunkPos);
     }
 
     public WorldHeight worldHeight() {

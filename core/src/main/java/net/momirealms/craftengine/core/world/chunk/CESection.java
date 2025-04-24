@@ -17,15 +17,15 @@ public class CESection {
     }
 
     public void setBlockState(BlockPos pos, ImmutableBlockState state) {
-        setBlockState(pos.x() & 15, pos.y() & 15, pos.z() & 15, state);
+        this.setBlockState(pos.x() & 15, pos.y() & 15, pos.z() & 15, state);
     }
 
     public void setBlockState(int x, int y, int z, ImmutableBlockState state) {
-        statesContainer.set((y << 4 | z) << 4 | x, state);
+        this.statesContainer.set((y << 4 | z) << 4 | x, state);
     }
 
     public void setBlockState(int index, ImmutableBlockState state) {
-        statesContainer.set(index, state);
+        this.statesContainer.set(index, state);
     }
 
     public ImmutableBlockState getBlockState(BlockPos pos) {

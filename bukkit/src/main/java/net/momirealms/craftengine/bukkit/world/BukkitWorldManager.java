@@ -17,11 +17,9 @@ import net.momirealms.craftengine.core.world.SectionPos;
 import net.momirealms.craftengine.core.world.WorldManager;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.CESection;
-import net.momirealms.craftengine.core.world.chunk.serialization.ChunkSerializer;
 import net.momirealms.craftengine.core.world.chunk.storage.DefaultStorageAdaptor;
 import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
 import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
-import net.momirealms.sparrow.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -29,10 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.event.world.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -148,6 +143,11 @@ public class BukkitWorldManager implements WorldManager, Listener {
             for (Chunk chunk : world.getLoadedChunks()) {
                 handleChunkUnload(ceWorld, chunk);
             }
+            try {
+                ceWorld.worldDataStorage().close();
+            } catch (IOException e) {
+                this.plugin.logger().warn("Error unloading world: " + world.getName(), e);
+            }
         }
         this.worlds.clear();
     }
@@ -196,6 +196,11 @@ public class BukkitWorldManager implements WorldManager, Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onWorldUnload(WorldUnloadEvent event) {
         unloadWorld(new BukkitWorld(event.getWorld()));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onWorldSave(WorldSaveEvent event) {
+        // TODO Timely saving?
     }
 
     @Override
@@ -270,10 +275,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
         CEChunk ceChunk = world.getChunkAtIfLoaded(chunk.getX(), chunk.getZ());
         if (ceChunk != null) {
             try {
-                world.worldDataStorage().writeChunkTagAt(pos, ChunkSerializer.serialize(ceChunk));
+                world.worldDataStorage().writeChunkAt(pos, ceChunk);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
-                return;
+                this.plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
             } finally {
                 if (Config.restoreVanillaBlocks()) {
                     CESection[] ceSections = ceChunk.sections();
@@ -308,12 +312,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
         if (ceWorld.isChunkLoaded(pos.longKey)) return;
         CEChunk ceChunk;
         try {
-            CompoundTag chunkNbt = ceWorld.worldDataStorage().readChunkTagAt(pos);
-            if (chunkNbt != null) {
-                ceChunk = ChunkSerializer.deserialize(ceWorld, pos, chunkNbt);
-            } else {
-                ceChunk = new CEChunk(ceWorld, pos);
-            }
+            ceChunk = ceWorld.worldDataStorage().readChunkAt(ceWorld, pos);
             try {
                 CESection[] ceSections = ceChunk.sections();
                 Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);

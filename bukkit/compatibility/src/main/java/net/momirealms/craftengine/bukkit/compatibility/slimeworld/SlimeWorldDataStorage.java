@@ -2,11 +2,14 @@ package net.momirealms.craftengine.bukkit.compatibility.slimeworld;
 
 import com.infernalsuite.asp.api.world.SlimeChunk;
 import com.infernalsuite.asp.api.world.SlimeWorld;
+import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.craftengine.core.world.chunk.CEChunk;
+import net.momirealms.craftengine.core.world.chunk.serialization.DefaultChunkSerializer;
 import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -25,15 +28,16 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
         return slimeWorld.get();
     }
 
-    @Nullable
     @Override
-    public CompoundTag readChunkTagAt(ChunkPos pos) {
+    public @NotNull CEChunk readChunkAt(@NotNull CEWorld world, @NotNull ChunkPos pos) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
-        if (slimeChunk == null) return null;
+        if (slimeChunk == null) return new CEChunk(world, pos);
         Object tag = slimeChunk.getExtraData().get("craftengine");
-        if (tag == null) return null;
+        if (tag == null) return new CEChunk(world, pos);
         try {
-            return NBT.fromBytes(adaptor.byteArrayTagToBytes(tag));
+            CompoundTag compoundTag = NBT.fromBytes(adaptor.byteArrayTagToBytes(tag));
+            if (compoundTag == null) return new CEChunk(world, pos);
+            return DefaultChunkSerializer.deserialize(world, pos, compoundTag);
         } catch (Exception e) {
             throw new RuntimeException("Failed to read chunk tag from slime world. " + pos, e);
         }
@@ -41,9 +45,10 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void writeChunkTagAt(ChunkPos pos, @Nullable CompoundTag nbt) {
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
         if (slimeChunk == null) return;
+        CompoundTag nbt = DefaultChunkSerializer.serialize(chunk);
         if (nbt == null) {
             slimeChunk.getExtraData().remove("craftengine");
         } else {

@@ -22,7 +22,6 @@ import net.momirealms.craftengine.core.pack.model.select.SelectPropertyFactory;
 import net.momirealms.craftengine.core.pack.model.special.SpecialModelFactory;
 import net.momirealms.craftengine.core.pack.model.tint.TintFactory;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateArgumentFactory;
-import net.momirealms.craftengine.core.plugin.script.TaskActionParser;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
@@ -50,7 +49,6 @@ public class BuiltInRegistries {
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);
     public static final Registry<HitBoxFactory> HITBOX_FACTORY = createRegistry(Registries.HITBOX_FACTORY);
     public static final Registry<ResourcePackHostFactory> RESOURCE_PACK_HOST_FACTORY = createRegistry(Registries.RESOURCE_PACK_HOST_FACTORY);
-    public static final Registry<TaskActionParser> TASK_ACTION_PARSER = createRegistry(Registries.TASK_ACTION_PARSER);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);

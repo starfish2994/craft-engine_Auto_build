@@ -453,7 +453,11 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         }
         targetLocation.setYaw(player.getLocation().getYaw());
         targetLocation.setPitch(player.getLocation().getPitch());
-        player.teleport(targetLocation);
+        if (VersionHelper.isFolia()) {
+            player.teleportAsync(targetLocation);
+        } else {
+            player.teleport(targetLocation);
+        }
     }
 
     protected boolean isSeatCarrierType(Entity entity) {
