@@ -25,7 +25,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class CraftEngineFurniture {
+public final class CraftEngineFurniture {
+
+    private CraftEngineFurniture() {}
 
     /**
      * Gets custom furniture by ID

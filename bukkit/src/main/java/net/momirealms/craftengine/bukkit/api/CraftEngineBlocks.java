@@ -30,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 
 public final class CraftEngineBlocks {
 
+    private CraftEngineBlocks() {}
+
     /**
      * Gets a custom block by ID
      *
