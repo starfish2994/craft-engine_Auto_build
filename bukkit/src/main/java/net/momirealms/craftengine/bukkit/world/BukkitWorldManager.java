@@ -200,7 +200,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onWorldSave(WorldSaveEvent event) {
-        // TODO Timely saving?
+        for (CEWorld world : this.worldArray) {
+            world.save();
+        }
     }
 
     @Override
@@ -275,7 +277,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
         CEChunk ceChunk = world.getChunkAtIfLoaded(chunk.getX(), chunk.getZ());
         if (ceChunk != null) {
             try {
-                world.worldDataStorage().writeChunkAt(pos, ceChunk);
+                world.worldDataStorage().writeChunkAt(pos, ceChunk, false);
             } catch (IOException e) {
                 this.plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
             } finally {

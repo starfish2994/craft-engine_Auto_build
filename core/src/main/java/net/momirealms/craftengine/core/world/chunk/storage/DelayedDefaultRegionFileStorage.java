@@ -26,7 +26,7 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
                     }
                     if (cause == RemovalCause.EXPIRED || cause == RemovalCause.SIZE) {
                         try {
-                            super.writeChunkAt(key, value);
+                            super.writeChunkAt(key, value, true);
                         } catch (IOException e) {
                             CraftEngine.instance().logger().warn("Failed to write chunk at " + key, e);
                         }
@@ -45,7 +45,11 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
     }
 
     @Override
-    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk) throws IOException {
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk, boolean immediately) throws IOException {
+        if (immediately) {
+            super.writeChunkAt(pos, chunk, true);
+            return;
+        }
         if (chunk.isEmpty()) {
             super.writeChunkTagAt(pos, null);
             return;
@@ -62,7 +66,7 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
     private void saveCache() {
         try {
             for (var chunk : this.chunkCache.asMap().entrySet()) {
-                super.writeChunkAt(chunk.getKey(), chunk.getValue());
+                super.writeChunkAt(chunk.getKey(), chunk.getValue(), true);
             }
         } catch (IOException e) {
             CraftEngine.instance().logger().warn("Failed to save chunks", e);
