@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.compatibility.skript;
+package net.momirealms.craftengine.bukkit.compatibility.skript.event;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Literal;
@@ -20,7 +20,7 @@ public class EvtCustomBlock extends SkriptEvent {
     public static void register() {
         Skript.registerEvent("Break Custom Block", EvtCustomBlock.class, CustomBlockBreakEvent.class, "[customblock] (break[ing]|1¦min(e|ing)) [[of] %-strings%]")
                 .description("Called when a custom block is broken by a player. If you use 'on mine', only events where the broken block dropped something will call the trigger.");
-        Skript.registerEvent("Place Custom Block", EvtCustomBlock.class, CustomBlockBreakEvent.class, "[customblock] (plac(e|ing)|build[ing]) [[of] %-strings%]")
+        Skript.registerEvent("Place Custom Block", EvtCustomBlock.class, CustomBlockPlaceEvent.class, "[customblock] (plac(e|ing)|build[ing]) [[of] %-strings%]")
                 .description("Called when a player places a custom block.");
     }
 

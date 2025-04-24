@@ -1,12 +1,17 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
+import ch.njol.skript.Skript;
 import net.momirealms.antigrieflib.AntiGriefLib;
 import net.momirealms.craftengine.bukkit.advancement.BukkitAdvancementManager;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
-import net.momirealms.craftengine.bukkit.compatibility.skript.EvtCustomBlock;
+import net.momirealms.craftengine.bukkit.compatibility.skript.classes.CraftEngineClasses;
+import net.momirealms.craftengine.bukkit.compatibility.skript.condition.CondIsBlockCustomBlock;
+import net.momirealms.craftengine.bukkit.compatibility.skript.event.EvtCustomBlock;
+import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockID;
+import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockState;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
 import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
@@ -168,7 +173,11 @@ public class BukkitCraftEngine extends CraftEngine {
         }
         // skript
         if (this.isPluginEnabled("Skript")) {
+            CraftEngineClasses.register();
             EvtCustomBlock.register();
+            CondIsBlockCustomBlock.register();
+            ExprBlockCustomBlockID.register();
+            ExprBlockCustomBlockState.register();
         }
     }
 

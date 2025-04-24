@@ -2,6 +2,7 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.rapture.pw/repository/maven-releases/")
+    maven("https://repo.momirealms.net/releases/")
     maven("https://repo.infernalsuite.com/repository/maven-snapshots/")
 }
 
