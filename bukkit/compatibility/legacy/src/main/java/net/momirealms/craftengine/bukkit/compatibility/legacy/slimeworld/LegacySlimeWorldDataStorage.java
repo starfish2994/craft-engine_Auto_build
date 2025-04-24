@@ -1,7 +1,9 @@
-package net.momirealms.craftengine.bukkit.compatibility.slimeworld;
+package net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld;
 
-import com.infernalsuite.asp.api.world.SlimeChunk;
-import com.infernalsuite.asp.api.world.SlimeWorld;
+import com.flowpowered.nbt.ByteArrayTag;
+import com.flowpowered.nbt.CompoundMap;
+import com.infernalsuite.aswm.api.world.SlimeChunk;
+import com.infernalsuite.aswm.api.world.SlimeWorld;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
@@ -13,15 +15,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Map;
+import java.util.Optional;
 
-public class SlimeWorldDataStorage implements WorldDataStorage {
-    private final WeakReference<SlimeWorld> slimeWorld;
-    private final SlimeFormatStorageAdaptor adaptor;
+public class LegacySlimeWorldDataStorage implements WorldDataStorage {
+    private final WeakReference<com.infernalsuite.aswm.api.world.SlimeWorld> slimeWorld;
 
-    public SlimeWorldDataStorage(SlimeWorld slimeWorld, SlimeFormatStorageAdaptor adaptor) {
+    public LegacySlimeWorldDataStorage(SlimeWorld slimeWorld) {
         this.slimeWorld = new WeakReference<>(slimeWorld);
-        this.adaptor = adaptor;
     }
 
     public SlimeWorld getWorld() {
@@ -32,10 +32,10 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
     public @NotNull CEChunk readChunkAt(@NotNull CEWorld world, @NotNull ChunkPos pos) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
         if (slimeChunk == null) return new CEChunk(world, pos);
-        Object tag = slimeChunk.getExtraData().get("craftengine");
-        if (tag == null) return new CEChunk(world, pos);
+        Optional<ByteArrayTag> tag = slimeChunk.getExtraData().getAsByteArrayTag("craftengine");
+        if (tag.isEmpty()) return new CEChunk(world, pos);
         try {
-            CompoundTag compoundTag = NBT.fromBytes(adaptor.byteArrayTagToBytes(tag));
+            CompoundTag compoundTag = NBT.fromBytes(tag.get().getValue());
             if (compoundTag == null) return new CEChunk(world, pos);
             return DefaultChunkSerializer.deserialize(world, pos, compoundTag);
         } catch (Exception e) {
@@ -43,20 +43,28 @@ public class SlimeWorldDataStorage implements WorldDataStorage {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    private CompoundMap createOrGetDataMap(SlimeWorld world) {
+        Optional<com.flowpowered.nbt.CompoundTag> optionalCompoundTag = world.getExtraData().getAsCompoundTag("craftengine");
+        CompoundMap ccDataMap;
+        if (optionalCompoundTag.isEmpty()) {
+            ccDataMap = new CompoundMap();
+            world.getExtraData().getValue().put(new com.flowpowered.nbt.CompoundTag("customcrops", ccDataMap));
+        } else {
+            ccDataMap = optionalCompoundTag.get().getValue();
+        }
+        return ccDataMap;
+    }
+
     @Override
     public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk, boolean immediately) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
         if (slimeChunk == null) return;
         CompoundTag nbt = DefaultChunkSerializer.serialize(chunk);
         if (nbt == null) {
-            slimeChunk.getExtraData().remove("craftengine");
+            slimeChunk.getExtraData().getValue().remove("craftengine");
         } else {
             try {
-                Object tag = adaptor.bytesToByteArrayTag(NBT.toBytes(nbt));
-                Map<String, ?> data1 = slimeChunk.getExtraData();
-                Map<String, Object> data2 = (Map<String, Object>) data1;
-                data2.put("craftengine", tag);
+                slimeChunk.getExtraData().getValue().put("craftengine", new ByteArrayTag("craftengine", NBT.toBytes(nbt)));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to write chunk tag to slime world. " + pos, e);
             }

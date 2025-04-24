@@ -7,6 +7,7 @@ repositories {
     maven("https://jitpack.io/")
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
+    maven("https://repo.skriptlang.org/releases/") // skript
     mavenCentral()
 }
 
@@ -14,6 +15,7 @@ dependencies {
     compileOnly(project(":core"))
     compileOnly(project(":shared"))
     compileOnly(project(":bukkit:compatibility"))
+    compileOnly(project(":bukkit:compatibility:legacy"))
     compileOnly(project(":bukkit:legacy"))
     // Anti Grief
     compileOnly("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
@@ -58,6 +60,8 @@ dependencies {
     compileOnly("org.bstats:bstats-bukkit:${rootProject.properties["bstats_version"]}")
     // Aho-Corasick java implementation
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
+    // Skript
+    compileOnly("com.github.SkriptLang:Skript:2.11.0")
 }
 
 java {

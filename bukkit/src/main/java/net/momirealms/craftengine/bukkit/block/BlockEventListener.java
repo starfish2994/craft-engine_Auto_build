@@ -120,7 +120,7 @@ public class BlockEventListener implements Listener {
                 }
 
                 // trigger event
-                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(event.getPlayer(), location, block, state);
+                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(serverPlayer, location, block, state);
                 boolean isCancelled = EventUtils.fireAndCheckCancel(customBreakEvent);
                 if (isCancelled) {
                     event.setCancelled(true);
@@ -146,14 +146,10 @@ public class BlockEventListener implements Listener {
 
                 Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
                 // do not drop if it's not the correct tool
-                BlockSettings settings = state.settings();
-                if (settings.requireCorrectTool()) {
-                    if (itemInHand == null) return;
-                    if (!settings.isCorrectTool(itemInHand.id()) &&
-                            (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()))) {
-                        return;
-                    }
+                if (!BlockStateUtils.isCorrectTool(state, itemInHand)) {
+                    return;
                 }
+
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder();
                 builder.withParameter(LootParameters.WORLD, world);

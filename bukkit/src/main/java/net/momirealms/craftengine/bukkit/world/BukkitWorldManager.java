@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.world;
 
+import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.slimeworld.SlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -61,8 +62,23 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 return;
             } catch (ClassNotFoundException ignored) {
             }
+        } else {
+            try {
+                Class.forName("com.infernalsuite.aswm.api.SlimePlugin");
+                LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(this, 1);
+                this.storageAdaptor = adaptor;
+                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+            } catch (ClassNotFoundException ignored) {
+                if (Bukkit.getPluginManager().isPluginEnabled("SlimeWorldPlugin")) {
+                    LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(this, 2);
+                    this.storageAdaptor = adaptor;
+                    Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+                }
+            }
         }
-        this.storageAdaptor = new DefaultStorageAdaptor();
+        if (this.storageAdaptor == null) {
+            this.storageAdaptor = new DefaultStorageAdaptor();
+        }
     }
 
     @Override

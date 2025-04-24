@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
+import net.momirealms.craftengine.bukkit.compatibility.skript.EvtCustomBlock;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
 import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
@@ -164,6 +165,10 @@ public class BukkitCraftEngine extends CraftEngine {
         if (this.isPluginEnabled("PlaceholderAPI")) {
             PlaceholderAPIUtils.registerExpansions(this);
             this.hasPlaceholderAPI = true;
+        }
+        // skript
+        if (this.isPluginEnabled("Skript")) {
+            EvtCustomBlock.register();
         }
     }
 
