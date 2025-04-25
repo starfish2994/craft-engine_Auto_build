@@ -2213,7 +2213,7 @@ public class PacketConsumers {
             if (action == Reflections.instance$ServerboundResourcePackPacket$Action$DECLINED
                     || action == Reflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
                 Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
-                        ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                        ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
                 user.nettyChannel().writeAndFlush(kickPacket);
                 user.nettyChannel().disconnect();
                 return;
