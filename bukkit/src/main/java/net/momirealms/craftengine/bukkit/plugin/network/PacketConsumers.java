@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
+import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionProtocol;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
@@ -1248,6 +1249,10 @@ public class PacketConsumers {
             player.setConnectionState(ConnectionState.PLAY);
             Object dimensionKey;
             if (!VersionHelper.isVersionNewerThan1_20_2()) {
+                ViaVersionProtocol viaVersionProtocol = BukkitNetworkManager.instance().viaVersionProtocol();
+                if (viaVersionProtocol.hasPlugin()) {
+                    user.setProtocolVersion(viaVersionProtocol.getPlayerProtocolVersion(player.uuid()));
+                }
                 dimensionKey = Reflections.field$ClientboundLoginPacket$dimension.get(packet);
             } else {
                 Object commonInfo = Reflections.field$ClientboundLoginPacket$commonPlayerSpawnInfo.get(packet);
@@ -2176,6 +2181,27 @@ public class PacketConsumers {
             });
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HANDSHAKE_C2S = (user, event, packet) -> {
+        try {
+            if (BukkitNetworkManager.instance().viaVersionProtocol().hasPlugin()) return;
+            int protocolVersion = Reflections.field$ClientIntentionPacket$protocolVersion.getInt(packet);
+            user.setProtocolVersion(protocolVersion);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientIntentionPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LOGIN_ACKNOWLEDGED = (user, event, packet) -> {
+        try {
+            ViaVersionProtocol viaVersionProtocol = BukkitNetworkManager.instance().viaVersionProtocol();
+            if (viaVersionProtocol.hasPlugin()) {
+                user.setProtocolVersion(viaVersionProtocol.getPlayerProtocolVersion(user.uuid()));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundLoginAcknowledgedPacket", e);
         }
     };
 }

@@ -9,6 +9,7 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://mvn.lumine.io/repository/maven-public/") // model engine
     maven("https://nexus.phoenixdevt.fr/repository/maven-public/") // mmoitems
+    maven("https://repo.viaversion.com") // via
 }
 
 dependencies {
@@ -34,6 +35,8 @@ dependencies {
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT")
     // LuckPerms
     compileOnly("net.luckperms:api:5.4")
+    // viaversion
+    compileOnly("com.viaversion:viaversion-api:5.3.2")
 }
 
 java {

@@ -6,6 +6,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionProtocol;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
@@ -16,10 +17,8 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
-import net.momirealms.craftengine.core.util.FriendlyByteBuf;
-import net.momirealms.craftengine.core.util.ListMonitor;
-import net.momirealms.craftengine.core.util.TriConsumer;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -57,6 +56,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private final BiConsumer<Object, Object> packetConsumer;
     private final BiConsumer<Object, Object> immediatePacketConsumer;
     private final BukkitCraftEngine plugin;
+    private final ViaVersionProtocol viaVersionProtocol;
 
     private final Map<ChannelPipeline, BukkitServerPlayer> users = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitServerPlayer> onlineUsers = new ConcurrentHashMap<>();
@@ -77,6 +77,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         instance = this;
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         this.plugin = plugin;
+        // hook via
+        this.viaVersionProtocol = new ViaVersionProtocol(Bukkit.getPluginManager().getPlugin("ViaVersion") != null);
         // set up packet id
         this.packetIds = setupPacketIds();
         // register packet handlers
@@ -147,6 +149,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, Reflections.clazz$ClientboundResourcePackPushPacket);
+        registerNMSPacketConsumer(PacketConsumers.HANDSHAKE_C2S, Reflections.clazz$ClientIntentionPacket);
+        registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, Reflections.clazz$ServerboundLoginAcknowledgedPacket);
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_21_3() ? PacketConsumers.LEVEL_PARTICLE_1_21_3 : (VersionHelper.isVersionNewerThan1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
@@ -619,5 +623,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             CraftEngine.instance().logger().warn("Failed to call decode", e);
         }
         return output;
+    }
+
+    public ViaVersionProtocol viaVersionProtocol() {
+        return this.viaVersionProtocol;
     }
 }

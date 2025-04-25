@@ -6521,4 +6521,23 @@ public class Reflections {
                     "core.component.DataComponentType"
             )
     );
+
+    public static final Class<?> clazz$ClientIntentionPacket = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.handshake.ClientIntentionPacket"),
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.handshake.PacketHandshakingInSetProtocol")
+            )
+    );
+
+    public static final Field field$ClientIntentionPacket$protocolVersion = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientIntentionPacket, int.class, VersionHelper.isVersionNewerThan1_20_2() ? 0 : 1
+            )
+    );
+
+    // 1.20.2+
+    public static final Class<?> clazz$ServerboundLoginAcknowledgedPacket =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.login.ServerboundLoginAcknowledgedPacket")
+            );
 }
