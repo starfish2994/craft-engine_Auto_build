@@ -20,11 +20,11 @@ public class PlaceholderTag implements TagResolver {
 
     @Override
     public @Nullable Tag resolve(@NotNull String name, @NotNull ArgumentQueue arguments, @NotNull Context ctx) throws ParsingException {
-        if (!this.has(name) || !CraftEngine.instance().hasPlaceholderAPI()) {
+        if (!this.has(name) || !CraftEngine.instance().compatibilityManager().hasPlaceholderAPI()) {
             return null;
         }
         String placeholder = arguments.popOr("No argument placeholder provided").toString();
-        String parsed = CraftEngine.instance().parse(player, "%" + placeholder + "%");
+        String parsed = CraftEngine.instance().compatibilityManager().parse(player, "%" + placeholder + "%");
         return Tag.inserting(AdventureHelper.miniMessage().deserialize(parsed));
     }
 

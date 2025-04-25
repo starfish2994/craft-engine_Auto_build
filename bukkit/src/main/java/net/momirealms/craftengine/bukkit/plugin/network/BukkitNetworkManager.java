@@ -7,7 +7,6 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionProtocol;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
@@ -56,7 +55,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private final BiConsumer<Object, Object> packetConsumer;
     private final BiConsumer<Object, Object> immediatePacketConsumer;
     private final BukkitCraftEngine plugin;
-    private final ViaVersionProtocol viaVersionProtocol;
 
     private final Map<ChannelPipeline, BukkitServerPlayer> users = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitServerPlayer> onlineUsers = new ConcurrentHashMap<>();
@@ -72,13 +70,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static final String PACKET_DECODER = "craftengine_decoder";
 
     private static boolean hasModelEngine;
+    private static boolean hasViaVersion;
 
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         instance = this;
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
+        hasViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
         this.plugin = plugin;
-        // hook via
-        this.viaVersionProtocol = new ViaVersionProtocol(Bukkit.getPluginManager().getPlugin("ViaVersion") != null);
         // set up packet id
         this.packetIds = setupPacketIds();
         // register packet handlers
@@ -302,6 +300,10 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public static boolean hasModelEngine() {
         return hasModelEngine;
+    }
+
+    public static boolean hasViaVersion() {
+        return hasViaVersion;
     }
 
     public void simulatePacket(@NotNull NetWorkUser player, Object packet) {
@@ -634,9 +636,5 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             CraftEngine.instance().logger().warn("Failed to call decode", e);
         }
         return output;
-    }
-
-    public ViaVersionProtocol viaVersionProtocol() {
-        return this.viaVersionProtocol;
     }
 }

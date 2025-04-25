@@ -90,7 +90,5 @@ public interface Plugin {
 
     void debug(Supplier<String> message);
 
-    boolean isPluginEnabled(String plugin);
-
-    String parse(Player player, String text);
+    CompatibilityManager compatibilityManager();
 }

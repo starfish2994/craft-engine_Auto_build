@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
-import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -149,9 +147,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 // external model providers
                 Optional<ExternalModel> externalModel;
                 if (placementArguments.containsKey("model-engine")) {
-                    externalModel = Optional.of(new ModelEngineModel(placementArguments.get("model-engine").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createModelEngineModel(placementArguments.get("model-engine").toString()));
                 } else if (placementArguments.containsKey("better-model")) {
-                    externalModel = Optional.of(new BetterModelModel(placementArguments.get("better-model").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createBetterModelModel(placementArguments.get("better-model").toString()));
                 } else {
                     externalModel = Optional.empty();
                 }

@@ -68,6 +68,7 @@ public abstract class CraftEngine implements Plugin {
     protected SoundManager soundManager;
     protected VanillaLootManager vanillaLootManager;
     protected AdvancementManager advancementManager;
+    protected CompatibilityManager compatibilityManager;
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
@@ -371,8 +372,6 @@ public abstract class CraftEngine implements Plugin {
         return isInitializing;
     }
 
-    public abstract boolean hasPlaceholderAPI();
-
     @Override
     public DependencyManager dependencyManager() {
         return dependencyManager;
@@ -459,5 +458,10 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public VanillaLootManager vanillaLootManager() {
         return vanillaLootManager;
+    }
+
+    @Override
+    public CompatibilityManager compatibilityManager() {
+        return compatibilityManager;
     }
 }

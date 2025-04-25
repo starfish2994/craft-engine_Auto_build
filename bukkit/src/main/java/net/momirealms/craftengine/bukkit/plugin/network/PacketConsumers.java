@@ -9,8 +9,6 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
-import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
-import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionProtocol;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
@@ -64,7 +62,6 @@ public class PacketConsumers {
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
-    private static final UUID EMPTY_UUID = new UUID(0, 0);
 
     public static void init(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
@@ -1249,9 +1246,8 @@ public class PacketConsumers {
             player.setConnectionState(ConnectionState.PLAY);
             Object dimensionKey;
             if (!VersionHelper.isVersionNewerThan1_20_2()) {
-                ViaVersionProtocol viaVersionProtocol = BukkitNetworkManager.instance().viaVersionProtocol();
-                if (viaVersionProtocol.hasPlugin()) {
-                    user.setProtocolVersion(viaVersionProtocol.getPlayerProtocolVersion(player.uuid()));
+                if (BukkitNetworkManager.hasViaVersion()) {
+                    user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(player.uuid()));
                 }
                 dimensionKey = Reflections.field$ClientboundLoginPacket$dimension.get(packet);
             } else {
@@ -1590,7 +1586,7 @@ public class PacketConsumers {
             int entityId;
             if (BukkitNetworkManager.hasModelEngine()) {
                 int fakeId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
-                entityId = ModelEngineUtils.interactionToBaseEntity(fakeId);
+                entityId = CraftEngine.instance().compatibilityManager().interactionToBaseEntity(fakeId);
             } else {
                 entityId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
             }
@@ -2186,7 +2182,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HANDSHAKE_C2S = (user, event, packet) -> {
         try {
-            if (BukkitNetworkManager.instance().viaVersionProtocol().hasPlugin()) return;
+            if (BukkitNetworkManager.hasViaVersion()) return;
             int protocolVersion = Reflections.field$ClientIntentionPacket$protocolVersion.getInt(packet);
             user.setProtocolVersion(protocolVersion);
         } catch (Exception e) {
@@ -2196,9 +2192,8 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LOGIN_ACKNOWLEDGED = (user, event, packet) -> {
         try {
-            ViaVersionProtocol viaVersionProtocol = BukkitNetworkManager.instance().viaVersionProtocol();
-            if (viaVersionProtocol.hasPlugin()) {
-                user.setProtocolVersion(viaVersionProtocol.getPlayerProtocolVersion(user.uuid()));
+            if (BukkitNetworkManager.hasViaVersion()) {
+                user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(user.uuid()));
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundLoginAcknowledgedPacket", e);

@@ -11,7 +11,6 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 

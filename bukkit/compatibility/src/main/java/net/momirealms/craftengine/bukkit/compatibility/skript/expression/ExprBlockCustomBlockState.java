@@ -2,14 +2,10 @@ package net.momirealms.craftengine.bukkit.compatibility.skript.expression;
 
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
-import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
 
 public class ExprBlockCustomBlockState extends SimplePropertyExpression<Object, ImmutableBlockState> {
 

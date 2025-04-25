@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.bukkit.world;
 
-import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
-import net.momirealms.craftengine.bukkit.compatibility.slimeworld.SlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -11,7 +9,6 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.SectionPos;
@@ -53,32 +50,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
         instance = this;
         this.plugin = plugin;
         this.worlds = new HashMap<>();
-        if (VersionHelper.isVersionNewerThan1_21_4()) {
-            try {
-                Class.forName("com.infernalsuite.asp.api.AdvancedSlimePaperAPI");
-                SlimeFormatStorageAdaptor adaptor = new SlimeFormatStorageAdaptor(this);
-                this.storageAdaptor = adaptor;
-                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
-                return;
-            } catch (ClassNotFoundException ignored) {
-            }
-        } else {
-            try {
-                Class.forName("com.infernalsuite.aswm.api.SlimePlugin");
-                LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(this, 1);
-                this.storageAdaptor = adaptor;
-                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
-            } catch (ClassNotFoundException ignored) {
-                if (Bukkit.getPluginManager().isPluginEnabled("SlimeWorldPlugin")) {
-                    LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(this, 2);
-                    this.storageAdaptor = adaptor;
-                    Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
-                }
-            }
-        }
-        if (this.storageAdaptor == null) {
-            this.storageAdaptor = new DefaultStorageAdaptor();
-        }
+        this.storageAdaptor = new DefaultStorageAdaptor();
     }
 
     @Override

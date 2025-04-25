@@ -5,12 +5,6 @@ import net.momirealms.craftengine.bukkit.advancement.BukkitAdvancementManager;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
-import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
-import net.momirealms.craftengine.bukkit.compatibility.skript.classes.CraftEngineClasses;
-import net.momirealms.craftengine.bukkit.compatibility.skript.condition.CondIsBlockCustomBlock;
-import net.momirealms.craftengine.bukkit.compatibility.skript.event.EvtCustomBlock;
-import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockID;
-import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockState;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
 import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
@@ -30,8 +24,8 @@ import net.momirealms.craftengine.bukkit.sound.BukkitSoundManager;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
-import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.ItemManager;
+import net.momirealms.craftengine.core.plugin.CompatibilityManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.classpath.ReflectionClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
@@ -56,10 +50,12 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 public class BukkitCraftEngine extends CraftEngine {
+    private static final String COMPATIBILITY_CLASS = "net.momirealms.craftengine.bukkit.compatibility.BukkitCompatibilityManager";
     private static BukkitCraftEngine instance;
     private final JavaPlugin bootstrap;
     private SchedulerTask tickTask;
@@ -68,7 +64,6 @@ public class BukkitCraftEngine extends CraftEngine {
     private boolean requiresRestart = false;
     private boolean hasMod = false;
     private AntiGriefLib antiGrief;
-    private boolean hasPlaceholderAPI;
 
     public BukkitCraftEngine(JavaPlugin bootstrap) {
         super((p) -> {
@@ -90,6 +85,12 @@ public class BukkitCraftEngine extends CraftEngine {
             } catch (Exception ignore) {
             }
         }
+        Class<?> compatibilityClass = Objects.requireNonNull(ReflectionUtils.getClazz(COMPATIBILITY_CLASS), "Compatibility class not found");
+        try {
+            super.compatibilityManager = (CompatibilityManager) Objects.requireNonNull(ReflectionUtils.getConstructor(compatibilityClass, 0)).newInstance(this);
+        } catch (ReflectiveOperationException e) {
+            logger().warn("Compatibility class could not be instantiated: " + compatibilityClass.getName());
+        }
     }
 
     @Override
@@ -101,6 +102,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.blockManager = new BukkitBlockManager(this);
         super.furnitureManager = new BukkitFurnitureManager(this);
         this.successfullyLoaded = true;
+        super.compatibilityManager().onLoad();
     }
 
     @Override
@@ -164,20 +166,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.fontManager = new BukkitFontManager(this);
         super.advancementManager = new BukkitAdvancementManager(this);
         super.onPluginEnable();
-        // compatibility
-        // register expansion
-        if (this.isPluginEnabled("PlaceholderAPI")) {
-            PlaceholderAPIUtils.registerExpansions(this);
-            this.hasPlaceholderAPI = true;
-        }
-        // skript
-        if (this.isPluginEnabled("Skript")) {
-            CraftEngineClasses.register();
-            EvtCustomBlock.register();
-            CondIsBlockCustomBlock.register();
-            ExprBlockCustomBlockID.register();
-            ExprBlockCustomBlockState.register();
-        }
+        super.compatibilityManager().onEnable();
     }
 
     @Override
@@ -217,6 +206,7 @@ public class BukkitCraftEngine extends CraftEngine {
                 }
             }, 1, 1);
         }
+        super.compatibilityManager().onDelayedEnable();
     }
 
     @Override
@@ -281,21 +271,6 @@ public class BukkitCraftEngine extends CraftEngine {
 
     public static BukkitCraftEngine instance() {
         return instance;
-    }
-
-    @Override
-    public boolean hasPlaceholderAPI() {
-        return this.hasPlaceholderAPI;
-    }
-
-    @Override
-    public boolean isPluginEnabled(String plugin) {
-        return Bukkit.getPluginManager().isPluginEnabled(plugin);
-    }
-
-    @Override
-    public String parse(Player player, String text) {
-        return PlaceholderAPIUtils.parse((org.bukkit.entity.Player) player.platformPlayer(), text);
     }
 
     @Override

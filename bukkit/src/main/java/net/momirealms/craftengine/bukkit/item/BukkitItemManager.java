@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.bukkit.item;
 
-import net.momirealms.craftengine.bukkit.compatibility.item.MMOItemsProvider;
-import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsProvider;
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BoneMealItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
@@ -131,16 +129,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, this.plugin.bootstrap());
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, this.plugin.bootstrap());
-        this.hookExternalPlugins();
-    }
-
-    private void hookExternalPlugins() {
-        if (this.plugin.isPluginEnabled("NeigeItems")) {
-            registerExternalItemProvider(new NeigeItemsProvider());
-        }
-        if (this.plugin.isPluginEnabled("MMOItems")) {
-            registerExternalItemProvider(new MMOItemsProvider());
-        }
     }
 
     public static BukkitItemManager instance() {

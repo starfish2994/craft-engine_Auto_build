@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.bukkit.compatibility.permission.LuckPermsEventListeners;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
@@ -35,7 +34,6 @@ import java.util.*;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
-    private LuckPermsEventListeners luckPermsEventListeners;
 
     public BukkitFontManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -44,9 +42,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedInit() {
-        if (this.plugin.isPluginEnabled("LuckPerms")) {
-            luckPermsEventListeners = new LuckPermsEventListeners(plugin.bootstrap(), this::refreshEmojiSuggestions);
-        }
         Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
     }
 
@@ -54,9 +49,6 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     public void disable() {
         super.disable();
         HandlerList.unregisterAll(this);
-        if (luckPermsEventListeners != null && this.plugin.isPluginEnabled("LuckPerms")) {
-            luckPermsEventListeners.unregisterListeners();
-        }
     }
 
     @Override
@@ -76,7 +68,8 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         plugin.scheduler().async().execute(() -> this.addEmojiSuggestions(event.getPlayer(), getEmojiSuggestion(event.getPlayer())));
     }
 
-    private void refreshEmojiSuggestions(UUID uuid) {
+    @Override
+    public void refreshEmojiSuggestions(UUID uuid) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null) return;
         removeEmojiSuggestions(player);

@@ -371,9 +371,8 @@ public class BukkitInjector {
     public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
-            if (!clazz$InjectedPalettedContainer.isInstance(container)) {
-                InjectedPalettedContainerHolder injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
-                varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
+            if (!(container instanceof InjectedPalettedContainerHolder)) {
+                InjectedPalettedContainerHolder injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
                 injectedObject.ceSection(ceSection);
                 injectedObject.ceWorld(ceWorld);
                 injectedObject.cePos(pos);
