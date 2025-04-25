@@ -6499,12 +6499,33 @@ public class Reflections {
             )
     );
 
+    public static final Object instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED;
+    public static final Object instance$ServerboundResourcePackPacket$Action$DECLINED;
+    public static final Object instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD;
     public static final Object instance$ServerboundResourcePackPacket$Action$ACCEPTED;
+    public static final Object instance$ServerboundResourcePackPacket$Action$DOWNLOADED;
+    public static final Object instance$ServerboundResourcePackPacket$Action$INVALID_URL;
+    public static final Object instance$ServerboundResourcePackPacket$Action$FAILED_RELOAD;
+    public static final Object instance$ServerboundResourcePackPacket$Action$DISCARDED;
 
     static {
         try {
             Object[] values = (Object[]) method$ServerboundResourcePackPacket$Action$values.invoke(null);
+            instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED = values[0];
+            instance$ServerboundResourcePackPacket$Action$DECLINED = values[1];
+            instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD = values[2];
             instance$ServerboundResourcePackPacket$Action$ACCEPTED = values[3];
+            if (VersionHelper.isVersionNewerThan1_20_3()) {
+                instance$ServerboundResourcePackPacket$Action$DOWNLOADED = values[4];
+                instance$ServerboundResourcePackPacket$Action$INVALID_URL = values[5];
+                instance$ServerboundResourcePackPacket$Action$FAILED_RELOAD = values[6];
+                instance$ServerboundResourcePackPacket$Action$DISCARDED = values[7];
+            } else {
+                instance$ServerboundResourcePackPacket$Action$DOWNLOADED = null;
+                instance$ServerboundResourcePackPacket$Action$INVALID_URL = null;
+                instance$ServerboundResourcePackPacket$Action$FAILED_RELOAD = null;
+                instance$ServerboundResourcePackPacket$Action$DISCARDED = null;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -6540,4 +6561,10 @@ public class Reflections {
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.login.ServerboundLoginAcknowledgedPacket")
             );
+
+    public static final Field field$ServerboundResourcePackPacket$action = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action, 0
+            )
+    );
 }

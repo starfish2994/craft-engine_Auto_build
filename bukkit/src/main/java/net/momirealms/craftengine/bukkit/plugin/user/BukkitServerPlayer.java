@@ -49,6 +49,7 @@ public class BukkitServerPlayer extends Player {
     private ConnectionState decoderState;
     private ConnectionState encoderState;
     private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
+    private boolean sentResourcePack = !Config.sendPackOnJoin();
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -769,6 +770,16 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void setProtocolVersion(int protocolVersion) {
         this.protocolVersion = ProtocolVersion.getById(protocolVersion);
+    }
+
+    @Override
+    public boolean sentResourcePack() {
+        return this.sentResourcePack;
+    }
+
+    @Override
+    public void setSentResourcePack(boolean sentResourcePack) {
+        this.sentResourcePack = sentResourcePack;
     }
 
     @Override

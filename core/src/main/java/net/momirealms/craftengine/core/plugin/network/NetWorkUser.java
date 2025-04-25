@@ -55,4 +55,8 @@ public interface NetWorkUser {
     ProtocolVersion protocolVersion();
 
     void setProtocolVersion(int protocolVersion);
+
+    boolean sentResourcePack();
+
+    void setSentResourcePack(boolean sentResourcePack);
 }

@@ -2204,4 +2204,25 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundLoginAcknowledgedPacket", e);
         }
     };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
+        try {
+            if (user.sentResourcePack() || !Config.sendPackOnJoin() || !Config.kickOnDeclined()) return;
+            Object action = Reflections.field$ServerboundResourcePackPacket$action.get(packet);
+            if (action == null) return;
+            if (action == Reflections.instance$ServerboundResourcePackPacket$Action$DECLINED
+                    || action == Reflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
+                Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
+                        ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
+                user.nettyChannel().writeAndFlush(kickPacket);
+                user.nettyChannel().disconnect();
+                return;
+            }
+            if (action == Reflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED) {
+                user.setSentResourcePack(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket", e);
+        }
+    };
 }

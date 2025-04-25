@@ -21,7 +21,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,16 +51,6 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
         if (Config.sendPackOnJoin() && !VersionHelper.isVersionNewerThan1_20_2()) {
             Player player = plugin.adapt(event.getPlayer());
             this.sendResourcePack(player);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
-    public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
-        // for 1.20.1 servers, not recommended to use
-        if (Config.sendPackOnJoin() && Config.kickOnDeclined() && !VersionHelper.isVersionNewerThan1_20_2()) {
-            if (event.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED || event.getStatus() == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
-                event.getPlayer().kick();
-            }
         }
     }
 
