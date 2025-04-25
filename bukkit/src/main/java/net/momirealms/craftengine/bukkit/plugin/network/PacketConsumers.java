@@ -169,7 +169,19 @@ public class PacketConsumers {
             int chunkX = buf.readInt();
             int chunkZ = buf.readInt();
             // ClientboundLevelChunkPacketData
-            Tag heightmaps = buf.readNbt(false);
+            int heightmapsCount = 0;
+            Map<Integer, long[]> heightmapsMap = new HashMap<>();
+            Tag heightmaps = null;
+            if (VersionHelper.isVersionNewerThan1_21_5()) {
+                heightmapsCount = buf.readVarInt();
+                for (int i = 0; i < heightmapsCount; i++) {
+                    int key = buf.readVarInt();
+                    long[] value = buf.readLongArray();
+                    heightmapsMap.put(key, value);
+                }
+            } else {
+                heightmaps = buf.readNbt(false);
+            }
             int varInt = buf.readVarInt();
             byte[] buffer = new byte[varInt];
             buf.readBytes(buffer);
@@ -250,7 +262,15 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeInt(chunkX);
             buf.writeInt(chunkZ);
-            buf.writeNbt(heightmaps, false);
+            if (VersionHelper.isVersionNewerThan1_21_5()) {
+                buf.writeVarInt(heightmapsCount);
+                for (Map.Entry<Integer, long[]> entry : heightmapsMap.entrySet()) {
+                    buf.writeVarInt(entry.getKey());
+                    buf.writeLongArray(entry.getValue());
+                }
+            } else {
+                buf.writeNbt(heightmaps, false);
+            }
             buf.writeVarInt(buffer.length);
             buf.writeBytes(buffer);
             buf.writeVarInt(blockEntitiesDataCount);
