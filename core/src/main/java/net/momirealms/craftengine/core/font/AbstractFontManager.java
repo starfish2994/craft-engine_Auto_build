@@ -492,6 +492,10 @@ public abstract class AbstractFontManager implements FontManager {
                         return;
                     }
                 }
+                if (codepoints.length == 0) {
+                    TranslationManager.instance().log("warning.config.image.lack_char", path.toString(), id.toString());
+                    return;
+                }
                 codepointGrid[i] = codepoints;
                 if (size == -1) size = codepoints.length;
                 if (size != codepoints.length) {
