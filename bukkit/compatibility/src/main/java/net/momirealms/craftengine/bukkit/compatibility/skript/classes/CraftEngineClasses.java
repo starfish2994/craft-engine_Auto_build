@@ -68,26 +68,5 @@ public class CraftEngineClasses {
                     }
                 })
         );
-
-//        Classes.registerClass(new ClassInfo<>(CustomBlock.class, "customblocks")
-//                .user("custom block")
-//                .name("Custom Block")
-//                .parser(new Parser<>() {
-//                    @Override
-//                    public String toString(CustomBlock o, int flags) {
-//                        return o.id().toString();
-//                    }
-//
-//                    @Override
-//                    public String toVariableNameString(CustomBlock o) {
-//                        return "customblock:" + o.id();
-//                    }
-//
-//                    @Override
-//                    public @Nullable CustomBlock parse(String s, ParseContext context) {
-//                        return BuiltInRegistries.BLOCK.getValue(Key.of(s));
-//                    }
-//                })
-//        );
     }
 }

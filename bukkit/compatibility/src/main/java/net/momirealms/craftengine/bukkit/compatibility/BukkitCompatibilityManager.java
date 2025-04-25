@@ -61,6 +61,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             CondIsBlockCustomBlock.register();
             ExprBlockCustomBlockID.register();
             ExprBlockCustomBlockState.register();
+//            ExprCustomBlockProperty.register();
             logHook("Skript");
             Plugin skriptPlugin = getPlugin("Skript");
             for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
