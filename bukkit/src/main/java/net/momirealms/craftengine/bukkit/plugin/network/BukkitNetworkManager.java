@@ -129,7 +129,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private void registerPacketHandlers() {
-        // registerNMSPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, Reflections.clazz$ClientboundLevelChunkWithLightPacket);
         registerNMSPacketConsumer(PacketConsumers.PLAYER_INFO_UPDATE, Reflections.clazz$ClientboundPlayerInfoUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.PLAYER_ACTION, Reflections.clazz$ServerboundPlayerActionPacket);
         registerNMSPacketConsumer(PacketConsumers.SWING_HAND, Reflections.clazz$ServerboundSwingPacket);
