@@ -40,6 +40,7 @@ import net.momirealms.craftengine.core.world.EntityHitResult;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
+import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
@@ -92,15 +93,38 @@ public class PacketConsumers {
         return mappingsMOD[stateId];
     }
 
-    // TODO Use bytebuffer?
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LEVEL_CHUNK_WITH_LIGHT = (user, event, packet) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_CHUNK_WITH_LIGHT = (user, event) -> {
         try {
+            BukkitServerPlayer player = (BukkitServerPlayer) user;
+            FriendlyByteBuf buf = event.getBuffer();
+            int chunkX = buf.readInt();
+            int chunkZ = buf.readInt();
+            // ClientboundLevelChunkPacketData
+            Tag heightmaps = buf.readNbt(false);
+            int varInt = buf.readVarInt();
+            byte[] buffer = new byte[varInt];
+            buf.readBytes(buffer);
+            int blockEntitiesDataCount = buf.readVarInt();
+            List<BlockEntityData> blockEntitiesData = new ArrayList<>();
+            for (int i = 0; i < blockEntitiesDataCount; i++) {
+                byte packedXZ = buf.readByte();
+                short y = buf.readShort();
+                int type = buf.readVarInt();
+                Tag tag = buf.readNbt(false);
+                BlockEntityData blockEntityData = new BlockEntityData(packedXZ, y, type, tag);
+                blockEntitiesData.add(blockEntityData);
+            }
+            // ClientboundLightUpdatePacketData
+            BitSet skyYMask = buf.readBitSet();
+            BitSet blockYMask = buf.readBitSet();
+            BitSet emptySkyYMask = buf.readBitSet();
+            BitSet emptyBlockYMask = buf.readBitSet();
+            List<byte[]> skyUpdates = buf.readByteArrayList(2048);
+            List<byte[]> blockUpdates = buf.readByteArrayList(2048);
+            // 开始处理
             if (user.clientModEnabled()) {
-                BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
-                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
-                ByteBuf buf = Unpooled.copiedBuffer(buffer);
-                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
+                ByteBuf byteBuf = Unpooled.copiedBuffer(buffer);
+                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
                 FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
                 for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
                     try {
@@ -124,13 +148,10 @@ public class PacketConsumers {
                         break;
                     }
                 }
-                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
+                buffer = newBuf.array();
             } else {
-                BukkitServerPlayer player = (BukkitServerPlayer) user;
-                Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
-                byte[] buffer = (byte[]) Reflections.field$ClientboundLevelChunkPacketData$buffer.get(chunkData);
-                ByteBuf buf = Unpooled.copiedBuffer(buffer);
-                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(buf);
+                ByteBuf byteBuf = Unpooled.copiedBuffer(buffer);
+                FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
                 FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
                 for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
                     try {
@@ -154,8 +175,29 @@ public class PacketConsumers {
                         break;
                     }
                 }
-                Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
+                buffer = newBuf.array();
             }
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeInt(chunkX);
+            buf.writeInt(chunkZ);
+            buf.writeNbt(heightmaps, false);
+            buf.writeVarInt(buffer.length);
+            buf.writeBytes(buffer);
+            buf.writeVarInt(blockEntitiesDataCount);
+            for (BlockEntityData blockEntityData : blockEntitiesData) {
+                buf.writeByte(blockEntityData.packedXZ());
+                buf.writeShort(blockEntityData.y());
+                buf.writeVarInt(blockEntityData.type());
+                buf.writeNbt(blockEntityData.tag(), false);
+            }
+            buf.writeBitSet(skyYMask);
+            buf.writeBitSet(blockYMask);
+            buf.writeBitSet(emptySkyYMask);
+            buf.writeBitSet(emptyBlockYMask);
+            buf.writeByteArrayList(skyUpdates);
+            buf.writeByteArrayList(blockUpdates);
+            event.setChanged(true);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelChunkWithLightPacket", e);
         }
