@@ -101,6 +101,29 @@ public class FriendlyByteBuf extends ByteBuf {
         idList.forEach(this::writeVarInt);
     }
 
+    public List<byte[]> readByteArrayList() {
+        int listSize = this.readVarInt();
+        List<byte[]> bytes = new ArrayList<>();
+        for (int i = 0; i < listSize; ++i) {
+            bytes.add(this.readByteArray());
+        }
+        return bytes;
+    }
+
+    public List<byte[]> readByteArrayList(int maxSize) {
+        int listSize = this.readVarInt();
+        List<byte[]> bytes = new ArrayList<>();
+        for (int i = 0; i < listSize; ++i) {
+            bytes.add(this.readByteArray(maxSize));
+        }
+        return bytes;
+    }
+
+    public void writeByteArrayList(List<byte[]> bytes) {
+        this.writeVarInt(bytes.size());
+        bytes.forEach(this::writeByteArray);
+    }
+
     public <K, V, M extends Map<K, V>> M readMap(IntFunction<M> mapFactory, FriendlyByteBuf.Reader<K> keyReader, FriendlyByteBuf.Reader<V> valueReader) {
         int mapSize = this.readVarInt();
         M map = mapFactory.apply(mapSize);
