@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
+import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -17,7 +18,6 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
-import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -103,6 +103,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         // set up mod channel
         this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
         this.plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL);
+        // 配置via频道
+        this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), VIA_CHANNEL, this);
         // Inject server channel
         try {
             Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
@@ -207,9 +209,17 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         return this.onlineUserArray;
     }
 
-    // 保留仅注册入频道用
     @Override
-    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {}
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
+        if (channel.equals(VIA_CHANNEL)) {
+            BukkitServerPlayer user = plugin.adapt(player);
+            if (user != null) {
+                JsonObject payload = GsonHelper.get().fromJson(new String(message), JsonObject.class);
+                int version = payload.get("version").getAsInt();
+                user.setProtocolVersion(version);
+            }
+        }
+    }
 
     @Override
     public void init() {
