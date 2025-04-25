@@ -368,7 +368,7 @@ public class BukkitInjector {
         }
     }
 
-    public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
+    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!(container instanceof InjectedPalettedContainerHolder)) {
@@ -384,7 +384,7 @@ public class BukkitInjector {
         }
     }
 
-    public static void uninjectLevelChunkSection(Object section) {
+    public synchronized static void uninjectLevelChunkSection(Object section) {
         try {
             Object states = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
             if (states instanceof InjectedPalettedContainerHolder holder) {
