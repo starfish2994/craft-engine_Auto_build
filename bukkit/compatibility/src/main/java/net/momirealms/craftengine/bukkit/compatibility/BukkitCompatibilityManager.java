@@ -19,6 +19,7 @@ import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionUtil
 import net.momirealms.craftengine.bukkit.compatibility.worldedit.WorldEditBlockRegister;
 import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.core.entity.furniture.AbstractExternalModel;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -27,6 +28,8 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.WorldManager;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.UUID;
 
@@ -59,6 +62,19 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             ExprBlockCustomBlockID.register();
             ExprBlockCustomBlockState.register();
             logHook("Skript");
+            Plugin skriptPlugin = getPlugin("Skript");
+            for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
+                if (task.getOwner() == skriptPlugin) {
+                    task.cancel();
+                    if (VersionHelper.isFolia()) {
+                        Bukkit.getGlobalRegionScheduler().run(skriptPlugin, (t) -> {
+                            FastNMS.INSTANCE.getBukkitTaskRunnable(task).run();
+                        });
+                    } else {
+                        Bukkit.getScheduler().runTask(skriptPlugin, FastNMS.INSTANCE.getBukkitTaskRunnable(task));
+                    }
+                }
+            }
         }
     }
 
@@ -159,6 +175,10 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             itemManager.registerExternalItemProvider(new MMOItemsProvider());
             logHook("MMOItems");
         }
+    }
+
+    private Plugin getPlugin(String name) {
+        return Bukkit.getPluginManager().getPlugin(name);
     }
 
     @Override

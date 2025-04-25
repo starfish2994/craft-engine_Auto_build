@@ -18,6 +18,8 @@ dependencies {
     compileOnly(project(":bukkit"))
     compileOnly(project(":bukkit:compatibility:legacy"))
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
+    // NMS
+    compileOnly("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
     // Platform
     compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
     // NeigeItems
