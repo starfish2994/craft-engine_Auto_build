@@ -18,7 +18,6 @@ public class ExprBlockCustomBlockID extends SimplePropertyExpression<Object, Str
 
     @Override
     public @Nullable String convert(Object object) {
-        System.out.println(object.getClass());
         if (object instanceof ImmutableBlockState immutableBlockState)
             return immutableBlockState.owner().value().id().toString();
         if (object instanceof CustomBlock customBlock)

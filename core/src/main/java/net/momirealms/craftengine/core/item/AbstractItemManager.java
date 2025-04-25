@@ -234,6 +234,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new ComponentModifier<>(data);
             }, "components", "component");
+            registerDataFunction((obj) -> {
+                List<String> data = MiscUtils.getAsStringList(obj);
+                return new RemoveComponentModifier<>(data);
+            }, "remove-components", "remove-component");
         }
         if (VersionHelper.isVersionNewerThan1_21()) {
             registerDataFunction((obj) -> {

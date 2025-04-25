@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.plugin;
 
-import ch.njol.skript.Skript;
 import net.momirealms.antigrieflib.AntiGriefLib;
 import net.momirealms.craftengine.bukkit.advancement.BukkitAdvancementManager;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
