@@ -277,7 +277,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 itemBuilder.dataModifier(new CustomModelDataModifier<>(customModelData));
             }
             // Requires the item to have model before apply item-model
-            else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isVersionNewerThan1_21_2()) {
+            else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isOrAbove1_21_2()) {
                 // check server version here because components require 1.21.2+
                 // customize or use the id
                 itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());

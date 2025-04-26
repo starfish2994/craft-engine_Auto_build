@@ -341,7 +341,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$SoundEvent = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_2() ?
+            VersionHelper.isOrAbove1_21_2() ?
             ReflectionUtils.getConstructor(
                     clazz$SoundEvent, clazz$ResourceLocation, Optional.class
             ) :
@@ -377,7 +377,7 @@ public class Reflections {
     public static final Object instance$MinecraftRegistry;
 
     static {
-        if (VersionHelper.isVersionNewerThan1_20()) {
+        if (VersionHelper.isOrAbove1_20()) {
             try {
                 Method method = requireNonNull(ReflectionUtils.getMethod(clazz$CraftRegistry, new String[]{"getMinecraftRegistry"}));
                 instance$MinecraftRegistry = method.invoke(null);
@@ -460,7 +460,7 @@ public class Reflections {
     );
 
     public static final Field field$ServerCommonPacketListenerImpl$connection = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
+            VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getDeclaredField(
                     clazz$ServerCommonPacketListenerImpl, clazz$Connection, 0
             ) :
@@ -493,7 +493,7 @@ public class Reflections {
     );
 
     public static final Method method$Connection$sendPacketImmediate = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
+            VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getDeclaredMethod(
                     clazz$Connection, void.class, new String[] {"sendPacket", "b"}, clazz$Packet, clazz$PacketSendListener, boolean.class
             ) :
@@ -885,10 +885,10 @@ public class Reflections {
     }
 
     public static final Constructor<?> constructor$AttributeModifier = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getConstructor(clazz$AttributeModifier, String.class, double.class, clazz$AttributeModifier$Operation):
             (
-                !VersionHelper.isVersionNewerThan1_21() ?
+                !VersionHelper.isOrAbove1_21() ?
                 ReflectionUtils.getConstructor(clazz$AttributeModifier, UUID.class, String.class, double.class, clazz$AttributeModifier$Operation) :
                 (
                         ReflectionUtils.getConstructor(clazz$AttributeModifier, clazz$ResourceLocation, double.class, clazz$AttributeModifier$Operation)
@@ -981,7 +981,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundUpdateAttributesPacket$AttributeSnapshot = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5() ?
+            VersionHelper.isOrAbove1_20_5() ?
                     ReflectionUtils.getConstructor(
                             clazz$ClientboundUpdateAttributesPacket$AttributeSnapshot, clazz$Holder, double.class, Collection.class
                     ) :
@@ -1290,7 +1290,7 @@ public class Reflections {
     public static final Field field$ClientboundSetPlayerTeamPacket$Parameters$nametagVisibility = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundSetPlayerTeamPacket$Parameters,
-                    VersionHelper.isVersionNewerThan1_21_5() ? clazz$Team$Visibility : String.class,
+                    VersionHelper.isOrAbove1_21_5() ? clazz$Team$Visibility : String.class,
                     0
             )
     );
@@ -2158,7 +2158,7 @@ public class Reflections {
                                     registries$Item = field.get(null);
                                 } else if (type == clazz$Fluid) {
                                     registries$Fluid = field.get(null);
-                                } else if (VersionHelper.isVersionNewerThan1_21() && type == clazz$JukeboxSong) {
+                                } else if (VersionHelper.isOrAbove1_21() && type == clazz$JukeboxSong) {
                                     registries$JukeboxSong = field.get(null);
                                 }
                             }
@@ -2586,7 +2586,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundLevelParticlesPacket = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5() ?
+            VersionHelper.isOrAbove1_20_5() ?
                     ReflectionUtils.getDeclaredConstructor(clazz$ClientboundLevelParticlesPacket, clazz$RegistryFriendlyByteBuf) :
                     ReflectionUtils.getConstructor(clazz$ClientboundLevelParticlesPacket, clazz$FriendlyByteBuf)
     );
@@ -2821,7 +2821,7 @@ public class Reflections {
     }
 
     public static final Method method$ChunkHolder$sectionLightChanged = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_2() ?
+            VersionHelper.isOrAbove1_21_2() ?
             ReflectionUtils.getMethod(clazz$ChunkHolder, boolean.class, clazz$LightLayer, int.class) :
                     ReflectionUtils.getMethod(clazz$ChunkHolder, void.class, clazz$LightLayer, int.class)
     );
@@ -2881,18 +2881,18 @@ public class Reflections {
 
     static {
         try {
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
-                Object block_break_speed = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_break_speed" : "player.block_break_speed");
+            if (VersionHelper.isOrAbove1_20_5()) {
+                Object block_break_speed = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isOrAbove1_21_2() ? "block_break_speed" : "player.block_break_speed");
                 @SuppressWarnings("unchecked")
                 Optional<Object> breakSpeedHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_break_speed);
                 instance$Holder$Attribute$block_break_speed = breakSpeedHolder.orElse(null);
 
-                Object block_interaction_range = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "block_interaction_range" : "player.block_interaction_range");
+                Object block_interaction_range = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isOrAbove1_21_2() ? "block_interaction_range" : "player.block_interaction_range");
                 @SuppressWarnings("unchecked")
                 Optional<Object> blockInteractionRangeHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, block_interaction_range);
                 instance$Holder$Attribute$block_interaction_range = blockInteractionRangeHolder.orElse(null);
 
-                Object scale = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isVersionNewerThan1_21_2() ? "scale" : "generic.scale");
+                Object scale = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isOrAbove1_21_2() ? "scale" : "generic.scale");
                 @SuppressWarnings("unchecked")
                 Optional<Object> scaleHolder = (Optional<Object>) method$Registry$getHolder0.invoke(instance$BuiltInRegistries$ATTRIBUTE, scale);
                 instance$Holder$Attribute$scale = scaleHolder.orElse(null);
@@ -2907,7 +2907,7 @@ public class Reflections {
     }
 
     public static final Method method$ServerPlayer$getAttribute = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5() ?
+            VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Holder) :
             ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Attribute)
     );
@@ -3271,7 +3271,7 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundUpdateMobEffectPacket = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getConstructor(
                     clazz$ClientboundUpdateMobEffectPacket, int.class, clazz$MobEffectInstance
             ) :
@@ -3287,7 +3287,7 @@ public class Reflections {
     );
 
     public static final Field field$ClientboundUpdateMobEffectPacket$effect = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundUpdateMobEffectPacket, clazz$MobEffect, 0
             ) :
@@ -3297,7 +3297,7 @@ public class Reflections {
     );
 
     public static final Field field$ClientboundUpdateMobEffectPacket$amplifier = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundUpdateMobEffectPacket, byte.class, 0
             ) :
@@ -3307,7 +3307,7 @@ public class Reflections {
     );
 
     public static final Field field$ClientboundUpdateMobEffectPacket$duration = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundUpdateMobEffectPacket, int.class, 1
             ) :
@@ -3317,7 +3317,7 @@ public class Reflections {
     );
 
     public static final Field field$ClientboundUpdateMobEffectPacket$flags = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundUpdateMobEffectPacket, byte.class, 1
             ) :
@@ -3327,7 +3327,7 @@ public class Reflections {
     );
 
     public static final Method method$ServerPlayer$getEffect = requireNonNull(
-            !VersionHelper.isVersionNewerThan1_20_5() ?
+            !VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getMethod(
                     clazz$ServerPlayer, clazz$MobEffectInstance, clazz$MobEffect
             ) :
@@ -3371,7 +3371,7 @@ public class Reflections {
     );
 
     public static final Field field$ServerboundSetCreativeModeSlotPacket$slotNum = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5() ?
+            VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundSetCreativeModeSlotPacket, short.class, 0
             ) :
@@ -3483,7 +3483,7 @@ public class Reflections {
     );
 
     public static final Method method$BlockBehaviour$updateShape = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_2() ?
+            VersionHelper.isOrAbove1_21_2() ?
             ReflectionUtils.getDeclaredMethod(
                     clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$LevelReader, clazz$ScheduledTickAccess, clazz$BlockPos, clazz$Direction, clazz$BlockPos, clazz$BlockState, clazz$RandomSource
             ) :
@@ -3742,7 +3742,7 @@ public class Reflections {
     // 1.20.2+
     public static final Field field$CommonPlayerSpawnInfo$dimension = Optional.ofNullable(clazz$CommonPlayerSpawnInfo)
             .map(it -> {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                if (VersionHelper.isOrAbove1_20_5()) {
                     return ReflectionUtils.getDeclaredField(it, clazz$ResourceKey, 0);
                 } else {
                     return ReflectionUtils.getDeclaredField(it, clazz$ResourceKey, 1);
@@ -3791,7 +3791,7 @@ public class Reflections {
             instance$EntityType$SHULKER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, shulker);
             Object armorStand = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "armor_stand");
             instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
-            Object oakBoat = VersionHelper.isVersionNewerThan1_21_2() ? FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "oak_boat") : FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "boat");
+            Object oakBoat = VersionHelper.isOrAbove1_21_2() ? FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "oak_boat") : FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "boat");
             instance$EntityType$OAK_BOAT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, oakBoat);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -4077,7 +4077,7 @@ public class Reflections {
     );
 
     public static final Method method$CraftEventFactory$callBlockPlaceEvent = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5()
+            VersionHelper.isOrAbove1_21_5()
                     ? ReflectionUtils.getStaticMethod(clazz$CraftEventFactory, BlockPlaceEvent.class, clazz$ServerLevel, clazz$Player, clazz$InteractionHand, BlockState.class, clazz$BlockPos)
                     : ReflectionUtils.getStaticMethod(clazz$CraftEventFactory, BlockPlaceEvent.class, clazz$ServerLevel, clazz$Player, clazz$InteractionHand, BlockState.class, int.class, int.class, int.class)
     );
@@ -4602,7 +4602,7 @@ public class Reflections {
 
     static {
         Method method$RecipeManager$byKey0 = null;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             for (Method method : clazz$RecipeManager.getMethods()) {
                 if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceKey) {
                     if (method.getReturnType() == Optional.class && method.getGenericReturnType() instanceof ParameterizedType type) {
@@ -4613,7 +4613,7 @@ public class Reflections {
                     }
                 }
             }
-        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+        } else if (VersionHelper.isOrAbove1_20_2()) {
             for (Method method : clazz$RecipeManager.getMethods()) {
                 if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceLocation) {
                     if (method.getReturnType() == Optional.class && method.getGenericReturnType() instanceof ParameterizedType type) {
@@ -4924,7 +4924,7 @@ public class Reflections {
     );
 
     public static final Method method$BonemealableBlock$isValidBonemealTarget = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
+            VersionHelper.isOrAbove1_20_2() ?
                     ReflectionUtils.getMethod(
                             clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState
                     ) :
@@ -4977,7 +4977,7 @@ public class Reflections {
     );
 
     public static final Method method$ServerLevel$levelEvent = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5()
+            VersionHelper.isOrAbove1_21_5()
                     ? ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Entity, int.class, clazz$BlockPos, int.class)
                     : ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Player, int.class, clazz$BlockPos, int.class)
     );
@@ -5110,11 +5110,11 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundResourcePackPushPacket = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5() ?
+            VersionHelper.isOrAbove1_20_5() ?
             ReflectionUtils.getConstructor(
                     clazz$ClientboundResourcePackPushPacket, UUID.class, String.class, String.class, boolean.class, Optional.class
             ) :
-            VersionHelper.isVersionNewerThan1_20_3() ?
+            VersionHelper.isOrAbove1_20_3() ?
             ReflectionUtils.getConstructor(
                     clazz$ClientboundResourcePackPushPacket, UUID.class, String.class, String.class, boolean.class, clazz$Component
             ) :
@@ -5276,17 +5276,17 @@ public class Reflections {
             .orElse(null);
 
     public static final Constructor<?> constructor$SmithingTransformRecipe = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5()
+            VersionHelper.isOrAbove1_21_5()
                     ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, clazz$Ingredient, Optional.class, clazz$TransmuteResult)
-                    : VersionHelper.isVersionNewerThan1_21_2()
+                    : VersionHelper.isOrAbove1_21_2()
                         ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack)
-                        : VersionHelper.isVersionNewerThan1_20_2()
+                        : VersionHelper.isOrAbove1_20_2()
                             ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
                             : ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
     );
 
     public static final Method method$RecipeManager$addRecipe = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
+            VersionHelper.isOrAbove1_20_2() ?
                     ReflectionUtils.getMethod(clazz$RecipeManager, void.class, clazz$RecipeHolder) :
                     ReflectionUtils.getMethod(clazz$RecipeManager, void.class, clazz$Recipe)
     );
@@ -5588,9 +5588,9 @@ public class Reflections {
     );
 
     public static final Method method$SimpleWaterloggedBlock$canPlaceLiquid = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5()
+            VersionHelper.isOrAbove1_21_5()
                     ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LivingEntity, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
-                    : VersionHelper.isVersionNewerThan1_20_2()
+                    : VersionHelper.isOrAbove1_20_2()
                         ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
                         : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
     );
@@ -5602,9 +5602,9 @@ public class Reflections {
     );
 
     public static final Method method$SimpleWaterloggedBlock$pickupBlock = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5()
+            VersionHelper.isOrAbove1_21_5()
                     ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LivingEntity, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
-                    : VersionHelper.isVersionNewerThan1_20_2()
+                    : VersionHelper.isOrAbove1_20_2()
                         ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
                         : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
     );
@@ -5797,7 +5797,7 @@ public class Reflections {
     );
 
     public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_2()
+            VersionHelper.isOrAbove1_21_2()
                     ? ReflectionUtils.getMethod(clazz$BlockBehaviour, String.class)
                     : ReflectionUtils.getMethod(clazz$Block, String.class)
     );
@@ -5869,7 +5869,7 @@ public class Reflections {
     );
 
     public static final Method method$CraftEventFactory$handleBlockGrowEvent = requireNonNull(
-            VersionHelper.isVersionNewerThan1_21_5() ?
+            VersionHelper.isOrAbove1_21_5() ?
             ReflectionUtils.getStaticMethod(
                     clazz$CraftEventFactory, boolean.class, clazz$Level, clazz$BlockPos, clazz$BlockState, int.class
             ) :
@@ -5967,7 +5967,7 @@ public class Reflections {
             instance$Pose$SNIFFING = instance$Poses[12];
             instance$Pose$EMERGING = instance$Poses[13];
             instance$Pose$DIGGING = instance$Poses[14];
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
+            if (VersionHelper.isOrAbove1_20_3()) {
                 instance$Pose$SLIDING = instance$Poses[15];
                 instance$Pose$SHOOTING = instance$Poses[16];
                 instance$Pose$INHALING = instance$Poses[17];
@@ -6019,13 +6019,13 @@ public class Reflections {
 //    );
 
     public static final Method method$Entity$canBeCollidedWith = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5()
+            VersionHelper.isOrAbove1_20_5()
                     ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith"})
-                    : VersionHelper.isVersionNewerThan1_20_3()
+                    : VersionHelper.isOrAbove1_20_3()
                         ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bz"})
-                        : VersionHelper.isVersionNewerThan1_20_2()
+                        : VersionHelper.isOrAbove1_20_2()
                             ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bx"})
-                            : VersionHelper.isVersionNewerThan1_20()
+                            : VersionHelper.isOrAbove1_20()
                                 ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bu"})
                                 : ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith", "bu", "bx", "bz"})
     );
@@ -6039,13 +6039,13 @@ public class Reflections {
 
     @Deprecated
     public static final Method method$Entity$getId = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_5()
+            VersionHelper.isOrAbove1_20_5()
                     ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId"})
-                    : VersionHelper.isVersionNewerThan1_20_3()
+                    : VersionHelper.isOrAbove1_20_3()
                         ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"aj"})
-                        : VersionHelper.isVersionNewerThan1_20_2()
+                        : VersionHelper.isOrAbove1_20_2()
                             ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"ah"})
-                            : VersionHelper.isVersionNewerThan1_20()
+                            : VersionHelper.isOrAbove1_20()
                                 ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"af"})
                                 : ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId", "aj", "ah", "af"})
     );
@@ -6204,7 +6204,7 @@ public class Reflections {
 
     public static final Method method$Level$moonrise$getEntityLookup = requireNonNull(
             ReflectionUtils.getMethod(
-                    VersionHelper.isVersionNewerThan1_21() ? clazz$Level : clazz$ServerLevel,
+                    VersionHelper.isOrAbove1_21() ? clazz$Level : clazz$ServerLevel,
                     clazz$EntityLookup
             )
     );
@@ -6329,7 +6329,7 @@ public class Reflections {
     // 1.21.2+
     static {
         try {
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Object[] values = (Object[]) method$ParticleStatus$values.invoke(null);
                 instance$ParticleStatus$ALL = values[0];
                 instance$ParticleStatus$DECREASED = values[1];
@@ -6455,7 +6455,7 @@ public class Reflections {
     );
 
     public static final Field field$ServerboundHelloPacket$uuid = requireNonNull(
-            VersionHelper.isVersionNewerThan1_20_2() ?
+            VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundHelloPacket, UUID.class, 0
             ) :
@@ -6472,7 +6472,7 @@ public class Reflections {
     public static final Field field$ClientboundResourcePackPushPacket$prompt = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundResourcePackPushPacket,
-                    VersionHelper.isVersionNewerThan1_20_5() ? Optional.class : clazz$Component,
+                    VersionHelper.isOrAbove1_20_5() ? Optional.class : clazz$Component,
                     0
             )
     );
@@ -6515,7 +6515,7 @@ public class Reflections {
             instance$ServerboundResourcePackPacket$Action$DECLINED = values[1];
             instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD = values[2];
             instance$ServerboundResourcePackPacket$Action$ACCEPTED = values[3];
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
+            if (VersionHelper.isOrAbove1_20_3()) {
                 instance$ServerboundResourcePackPacket$Action$DOWNLOADED = values[4];
                 instance$ServerboundResourcePackPacket$Action$INVALID_URL = values[5];
                 instance$ServerboundResourcePackPacket$Action$FAILED_RELOAD = values[6];
@@ -6552,7 +6552,7 @@ public class Reflections {
 
     public static final Field field$ClientIntentionPacket$protocolVersion = requireNonNull(
             ReflectionUtils.getDeclaredField(
-                    clazz$ClientIntentionPacket, int.class, VersionHelper.isVersionNewerThan1_20_2() ? 0 : 1
+                    clazz$ClientIntentionPacket, int.class, VersionHelper.isOrAbove1_20_2() ? 0 : 1
             )
     );
 

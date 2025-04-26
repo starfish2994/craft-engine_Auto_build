@@ -51,7 +51,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerAttack(EntityDamageByEntityEvent event) {
-        if (!VersionHelper.isVersionNewerThan1_20_5()) {
+        if (!VersionHelper.isOrAbove1_20_5()) {
             if (event.getDamager() instanceof Player player) {
                 BukkitServerPlayer serverPlayer = plugin.adapt(player);
                 serverPlayer.setClientSideCanBreakBlock(true);
@@ -306,7 +306,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityExplode(EntityExplodeEvent event) {
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             if (!ExplosionUtils.isDroppingItems(event)) return;
         }
         handleExplodeEvent(event.blockList(), new BukkitWorld(event.getEntity().getWorld()), event.getYield());
@@ -314,7 +314,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockExplode(BlockExplodeEvent event) {
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             if (!ExplosionUtils.isDroppingItems(event)) return;
         }
         handleExplodeEvent(event.blockList(), new BukkitWorld(event.getBlock().getWorld()), event.getYield());

@@ -318,11 +318,11 @@ public class BukkitInjector {
                     .intercept(FieldAccessor.ofField("lastCustomRecipe"))
                     .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
                     .intercept(MethodDelegation.to(
-                            VersionHelper.isVersionNewerThan1_21_2() ?
+                            VersionHelper.isOrAbove1_21_2() ?
                                     GetRecipeForMethodInterceptor1_21_2.INSTANCE :
-                                    (VersionHelper.isVersionNewerThan1_21() ?
+                                    (VersionHelper.isOrAbove1_21() ?
                                             GetRecipeForMethodInterceptor1_21.INSTANCE :
-                                            VersionHelper.isVersionNewerThan1_20_5() ?
+                                            VersionHelper.isOrAbove1_20_5() ?
                                                     GetRecipeForMethodInterceptor1_20_5.INSTANCE :
                                                     GetRecipeForMethodInterceptor1_20.INSTANCE)
                     ))
@@ -346,7 +346,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
             injectedChecker.recipeType(recipeType);
             Reflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
-        } else if (!VersionHelper.isVersionNewerThan1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
+        } else if (!VersionHelper.isOrAbove1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
             Object quickCheck = Reflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
@@ -749,7 +749,7 @@ public class BukkitInjector {
         Object direction;
         Object serverLevel;
         Object blockPos;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             direction = args[4];
             serverLevel = args[1];
             blockPos = args[3];

@@ -415,7 +415,7 @@ public class BukkitServerPlayer extends Player {
             }
             this.clientSideCanBreak = canBreak;
             if (canBreak) {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                if (VersionHelper.isOrAbove1_20_5()) {
                     Object serverPlayer = serverPlayer();
                     Object attributeInstance = Reflections.method$ServerPlayer$getAttribute.invoke(serverPlayer, Reflections.instance$Holder$Attribute$block_break_speed);
                     Object newPacket = Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityID(), Lists.newArrayList(attributeInstance));
@@ -425,8 +425,8 @@ public class BukkitServerPlayer extends Player {
                     resetEffect(Reflections.instance$MobEffecr$haste);
                 }
             } else {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    Object attributeModifier = VersionHelper.isVersionNewerThan1_21() ?
+                if (VersionHelper.isOrAbove1_20_5()) {
+                    Object attributeModifier = VersionHelper.isOrAbove1_21() ?
                             Reflections.constructor$AttributeModifier.newInstance(KeyUtils.toResourceLocation("craftengine", "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
                             Reflections.constructor$AttributeModifier.newInstance(UUID.randomUUID(), "craftengine:custom_hardness", -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE);
                     Object attributeSnapshot = Reflections.constructor$ClientboundUpdateAttributesPacket$AttributeSnapshot.newInstance(Reflections.instance$Holder$Attribute$block_break_speed, 1d, Lists.newArrayList(attributeModifier));
@@ -520,7 +520,7 @@ public class BukkitServerPlayer extends Player {
                     // creative mode + invalid item in hand
                     if (canInstabuild() && (itemMaterial == Material.DEBUG_STICK
                             || itemMaterial == Material.TRIDENT
-                            || (VersionHelper.isVersionNewerThan1_20_5() && itemMaterial == MaterialUtils.MACE)
+                            || (VersionHelper.isOrAbove1_20_5() && itemMaterial == MaterialUtils.MACE)
                             || item.is(ItemTags.SWORDS))) {
                         return;
                     }
@@ -757,7 +757,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void addResourcePackUUID(UUID uuid) {
-        if (VersionHelper.isVersionNewerThan1_20_3()) {
+        if (VersionHelper.isOrAbove1_20_3()) {
             this.resourcePackUUID.add(uuid);
         }
     }
@@ -790,7 +790,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void unloadCurrentResourcePack() {
-        if (!VersionHelper.isVersionNewerThan1_20_3()) {
+        if (!VersionHelper.isOrAbove1_20_3()) {
             return;
         }
         if (decoderState() == ConnectionState.PLAY && !this.resourcePackUUID.isEmpty()) {

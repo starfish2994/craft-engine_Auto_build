@@ -57,7 +57,7 @@ public class CustomHitBox extends AbstractHitBox {
                     FastNMS.INSTANCE.toNMSEntityType(this.entityType), 0, Reflections.instance$Vec3$Zero, 0
             ), true);
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId[0], List.copyOf(this.cachedValues)), true);
-            if (VersionHelper.isVersionNewerThan1_20_5() && this.scale != 1) {
+            if (VersionHelper.isOrAbove1_20_5() && this.scale != 1) {
                 Object attributeInstance = Reflections.constructor$AttributeInstance.newInstance(Reflections.instance$Holder$Attribute$scale, (Consumer<?>) (o) -> {});
                 Reflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, this.scale);
                 packets.accept(Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityId[0], Collections.singletonList(attributeInstance)), false);

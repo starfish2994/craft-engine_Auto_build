@@ -27,7 +27,7 @@ public class EntityUtils {
     }
 
     public static Entity spawnEntity(World world, Location loc, EntityType type, Consumer<Entity> function) {
-        if (VersionHelper.isVersionNewerThan1_20_2()) {
+        if (VersionHelper.isOrAbove1_20_2()) {
             return world.spawnEntity(loc, type, CreatureSpawnEvent.SpawnReason.CUSTOM, function);
         } else {
             return LegacyEntityUtils.spawnEntity(world, loc, type, function);

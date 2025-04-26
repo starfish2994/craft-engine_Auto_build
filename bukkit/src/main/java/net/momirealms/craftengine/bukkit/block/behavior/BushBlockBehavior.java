@@ -56,7 +56,7 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
         Object level;
         Object blockPos;
         Object state = args[0];
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             level = args[1];
             blockPos = args[3];
         } else {

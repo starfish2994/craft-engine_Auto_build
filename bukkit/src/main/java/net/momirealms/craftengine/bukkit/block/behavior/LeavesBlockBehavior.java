@@ -66,7 +66,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
         Object blockPos;
         Object neighborState;
         Object blockState = args[0];
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             world = args[1];
             neighborState = args[6];
             blockPos = args[3];

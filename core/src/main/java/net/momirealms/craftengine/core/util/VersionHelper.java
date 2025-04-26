@@ -6,12 +6,39 @@ public class VersionHelper {
     private static boolean folia;
     private static boolean paper;
 
+    private static boolean v1_20;
+    private static boolean v1_20_1;
+    private static boolean v1_20_2;
+    private static boolean v1_20_3;
+    private static boolean v1_20_4;
+    private static boolean v1_20_5;
+    private static boolean v1_20_6;
+    private static boolean v1_21;
+    private static boolean v1_21_1;
+    private static boolean v1_21_2;
+    private static boolean v1_21_3;
+    private static boolean v1_21_4;
+    private static boolean v1_21_5;
+
     public static void init(String serverVersion) {
         String[] split = serverVersion.split("\\.");
         version = Float.parseFloat(split[1] + "." + (split.length == 3 ? split[2] : "0"));
         checkMojMap();
         checkFolia();
         checkPaper();
+        v1_20 = version >= 20f;
+        v1_20_1 = version >= 20.1f;
+        v1_20_2 = version >= 20.2f;
+        v1_20_3 = version >= 20.3f;
+        v1_20_4 = version >= 20.4f;
+        v1_20_5 = version >= 20.5f;
+        v1_20_6 = version >= 20.6f;
+        v1_21 = version >= 21f;
+        v1_21_1 = version >= 21.1f;
+        v1_21_2 = version >= 21.2f;
+        v1_21_3 = version >= 21.3f;
+        v1_21_4 = version >= 21.4f;
+        v1_21_5 = version >= 21.5f;
     }
 
     public static float version() {
@@ -55,43 +82,55 @@ public class VersionHelper {
         return mojmap;
     }
 
-    public static boolean isVersionNewerThan1_20() {
-        return version >= 20f;
+    public static boolean isOrAbove1_20() {
+        return v1_20;
     }
 
-    public static boolean isVersionNewerThan1_20_2() {
-        return version >= 20.19f;
+    public static boolean isOrAbove1_20_1() {
+        return v1_20_1;
     }
 
-    public static boolean isVersionNewerThan1_20_3() {
-        return version >= 20.29f;
+    public static boolean isOrAbove1_20_2() {
+        return v1_20_2;
     }
 
-    public static boolean isVersionNewerThan1_20_4() {
-        return version >= 20.39f;
+    public static boolean isOrAbove1_20_3() {
+        return v1_20_3;
     }
 
-    public static boolean isVersionNewerThan1_20_5() {
-        return version >= 20.49f;
+    public static boolean isOrAbove1_20_4() {
+        return v1_20_4;
     }
 
-    public static boolean isVersionNewerThan1_21() {
-        return version >= 21f;
+    public static boolean isOrAbove1_20_5() {
+        return v1_20_5;
     }
 
-    public static boolean isVersionNewerThan1_21_2() {
-        return version >= 21.19f;
+    public static boolean isOrAbove1_20_6() {
+        return v1_20_6;
     }
 
-    public static boolean isVersionNewerThan1_21_3() {
-        return version >= 21.29f;
+    public static boolean isOrAbove1_21() {
+        return v1_21;
     }
 
-    public static boolean isVersionNewerThan1_21_4() {
-        return version >= 21.39f;
+    public static boolean isOrAbove1_21_1() {
+        return v1_21_1;
     }
 
-    public static boolean isVersionNewerThan1_21_5() {
-        return version >= 21.49f;
+    public static boolean isOrAbove1_21_2() {
+        return v1_21_2;
+    }
+
+    public static boolean isOrAbove1_21_3() {
+        return v1_21_3;
+    }
+
+    public static boolean isOrAbove1_21_4() {
+        return v1_21_4;
+    }
+
+    public static boolean isOrAbove1_21_5() {
+        return v1_21_5;
     }
 }

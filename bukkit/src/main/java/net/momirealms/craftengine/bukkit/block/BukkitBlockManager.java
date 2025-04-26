@@ -107,7 +107,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (enableNoteBlocks) {
             this.recordVanillaNoteBlocks();
         }
-        if (VersionHelper.isVersionNewerThan1_20_3()) {
+        if (VersionHelper.isOrAbove1_20_3()) {
             this.fallingBlockRemoveListener = new FallingBlockRemoveListener();
         } else this.fallingBlockRemoveListener = null;
         this.stateId2ImmutableBlockStates = new ImmutableBlockState[customBlockCount];

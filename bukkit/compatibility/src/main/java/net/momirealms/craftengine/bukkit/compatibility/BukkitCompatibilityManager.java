@@ -124,7 +124,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
 
     private void initSlimeWorldHook() {
         WorldManager worldManager = this.plugin.worldManager();
-        if (VersionHelper.isVersionNewerThan1_21_4()) {
+        if (VersionHelper.isOrAbove1_21_4()) {
             try {
                 Class.forName("com.infernalsuite.asp.api.AdvancedSlimePaperAPI");
                 SlimeFormatStorageAdaptor adaptor = new SlimeFormatStorageAdaptor(worldManager);

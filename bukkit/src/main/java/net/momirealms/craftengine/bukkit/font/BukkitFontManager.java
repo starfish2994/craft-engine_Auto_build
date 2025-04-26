@@ -131,14 +131,14 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         if (result == null) return;
         Player player;
         try {
-            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isVersionNewerThan1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
+            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isOrAbove1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
         } catch (ReflectiveOperationException e) {
             this.plugin.logger().warn("Failed to get inventory viewer", e);
             return;
         }
 
         String renameText;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             AnvilView anvilView = event.getView();
             renameText = anvilView.getRenameText();
         } else {

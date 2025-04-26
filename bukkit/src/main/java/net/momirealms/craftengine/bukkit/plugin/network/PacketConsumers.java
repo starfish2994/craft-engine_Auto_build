@@ -43,7 +43,6 @@ import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
-import net.momirealms.sparrow.nbt.NBT;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -98,16 +97,15 @@ public class PacketConsumers {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             FriendlyByteBuf buf = event.getBuffer();
-            // 这里是正片
             int chunkX = buf.readInt();
             int chunkZ = buf.readInt();
-
-            boolean named = !VersionHelper.isVersionNewerThan1_20_2();
+            boolean named = !VersionHelper.isOrAbove1_20_2();
             // ClientboundLevelChunkPacketData
             int heightmapsCount = 0;
-            Map<Integer, long[]> heightmapsMap = new HashMap<>();
+            Map<Integer, long[]> heightmapsMap = null;
             Tag heightmaps = null;
-            if (VersionHelper.isVersionNewerThan1_21_5()) {
+            if (VersionHelper.isOrAbove1_21_5()) {
+                heightmapsMap = new HashMap<>();
                 heightmapsCount = buf.readVarInt();
                 for (int i = 0; i < heightmapsCount; i++) {
                     int key = buf.readVarInt();
@@ -198,8 +196,9 @@ public class PacketConsumers {
             buf.writeVarInt(event.packetID());
             buf.writeInt(chunkX);
             buf.writeInt(chunkZ);
-            if (VersionHelper.isVersionNewerThan1_21_5()) {
+            if (VersionHelper.isOrAbove1_21_5()) {
                 buf.writeVarInt(heightmapsCount);
+                assert heightmapsMap != null;
                 for (Map.Entry<Integer, long[]> entry : heightmapsMap.entrySet()) {
                     buf.writeVarInt(entry.getKey());
                     buf.writeLongArray(entry.getValue());
@@ -1239,7 +1238,7 @@ public class PacketConsumers {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             String name = (String) Reflections.field$ServerboundHelloPacket$name.get(packet);
             player.setName(name);
-            if (VersionHelper.isVersionNewerThan1_20_2()) {
+            if (VersionHelper.isOrAbove1_20_2()) {
                 UUID uuid = (UUID) Reflections.field$ServerboundHelloPacket$uuid.get(packet);
                 player.setUUID(uuid);
             } else {
@@ -1287,7 +1286,7 @@ public class PacketConsumers {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             player.clearView();
             Object dimensionKey;
-            if (!VersionHelper.isVersionNewerThan1_20_2()) {
+            if (!VersionHelper.isOrAbove1_20_2()) {
                 dimensionKey = Reflections.field$ClientboundRespawnPacket$dimension.get(packet);
             } else {
                 Object commonInfo = Reflections.field$ClientboundRespawnPacket$commonPlayerSpawnInfo.get(packet);
@@ -1312,7 +1311,7 @@ public class PacketConsumers {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             player.setConnectionState(ConnectionState.PLAY);
             Object dimensionKey;
-            if (!VersionHelper.isVersionNewerThan1_20_2()) {
+            if (!VersionHelper.isOrAbove1_20_2()) {
                 if (BukkitNetworkManager.hasViaVersion()) {
                     user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(player.uuid()));
                 }
@@ -1340,7 +1339,7 @@ public class PacketConsumers {
     // When the hotbar is full, the latest creative mode inventory can only be accessed when the player opens the inventory screen. Currently, it is not worth further handling this issue.
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_CREATIVE_SLOT = (user, event, packet) -> {
         try {
-            if (VersionHelper.isVersionNewerThan1_21_4()) return;
+            if (VersionHelper.isOrAbove1_21_4()) return;
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (VersionHelper.isFolia()) {
@@ -1363,7 +1362,7 @@ public class PacketConsumers {
         Player bukkitPlayer = player.platformPlayer();
         if (bukkitPlayer == null) return;
         if (bukkitPlayer.getGameMode() != GameMode.CREATIVE) return;
-        int slot = VersionHelper.isVersionNewerThan1_20_5() ? Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getShort(packet) : Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getInt(packet);
+        int slot = VersionHelper.isOrAbove1_20_5() ? Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getShort(packet) : Reflections.field$ServerboundSetCreativeModeSlotPacket$slotNum.getInt(packet);
         if (slot < 36 || slot > 44) return;
         ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$ServerboundSetCreativeModeSlotPacket$itemStack.get(packet));
         if (ItemUtils.isEmpty(item)) return;
@@ -1935,7 +1934,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
         try {
-            if (!VersionHelper.isVersionNewerThan1_20_5()) return;
+            if (!VersionHelper.isOrAbove1_20_5()) return;
             Object payload = Reflections.field$ServerboundCustomPayloadPacket$payload.get(packet);
             if (payload.getClass().equals(Reflections.clazz$DiscardedPayload)) {
                 Object type = Reflections.method$CustomPacketPayload$type.invoke(payload);
@@ -2217,7 +2216,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
         try {
-            if (!VersionHelper.isVersionNewerThan1_20_2()) return;
+            if (!VersionHelper.isOrAbove1_20_2()) return;
             // we should only handle fake urls
             String url = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$url(packet);
             if (!url.equals(BukkitPackManager.FAKE_URL)) {

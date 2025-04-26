@@ -48,7 +48,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (Config.sendPackOnJoin() && !VersionHelper.isVersionNewerThan1_20_2()) {
+        if (Config.sendPackOnJoin() && !VersionHelper.isOrAbove1_20_2()) {
             Player player = plugin.adapt(event.getPlayer());
             this.sendResourcePack(player);
         }
@@ -58,7 +58,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     public void load() {
         if (ReloadCommand.RELOAD_PACK_FLAG || CraftEngine.instance().isInitializing()) {
             super.load();
-            if (Config.sendPackOnJoin() && VersionHelper.isVersionNewerThan1_20_2() && !(resourcePackHost() instanceof NoneHost)) {
+            if (Config.sendPackOnJoin() && VersionHelper.isOrAbove1_20_2() && !(resourcePackHost() instanceof NoneHost)) {
                 this.modifyServerSettings();
             }
         }
@@ -69,7 +69,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
             Object settings = Reflections.field$DedicatedServer$settings.get(Reflections.method$MinecraftServer$getServer.invoke(null));
             Object properties = Reflections.field$DedicatedServerSettings$properties.get(settings);
             Object info;
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
+            if (VersionHelper.isOrAbove1_20_3()) {
                 info = Reflections.constructor$ServerResourcePackInfo.newInstance(new UUID(0, 0), FAKE_URL, "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
             } else {
                 info = Reflections.constructor$ServerResourcePackInfo.newInstance(FAKE_URL, "", Config.kickOnDeclined(), ComponentUtils.adventureToMinecraft(Config.resourcePackPrompt()));
@@ -84,7 +84,7 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     public void unload() {
         super.unload();
         if (ReloadCommand.RELOAD_PACK_FLAG) {
-            if (VersionHelper.isVersionNewerThan1_20_2()) {
+            if (VersionHelper.isOrAbove1_20_2()) {
                 this.resetServerSettings();
             }
         }

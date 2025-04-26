@@ -42,7 +42,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object world;
         Object blockPos;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             world = args[1];
             blockPos = args[3];
         } else {
@@ -81,7 +81,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     @Override
     public void onBrokenAfterFall(Object thisBlock, Object[] args) throws Exception {
         // Use EntityRemoveEvent for 1.20.3+
-        if (VersionHelper.isVersionNewerThan1_20_3()) return;
+        if (VersionHelper.isOrAbove1_20_3()) return;
         Object level = args[0];
         Object fallingBlockEntity = args[2];
         boolean cancelDrop = (boolean) Reflections.field$FallingBlockEntity$cancelDrop.get(fallingBlockEntity);

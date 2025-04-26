@@ -29,7 +29,7 @@ public class ComponentTypes {
     private ComponentTypes() {}
 
     private static Object getComponentType(Key key) {
-        if (!VersionHelper.isVersionNewerThan1_20_5()) return null;
+        if (!VersionHelper.isOrAbove1_20_5()) return null;
         return FastNMS.INSTANCE.getComponentType(key.namespace(), key.value());
     }
 }

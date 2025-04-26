@@ -38,6 +38,6 @@ public class DisplayEntityData<T> extends BaseEntityData<T> {
     }
 
     public DisplayEntityData(int id, Object serializer, T defaultValue) {
-        super(!VersionHelper.isVersionNewerThan1_20_2() && id >= 11 ? id - 1 : id, serializer, defaultValue);
+        super(!VersionHelper.isOrAbove1_20_2() && id >= 11 ? id - 1 : id, serializer, defaultValue);
     }
 }

@@ -104,7 +104,7 @@ public class EquipmentData {
         map.put("dispensable", this.dispensable);
         map.put("swappable", this.swappable);
         map.put("damage_on_hurt", this.damageOnHurt);
-        if (VersionHelper.isVersionNewerThan1_21_5()) {
+        if (VersionHelper.isOrAbove1_21_5()) {
             map.put("equip_on_interact", this.equipOnInteract);
         }
         if (this.cameraOverlay != null) {

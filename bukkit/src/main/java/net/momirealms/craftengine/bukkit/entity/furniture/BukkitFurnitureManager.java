@@ -58,7 +58,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         this.plugin = plugin;
         this.furnitureParser = new FurnitureParser();
         this.furnitureEventListener = new FurnitureEventListener(this);
-        this.dismountListener = VersionHelper.isVersionNewerThan1_20_3() ? new DismountListener1_20_3(this) : new DismountListener1_20(this::handleDismount);
+        this.dismountListener = VersionHelper.isOrAbove1_20_3() ? new DismountListener1_20_3(this) : new DismountListener1_20(this::handleDismount);
     }
 
     @Override
@@ -292,7 +292,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         if (previous != null) return;
 
         Location location = display.getLocation();
-        boolean above1_20_1 = VersionHelper.isVersionNewerThan1_20_2();
+        boolean above1_20_1 = VersionHelper.isOrAbove1_20_2();
         boolean preventChange = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         if (above1_20_1) {
             if (!preventChange) {
