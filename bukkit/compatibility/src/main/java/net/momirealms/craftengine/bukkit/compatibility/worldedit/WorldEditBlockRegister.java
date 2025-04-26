@@ -25,7 +25,7 @@ public class WorldEditBlockRegister {
     private final boolean isFAWE;
 
     public WorldEditBlockRegister(AbstractBlockManager manager, boolean isFAWE) {
-        field$BlockType$blockMaterial = ReflectionUtils.getDeclaredField(BlockType.class, "blockMaterial");
+        this.field$BlockType$blockMaterial = ReflectionUtils.getDeclaredField(BlockType.class, "blockMaterial");
         this.manager = manager;
         this.isFAWE = isFAWE;
         CEBlockParser blockParser = new CEBlockParser(WorldEdit.getInstance());
@@ -34,7 +34,7 @@ public class WorldEditBlockRegister {
 
     public void register(Key id) throws ReflectiveOperationException {
         BlockType blockType = new BlockType(id.toString(), blockState -> blockState);
-        field$BlockType$blockMaterial.set(blockType, LazyReference.from(() -> new BukkitBlockRegistry.BukkitBlockMaterial(null, Material.STONE)));
+        this.field$BlockType$blockMaterial.set(blockType, LazyReference.from(() -> new BukkitBlockRegistry.BukkitBlockMaterial(null, Material.STONE)));
         BlockType.REGISTRY.register(id.toString(), blockType);
     }
 
