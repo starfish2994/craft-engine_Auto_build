@@ -2,6 +2,8 @@ package net.momirealms.craftengine.bukkit.api;
 
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
@@ -120,6 +122,17 @@ public final class CraftEngineFurniture {
     public static boolean isFurniture(@NotNull Entity entity) {
         String furnitureId = entity.getPersistentDataContainer().get(BukkitFurnitureManager.FURNITURE_KEY, PersistentDataType.STRING);
         return furnitureId != null;
+    }
+
+    /**
+     * Check if an entity is a collision entity
+     *
+     * @param entity entity to check
+     * @return is collision entity or not
+     */
+    public static boolean isCollisionEntity(@NotNull Entity entity) {
+        Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(entity);
+        return nmsEntity instanceof CollisionEntity;
     }
 
     /**

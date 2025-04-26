@@ -43,6 +43,7 @@ import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
 import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
+import net.momirealms.sparrow.nbt.NBT;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -97,77 +98,11 @@ public class PacketConsumers {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             FriendlyByteBuf buf = event.getBuffer();
-            // 我不明白为什么1.20~1.20.1会出问题，貌似是readNbt的问题
-            if (!VersionHelper.isVersionNewerThan1_20_2()) {
-                Object packet = FastNMS.INSTANCE.constructor$ClientboundLevelChunkWithLightPacket(buf);
-                if (user.clientModEnabled()) {
-                    Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
-                    byte[] buffer = FastNMS.INSTANCE.field$ClientboundLevelChunkPacketData$buffer(chunkData);
-                    ByteBuf byteBuf = Unpooled.copiedBuffer(buffer);
-                    FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
-                    FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
-                    for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                        try {
-                            MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
-                            mcSection.readPacket(friendlyByteBuf);
-                            PalettedContainer<Integer> container = mcSection.blockStateContainer();
-                            Palette<Integer> palette = container.data().palette();
-                            if (palette.canRemap()) {
-                                palette.remap(PacketConsumers::remapMOD);
-                            } else {
-                                for (int j = 0; j < 4096; j++) {
-                                    int state = container.get(j);
-                                    int newState = remapMOD(state);
-                                    if (newState != state) {
-                                        container.set(j, newState);
-                                    }
-                                }
-                            }
-                            mcSection.writePacket(newBuf);
-                        } catch (Exception e) {
-                            break;
-                        }
-                    }
-                    Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
-                } else {
-                    Object chunkData = FastNMS.INSTANCE.field$ClientboundLevelChunkWithLightPacket$chunkData(packet);
-                    byte[] buffer = FastNMS.INSTANCE.field$ClientboundLevelChunkPacketData$buffer(chunkData);
-                    ByteBuf byteBuf = Unpooled.copiedBuffer(buffer);
-                    FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
-                    FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
-                    for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                        try {
-                            MCSection mcSection = new MCSection(BLOCK_LIST, BIOME_LIST);
-                            mcSection.readPacket(friendlyByteBuf);
-                            PalettedContainer<Integer> container = mcSection.blockStateContainer();
-                            Palette<Integer> palette = container.data().palette();
-                            if (palette.canRemap()) {
-                                palette.remap(PacketConsumers::remap);
-                            } else {
-                                for (int j = 0; j < 4096; j++) {
-                                    int state = container.get(j);
-                                    int newState = remap(state);
-                                    if (newState != state) {
-                                        container.set(j, newState);
-                                    }
-                                }
-                            }
-                            mcSection.writePacket(newBuf);
-                        } catch (Exception e) {
-                            break;
-                        }
-                    }
-                    Reflections.field$ClientboundLevelChunkPacketData$buffer.set(chunkData, newBuf.array());
-                }
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                FastNMS.INSTANCE.method$ClientboundLevelChunkWithLightPacket$write(packet, buf);
-                event.setChanged(true);
-                return;
-            }
             // 这里是正片
             int chunkX = buf.readInt();
             int chunkZ = buf.readInt();
+
+            boolean named = !VersionHelper.isVersionNewerThan1_20_2();
             // ClientboundLevelChunkPacketData
             int heightmapsCount = 0;
             Map<Integer, long[]> heightmapsMap = new HashMap<>();
@@ -180,8 +115,9 @@ public class PacketConsumers {
                     heightmapsMap.put(key, value);
                 }
             } else {
-                heightmaps = buf.readNbt(false);
+                heightmaps = buf.readNbt(named);
             }
+
             int varInt = buf.readVarInt();
             byte[] buffer = new byte[varInt];
             buf.readBytes(buffer);
@@ -191,7 +127,7 @@ public class PacketConsumers {
                 byte packedXZ = buf.readByte();
                 short y = buf.readShort();
                 int type = buf.readVarInt();
-                Tag tag = buf.readNbt(false);
+                Tag tag = buf.readNbt(named);
                 BlockEntityData blockEntityData = new BlockEntityData(packedXZ, y, type, tag);
                 blockEntitiesData.add(blockEntityData);
             }
@@ -269,7 +205,7 @@ public class PacketConsumers {
                     buf.writeLongArray(entry.getValue());
                 }
             } else {
-                buf.writeNbt(heightmaps, false);
+                buf.writeNbt(heightmaps, named);
             }
             buf.writeVarInt(buffer.length);
             buf.writeBytes(buffer);
@@ -278,7 +214,7 @@ public class PacketConsumers {
                 buf.writeByte(blockEntityData.packedXZ());
                 buf.writeShort(blockEntityData.y());
                 buf.writeVarInt(blockEntityData.type());
-                buf.writeNbt(blockEntityData.tag(), false);
+                buf.writeNbt(blockEntityData.tag(), named);
             }
             buf.writeBitSet(skyYMask);
             buf.writeBitSet(blockYMask);

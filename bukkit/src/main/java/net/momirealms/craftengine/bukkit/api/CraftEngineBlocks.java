@@ -124,7 +124,7 @@ public final class CraftEngineBlocks {
     }
 
     /**
-     * Removes a block from the world if it's a custom one
+     * Removes a block from the world if it's custom
      *
      * @param block block to remove
      * @return success or not
@@ -136,7 +136,7 @@ public final class CraftEngineBlocks {
     }
 
     /**
-     * Removes a block from the world if it's a custom one
+     * Removes a block from the world if it's custom
      *
      * @param block block to remove
      * @param applyPhysics whether to apply physics
@@ -150,7 +150,7 @@ public final class CraftEngineBlocks {
     }
 
     /**
-     * Removes a block from the world if it's a custom one
+     * Removes a block from the world if it's custom
      *
      * @param block block to remove
      * @param player player who breaks the block
@@ -193,7 +193,7 @@ public final class CraftEngineBlocks {
     }
 
     /**
-     * Checks if a block is a custom one
+     * Checks if a block is custom
      *
      * @param block block
      * @return is custom block or not
@@ -236,7 +236,7 @@ public final class CraftEngineBlocks {
      * @return bukkit block data
      */
     @NotNull
-    public static BlockData createBukkitBlockData(@NotNull ImmutableBlockState blockState) {
+    public static BlockData getBukkitBlockData(@NotNull ImmutableBlockState blockState) {
         return BlockStateUtils.fromBlockData(blockState.customBlockState().handle());
     }
 }
