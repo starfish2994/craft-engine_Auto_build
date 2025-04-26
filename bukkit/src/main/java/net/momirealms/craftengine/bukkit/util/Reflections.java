@@ -5811,8 +5811,8 @@ public class Reflections {
 
     public static final Class<?> clazz$ServerboundCustomPayloadPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "network.protocol.game.PacketPlayInCustomPayload",
-                    "network.protocol.common.ServerboundCustomPayloadPacket"
+                    List.of("network.protocol.game.PacketPlayInCustomPayload", "network.protocol.common.ServerboundCustomPayloadPacket"),
+                    List.of("network.protocol.game.ServerboundCustomPayloadPacket", "network.protocol.common.ServerboundCustomPayloadPacket")
             )
     );
 
@@ -5865,8 +5865,8 @@ public class Reflections {
 
     public static final Class<?> clazz$ClientboundDisconnectPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "network.protocol.game.PacketPlayOutKickDisconnect",
-                    "network.protocol.common.ClientboundDisconnectPacket"
+                    List.of("network.protocol.game.PacketPlayOutKickDisconnect", "network.protocol.common.ClientboundDisconnectPacket"),
+                    List.of("network.protocol.game.ClientboundDisconnectPacket", "network.protocol.common.ClientboundDisconnectPacket")
             )
     );
 
