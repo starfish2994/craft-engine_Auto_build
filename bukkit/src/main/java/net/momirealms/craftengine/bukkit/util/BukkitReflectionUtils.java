@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 
 public final class BukkitReflectionUtils {
@@ -69,7 +70,22 @@ public final class BukkitReflectionUtils {
     }
 
     public static Class<?> findReobfOrMojmapClass(String reobf, String mojmap) {
-        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass(mojmap));
-        else return ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass(reobf));
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(mojmap);
+        else return ReflectionUtils.getClazz(reobf);
+    }
+
+    public static Class<?> findReobfOrMojmapClass(List<String> reobf, String mojmap) {
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(mojmap);
+        else return ReflectionUtils.getClazz(reobf.toArray(new String[0]));
+    }
+
+    public static Class<?> findReobfOrMojmapClass(String reobf, List<String> mojmap) {
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(mojmap.toArray(new String[0]));
+        else return ReflectionUtils.getClazz(reobf);
+    }
+
+    public static Class<?> findReobfOrMojmapClass(List<String> reobf, List<String> mojmap) {
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(mojmap.toArray(new String[0]));
+        else return ReflectionUtils.getClazz(reobf.toArray(new String[0]));
     }
 }
