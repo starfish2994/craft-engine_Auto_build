@@ -2,9 +2,12 @@ package net.momirealms.craftengine.bukkit;
 
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +20,7 @@ public class BukkitBootstrap extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        if (!Bukkit.getServer().getOnlineMode()) {
+        if (!isOnlineMode()) {
             return;
         }
         this.plugin.onPluginLoad();
@@ -25,7 +28,7 @@ public class BukkitBootstrap extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        if (!Bukkit.getServer().getOnlineMode()) {
+        if (!isOnlineMode()) {
             this.plugin.logger().warn("CraftEngine Community Edition requires online mode to be enabled.");
             Bukkit.getPluginManager().disablePlugin(this);
         } else {
@@ -50,9 +53,33 @@ public class BukkitBootstrap extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (!Bukkit.getServer().getOnlineMode()) {
+        if (!isOnlineMode()) {
             return;
         }
         this.plugin.onPluginDisable();
+    }
+
+    private boolean isOnlineMode() {
+        if (Bukkit.getServer().getOnlineMode()) {
+            return true;
+        }
+        return isVelocityOnlineMode();
+    }
+
+    private boolean isVelocityOnlineMode() {
+        File paperGlobalFile = new File(this.getDataFolder().getParentFile().getParentFile(), "config" + File.separator + "paper-global.yml");
+        if (!paperGlobalFile.exists()) {
+            return false;
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(paperGlobalFile);
+        ConfigurationSection proxies = config.getConfigurationSection("proxies");
+        if (proxies == null) {
+            return false;
+        }
+        boolean enableVelocity = proxies.getBoolean("velocity.enabled", false);
+        if (!enableVelocity) {
+            return false;
+        }
+        return proxies.getBoolean("velocity.online-mode", false);
     }
 }
