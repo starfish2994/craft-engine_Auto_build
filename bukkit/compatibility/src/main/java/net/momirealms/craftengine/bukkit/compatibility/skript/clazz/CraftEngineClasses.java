@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.compatibility.skript.classes;
+package net.momirealms.craftengine.bukkit.compatibility.skript.clazz;
 
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;

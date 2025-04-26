@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Method;
@@ -65,5 +66,10 @@ public final class BukkitReflectionUtils {
 
     public static String assembleMCClass(String className) {
         return PREFIX_MC + className;
+    }
+
+    public static Class<?> findReobfOrMojmapClass(String reobf, String mojmap) {
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass(mojmap));
+        else return ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass(reobf));
     }
 }

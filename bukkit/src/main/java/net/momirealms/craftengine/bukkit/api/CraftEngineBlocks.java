@@ -112,6 +112,8 @@ public final class CraftEngineBlocks {
         Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld());
         Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         Object blockState = block.customBlockState().handle();
+        System.out.println(blockPos);
+        System.out.println(blockState);
         Object oldBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
         success = FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, blockState, option.flags());
         if (success) {
@@ -120,6 +122,7 @@ public final class CraftEngineBlocks {
                 location.getWorld().playSound(location, block.sounds().placeSound().toString(), SoundCategory.BLOCKS, block.sounds().placeSound().volume(), block.sounds().placeSound().pitch());
             }
         }
+        System.out.println(success);
         return success;
     }
 

@@ -9,11 +9,7 @@ import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineMo
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.compatibility.permission.LuckPermsEventListeners;
-import net.momirealms.craftengine.bukkit.compatibility.skript.classes.CraftEngineClasses;
-import net.momirealms.craftengine.bukkit.compatibility.skript.condition.CondIsBlockCustomBlock;
-import net.momirealms.craftengine.bukkit.compatibility.skript.event.EvtCustomBlock;
-import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockID;
-import net.momirealms.craftengine.bukkit.compatibility.skript.expression.ExprBlockCustomBlockState;
+import net.momirealms.craftengine.bukkit.compatibility.skript.SkriptHook;
 import net.momirealms.craftengine.bukkit.compatibility.slimeworld.SlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.viaversion.ViaVersionUtils;
 import net.momirealms.craftengine.bukkit.compatibility.worldedit.WorldEditBlockRegister;
@@ -56,12 +52,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
         // skript
         if (this.isPluginEnabled("Skript")) {
-            CraftEngineClasses.register();
-            EvtCustomBlock.register();
-            CondIsBlockCustomBlock.register();
-            ExprBlockCustomBlockID.register();
-            ExprBlockCustomBlockState.register();
-//            ExprCustomBlockProperty.register();
+            SkriptHook.register();
             logHook("Skript");
             Plugin skriptPlugin = getPlugin("Skript");
             for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
