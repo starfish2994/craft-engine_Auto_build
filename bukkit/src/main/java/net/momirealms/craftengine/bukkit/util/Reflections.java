@@ -4238,8 +4238,8 @@ public class Reflections {
 
     public static final Class<?> clazz$MultiPackResourceManager = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "server.packs.resources.MultiPackResourceManager",
-                    "server.packs.resources.ResourceManager"
+                    "server.packs.resources.ResourceManager",
+                    "server.packs.resources.MultiPackResourceManager"
             )
     );
 
