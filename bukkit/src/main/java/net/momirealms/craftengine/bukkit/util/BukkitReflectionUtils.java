@@ -75,8 +75,8 @@ public final class BukkitReflectionUtils {
     }
 
     public static Class<?> findReobfOrMojmapClass(String reobf, String mojmap, Function<String, String> classDecorator) {
-        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(classDecorator.apply(reobf));
-        else return ReflectionUtils.getClazz(classDecorator.apply(mojmap));
+        if (VersionHelper.isMojmap()) return ReflectionUtils.getClazz(classDecorator.apply(mojmap));
+        else return ReflectionUtils.getClazz(classDecorator.apply(reobf));
     }
 
     public static Class<?> findReobfOrMojmapClass(List<String> reobf, String mojmap) {
