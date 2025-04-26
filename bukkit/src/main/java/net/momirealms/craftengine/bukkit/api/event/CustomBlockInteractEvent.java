@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,6 +26,7 @@ public class CustomBlockInteractEvent extends PlayerEvent implements Cancellable
     private final InteractionHand hand;
     private final Action action;
     private final BlockFace clickedFace;
+    private final ItemStack item;
 
     public CustomBlockInteractEvent(@NotNull Player player,
                                     @NotNull Location location,
@@ -32,7 +35,8 @@ public class CustomBlockInteractEvent extends PlayerEvent implements Cancellable
                                     @NotNull Block bukkitBlock,
                                     @NotNull BlockFace clickedFace,
                                     @NotNull InteractionHand hand,
-                                    @NotNull Action action) {
+                                    @NotNull Action action,
+                                    @Nullable ItemStack item) {
         super(player);
         this.customBlock = state.owner().value();
         this.bukkitBlock = bukkitBlock;
@@ -42,6 +46,7 @@ public class CustomBlockInteractEvent extends PlayerEvent implements Cancellable
         this.hand = hand;
         this.action = action;
         this.clickedFace = clickedFace;
+        this.item = item;
     }
 
     @NotNull
@@ -87,6 +92,12 @@ public class CustomBlockInteractEvent extends PlayerEvent implements Cancellable
     @NotNull
     public ImmutableBlockState blockState() {
         return this.state;
+    }
+
+    @ApiStatus.Experimental
+    @NotNull
+    public ItemStack item() {
+        return this.item;
     }
 
     @NotNull
