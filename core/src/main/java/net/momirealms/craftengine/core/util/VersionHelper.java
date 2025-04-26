@@ -67,7 +67,7 @@ public class VersionHelper {
     private static boolean checkMojMap() {
         // Check if the server is Mojmap
         try {
-            Class.forName("net.minecraft.network.protocol.game.ClientboundBossEventPacket");
+            Class.forName("net.neoforged.art.internal.RenamerImpl");
             return true;
         } catch (ClassNotFoundException ignored) {
         }
