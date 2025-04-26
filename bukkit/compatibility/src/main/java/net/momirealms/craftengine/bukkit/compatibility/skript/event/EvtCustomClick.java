@@ -63,8 +63,6 @@ public class EvtCustomClick extends SkriptEvent {
             return false;
         }
 
-        System.out.println(furnitureId);
-
         Predicate<ItemType> checker = itemType -> {
             if (event instanceof CustomBlockInteractEvent event1) {
                 return itemType.isOfType(event1.item());
