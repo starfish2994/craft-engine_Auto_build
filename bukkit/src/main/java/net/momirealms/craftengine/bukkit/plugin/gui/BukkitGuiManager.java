@@ -43,7 +43,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
         if (VersionHelper.isFolia()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 this.plugin.scheduler().sync().run(() -> {
-                    org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
+                    org.bukkit.inventory.Inventory top = !VersionHelper.isOrAbove1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
                     if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
                         holder.gui().onTimer();
                     }
@@ -51,7 +51,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
             }
         } else {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                org.bukkit.inventory.Inventory top = !VersionHelper.isVersionNewerThan1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
+                org.bukkit.inventory.Inventory top = !VersionHelper.isOrAbove1_21() ? LegacyInventoryUtils.getTopInventory(player) : player.getOpenInventory().getTopInventory();
                 if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
                     holder.gui().onTimer();
                 }

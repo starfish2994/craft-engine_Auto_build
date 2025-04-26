@@ -79,7 +79,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object world;
         Object blockPos;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             world = args[1];
             blockPos = args[3];
         } else {
@@ -120,7 +120,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
                 int age = currentState.get(ageProperty);
                 if (age >= this.ageProperty.max || RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
                     Object abovePos = LocationUtils.above(blockPos);
-                    if (VersionHelper.isVersionNewerThan1_21_5()) {
+                    if (VersionHelper.isOrAbove1_21_5()) {
                         Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
                     } else {
                         Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle());

@@ -25,7 +25,7 @@ public class ItemSettings {
 
     public <I> List<ItemDataModifier<I>> modifiers() {
         ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
-        if (VersionHelper.isVersionNewerThan1_21_2() && this.equipment != null && this.equipment.modernData() != null) modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
+        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null && this.equipment.modernData() != null) modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
         // TODO 1.20 leather armor
         return modifiers;
     }
@@ -172,7 +172,7 @@ public class ItemSettings {
             registerFactory("equippable", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 EquipmentData data;
-                if (VersionHelper.isVersionNewerThan1_21_2() && args.containsKey("slot")) data = EquipmentData.fromMap(args);
+                if (VersionHelper.isOrAbove1_21_2() && args.containsKey("slot")) data = EquipmentData.fromMap(args);
                 else data = null;
                 EquipmentGeneration equipment = new EquipmentGeneration(
                         EquipmentGeneration.Layer.fromConfig(args.get("humanoid")),

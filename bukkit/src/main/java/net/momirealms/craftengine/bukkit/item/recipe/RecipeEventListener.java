@@ -279,7 +279,7 @@ public class RecipeEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
         if (!Config.enableRecipeSystem()) return;
-        if (VersionHelper.isVersionNewerThan1_21_2()) return;
+        if (VersionHelper.isOrAbove1_21_2()) return;
         Block block = event.getBlock();
         Material material = block.getType();
         if (material == Material.CAMPFIRE) {
@@ -308,7 +308,7 @@ public class RecipeEventListener implements Listener {
                     plugin.logger().warn("Failed to inject cooking block entity", e);
                 }
             }
-        } else if (!VersionHelper.isVersionNewerThan1_21_2() && material == Material.CAMPFIRE) {
+        } else if (!VersionHelper.isOrAbove1_21_2() && material == Material.CAMPFIRE) {
             if (block.getState() instanceof Campfire campfire) {
                 try {
                     Object blockEntity = Reflections.field$CraftBlockEntityState$tileEntity.get(campfire);
@@ -324,13 +324,13 @@ public class RecipeEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPutItemOnCampfire(PlayerInteractEvent event) {
         if (!Config.enableRecipeSystem()) return;
-        if (!VersionHelper.isVersionNewerThan1_21_2()) return;
+        if (!VersionHelper.isOrAbove1_21_2()) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block clicked = event.getClickedBlock();
         if (clicked == null) return;
         Material type = clicked.getType();
         if (type != Material.CAMPFIRE && type != Material.SOUL_CAMPFIRE) return;
-        if (!VersionHelper.isVersionNewerThan1_21_2()) {
+        if (!VersionHelper.isOrAbove1_21_2()) {
             if (clicked.getState() instanceof Campfire campfire) {
                 try {
                     Object blockEntity = Reflections.field$CraftBlockEntityState$tileEntity.get(campfire);
@@ -375,7 +375,7 @@ public class RecipeEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(CampfireStartEvent event) {
         if (!Config.enableRecipeSystem()) return;
-        if (!VersionHelper.isVersionNewerThan1_21_2()) return;
+        if (!VersionHelper.isOrAbove1_21_2()) return;
         CampfireRecipe recipe = event.getRecipe();
         Key recipeId = new Key(recipe.getKey().namespace(), recipe.getKey().value());
 
@@ -406,7 +406,7 @@ public class RecipeEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onCampfireCook(BlockCookEvent event) {
         if (!Config.enableRecipeSystem()) return;
-        if (!VersionHelper.isVersionNewerThan1_21_2()) return;
+        if (!VersionHelper.isOrAbove1_21_2()) return;
         Material type = event.getBlock().getType();
         if (type != Material.CAMPFIRE && type != Material.SOUL_CAMPFIRE) return;
         CampfireRecipe recipe = (CampfireRecipe) event.getRecipe();
@@ -563,7 +563,7 @@ public class RecipeEventListener implements Listener {
         String renameText;
         int maxRepairCost;
         //int previousCost;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             AnvilView anvilView = event.getView();
             renameText = anvilView.getRenameText();
             maxRepairCost = anvilView.getMaximumRepairCost();
@@ -588,10 +588,10 @@ public class RecipeEventListener implements Listener {
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to get hover name", e);
             }
-        } else if (VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasComponent(ComponentTypes.CUSTOM_NAME)) {
+        } else if (VersionHelper.isOrAbove1_20_5() && wrappedFirst.hasComponent(ComponentTypes.CUSTOM_NAME)) {
             repairCost += 1;
             wrappedFirst.customName(null);
-        } else if (!VersionHelper.isVersionNewerThan1_20_5() && wrappedFirst.hasTag("display", "Name")) {
+        } else if (!VersionHelper.isOrAbove1_20_5() && wrappedFirst.hasTag("display", "Name")) {
             repairCost += 1;
             wrappedFirst.customName(null);
         }
@@ -601,7 +601,7 @@ public class RecipeEventListener implements Listener {
         // To fix some client side visual issues
         try {
             Object anvilMenu;
-            if (VersionHelper.isVersionNewerThan1_21()) {
+            if (VersionHelper.isOrAbove1_21()) {
                 anvilMenu = Reflections.field$CraftInventoryView$container.get(event.getView());
             } else {
                 anvilMenu = Reflections.field$CraftInventoryAnvil$menu.get(inventory);
@@ -611,7 +611,7 @@ public class RecipeEventListener implements Listener {
             this.plugin.logger().warn("Failed to broadcast changes", e);
         }
 
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             AnvilView anvilView = event.getView();
             anvilView.setRepairCost(finalCost);
             anvilView.setRepairItemCountCost(actualConsumedAmount);
@@ -622,7 +622,7 @@ public class RecipeEventListener implements Listener {
 
         Player player;
         try {
-            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isVersionNewerThan1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
+            player = (Player) Reflections.method$InventoryView$getPlayer.invoke(VersionHelper.isOrAbove1_21() ? event.getView() : LegacyInventoryUtils.getView(event));
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to get inventory viewer", e);
             return;
@@ -659,7 +659,7 @@ public class RecipeEventListener implements Listener {
         wrappedFirst.getCustomItem().ifPresent(item -> {
             if (!item.settings().renameable()) {
                 String renameText;
-                if (VersionHelper.isVersionNewerThan1_21_2()) {
+                if (VersionHelper.isOrAbove1_21_2()) {
                     AnvilView anvilView = event.getView();
                     renameText = anvilView.getRenameText();
                 } else {

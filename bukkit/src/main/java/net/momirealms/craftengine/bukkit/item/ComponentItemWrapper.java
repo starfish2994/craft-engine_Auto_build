@@ -22,6 +22,10 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
         this.item.setAmount(count);
     }
 
+    public void removeComponent(Object type) {
+        FastNMS.INSTANCE.removeComponent(this.getLiteralObject(), ensureDataComponentType(type));
+    }
+
     public void resetComponent(Object type) {
         FastNMS.INSTANCE.resetComponent(this.getLiteralObject(), ensureDataComponentType(type));
     }

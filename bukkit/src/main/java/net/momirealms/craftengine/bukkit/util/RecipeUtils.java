@@ -15,9 +15,9 @@ public class RecipeUtils {
     public static List<Object> getIngredientsFromShapedRecipe(Object recipe) {
         List<Object> ingredients = new ArrayList<>();
         try {
-            if (VersionHelper.isVersionNewerThan1_20_3()) {
+            if (VersionHelper.isOrAbove1_20_3()) {
                 Object pattern = Reflections.field$1_20_3$ShapedRecipe$pattern.get(recipe);
-                if (VersionHelper.isVersionNewerThan1_21_2()) {
+                if (VersionHelper.isOrAbove1_21_2()) {
                     List<Optional<Object>> optionals = (List<Optional<Object>>) Reflections.field$ShapedRecipePattern$ingredients1_21_2.get(pattern);
                     for (Optional<Object> optional : optionals) {
                         optional.ifPresent(ingredients::add);

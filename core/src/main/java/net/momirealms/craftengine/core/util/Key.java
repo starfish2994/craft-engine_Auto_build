@@ -43,7 +43,8 @@ public record Key(String namespace, String value) {
             return false;
         }
         if (!(obj instanceof Key key)) return false;
-        return this.namespace.equals(key.namespace()) && this.value.equals(key.value());
+        // 先比value命中率高
+        return this.value.equals(key.value()) && this.namespace.equals(key.namespace());
     }
 
     @Override

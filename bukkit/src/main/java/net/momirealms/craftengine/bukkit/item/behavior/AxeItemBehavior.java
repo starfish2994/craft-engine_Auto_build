@@ -96,7 +96,7 @@ public class AxeItemBehavior extends ItemBehavior {
             player.swingHand(context.getHand());
         }
         // shrink item amount
-        if (VersionHelper.isVersionNewerThan1_20_5()) {
+        if (VersionHelper.isOrAbove1_20_5()) {
             Object itemStack = item.getLiteralObject();
             Object serverPlayer = player.serverPlayer();
             Object equipmentSlot = context.getHand() == InteractionHand.MAIN_HAND ? Reflections.instance$EquipmentSlot$MAINHAND : Reflections.instance$EquipmentSlot$OFFHAND;

@@ -1,7 +1,5 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
-import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitBox;
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -60,7 +58,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         this.plugin = plugin;
         this.furnitureParser = new FurnitureParser();
         this.furnitureEventListener = new FurnitureEventListener(this);
-        this.dismountListener = VersionHelper.isVersionNewerThan1_20_3() ? new DismountListener1_20_3(this) : new DismountListener1_20(this::handleDismount);
+        this.dismountListener = VersionHelper.isOrAbove1_20_3() ? new DismountListener1_20_3(this) : new DismountListener1_20(this::handleDismount);
     }
 
     @Override
@@ -149,9 +147,9 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 // external model providers
                 Optional<ExternalModel> externalModel;
                 if (placementArguments.containsKey("model-engine")) {
-                    externalModel = Optional.of(new ModelEngineModel(placementArguments.get("model-engine").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createModelEngineModel(placementArguments.get("model-engine").toString()));
                 } else if (placementArguments.containsKey("better-model")) {
-                    externalModel = Optional.of(new BetterModelModel(placementArguments.get("better-model").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createBetterModelModel(placementArguments.get("better-model").toString()));
                 } else {
                     externalModel = Optional.empty();
                 }
@@ -294,7 +292,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         if (previous != null) return;
 
         Location location = display.getLocation();
-        boolean above1_20_1 = VersionHelper.isVersionNewerThan1_20_2();
+        boolean above1_20_1 = VersionHelper.isOrAbove1_20_2();
         boolean preventChange = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         if (above1_20_1) {
             if (!preventChange) {
@@ -453,7 +451,11 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         }
         targetLocation.setYaw(player.getLocation().getYaw());
         targetLocation.setPitch(player.getLocation().getPitch());
-        player.teleport(targetLocation);
+        if (VersionHelper.isFolia()) {
+            player.teleportAsync(targetLocation);
+        } else {
+            player.teleport(targetLocation);
+        }
     }
 
     protected boolean isSeatCarrierType(Entity entity) {

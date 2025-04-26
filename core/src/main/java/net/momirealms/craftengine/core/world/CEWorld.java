@@ -2,11 +2,13 @@ package net.momirealms.craftengine.core.world;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
 import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,6 +41,19 @@ public abstract class CEWorld {
         this.worldDataStorage = dataStorage;
         this.worldHeightAccessor = world.worldHeight();
         this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
+    }
+
+    public void save() {
+        this.loadedChunkMapLock.readLock().lock();
+        try {
+            for (Map.Entry<Long, CEChunk> entry : this.loadedChunkMap.entrySet()) {
+                worldDataStorage.writeChunkAt(new ChunkPos(entry.getKey()), entry.getValue(), true);
+            }
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to save world chunks", e);
+        } finally {
+            this.loadedChunkMapLock.readLock().unlock();
+        }
     }
 
     public World world() {
@@ -77,14 +92,18 @@ public abstract class CEWorld {
     }
 
     @Nullable
-    public CEChunk getLoadedChunkImmediately(int x, int z) {
-        long longKey = ChunkPos.asLong(x, z);
+    public CEChunk getChunkAtIfLoaded(long chunkPos) {
         this.loadedChunkMapLock.readLock().lock();
         try {
-            return this.loadedChunkMap.get(longKey);
+            return getChunkAtIfLoadedMainThread(chunkPos);
         } finally {
             this.loadedChunkMapLock.readLock().unlock();
         }
+    }
+
+    @Nullable
+    public CEChunk getChunkAtIfLoaded(int x, int z) {
+        return getChunkAtIfLoaded(ChunkPos.asLong(x, z));
     }
 
     @Nullable
@@ -103,12 +122,6 @@ public abstract class CEWorld {
     @Nullable
     public CEChunk getChunkAtIfLoadedMainThread(int x, int z) {
         return getChunkAtIfLoadedMainThread(ChunkPos.asLong(x, z));
-    }
-
-    @Nullable
-    public CEChunk getChunkAtIfLoaded(int x, int z) {
-        long chunkPos = ChunkPos.asLong(x, z);
-        return this.getChunkAtIfLoadedMainThread(chunkPos);
     }
 
     public WorldHeight worldHeight() {

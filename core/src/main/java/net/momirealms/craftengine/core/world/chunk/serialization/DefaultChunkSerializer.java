@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ChunkSerializer {
+public class DefaultChunkSerializer {
 
     @Nullable
     public static CompoundTag serialize(@NotNull CEChunk chunk) {
@@ -19,7 +19,7 @@ public class ChunkSerializer {
         CESection[] ceSections = chunk.sections();
         for (CESection ceSection : ceSections) {
             if (ceSection != null) {
-                CompoundTag sectionNbt = SectionSerializer.serialize(ceSection);
+                CompoundTag sectionNbt = DefaultSectionSerializer.serialize(ceSection);
                 if (sectionNbt != null) {
                     sections.add(sectionNbt);
                 }
@@ -38,7 +38,7 @@ public class ChunkSerializer {
         CESection[] sectionArray = new CESection[world.worldHeight().getSectionsCount()];
         for (int i = 0, size = sections.size(); i < size; ++i) {
             CompoundTag sectionTag = sections.getCompound(i);
-            CESection ceSection = SectionSerializer.deserialize(sectionTag);
+            CESection ceSection = DefaultSectionSerializer.deserialize(sectionTag);
             if (ceSection != null) {
                 int sectionIndex = world.worldHeight().getSectionIndexFromSectionY(ceSection.sectionY());
                 if (sectionIndex >= 0 && sectionIndex < sectionArray.length) {

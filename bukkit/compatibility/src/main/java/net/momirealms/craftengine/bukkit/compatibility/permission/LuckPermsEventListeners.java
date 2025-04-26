@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 public class LuckPermsEventListeners {
     private final JavaPlugin plugin;
@@ -42,16 +41,16 @@ public class LuckPermsEventListeners {
         this.subscriptions.add(eventBus.subscribe(this.plugin, GroupDataRecalculateEvent.class, this::onGroupPermissionChange));
     }
 
-    public void unregisterListeners() {
-        this.subscriptions.forEach(subscription -> {
-            try {
-                subscription.close();
-            } catch (Exception e) {
-                this.plugin.getLogger().log(Level.WARNING, "Failed to close event subscription", e);
-            }
-        });
-        this.subscriptions.clear();
-    }
+//    public void unregisterListeners() {
+//        this.subscriptions.forEach(subscription -> {
+//            try {
+//                subscription.close();
+//            } catch (Exception e) {
+//                this.plugin.getLogger().log(Level.WARNING, "Failed to close event subscription", e);
+//            }
+//        });
+//        this.subscriptions.clear();
+//    }
 
     private void onUserPermissionChange(UserDataRecalculateEvent event) {
         CraftEngine.instance().scheduler().async().execute(() -> {

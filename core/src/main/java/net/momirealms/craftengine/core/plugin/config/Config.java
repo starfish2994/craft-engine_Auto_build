@@ -98,6 +98,7 @@ public class Config {
     protected boolean chunk_system$restore_vanilla_blocks_on_chunk_unload;
     protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
     protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
+    protected int chunk_system$delay_serialization;
 
     protected boolean furniture$handle_invalid_furniture_on_chunk_load$enable;
     protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
@@ -265,6 +266,7 @@ public class Config {
         chunk_system$restore_vanilla_blocks_on_chunk_unload = config.getBoolean("chunk-system.restore-vanilla-blocks-on-chunk-unload", true);
         chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.restore-custom-blocks-on-chunk-load", true);
         chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
+        chunk_system$delay_serialization = config.getInt("chunk-system.delay-serialization", 20);
 
         // furniture
         furniture$handle_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.handle-invalid-furniture-on-chunk-load.enable", false);
@@ -681,6 +683,10 @@ public class Config {
 
     public static ColliderType colliderType() {
         return instance.furniture$collision_entity_type;
+    }
+
+    public static int delaySerialization() {
+        return instance.chunk_system$delay_serialization;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

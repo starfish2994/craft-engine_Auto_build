@@ -318,11 +318,11 @@ public class BukkitInjector {
                     .intercept(FieldAccessor.ofField("lastCustomRecipe"))
                     .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
                     .intercept(MethodDelegation.to(
-                            VersionHelper.isVersionNewerThan1_21_2() ?
+                            VersionHelper.isOrAbove1_21_2() ?
                                     GetRecipeForMethodInterceptor1_21_2.INSTANCE :
-                                    (VersionHelper.isVersionNewerThan1_21() ?
+                                    (VersionHelper.isOrAbove1_21() ?
                                             GetRecipeForMethodInterceptor1_21.INSTANCE :
-                                            VersionHelper.isVersionNewerThan1_20_5() ?
+                                            VersionHelper.isOrAbove1_20_5() ?
                                                     GetRecipeForMethodInterceptor1_20_5.INSTANCE :
                                                     GetRecipeForMethodInterceptor1_20.INSTANCE)
                     ))
@@ -346,7 +346,7 @@ public class BukkitInjector {
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
             injectedChecker.recipeType(recipeType);
             Reflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
-        } else if (!VersionHelper.isVersionNewerThan1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
+        } else if (!VersionHelper.isOrAbove1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
             Object quickCheck = Reflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
@@ -368,6 +368,22 @@ public class BukkitInjector {
         }
     }
 
+//    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
+//        try {
+//            Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
+//            if (!(container instanceof InjectedPalettedContainerHolder)) {
+//                InjectedPalettedContainerHolder injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
+//                injectedObject.ceSection(ceSection);
+//                injectedObject.ceWorld(ceWorld);
+//                injectedObject.cePos(pos);
+//                Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
+//                Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
+//            }
+//        } catch (Exception e) {
+//            CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
+//        }
+//    }
+
     public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
@@ -385,7 +401,7 @@ public class BukkitInjector {
         }
     }
 
-    public static void uninjectLevelChunkSection(Object section) {
+    public synchronized static void uninjectLevelChunkSection(Object section) {
         try {
             Object states = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
             if (states instanceof InjectedPalettedContainerHolder holder) {
@@ -750,7 +766,7 @@ public class BukkitInjector {
         Object direction;
         Object serverLevel;
         Object blockPos;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             direction = args[4];
             serverLevel = args[1];
             blockPos = args[3];

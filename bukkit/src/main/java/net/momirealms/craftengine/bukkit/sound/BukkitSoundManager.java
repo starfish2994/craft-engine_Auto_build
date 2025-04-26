@@ -33,7 +33,7 @@ public class BukkitSoundManager extends AbstractSoundManager {
                 Object soundId = KeyUtils.toResourceLocation(jukeboxSong.sound());
                 Object song = Reflections.method$Registry$get.invoke(Reflections.instance$InternalRegistries$JUKEBOX_SONG, resourceLocation);
 
-                Object soundEvent = VersionHelper.isVersionNewerThan1_21_2() ?
+                Object soundEvent = VersionHelper.isOrAbove1_21_2() ?
                         Reflections.constructor$SoundEvent.newInstance(soundId, Optional.of(jukeboxSong.range())) :
                         Reflections.constructor$SoundEvent.newInstance(soundId, jukeboxSong.range(), false);
                 Object soundHolder = Reflections.method$Holder$direct.invoke(null, soundEvent);

@@ -9,11 +9,17 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://mvn.lumine.io/repository/maven-public/") // model engine
     maven("https://nexus.phoenixdevt.fr/repository/maven-public/") // mmoitems
+    maven("https://repo.viaversion.com") // via
+    maven("https://repo.skriptlang.org/releases/") // skript
 }
 
 dependencies {
     compileOnly(project(":core"))
+    compileOnly(project(":bukkit"))
+    compileOnly(project(":bukkit:compatibility:legacy"))
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
+    // NMS
+    compileOnly("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
     // Platform
     compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
     // NeigeItems
@@ -34,6 +40,10 @@ dependencies {
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT")
     // LuckPerms
     compileOnly("net.luckperms:api:5.4")
+    // viaversion
+    compileOnly("com.viaversion:viaversion-api:5.3.2")
+    // Skript
+    compileOnly("com.github.SkriptLang:Skript:2.11.0")
 }
 
 java {

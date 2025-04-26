@@ -44,6 +44,16 @@ public class CEChunk {
         this.fillEmptySection();
     }
 
+    public boolean isEmpty() {
+        if (!this.entities.isEmpty()) return false;
+        for (CESection section : this.sections) {
+            if (section != null && !section.statesContainer().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void fillEmptySection() {
         for (int i = 0; i < sections.length; ++i) {
             if (sections[i] == null) {

@@ -7,7 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import net.momirealms.craftengine.bukkit.compatibility.worldedit.WorldEditBlockRegister;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -108,13 +107,17 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (enableNoteBlocks) {
             this.recordVanillaNoteBlocks();
         }
-        if (VersionHelper.isVersionNewerThan1_20_3()) {
+        if (VersionHelper.isOrAbove1_20_3()) {
             this.fallingBlockRemoveListener = new FallingBlockRemoveListener();
         } else this.fallingBlockRemoveListener = null;
         this.stateId2ImmutableBlockStates = new ImmutableBlockState[customBlockCount];
         Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.INSTANCE.defaultState());
         instance = this;
         this.resetPacketConsumers();
+    }
+
+    public List<Key> blockRegisterOrder() {
+        return Collections.unmodifiableList(this.blockRegisterOrder);
     }
 
     public static BukkitBlockManager instance() {
@@ -126,12 +129,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         Bukkit.getPluginManager().registerEvents(this.blockEventListener, plugin.bootstrap());
         if (this.fallingBlockRemoveListener != null) {
             Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, plugin.bootstrap());
-        }
-        // WorldEdit
-        if (this.plugin.isPluginEnabled("FastAsyncWorldEdit")) {
-            this.initFastAsyncWorldEditHook();
-        } else if (this.plugin.isPluginEnabled("WorldEdit")) {
-            this.initWorldEditHook();
         }
     }
 
@@ -171,20 +168,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.tempVanillaBlockStateModels.clear();
     }
 
-    public void initFastAsyncWorldEditHook() {
-        new WorldEditBlockRegister(this, true);
-    }
-
-    public void initWorldEditHook() {
-        WorldEditBlockRegister weBlockRegister = new WorldEditBlockRegister(this, false);
-        try {
-            for (Key newBlockId : this.blockRegisterOrder) {
-                weBlockRegister.register(newBlockId);
-            }
-        } catch (Exception e) {
-            this.plugin.logger().warn("Failed to initialize world edit hook", e);
-        }
-    }
 
     @Nullable
     public Object getMinecraftBlockHolder(int stateId) {

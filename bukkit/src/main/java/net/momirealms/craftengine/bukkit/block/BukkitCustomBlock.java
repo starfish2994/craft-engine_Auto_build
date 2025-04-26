@@ -107,7 +107,7 @@ public class BukkitCustomBlock extends CustomBlock {
                 Reflections.method$BlockStateBase$initCache.invoke(mcBlockState);
                 // set block light
                 if (settings.blockLight() != -1) {
-                    if (VersionHelper.isVersionNewerThan1_21_2()) {
+                    if (VersionHelper.isOrAbove1_21_2()) {
                         Reflections.field$BlockStateBase$lightBlock.set(mcBlockState, settings.blockLight());
                     } else {
                         Object cache = Reflections.field$BlockStateBase$cache.get(mcBlockState);

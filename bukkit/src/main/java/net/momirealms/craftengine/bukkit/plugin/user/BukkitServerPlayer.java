@@ -18,6 +18,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
+import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -39,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
+    // handshake
+    private ProtocolVersion protocolVersion = ProtocolVersion.UNKNOWN;
     // connection state
     private final Channel channel;
     private String name;
@@ -46,6 +49,7 @@ public class BukkitServerPlayer extends Player {
     private ConnectionState decoderState;
     private ConnectionState encoderState;
     private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
+    private boolean sentResourcePack = !Config.sendPackOnJoin();
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -411,7 +415,7 @@ public class BukkitServerPlayer extends Player {
             }
             this.clientSideCanBreak = canBreak;
             if (canBreak) {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
+                if (VersionHelper.isOrAbove1_20_5()) {
                     Object serverPlayer = serverPlayer();
                     Object attributeInstance = Reflections.method$ServerPlayer$getAttribute.invoke(serverPlayer, Reflections.instance$Holder$Attribute$block_break_speed);
                     Object newPacket = Reflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityID(), Lists.newArrayList(attributeInstance));
@@ -421,8 +425,8 @@ public class BukkitServerPlayer extends Player {
                     resetEffect(Reflections.instance$MobEffecr$haste);
                 }
             } else {
-                if (VersionHelper.isVersionNewerThan1_20_5()) {
-                    Object attributeModifier = VersionHelper.isVersionNewerThan1_21() ?
+                if (VersionHelper.isOrAbove1_20_5()) {
+                    Object attributeModifier = VersionHelper.isOrAbove1_21() ?
                             Reflections.constructor$AttributeModifier.newInstance(KeyUtils.toResourceLocation("craftengine", "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
                             Reflections.constructor$AttributeModifier.newInstance(UUID.randomUUID(), "craftengine:custom_hardness", -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE);
                     Object attributeSnapshot = Reflections.constructor$ClientboundUpdateAttributesPacket$AttributeSnapshot.newInstance(Reflections.instance$Holder$Attribute$block_break_speed, 1d, Lists.newArrayList(attributeModifier));
@@ -516,7 +520,7 @@ public class BukkitServerPlayer extends Player {
                     // creative mode + invalid item in hand
                     if (canInstabuild() && (itemMaterial == Material.DEBUG_STICK
                             || itemMaterial == Material.TRIDENT
-                            || (VersionHelper.isVersionNewerThan1_20_5() && itemMaterial == MaterialUtils.MACE)
+                            || (VersionHelper.isOrAbove1_20_5() && itemMaterial == MaterialUtils.MACE)
                             || item.is(ItemTags.SWORDS))) {
                         return;
                     }
@@ -753,9 +757,29 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void addResourcePackUUID(UUID uuid) {
-        if (VersionHelper.isVersionNewerThan1_20_3()) {
+        if (VersionHelper.isOrAbove1_20_3()) {
             this.resourcePackUUID.add(uuid);
         }
+    }
+
+    @Override
+    public ProtocolVersion protocolVersion() {
+        return this.protocolVersion;
+    }
+
+    @Override
+    public void setProtocolVersion(int protocolVersion) {
+        this.protocolVersion = ProtocolVersion.getById(protocolVersion);
+    }
+
+    @Override
+    public boolean sentResourcePack() {
+        return this.sentResourcePack;
+    }
+
+    @Override
+    public void setSentResourcePack(boolean sentResourcePack) {
+        this.sentResourcePack = sentResourcePack;
     }
 
     @Override
@@ -766,7 +790,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void unloadCurrentResourcePack() {
-        if (!VersionHelper.isVersionNewerThan1_20_3()) {
+        if (!VersionHelper.isOrAbove1_20_3()) {
             return;
         }
         if (decoderState() == ConnectionState.PLAY && !this.resourcePackUUID.isEmpty()) {

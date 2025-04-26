@@ -74,7 +74,7 @@ public class BukkitWorld implements World {
     public void dropItemNaturally(Vec3d location, Item<?> item) {
         ItemStack itemStack = (ItemStack) item.load();
         if (ItemUtils.isEmpty(itemStack)) return;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             platformWorld().dropItemNaturally(new Location(null, location.x(), location.y(), location.z()), (ItemStack) item.getItem());
         } else {
             platformWorld().dropItemNaturally(new Location(null, location.x() - 0.5, location.y() - 0.5, location.z() - 0.5), (ItemStack) item.getItem());

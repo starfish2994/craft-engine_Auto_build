@@ -99,7 +99,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object level;
         Object pos;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             level = args[1];
             pos = args[3];
         } else {

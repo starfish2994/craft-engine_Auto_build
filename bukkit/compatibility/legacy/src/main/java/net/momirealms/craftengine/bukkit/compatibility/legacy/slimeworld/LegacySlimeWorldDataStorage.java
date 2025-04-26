@@ -1,0 +1,80 @@
+package net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld;
+
+import com.flowpowered.nbt.ByteArrayTag;
+import com.flowpowered.nbt.CompoundMap;
+import com.infernalsuite.aswm.api.world.SlimeChunk;
+import com.infernalsuite.aswm.api.world.SlimeWorld;
+import net.momirealms.craftengine.core.world.CEWorld;
+import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.craftengine.core.world.chunk.CEChunk;
+import net.momirealms.craftengine.core.world.chunk.serialization.DefaultChunkSerializer;
+import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
+import net.momirealms.sparrow.nbt.CompoundTag;
+import net.momirealms.sparrow.nbt.NBT;
+import org.jetbrains.annotations.NotNull;
+
+import java.lang.ref.WeakReference;
+import java.util.Optional;
+
+public class LegacySlimeWorldDataStorage implements WorldDataStorage {
+    private final WeakReference<com.infernalsuite.aswm.api.world.SlimeWorld> slimeWorld;
+
+    public LegacySlimeWorldDataStorage(SlimeWorld slimeWorld) {
+        this.slimeWorld = new WeakReference<>(slimeWorld);
+    }
+
+    public SlimeWorld getWorld() {
+        return slimeWorld.get();
+    }
+
+    @Override
+    public @NotNull CEChunk readChunkAt(@NotNull CEWorld world, @NotNull ChunkPos pos) {
+        SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
+        if (slimeChunk == null) return new CEChunk(world, pos);
+        Optional<ByteArrayTag> tag = slimeChunk.getExtraData().getAsByteArrayTag("craftengine");
+        if (tag.isEmpty()) return new CEChunk(world, pos);
+        try {
+            CompoundTag compoundTag = NBT.fromBytes(tag.get().getValue());
+            if (compoundTag == null) return new CEChunk(world, pos);
+            return DefaultChunkSerializer.deserialize(world, pos, compoundTag);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read chunk tag from slime world. " + pos, e);
+        }
+    }
+
+    private CompoundMap createOrGetDataMap(SlimeWorld world) {
+        Optional<com.flowpowered.nbt.CompoundTag> optionalCompoundTag = world.getExtraData().getAsCompoundTag("craftengine");
+        CompoundMap ccDataMap;
+        if (optionalCompoundTag.isEmpty()) {
+            ccDataMap = new CompoundMap();
+            world.getExtraData().getValue().put(new com.flowpowered.nbt.CompoundTag("customcrops", ccDataMap));
+        } else {
+            ccDataMap = optionalCompoundTag.get().getValue();
+        }
+        return ccDataMap;
+    }
+
+    @Override
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk, boolean immediately) {
+        SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
+        if (slimeChunk == null) return;
+        CompoundTag nbt = DefaultChunkSerializer.serialize(chunk);
+        if (nbt == null) {
+            slimeChunk.getExtraData().getValue().remove("craftengine");
+        } else {
+            try {
+                slimeChunk.getExtraData().getValue().put("craftengine", new ByteArrayTag("craftengine", NBT.toBytes(nbt)));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to write chunk tag to slime world. " + pos, e);
+            }
+        }
+    }
+
+    @Override
+    public void flush() {
+    }
+
+    @Override
+    public void close() {
+    }
+}
