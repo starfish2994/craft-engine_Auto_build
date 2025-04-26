@@ -48,14 +48,9 @@ public class BlockStateHolder {
         return propertyMap.entrySet().stream()
                 .map(entry -> {
                     Property<?> property = entry.getKey();
-                    return property.name() + "=" + formatValue(property, entry.getValue());
+                    return property.name() + "=" + Property.formatValue(property, entry.getValue());
                 })
                 .collect(Collectors.joining(","));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends Comparable<T>> String formatValue(Property<T> property, Comparable<?> value) {
-        return property.valueName((T) value);
     }
 
     public Collection<Property<?>> getProperties() {

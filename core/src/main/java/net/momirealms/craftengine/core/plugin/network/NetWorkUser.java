@@ -51,4 +51,12 @@ public interface NetWorkUser {
     void setClientModState(boolean enable);
 
     void addResourcePackUUID(UUID uuid);
+
+    ProtocolVersion protocolVersion();
+
+    void setProtocolVersion(int protocolVersion);
+
+    boolean sentResourcePack();
+
+    void setSentResourcePack(boolean sentResourcePack);
 }

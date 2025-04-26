@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":bukkit"))
     implementation(project(":bukkit:legacy"))
     implementation(project(":bukkit:compatibility"))
+    implementation(project(":bukkit:compatibility:legacy"))
 
     implementation("net.kyori:adventure-platform-bukkit:${rootProject.properties["adventure_platform_version"]}")
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
@@ -49,7 +50,7 @@ bukkit {
     apiVersion = "1.20"
     authors = listOf("XiaoMoMi")
     contributors = listOf("jhqwqmc", "iqtesterrr")
-    softDepend = listOf("PlaceholderAPI", "WorldEdit", "FastAsyncWorldEdit")
+    softDepend = listOf("PlaceholderAPI", "WorldEdit", "FastAsyncWorldEdit", "Skript")
     foliaSupported = true
 }
 

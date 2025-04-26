@@ -229,25 +229,29 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
             return new TrimModifier<>(material, pattern);
         }, "trim");
-        if (VersionHelper.isVersionNewerThan1_20_5()) {
+        if (VersionHelper.isOrAbove1_20_5()) {
             registerDataFunction((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new ComponentModifier<>(data);
             }, "components", "component");
+            registerDataFunction((obj) -> {
+                List<String> data = MiscUtils.getAsStringList(obj);
+                return new RemoveComponentModifier<>(data);
+            }, "remove-components", "remove-component");
         }
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             registerDataFunction((obj) -> {
                 String song = obj.toString();
                 return new JukeboxSongModifier<>(new JukeboxPlayable(song, true));
             }, "jukebox-playable");
         }
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             registerDataFunction((obj) -> {
                 String id = obj.toString();
                 return new TooltipStyleModifier<>(Key.of(id));
             }, "tooltip-style");
         }
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             registerDataFunction((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new EquippableModifier<>(EquipmentData.fromMap(data));

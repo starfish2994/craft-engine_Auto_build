@@ -123,10 +123,10 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRANSFORM, (BukkitRecipeConvertor<CustomSmithingTransformRecipe<ItemStack>>) (id, recipe) -> {
             try {
                 Object nmsRecipe = createMinecraftSmithingTransformRecipe(recipe);
-                if (VersionHelper.isVersionNewerThan1_21_2()) {
+                if (VersionHelper.isOrAbove1_21_2()) {
                     nmsRecipe = Reflections.constructor$RecipeHolder.newInstance(
                             Reflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value())), nmsRecipe);
-                } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+                } else if (VersionHelper.isOrAbove1_20_2()) {
                     nmsRecipe = Reflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
                 } else {
                     return () -> {};
@@ -255,7 +255,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         instance = this;
         this.plugin = plugin;
         this.recipeEventListener = new RecipeEventListener(plugin, this, plugin.itemManager());
-        this.crafterEventListener = VersionHelper.isVersionNewerThan1_21() ? new CrafterEventListener(plugin, this, plugin.itemManager()) : null;
+        this.crafterEventListener = VersionHelper.isOrAbove1_21() ? new CrafterEventListener(plugin, this, plugin.itemManager()) : null;
         try {
             nmsRecipeManager = Reflections.method$MinecraftServer$getRecipeManager.invoke(Reflections.method$MinecraftServer$getServer.invoke(null));
         } catch (ReflectiveOperationException e) {
@@ -286,7 +286,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void load() {
         if (!Config.enableRecipeSystem()) return;
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             try {
                 this.stolenFeatureFlagSet = Reflections.field$RecipeManager$featureflagset.get(nmsRecipeManager);
                 Reflections.field$RecipeManager$featureflagset.set(nmsRecipeManager, null);
@@ -301,7 +301,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (!Config.enableRecipeSystem()) return;
         super.unload();
         try {
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
             }
         } catch (ReflectiveOperationException e) {
@@ -349,7 +349,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     private void unregisterNMSRecipe(NamespacedKey key) {
         try {
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Object recipeMap = Reflections.field$RecipeManager$recipes.get(nmsRecipeManager);
                 Reflections.method$RecipeMap$removeRecipe.invoke(recipeMap, Reflections.method$CraftRecipe$toMinecraft.invoke(null, key));
             } else {
@@ -363,7 +363,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @SuppressWarnings("unchecked")
     private void injectDataPackRecipes() {
         try {
-            Object fileToIdConverter = Reflections.method$FileToIdConverter$json.invoke(null, VersionHelper.isVersionNewerThan1_21() ? "recipe" : "recipes");
+            Object fileToIdConverter = Reflections.method$FileToIdConverter$json.invoke(null, VersionHelper.isOrAbove1_21() ? "recipe" : "recipes");
             Object minecraftServer = Reflections.method$MinecraftServer$getServer.invoke(null);
             Object packRepository = Reflections.method$MinecraftServer$getPackRepository.invoke(minecraftServer);
             List<Object> selected = (List<Object>) Reflections.field$PackRepository$selected.get(packRepository);
@@ -446,13 +446,13 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             this.delayedTasksOnMainThread.clear();
 
             // give flags back on 1.21.2+
-            if (VersionHelper.isVersionNewerThan1_21_2() && this.stolenFeatureFlagSet != null) {
+            if (VersionHelper.isOrAbove1_21_2() && this.stolenFeatureFlagSet != null) {
                 Reflections.field$RecipeManager$featureflagset.set(nmsRecipeManager(), this.stolenFeatureFlagSet);
                 this.stolenFeatureFlagSet = null;
             }
 
             // refresh recipes
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Reflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager());
             }
 
@@ -460,11 +460,11 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             Reflections.method$DedicatedPlayerList$reloadRecipes.invoke(Reflections.field$CraftServer$playerList.get(Bukkit.getServer()));
 
             // now we need to remove the fake `exact`
-            if (VersionHelper.isVersionNewerThan1_21_4()) {
+            if (VersionHelper.isOrAbove1_21_4()) {
                 for (Object ingredient : injectedIngredients) {
                     Reflections.field$Ingredient$itemStacks1_21_4.set(ingredient, null);
                 }
-            } else if (VersionHelper.isVersionNewerThan1_21_2()) {
+            } else if (VersionHelper.isOrAbove1_21_2()) {
                 for (Object ingredient : injectedIngredients) {
                     Reflections.field$Ingredient$itemStacks1_21_2.set(ingredient, null);
                 }
@@ -711,11 +711,11 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             Object shapedRecipe = getNMSRecipe(id);
             recipeToMcRecipeHolder.put(recipe, shapedRecipe);
-            if (VersionHelper.isVersionNewerThan1_20_2()) {
+            if (VersionHelper.isOrAbove1_20_2()) {
                 shapedRecipe = Reflections.field$RecipeHolder$recipe.get(shapedRecipe);
             }
 
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Reflections.field$ShapedRecipe$placementInfo.set(shapedRecipe, null);
             }
 
@@ -732,11 +732,11 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             Object shapelessRecipe = getNMSRecipe(id);
             recipeToMcRecipeHolder.put(recipe, shapelessRecipe);
-            if (VersionHelper.isVersionNewerThan1_20_2()) {
+            if (VersionHelper.isOrAbove1_20_2()) {
                 shapelessRecipe = Reflections.field$RecipeHolder$recipe.get(shapelessRecipe);
             }
 
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 Reflections.field$ShapelessRecipe$placementInfo.set(shapelessRecipe, null);
             }
             @SuppressWarnings("unchecked")
@@ -752,12 +752,12 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             Ingredient<ItemStack> actualIngredient = recipe.ingredient();
             Object smeltingRecipe = getNMSRecipe(id);
             recipeToMcRecipeHolder.put(recipe, smeltingRecipe);
-            if (VersionHelper.isVersionNewerThan1_20_2()) {
+            if (VersionHelper.isOrAbove1_20_2()) {
                 smeltingRecipe = Reflections.field$RecipeHolder$recipe.get(smeltingRecipe);
             }
 
             Object ingredient;
-            if (VersionHelper.isVersionNewerThan1_21_2()) {
+            if (VersionHelper.isOrAbove1_21_2()) {
                 ingredient = Reflections.field$SingleItemRecipe$input.get(smeltingRecipe);
             } else {
                 ingredient = Reflections.field$AbstractCookingRecipe$input.get(smeltingRecipe);
@@ -771,7 +771,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     // 获取nms配方，请注意1.20.1获取配方本身，而1.20.2+获取的是配方的holder
     // recipe on 1.20.1 and holder on 1.20.2+
     private static Object getNMSRecipe(Key id) throws ReflectiveOperationException {
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             Object resourceKey = Reflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value()));
             @SuppressWarnings("unchecked")
             Optional<Object> optional = (Optional<Object>) Reflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceKey);
@@ -800,9 +800,9 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             Object ingredient = fakeIngredients.get(i);
             Ingredient<ItemStack> actualIngredient = actualIngredients.get(i);
             List<Object> items = getIngredientLooks(actualIngredient.items());
-            if (VersionHelper.isVersionNewerThan1_21_4()) {
+            if (VersionHelper.isOrAbove1_21_4()) {
                 Reflections.field$Ingredient$itemStacks1_21_4.set(ingredient, new HashSet<>(items));
-            } else if (VersionHelper.isVersionNewerThan1_21_2()) {
+            } else if (VersionHelper.isOrAbove1_21_2()) {
                 Reflections.field$Ingredient$itemStacks1_21_2.set(ingredient, items);
             } else {
                 Object itemStackArray = Array.newInstance(Reflections.clazz$ItemStack, items.size());
@@ -845,21 +845,21 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     // create nms smithing recipe for different versions
     private static Object createMinecraftSmithingTransformRecipe(CustomSmithingTransformRecipe<ItemStack> recipe) throws ReflectiveOperationException {
-        if (VersionHelper.isVersionNewerThan1_21_5()) {
+        if (VersionHelper.isOrAbove1_21_5()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toOptionalMinecraftIngredient(recipe.template()),
                     toMinecraftIngredient(recipe.base()),
                     toOptionalMinecraftIngredient(recipe.addition()),
                     toTransmuteResult(recipe.result(ItemBuildContext.EMPTY))
             );
-        } else if (VersionHelper.isVersionNewerThan1_21_2()) {
+        } else if (VersionHelper.isOrAbove1_21_2()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toOptionalMinecraftIngredient(recipe.template()),
                     toOptionalMinecraftIngredient(recipe.base()),
                     toOptionalMinecraftIngredient(recipe.addition()),
                     FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(recipe.result(ItemBuildContext.EMPTY))
             );
-        } else if (VersionHelper.isVersionNewerThan1_20_2()) {
+        } else if (VersionHelper.isOrAbove1_20_2()) {
             return Reflections.constructor$SmithingTransformRecipe.newInstance(
                     toMinecraftIngredient(recipe.template()),
                     toMinecraftIngredient(recipe.base()),

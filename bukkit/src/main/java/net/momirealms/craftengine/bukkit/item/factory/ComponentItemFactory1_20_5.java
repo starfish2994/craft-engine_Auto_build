@@ -93,7 +93,7 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
 
     @Override
     protected void removeComponent(ComponentItemWrapper item, Object type) {
-        item.resetComponent(type);
+        item.removeComponent(type);
     }
 
     @Override

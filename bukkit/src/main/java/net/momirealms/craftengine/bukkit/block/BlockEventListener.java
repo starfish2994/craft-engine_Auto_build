@@ -7,7 +7,6 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
-import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
@@ -52,7 +51,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerAttack(EntityDamageByEntityEvent event) {
-        if (!VersionHelper.isVersionNewerThan1_20_5()) {
+        if (!VersionHelper.isOrAbove1_20_5()) {
             if (event.getDamager() instanceof Player player) {
                 BukkitServerPlayer serverPlayer = plugin.adapt(player);
                 serverPlayer.setClientSideCanBreakBlock(true);
@@ -120,7 +119,7 @@ public class BlockEventListener implements Listener {
                 }
 
                 // trigger event
-                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(event.getPlayer(), location, block, state);
+                CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(serverPlayer, location, block, state);
                 boolean isCancelled = EventUtils.fireAndCheckCancel(customBreakEvent);
                 if (isCancelled) {
                     event.setCancelled(true);
@@ -146,14 +145,10 @@ public class BlockEventListener implements Listener {
 
                 Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
                 // do not drop if it's not the correct tool
-                BlockSettings settings = state.settings();
-                if (settings.requireCorrectTool()) {
-                    if (itemInHand == null) return;
-                    if (!settings.isCorrectTool(itemInHand.id()) &&
-                            (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()))) {
-                        return;
-                    }
+                if (!BlockStateUtils.isCorrectTool(state, itemInHand)) {
+                    return;
                 }
+
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder();
                 builder.withParameter(LootParameters.WORLD, world);
@@ -311,7 +306,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityExplode(EntityExplodeEvent event) {
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             if (!ExplosionUtils.isDroppingItems(event)) return;
         }
         handleExplodeEvent(event.blockList(), new BukkitWorld(event.getEntity().getWorld()), event.getYield());
@@ -319,7 +314,7 @@ public class BlockEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockExplode(BlockExplodeEvent event) {
-        if (VersionHelper.isVersionNewerThan1_21()) {
+        if (VersionHelper.isOrAbove1_21()) {
             if (!ExplosionUtils.isDroppingItems(event)) return;
         }
         handleExplodeEvent(event.blockList(), new BukkitWorld(event.getBlock().getWorld()), event.getYield());

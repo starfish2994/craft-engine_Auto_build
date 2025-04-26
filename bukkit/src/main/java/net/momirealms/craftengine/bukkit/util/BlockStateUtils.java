@@ -2,10 +2,8 @@ package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.core.block.BlockStateParser;
-import net.momirealms.craftengine.core.block.CustomBlock;
-import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.PushReaction;
+import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Instrument;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MapColor;
@@ -14,6 +12,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -30,6 +31,18 @@ public class BlockStateUtils {
         }
         vanillaStateSize = size;
         hasInit = true;
+    }
+
+    public static boolean isCorrectTool(@NotNull ImmutableBlockState state, @Nullable Item<ItemStack> itemInHand) {
+        BlockSettings settings = state.settings();
+        if (settings.requireCorrectTool()) {
+            if (itemInHand == null) return false;
+            if (!settings.isCorrectTool(itemInHand.id()) &&
+                    (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static List<Object> getAllBlockStates(String blockState) {

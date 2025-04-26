@@ -161,7 +161,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         public static final Key KEEP_TAGS = Key.of("craftengine:keep_tags");
 
         static {
-            if (VersionHelper.isVersionNewerThan1_20_5()) {
+            if (VersionHelper.isOrAbove1_20_5()) {
                 register(KEEP_COMPONENTS, KeepComponents.FACTORY);
             } else {
                 register(KEEP_TAGS, KeepTags.FACTORY);

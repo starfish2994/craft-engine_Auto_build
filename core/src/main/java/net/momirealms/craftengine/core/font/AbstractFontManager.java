@@ -384,7 +384,12 @@ public abstract class AbstractFontManager implements FontManager {
                     Key imageId = new Key(split[0], split[1]);
                     Optional<BitmapImage> bitmapImage = bitmapImageByImageId(imageId);
                     if (bitmapImage.isPresent()) {
-                        image = bitmapImage.get().miniMessage(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
+                        try {
+                            image = bitmapImage.get().miniMessage(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
+                            return;
+                        }
                     } else {
                         TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
                         return;
@@ -462,15 +467,20 @@ public abstract class AbstractFontManager implements FontManager {
                     }
                 }).toList();
             } else {
-                String character = (String) section.get("char");
-                if (character == null) {
+                Object c = section.get("char");
+                if (c == null) {
                     TranslationManager.instance().log("warning.config.image.lack_char", path.toString(), id.toString());
                     return;
                 }
-                if (character.length() == 1) {
-                    chars = List.of(character.toCharArray());
+                if (c instanceof Integer integer) {
+                    chars = List.of(new char[]{(char) integer.intValue()});
                 } else {
-                    chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                    String character = c.toString();
+                    if (character.length() == 1) {
+                        chars = List.of(character.toCharArray());
+                    } else {
+                        chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                    }
                 }
             }
 
@@ -491,6 +501,10 @@ public abstract class AbstractFontManager implements FontManager {
                         );
                         return;
                     }
+                }
+                if (codepoints.length == 0) {
+                    TranslationManager.instance().log("warning.config.image.lack_char", path.toString(), id.toString());
+                    return;
                 }
                 codepointGrid[i] = codepoints;
                 if (size == -1) size = codepoints.length;

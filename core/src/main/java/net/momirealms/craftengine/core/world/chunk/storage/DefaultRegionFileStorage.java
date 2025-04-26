@@ -5,9 +5,13 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.ExceptionCollector;
 import net.momirealms.craftengine.core.util.FileUtils;
+import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.craftengine.core.world.chunk.CEChunk;
+import net.momirealms.craftengine.core.world.chunk.serialization.DefaultChunkSerializer;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInputStream;
@@ -117,15 +121,14 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
     }
 
     @Override
-    @Nullable
-    public CompoundTag readChunkTagAt(ChunkPos pos) throws IOException {
+    public @NotNull CEChunk readChunkAt(@NotNull CEWorld world, @NotNull ChunkPos pos) throws IOException {
         RegionFile regionFile = this.getRegionFile(pos, false, true);
         try {
             DataInputStream dataInputStream = regionFile.getChunkDataInputStream(pos);
             CompoundTag tag;
             try {
                 if (dataInputStream == null) {
-                    return null;
+                    return new CEChunk(world, pos);
                 }
                 tag = NBT.readCompound(dataInputStream, false);
             } catch (Throwable t1) {
@@ -137,14 +140,19 @@ public class DefaultRegionFileStorage implements WorldDataStorage {
                 throw t1;
             }
             dataInputStream.close();
-            return tag;
+            return DefaultChunkSerializer.deserialize(world, pos, tag);
         } finally {
             regionFile.fileLock.unlock();
         }
     }
 
     @Override
-    public void writeChunkTagAt(ChunkPos pos, @Nullable CompoundTag nbt) throws IOException {
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk, boolean immediately) throws IOException {
+        CompoundTag nbt = DefaultChunkSerializer.serialize(chunk);
+        writeChunkTagAt(pos, nbt);
+    }
+
+    public void writeChunkTagAt(@NotNull ChunkPos pos, @Nullable CompoundTag nbt) throws IOException {
         RegionFile regionFile = this.getRegionFile(pos, nbt == null, true);
         try {
             if (nbt == null) {

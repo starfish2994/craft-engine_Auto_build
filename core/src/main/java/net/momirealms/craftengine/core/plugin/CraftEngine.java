@@ -29,7 +29,6 @@ import net.momirealms.craftengine.core.plugin.logger.filter.LogFilter;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.craftengine.core.sound.SoundManager;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.WorldManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
@@ -68,6 +67,7 @@ public abstract class CraftEngine implements Plugin {
     protected SoundManager soundManager;
     protected VanillaLootManager vanillaLootManager;
     protected AdvancementManager advancementManager;
+    protected CompatibilityManager compatibilityManager;
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
@@ -82,7 +82,6 @@ public abstract class CraftEngine implements Plugin {
     protected CraftEngine(Consumer<CraftEngine> reloadEventDispatcher) {
         instance = this;
         this.reloadEventDispatcher = reloadEventDispatcher;
-        VersionHelper.init(serverVersion());
     }
 
     public static CraftEngine instance() {
@@ -371,8 +370,6 @@ public abstract class CraftEngine implements Plugin {
         return isInitializing;
     }
 
-    public abstract boolean hasPlaceholderAPI();
-
     @Override
     public DependencyManager dependencyManager() {
         return dependencyManager;
@@ -459,5 +456,10 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public VanillaLootManager vanillaLootManager() {
         return vanillaLootManager;
+    }
+
+    @Override
+    public CompatibilityManager compatibilityManager() {
+        return compatibilityManager;
     }
 }

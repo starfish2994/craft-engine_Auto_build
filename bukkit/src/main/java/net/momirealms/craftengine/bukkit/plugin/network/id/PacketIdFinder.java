@@ -15,7 +15,7 @@ public class PacketIdFinder {
 
     static {
         try {
-            if (VersionHelper.isVersionNewerThan1_21()) {
+            if (VersionHelper.isOrAbove1_21()) {
                 Object packetReport = Reflections.constructor$PacketReport.newInstance((Object) null);
                 JsonElement jsonElement = (JsonElement) Reflections.method$PacketReport$serializePackets.invoke(packetReport);
                 var play = jsonElement.getAsJsonObject().get("play");
@@ -26,7 +26,7 @@ public class PacketIdFinder {
                         ids.put(entry2.getKey(), entry2.getValue().getAsJsonObject().get("protocol_id").getAsInt());
                     }
                 }
-            } else if (VersionHelper.isVersionNewerThan1_20_5()) {
+            } else if (VersionHelper.isOrAbove1_20_5()) {
                 gamePacketIdsByName.putAll(FastNMS.INSTANCE.method$getGamePacketIdsByName());
             } else {
                 gamePacketIdsByClazz.putAll(FastNMS.INSTANCE.method$getGamePacketIdsByClazz());

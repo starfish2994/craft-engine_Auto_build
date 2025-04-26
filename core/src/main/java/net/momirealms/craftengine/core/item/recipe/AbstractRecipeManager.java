@@ -40,9 +40,9 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     }
 
     private VanillaRecipeReader initVanillaRecipeReader() {
-        if (VersionHelper.isVersionNewerThan1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             return new VanillaRecipeReader1_21_2();
-        } else if (VersionHelper.isVersionNewerThan1_20_5()) {
+        } else if (VersionHelper.isOrAbove1_20_5()) {
             return new VanillaRecipeReader1_20_5();
         } else {
             return new VanillaRecipeReader1_20();

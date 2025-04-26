@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface NetworkManager extends Manageable {
     String MOD_CHANNEL = "craftengine:payload";
+    String VIA_CHANNEL = "vv:proxy_details";
 
     void setUser(Channel channel, NetWorkUser user);
 

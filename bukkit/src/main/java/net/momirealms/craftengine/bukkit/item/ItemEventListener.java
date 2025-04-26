@@ -70,7 +70,8 @@ public class ItemEventListener implements Listener {
                 block,
                 event.getBlockFace(),
                 event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
-                action.isRightClick() ? CustomBlockInteractEvent.Action.RIGHT_CLICK : CustomBlockInteractEvent.Action.LEFT_CLICK
+                action.isRightClick() ? CustomBlockInteractEvent.Action.RIGHT_CLICK : CustomBlockInteractEvent.Action.LEFT_CLICK,
+                event.getItem()
         );
         if (EventUtils.fireAndCheckCancel(interactEvent)) {
             event.setCancelled(true);

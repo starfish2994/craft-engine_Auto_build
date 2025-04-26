@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin;
 import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
-import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
@@ -90,7 +89,5 @@ public interface Plugin {
 
     void debug(Supplier<String> message);
 
-    boolean isPluginEnabled(String plugin);
-
-    String parse(Player player, String text);
+    CompatibilityManager compatibilityManager();
 }

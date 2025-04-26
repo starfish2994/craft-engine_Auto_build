@@ -1,238 +1,62 @@
 package net.momirealms.craftengine.core.util;
 
-public class StringReader {
-    private static final char SYNTAX_ESCAPE = '\\';
-    private static final char SYNTAX_DOUBLE_QUOTE = '"';
-    private static final char SYNTAX_SINGLE_QUOTE = '\'';
-    private final String string;
-    private int cursor;
+public interface StringReader {
 
-    public StringReader(StringReader other) {
-        this.string = other.string;
-        this.cursor = other.cursor;
+    static StringReader simple(String input) {
+        return new DefaultStringReader(input);
     }
 
-    public StringReader(String string) {
-        this.string = string;
-    }
+    int getMarker();
 
-    public String getString() {
-        return this.string;
-    }
+    void setMarker(int marker);
 
-    public void setCursor(int cursor) {
-        this.cursor = cursor;
-    }
+    void restore();
 
-    public int getRemainingLength() {
-        return this.string.length() - this.cursor;
-    }
+    String getString();
 
-    public int getTotalLength() {
-        return this.string.length();
-    }
+    void setCursor(int cursor);
 
-    public int getCursor() {
-        return this.cursor;
-    }
+    int getRemainingLength();
 
-    public String getRead() {
-        return this.string.substring(0, this.cursor);
-    }
+    int getTotalLength();
 
-    public String getRemaining() {
-        return this.string.substring(this.cursor);
-    }
+    int getCursor();
 
-    public boolean canRead(int length) {
-        return this.cursor + length <= this.string.length();
-    }
+    String getRead();
 
-    public boolean canRead() {
-        return this.canRead(1);
-    }
+    String getRemaining();
 
-    public char peek() {
-        return this.string.charAt(this.cursor);
-    }
+    boolean canRead(int length);
 
-    public char peek(int offset) {
-        return this.string.charAt(this.cursor + offset);
-    }
+    boolean canRead();
 
-    public char read() {
-        if (!canRead()) {
-            throw new RuntimeException("No more characters to read.");
-        }
-        return this.string.charAt(this.cursor++);
-    }
+    char peek();
 
-    public void skip() {
-        if (!canRead()) {
-            throw new RuntimeException("No more characters to skip.");
-        }
-        ++this.cursor;
-    }
+    char peek(int offset);
 
-    public static boolean isAllowedNumber(char c) {
-        return c >= '0' && c <= '9' || c == '.' || c == '-';
-    }
+    char read();
 
-    public static boolean isQuotedStringStart(char c) {
-        return c == SYNTAX_DOUBLE_QUOTE || c == SYNTAX_SINGLE_QUOTE;
-    }
+    void skip();
 
-    public void skipWhitespace() {
-        while (this.canRead() && Character.isWhitespace(this.peek())) {
-            this.skip();
-        }
-    }
+    void skip(int count);
 
-    public int readInt() {
-        int start = this.cursor;
-        while (this.canRead() && isAllowedNumber(this.peek())) {
-            this.skip();
-        }
-        String number = this.string.substring(start, this.cursor);
-        if (number.isEmpty()) {
-            throw new RuntimeException("Expected integer, but found empty string.");
-        }
-        try {
-            return Integer.parseInt(number);
-        } catch (NumberFormatException var4) {
-            this.cursor = start;
-            throw new RuntimeException("Failed to parse integer: " + number);
-        }
-    }
+    void skipWhitespace();
 
-    public long readLong() {
-        int start = this.cursor;
-        while (this.canRead() && isAllowedNumber(this.peek())) {
-            this.skip();
-        }
-        String number = this.string.substring(start, this.cursor);
-        if (number.isEmpty()) {
-            throw new RuntimeException("Expected long, but found empty string.");
-        }
-        try {
-            return Long.parseLong(number);
-        } catch (NumberFormatException var4) {
-            this.cursor = start;
-            throw new RuntimeException("Failed to parse long: " + number);
-        }
-    }
+    void skipWhitespaceAndComment();
 
-    public double readDouble() {
-        int start = this.cursor;
-        while (this.canRead() && isAllowedNumber(this.peek())) {
-            this.skip();
-        }
-        String number = this.string.substring(start, this.cursor);
-        if (number.isEmpty()) {
-            throw new RuntimeException("Expected double, but found empty string.");
-        }
-        try {
-            return Double.parseDouble(number);
-        } catch (NumberFormatException var4) {
-            this.cursor = start;
-            throw new RuntimeException("Failed to parse double: " + number);
-        }
-    }
+    int readInt();
 
-    public float readFloat() {
-        int start = this.cursor;
-        while (this.canRead() && isAllowedNumber(this.peek())) {
-            this.skip();
-        }
-        String number = this.string.substring(start, this.cursor);
-        if (number.isEmpty()) {
-            throw new RuntimeException("Expected float, but found empty string.");
-        }
-        try {
-            return Float.parseFloat(number);
-        } catch (NumberFormatException var4) {
-            this.cursor = start;
-            throw new RuntimeException("Failed to parse float: " + number);
-        }
-    }
+    long readLong();
 
-    public static boolean isAllowedInUnquotedString(char c) {
-        return c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_' || c == '-' || c == '.' || c == '+';
-    }
+    double readDouble();
 
-    public String readUnquotedString() {
-        int start = this.cursor;
-        while (this.canRead() && isAllowedInUnquotedString(this.peek())) {
-            this.skip();
-        }
-        return this.string.substring(start, this.cursor);
-    }
+    float readFloat();
 
-    public String readQuotedString() {
-        if (!this.canRead()) {
-            return "";
-        } else {
-            char next = this.peek();
-            if (!isQuotedStringStart(next)) {
-                throw new RuntimeException("Expected quoted string, but found: " + next);
-            } else {
-                this.skip();
-                return this.readStringUntil(next);
-            }
-        }
-    }
+    String readUnquotedString();
 
-    public String readStringUntil(char terminator) {
-        StringBuilder result = new StringBuilder();
-        boolean escaped = false;
+    String readQuotedString();
 
-        while (this.canRead()) {
-            char c = this.read();
-            if (escaped) {
-                if (c != terminator && c != SYNTAX_ESCAPE) {
-                    this.setCursor(this.getCursor() - 1);
-                    throw new RuntimeException("Invalid escape sequence.");
-                }
-                result.append(c);
-                escaped = false;
-            } else if (c == SYNTAX_ESCAPE) {
-                escaped = true;
-            } else {
-                if (c == terminator) {
-                    return result.toString();
-                }
-                result.append(c);
-            }
-        }
-        throw new RuntimeException("Unexpected end of input while reading string.");
-    }
+    String readString();
 
-    public String readString() {
-        if (!this.canRead()) {
-            return "";
-        } else {
-            char next = this.peek();
-            if (isQuotedStringStart(next)) {
-                this.skip();
-                return this.readStringUntil(next);
-            } else {
-                return this.readUnquotedString();
-            }
-        }
-    }
-
-    public boolean readBoolean() {
-        int start = this.cursor;
-        String value = this.readString();
-        if (value.isEmpty()) {
-            throw new RuntimeException("Expected boolean, but found empty string.");
-        } else if (value.equals("true")) {
-            return true;
-        } else if (value.equals("false")) {
-            return false;
-        } else {
-            this.cursor = start;
-            throw new RuntimeException("Failed to parse boolean: " + value);
-        }
-    }
+    boolean readBoolean();
 }

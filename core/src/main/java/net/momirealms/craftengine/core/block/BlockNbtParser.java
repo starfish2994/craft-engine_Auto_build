@@ -12,7 +12,7 @@ public class BlockNbtParser {
 
     @Nullable
     public static CompoundTag deserialize(@NotNull CustomBlock block, @NotNull String data) {
-        StringReader reader = new StringReader(data);
+        StringReader reader = StringReader.simple(data);
         CompoundTag properties = new CompoundTag();
         while (reader.canRead()) {
             String propertyName = reader.readUnquotedString();
