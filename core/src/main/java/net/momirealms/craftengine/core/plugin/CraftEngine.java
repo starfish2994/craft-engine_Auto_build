@@ -83,7 +83,6 @@ public abstract class CraftEngine implements Plugin {
     protected CraftEngine(Consumer<CraftEngine> reloadEventDispatcher) {
         instance = this;
         this.reloadEventDispatcher = reloadEventDispatcher;
-        VersionHelper.init(serverVersion());
     }
 
     public static CraftEngine instance() {
