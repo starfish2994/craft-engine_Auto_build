@@ -1,6 +1,28 @@
 package net.momirealms.craftengine.core.util;
 
+import java.lang.reflect.Field;
+
+import static java.util.Objects.requireNonNull;
+
 public class VersionHelper {
+    private static final Class<?> clazz$DetectedVersion = requireNonNull(
+            ReflectionUtils.getClazz("net.minecraft.DetectedVersion", "net.minecraft.MinecraftVersion"));
+    private static final Class<?> clazz$WorldVersion = requireNonNull(
+            ReflectionUtils.getClazz("net.minecraft.WorldVersion"));
+    public static final Field field$DetectedVersion$BUILT_IN = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$DetectedVersion, clazz$WorldVersion, 0));
+    public static final Field field$DetectedVersion$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$DetectedVersion, String.class, 1));
+    static {
+        try {
+            Object detectedVersion = field$DetectedVersion$BUILT_IN.get(null);
+            String name = (String) field$DetectedVersion$name.get(detectedVersion);
+            init(name);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static float version;
     private static boolean mojmap;
     private static boolean folia;
