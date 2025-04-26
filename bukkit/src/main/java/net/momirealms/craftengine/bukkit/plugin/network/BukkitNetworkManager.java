@@ -129,7 +129,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private void registerPacketHandlers() {
-        registerNMSPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, Reflections.clazz$ClientboundLevelChunkWithLightPacket);
         registerNMSPacketConsumer(PacketConsumers.PLAYER_INFO_UPDATE, Reflections.clazz$ClientboundPlayerInfoUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.PLAYER_ACTION, Reflections.clazz$ServerboundPlayerActionPacket);
         registerNMSPacketConsumer(PacketConsumers.SWING_HAND, Reflections.clazz$ServerboundSwingPacket);
@@ -152,6 +151,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.HANDSHAKE_C2S, Reflections.clazz$ClientIntentionPacket);
         registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, Reflections.clazz$ServerboundLoginAcknowledgedPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, Reflections.clazz$ServerboundResourcePackPacket);
+        registerByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
         registerByteBufPacketConsumer(VersionHelper.isVersionNewerThan1_21_3() ? PacketConsumers.LEVEL_PARTICLE_1_21_3 : (VersionHelper.isVersionNewerThan1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
