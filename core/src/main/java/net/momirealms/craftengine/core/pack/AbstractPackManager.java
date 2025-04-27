@@ -454,11 +454,13 @@ public abstract class AbstractPackManager implements PackManager {
                                     parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
                                 }
                             } else {
-                                this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId()[0] + "." + configEntry.getKey() + " - ");
+                                TranslationManager.instance().log("warning.config.not_a_section", cached.filePath().toString(), parser.sectionId()[0], configEntry.getKey(), configEntry.getValue().getClass().getSimpleName());
                             }
                         }
+                    } catch (LocalizedException e) {
+                        TranslationManager.instance().log(e.node(), e.arguments());
                     } catch (Exception e) {
-                        this.plugin.logger().warn(cached.filePath(), "Error loading " + parser.sectionId()[0] + "." + key, e);
+                        this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
                     }
                 }
             }

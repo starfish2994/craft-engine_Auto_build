@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
@@ -106,18 +107,17 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.furniture.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedException("warning.config.furniture.duplicated", path.toString(), id.toString());
             }
 
             Map<String, Object> lootMap = MiscUtils.castToMap(section.get("loot"), true);
             Map<String, Object> settingsMap = MiscUtils.castToMap(section.get("settings"), true);
             Map<String, Object> placementMap = MiscUtils.castToMap(section.get("placement"), true);
-            EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
             if (placementMap == null) {
-                TranslationManager.instance().log("warning.config.furniture.lack_placement", path.toString(), id.toString());
-                return;
+                throw new LocalizedException("warning.config.furniture.lack_placement", path.toString(), id.toString());
             }
+
+            EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
 
             for (Map.Entry<String, Object> entry : placementMap.entrySet()) {
                 // anchor type
@@ -130,8 +130,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> element : elementConfigs) {
                     String key = (String) element.get("item");
                     if (key == null) {
-                        TranslationManager.instance().log("warning.config.furniture.element.lack_item", path.toString(), id.toString());
-                        return;
+                        throw new LocalizedException("warning.config.furniture.element.lack_item", path.toString(), id.toString());
                     }
                     ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                     Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
@@ -192,13 +191,16 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 }
             }
 
-            CustomFurniture furniture = new CustomFurniture(
-                    id,
-                    FurnitureSettings.fromMap(settingsMap),
-                    placements,
-                    lootMap == null ? null : LootTable.fromMap(lootMap)
-            );
-
+            // get furniture settings
+            FurnitureSettings settings;
+            try {
+                settings = FurnitureSettings.fromMap(settingsMap);
+            } catch (LocalizedException e) {
+                e.setArgument(0, path.toString());
+                e.setArgument(1, id.toString());
+                throw e;
+            }
+            CustomFurniture furniture = new CustomFurniture(id, settings, placements, lootMap == null ? null : LootTable.fromMap(lootMap));
             byId.put(id, furniture);
         }
     }
