@@ -116,3 +116,4 @@ warning.config.emoji.lack_keywords: "<yellow>在文件 <arg:0> 中发现问题 -
 warning.config.emoji.duplicated: "<yellow>在文件 <arg:0> 中发现问题 - 表情 '<arg:1>' 重复定义</yellow>"
 warning.config.emoji.invalid_image: "<yellow>在文件 <arg:0> 中发现问题 - 表情 '<arg:1>' 使用了无效的 'image' 图片参数 '<arg:2>'.</yellow>"
 warning.config.advancement.duplicated: "<yellow>在文件 <arg:0> 中发现问题 - 进度 '<arg:1>' 重复定义</yellow>"
+# 先不要急着汉化，目前语言改动较大

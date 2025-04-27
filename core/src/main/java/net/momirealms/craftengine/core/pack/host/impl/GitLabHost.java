@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
@@ -178,18 +179,18 @@ public class GitLabHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String gitlabUrl = (String) arguments.get("gitlab-url");
             if (gitlabUrl == null || gitlabUrl.isEmpty()) {
-                throw new IllegalArgumentException("'gitlab-url' cannot be empty for GitLab host");
+                throw new LocalizedException("warning.config.host.gitlab.lack_url");
             }
             if (gitlabUrl.endsWith("/")) {
                 gitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
             }
             String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : (String) arguments.get("access-token");
             if (accessToken == null || accessToken.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'access-token' configuration");
+                throw new LocalizedException("warning.config.host.gitlab.lack_access_token");
             }
             String projectId = (String) arguments.get("project-id");
             if (projectId == null || projectId.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'project-id' configuration");
+                throw new LocalizedException("warning.config.host.gitlab.lack_project_id");
             }
             projectId = URLEncoder.encode(projectId, StandardCharsets.UTF_8).replace("/", "%2F");
             ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
