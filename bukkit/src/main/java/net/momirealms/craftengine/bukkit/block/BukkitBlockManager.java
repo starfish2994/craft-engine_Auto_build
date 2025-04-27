@@ -308,7 +308,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
-            this.soundMapper = soundMapperBuilder.build();
+            this.soundMapper = soundMapperBuilder.buildKeepingLast();
         } catch (Throwable e) {
             plugin.logger().warn("Failed to inject blocks.", e);
         }
