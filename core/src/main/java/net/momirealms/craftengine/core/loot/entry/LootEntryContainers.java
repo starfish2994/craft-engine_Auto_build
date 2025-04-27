@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.loot.entry;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -41,12 +42,12 @@ public class LootEntryContainers {
     public static <T> LootEntryContainer<T> fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("loot entry type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.loot_table.entry.lack_type", new NullPointerException("loot entry type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootEntryContainerFactory<T> factory = (LootEntryContainerFactory<T>) BuiltInRegistries.LOOT_ENTRY_CONTAINER_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown loot entry type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.loot_table.entry.invalid_type", new IllegalArgumentException("Unknown loot entry type: " + type), type);
         }
         return factory.create(map);
     }

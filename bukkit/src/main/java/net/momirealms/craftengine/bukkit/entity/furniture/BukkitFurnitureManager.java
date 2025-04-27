@@ -22,6 +22,7 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
@@ -205,7 +206,17 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 e.setId(id);
                 throw e;
             }
-            CustomFurniture furniture = new CustomFurniture(id, settings, placements, lootMap == null ? null : LootTable.fromMap(lootMap));
+
+            // get loot table
+            LootTable<ItemStack> lootTable;
+            try {
+                lootTable = lootMap == null ? null : LootTable.fromMap(lootMap);
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
+            }
+            CustomFurniture furniture = new CustomFurniture(id, settings, placements, lootTable);
             byId.put(id, furniture);
         }
     }

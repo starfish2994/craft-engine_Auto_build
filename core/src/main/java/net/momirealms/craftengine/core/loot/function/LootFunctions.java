@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.loot.function;
 
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootContext;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -69,12 +70,12 @@ public class LootFunctions {
     public static <T> LootFunction<T> fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("function type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.loot_table.function.lack_type", new NullPointerException("function type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootFunctionFactory<T> factory = (LootFunctionFactory<T>) BuiltInRegistries.LOOT_FUNCTION_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown function type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.loot_table.function.invalid_type", new IllegalArgumentException("Unknown function type: " + type), type);
         }
         return factory.create(map);
     }
