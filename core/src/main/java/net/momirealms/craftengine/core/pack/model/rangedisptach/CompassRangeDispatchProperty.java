@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.rangedisptach;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
@@ -29,7 +30,11 @@ public class CompassRangeDispatchProperty implements RangeDispatchProperty {
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            String target = Objects.requireNonNull(arguments.get("target")).toString();
+            Object targetObj = arguments.get("target");
+            if (targetObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.compass.lack_target", new NullPointerException("target should not be null"));
+            }
+            String target = targetObj.toString();
             return new CompassRangeDispatchProperty(target);
         }
     }

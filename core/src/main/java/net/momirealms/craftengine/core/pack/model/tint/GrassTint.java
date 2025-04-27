@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.tint;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
@@ -37,10 +38,10 @@ public class GrassTint implements Tint {
             float temperature = MiscUtils.getAsFloat(arguments.getOrDefault("temperature", 0));
             float downfall = MiscUtils.getAsFloat(arguments.getOrDefault("downfall", 0));
             if (temperature > 1 || temperature < 0) {
-                throw new IllegalArgumentException("Invalid temperature: " + temperature + ". Valid range 0~1");
+                throw new LocalizedResourceConfigException("warning.config.item.model.tint.grass.invalid_temperature", new IllegalArgumentException("Invalid temperature: " + temperature + ". Valid range 0~1"), String.valueOf(temperature));
             }
             if (downfall > 1 || downfall < 0) {
-                throw new IllegalArgumentException("Invalid downfall: " + downfall + ". Valid range 0~1");
+                throw new LocalizedResourceConfigException("warning.config.item.model.tint.grass.invalid_downfall", new IllegalArgumentException("Invalid downfall: " + downfall + ". Valid range 0~1"), String.valueOf(downfall));
             }
             return new GrassTint(temperature, downfall);
         }

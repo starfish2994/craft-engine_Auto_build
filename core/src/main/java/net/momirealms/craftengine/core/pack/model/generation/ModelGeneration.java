@@ -1,13 +1,9 @@
 package net.momirealms.craftengine.core.pack.model.generation;
 
 import com.google.gson.JsonObject;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
-import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

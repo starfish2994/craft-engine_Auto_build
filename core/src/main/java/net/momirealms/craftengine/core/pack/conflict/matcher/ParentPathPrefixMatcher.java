@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class ParentPathPrefixMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             String prefix = (String) arguments.get("prefix");
             if (prefix == null) {
-                throw new IllegalArgumentException("The prefix argument must not be null");
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_path_prefix.lack_prefix", new IllegalArgumentException("The prefix argument must not be null"));
             }
             return new ParentPathPrefixMatcher(prefix);
         }

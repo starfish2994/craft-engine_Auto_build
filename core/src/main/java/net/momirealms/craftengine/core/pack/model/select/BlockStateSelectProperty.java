@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.select;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
@@ -29,7 +30,11 @@ public class BlockStateSelectProperty implements SelectProperty {
 
         @Override
         public SelectProperty create(Map<String, Object> arguments) {
-            String blockStateProperty = Objects.requireNonNull(arguments.get("block-state-property")).toString();
+            Object property = arguments.get("block-state-property");
+            if (property == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.select.block_state.lack_block_state_property", new NullPointerException("block-state-property should not be null"));
+            }
+            String blockStateProperty = property.toString();
             return new BlockStateSelectProperty(blockStateProperty);
         }
     }

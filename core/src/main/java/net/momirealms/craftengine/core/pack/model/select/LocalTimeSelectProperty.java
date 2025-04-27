@@ -43,7 +43,11 @@ public class LocalTimeSelectProperty implements SelectProperty {
 
         @Override
         public SelectProperty create(Map<String, Object> arguments) {
-            String pattern = Objects.requireNonNull(arguments.get("pattern")).toString();
+            Object patternObj = arguments.get("pattern");
+            if (patternObj == null) {
+                throw new IllegalArgumentException("warning.config.item.model.select.local_time.lack_pattern", new NullPointerException("pattern should not be null"));
+            }
+            String pattern = patternObj.toString();
             String locale = (String) arguments.get("locale");
             String timeZone = (String) arguments.get("time-zone");
             return new LocalTimeSelectProperty(pattern, locale, timeZone);

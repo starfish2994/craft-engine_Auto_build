@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item.recipe;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -52,37 +53,66 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
         return RecipeTypes.SHAPELESS;
     }
 
-    public static class Factory<A> implements RecipeFactory<A> {
+    public static class Factory<A> extends AbstractRecipeFactory<A> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
-            Map<String, Object> ingredientMap = MiscUtils.castToMap(arguments.get("ingredients"), true);
-            if (ingredientMap == null) {
-                throw new IllegalArgumentException("ingredients cannot be empty");
-            }
             CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             List<Ingredient<A>> ingredients = new ArrayList<>();
-            for (Map.Entry<String, Object> entry : ingredientMap.entrySet()) {
-                List<String> items = MiscUtils.getAsStringList(entry.getValue());
-                Set<Holder<Key>> holders = new HashSet<>();
-                for (String item : items) {
-                    if (item.charAt(0) == '#') {
-                        holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
-                    } else {
-                        holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(() -> new IllegalArgumentException("Invalid vanilla/custom item: " + item)));
+            Object ingredientsObject = getIngredientOrThrow(arguments);
+            if (ingredientsObject instanceof Map<?,?> map) {
+                for (Map.Entry<String, Object> entry : (MiscUtils.castToMap(map, false)).entrySet()) {
+                    List<String> items = MiscUtils.getAsStringList(entry.getValue());
+                    Set<Holder<Key>> holders = new HashSet<>();
+                    for (String item : items) {
+                        if (item.charAt(0) == '#') {
+                            holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
+                        } else {
+                            holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                        }
                     }
+                    ingredients.add(Ingredient.of(holders));
+                }
+            } else if (ingredientsObject instanceof List<?> list) {
+                for (Object obj : list) {
+                    if (obj instanceof List<?> inner) {
+                        Set<Holder<Key>> holders = new HashSet<>();
+                        for (String item : MiscUtils.getAsStringList(inner)) {
+                            if (item.charAt(0) == '#') {
+                                holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
+                            } else {
+                                holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                                        () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                            }
+                        }
+                        ingredients.add(Ingredient.of(holders));
+                    } else {
+                        String item = obj.toString();
+                        Set<Holder<Key>> holders = new HashSet<>();
+                        if (item.charAt(0) == '#') {
+                            holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
+                        } else {
+                            holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                        }
+                        ingredients.add(Ingredient.of(holders));
+                    }
+                }
+            } else {
+                String item = ingredientsObject.toString();
+                Set<Holder<Key>> holders = new HashSet<>();
+                if (item.charAt(0) == '#') {
+                    holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
+                } else {
+                    holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                            () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
                 }
                 ingredients.add(Ingredient.of(holders));
             }
-            return new CustomShapelessRecipe(
-                    id,
-                    recipeCategory,
-                    group,
-                    ingredients,
-                    parseResult(arguments)
-            );
+            return new CustomShapelessRecipe(id, recipeCategory, group, ingredients, parseResult(arguments));
         }
     }
 }

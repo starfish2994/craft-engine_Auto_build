@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.model.rangedisptach;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -43,12 +44,12 @@ public class RangeDispatchProperties {
     public static RangeDispatchProperty fromMap(Map<String, Object> map) {
         String type = (String) map.get("property");
         if (type == null) {
-            throw new NullPointerException("property type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.lack_property", new NullPointerException("property type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         RangeDispatchPropertyFactory factory = BuiltInRegistries.RANGE_DISPATCH_PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown property type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.invalid_property", new IllegalArgumentException("Unknown property type: " + type), type);
         }
         return factory.create(map);
     }

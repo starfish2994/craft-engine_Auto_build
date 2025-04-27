@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -35,6 +36,7 @@ public class ItemSettings {
     }
 
     public static ItemSettings fromMap(Map<String, Object> map) {
+        if (map == null) return ItemSettings.of();
         return applyModifiers(ItemSettings.of(), map);
     }
 
@@ -56,7 +58,7 @@ public class ItemSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new IllegalArgumentException("Unknown item settings key: " + entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.item.settings.unknown", new IllegalArgumentException("Unknown item settings key: " + entry.getKey()), entry.getKey());
             }
         }
         return settings;

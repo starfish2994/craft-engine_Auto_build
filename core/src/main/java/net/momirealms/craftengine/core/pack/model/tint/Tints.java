@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.model.tint;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -39,12 +40,12 @@ public class Tints {
     public static Tint fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("tint type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.item.model.tint.lack_type", new NullPointerException("'type' cannot be null for tint"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         TintFactory factory = BuiltInRegistries.TINT_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown tint type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.tint.invalid_type", new IllegalArgumentException("Unknown tint type: " + type), type);
         }
         return factory.create(map);
     }

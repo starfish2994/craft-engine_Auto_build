@@ -113,6 +113,9 @@ public abstract class AbstractSoundManager implements SoundManager {
             boolean replace = (boolean) section.getOrDefault("replace", false);
             String subtitle = (String) section.get("subtitle");
             List<?> soundList = (List<?>) section.get("sounds");
+            if (soundList == null) {
+                throw new LocalizedResourceConfigException("warning.config.sound.lack_sounds", path, id);
+            }
             List<Sound> sounds = new ArrayList<>();
             for (Object sound : soundList) {
                 if (sound instanceof String soundPath) {

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.condition;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
@@ -29,7 +30,11 @@ public class KeyBindDownConditionProperty implements ConditionProperty {
 
         @Override
         public ConditionProperty create(Map<String, Object> arguments) {
-            String keybind = Objects.requireNonNull(arguments.get("keybind"), "keybind").toString();
+            Object keybindObj = arguments.get("keybind");
+            if (keybindObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.keybind_down.lack_keybind", new NullPointerException("keybind should not be null"));
+            }
+            String keybind = keybindObj.toString();
             return new KeyBindDownConditionProperty(keybind);
         }
     }

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -29,6 +30,9 @@ public class PathContainsMatcher implements PathMatcher {
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
             String path = (String) arguments.get("path");
+            if (path == null) {
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.contains.lack_path", new NullPointerException("path should not be null"));
+            }
             return new PathContainsMatcher(path);
         }
     }

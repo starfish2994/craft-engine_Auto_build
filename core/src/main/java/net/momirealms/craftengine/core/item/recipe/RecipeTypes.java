@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -41,12 +42,12 @@ public class RecipeTypes {
     public static <T> Recipe<T> fromMap(Key id, Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("recipe type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.recipe.lack_type", new NullPointerException("recipe type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         RecipeFactory<T> factory = (RecipeFactory<T>) BuiltInRegistries.RECIPE_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown recipe type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_type", new IllegalArgumentException("Unknown recipe type: " + type), type);
         }
         return factory.create(id, map);
     }

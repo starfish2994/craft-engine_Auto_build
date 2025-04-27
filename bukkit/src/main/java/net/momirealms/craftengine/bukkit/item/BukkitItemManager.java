@@ -340,12 +340,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             }
 
             ItemSettings itemSettings;
-            if (section.containsKey("settings")) {
-                Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
-                itemSettings = ItemSettings.fromMap(settings);
-            } else {
-                itemSettings = ItemSettings.of();
+            try {
+                itemSettings = ItemSettings.fromMap(MiscUtils.castToMap(section.get("settings"), true));
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
             }
+
             if (isVanillaItem) {
                 itemSettings.canPlaceRelatedVanillaBlock(true);
             }
@@ -389,6 +391,15 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 return;
             }
 
+            ItemModel model;
+            try {
+                model = ItemModels.fromMap(modelSection);
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
+            }
+
             boolean hasModel = false;
             if (customModelData != 0) {
                 hasModel= true;
@@ -406,7 +417,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 conflict.put(customModelData, id);
 
                 // Parse models
-                ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
                     prepareModelGeneration(path, id, generation);
                 }
@@ -425,8 +435,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             }
             if (itemModelKey != null) {
                 hasModel = true;
-                // use components
-                ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
                     prepareModelGeneration(path, id, generation);
                 }

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item.recipe;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -133,29 +134,26 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
         }
     }
 
-    public static class Factory<A> implements RecipeFactory<A> {
+    public static class Factory<A> extends AbstractRecipeFactory<A> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> pattern = MiscUtils.getAsStringList(arguments.get("pattern"));
             if (pattern.isEmpty()) {
-                throw new IllegalArgumentException("pattern cannot be empty");
+                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.lack_pattern", new NullPointerException("'pattern' cannot be empty"));
             }
             if (!validatePattern(pattern)) {
-                throw new IllegalArgumentException("Invalid pattern: " + pattern);
+                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_pattern", new IllegalArgumentException("Invalid pattern: " + pattern), pattern.toString());
             }
-            Map<String, Object> ingredientMap = MiscUtils.castToMap(arguments.get("ingredients"), true);
-            if (ingredientMap == null) {
-                throw new IllegalArgumentException("ingredients cannot be empty");
-            }
+            Object ingredientObj = getIngredientOrThrow(arguments);
             CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             Map<Character, Ingredient<A>> ingredients = new HashMap<>();
-            for (Map.Entry<String, Object> entry : ingredientMap.entrySet()) {
+            for (Map.Entry<String, Object> entry : MiscUtils.castToMap(ingredientObj, false).entrySet()) {
                 String key = entry.getKey();
                 if (key.length() != 1) {
-                    throw new IllegalArgumentException("Invalid key: " + key);
+                    throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_symbol", new IllegalArgumentException("Invalid symbol: " + key), key);
                 }
                 char ch = key.charAt(0);
                 List<String> items = MiscUtils.getAsStringList(entry.getValue());
@@ -164,7 +162,8 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
                     if (item.charAt(0) == '#') {
                         holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                     } else {
-                        holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(() -> new IllegalArgumentException("Invalid vanilla/custom item: " + item)));
+                        holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                                () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
                     }
                 }
                 ingredients.put(ch, Ingredient.of(holders));

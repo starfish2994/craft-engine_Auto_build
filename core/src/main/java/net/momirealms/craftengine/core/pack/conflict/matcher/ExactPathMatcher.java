@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ public class ExactPathMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             String path = (String) arguments.get("path");
             if (path == null) {
-                throw new IllegalArgumentException("The 'path' argument must not be null");
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.exact.lack_path", new IllegalArgumentException("The 'path' argument must not be null"));
             }
             return new ExactPathMatcher(path);
         }

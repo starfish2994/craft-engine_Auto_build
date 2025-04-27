@@ -11,7 +11,6 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ConditionItemModel implements ItemModel {
     public static final Factory FACTORY = new Factory();

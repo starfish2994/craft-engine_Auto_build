@@ -162,9 +162,10 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
             Recipe<T> recipe;
             try {
                 recipe = RecipeTypes.fromMap(id, section);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().warn(path, "Failed to create recipe: " + id, e);
-                return;
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
             }
             try {
                 markAsCustomRecipe(id);

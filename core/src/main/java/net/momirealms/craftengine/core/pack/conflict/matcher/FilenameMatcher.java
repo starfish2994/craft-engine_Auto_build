@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ public class FilenameMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             String name = (String) arguments.get("name");
             if (name == null) {
-                throw new IllegalArgumentException("The 'name' argument must not be null");
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.filename.lack_name", new IllegalArgumentException("The 'name' argument must not be null"));
             }
             return new FilenameMatcher(name);
         }

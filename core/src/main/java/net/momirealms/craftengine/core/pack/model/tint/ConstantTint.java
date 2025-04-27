@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.tint;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import org.incendo.cloud.type.Either;
 
@@ -33,6 +34,9 @@ public class ConstantTint implements Tint {
         @Override
         public Tint create(Map<String, Object> arguments) {
             Object value = arguments.get("value");
+            if (value == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.tint.constant.lack_value", new NullPointerException("value should not be null"));
+            }
             return new ConstantTint(parseTintValue(value));
         }
     }

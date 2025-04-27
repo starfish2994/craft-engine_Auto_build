@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.rangedisptach;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
@@ -34,7 +35,11 @@ public class TimeRangeDispatchProperty implements RangeDispatchProperty {
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            String source = Objects.requireNonNull(arguments.get("source")).toString();
+            Object sourceObj = arguments.get("source");
+            if (sourceObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.time.lack_source", new NullPointerException("source should not be null"));
+            }
+            String source = sourceObj.toString();
             boolean wobble = (boolean) arguments.getOrDefault("wobble", true);
             return new TimeRangeDispatchProperty(source, wobble);
         }

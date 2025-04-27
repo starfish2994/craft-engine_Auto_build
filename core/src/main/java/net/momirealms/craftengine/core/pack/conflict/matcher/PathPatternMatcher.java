@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ public class PathPatternMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             String pattern = (String) arguments.get("pattern");
             if (pattern == null) {
-                throw new IllegalArgumentException("The pattern argument must not be null");
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.pattern.lack_pattern", new IllegalArgumentException("The pattern argument must not be null"));
             }
             return new PathPatternMatcher(pattern);
         }
