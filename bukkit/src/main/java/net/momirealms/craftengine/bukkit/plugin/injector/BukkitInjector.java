@@ -368,11 +368,28 @@ public class BukkitInjector {
         }
     }
 
-    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
+//    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
+//        try {
+//            Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
+//            if (!(container instanceof InjectedPalettedContainerHolder)) {
+//                InjectedPalettedContainerHolder injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
+//                injectedObject.ceSection(ceSection);
+//                injectedObject.ceWorld(ceWorld);
+//                injectedObject.cePos(pos);
+//                Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
+//                Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
+//            }
+//        } catch (Exception e) {
+//            CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
+//        }
+//    }
+
+    public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
-            if (!(container instanceof InjectedPalettedContainerHolder)) {
-                InjectedPalettedContainerHolder injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
+            if (!clazz$InjectedPalettedContainer.isInstance(container)) {
+                InjectedPalettedContainerHolder injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
+                varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
                 injectedObject.ceSection(ceSection);
                 injectedObject.ceWorld(ceWorld);
                 injectedObject.cePos(pos);

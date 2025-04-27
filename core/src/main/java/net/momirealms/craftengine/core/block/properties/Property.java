@@ -162,4 +162,9 @@ public abstract class Property<T extends Comparable<T>> {
                 .map(it -> it.apply(property))
                 .orElse(((context, state) -> ImmutableBlockState.with(state, property, property.defaultValue())));
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Comparable<T>> String formatValue(Property<T> property, Comparable<?> value) {
+        return property.valueName((T) value);
+    }
 }

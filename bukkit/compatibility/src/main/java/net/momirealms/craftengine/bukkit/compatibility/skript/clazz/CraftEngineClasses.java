@@ -8,6 +8,7 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.yggdrasil.Fields;
 import net.momirealms.craftengine.core.block.BlockStateParser;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.UnsafeBlockStateMatcher;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StreamCorruptedException;
@@ -65,6 +66,60 @@ public class CraftEngineClasses {
                     @Override
                     public @Nullable ImmutableBlockState parse(String s, ParseContext context) {
                         return BlockStateParser.deserialize(s);
+                    }
+                })
+        );
+
+        Classes.registerClass(new ClassInfo<>(UnsafeBlockStateMatcher.class, "unsafeblockstatematcher")
+                .user("unsafe block state matcher")
+                .name("Unsafe Block State Matcher")
+                .serializer(new Serializer<>() {
+                    @Override
+                    public Fields serialize(UnsafeBlockStateMatcher o) {
+                        Fields f = new Fields();
+                        f.putObject("unsafeblockstatematcher", o.toString());
+                        return f;
+                    }
+
+                    @Override
+                    public void deserialize(UnsafeBlockStateMatcher o, Fields f) {
+                    }
+
+                    @Override
+                    public UnsafeBlockStateMatcher deserialize(Fields f) throws StreamCorruptedException {
+                        String data = f.getObject("unsafeblockstatematcher", String.class);
+                        assert data != null;
+                        try {
+                            return UnsafeBlockStateMatcher.deserialize(data);
+                        } catch (IllegalArgumentException ex) {
+                            throw new StreamCorruptedException("Invalid block matcher: " + data);
+                        }
+                    }
+
+                    @Override
+                    public boolean mustSyncDeserialization() {
+                        return true;
+                    }
+
+                    @Override
+                    protected boolean canBeInstantiated() {
+                        return false;
+                    }
+                })
+                .parser(new Parser<>() {
+                    @Override
+                    public String toString(UnsafeBlockStateMatcher o, int flags) {
+                        return o.toString();
+                    }
+
+                    @Override
+                    public String toVariableNameString(UnsafeBlockStateMatcher o) {
+                        return "unsafeblockstatematcher:" + o.toString();
+                    }
+
+                    @Override
+                    public @Nullable UnsafeBlockStateMatcher parse(String s, ParseContext context) {
+                        return UnsafeBlockStateMatcher.deserialize(s);
                     }
                 })
         );
