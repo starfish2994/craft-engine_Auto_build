@@ -28,7 +28,7 @@ import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectPropert
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -240,11 +240,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (customItems.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.item.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.item.duplicated", path, id);
             }
 
-            // just register for recipes
+            // register for recipes
             Holder.Reference<Key> holder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
                     .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                             .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
@@ -254,14 +253,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             if (isVanillaItem)
                 materialStringId = id.value();
             if (materialStringId == null) {
-                TranslationManager.instance().log("warning.config.item.lack_material", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.item.lack_material", path, id);
             }
 
             Material material = MaterialUtils.getMaterial(materialStringId);
             if (material == null) {
-                TranslationManager.instance().log("warning.config.item.invalid_material", path.toString(), id.toString(), materialStringId);
-                return;
+                throw new LocalizedResourceConfigException("warning.config.item.invalid_material", path, id);
             }
             
             Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
@@ -399,12 +396,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // check conflict
                 Map<Integer, Key> conflict = cmdConflictChecker.computeIfAbsent(materialId, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
-                    TranslationManager.instance().log("warning.config.item.custom_model_data_conflict", path.toString(), id.toString(), String.valueOf(customModelData), conflict.get(customModelData).toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", path, id, String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
 
                 if (customModelData > 16_777_216) {
-                    TranslationManager.instance().log("warning.config.item.bad_custom_model_data_value", path.toString(), id.toString(), String.valueOf(customModelData));
+                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data_value", path, id, String.valueOf(customModelData));
                 }
 
                 conflict.put(customModelData, id);
@@ -451,7 +447,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
             if (!hasModel) {
-                TranslationManager.instance().log("warning.config.item.lack_model_id", path.toString(), id.toString());
+                throw new LocalizedResourceConfigException("warning.config.item.lack_model_id", path, id);
             }
         }
     }

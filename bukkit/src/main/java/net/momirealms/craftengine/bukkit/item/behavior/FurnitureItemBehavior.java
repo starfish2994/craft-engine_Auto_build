@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.collision.AABB;
@@ -154,7 +155,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("furniture");
             if (id == null) {
-                throw new IllegalArgumentException("Missing required parameter 'furniture' for furniture_item behavior");
+                throw new LocalizedResourceConfigException("warning.config.item.behavior.furniture.lack_furniture", new IllegalArgumentException("Missing required parameter 'furniture' for furniture_item behavior"));
             }
             if (id instanceof Map<?,?> map) {
                 if (map.containsKey(key.toString())) {

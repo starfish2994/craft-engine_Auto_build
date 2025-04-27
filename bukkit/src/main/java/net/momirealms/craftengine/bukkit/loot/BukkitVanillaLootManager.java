@@ -15,7 +15,7 @@ import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -110,8 +110,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             String type = (String) section.get("type");
             if (type == null) {
-                TranslationManager.instance().log("warning.config.vanilla_loot.type_not_exist", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.vanilla_loot.type_not_exist", path, id);
             }
             VanillaLoot.Type typeEnum = VanillaLoot.Type.valueOf(type.toUpperCase(Locale.ENGLISH));
             boolean override = (boolean) section.getOrDefault("override", false);
@@ -123,16 +122,14 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
                         if (target.endsWith("]") && target.contains("[")) {
                             java.lang.Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(target));
                             if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
-                                TranslationManager.instance().log("warning.config.vanilla_loot.block.invalid_target", path.toString(), id.toString(), target);
-                                return;
+                                throw new LocalizedResourceConfigException("warning.config.vanilla_loot.block.invalid_target", path, id, target);
                             }
                             VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
                             vanillaLoot.addLootTable(lootTable);
                         } else {
                             for (Object blockState : BlockStateUtils.getAllVanillaBlockStates(Key.of(target))) {
                                 if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
-                                    TranslationManager.instance().log("warning.config.vanilla_loot.block.invalid_target", path.toString(), id.toString(), target);
-                                    return;
+                                    throw new LocalizedResourceConfigException("warning.config.vanilla_loot.block.invalid_target", path, id, target);
                                 }
                                 VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
                                 if (override) vanillaLoot.override(true);

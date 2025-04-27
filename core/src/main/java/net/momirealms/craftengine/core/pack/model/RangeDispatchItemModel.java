@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.rangedisptach.RangeDispatchProperties;
 import net.momirealms.craftengine.core.pack.model.rangedisptach.RangeDispatchProperty;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.jetbrains.annotations.NotNull;
@@ -98,17 +99,26 @@ public class RangeDispatchItemModel implements ItemModel {
             RangeDispatchProperty property = RangeDispatchProperties.fromMap(arguments);
             float scale = MiscUtils.getAsFloat(arguments.getOrDefault("scale", 1.0));
             Map<String, Object> fallback = MiscUtils.castToMap(arguments.get("fallback"), true);
-            List<Map<String, Object>> entries = (List<Map<String, Object>>) arguments.get("entries");
-            if (entries != null && !entries.isEmpty()) {
-                Map<Float, ItemModel> entryMap = new HashMap<>();
-                for (Map<String, Object> entry : entries) {
-                    float threshold = MiscUtils.getAsFloat(entry.getOrDefault("threshold", 1));
-                    Map<String, Object> model = MiscUtils.castToMap(entry.getOrDefault("model", fallback), false);
-                    entryMap.put(threshold, ItemModels.fromMap(model));
+            Object entriesObj = arguments.get("entries");
+            if (entriesObj instanceof List<?> list) {
+                List<Map<String, Object>> entries = (List<Map<String, Object>>) list;
+                if (!entries.isEmpty()) {
+                    Map<Float, ItemModel> entryMap = new HashMap<>();
+                    for (Map<String, Object> entry : entries) {
+                        float threshold = MiscUtils.getAsFloat(entry.getOrDefault("threshold", 1));
+                        Object model = entry.getOrDefault("model", fallback);
+                        if (model == null) {
+                            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.entry.lack_model", new NullPointerException("'model' is required for range_dispatch entry"));
+                        }
+                        entryMap.put(threshold, ItemModels.fromMap(MiscUtils.castToMap(model, false)));
+                    }
+                    return new RangeDispatchItemModel(property, scale, fallback == null ? null : ItemModels.fromMap(fallback), entryMap);
+                } else {
+                    throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.lack_entries", new IllegalArgumentException("No entries found for range_dispatch"));
                 }
-                return new RangeDispatchItemModel(property, scale, fallback == null ? null : ItemModels.fromMap(fallback), entryMap);
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.lack_entries", new NullPointerException("'entries' is required for the range_dispatch model"));
             }
-            throw new IllegalArgumentException("No 'entries' set for 'minecraft:range_dispatch'");
         }
     }
 }

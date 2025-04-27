@@ -294,8 +294,7 @@ public class TranslationManagerImpl implements TranslationManager {
         public void parseSection(Pack pack, Path path, net.momirealms.craftengine.core.util.Key id, Map<String, Object> section) {
             Locale locale = TranslationManager.parseLocale(id.value());
             if (locale == null) {
-                log("warning.config.i18n.unknown_locale", path.toString(), id.value());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.i18n.unknown_locale", path, id);
             }
 
             Map<String, String> bundle = new HashMap<>();

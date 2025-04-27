@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.Tuple;
@@ -170,7 +171,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
             if (ageProperty == null) {
-                throw new IllegalArgumentException("age property not set for crop");
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.crop.lack_age", new IllegalArgumentException("age property not set for crop"));
             }
             int minGrowLight = MiscUtils.getAsInt(arguments.getOrDefault("light-requirement", 9));
             float growSpeed = MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.125f));

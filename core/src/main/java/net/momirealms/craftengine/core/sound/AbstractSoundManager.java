@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -78,13 +78,11 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.songs.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.jukebox_song.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.jukebox_song.duplicated", path, id);
             }
             String sound = (String) section.get("sound");
             if (sound == null) {
-                AbstractSoundManager.this.plugin.logger().warn(path, "No sound specified");
-                return;
+                throw new LocalizedResourceConfigException("warning.config.jukebox_song.lack_sound", path, id);
             }
             Component description = AdventureHelper.miniMessage().deserialize(section.getOrDefault("description", "").toString());
             float length = MiscUtils.getAsFloat(section.get("length"));
@@ -110,8 +108,7 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.sound.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.sound.duplicated", path, id);
             }
             boolean replace = (boolean) section.getOrDefault("replace", false);
             String subtitle = (String) section.get("subtitle");

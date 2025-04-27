@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.select.SelectProperties;
 import net.momirealms.craftengine.core.pack.model.select.SelectProperty;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.incendo.cloud.type.Either;
@@ -96,28 +97,40 @@ public class SelectItemModel implements ItemModel {
         public ItemModel create(Map<String, Object> arguments) {
             SelectProperty property = SelectProperties.fromMap(arguments);
             Map<String, Object> fallback = MiscUtils.castToMap(arguments.get("fallback"), true);
-            List<Map<String, Object>> cases = (List<Map<String, Object>>) arguments.get("cases");
-            if (cases != null && !cases.isEmpty()) {
-                Map<Either<String, List<String>>, ItemModel> whenMap = new HashMap<>();
-                for (Map<String, Object> c : cases) {
-                    Object when = c.get("when");
-                    if (when == null) continue;
-                    Either<String, List<String>> either;
-                    if (when instanceof List<?> whenList) {
-                        List<String> whens = new ArrayList<>(whenList.size());
-                        for (Object o : whenList) {
-                            whens.add(o.toString());
+
+            Object casesObj = arguments.get("cases");
+            if (casesObj instanceof List<?> list) {
+                List<Map<String, Object>> cases = (List<Map<String, Object>>) list;
+                if (!cases.isEmpty()) {
+                    Map<Either<String, List<String>>, ItemModel> whenMap = new HashMap<>();
+                    for (Map<String, Object> c : cases) {
+                        Object when = c.get("when");
+                        if (when == null) {
+                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.lack_when", new NullPointerException("'when' should not be null"));
                         }
-                        either = Either.ofFallback(whens);
-                    } else {
-                        either = Either.ofPrimary(when.toString());
+                        Either<String, List<String>> either;
+                        if (when instanceof List<?> whenList) {
+                            List<String> whens = new ArrayList<>(whenList.size());
+                            for (Object o : whenList) {
+                                whens.add(o.toString());
+                            }
+                            either = Either.ofFallback(whens);
+                        } else {
+                            either = Either.ofPrimary(when.toString());
+                        }
+                        Object model = c.get("model");
+                        if (model == null) {
+                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.lack_model", new NullPointerException("'model' should not be null"));
+                        }
+                        whenMap.put(either, ItemModels.fromMap(MiscUtils.castToMap(model, false)));
                     }
-                    Map<String, Object> model = MiscUtils.castToMap(c.get("model"), false);
-                    whenMap.put(either, ItemModels.fromMap(model));
+                    return new SelectItemModel(property, whenMap, fallback == null ? null : ItemModels.fromMap(fallback));
+                } else {
+                    throw new LocalizedResourceConfigException("warning.config.item.model.select.lack_cases", new NullPointerException("'cases' is required for the select model"));
                 }
-                return new SelectItemModel(property, whenMap, fallback == null ? null : ItemModels.fromMap(fallback));
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.item.model.select.lack_cases", new NullPointerException("'cases' is required for the select model"));
             }
-            throw new IllegalArgumentException("No 'cases' set for 'minecraft:select'");
         }
     }
 }

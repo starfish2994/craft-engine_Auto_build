@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.block.behavior;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -31,7 +32,7 @@ public class BlockBehaviors {
         Key key = Key.withDefaultNamespace(type, "craftengine");
         BlockBehaviorFactory factory = BuiltInRegistries.BLOCK_BEHAVIOR_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown behavior type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.block.behavior.invalid_type", new IllegalArgumentException("Unknown block behavior type: " + type), type);
         }
         return factory.create(block, map);
     }

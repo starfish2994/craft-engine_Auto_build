@@ -31,14 +31,14 @@ public abstract class CustomBlock {
     @Nullable
     protected final LootTable<?> lootTable;
 
-    public CustomBlock(
+    protected CustomBlock(
             @NotNull Key id,
             @NotNull Holder.Reference<CustomBlock> holder,
             @NotNull Map<String, Property<?>> properties,
             @NotNull Map<String, Integer> appearances,
             @NotNull Map<String, VariantState> variantMapper,
             @NotNull BlockSettings settings,
-            @Nullable Map<String, Object> behaviorSettings,
+            @Nullable Map<String, Object> behavior,
             @Nullable LootTable<?> lootTable
     ) {
         holder.bindValue(this);
@@ -49,7 +49,7 @@ public abstract class CustomBlock {
         this.placements = new ArrayList<>();
         this.variantProvider = new BlockStateVariantProvider(holder, ImmutableBlockState::new, properties);
         this.defaultState = this.variantProvider.getDefaultState();
-        this.behavior = BlockBehaviors.fromMap(this, behaviorSettings);
+        this.behavior = BlockBehaviors.fromMap(this, behavior);
         for (Map.Entry<String, VariantState> entry : variantMapper.entrySet()) {
             String nbtString = entry.getKey();
             CompoundTag tag = BlockNbtParser.deserialize(this, nbtString);
@@ -158,5 +158,79 @@ public abstract class CustomBlock {
             state = blockBehavior.updateStateForPlacement(context, state);
         }
         return state;
+    }
+
+    public abstract static class Builder {
+        protected final Key id;
+        protected Map<String, Property<?>> properties;
+        protected Map<String, Integer> appearances;
+        protected Map<String, VariantState> variantMapper;
+        protected BlockSettings settings;
+        protected Map<String, Object> behavior;
+        protected LootTable<?> lootTable;
+
+        protected Builder(Key id) {
+            this.id = id;
+        }
+
+        public Builder appearances(Map<String, Integer> appearances) {
+            this.appearances = appearances;
+            return this;
+        }
+
+        public Builder behavior(Map<String, Object> behaviorSettings) {
+            this.behavior = behaviorSettings;
+            return this;
+        }
+
+        public Builder lootTable(LootTable<?> lootTable) {
+            this.lootTable = lootTable;
+            return this;
+        }
+
+        public Builder properties(Map<String, Property<?>> properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public Builder settings(BlockSettings settings) {
+            this.settings = settings;
+            return this;
+        }
+
+        public Builder variantMapper(Map<String, VariantState> variantMapper) {
+            this.variantMapper = variantMapper;
+            return this;
+        }
+
+        public Map<String, Integer> appearances() {
+            return appearances;
+        }
+
+        public Map<String, Object> behavior() {
+            return behavior;
+        }
+
+        public Key id() {
+            return id;
+        }
+
+        public LootTable<?> lootTable() {
+            return lootTable;
+        }
+
+        public Map<String, Property<?>> properties() {
+            return properties;
+        }
+
+        public BlockSettings settings() {
+            return settings;
+        }
+
+        public Map<String, VariantState> variantMapper() {
+            return variantMapper;
+        }
+
+        public abstract CustomBlock build();
     }
 }

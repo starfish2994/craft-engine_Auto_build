@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.block;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +55,7 @@ public class BlockSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new IllegalArgumentException("Unknown block settings key: " + entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.block.settings.unknown", new IllegalArgumentException("Unknown block settings key: " + entry.getKey()), entry.getKey());
             }
         }
         return settings;

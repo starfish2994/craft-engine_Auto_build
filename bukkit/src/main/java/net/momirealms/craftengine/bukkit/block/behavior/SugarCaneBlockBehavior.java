@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.block.properties.IntegerProperty;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.Tuple;
@@ -203,7 +204,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
             if (ageProperty == null) {
-                throw new IllegalArgumentException("age property not set for sugar cane");
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.sugar_cane.lack_age", new IllegalArgumentException("'age' property not set for sugar cane block behavior"));
             }
             int maxHeight = MiscUtils.getAsInt(arguments.getOrDefault("max-height", 3));
             List<String> nearbyLiquids = MiscUtils.getAsStringList(arguments.getOrDefault("required-adjacent-liquids", List.of()));

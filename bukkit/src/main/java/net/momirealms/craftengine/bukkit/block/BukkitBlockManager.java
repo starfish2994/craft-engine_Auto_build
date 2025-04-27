@@ -26,6 +26,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -331,13 +332,28 @@ public class BukkitBlockManager extends AbstractBlockManager {
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             // check duplicated config
             if (byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.block.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.block.duplicated", path, id);
             }
             // read block settings
-            BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
+            BlockSettings settings;
+            try {
+                settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
+            }
+
             // read loot table
-            LootTable<ItemStack> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
+            LootTable<ItemStack> lootTable;
+            try {
+                lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
+            }
+
             // read states
             Map<String, Property<?>> properties;
             Map<String, Integer> appearances;
@@ -347,8 +363,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 properties = Map.of();
                 int internalId = MiscUtils.getAsInt(stateSection.getOrDefault("id", -1));
                 if (internalId < 0) {
-                    TranslationManager.instance().log("warning.config.block.state.lack_real_id", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_real_id", path, id);
                 }
 
                 Pair<Key, Integer> pair = parseAppearanceSection(pack, path, id, stateSection);
@@ -358,34 +373,27 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 Key internalBlockId = Key.of(CraftEngine.NAMESPACE, pair.left().value() + "_" + internalId);
                 int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
                 if (internalBlockRegistryId == -1) {
-                    TranslationManager.instance().log("warning.config.block.state.invalid_real_state_id",
-                            path.toString(),
-                            id.toString(),
+                    throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
                             pair.left().value() + "_" + internalId,
-                            String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1)
-                    );
-                    return;
+                            String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1));
                 }
                 variants = Map.of("", new VariantState("default", settings, internalBlockRegistryId));
             } else {
                 // states
                 Map<String, Object> statesSection = MiscUtils.castToMap(section.get("states"), true);
                 if (statesSection == null) {
-                    TranslationManager.instance().log("warning.config.block.lack_state", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.block.lack_state", path, id);
                 }
                 // properties
                 Map<String, Object> propertySection = MiscUtils.castToMap(statesSection.get("properties"), true);
                 if (propertySection == null) {
-                    TranslationManager.instance().log("warning.config.block.state.lack_properties", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_properties", path, id);
                 }
                 properties = parseProperties(path, id, propertySection);
                 // appearance
                 Map<String, Object> appearancesSection = MiscUtils.castToMap(statesSection.get("appearances"), true);
                 if (appearancesSection == null) {
-                    TranslationManager.instance().log("warning.config.block.state.lack_appearances", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_appearances", path, id);
                 }
                 appearances = new HashMap<>();
                 Map<String, Key> tempTypeMap = new HashMap<>();
@@ -400,8 +408,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 // variants
                 Map<String, Object> variantsSection = MiscUtils.castToMap(statesSection.get("variants"), true);
                 if (variantsSection == null) {
-                    TranslationManager.instance().log("warning.config.block.state.lack_variants", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_variants", path, id);
                 }
                 variants = new HashMap<>();
                 for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
@@ -410,25 +417,19 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         String variantName = variantEntry.getKey();
                         String appearance = (String) variantSection.get("appearance");
                         if (appearance == null) {
-                            TranslationManager.instance().log("warning.config.block.state.variant.lack_appearance", path.toString(), id.toString(), variantName);
-                            return;
+                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.lack_appearance", path, id, variantName);
                         }
                         if (!appearances.containsKey(appearance)) {
-                            TranslationManager.instance().log("warning.config.block.state.variant.invalid_appearance", path.toString(), id.toString(), variantName, appearance);
-                            return;
+                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.invalid_appearance", path, id, variantName, appearance);
                         }
                         int internalId = MiscUtils.getAsInt(variantSection.getOrDefault("id", -1));
                         Key baseBlock = tempTypeMap.get(appearance);
                         Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
                         int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
                         if (internalBlockRegistryId == -1) {
-                            TranslationManager.instance().log("warning.config.block.state.invalid_real_state_id",
-                                    path.toString(),
-                                    id.toString(),
+                            throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
                                     internalBlockId.toString(),
-                                    String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1)) - 1)
-                            );
-                            return;
+                                    String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1)) - 1));
                         }
                         Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
                         variants.put(variantName, new VariantState(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
@@ -436,12 +437,23 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
-            // create or get block holder
-            Holder.Reference<CustomBlock> holder = BuiltInRegistries.BLOCK.get(id).orElseGet(() ->
-                    ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).registerForHolder(new ResourceKey<>(BuiltInRegistries.BLOCK.key().location(), id)));
-            // create block
-            Map<String, Object> behaviorSection = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
-            BukkitCustomBlock block = new BukkitCustomBlock(id, holder, properties, appearances, variants, settings, behaviorSection, lootTable);
+            Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
+
+            CustomBlock block;
+            try {
+                block = BukkitCustomBlock.builder(id)
+                        .appearances(appearances)
+                        .variantMapper(variants)
+                        .lootTable(lootTable)
+                        .properties(properties)
+                        .settings(settings)
+                        .behavior(behaviors)
+                        .build();
+            } catch (LocalizedResourceConfigException e) {
+                e.setPath(path);
+                e.setId(id);
+                throw e;
+            }
 
             // bind appearance and real state
             for (ImmutableBlockState state : block.variantProvider().states()) {

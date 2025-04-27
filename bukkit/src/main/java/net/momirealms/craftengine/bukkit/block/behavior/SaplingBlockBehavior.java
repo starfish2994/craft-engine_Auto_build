@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
@@ -142,11 +143,11 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             String feature = (String) arguments.get("feature");
             if (feature == null) {
-                throw new IllegalArgumentException("feature is null");
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.sapling.lack_feature", new IllegalArgumentException("'feature' is required for sapling block behavior"));
             }
             Property<Integer> stageProperty = (Property<Integer>) block.getProperty("stage");
             if (stageProperty == null) {
-                throw new IllegalArgumentException("stage property not set for sapling");
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.sapling.lack_stage", new IllegalArgumentException("stage property not set for sapling"));
             }
             double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);

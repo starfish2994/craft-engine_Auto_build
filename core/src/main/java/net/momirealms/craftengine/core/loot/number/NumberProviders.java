@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.loot.number;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -38,12 +39,12 @@ public class NumberProviders {
     public static NumberProvider fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("number type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.loot_table.number.lack_type", new NullPointerException("number type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         NumberProviderFactory factory = BuiltInRegistries.NUMBER_PROVIDER_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown number type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.loot_table.number.invalid_type", new IllegalArgumentException("Unknown number type: " + type), type);
         }
         return factory.create(map);
     }
