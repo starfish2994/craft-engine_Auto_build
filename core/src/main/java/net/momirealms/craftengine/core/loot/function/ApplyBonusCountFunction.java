@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -53,11 +54,11 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
         public LootFunction<T> create(Map<String, Object> arguments) {
             String enchantment = (String) arguments.get("enchantment");
             if (enchantment == null || enchantment.isEmpty()) {
-                throw new IllegalArgumentException("enchantment is required");
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.lack_enchantment", new IllegalArgumentException("'enchantment' is required for apply_bonus function"));
             }
             Map<String, Object> formulaMap = MiscUtils.castToMap(arguments.get("formula"), true);
             if (formulaMap == null) {
-                throw new IllegalArgumentException("formula is required");
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.lack_formula", new IllegalArgumentException("formula is required"));
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))

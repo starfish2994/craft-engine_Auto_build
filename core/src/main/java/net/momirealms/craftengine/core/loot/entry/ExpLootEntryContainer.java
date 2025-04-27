@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class ExpLootEntryContainer<T> extends AbstractLootEntryContainer<T> {
         public LootEntryContainer<A> create(Map<String, Object> arguments) {
             Object value = arguments.get("count");
             if (value == null) {
-                throw new IllegalArgumentException("count can not be null");
+                throw new LocalizedResourceConfigException("warning.config.loot_table.entry.exp.lack_count", new IllegalArgumentException("'count' is required for exp entry"));
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
