@@ -2,66 +2,93 @@ package net.momirealms.craftengine.core.plugin.locale;
 
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
 
 public class LocalizedException extends RuntimeException {
     private final String node;
-    private final Exception originalException;
     private String[] arguments;
 
-    public LocalizedException(String node, Exception originalException, String... arguments) {
-        super(node);
+    public LocalizedException(
+            @NotNull String node,
+            @Nullable Exception cause,
+            @Nullable String... arguments
+    ) {
+        super(node, cause);
         this.node = node;
-        this.arguments = arguments;
-        this.originalException = originalException;
+        this.arguments = arguments != null
+                ? Arrays.copyOf(arguments, arguments.length)
+                : new String[0];
     }
 
-    public LocalizedException(String node, String... arguments) {
+    public LocalizedException(@NotNull String node, @Nullable String... arguments) {
         this(node, (Exception) null, arguments);
     }
 
-    public LocalizedException(String node, String[] arguments1, String... arguments2) {
-        this(node, (Exception) null, ArrayUtils.merge(arguments1, arguments2));
-    }
-
-    @Nullable
-    public Exception originalException() {
-        return originalException;
+    public LocalizedException(
+            @NotNull String node,
+            @Nullable String[] prefixArgs,
+            @Nullable String... suffixArgs
+    ) {
+        this(
+                node,
+                (Exception) null,
+                ArrayUtils.merge(
+                        prefixArgs != null ? prefixArgs : new String[0],
+                        suffixArgs != null ? suffixArgs : new String[0]
+                )
+        );
     }
 
     public String[] arguments() {
-        return arguments;
+        return Arrays.copyOf(arguments, arguments.length);
     }
 
-    public String node() {
-        return node;
-    }
-
-    public void setArgument(int index, String argument) {
+    public void setArgument(int index, @NotNull String argument) {
+        if (index < 0 || index >= arguments.length) {
+            throw new IndexOutOfBoundsException("Invalid argument index: " + index);
+        }
         this.arguments[index] = argument;
     }
 
-    public void appendHeadArgument(String argument) {
-        this.arguments = ArrayUtils.appendElementToArrayHead(this.arguments, argument);
+    public void appendHeadArgument(@NotNull String argument) {
+        this.arguments = ArrayUtils.appendElementToArrayHead(arguments, argument);
     }
 
-    public void appendTailArgument(String argument) {
-        this.arguments = ArrayUtils.appendElementToArrayTail(this.arguments, argument);
+    public void appendTailArgument(@NotNull String argument) {
+        this.arguments = ArrayUtils.appendElementToArrayTail(arguments, argument);
     }
 
-    // we should not call this method directly, as it's inaccurate
+    public @NotNull String node() {
+        return node;
+    }
+
     @Override
     public String getMessage() {
-        if (originalException != null) {
-            return originalException.getMessage();
+        return generateLocalizedMessage();
+    }
+
+    private String generateLocalizedMessage() {
+        try {
+            String rawMessage = TranslationManager.instance()
+                    .miniMessageTranslation(this.node);
+            String cleanMessage = AdventureHelper.miniMessage()
+                    .stripTags(rawMessage);
+            for (int i = 0; i < arguments.length; i++) {
+                cleanMessage = cleanMessage.replace(
+                        "<arg:" + i + ">",
+                        arguments[i] != null ? arguments[i] : "null"
+                );
+            }
+            return cleanMessage;
+        } catch (Exception e) {
+            return String.format(
+                    "Failed to translate. Node: %s, Arguments: %s",
+                    node,
+                    Arrays.toString(arguments)
+            );
         }
-        String text = AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation(this.node));
-        for (int i = 0; i < arguments.length; i++) {
-            text = text.replace("<arg:" + i + ">", arguments[i]);
-        }
-        return text;
-//        return  "\n" + "Node: '" + this.node + "'" +
-//                "\n" + "Translation: '" + AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation(this.node)) + "'" +
-//                "\n" + "Arguments: " + Arrays.toString(this.arguments);
     }
 }
