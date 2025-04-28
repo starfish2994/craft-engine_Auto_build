@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Particle;
 
 public class ParticleUtils {
@@ -10,7 +11,7 @@ public class ParticleUtils {
         } catch (IllegalArgumentException e) {
             return switch (particle) {
                 case "REDSTONE" -> Particle.valueOf("DUST");
-                case "VILLAGER_HAPPY" -> Particle.valueOf("HAPPY_VILLAGER");
+                case "VILLAGER_HAPPY" -> Particle.valueOf(VersionHelper.isOrAbove1_20_5() ? "HAPPY_VILLAGER" : "VILLAGER_HAPPY");
                 default -> Particle.valueOf(particle);
             };
         }

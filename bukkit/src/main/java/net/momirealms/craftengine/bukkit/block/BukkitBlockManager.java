@@ -849,9 +849,19 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return states.get(0);
     }
 
+    @SuppressWarnings("unchecked")
     private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock) throws IllegalAccessException {
-        @SuppressWarnings("unchecked")
         Map<Object, Material> magicMap = (Map<Object, Material>) Reflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
-        magicMap.put(newBlock, isNoteBlock ? Material.STONE : org.bukkit.Registry.MATERIAL.get(new NamespacedKey(replacedBlock.namespace(), replacedBlock.value())));
+        Map<Material, Object> factories = (Map<Material, Object>) Reflections.field$CraftBlockStates$FACTORIES.get(null);
+        if (isNoteBlock) {
+            magicMap.put(newBlock, Material.STONE);
+        } else {
+            Material material = org.bukkit.Registry.MATERIAL.get(new NamespacedKey(replacedBlock.namespace(), replacedBlock.value()));
+            if (Reflections.clazz$CraftBlockStates$BlockEntityStateFactory.isInstance(factories.get(material))) {
+                magicMap.put(newBlock, Material.STONE);
+            } else {
+                magicMap.put(newBlock, material);
+            }
+        }
     }
 }

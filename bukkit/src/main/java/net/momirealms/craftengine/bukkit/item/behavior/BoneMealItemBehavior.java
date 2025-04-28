@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.CropBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.GrassBlockBehavior;
 import net.momirealms.craftengine.bukkit.block.behavior.SaplingBlockBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -43,6 +44,10 @@ public class BoneMealItemBehavior extends ItemBehavior {
             }
         } else if (state.behavior() instanceof SaplingBlockBehavior) {
             shouldHandle = true;
+        } else if (state.behavior() instanceof GrassBlockBehavior) {
+            if (block.getLocation().add(0, 1, 0).getBlock().isEmpty()) {
+                shouldHandle = true;
+            }
         }
 
         if (!shouldHandle) return InteractionResult.PASS;
