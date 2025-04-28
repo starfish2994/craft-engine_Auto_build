@@ -439,8 +439,15 @@ public abstract class AbstractFontManager implements FontManager {
             Key fontKey = Key.withDefaultNamespace(fontName, id.namespace());
             Font font = getOrCreateFont(fontKey);
             List<char[]> chars;
-            if (section.containsKey("chars")) {
-                chars = MiscUtils.getAsStringList(section.get("chars")).stream().map(it -> {
+            Object charsObj = section.get("chars");
+            if (charsObj == null) {
+                charsObj = section.get("char");
+            }
+            if (charsObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.image.lack_char", path, id);
+            }
+            if (charsObj instanceof List<?> list) {
+                chars = MiscUtils.getAsStringList(list).stream().map(it -> {
                     if (it.startsWith("\\u")) {
                         return CharacterUtils.decodeUnicodeToChars(it);
                     } else {
@@ -448,14 +455,10 @@ public abstract class AbstractFontManager implements FontManager {
                     }
                 }).toList();
             } else {
-                Object c = section.get("char");
-                if (c == null) {
-                    throw new LocalizedResourceConfigException("warning.config.image.lack_char", path, id);
-                }
-                if (c instanceof Integer integer) {
+                if (charsObj instanceof Integer integer) {
                     chars = List.of(new char[]{(char) integer.intValue()});
                 } else {
-                    String character = c.toString();
+                    String character = charsObj.toString();
                     if (character.length() == 1) {
                         chars = List.of(character.toCharArray());
                     } else {

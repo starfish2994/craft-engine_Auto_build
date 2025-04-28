@@ -460,7 +460,7 @@ public abstract class AbstractPackManager implements PackManager {
                                         parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
                                     }
                                 } else {
-                                    TranslationManager.instance().log("warning.config.not_a_section", cached.filePath().toString(), parser.sectionId()[0], configEntry.getKey(), configEntry.getValue().getClass().getSimpleName());
+                                    TranslationManager.instance().log("warning.config.not_a_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
                                 }
                             }
                         } catch (LocalizedException e) {

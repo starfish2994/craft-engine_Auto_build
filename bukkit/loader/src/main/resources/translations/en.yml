@@ -68,7 +68,7 @@ warning.config.cast_float: "<yellow>Issue found in file <arg:0> - Failed to load
 warning.config.cast_double: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to double type for option '<arg:3>'."
 warning.config.cast_quaternionf: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to Quaternionf type for option '<arg:3>'."
 warning.config.cast_vector3f: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to Vector3f type for option '<arg:3>'."
-warning.config.not_a_section: "<yellow>Issue found in file <arg:0> - '<arg:1>.<arg:2>' is expected to be a config section while it's actually a(n) '<arg:3>'.</yellow>"
+warning.config.not_a_section: "<yellow>Issue found in file <arg:0> - '<arg:1>' is expected to be a config section while it's actually a(n) '<arg:2>'.</yellow>"
 warning.config.image.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated image '<arg:1>'.</yellow>"
 warning.config.image.lack_height: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' is missing the required 'height' argument.</yellow>"
 warning.config.image.height_smaller_than_ascent: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' violates the bitmap image rule: 'height'[<arg:2>] should be no lower than 'ascent'[<arg:3>].</yellow>"
