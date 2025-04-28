@@ -16,6 +16,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key CONCRETE_POWDER_BLOCK = Key.from("craftengine:concrete_powder_block");
     public static final Key SUGARCANE_BLOCK = Key.from("craftengine:sugar_cane_block");
     public static final Key CROP_BLOCK = Key.from("craftengine:crop_block");
+    public static final Key GRASS_BLOCK = Key.from("craftengine:grass_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
@@ -30,5 +31,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(CONCRETE_POWDER_BLOCK, ConcretePowderBlockBehavior.FACTORY);
         register(SUGARCANE_BLOCK, SugarCaneBlockBehavior.FACTORY);
         register(CROP_BLOCK, CropBlockBehavior.FACTORY);
+        register(GRASS_BLOCK, GrassBlockBehavior.FACTORY);
     }
 }
