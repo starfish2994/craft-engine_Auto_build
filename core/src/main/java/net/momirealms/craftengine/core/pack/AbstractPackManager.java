@@ -513,15 +513,18 @@ public abstract class AbstractPackManager implements PackManager {
             List<Path> folders = new ArrayList<>();
             folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
             folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-
             List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);
             if (!duplicated.isEmpty()) {
-                this.plugin.logger().severe("Duplicated files Found. Please resolve them through config.yml resource-pack.duplicated-files-handler.");
+                plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
+                int x = 1;
                 for (Pair<Path, List<Path>> path : duplicated) {
-                    this.plugin.logger().warn("");
-                    this.plugin.logger().warn("Target: " + path.left());
-                    for (Path path0 : path.right()) {
-                        this.plugin.logger().warn(" - " + path0.toAbsolutePath());
+                    this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
+                    for (int i = 0, size = path.right().size(); i < size; i++) {
+                        if (i == size - 1) {
+                            this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
+                        } else {
+                            this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
+                        }
                     }
                 }
             }
@@ -932,7 +935,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
 
         if (Config.packMinVersion() < 21.19f && has) {
-            plugin.logger().warn("You are using item-model component for models which requires 1.21.2+. But the min supported version is " + "1." + Config.packMinVersion());
+            plugin.logger().warn("You are using 'item-model' component for some models which requires 1.21.2+ client. But the min-supported-version set in 'config.yml' is " + "1." + Config.packMinVersion());
         }
     }
 

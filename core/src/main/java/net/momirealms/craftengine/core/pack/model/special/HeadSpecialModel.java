@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;

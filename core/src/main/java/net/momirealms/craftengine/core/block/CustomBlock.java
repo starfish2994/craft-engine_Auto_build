@@ -178,8 +178,8 @@ public abstract class CustomBlock {
             return this;
         }
 
-        public Builder behavior(Map<String, Object> behaviorSettings) {
-            this.behavior = behaviorSettings;
+        public Builder behavior(Map<String, Object> behavior) {
+            this.behavior = behavior;
             return this;
         }
 

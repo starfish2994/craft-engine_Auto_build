@@ -17,7 +17,6 @@ import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.Tuple;

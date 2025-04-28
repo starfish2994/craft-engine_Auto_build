@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.block.properties;
 
 import it.unimi.dsi.fastutil.ints.IntImmutableList;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.sparrow.nbt.IntTag;
 import net.momirealms.sparrow.nbt.NumericTag;

@@ -5,7 +5,6 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class TimeRangeDispatchProperty implements RangeDispatchProperty {
     public static final Factory FACTORY = new Factory();

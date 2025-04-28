@@ -226,7 +226,7 @@ public class TranslationManagerImpl implements TranslationManager {
     @Override
     public void log(String id, String... args) {
         String translation = miniMessageTranslation(id);
-        if (translation == null) translation = id;
+        if (translation == null || translation.isEmpty()) translation = id;
         this.plugin.senderFactory().console().sendMessage(AdventureHelper.miniMessage().deserialize(translation, new IndexedArgumentTag(Arrays.stream(args).map(Component::text).toList())));
     }
 

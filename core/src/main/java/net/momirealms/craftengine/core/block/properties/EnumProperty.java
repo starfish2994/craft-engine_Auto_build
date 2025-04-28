@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.block.properties;
 
 import com.google.common.collect.ImmutableMap;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.sparrow.nbt.StringTag;
 import net.momirealms.sparrow.nbt.Tag;
 

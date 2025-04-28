@@ -24,7 +24,7 @@ public class BlockBehaviors {
     }
 
     public static BlockBehavior fromMap(CustomBlock block, @Nullable Map<String, Object> map) {
-        if (map == null) return EmptyBlockBehavior.INSTANCE;
+        if (map == null || map.isEmpty()) return EmptyBlockBehavior.INSTANCE;
         Object type = map.get("type");
         if (type == null) {
             throw new LocalizedResourceConfigException("warning.config.block.behavior.missing_type");

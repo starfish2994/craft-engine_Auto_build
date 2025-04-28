@@ -22,6 +22,7 @@ public class ItemBehaviors {
     }
 
     public static ItemBehavior fromMap(Pack pack, Path path, Key id, Map<String, Object> map) {
+        if (map == null || map.isEmpty()) return EmptyItemBehavior.INSTANCE;
         Object type = map.get("type");
         if (type == null) {
             throw new LocalizedResourceConfigException("warning.config.item.behavior.missing_type");

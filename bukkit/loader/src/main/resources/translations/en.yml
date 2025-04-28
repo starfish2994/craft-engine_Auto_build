@@ -64,7 +64,7 @@ command.upload.failure.not_supported: "<red>Current hosting method '<arg:0>' doe
 command.upload.on_progress: "<white>Started uploading progress. Check the console for more information.</white>"
 command.send_resource_pack.success.single: "<white>Sent resource pack to <arg:0>.</white>"
 command.send_resource_pack.success.multiple: "<white>Send resource packs to <arg:0> players.</white>"
-
+warning.config.pack.duplicated_files: "</red>Duplicated files Found. Please resolve them through config.yml 'resource-pack.duplicated-files-handler' section.</red>"
 warning.config.type.int: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to integer type for option '<arg:3>'.</yellow>"
 warning.config.type.float: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to float type for option '<arg:3>'.</yellow>"
 warning.config.type.double: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to double type for option '<arg:3>'.</yellow>"
@@ -101,6 +101,7 @@ warning.config.recipe.smithing_transform.post_processor.keep_component.missing_t
 warning.config.i18n.unknown_locale: "<yellow>Issue found in file <arg:0> - Unknown locale '<arg:1>'.</yellow>"
 warning.config.template.duplicate: "<yellow>Issue found in file <arg:0> - Duplicated template '<arg:1>'.</yellow>"
 warning.config.template.argument.self_increase_int.invalid_range: "<yellow>Issue found in file <arg:0> - The template '<arg:1>' is using a 'from' '<arg:2>' larger than 'to' '<arg:3>' in 'self_increase_int' argument.</yellow>"
+warning.config.template.argument.list.invalid_type: "<yellow>Issue found in file <arg:0> - The template '<arg:1>' is using a 'list' argument which expects a 'List' as argument while the input argument is a(n) '<arg:2>'.</yellow>"
 warning.config.vanilla_loot.missing_type: "<yellow>Issue found in file <arg:0> - 'type' not set for vanilla loot '<arg:1>'.</yellow>"
 warning.config.vanilla_loot.block.invalid_target: "<yellow>Issue found in file <arg:0> - Invalid block target '<arg:2>' in vanilla loot '<arg:1>'.</yellow>"
 warning.config.sound.duplicate: "<yellow>Issue found in file <arg:0> - Duplicated sound '<arg:1>'.</yellow>"
