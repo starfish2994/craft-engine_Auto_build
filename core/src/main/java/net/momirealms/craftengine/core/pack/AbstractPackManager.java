@@ -934,9 +934,10 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        if (Config.packMinVersion() < 21.19f && has) {
-            plugin.logger().warn("You are using 'item-model' component for some models which requires 1.21.2+ client. But the min-supported-version set in 'config.yml' is " + "1." + Config.packMinVersion());
-        }
+        // TODO it later
+//        if (Config.packMinVersion() < 21.19f && has) {
+//            plugin.logger().warn("You are using 'item-model' component for some models which requires 1.21.2+ client. But the min-supported-version set in 'config.yml' is " + "1." + Config.packMinVersion());
+//        }
     }
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
