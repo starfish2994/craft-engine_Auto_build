@@ -147,7 +147,6 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
                 throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_pattern", new IllegalArgumentException("Invalid pattern: " + pattern), pattern.toString());
             }
             Object ingredientObj = getIngredientOrThrow(arguments);
-            CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             Map<Character, Ingredient<A>> ingredients = new HashMap<>();
             for (Map.Entry<String, Object> entry : MiscUtils.castToMap(ingredientObj, false).entrySet()) {
@@ -168,13 +167,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
                 }
                 ingredients.put(ch, Ingredient.of(holders));
             }
-            return new CustomShapedRecipe(
-                    id,
-                    recipeCategory,
-                    group,
-                    new Pattern<>(pattern.toArray(new String[0]), ingredients),
-                    parseResult(arguments)
-            );
+            return new CustomShapedRecipe(id, craftingRecipeCategory(arguments), group, new Pattern<>(pattern.toArray(new String[0]), ingredients), parseResult(arguments));
         }
 
         private boolean validatePattern(List<String> pattern) {

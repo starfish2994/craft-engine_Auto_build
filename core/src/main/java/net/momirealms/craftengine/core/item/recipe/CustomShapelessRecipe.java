@@ -58,7 +58,6 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
-            CraftingRecipeCategory recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             List<Ingredient<A>> ingredients = new ArrayList<>();
             Object ingredientsObject = getIngredientOrThrow(arguments);
@@ -112,7 +111,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                 }
                 ingredients.add(Ingredient.of(holders));
             }
-            return new CustomShapelessRecipe(id, recipeCategory, group, ingredients, parseResult(arguments));
+            return new CustomShapelessRecipe(id, craftingRecipeCategory(arguments), group, ingredients, parseResult(arguments));
         }
     }
 }

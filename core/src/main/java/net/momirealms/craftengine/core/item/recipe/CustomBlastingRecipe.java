@@ -26,12 +26,11 @@ public class CustomBlastingRecipe<T> extends CustomCookingRecipe<T> {
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
-            CookingRecipeCategory recipeCategory = arguments.containsKey("category") ? CookingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
             int cookingTime = MiscUtils.getAsInt(arguments.getOrDefault("time", 80));
             float experience = MiscUtils.getAsFloat(arguments.getOrDefault("experience", 0.0f));
             Set<Holder<Key>> holders = ingredientHolders(arguments);
-            return new CustomBlastingRecipe(id, recipeCategory, group, Ingredient.of(holders), cookingTime, experience, parseResult(arguments));
+            return new CustomBlastingRecipe(id, cookingRecipeCategory(arguments), group, Ingredient.of(holders), cookingTime, experience, parseResult(arguments));
         }
     }
 }

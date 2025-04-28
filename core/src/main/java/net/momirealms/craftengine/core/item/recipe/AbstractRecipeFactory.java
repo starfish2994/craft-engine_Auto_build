@@ -7,10 +7,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
 
@@ -44,5 +41,25 @@ public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
             throw new LocalizedResourceConfigException("warning.config.recipe.lack_ingredient", new NullPointerException("'ingredient' should not be null"));
         }
         return ingredient;
+    }
+
+    protected CookingRecipeCategory cookingRecipeCategory(Map<String, Object> arguments) {
+        CookingRecipeCategory recipeCategory;
+        try {
+            recipeCategory = arguments.containsKey("category") ? CookingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
+        } catch (IllegalArgumentException e) {
+            throw new LocalizedResourceConfigException("warning.config.recipe.cooking.invalid_category", e, arguments.get("category").toString());
+        }
+        return recipeCategory;
+    }
+
+    protected CraftingRecipeCategory craftingRecipeCategory(Map<String, Object> arguments) {
+        CraftingRecipeCategory recipeCategory;
+        try {
+            recipeCategory = arguments.containsKey("category") ? CraftingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
+        } catch (IllegalArgumentException e) {
+            throw new LocalizedResourceConfigException("warning.config.recipe.crafting.invalid_category", e, arguments.get("category").toString());
+        }
+        return recipeCategory;
     }
 }
