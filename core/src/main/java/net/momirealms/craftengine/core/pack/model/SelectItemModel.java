@@ -106,7 +106,7 @@ public class SelectItemModel implements ItemModel {
                     for (Map<String, Object> c : cases) {
                         Object when = c.get("when");
                         if (when == null) {
-                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.missing_when", new NullPointerException("'when' should not be null"));
+                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.missing_when");
                         }
                         Either<String, List<String>> either;
                         if (when instanceof List<?> whenList) {
@@ -120,16 +120,16 @@ public class SelectItemModel implements ItemModel {
                         }
                         Object model = c.get("model");
                         if (model == null) {
-                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.missing_model", new NullPointerException("'model' should not be null"));
+                            throw new LocalizedResourceConfigException("warning.config.item.model.select.case.missing_model");
                         }
                         whenMap.put(either, ItemModels.fromMap(MiscUtils.castToMap(model, false)));
                     }
                     return new SelectItemModel(property, whenMap, fallback == null ? null : ItemModels.fromMap(fallback));
                 } else {
-                    throw new LocalizedResourceConfigException("warning.config.item.model.select.missing_cases", new NullPointerException("'cases' is required for the select model"));
+                    throw new LocalizedResourceConfigException("warning.config.item.model.select.missing_cases");
                 }
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.model.select.missing_cases", new NullPointerException("'cases' is required for the select model"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.select.missing_cases");
             }
         }
     }

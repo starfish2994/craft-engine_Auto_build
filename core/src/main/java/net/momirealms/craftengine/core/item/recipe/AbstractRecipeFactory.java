@@ -26,7 +26,7 @@ public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
                 holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
             } else {
                 holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                        () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                        () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
             }
         }
         return holders;
@@ -38,7 +38,7 @@ public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
             ingredient = arguments.get("ingredients");
         }
         if (ingredient == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.missing_ingredient", new NullPointerException("'ingredient' should not be null"));
+            throw new LocalizedResourceConfigException("warning.config.recipe.missing_ingredient");
         }
         return ingredient;
     }

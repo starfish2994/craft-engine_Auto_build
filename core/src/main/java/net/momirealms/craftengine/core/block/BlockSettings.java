@@ -55,7 +55,7 @@ public class BlockSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new LocalizedResourceConfigException("warning.config.block.settings.unknown", new IllegalArgumentException("Unknown block settings key: " + entry.getKey()), entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.block.settings.unknown", entry.getKey());
             }
         }
         return settings;

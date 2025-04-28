@@ -56,15 +56,15 @@ public class LootTable<T> {
                 NumberProvider bonus_rolls = NumberProviders.fromObject(pool.getOrDefault("bonus_rolls", 0));
                 List<LootCondition> conditions = Optional.ofNullable(pool.get("conditions"))
                         .map(it -> LootConditions.fromMapList(castToMapListOrThrow(it,
-                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_conditions_type", new RuntimeException("'conditions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName()))))
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_conditions_type", it.getClass().getSimpleName()))))
                         .orElse(Lists.newArrayList());
                 List<LootEntryContainer<T>> containers = Optional.ofNullable(pool.get("entries"))
                         .map(it -> (List<LootEntryContainer<T>>) new ArrayList<LootEntryContainer<T>>(LootEntryContainers.fromMapList(castToMapListOrThrow(it,
-                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_entries_type", new RuntimeException("'entries' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_entries_type", it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList());
                 List<LootFunction<T>> functions = Optional.ofNullable(pool.get("functions"))
                         .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
-                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList());
                 lootPools.add(new LootPool<>(containers, conditions, functions, rolls, bonus_rolls));
             } else if (rawPool instanceof String string) {
@@ -76,7 +76,7 @@ public class LootTable<T> {
         return new LootTable<>(lootPools,
                 Optional.ofNullable(map.get("functions"))
                         .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
-                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList())
         );
     }

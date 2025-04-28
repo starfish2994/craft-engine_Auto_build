@@ -71,11 +71,11 @@ public class BaseItemModel implements ItemModel {
         public ItemModel create(Map<String, Object> arguments) {
             Object path = arguments.get("path");
             if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.base.missing_path", new NullPointerException("'path' is required for 'minecraft:model'"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.base.missing_path");
             }
             String modelPath = path.toString();
             if (!ResourceLocation.isValid(modelPath)) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.base.invalid_path", new IllegalArgumentException("Invalid resource location: " + modelPath), modelPath);
+                throw new LocalizedResourceConfigException("warning.config.item.model.base.invalid_path", modelPath);
             }
             Map<String, Object> generation = MiscUtils.castToMap(arguments.get("generation"), true);
             ModelGeneration modelGeneration = null;

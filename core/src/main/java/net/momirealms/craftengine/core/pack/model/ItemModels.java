@@ -40,7 +40,7 @@ public class ItemModels {
         Key key = Key.withDefaultNamespace(type, "minecraft");
         ItemModelFactory factory = BuiltInRegistries.ITEM_MODEL_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.invalid_type", new IllegalArgumentException("Unknown model type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.invalid_type", type);
         }
         return factory.create(map);
     }

@@ -27,7 +27,7 @@ public class HitBoxTypes {
         Key type = Optional.ofNullable((String) arguments.get("type")).map(Key::of).orElse(HitBoxTypes.INTERACTION);
         HitBoxFactory factory = BuiltInRegistries.HITBOX_FACTORY.getValue(type);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.furniture.hitbox.invalid_type", new IllegalArgumentException("Unknown hitbox type: " + type), type.toString());
+            throw new LocalizedResourceConfigException("warning.config.furniture.hitbox.invalid_type", type.toString());
         }
         return factory.create(arguments);
     }

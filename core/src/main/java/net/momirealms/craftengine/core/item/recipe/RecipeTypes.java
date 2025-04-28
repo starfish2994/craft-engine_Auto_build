@@ -42,12 +42,12 @@ public class RecipeTypes {
     public static <T> Recipe<T> fromMap(Key id, Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.missing_type", new NullPointerException("'type' cannot be null for recipe"));
+            throw new LocalizedResourceConfigException("warning.config.recipe.missing_type");
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         RecipeFactory<T> factory = (RecipeFactory<T>) BuiltInRegistries.RECIPE_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_type", new IllegalArgumentException("Unknown recipe type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_type", type);
         }
         return factory.create(id, map);
     }

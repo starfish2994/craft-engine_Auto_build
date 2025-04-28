@@ -141,10 +141,10 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> pattern = MiscUtils.getAsStringList(arguments.get("pattern"));
             if (pattern.isEmpty()) {
-                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.missing_pattern", new NullPointerException("'pattern' cannot be empty"));
+                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.missing_pattern");
             }
             if (!validatePattern(pattern)) {
-                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_pattern", new IllegalArgumentException("Invalid pattern: " + pattern), pattern.toString());
+                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_pattern", pattern.toString());
             }
             Object ingredientObj = getIngredientOrThrow(arguments);
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
@@ -152,7 +152,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
             for (Map.Entry<String, Object> entry : MiscUtils.castToMap(ingredientObj, false).entrySet()) {
                 String key = entry.getKey();
                 if (key.length() != 1) {
-                    throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_symbol", new IllegalArgumentException("Invalid symbol: " + key), key);
+                    throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_symbol", key);
                 }
                 char ch = key.charAt(0);
                 List<String> items = MiscUtils.getAsStringList(entry.getValue());
@@ -162,7 +162,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
                         holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                     } else {
                         holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                                () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                                () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                     }
                 }
                 ingredients.put(ch, Ingredient.of(holders));

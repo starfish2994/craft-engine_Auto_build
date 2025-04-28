@@ -44,12 +44,12 @@ public class RangeDispatchProperties {
     public static RangeDispatchProperty fromMap(Map<String, Object> map) {
         String type = (String) map.get("property");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.missing_property", new NullPointerException("property type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.missing_property");
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         RangeDispatchPropertyFactory factory = BuiltInRegistries.RANGE_DISPATCH_PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.invalid_property", new IllegalArgumentException("Unknown property type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.invalid_property", type);
         }
         return factory.create(map);
     }

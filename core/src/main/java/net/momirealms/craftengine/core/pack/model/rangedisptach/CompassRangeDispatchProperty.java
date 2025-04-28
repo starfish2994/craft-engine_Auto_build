@@ -32,7 +32,7 @@ public class CompassRangeDispatchProperty implements RangeDispatchProperty {
         public RangeDispatchProperty create(Map<String, Object> arguments) {
             Object targetObj = arguments.get("target");
             if (targetObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.compass.missing_target", new NullPointerException("target should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.compass.missing_target");
             }
             String target = targetObj.toString();
             return new CompassRangeDispatchProperty(target);

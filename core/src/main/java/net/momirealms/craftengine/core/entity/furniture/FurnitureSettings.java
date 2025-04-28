@@ -39,7 +39,7 @@ public class FurnitureSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new LocalizedResourceConfigException("warning.config.furniture.settings.unknown", new RuntimeException("Unknown furniture settings: " + entry.getKey()), entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.furniture.settings.unknown", entry.getKey());
             }
         }
         return settings;

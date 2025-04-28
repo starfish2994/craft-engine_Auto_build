@@ -38,7 +38,7 @@ public class HasComponentConditionProperty implements ConditionProperty {
             boolean ignoreDefault = (boolean) arguments.getOrDefault("ignore-default", false);
             Object componentObj = arguments.get("component");
             if (componentObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.condition.has_component.missing_component", new NullPointerException("component should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.has_component.missing_component");
             }
             String component = componentObj.toString();
             return new HasComponentConditionProperty(component, ignoreDefault);

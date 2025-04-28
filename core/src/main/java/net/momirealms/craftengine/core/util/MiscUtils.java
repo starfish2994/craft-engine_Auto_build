@@ -59,7 +59,7 @@ public class MiscUtils {
         } else if (split.length == 1) {
             return new Vector3f(Float.parseFloat(split[0]));
         } else {
-            throw new LocalizedResourceConfigException("warning.config.type.vector3f", new RuntimeException("Cannot convert " + o + " to Vector3f"), stringFormat, option);
+            throw new LocalizedResourceConfigException("warning.config.type.vector3f", stringFormat, option);
         }
     }
 
@@ -72,7 +72,7 @@ public class MiscUtils {
         } else if (split.length == 1) {
             return QuaternionUtils.toQuaternionf(0, Math.toRadians(Float.parseFloat(split[0])), 0);
         } else {
-            throw new LocalizedResourceConfigException("warning.config.type.quaternionf", new RuntimeException("Cannot convert " + o + " to Quaternionf"), stringFormat, option);
+            throw new LocalizedResourceConfigException("warning.config.type.quaternionf", stringFormat, option);
         }
     }
 }

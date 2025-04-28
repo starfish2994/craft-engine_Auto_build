@@ -31,7 +31,7 @@ public class InvertedPathMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             Object inverted = arguments.get("term");
             if (inverted == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.inverted.missing_term", new NullPointerException("term should not be null for inverted"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.inverted.missing_term");
             }
             Map<String, Object> term = MiscUtils.castToMap(inverted, false);
             return new InvertedPathMatcher(PathMatchers.fromMap(term));

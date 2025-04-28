@@ -25,7 +25,7 @@ public class ModelGeneration {
         this.path = path;
         Object parent = map.get("parent");
         if (parent == null) {
-            throw new LocalizedResourceConfigException("warning.config.model.generation.missing_parent", new NullPointerException("'parent' argument is required for generation"));
+            throw new LocalizedResourceConfigException("warning.config.model.generation.missing_parent");
         }
         this.parentModelPath = parent.toString();
         Map<String, Object> texturesMap = MiscUtils.castToMap(map.get("textures"), true);

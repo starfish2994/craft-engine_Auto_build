@@ -31,7 +31,7 @@ public class PathContainsMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             Object path = arguments.get("path");
             if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.contains.missing_path", new NullPointerException("path should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.contains.missing_path");
             }
             return new PathContainsMatcher(path.toString());
         }

@@ -31,7 +31,7 @@ public class FilenameMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             Object name = arguments.get("name");
             if (name == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.filename.missing_name", new IllegalArgumentException("The 'name' argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.filename.missing_name");
             }
             return new FilenameMatcher(name.toString());
         }

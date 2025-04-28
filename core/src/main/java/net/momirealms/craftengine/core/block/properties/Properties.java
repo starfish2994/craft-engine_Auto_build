@@ -37,12 +37,12 @@ public class Properties {
     public static Property<?> fromMap(String name, Map<String, Object> map) {
         Object type = map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.block.state.property.missing_type", new NullPointerException("'type' cannot be null for block state property"), name);
+            throw new LocalizedResourceConfigException("warning.config.block.state.property.missing_type", name);
         }
         Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
         PropertyFactory factory = BuiltInRegistries.PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.block.state.property.invalid_type", new IllegalArgumentException("Unknown property type: " + type), key.toString(), name);
+            throw new LocalizedResourceConfigException("warning.config.block.state.property.invalid_type", key.toString(), name);
         }
         return factory.create(name, map);
     }

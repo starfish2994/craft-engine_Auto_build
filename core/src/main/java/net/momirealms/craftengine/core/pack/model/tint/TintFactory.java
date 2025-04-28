@@ -32,6 +32,6 @@ public interface TintFactory {
                 return Either.ofFallback(intList);
             }
         }
-        throw new LocalizedResourceConfigException("warning.config.item.model.tint.invalid_value", new IllegalArgumentException("Invalid tint value: " + value), value.toString());
+        throw new LocalizedResourceConfigException("warning.config.item.model.tint.invalid_value", value.toString());
     }
 }

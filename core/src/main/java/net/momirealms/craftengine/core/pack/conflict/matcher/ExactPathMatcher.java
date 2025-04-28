@@ -31,7 +31,7 @@ public class ExactPathMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             Object path = arguments.get("path");
             if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.exact.missing_path", new IllegalArgumentException("The 'path' argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.exact.missing_path");
             }
             return new ExactPathMatcher(path.toString());
         }

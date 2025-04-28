@@ -53,7 +53,7 @@ public interface Sound extends Supplier<JsonElement> {
 
         public static SoundFile fromMap(Map<String, Object> map) {
             Object name = map.get("name");
-            if (name == null) throw new LocalizedResourceConfigException("warning.config.sound.missing_name", new NullPointerException("Missing required property 'name'"));
+            if (name == null) throw new LocalizedResourceConfigException("warning.config.sound.missing_name");
             Builder builder = file(name.toString());
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 Optional.ofNullable(Builder.MODIFIERS.get(entry.getKey())).ifPresent(modifier -> modifier.apply(builder, entry.getValue()));

@@ -45,12 +45,12 @@ public class SpecialModels {
     public static SpecialModel fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.special.missing_type", new NullPointerException("special model type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.item.model.special.missing_type");
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         SpecialModelFactory factory = BuiltInRegistries.SPECIAL_MODEL_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.special.invalid_type", new IllegalArgumentException("Unknown special model type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.special.invalid_type", type);
         }
         return factory.create(map);
     }

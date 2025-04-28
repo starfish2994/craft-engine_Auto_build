@@ -59,7 +59,7 @@ public class ItemSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.settings.unknown", new IllegalArgumentException("Unknown item settings key: " + entry.getKey()), entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.item.settings.unknown", entry.getKey());
             }
         }
         return settings;

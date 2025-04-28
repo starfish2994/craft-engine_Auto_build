@@ -44,7 +44,7 @@ public class AllOfPathMatcher implements PathMatcher {
                 Map<String, Object> terms = MiscUtils.castToMap(termsObj, false);
                 return new AllOfPathMatcher(PathMatchers.fromMapList(List.of(terms)));
             } else {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.all_of.missing_terms", new NullPointerException("terms should not be null for all_of"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.all_of.missing_terms");
             }
         }
     }

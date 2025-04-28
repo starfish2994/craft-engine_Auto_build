@@ -42,7 +42,7 @@ public class DropExpFunction<T> extends AbstractLootConditionalFunction<T> {
         public LootFunction<T> create(Map<String, Object> arguments) {
             Object value = arguments.get("count");
             if (value == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.function.drop_exp.missing_count", new IllegalArgumentException("'count' is required for drop_exp function"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.drop_exp.missing_count");
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))

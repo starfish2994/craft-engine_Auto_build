@@ -70,7 +70,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                             holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                         } else {
                             holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                         }
                     }
                     ingredients.add(Ingredient.of(holders));
@@ -84,7 +84,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                                 holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                             } else {
                                 holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                                        () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                                        () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                             }
                         }
                         ingredients.add(Ingredient.of(holders));
@@ -95,7 +95,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                             holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                         } else {
                             holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                                    () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                         }
                         ingredients.add(Ingredient.of(holders));
                     }
@@ -107,7 +107,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                     holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                 } else {
                     holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                            () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Invalid vanilla/custom item: " + item), item)));
+                            () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                 }
                 ingredients.add(Ingredient.of(holders));
             }

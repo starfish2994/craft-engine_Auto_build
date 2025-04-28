@@ -33,7 +33,7 @@ public class ParentPathPrefixMatcher implements PathMatcher {
         public PathMatcher create(Map<String, Object> arguments) {
             Object prefix = arguments.get("prefix");
             if (prefix == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_prefix.missing_prefix", new IllegalArgumentException("The prefix argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_prefix.missing_prefix");
             }
             return new ParentPathPrefixMatcher(prefix.toString());
         }

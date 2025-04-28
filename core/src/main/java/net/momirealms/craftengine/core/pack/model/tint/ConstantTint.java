@@ -35,7 +35,7 @@ public class ConstantTint implements Tint {
         public Tint create(Map<String, Object> arguments) {
             Object value = arguments.get("value");
             if (value == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.tint.constant.missing_value", new NullPointerException("value should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.tint.constant.missing_value");
             }
             return new ConstantTint(parseTintValue(value));
         }
