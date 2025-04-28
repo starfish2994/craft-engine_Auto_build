@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -64,7 +65,7 @@ public class SelfHost implements ResourcePackHost {
             if (ip == null) {
                 throw new LocalizedException("warning.config.host.self.lack_ip");
             }
-            int port = MiscUtils.getAsInt(arguments.getOrDefault("port", 8163));
+            int port = ResourceConfigUtils.getAsInt(arguments.getOrDefault("port", 8163), "port");
             if (port < 0 || port > 65535) {
                 throw new LocalizedException("warning.config.host.self.invalid_port", String.valueOf(port));
             }
@@ -75,8 +76,8 @@ public class SelfHost implements ResourcePackHost {
             int maxRequests = 5;
             int resetInterval = 20_000;
             if (rateMap != null) {
-                maxRequests = MiscUtils.getAsInt(rateMap.getOrDefault("max-requests", 5));
-                resetInterval = MiscUtils.getAsInt(rateMap.getOrDefault("reset-interval", 20)) * 1000;
+                maxRequests = ResourceConfigUtils.getAsInt(rateMap.getOrDefault("max-requests", 5), "max-requests");
+                resetInterval = ResourceConfigUtils.getAsInt(rateMap.getOrDefault("reset-interval", 20), "reset-interval") * 1000;
             }
             selfHostHttpServer.updateProperties(ip, port, denyNonMinecraftRequest, protocol, maxRequests, resetInterval, oneTimeToken);
             return INSTANCE;

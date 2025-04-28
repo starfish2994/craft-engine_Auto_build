@@ -262,7 +262,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             }
             
             Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
-            int customModelData = MiscUtils.getAsInt(section.getOrDefault("custom-model-data", 0));
+            int customModelData = ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
             Key itemModelKey = null;
 
             CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);

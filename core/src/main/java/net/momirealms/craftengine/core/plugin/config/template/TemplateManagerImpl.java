@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
@@ -14,8 +15,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
-
-import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
 public class TemplateManagerImpl implements TemplateManager {
     private final Map<Key, Object> templates = new HashMap<>();
@@ -184,7 +183,7 @@ public class TemplateManagerImpl implements TemplateManager {
         }
         // 将本节点下的参数与父参数合并
         Map<String, TemplateArgument> arguments = mergeArguments(
-                castToMap(input.getOrDefault(ARGUMENTS, Collections.emptyMap()), false),
+                MiscUtils.castToMap(input.getOrDefault(ARGUMENTS, Collections.emptyMap()), false),
                 parentArguments
         );
         // 对overrides参数应用 本节点 + 父节点 参数

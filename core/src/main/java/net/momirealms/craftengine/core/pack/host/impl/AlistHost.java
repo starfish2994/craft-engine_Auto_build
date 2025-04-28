@@ -312,7 +312,7 @@ public class AlistHost implements ResourcePackHost {
                 throw new LocalizedException("warning.config.host.alist.lack_upload_path");
             }
             boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, disableUpload, proxy);
         }
     }

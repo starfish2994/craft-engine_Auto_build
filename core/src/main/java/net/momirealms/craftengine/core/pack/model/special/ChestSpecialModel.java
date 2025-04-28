@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.pack.model.special;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +36,7 @@ public class ChestSpecialModel implements SpecialModel {
 
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
-            float openness = MiscUtils.getAsFloat(arguments.getOrDefault("openness", 0));
+            float openness = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("openness", 0), "openness");
             String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
             if (openness > 1 || openness < 0) {
                 throw new IllegalArgumentException("Invalid openness: " + openness + ". Valid range 0~1");

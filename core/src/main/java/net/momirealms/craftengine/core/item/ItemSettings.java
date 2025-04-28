@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -157,14 +158,14 @@ public class ItemSettings {
                 List<Map<String, Object>> materials = (List<Map<String, Object>>) value;
                 List<AnvilRepairItem> anvilRepairItemList = new ArrayList<>();
                 for (Map<String, Object> material : materials) {
-                    int amount = MiscUtils.getAsInt(material.getOrDefault("amount", 0));
-                    double percent = MiscUtils.getAsDouble(material.getOrDefault("percent", 0));
+                    int amount = ResourceConfigUtils.getAsInt(material.getOrDefault("amount", 0), "amount");
+                    double percent = ResourceConfigUtils.getAsDouble(material.getOrDefault("percent", 0), "percent");
                     anvilRepairItemList.add(new AnvilRepairItem(MiscUtils.getAsStringList(material.get("target")), amount, percent));
                 }
                 return settings -> settings.repairItems(anvilRepairItemList);
             }));
             registerFactory("fuel-time", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value, "fuel-time");
                 return settings -> settings.fuelTime(intValue);
             }));
             registerFactory("tags", (value -> {
@@ -184,7 +185,7 @@ public class ItemSettings {
                         EquipmentGeneration.Layer.fromConfig(args.get("wolf-body")),
                         EquipmentGeneration.Layer.fromConfig(args.get("wings")),
                         data,
-                        MiscUtils.getAsInt(args.getOrDefault("trim", -1))
+                        ResourceConfigUtils.getAsInt(args.getOrDefault("trim", -1), "trim")
                 );
                 return settings -> settings.equipment(equipment);
             }));

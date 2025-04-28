@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class LootTable<T> {
     private final List<LootPool<T>> pools;
@@ -54,15 +55,15 @@ public class LootTable<T> {
                 NumberProvider rolls = NumberProviders.fromObject(pool.getOrDefault("rolls", 1));
                 NumberProvider bonus_rolls = NumberProviders.fromObject(pool.getOrDefault("bonus_rolls", 0));
                 List<LootCondition> conditions = Optional.ofNullable(pool.get("conditions"))
-                        .map(it -> LootConditions.fromMapList(MiscUtils.castToMapListOrThrow(it,
+                        .map(it -> LootConditions.fromMapList(castToMapListOrThrow(it,
                                 () -> new LocalizedResourceConfigException("warning.config.loot_table.wrong_conditions_type", new RuntimeException("'conditions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName()))))
                         .orElse(Lists.newArrayList());
                 List<LootEntryContainer<T>> containers = Optional.ofNullable(pool.get("entries"))
-                        .map(it -> (List<LootEntryContainer<T>>) new ArrayList<LootEntryContainer<T>>(LootEntryContainers.fromMapList(MiscUtils.castToMapListOrThrow(it,
+                        .map(it -> (List<LootEntryContainer<T>>) new ArrayList<LootEntryContainer<T>>(LootEntryContainers.fromMapList(castToMapListOrThrow(it,
                                 () -> new LocalizedResourceConfigException("warning.config.loot_table.wrong_entries_type", new RuntimeException("'entries' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList());
                 List<LootFunction<T>> functions = Optional.ofNullable(pool.get("functions"))
-                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(MiscUtils.castToMapListOrThrow(it,
+                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
                                 () -> new LocalizedResourceConfigException("warning.config.loot_table.wrong_functions_type", new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList());
                 lootPools.add(new LootPool<>(containers, conditions, functions, rolls, bonus_rolls));
@@ -74,7 +75,7 @@ public class LootTable<T> {
         }
         return new LootTable<>(lootPools,
                 Optional.ofNullable(map.get("functions"))
-                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(MiscUtils.castToMapListOrThrow(it,
+                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
                                 () -> new LocalizedResourceConfigException("warning.config.loot_table.wrong_functions_type", new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName()), it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList())
         );
@@ -128,5 +129,14 @@ public class LootTable<T> {
     // TODO https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/loot-system/flat-format
     public static <T> LootPool<T> readFlatFormatLootPool(String pool) {
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> castToMapListOrThrow(Object obj, Supplier<RuntimeException> exceptionSupplier) {
+        if (obj instanceof List<?> list) {
+            return (List<Map<String, Object>>) list;
+        } else {
+            throw exceptionSupplier.get();
+        }
     }
 }

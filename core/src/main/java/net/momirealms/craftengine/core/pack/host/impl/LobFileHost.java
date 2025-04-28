@@ -276,7 +276,7 @@ public class LobFileHost implements ResourcePackHost {
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new LocalizedException("warning.config.host.lobfile.lack_api_key");
             }
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new LobFileHost(apiKey, proxy);
         }
     }

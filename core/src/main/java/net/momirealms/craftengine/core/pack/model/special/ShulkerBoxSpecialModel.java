@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Locale;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class ShulkerBoxSpecialModel implements SpecialModel {
 
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
-            float openness = MiscUtils.getAsFloat(arguments.getOrDefault("openness", 0));
+            float openness = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("openness", 0), "openness");
             String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
             Direction orientation = Direction.valueOf(arguments.getOrDefault("orientation", "down").toString().toUpperCase(Locale.ENGLISH));
             if (openness > 1 || openness < 0) {

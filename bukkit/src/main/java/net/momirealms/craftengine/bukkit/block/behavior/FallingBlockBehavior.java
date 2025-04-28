@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -129,8 +130,8 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     public static class Factory implements BlockBehaviorFactory {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            float hurtAmount = MiscUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f));
-            int hurtMax = MiscUtils.getAsInt(arguments.getOrDefault("max-hurt", -1));
+            float hurtAmount = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f), "hurt-amount");
+            int hurtMax = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-hurt", -1), "max-hurt");
             return new FallingBlockBehavior(block, hurtAmount, hurtMax);
         }
     }

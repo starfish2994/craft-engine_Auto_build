@@ -283,7 +283,7 @@ public class DropboxHost implements ResourcePackHost {
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.lack_upload_path");
             }
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new DropboxHost(appKey, appSecret, refreshToken, "/" + uploadPath, proxy);
         }
     }

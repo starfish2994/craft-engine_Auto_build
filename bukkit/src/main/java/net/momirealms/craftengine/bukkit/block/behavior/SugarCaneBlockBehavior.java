@@ -15,10 +15,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.Tuple;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -206,12 +203,12 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
             if (ageProperty == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.behavior.sugar_cane.lack_age", new IllegalArgumentException("'age' property not set for sugar cane block behavior"));
             }
-            int maxHeight = MiscUtils.getAsInt(arguments.getOrDefault("max-height", 3));
+            int maxHeight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-height", 3), "max-height");
             List<String> nearbyLiquids = MiscUtils.getAsStringList(arguments.getOrDefault("required-adjacent-liquids", List.of()));
             boolean nearWater = nearbyLiquids.contains("water");
             boolean nearLava = nearbyLiquids.contains("lava");
             return new SugarCaneBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right(), ageProperty, maxHeight, nearWater, nearLava,
-                    MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1)));
+                    ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1), "grow-speed"));
         }
     }
 }

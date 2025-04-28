@@ -99,10 +99,7 @@ public class StringProperty extends Property<String> {
             String defaultValue = values.stream()
                     .filter(e -> e.toLowerCase(Locale.ENGLISH).equals(defaultValueName))
                     .findFirst()
-                    .orElseGet(() -> {
-                        CraftEngine.instance().logger().warn("Invalid default value '" + defaultValueName + "' for property '" + name + "'");
-                        return values.getFirst();
-                    });
+                    .orElseGet(() -> values.get(0));
             return StringProperty.create(name, values, defaultValue);
         }
     }

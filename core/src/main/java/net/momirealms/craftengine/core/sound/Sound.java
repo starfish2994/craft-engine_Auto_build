@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,11 +94,11 @@ public interface Sound extends Supplier<JsonElement> {
             public static final Map<String, Modifier> MODIFIERS = new HashMap<>();
 
             static {
-                MODIFIERS.put("volume", (b, o) -> b.volume(MiscUtils.getAsFloat(o)));
-                MODIFIERS.put("pitch", (b, o) -> b.pitch(MiscUtils.getAsFloat(o)));
-                MODIFIERS.put("weight", (b, o) -> b.pitch(MiscUtils.getAsInt(o)));
+                MODIFIERS.put("volume", (b, o) -> b.volume(ResourceConfigUtils.getAsFloat(o, "volume")));
+                MODIFIERS.put("pitch", (b, o) -> b.pitch(ResourceConfigUtils.getAsFloat(o, "pitch")));
+                MODIFIERS.put("weight", (b, o) -> b.pitch(ResourceConfigUtils.getAsInt(o, "weight")));
                 MODIFIERS.put("stream", (b, o) -> b.stream((boolean) o));
-                MODIFIERS.put("attenuation-distance", (b, o) -> b.attenuationDistance(MiscUtils.getAsInt(o)));
+                MODIFIERS.put("attenuation-distance", (b, o) -> b.attenuationDistance(ResourceConfigUtils.getAsInt(o, "attenuation-distance")));
                 MODIFIERS.put("preload", (b, o) -> b.preload((boolean) o));
                 MODIFIERS.put("type", (b, o) -> b.type(o.toString()));
             }

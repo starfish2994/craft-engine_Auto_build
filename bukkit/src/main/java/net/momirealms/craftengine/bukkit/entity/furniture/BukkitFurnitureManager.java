@@ -135,10 +135,10 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                     ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                     Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                     FurnitureElement furnitureElement = new BukkitFurnitureElement(Key.of(key), billboard, transform,
-                            MiscUtils.getVector3f(element.getOrDefault("scale", "1")),
-                            MiscUtils.getVector3f(element.getOrDefault("translation", "0")),
-                            MiscUtils.getVector3f(element.getOrDefault("position", "0")),
-                            MiscUtils.getQuaternionf(element.getOrDefault("rotation", "0"))
+                            MiscUtils.getAsVector3f(element.getOrDefault("scale", "1"), "scale"),
+                            MiscUtils.getAsVector3f(element.getOrDefault("translation", "0"), "translation"),
+                            MiscUtils.getAsVector3f(element.getOrDefault("position", "0"), "position"),
+                            MiscUtils.getAsQuaternionf(element.getOrDefault("rotation", "0"), "rotation")
                     );
                     elements.add(furnitureElement);
                 }
@@ -455,7 +455,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             plugin.logger().warn("Failed to get vector3f for player " + player.getName() + "'s seat");
             return;
         }
-        Vector3f seatPos = MiscUtils.getVector3f(vector3f);
+        Vector3f seatPos = MiscUtils.getAsVector3f(vector3f, "seat");
         furniture.removeOccupiedSeat(seatPos);
 
         if (player.getVehicle() != null) return;

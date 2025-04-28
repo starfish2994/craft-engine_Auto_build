@@ -193,7 +193,7 @@ public class GitLabHost implements ResourcePackHost {
                 throw new LocalizedException("warning.config.host.gitlab.lack_project_id");
             }
             projectId = URLEncoder.encode(projectId, StandardCharsets.UTF_8).replace("/", "%2F");
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new GitLabHost(gitlabUrl, accessToken, projectId, proxy);
         }
     }

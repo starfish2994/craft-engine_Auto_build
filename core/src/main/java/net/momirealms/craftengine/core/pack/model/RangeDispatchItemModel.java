@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.pack.model.rangedisptach.RangeDispatchPro
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -97,7 +98,7 @@ public class RangeDispatchItemModel implements ItemModel {
         @Override
         public ItemModel create(Map<String, Object> arguments) {
             RangeDispatchProperty property = RangeDispatchProperties.fromMap(arguments);
-            float scale = MiscUtils.getAsFloat(arguments.getOrDefault("scale", 1.0));
+            float scale = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("scale", 1.0), "scale");
             Map<String, Object> fallback = MiscUtils.castToMap(arguments.get("fallback"), true);
             Object entriesObj = arguments.get("entries");
             if (entriesObj instanceof List<?> list) {
@@ -105,7 +106,7 @@ public class RangeDispatchItemModel implements ItemModel {
                 if (!entries.isEmpty()) {
                     Map<Float, ItemModel> entryMap = new HashMap<>();
                     for (Map<String, Object> entry : entries) {
-                        float threshold = MiscUtils.getAsFloat(entry.getOrDefault("threshold", 1));
+                        float threshold = ResourceConfigUtils.getAsFloat(entry.getOrDefault("threshold", 1), "threshold");
                         Object model = entry.getOrDefault("model", fallback);
                         if (model == null) {
                             throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.entry.lack_model", new NullPointerException("'model' is required for range_dispatch entry"));

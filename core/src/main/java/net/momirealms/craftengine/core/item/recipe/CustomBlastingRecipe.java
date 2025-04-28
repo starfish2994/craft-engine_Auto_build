@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item.recipe;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -27,8 +28,8 @@ public class CustomBlastingRecipe<T> extends CustomCookingRecipe<T> {
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
-            int cookingTime = MiscUtils.getAsInt(arguments.getOrDefault("time", 80));
-            float experience = MiscUtils.getAsFloat(arguments.getOrDefault("experience", 0.0f));
+            int cookingTime = ResourceConfigUtils.getAsInt(arguments.getOrDefault("time", 80), "time");
+            float experience = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("experience", 0.0f), "experience");
             Set<Holder<Key>> holders = ingredientHolders(arguments);
             return new CustomBlastingRecipe(id, cookingRecipeCategory(arguments), group, Ingredient.of(holders), cookingTime, experience, parseResult(arguments));
         }

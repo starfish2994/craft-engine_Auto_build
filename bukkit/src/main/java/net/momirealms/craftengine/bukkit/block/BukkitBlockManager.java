@@ -361,7 +361,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Map<String, Object> stateSection = MiscUtils.castToMap(section.get("state"), true);
             if (stateSection != null) {
                 properties = Map.of();
-                int internalId = MiscUtils.getAsInt(stateSection.getOrDefault("id", -1));
+                int internalId = ResourceConfigUtils.getAsInt(stateSection.getOrDefault("id", -1), "id");
                 if (internalId < 0) {
                     throw new LocalizedResourceConfigException("warning.config.block.state.lack_real_id", path, id);
                 }
@@ -370,12 +370,13 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 if (pair == null) return;
 
                 appearances = Map.of("default", pair.right());
-                Key internalBlockId = Key.of(CraftEngine.NAMESPACE, pair.left().value() + "_" + internalId);
-                int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
+                String internalBlock = pair.left().value() + "_" + internalId;
+                Key internalBlockId = Key.of(CraftEngine.NAMESPACE, internalBlock);
+                int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                 if (internalBlockRegistryId == -1) {
                     throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
-                            pair.left().value() + "_" + internalId,
-                            String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.get(pair.left()))-1));
+                            internalBlock,
+                            String.valueOf(registeredRealBlockSlots.get(pair.left()) - 1));
                 }
                 variants = Map.of("", new VariantState("default", settings, internalBlockRegistryId));
             } else {
@@ -422,14 +423,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         if (!appearances.containsKey(appearance)) {
                             throw new LocalizedResourceConfigException("warning.config.block.state.variant.invalid_appearance", path, id, variantName, appearance);
                         }
-                        int internalId = MiscUtils.getAsInt(variantSection.getOrDefault("id", -1));
+                        int internalId = ResourceConfigUtils.getAsInt(variantSection.getOrDefault("id", -1), "id");
                         Key baseBlock = tempTypeMap.get(appearance);
                         Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
-                        int internalBlockRegistryId = MiscUtils.getAsInt(internalId2StateId.getOrDefault(internalBlockId, -1));
+                        int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                         if (internalBlockRegistryId == -1) {
                             throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
                                     internalBlockId.toString(),
-                                    String.valueOf(MiscUtils.getAsInt(registeredRealBlockSlots.getOrDefault(baseBlock, 1)) - 1));
+                                    String.valueOf(registeredRealBlockSlots.getOrDefault(baseBlock, 1) - 1));
                         }
                         Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
                         variants.put(variantName, new VariantState(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
@@ -575,10 +576,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
             return;
         }
         json.addProperty("model", modelPath);
-        if (singleModelMap.containsKey("x")) json.addProperty("x", MiscUtils.getAsInt(singleModelMap.get("x")));
-        if (singleModelMap.containsKey("y")) json.addProperty("y", MiscUtils.getAsInt(singleModelMap.get("y")));
+        if (singleModelMap.containsKey("x")) json.addProperty("x", ResourceConfigUtils.getAsInt(singleModelMap.get("x"), "x"));
+        if (singleModelMap.containsKey("y")) json.addProperty("y", ResourceConfigUtils.getAsInt(singleModelMap.get("y"), "y"));
         if (singleModelMap.containsKey("uvlock")) json.addProperty("uvlock", (boolean) singleModelMap.get("uvlock"));
-        if (singleModelMap.containsKey("weight")) json.addProperty("weight", MiscUtils.getAsInt(singleModelMap.get("weight")));
+        if (singleModelMap.containsKey("weight")) json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
             prepareModelGeneration(path, id, new ModelGeneration(Key.of(modelPath), generationMap));

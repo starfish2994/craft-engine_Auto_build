@@ -11,10 +11,7 @@ import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.Tuple;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -149,10 +146,10 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
             if (stageProperty == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.behavior.sapling.lack_stage", new IllegalArgumentException("stage property not set for sapling"));
             }
-            double boneMealSuccessChance = MiscUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45));
+            double boneMealSuccessChance = ResourceConfigUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45), "bone-meal-success-chance");
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             return new SaplingBlockBehavior(block, Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
-                    MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0)));
+                    ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0), "grow-speed"));
         }
     }
 }

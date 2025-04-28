@@ -515,8 +515,8 @@ public abstract class AbstractFontManager implements FontManager {
                 throw new LocalizedResourceConfigException("warning.config.image.lack_height", path, id);
             }
 
-            int height = MiscUtils.getAsInt(heightObj);
-            int ascent = MiscUtils.getAsInt(section.getOrDefault("ascent", height - 1));
+            int height = ResourceConfigUtils.getAsInt(heightObj, "height");
+            int ascent = ResourceConfigUtils.getAsInt(section.getOrDefault("ascent", height - 1), "ascent");
             if (height < ascent) {
                 throw new LocalizedResourceConfigException("warning.config.image.height_smaller_than_ascent", path, id, String.valueOf(height), String.valueOf(ascent));
             }

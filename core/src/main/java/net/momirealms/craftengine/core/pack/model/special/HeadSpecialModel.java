@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.pack.model.special;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class HeadSpecialModel implements SpecialModel {
         public SpecialModel create(Map<String, Object> arguments) {
             String kind = Objects.requireNonNull(arguments.get("kind"), "kind").toString();
             String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
-            int animation = MiscUtils.getAsInt(arguments.getOrDefault("animation", 0));
+            int animation = ResourceConfigUtils.getAsInt(arguments.getOrDefault("animation", 0), "animation");
             return new HeadSpecialModel(kind, texture, animation);
         }
     }

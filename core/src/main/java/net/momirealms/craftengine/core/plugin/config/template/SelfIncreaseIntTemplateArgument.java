@@ -1,7 +1,10 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.Map;
 
@@ -44,9 +47,9 @@ public class SelfIncreaseIntTemplateArgument implements TemplateArgument {
     public static class Factory implements TemplateArgumentFactory {
         @Override
         public TemplateArgument create(Map<String, Object> arguments) {
-            int from = MiscUtils.getAsInt(arguments.get("from"));
-            int to = MiscUtils.getAsInt(arguments.get("to"));
-            if (from > to) throw new IllegalArgumentException("from > to");
+            int from = ResourceConfigUtils.getAsInt(arguments.get("from"), "from");
+            int to = ResourceConfigUtils.getAsInt(arguments.get("to"), "to");
+            if (from > to) throw new LocalizedResourceConfigException("warning.config.template.from_larger_than_to", String.valueOf(from), String.valueOf(to));
             return new SelfIncreaseIntTemplateArgument(from, to);
         }
     }

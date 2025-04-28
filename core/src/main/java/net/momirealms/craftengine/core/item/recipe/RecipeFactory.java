@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public interface RecipeFactory<T> {
         if (id == null) {
             throw new LocalizedResourceConfigException("warning.config.recipe.result.lack_id", new IllegalArgumentException("id cannot be empty for result"));
         }
-        int count = MiscUtils.getAsInt(resultMap.getOrDefault("count", 1));
+        int count = ResourceConfigUtils.getAsInt(resultMap.getOrDefault("count", 1), "count");
         return new CustomRecipeResult(
                 CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(
                         () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", new IllegalArgumentException("Unknown recipe result item id: " + id), id)),

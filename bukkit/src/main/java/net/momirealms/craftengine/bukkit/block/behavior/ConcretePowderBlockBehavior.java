@@ -14,10 +14,7 @@ import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.block.BlockFormEvent;
@@ -156,8 +153,8 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
 
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            float hurtAmount = MiscUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f));
-            int hurtMax = MiscUtils.getAsInt(arguments.getOrDefault("max-hurt", -1));
+            float hurtAmount = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f), "hurt-amount");
+            int hurtMax = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-hurt", -1), "max-hurt");
             String solidBlock = (String) arguments.get("solid-block");
             if (solidBlock == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.behavior.concrete.lack_solid_block", new NullPointerException("No `solid-block` specified for concrete powder block behavior"));

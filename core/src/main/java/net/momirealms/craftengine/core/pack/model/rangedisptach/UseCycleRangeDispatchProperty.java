@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.pack.model.rangedisptach;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class UseCycleRangeDispatchProperty implements RangeDispatchProperty {
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            int period = MiscUtils.getAsInt(arguments.getOrDefault("period", 0));
+            int period = ResourceConfigUtils.getAsInt(arguments.getOrDefault("period", 0), "period");
             return new UseCycleRangeDispatchProperty(period);
         }
     }

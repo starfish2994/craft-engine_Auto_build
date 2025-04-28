@@ -11,10 +11,7 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -167,8 +164,8 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
 
             @Override
             public Formula create(Map<String, Object> arguments) {
-                int extra = MiscUtils.getAsInt(arguments.getOrDefault("extra", 1));
-                float probability = MiscUtils.getAsFloat(arguments.getOrDefault("probability", 0.5f));
+                int extra = ResourceConfigUtils.getAsInt(arguments.getOrDefault("extra", 1), "extra");
+                float probability = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("probability", 0.5f), "probability");
                 return new CropDrops(extra, probability);
             }
         }

@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.collision.AABB;
@@ -81,8 +82,8 @@ public class CustomHitBox extends AbstractHitBox {
 
         @Override
         public HitBox create(Map<String, Object> arguments) {
-            Vector3f position = MiscUtils.getVector3f(arguments.getOrDefault("position", "0"));
-            float scale = MiscUtils.getAsFloat(arguments.getOrDefault("scale", "1"));
+            Vector3f position = MiscUtils.getAsVector3f(arguments.getOrDefault("position", "0"), "position");
+            float scale = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("scale", 1), "scale");
             String type = (String) arguments.getOrDefault("entity-type", "slime");
             EntityType entityType = Registry.ENTITY_TYPE.get(new NamespacedKey("minecraft", type));
             if (entityType == null) {

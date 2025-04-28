@@ -6,10 +6,7 @@ import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -85,9 +82,9 @@ public abstract class AbstractSoundManager implements SoundManager {
                 throw new LocalizedResourceConfigException("warning.config.jukebox_song.lack_sound", path, id);
             }
             Component description = AdventureHelper.miniMessage().deserialize(section.getOrDefault("description", "").toString());
-            float length = MiscUtils.getAsFloat(section.get("length"));
-            int comparatorOutput = MiscUtils.getAsInt(section.getOrDefault("comparator-output", 15));
-            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, MiscUtils.getAsFloat(section.getOrDefault("range", 32f)));
+            float length = ResourceConfigUtils.getAsFloat(section.get("length"), "length");
+            int comparatorOutput = ResourceConfigUtils.getAsInt(section.getOrDefault("comparator-output", 15), "comparator-output");
+            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, ResourceConfigUtils.getAsFloat(section.getOrDefault("range", 32f), "range"));
             AbstractSoundManager.this.songs.put(id, song);
         }
     }

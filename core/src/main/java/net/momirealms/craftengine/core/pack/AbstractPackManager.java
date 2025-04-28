@@ -22,6 +22,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
 import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.AbstractSoundManager;
 import net.momirealms.craftengine.core.sound.SoundEvent;
@@ -157,6 +158,10 @@ public abstract class AbstractPackManager implements PackManager {
                 // we might add multiple host methods in future versions
                 this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
             } catch (LocalizedException e) {
+                if (e instanceof LocalizedResourceConfigException exception) {
+                    exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
+                    e.setArgument(1, "hosting");
+                }
                 TranslationManager.instance().log(e.node(), e.arguments());
                 this.resourcePackHost = NoneHost.INSTANCE;
             }
@@ -426,7 +431,7 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path path : files.right()) {
                 try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
                     Map<?, ?> dataRaw = GsonHelper.get().fromJson(JsonParser.parseReader(inputStream).getAsJsonObject(), Map.class);
-                    Map<String, Object> data = MiscUtils.castToMap(dataRaw, false);
+                    Map<String, Object> data = castToMap(dataRaw, false);
                     for (Map.Entry<String, Object> entry : data.entrySet()) {
                         processConfigEntry(entry, path, pack);
                     }
