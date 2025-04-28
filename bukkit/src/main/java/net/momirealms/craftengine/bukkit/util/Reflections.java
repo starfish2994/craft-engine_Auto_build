@@ -6591,4 +6591,16 @@ public class Reflections {
                     clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action, 0
             )
     );
+
+    public static final Field field$CraftBlockStates$FACTORIES = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftBlockStates, "FACTORIES"
+            )
+    );
+
+    public static final Class<?> clazz$CraftBlockStates$BlockEntityStateFactory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("block.CraftBlockStates$BlockEntityStateFactory")
+            )
+    );
 }
