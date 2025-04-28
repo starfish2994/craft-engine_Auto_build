@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.sound;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -51,13 +52,11 @@ public interface Sound extends Supplier<JsonElement> {
         }
 
         public static SoundFile fromMap(Map<String, Object> map) {
-            String name = (String) map.get("name");
-            if (name == null) throw new IllegalArgumentException("Missing 'name' for sound");
-            Builder builder = file(name);
+            Object name = map.get("name");
+            if (name == null) throw new LocalizedResourceConfigException("warning.config.sound.lack_name", new NullPointerException("Missing required property 'name'"));
+            Builder builder = file(name.toString());
             for (Map.Entry<String, Object> entry : map.entrySet()) {
-                Optional.ofNullable(Builder.MODIFIERS.get(entry.getKey())).ifPresent(modifier -> {
-                    modifier.apply(builder, entry.getValue());
-                });
+                Optional.ofNullable(Builder.MODIFIERS.get(entry.getKey())).ifPresent(modifier -> modifier.apply(builder, entry.getValue()));
             }
             return builder.build();
         }

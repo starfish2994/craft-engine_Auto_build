@@ -103,6 +103,7 @@ warning.config.vanilla_loot.type_not_exist: "<yellow>Issue found in file <arg:0>
 warning.config.vanilla_loot.block.invalid_target: "<yellow>Issue found in file <arg:0> - Invalid block target [<arg:2>] in vanilla loot '<arg:1>'.</yellow>"
 warning.config.sound.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated sound '<arg:1>'.</yellow>"
 warning.config.sound.lack_sounds: "<yellow>Issue found in file <arg:0> - The sound '<arg:1>' is missing the required argument 'sounds'.</yellow>"
+warning.config.sound.lack_name: "<yellow>Issue found in file <arg:0> - The sound '<arg:1>' is missing the required argument 'name'.</yellow>"
 warning.config.jukebox_song.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated jukebox song '<arg:1>'.</yellow>"
 warning.config.jukebox_song.lack_sound: "<yellow>Issue found in file <arg:0> - The jukebox song '<arg:1>' is missing the required 'sound' argument.</yellow>"
 warning.config.furniture.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated furniture '<arg:1>'.</yellow>"
