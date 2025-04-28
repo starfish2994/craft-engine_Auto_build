@@ -157,14 +157,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 List<Map<String, Object>> hitboxConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("hitboxes", List.of());
                 List<HitBox> hitboxes = new ArrayList<>();
                 for (Map<String, Object> config : hitboxConfigs) {
-                    try {
-                        HitBox hitBox = HitBoxTypes.fromMap(config);
-                        hitboxes.add(hitBox);
-                    } catch (LocalizedResourceConfigException e) {
-                        e.setPath(path);
-                        e.setId(id);
-                        throw e;
-                    }
+                    HitBox hitBox = HitBoxTypes.fromMap(config);
+                    hitboxes.add(hitBox);
                 }
                 if (hitboxes.isEmpty() && externalModel.isEmpty()) {
                     hitboxes.add(InteractionHitBox.DEFAULT);
@@ -198,24 +192,10 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             }
 
             // get furniture settings
-            FurnitureSettings settings;
-            try {
-                settings = FurnitureSettings.fromMap(settingsMap);
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
+            FurnitureSettings settings = FurnitureSettings.fromMap(settingsMap);
 
             // get loot table
-            LootTable<ItemStack> lootTable;
-            try {
-                lootTable = lootMap == null ? null : LootTable.fromMap(lootMap);
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
+            LootTable<ItemStack> lootTable = lootMap == null ? null : LootTable.fromMap(lootMap);
             CustomFurniture furniture = new CustomFurniture(id, settings, placements, lootTable);
             byId.put(id, furniture);
         }

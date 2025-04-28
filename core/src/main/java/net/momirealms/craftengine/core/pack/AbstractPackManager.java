@@ -450,20 +450,27 @@ public abstract class AbstractPackManager implements PackManager {
                     String key = configEntry.getKey();
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        if (parser.isTemplate()) {
-                            this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                        } else if (predicate.test(parser)) {
-                            if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                                Map<String, Object> configSection1 = castToMap(configSection0, false);
-                                if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                        try {
+                            if (parser.isTemplate()) {
+                                this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                            } else if (predicate.test(parser)) {
+                                if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
+                                    Map<String, Object> configSection1 = castToMap(configSection0, false);
+                                    if ((boolean) configSection1.getOrDefault("enable", true)) {
+                                        parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                                    }
+                                } else {
+                                    TranslationManager.instance().log("warning.config.not_a_section", cached.filePath().toString(), parser.sectionId()[0], configEntry.getKey(), configEntry.getValue().getClass().getSimpleName());
                                 }
-                            } else {
-                                TranslationManager.instance().log("warning.config.not_a_section", cached.filePath().toString(), parser.sectionId()[0], configEntry.getKey(), configEntry.getValue().getClass().getSimpleName());
                             }
+                        } catch (LocalizedException e) {
+                            if (e instanceof LocalizedResourceConfigException exception) {
+                                exception.setPath(cached.filePath());
+                                exception.setId(cached.prefix() + "." + key);
+                            }
+                            TranslationManager.instance().log(e.node(), e.arguments());
+                            this.plugin.debug(e::node);
                         }
-                    } catch (LocalizedException e) {
-                        TranslationManager.instance().log(e.node(), e.arguments());
                     } catch (Exception e) {
                         this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
                     }
@@ -482,7 +489,7 @@ public abstract class AbstractPackManager implements PackManager {
             String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
                     .ifPresent(parser -> this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
-                            .add(new CachedConfig(castToMap(typeSections0, false), path, pack)));
+                            .add(new CachedConfig(key, castToMap(typeSections0, false), path, pack)));
         }
     }
 

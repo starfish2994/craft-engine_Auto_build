@@ -339,15 +339,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
 
-            ItemSettings itemSettings;
-            try {
-                itemSettings = ItemSettings.fromMap(MiscUtils.castToMap(section.get("settings"), true));
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
-
+            ItemSettings itemSettings = ItemSettings.fromMap(MiscUtils.castToMap(section.get("settings"), true));
             if (isVanillaItem) {
                 itemSettings.canPlaceRelatedVanillaBlock(true);
             }
@@ -391,15 +383,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 return;
             }
 
-            ItemModel model;
-            try {
-                model = ItemModels.fromMap(modelSection);
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
-
+            ItemModel model = ItemModels.fromMap(modelSection);
             boolean hasModel = false;
             if (customModelData != 0) {
                 hasModel= true;

@@ -335,24 +335,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 throw new LocalizedResourceConfigException("warning.config.block.duplicated", path, id);
             }
             // read block settings
-            BlockSettings settings;
-            try {
-                settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
+            BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
 
             // read loot table
-            LootTable<ItemStack> lootTable;
-            try {
-                lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
+            LootTable<ItemStack> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.getOrDefault("loot", Map.of()), false));
 
             // read states
             Map<String, Property<?>> properties;
@@ -440,9 +426,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
 
-            CustomBlock block;
-            try {
-                block = BukkitCustomBlock.builder(id)
+            CustomBlock block = BukkitCustomBlock.builder(id)
                         .appearances(appearances)
                         .variantMapper(variants)
                         .lootTable(lootTable)
@@ -450,11 +434,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         .settings(settings)
                         .behavior(behaviors)
                         .build();
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
 
             // bind appearance and real state
             for (ImmutableBlockState state : block.variantProvider().states()) {

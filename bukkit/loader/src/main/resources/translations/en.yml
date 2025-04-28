@@ -79,7 +79,7 @@ warning.config.image.lack_char: "<yellow>Issue found in file <arg:0> - The image
 warning.config.image.codepoint_in_use: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' is using a character[<arg:3>(<arg:4>)] in font <arg:2> that has been used by another image '<arg:5>'.</yellow>"
 warning.config.image.invalid_codepoint_grid: "<yellow>Issue found in file <arg:0> - Image '<arg:1>' has an invalid 'chars' codepoint grind.</yellow>"
 warning.config.image.file_not_exist: "<yellow>Issue found in file <arg:0> - PNG file '<arg:2>' not found for image '<arg:1>'.</yellow>"
-warning.config.image.invalid_hex: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' is using an unicode character '<arg:2>' that is not a valid hexadecimal (radix 16) value.</yellow>"
+warning.config.image.invalid_hex: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' is using a unicode character '<arg:2>' that is not a valid hexadecimal (radix 16) value.</yellow>"
 warning.config.recipe.duplicated: "<yellow>Issue found in file <arg:0> - Duplicated recipe '<arg:1>'.</yellow>"
 warning.config.recipe.lack_type: "<yellow>Issue found in file <arg:0> - The recipe '<arg:1>' is missing the required argument 'type'.</yellow>"
 warning.config.recipe.invalid_type: "<yellow>Issue found in file <arg:0> - The recipe '<arg:1>' is using an invalid recipe type '<arg:2>'.</yellow>"

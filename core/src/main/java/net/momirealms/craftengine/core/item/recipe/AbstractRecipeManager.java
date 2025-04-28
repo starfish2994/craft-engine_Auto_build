@@ -159,14 +159,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
             if (AbstractRecipeManager.this.byId.containsKey(id)) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.duplicated", path, id);
             }
-            Recipe<T> recipe;
-            try {
-                recipe = RecipeTypes.fromMap(id, section);
-            } catch (LocalizedResourceConfigException e) {
-                e.setPath(path);
-                e.setId(id);
-                throw e;
-            }
+            Recipe<T> recipe = RecipeTypes.fromMap(id, section);
             try {
                 markAsCustomRecipe(id);
                 registerInternalRecipe(id, recipe);
