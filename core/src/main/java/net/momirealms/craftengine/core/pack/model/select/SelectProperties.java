@@ -42,7 +42,7 @@ public class SelectProperties {
     public static SelectProperty fromMap(Map<String, Object> map) {
         String type = (String) map.get("property");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.select.lack_property", new NullPointerException("property type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.item.model.select.missing_property", new NullPointerException("property type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         SelectPropertyFactory factory = BuiltInRegistries.SELECT_PROPERTY_FACTORY.getValue(key);

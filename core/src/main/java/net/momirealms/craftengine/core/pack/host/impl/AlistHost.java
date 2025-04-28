@@ -294,22 +294,22 @@ public class AlistHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String apiUrl = (String) arguments.get("api-url");
             if (apiUrl == null || apiUrl.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_api_url");
+                throw new LocalizedException("warning.config.host.alist.missing_api_url");
             }
             String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : (String) arguments.get("username");
             if (userName == null || userName.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_username");
+                throw new LocalizedException("warning.config.host.alist.missing_username");
             }
             String password =  useEnv ? System.getenv("CE_ALIST_PASSWORD") : (String) arguments.get("password");
             if (password == null || password.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_password");
+                throw new LocalizedException("warning.config.host.alist.missing_password");
             }
             String filePassword = useEnv ? System.getenv("CE_ALIST_FILE_PASSWORD") : (String) arguments.getOrDefault("file-password", "");
             String otpCode = (String) arguments.get("otp-code");
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
             String uploadPath = (String) arguments.get("upload-path");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_upload_path");
+                throw new LocalizedException("warning.config.host.alist.missing_upload_path");
             }
             boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));

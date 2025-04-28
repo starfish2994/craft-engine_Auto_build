@@ -23,7 +23,7 @@ public class CharacterUtils {
                     chars[i] = (char) codePoint;
                 }
             } catch (NumberFormatException e) {
-                throw new LocalizedResourceConfigException("warning.config.image.invalid_hex", e, hex);
+                throw new LocalizedResourceConfigException("warning.config.image.invalid_hex_value", e, hex);
             }
         }
         return chars;

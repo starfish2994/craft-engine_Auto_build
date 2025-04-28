@@ -63,7 +63,7 @@ public class SelfHost implements ResourcePackHost {
             SelfHostHttpServer selfHostHttpServer = SelfHostHttpServer.instance();
             String ip = (String) arguments.get("ip");
             if (ip == null) {
-                throw new LocalizedException("warning.config.host.self.lack_ip");
+                throw new LocalizedException("warning.config.host.self.missing_ip");
             }
             int port = ResourceConfigUtils.getAsInt(arguments.getOrDefault("port", 8163), "port");
             if (port < 0 || port > 65535) {

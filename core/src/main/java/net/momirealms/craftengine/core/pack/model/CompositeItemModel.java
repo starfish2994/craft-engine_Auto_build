@@ -58,7 +58,7 @@ public class CompositeItemModel implements ItemModel {
             if (m instanceof List<?> list) {
                 List<Map<String, Object>> models = (List<Map<String, Object>>) list;
                 if (models.isEmpty()) {
-                    throw new LocalizedResourceConfigException("warning.config.item.model.composite.lack_models", new IllegalArgumentException("'models' list should not be empty for 'minecraft:composite'"));
+                    throw new LocalizedResourceConfigException("warning.config.item.model.composite.missing_models", new IllegalArgumentException("'models' list should not be empty for 'minecraft:composite'"));
                 }
                 List<ItemModel> modelList = new ArrayList<>();
                 for (Map<String, Object> model : models) {
@@ -68,7 +68,7 @@ public class CompositeItemModel implements ItemModel {
             } else if (m instanceof Map<?, ?> map) {
                 return new CompositeItemModel(List.of(ItemModels.fromMap(MiscUtils.castToMap(map, false))));
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.model.composite.lack_models", new NullPointerException("'models' argument is required for 'minecraft:composite'"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.composite.missing_models", new NullPointerException("'models' argument is required for 'minecraft:composite'"));
             }
         }
     }

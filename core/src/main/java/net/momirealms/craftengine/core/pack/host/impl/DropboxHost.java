@@ -269,19 +269,19 @@ public class DropboxHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String appKey = useEnv ? System.getenv("CE_DROPBOX_APP_KEY") : (String) arguments.get("app-key");
             if (appKey == null || appKey.isEmpty()) {
-                throw new LocalizedException("warning.config.host.dropbox.lack_app_key");
+                throw new LocalizedException("warning.config.host.dropbox.missing_app_key");
             }
             String appSecret = useEnv ? System.getenv("CE_DROPBOX_APP_SECRET") : (String) arguments.get("app-secret");
             if (appSecret == null || appSecret.isEmpty()) {
-                throw new LocalizedException("warning.config.host.dropbox.lack_app_secret");
+                throw new LocalizedException("warning.config.host.dropbox.missing_app_secret");
             }
             String refreshToken = useEnv ? System.getenv("CE_DROPBOX_REFRESH_TOKEN") : (String) arguments.get("refresh-token");
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new LocalizedException("warning.config.host.dropbox.lack_refresh_token");
+                throw new LocalizedException("warning.config.host.dropbox.missing_refresh_token");
             }
             String uploadPath = (String) arguments.get("upload-path");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.dropbox.lack_upload_path");
+                throw new LocalizedException("warning.config.host.dropbox.missing_upload_path");
             }
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new DropboxHost(appKey, appSecret, refreshToken, "/" + uploadPath, proxy);

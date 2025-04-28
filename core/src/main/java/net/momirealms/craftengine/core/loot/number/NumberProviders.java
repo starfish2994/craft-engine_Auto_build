@@ -39,7 +39,7 @@ public class NumberProviders {
     public static NumberProvider fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.number.lack_type", new NullPointerException("number type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.loot_table.number.missing_type", new NullPointerException("number type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         NumberProviderFactory factory = BuiltInRegistries.NUMBER_PROVIDER_FACTORY.getValue(key);

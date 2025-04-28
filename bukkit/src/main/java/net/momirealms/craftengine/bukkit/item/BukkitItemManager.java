@@ -240,7 +240,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (customItems.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.item.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.duplicate", path, id);
             }
 
             // register for recipes
@@ -253,7 +253,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             if (isVanillaItem)
                 materialStringId = id.value();
             if (materialStringId == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.lack_material", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.missing_material", path, id);
             }
 
             Material material = MaterialUtils.getMaterial(materialStringId);
@@ -395,14 +395,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
 
                 if (customModelData > 16_777_216) {
-                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data_value", path, id, String.valueOf(customModelData));
+                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data", path, id, String.valueOf(customModelData));
                 }
 
                 conflict.put(customModelData, id);
 
                 // Parse models
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(path, id, generation);
+                    prepareModelGeneration(generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {
@@ -420,7 +420,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             if (itemModelKey != null) {
                 hasModel = true;
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(path, id, generation);
+                    prepareModelGeneration(generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {
@@ -439,7 +439,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
             if (!hasModel) {
-                throw new LocalizedResourceConfigException("warning.config.item.lack_model_id", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.missing_model_id", path, id);
             }
         }
     }

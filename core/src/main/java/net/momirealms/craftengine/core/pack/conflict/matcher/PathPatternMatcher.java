@@ -29,11 +29,11 @@ public class PathPatternMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String pattern = (String) arguments.get("pattern");
+            Object pattern = arguments.get("pattern");
             if (pattern == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.pattern.lack_pattern", new IllegalArgumentException("The pattern argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.pattern.missing_pattern", new IllegalArgumentException("The pattern argument must not be null"));
             }
-            return new PathPatternMatcher(pattern);
+            return new PathPatternMatcher(pattern.toString());
         }
     }
 }

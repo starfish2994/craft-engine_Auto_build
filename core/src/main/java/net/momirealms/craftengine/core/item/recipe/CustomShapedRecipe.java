@@ -141,7 +141,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
             List<String> pattern = MiscUtils.getAsStringList(arguments.get("pattern"));
             if (pattern.isEmpty()) {
-                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.lack_pattern", new NullPointerException("'pattern' cannot be empty"));
+                throw new LocalizedResourceConfigException("warning.config.recipe.shaped.missing_pattern", new NullPointerException("'pattern' cannot be empty"));
             }
             if (!validatePattern(pattern)) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.shaped.invalid_pattern", new IllegalArgumentException("Invalid pattern: " + pattern), pattern.toString());

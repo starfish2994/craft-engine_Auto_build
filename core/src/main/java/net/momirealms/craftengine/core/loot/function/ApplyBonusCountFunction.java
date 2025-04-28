@@ -51,11 +51,11 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
         public LootFunction<T> create(Map<String, Object> arguments) {
             String enchantment = (String) arguments.get("enchantment");
             if (enchantment == null || enchantment.isEmpty()) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.lack_enchantment", new IllegalArgumentException("'enchantment' is required for apply_bonus function"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.missing_enchantment", new IllegalArgumentException("'enchantment' is required for apply_bonus function"));
             }
             Map<String, Object> formulaMap = MiscUtils.castToMap(arguments.get("formula"), true);
             if (formulaMap == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.lack_formula", new IllegalArgumentException("formula is required"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.missing_formula", new IllegalArgumentException("formula is required"));
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))

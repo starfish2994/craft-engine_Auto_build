@@ -16,11 +16,11 @@ public interface RecipeFactory<T> {
     default CustomRecipeResult<T> parseResult(Map<String, Object> arguments) {
         Map<String, Object> resultMap = MiscUtils.castToMap(arguments.get("result"), true);
         if (resultMap == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.lack_result", new IllegalArgumentException("result cannot be empty for recipe"));
+            throw new LocalizedResourceConfigException("warning.config.recipe.missing_result", new IllegalArgumentException("result cannot be empty for recipe"));
         }
         String id = (String) resultMap.get("id");
         if (id == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.result.lack_id", new IllegalArgumentException("id cannot be empty for result"));
+            throw new LocalizedResourceConfigException("warning.config.recipe.result.missing_id", new IllegalArgumentException("id cannot be empty for result"));
         }
         int count = ResourceConfigUtils.getAsInt(resultMap.getOrDefault("count", 1), "count");
         return new CustomRecipeResult(

@@ -31,11 +31,11 @@ public class ParentPathSuffixMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String suffix = (String) arguments.get("suffix");
+            Object suffix = arguments.get("suffix");
             if (suffix == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_path_suffix.lack_suffix", new IllegalArgumentException("The suffix argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_suffix.missing_suffix");
             }
-            return new ParentPathSuffixMatcher(suffix);
+            return new ParentPathSuffixMatcher(suffix.toString());
         }
     }
 }

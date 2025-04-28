@@ -16,12 +16,12 @@ public interface ResourcePackHostFactory {
         if (proxySetting != null) {
             Object hostObj = proxySetting.get("host");
             if (hostObj == null) {
-                throw new LocalizedException("warning.config.host.proxy.lack_host", new NullPointerException("'host' should not be null for proxy setting"));
+                throw new LocalizedException("warning.config.host.proxy.missing_host", new NullPointerException("'host' should not be null for proxy setting"));
             }
             String proxyHost = hostObj.toString();
             Object portObj = proxySetting.get("port");
             if (portObj == null) {
-                throw new LocalizedException("warning.config.host.proxy.lack_port", new NullPointerException("'port' should not be null for proxy setting"));
+                throw new LocalizedException("warning.config.host.proxy.missing_port", new NullPointerException("'port' should not be null for proxy setting"));
             }
             int proxyPort = ResourceConfigUtils.getAsInt(portObj, "port");
             if (proxyHost == null || proxyHost.isEmpty() || proxyPort <= 0 || proxyPort > 65535) {

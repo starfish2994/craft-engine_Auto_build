@@ -45,7 +45,7 @@ public class LocalTimeSelectProperty implements SelectProperty {
         public SelectProperty create(Map<String, Object> arguments) {
             Object patternObj = arguments.get("pattern");
             if (patternObj == null) {
-                throw new IllegalArgumentException("warning.config.item.model.select.local_time.lack_pattern", new NullPointerException("pattern should not be null"));
+                throw new IllegalArgumentException("warning.config.item.model.select.local_time.missing_pattern", new NullPointerException("pattern should not be null"));
             }
             String pattern = patternObj.toString();
             String locale = (String) arguments.get("locale");

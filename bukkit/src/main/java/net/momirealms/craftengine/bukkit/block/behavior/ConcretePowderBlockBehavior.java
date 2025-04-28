@@ -157,7 +157,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
             int hurtMax = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-hurt", -1), "max-hurt");
             String solidBlock = (String) arguments.get("solid-block");
             if (solidBlock == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.concrete.lack_solid_block", new NullPointerException("No `solid-block` specified for concrete powder block behavior"));
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.concrete.missing_solid", new NullPointerException("No `solid-block` specified for concrete powder block behavior"));
             }
             return new ConcretePowderBlockBehavior(block, hurtAmount, hurtMax, Key.of(solidBlock));
         }

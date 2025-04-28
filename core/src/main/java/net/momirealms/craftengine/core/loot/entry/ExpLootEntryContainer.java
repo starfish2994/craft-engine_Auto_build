@@ -46,7 +46,7 @@ public class ExpLootEntryContainer<T> extends AbstractLootEntryContainer<T> {
         public LootEntryContainer<A> create(Map<String, Object> arguments) {
             Object value = arguments.get("count");
             if (value == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.entry.exp.lack_count", new IllegalArgumentException("'count' is required for exp entry"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.entry.exp.missing_count", new IllegalArgumentException("'count' is required for exp entry"));
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))

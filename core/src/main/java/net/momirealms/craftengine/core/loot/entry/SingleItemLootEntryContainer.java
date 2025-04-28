@@ -45,7 +45,7 @@ public class SingleItemLootEntryContainer<T> extends AbstractSingleLootEntryCont
         public LootEntryContainer<A> create(Map<String, Object> arguments) {
             Object itemObj = arguments.get("item");
             if (itemObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.entry.item.lack_item", new IllegalArgumentException("'item' is required for item entry"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.entry.item.missing_item", new IllegalArgumentException("'item' is required for item entry"));
             }
             Key item = Key.from(itemObj.toString());
             int weight = (int) arguments.getOrDefault("weight", 1);

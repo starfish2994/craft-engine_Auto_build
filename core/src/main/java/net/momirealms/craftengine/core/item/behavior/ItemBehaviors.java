@@ -24,7 +24,7 @@ public class ItemBehaviors {
     public static ItemBehavior fromMap(Pack pack, Path path, Key id, Map<String, Object> map) {
         Object type = map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.behavior.lack_type", new NullPointerException("behavior type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.item.behavior.missing_type", new NullPointerException("behavior type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
         ItemBehaviorFactory factory = BuiltInRegistries.ITEM_BEHAVIOR_FACTORY.getValue(key);

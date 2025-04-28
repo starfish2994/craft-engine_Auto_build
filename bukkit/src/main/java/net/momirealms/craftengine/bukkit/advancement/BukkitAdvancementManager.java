@@ -51,7 +51,7 @@ public class BukkitAdvancementManager extends AbstractAdvancementManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (advancements.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.advancement.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.advancement.duplicate", path, id);
             }
             JsonElement jsonTree = GsonHelper.get().toJsonTree(section);
             FastNMS.INSTANCE.registerAdvancement(id.decompose(), jsonTree);

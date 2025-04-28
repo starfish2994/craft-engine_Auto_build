@@ -37,7 +37,7 @@ public class TimeRangeDispatchProperty implements RangeDispatchProperty {
         public RangeDispatchProperty create(Map<String, Object> arguments) {
             Object sourceObj = arguments.get("source");
             if (sourceObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.time.lack_source", new NullPointerException("source should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.time.missing_source", new NullPointerException("source should not be null"));
             }
             String source = sourceObj.toString();
             boolean wobble = (boolean) arguments.getOrDefault("wobble", true);

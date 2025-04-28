@@ -182,7 +182,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         public static ItemDataProcessor fromMap(Map<String, Object> map) {
             String type = (String) map.get("type");
             if (type == null) {
-                throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.lack_type", new NullPointerException("Missing required parameter 'type' for post processor"));
+                throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.missing_type", new NullPointerException("Missing required parameter 'type' for post processor"));
             }
             Key key = Key.withDefaultNamespace(type, "craftengine");
             ItemDataProcessor.Factory factory = BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY.getValue(key);
@@ -237,7 +237,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
             public ItemDataProcessor create(Map<String, Object> arguments) {
                 Object componentsObj = arguments.get("components");
                 if (componentsObj == null) {
-                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.lack_components", new NullPointerException("Missing required parameter 'components' for post processor"));
+                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.missing_components", new NullPointerException("Missing required parameter 'components' for post processor"));
                 }
                 List<String> components = MiscUtils.getAsStringList(componentsObj);
                 return new KeepComponents(components.stream().map(Key::of).toList());
@@ -274,7 +274,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
             public ItemDataProcessor create(Map<String, Object> arguments) {
                 Object tagsObj = arguments.get("tags");
                 if (tagsObj == null) {
-                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.lack_tags", new NullPointerException("Missing required parameter 'tags' for post processor"));
+                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.missing_tags", new NullPointerException("Missing required parameter 'tags' for post processor"));
                 }
                 List<String> tags = MiscUtils.getAsStringList(tagsObj);
                 return new KeepTags(tags.stream().map(it -> it.split("\\.")).toList());

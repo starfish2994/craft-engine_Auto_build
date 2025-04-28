@@ -29,11 +29,11 @@ public class PathContainsMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String path = (String) arguments.get("path");
+            Object path = arguments.get("path");
             if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.contains.lack_path", new NullPointerException("path should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.contains.missing_path", new NullPointerException("path should not be null"));
             }
-            return new PathContainsMatcher(path);
+            return new PathContainsMatcher(path.toString());
         }
     }
 }

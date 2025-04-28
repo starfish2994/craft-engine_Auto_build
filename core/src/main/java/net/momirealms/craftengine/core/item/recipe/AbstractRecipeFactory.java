@@ -38,7 +38,7 @@ public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
             ingredient = arguments.get("ingredients");
         }
         if (ingredient == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.lack_ingredient", new NullPointerException("'ingredient' should not be null"));
+            throw new LocalizedResourceConfigException("warning.config.recipe.missing_ingredient", new NullPointerException("'ingredient' should not be null"));
         }
         return ingredient;
     }

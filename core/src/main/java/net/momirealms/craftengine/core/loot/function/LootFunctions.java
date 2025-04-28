@@ -70,7 +70,7 @@ public class LootFunctions {
     public static <T> LootFunction<T> fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.function.lack_type", new NullPointerException("function type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.loot_table.function.missing_type", new NullPointerException("function type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootFunctionFactory<T> factory = (LootFunctionFactory<T>) BuiltInRegistries.LOOT_FUNCTION_FACTORY.getValue(key);

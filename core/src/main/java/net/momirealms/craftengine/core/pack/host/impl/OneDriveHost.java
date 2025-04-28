@@ -234,19 +234,19 @@ public class OneDriveHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String clientId = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_ID") : (String) arguments.get("client-id");
             if (clientId == null || clientId.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_client_id");
+                throw new LocalizedException("warning.config.host.onedrive.missing_client_id");
             }
             String clientSecret = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_SECRET") : (String) arguments.get("client-secret");
             if (clientSecret == null || clientSecret.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_client_secret");
+                throw new LocalizedException("warning.config.host.onedrive.missing_client_secret");
             }
             String refreshToken = useEnv ? System.getenv("CE_ONEDRIVE_REFRESH_TOKEN") : (String) arguments.get("refresh-token");
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_refresh_token");
+                throw new LocalizedException("warning.config.host.onedrive.missing_refresh_token");
             }
             String uploadPath = (String) arguments.getOrDefault("upload-path", "resource_pack.zip");
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_upload_path");
+                throw new LocalizedException("warning.config.host.onedrive.missing_upload_path");
             }
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new OneDriveHost(clientId, clientSecret, refreshToken, uploadPath, proxy);

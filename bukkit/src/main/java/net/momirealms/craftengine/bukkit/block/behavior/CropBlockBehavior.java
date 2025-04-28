@@ -172,7 +172,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
             if (ageProperty == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.crop.lack_age", new IllegalArgumentException("age property not set for crop"));
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.crop.missing_age", new IllegalArgumentException("age property not set for crop"));
             }
             int minGrowLight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("light-requirement", 9), "light-requirement");
             float growSpeed = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.125f), "grow-speed");

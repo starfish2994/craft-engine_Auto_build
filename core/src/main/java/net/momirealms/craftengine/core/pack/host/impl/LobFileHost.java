@@ -274,7 +274,7 @@ public class LobFileHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String apiKey = useEnv ? System.getenv("CE_LOBFILE_API_KEY") : (String) arguments.get("api-key");
             if (apiKey == null || apiKey.isEmpty()) {
-                throw new LocalizedException("warning.config.host.lobfile.lack_api_key");
+                throw new LocalizedException("warning.config.host.lobfile.missing_api_key");
             }
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new LobFileHost(apiKey, proxy);

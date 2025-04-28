@@ -25,14 +25,14 @@ public class BlockBehaviors {
 
     public static BlockBehavior fromMap(CustomBlock block, @Nullable Map<String, Object> map) {
         if (map == null) return EmptyBlockBehavior.INSTANCE;
-        String type = (String) map.getOrDefault("type", "empty");
+        Object type = map.get("type");
         if (type == null) {
-            throw new NullPointerException("behavior type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.block.behavior.missing_type", new NullPointerException("behavior type cannot be null"));
         }
-        Key key = Key.withDefaultNamespace(type, "craftengine");
+        Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
         BlockBehaviorFactory factory = BuiltInRegistries.BLOCK_BEHAVIOR_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.block.behavior.invalid_type", new IllegalArgumentException("Unknown block behavior type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.block.behavior.invalid_type", new IllegalArgumentException("Unknown block behavior type: " + type), type.toString());
         }
         return factory.create(block, map);
     }

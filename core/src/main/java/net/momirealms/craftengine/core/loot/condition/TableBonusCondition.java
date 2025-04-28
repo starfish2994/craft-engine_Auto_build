@@ -42,7 +42,7 @@ public class TableBonusCondition implements LootCondition {
         public LootCondition create(Map<String, Object> arguments) {
             Object enchantmentObj = arguments.get("enchantment");
             if (enchantmentObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.lack_enchantment", new NullPointerException("'enchantment' should not be null for table bonus"));
+                throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.missing_enchantment");
             }
             Key enchantmentType = Key.of(enchantmentObj.toString());
             Object chances = arguments.get("chances");
@@ -57,7 +57,7 @@ public class TableBonusCondition implements LootCondition {
                     return new TableBonusCondition(enchantmentType, values);
                 }
             }
-            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.lack_chances", new NullPointerException("'chances' should not be null for table bonus"));
+            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.missing_chances");
         }
     }
 }

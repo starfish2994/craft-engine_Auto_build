@@ -32,7 +32,7 @@ public class BlockStateSelectProperty implements SelectProperty {
         public SelectProperty create(Map<String, Object> arguments) {
             Object property = arguments.get("block-state-property");
             if (property == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.select.block_state.lack_block_state_property", new NullPointerException("block-state-property should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.select.block_state.missing_property", new NullPointerException("block-state-property should not be null"));
             }
             String blockStateProperty = property.toString();
             return new BlockStateSelectProperty(blockStateProperty);

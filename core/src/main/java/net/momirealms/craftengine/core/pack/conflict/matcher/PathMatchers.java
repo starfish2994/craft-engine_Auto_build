@@ -51,7 +51,7 @@ public class PathMatchers {
     public static PathMatcher fromMap(Map<String, Object> map) {
         String type = (String) map.getOrDefault("type", "empty");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.conflict_matcher.lack_type", new NullPointerException("path matcher type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.conflict_matcher.missing_type", new NullPointerException("path matcher type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         PathMatcherFactory factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);

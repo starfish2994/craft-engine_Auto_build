@@ -31,11 +31,11 @@ public class ParentPathPrefixMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String prefix = (String) arguments.get("prefix");
+            Object prefix = arguments.get("prefix");
             if (prefix == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_path_prefix.lack_prefix", new IllegalArgumentException("The prefix argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_prefix.missing_prefix", new IllegalArgumentException("The prefix argument must not be null"));
             }
-            return new ParentPathPrefixMatcher(prefix);
+            return new ParentPathPrefixMatcher(prefix.toString());
         }
     }
 }

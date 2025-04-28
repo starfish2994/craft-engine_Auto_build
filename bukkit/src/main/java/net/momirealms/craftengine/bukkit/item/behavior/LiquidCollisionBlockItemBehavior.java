@@ -65,7 +65,7 @@ public class LiquidCollisionBlockItemBehavior extends BlockItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.behavior.liquid_collision_block.lack_block", new IllegalArgumentException("Missing required parameter 'block' for liquid_collision_block_item behavior"));
+                throw new LocalizedResourceConfigException("warning.config.item.behavior.liquid_collision.missing_block", new IllegalArgumentException("Missing required parameter 'block' for liquid_collision_block_item behavior"));
             }
             int offset = ResourceConfigUtils.getAsInt(arguments.getOrDefault("y-offset", 1), "y-offset");
             if (id instanceof Map<?, ?> map) {

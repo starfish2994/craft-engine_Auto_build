@@ -47,7 +47,7 @@ public class ExternalHost implements ResourcePackHost {
         public ResourcePackHost create(Map<String, Object> arguments) {
             String url = (String) arguments.get("url");
             if (url == null || url.isEmpty()) {
-                throw new LocalizedException("warning.config.host.external.lack_url");
+                throw new LocalizedException("warning.config.host.external.missing_url");
             }
             String uuid = (String) arguments.get("uuid");
             if (uuid == null || uuid.isEmpty()) {

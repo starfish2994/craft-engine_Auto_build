@@ -45,7 +45,7 @@ public class SpecialModels {
     public static SpecialModel fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.special.lack_type", new NullPointerException("special model type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.item.model.special.missing_type", new NullPointerException("special model type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         SpecialModelFactory factory = BuiltInRegistries.SPECIAL_MODEL_FACTORY.getValue(key);

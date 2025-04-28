@@ -75,16 +75,16 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.songs.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.jukebox_song.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.jukebox_song.duplicate", path, id);
             }
-            String sound = (String) section.get("sound");
+            Object sound = section.get("sound");
             if (sound == null) {
-                throw new LocalizedResourceConfigException("warning.config.jukebox_song.lack_sound", path, id);
+                throw new LocalizedResourceConfigException("warning.config.jukebox_song.missing_sound", path, id);
             }
             Component description = AdventureHelper.miniMessage().deserialize(section.getOrDefault("description", "").toString());
             float length = ResourceConfigUtils.getAsFloat(section.get("length"), "length");
             int comparatorOutput = ResourceConfigUtils.getAsInt(section.getOrDefault("comparator-output", 15), "comparator-output");
-            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, ResourceConfigUtils.getAsFloat(section.getOrDefault("range", 32f), "range"));
+            JukeboxSong song = new JukeboxSong(Key.of(sound.toString()), description, length, comparatorOutput, ResourceConfigUtils.getAsFloat(section.getOrDefault("range", 32f), "range"));
             AbstractSoundManager.this.songs.put(id, song);
         }
     }
@@ -105,13 +105,13 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.sound.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.sound.duplicate", path, id);
             }
             boolean replace = (boolean) section.getOrDefault("replace", false);
             String subtitle = (String) section.get("subtitle");
             List<?> soundList = (List<?>) section.get("sounds");
             if (soundList == null) {
-                throw new LocalizedResourceConfigException("warning.config.sound.lack_sounds", path, id);
+                throw new LocalizedResourceConfigException("warning.config.sound.missing_sounds", path, id);
             }
             List<Sound> sounds = new ArrayList<>();
             for (Object sound : soundList) {

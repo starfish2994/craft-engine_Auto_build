@@ -27,7 +27,7 @@ public class StrippableBlockBehavior extends BukkitBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             String stripped = (String) arguments.get("stripped");
             if (stripped == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.strippable.lack_stripped", new IllegalArgumentException("'stripped' is required for strippable block behavior"));
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.strippable.missing_stripped", new IllegalArgumentException("'stripped' is required for strippable block behavior"));
             }
             return new StrippableBlockBehavior(block, Key.of(stripped));
         }

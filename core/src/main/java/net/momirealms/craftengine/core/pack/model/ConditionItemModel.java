@@ -68,13 +68,13 @@ public class ConditionItemModel implements ItemModel {
             if (arguments.get("on-true") instanceof Map<?,?> map1) {
                 onTrue = ItemModels.fromMap(MiscUtils.castToMap(map1, false));
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.model.condition.lack_on_true", new NullPointerException("'on-true' is required for condition"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.missing_on_true", new NullPointerException("'on-true' is required for condition"));
             }
             ItemModel onFalse;
             if (arguments.get("on-false") instanceof Map<?,?> map2) {
                 onFalse = ItemModels.fromMap(MiscUtils.castToMap(map2, false));
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.model.condition.lack_on_false", new NullPointerException("'on-false' is required for condition"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.missing_on_false", new NullPointerException("'on-false' is required for condition"));
             }
             return new ConditionItemModel(property, onTrue, onFalse);
         }

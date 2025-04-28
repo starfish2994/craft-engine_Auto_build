@@ -179,18 +179,18 @@ public class GitLabHost implements ResourcePackHost {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
             String gitlabUrl = (String) arguments.get("gitlab-url");
             if (gitlabUrl == null || gitlabUrl.isEmpty()) {
-                throw new LocalizedException("warning.config.host.gitlab.lack_url");
+                throw new LocalizedException("warning.config.host.gitlab.missing_url");
             }
             if (gitlabUrl.endsWith("/")) {
                 gitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
             }
             String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : (String) arguments.get("access-token");
             if (accessToken == null || accessToken.isEmpty()) {
-                throw new LocalizedException("warning.config.host.gitlab.lack_access_token");
+                throw new LocalizedException("warning.config.host.gitlab.missing_token");
             }
             String projectId = (String) arguments.get("project-id");
             if (projectId == null || projectId.isEmpty()) {
-                throw new LocalizedException("warning.config.host.gitlab.lack_project_id");
+                throw new LocalizedException("warning.config.host.gitlab.missing_project");
             }
             projectId = URLEncoder.encode(projectId, StandardCharsets.UTF_8).replace("/", "%2F");
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));

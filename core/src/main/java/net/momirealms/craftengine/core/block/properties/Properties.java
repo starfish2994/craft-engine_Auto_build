@@ -37,7 +37,7 @@ public class Properties {
     public static Property<?> fromMap(String name, Map<String, Object> map) {
         Object type = map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.block.state.property.lack_type", new NullPointerException("'type' cannot be null for block state property"), name);
+            throw new LocalizedResourceConfigException("warning.config.block.state.property.missing_type", new NullPointerException("'type' cannot be null for block state property"), name);
         }
         Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
         PropertyFactory factory = BuiltInRegistries.PROPERTY_FACTORY.getValue(key);

@@ -107,14 +107,14 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.furniture.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.furniture.duplicate", path, id);
             }
 
             Map<String, Object> lootMap = MiscUtils.castToMap(section.get("loot"), true);
             Map<String, Object> settingsMap = MiscUtils.castToMap(section.get("settings"), true);
             Map<String, Object> placementMap = MiscUtils.castToMap(section.get("placement"), true);
             if (placementMap == null) {
-                throw new LocalizedResourceConfigException("warning.config.furniture.lack_placement", path, id);
+                throw new LocalizedResourceConfigException("warning.config.furniture.missing_placement", path, id);
             }
 
             EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
@@ -130,7 +130,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> element : elementConfigs) {
                     String key = (String) element.get("item");
                     if (key == null) {
-                        throw new LocalizedResourceConfigException("warning.config.furniture.element.lack_item", path, id);
+                        throw new LocalizedResourceConfigException("warning.config.furniture.element.missing_item", path, id);
                     }
                     ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                     Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));

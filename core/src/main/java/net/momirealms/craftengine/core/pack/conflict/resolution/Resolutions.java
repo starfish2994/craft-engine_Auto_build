@@ -33,12 +33,12 @@ public class Resolutions {
     public static Resolution fromMap(Map<String, Object> map) {
         String type = (String) map.getOrDefault("type", "empty");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.conflict_resolution.lack_type", new NullPointerException("path matcher type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.conflict_resolution.missing_type");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         ResolutionFactory factory = BuiltInRegistries.RESOLUTION_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.conflict_resolution.invalid_type", new IllegalArgumentException("Unknown matcher type: " + type), type);
+            throw new LocalizedResourceConfigException("warning.config.conflict_resolution.invalid_type", type);
         }
         return factory.create(map);
     }

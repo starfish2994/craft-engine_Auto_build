@@ -40,7 +40,7 @@ public class Tints {
     public static Tint fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.model.tint.lack_type", new NullPointerException("'type' cannot be null for tint"));
+            throw new LocalizedResourceConfigException("warning.config.item.model.tint.missing_type", new NullPointerException("'type' cannot be null for tint"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         TintFactory factory = BuiltInRegistries.TINT_FACTORY.getValue(key);

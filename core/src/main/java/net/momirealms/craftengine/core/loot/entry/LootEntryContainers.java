@@ -42,7 +42,7 @@ public class LootEntryContainers {
     public static <T> LootEntryContainer<T> fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.entry.lack_type", new NullPointerException("loot entry type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.loot_table.entry.missing_type", new NullPointerException("loot entry type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootEntryContainerFactory<T> factory = (LootEntryContainerFactory<T>) BuiltInRegistries.LOOT_ENTRY_CONTAINER_FACTORY.getValue(key);

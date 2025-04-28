@@ -157,7 +157,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (!Config.enableRecipeSystem()) return;
             if (AbstractRecipeManager.this.byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.recipe.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.recipe.duplicate", path, id);
             }
             Recipe<T> recipe = RecipeTypes.fromMap(id, section);
             try {

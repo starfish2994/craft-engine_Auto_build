@@ -23,13 +23,13 @@ public final class ResourceConfigUtils {
                 try {
                     return Integer.parseInt(s);
                 } catch (NumberFormatException e) {
-                    throw new LocalizedResourceConfigException("warning.config.cast_int", e, s, option);
+                    throw new LocalizedResourceConfigException("warning.config.type.int", e, s, option);
                 }
             }
             case Boolean b -> {
                 return b ? 1 : 0;
             }
-            default -> throw new LocalizedResourceConfigException("warning.config.cast_int", o.toString(), option);
+            default -> throw new LocalizedResourceConfigException("warning.config.type.int", o.toString(), option);
         }
     }
 
@@ -48,11 +48,11 @@ public final class ResourceConfigUtils {
                 try {
                     return Double.parseDouble(s);
                 } catch (NumberFormatException e) {
-                    throw new LocalizedResourceConfigException("warning.config.cast_double", e, s, option);
+                    throw new LocalizedResourceConfigException("warning.config.type.double", e, s, option);
                 }
             }
             default -> {
-                throw new LocalizedResourceConfigException("warning.config.cast_double", o.toString(), option);
+                throw new LocalizedResourceConfigException("warning.config.type.double", o.toString(), option);
             }
         }
     }
@@ -69,14 +69,14 @@ public final class ResourceConfigUtils {
                 try {
                     return Float.parseFloat(s);
                 } catch (NumberFormatException e) {
-                    throw new LocalizedResourceConfigException("warning.config.cast_float", e, s, option);
+                    throw new LocalizedResourceConfigException("warning.config.type.float", e, s, option);
                 }
             }
             case Number number -> {
                 return number.floatValue();
             }
             default -> {
-                throw new LocalizedResourceConfigException("warning.config.cast_float", o.toString(), option);
+                throw new LocalizedResourceConfigException("warning.config.type.float", o.toString(), option);
             }
         }
     }

@@ -110,7 +110,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             String type = (String) section.get("type");
             if (type == null) {
-                throw new LocalizedResourceConfigException("warning.config.vanilla_loot.type_not_exist", path, id);
+                throw new LocalizedResourceConfigException("warning.config.vanilla_loot.missing_type", path, id);
             }
             VanillaLoot.Type typeEnum = VanillaLoot.Type.valueOf(type.toUpperCase(Locale.ENGLISH));
             boolean override = (boolean) section.getOrDefault("override", false);

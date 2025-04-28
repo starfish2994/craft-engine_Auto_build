@@ -29,11 +29,11 @@ public class FilenameMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String name = (String) arguments.get("name");
+            Object name = arguments.get("name");
             if (name == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.filename.lack_name", new IllegalArgumentException("The 'name' argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.filename.missing_name", new IllegalArgumentException("The 'name' argument must not be null"));
             }
-            return new FilenameMatcher(name);
+            return new FilenameMatcher(name.toString());
         }
     }
 }

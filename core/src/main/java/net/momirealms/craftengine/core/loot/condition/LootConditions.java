@@ -90,7 +90,7 @@ public class LootConditions {
     public static LootCondition fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.lack_type", new NullPointerException("condition type cannot be null"));
+            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.missing_type", new NullPointerException("condition type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootConditionFactory factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);

@@ -39,7 +39,7 @@ public class GrassTint implements Tint {
             float temperature = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("temperature", 0), "temperature");
             float downfall = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("downfall", 0), "downfall");
             if (temperature > 1 || temperature < 0) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.tint.grass.invalid_temperature", new IllegalArgumentException("Invalid temperature: " + temperature + ". Valid range 0~1"), String.valueOf(temperature));
+                throw new LocalizedResourceConfigException("warning.config.item.model.tint.grass.invalid_temp", new IllegalArgumentException("Invalid temperature: " + temperature + ". Valid range 0~1"), String.valueOf(temperature));
             }
             if (downfall > 1 || downfall < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.model.tint.grass.invalid_downfall", new IllegalArgumentException("Invalid downfall: " + downfall + ". Valid range 0~1"), String.valueOf(downfall));

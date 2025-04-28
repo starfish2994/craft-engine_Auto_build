@@ -332,7 +332,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             // check duplicated config
             if (byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.block.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.block.duplicate", path, id);
             }
             // read block settings
             BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
@@ -349,7 +349,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 properties = Map.of();
                 int internalId = ResourceConfigUtils.getAsInt(stateSection.getOrDefault("id", -1), "id");
                 if (internalId < 0) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_real_id", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_real_id", path, id);
                 }
 
                 Pair<Key, Integer> pair = parseAppearanceSection(pack, path, id, stateSection);
@@ -360,7 +360,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 Key internalBlockId = Key.of(CraftEngine.NAMESPACE, internalBlock);
                 int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                 if (internalBlockRegistryId == -1) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
+                    throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", path, id,
                             internalBlock,
                             String.valueOf(registeredRealBlockSlots.get(pair.left()) - 1));
                 }
@@ -369,18 +369,18 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 // states
                 Map<String, Object> statesSection = MiscUtils.castToMap(section.get("states"), true);
                 if (statesSection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.lack_state", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.missing_state", path, id);
                 }
                 // properties
                 Map<String, Object> propertySection = MiscUtils.castToMap(statesSection.get("properties"), true);
                 if (propertySection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_properties", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_properties", path, id);
                 }
-                properties = parseProperties(path, id, propertySection);
+                properties = parseProperties(propertySection);
                 // appearance
                 Map<String, Object> appearancesSection = MiscUtils.castToMap(statesSection.get("appearances"), true);
                 if (appearancesSection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_appearances", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_appearances", path, id);
                 }
                 appearances = new HashMap<>();
                 Map<String, Key> tempTypeMap = new HashMap<>();
@@ -395,7 +395,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 // variants
                 Map<String, Object> variantsSection = MiscUtils.castToMap(statesSection.get("variants"), true);
                 if (variantsSection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.lack_variants", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_variants", path, id);
                 }
                 variants = new HashMap<>();
                 for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
@@ -404,7 +404,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         String variantName = variantEntry.getKey();
                         String appearance = (String) variantSection.get("appearance");
                         if (appearance == null) {
-                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.lack_appearance", path, id, variantName);
+                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.missing_appearance", path, id, variantName);
                         }
                         if (!appearances.containsKey(appearance)) {
                             throw new LocalizedResourceConfigException("warning.config.block.state.variant.invalid_appearance", path, id, variantName, appearance);
@@ -414,7 +414,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
                         int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                         if (internalBlockRegistryId == -1) {
-                            throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_state_id", path, id,
+                            throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", path, id,
                                     internalBlockId.toString(),
                                     String.valueOf(registeredRealBlockSlots.getOrDefault(baseBlock, 1) - 1));
                         }
@@ -439,7 +439,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             for (ImmutableBlockState state : block.variantProvider().states()) {
                 ImmutableBlockState previous = stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()];
                 if (previous != null && !previous.isEmpty()) {
-                    TranslationManager.instance().log("warning.config.block.state.bind_real_state", path.toString(), id.toString(), state.toString(), previous.toString());
+                    TranslationManager.instance().log("warning.config.block.state.bind_failed", path.toString(), id.toString(), state.toString(), previous.toString());
                     continue;
                 }
                 stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()] = state;
@@ -458,19 +458,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private Map<String, Property<?>> parseProperties(Path path, Key id, Map<String, Object> propertiesSection) {
+    private Map<String, Property<?>> parseProperties(Map<String, Object> propertiesSection) {
         Map<String, Property<?>> properties = new HashMap<>();
         for (Map.Entry<String, Object> entry : propertiesSection.entrySet()) {
-            if (entry.getValue() instanceof Map<?, ?> params) {
-                try {
-                    Property<?> property = Properties.fromMap(entry.getKey(), MiscUtils.castToMap(params, false));
-                    properties.put(entry.getKey(), property);
-                } catch (Exception e) {
-                    TranslationManager.instance().log("warning.config.block.state.invalid_property", path.toString(), id.toString(), entry.getKey(), e.getMessage());
-                }
-            } else {
-                TranslationManager.instance().log("warning.config.block.state.invalid_property_structure", path.toString(), id.toString(), entry.getKey());
-            }
+            Property<?> property = Properties.fromMap(entry.getKey(), MiscUtils.castToMap(entry.getValue(), false));
+            properties.put(entry.getKey(), property);
         }
         return properties;
     }
@@ -478,15 +470,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
     @Nullable
     private Pair<Key, Integer> parseAppearanceSection(Pack pack, Path path, Key id, Map<String, Object> section) {
         // require state non null
-        String vanillaStateString = (String) section.get("state");
+        Object vanillaStateString = section.get("state");
         if (vanillaStateString == null) {
-            TranslationManager.instance().log("warning.config.block.state.lack_state", path.toString(), id.toString());
-            return null;
+            throw new LocalizedResourceConfigException("warning.config.block.state.missing_state", path, id);
         }
 
         // get its registry id
         int vanillaStateRegistryId;
-        VanillaStateParseResult parseResult = parseVanillaStateRegistryId(vanillaStateString);
+        VanillaStateParseResult parseResult = parseVanillaStateRegistryId(vanillaStateString.toString());
         if (parseResult.success()) {
             vanillaStateRegistryId = parseResult.result;
         } else {
@@ -506,10 +497,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
 
         // require models not to be null
-        Object models = section.getOrDefault("models", section.get("model"));
+        Object models = section.get("models");
         if (models == null) {
-            TranslationManager.instance().log("warning.config.block.state.no_model_set", path.toString(), id.toString());
-            return null;
+            models = section.get("model");
+        }
+        if (models == null) {
+            throw new LocalizedResourceConfigException("warning.config.block.state.missing_model", path, id);
         }
 
         List<JsonObject> variants = new ArrayList<>();
@@ -547,12 +540,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
         JsonObject json = new JsonObject();
         String modelPath = (String) singleModelMap.get("path");
         if (modelPath == null) {
-            TranslationManager.instance().log("warning.config.block.state.model.lack_path", path.toString(), id.toString());
-            return;
+            throw new LocalizedResourceConfigException("warning.config.block.state.model.missing_path");
         }
         if (!ResourceLocation.isValid(modelPath)) {
-            TranslationManager.instance().log("warning.config.block.state.model.invalid_resource_location", path.toString(), id.toString(), modelPath);
-            return;
+            throw new LocalizedResourceConfigException("warning.config.block.state.model.invalid_path", modelPath);
         }
         json.addProperty("model", modelPath);
         if (singleModelMap.containsKey("x")) json.addProperty("x", ResourceConfigUtils.getAsInt(singleModelMap.get("x"), "x"));
@@ -561,7 +552,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (singleModelMap.containsKey("weight")) json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
-            prepareModelGeneration(path, id, new ModelGeneration(Key.of(modelPath), generationMap));
+            prepareModelGeneration(new ModelGeneration(Key.of(modelPath), generationMap));
         }
         variants.add(json);
     }
@@ -569,33 +560,33 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private VanillaStateParseResult parseVanillaStateRegistryId(String blockState) {
         String[] split = blockState.split(":", 3);
         if (split.length >= 4) {
-            return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+            return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla", new String[]{blockState});
         }
         int registryId;
         String stateOrId = split[split.length - 1];
         boolean isId = !stateOrId.contains("[") && !stateOrId.contains("]");
         if (isId) {
-            if (split.length == 1) return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+            if (split.length == 1) return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla", new String[]{blockState});
             Key block = split.length == 2 ? Key.of(split[0]) : Key.of(split[0], split[1]);
             try {
                 int id = split.length == 2 ? Integer.parseInt(split[1]) : Integer.parseInt(split[2]);
-                if (id < 0) return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+                if (id < 0) return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla", new String[]{blockState});
                 List<Integer> arranger = this.blockAppearanceArranger.get(block);
-                if (arranger == null) return VanillaStateParseResult.failure("warning.config.block.state.unavailable_state", new String[]{blockState});
-                if (id >= arranger.size()) return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla_state_id", new String[]{blockState, String.valueOf(arranger.size() - 1)});
+                if (arranger == null) return VanillaStateParseResult.failure("warning.config.block.state.unavailable_vanilla", new String[]{blockState});
+                if (id >= arranger.size()) return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla_id", new String[]{blockState, String.valueOf(arranger.size() - 1)});
                 registryId = arranger.get(id);
             } catch (NumberFormatException e) {
-                return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+                return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla", new String[]{blockState});
             }
         } else {
             try {
                 BlockData blockData = Bukkit.createBlockData(blockState);
                 registryId = BlockStateUtils.blockDataToId(blockData);
                 if (!this.blockAppearanceMapper.containsKey(registryId)) {
-                    return VanillaStateParseResult.failure("warning.config.block.state.unavailable_state", new String[]{blockState});
+                    return VanillaStateParseResult.failure("warning.config.block.state.unavailable_vanilla", new String[]{blockState});
                 }
             } catch (IllegalArgumentException e) {
-                return VanillaStateParseResult.failure("warning.config.block.state.invalid_state", new String[]{blockState});
+                return VanillaStateParseResult.failure("warning.config.block.state.invalid_vanilla", new String[]{blockState});
             }
         }
         return VanillaStateParseResult.success(registryId);

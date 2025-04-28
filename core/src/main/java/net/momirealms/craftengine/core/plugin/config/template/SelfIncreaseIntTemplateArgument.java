@@ -49,7 +49,7 @@ public class SelfIncreaseIntTemplateArgument implements TemplateArgument {
         public TemplateArgument create(Map<String, Object> arguments) {
             int from = ResourceConfigUtils.getAsInt(arguments.get("from"), "from");
             int to = ResourceConfigUtils.getAsInt(arguments.get("to"), "to");
-            if (from > to) throw new LocalizedResourceConfigException("warning.config.template.from_larger_than_to", String.valueOf(from), String.valueOf(to));
+            if (from > to) throw new LocalizedResourceConfigException("warning.config.template.argument.self_increase_int.invalid_range", String.valueOf(from), String.valueOf(to));
             return new SelfIncreaseIntTemplateArgument(from, to);
         }
     }

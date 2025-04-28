@@ -29,11 +29,11 @@ public class ExactPathMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String path = (String) arguments.get("path");
+            Object path = arguments.get("path");
             if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.exact.lack_path", new IllegalArgumentException("The 'path' argument must not be null"));
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.exact.missing_path", new IllegalArgumentException("The 'path' argument must not be null"));
             }
-            return new ExactPathMatcher(path);
+            return new ExactPathMatcher(path.toString());
         }
     }
 }

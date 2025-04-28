@@ -63,7 +63,7 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override
     public void addTemplate(Pack pack, Path path, Key id, Object obj) {
         if (this.templates.containsKey(id)) {
-            throw new LocalizedResourceConfigException("warning.config.template.duplicated", path.toString(), id.toString());
+            throw new LocalizedResourceConfigException("warning.config.template.duplicate", path.toString(), id.toString());
         }
         this.templates.put(id, obj);
     }

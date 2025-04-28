@@ -32,7 +32,7 @@ public class KeyBindDownConditionProperty implements ConditionProperty {
         public ConditionProperty create(Map<String, Object> arguments) {
             Object keybindObj = arguments.get("keybind");
             if (keybindObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.condition.keybind_down.lack_keybind", new NullPointerException("keybind should not be null"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.keybind.missing", new NullPointerException("keybind should not be null"));
             }
             String keybind = keybindObj.toString();
             return new KeyBindDownConditionProperty(keybind);

@@ -188,7 +188,7 @@ public class BlockItemBehavior extends ItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.behavior.block.lack_block", new IllegalArgumentException("Missing required parameter 'block' for block_item behavior"));
+                throw new LocalizedResourceConfigException("warning.config.item.behavior.block.missing_block", new IllegalArgumentException("Missing required parameter 'block' for block_item behavior"));
             }
             if (id instanceof Map<?, ?> map) {
                 if (map.containsKey(key.toString())) {

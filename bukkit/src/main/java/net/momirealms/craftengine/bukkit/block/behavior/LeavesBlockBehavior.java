@@ -175,11 +175,11 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Boolean> persistent = (Property<Boolean>) block.getProperty("persistent");
             if (persistent == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.leaves.lack_persistent", new NullPointerException("persistent property not set for block " + block.id()));
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.leaves.missing_persistent", new NullPointerException("persistent property not set for block " + block.id()));
             }
             Property<Integer> distance = (Property<Integer>) block.getProperty("distance");
             if (distance == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.leaves.lack_distance", new NullPointerException("distance property not set for block " + block.id()));
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.leaves.missing_distance", new NullPointerException("distance property not set for block " + block.id()));
             }
             Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
             int actual = distance.possibleValues().get(distance.possibleValues().size() - 1);

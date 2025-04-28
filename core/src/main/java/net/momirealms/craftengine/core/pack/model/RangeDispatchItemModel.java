@@ -109,16 +109,16 @@ public class RangeDispatchItemModel implements ItemModel {
                         float threshold = ResourceConfigUtils.getAsFloat(entry.getOrDefault("threshold", 1), "threshold");
                         Object model = entry.getOrDefault("model", fallback);
                         if (model == null) {
-                            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.entry.lack_model", new NullPointerException("'model' is required for range_dispatch entry"));
+                            throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.entry.missing_model", new NullPointerException("'model' is required for range_dispatch entry"));
                         }
                         entryMap.put(threshold, ItemModels.fromMap(MiscUtils.castToMap(model, false)));
                     }
                     return new RangeDispatchItemModel(property, scale, fallback == null ? null : ItemModels.fromMap(fallback), entryMap);
                 } else {
-                    throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.lack_entries", new IllegalArgumentException("No entries found for range_dispatch"));
+                    throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.missing_entries", new IllegalArgumentException("No entries found for range_dispatch"));
                 }
             } else {
-                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.lack_entries", new NullPointerException("'entries' is required for the range_dispatch model"));
+                throw new LocalizedResourceConfigException("warning.config.item.model.range_dispatch.missing_entries", new NullPointerException("'entries' is required for the range_dispatch model"));
             }
         }
     }
