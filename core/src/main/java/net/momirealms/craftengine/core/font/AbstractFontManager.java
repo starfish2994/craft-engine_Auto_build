@@ -418,7 +418,7 @@ public abstract class AbstractFontManager implements FontManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (images.containsKey(id)) {
-                throw new LocalizedResourceConfigException("error.config.image.duplicated", path, id);
+                throw new LocalizedResourceConfigException("warning.config.image.duplicated", path, id);
             }
 
             Object file = section.get("file");
@@ -434,39 +434,6 @@ public abstract class AbstractFontManager implements FontManager {
             String fontName = (String) section.getOrDefault("font", "minecraft:default");
             if (!ResourceLocation.isValid(fontName)) {
                 throw new LocalizedResourceConfigException("warning.config.image.invalid_font_name", path, id, fontName);
-            }
-
-            Object heightObj = section.get("height");
-
-            if (!resourceLocation.endsWith(".png")) resourceLocation += ".png";
-            Key namespacedPath = Key.of(resourceLocation);
-            Path targetImagePath = pack.resourcePackFolder()
-                    .resolve("assets")
-                    .resolve(namespacedPath.namespace())
-                    .resolve("textures")
-                    .resolve(namespacedPath.value());
-
-            if (!Files.exists(targetImagePath)) {
-                TranslationManager.instance().log("warning.config.image.file_not_exist", path.toString(), id.toString(), targetImagePath.toString());
-                // DO NOT RETURN, JUST GIVE WARNINGS
-            } else if (heightObj == null) {
-                try (InputStream in = Files.newInputStream(targetImagePath)) {
-                    BufferedImage image = ImageIO.read(in);
-                    heightObj = image.getHeight();
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load image " + targetImagePath, e);
-                    return;
-                }
-            }
-
-            if (heightObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.image.lack_height", path, id);
-            }
-
-            int height = MiscUtils.getAsInt(heightObj);
-            int ascent = MiscUtils.getAsInt(section.getOrDefault("ascent", height - 1));
-            if (height < ascent) {
-                throw new LocalizedResourceConfigException("warning.config.image.height_smaller_than_ascent", path, id);
             }
 
             Key fontKey = Key.withDefaultNamespace(fontName, id.namespace());
@@ -521,6 +488,39 @@ public abstract class AbstractFontManager implements FontManager {
                 }
             }
 
+            Object heightObj = section.get("height");
+
+            if (!resourceLocation.endsWith(".png")) resourceLocation += ".png";
+            Key namespacedPath = Key.of(resourceLocation);
+            Path targetImagePath = pack.resourcePackFolder()
+                    .resolve("assets")
+                    .resolve(namespacedPath.namespace())
+                    .resolve("textures")
+                    .resolve(namespacedPath.value());
+
+            if (!Files.exists(targetImagePath)) {
+                TranslationManager.instance().log("warning.config.image.file_not_exist", path.toString(), id.toString(), targetImagePath.toString());
+                // DO NOT RETURN, JUST GIVE WARNINGS
+            } else if (heightObj == null) {
+                try (InputStream in = Files.newInputStream(targetImagePath)) {
+                    BufferedImage image = ImageIO.read(in);
+                    heightObj = image.getHeight() / codepointGrid.length;
+                } catch (IOException e) {
+                    plugin.logger().warn("Failed to load image " + targetImagePath, e);
+                    return;
+                }
+            }
+
+            if (heightObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.image.lack_height", path, id);
+            }
+
+            int height = MiscUtils.getAsInt(heightObj);
+            int ascent = MiscUtils.getAsInt(section.getOrDefault("ascent", height - 1));
+            if (height < ascent) {
+                throw new LocalizedResourceConfigException("warning.config.image.height_smaller_than_ascent", path, id);
+            }
+
             BitmapImage bitmapImage = new BitmapImage(id, fontKey, height, ascent, resourceLocation, codepointGrid);
             for (int[] y : codepointGrid) {
                 for (int x : y) {
@@ -528,7 +528,7 @@ public abstract class AbstractFontManager implements FontManager {
                 }
             }
 
-            AbstractFontManager.this.images.put(id, bitmapImage);
+            images.put(id, bitmapImage);
         }
     }
 }
