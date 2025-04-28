@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.model.special;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -44,12 +45,12 @@ public class SpecialModels {
     public static SpecialModel fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("special model type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.item.model.special.lack_type", new NullPointerException("special model type cannot be null"));
         }
         Key key = Key.withDefaultNamespace(type, "minecraft");
         SpecialModelFactory factory = BuiltInRegistries.SPECIAL_MODEL_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown special model type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.special.invalid_type", new IllegalArgumentException("Unknown special model type: " + type), type);
         }
         return factory.create(map);
     }

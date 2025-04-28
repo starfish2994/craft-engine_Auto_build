@@ -37,8 +37,8 @@ public class SignSpecialModel implements SpecialModel {
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
             Key type = Key.of(arguments.get("type").toString());
-            String woodType = Objects.requireNonNull(arguments.get("wood-type"), "wood-type").toString();
-            String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
+            String woodType = Objects.requireNonNull(arguments.get("wood-type"), "lack wood-type").toString();
+            String texture = Objects.requireNonNull(arguments.get("texture"), "lack texture").toString();
             return new SignSpecialModel(type, woodType, texture);
         }
     }
