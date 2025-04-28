@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -34,8 +36,16 @@ public class AnyOfPathMatcher implements PathMatcher {
         @SuppressWarnings("unchecked")
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            List<Map<String, Object>> terms = (List<Map<String, Object>>) arguments.get("terms");
-            return new AnyOfPathMatcher(PathMatchers.fromMapList(terms));
+            Object termsObj = arguments.get("terms");
+            if (termsObj instanceof List<?> list) {
+                List<Map<String, Object>> terms = (List<Map<String, Object>>) list;
+                return new AnyOfPathMatcher(PathMatchers.fromMapList(terms));
+            } else if (termsObj instanceof Map<?, ?>) {
+                Map<String, Object> terms = MiscUtils.castToMap(termsObj, false);
+                return new AnyOfPathMatcher(PathMatchers.fromMapList(List.of(terms)));
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.any_of.missing_terms", new NullPointerException("terms should not be null for any_of"));
+            }
         }
     }
 }
