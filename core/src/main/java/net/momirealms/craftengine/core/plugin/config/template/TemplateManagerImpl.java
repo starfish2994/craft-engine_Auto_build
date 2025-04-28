@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin.config.template;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
@@ -62,8 +63,7 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override
     public void addTemplate(Pack pack, Path path, Key id, Object obj) {
         if (this.templates.containsKey(id)) {
-            TranslationManager.instance().log("warning.config.template.duplicated", path.toString(), id.toString());
-            return;
+            throw new LocalizedResourceConfigException("warning.config.template.duplicated", path.toString(), id.toString());
         }
         this.templates.put(id, obj);
     }
