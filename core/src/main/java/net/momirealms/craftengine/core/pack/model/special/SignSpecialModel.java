@@ -3,8 +3,10 @@ package net.momirealms.craftengine.core.pack.model.special;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class SignSpecialModel implements SpecialModel {
     public static final Factory FACTORY = new Factory();
@@ -37,15 +39,9 @@ public class SignSpecialModel implements SpecialModel {
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
             Key type = Key.of(arguments.get("type").toString());
-            Object woodType = arguments.get("wood-type");
-            if (woodType == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.special.sign.missing_wood_type");
-            }
-            Object texture = arguments.get("texture");
-            if (texture == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.special.sign.missing_texture");
-            }
-            return new SignSpecialModel(type, woodType.toString(), texture.toString());
+            String woodType = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("wood-type"), "warning.config.item.model.special.sign.missing_wood_type").toString();
+            String texture = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("texture"), "warning.config.item.model.special.sign.missing_texture").toString();
+            return new SignSpecialModel(type, woodType, texture);
         }
     }
 }

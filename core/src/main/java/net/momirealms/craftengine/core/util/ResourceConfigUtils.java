@@ -6,6 +6,12 @@ public final class ResourceConfigUtils {
 
     private ResourceConfigUtils() {}
 
+    public static <T> T requireNonNullOrThrow(T obj, String node) {
+        if (obj == null)
+            throw new LocalizedResourceConfigException(node);
+        return obj;
+    }
+
     public static int getAsInt(Object o, String option) {
         switch (o) {
             case null -> {
