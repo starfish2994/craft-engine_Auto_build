@@ -3138,6 +3138,18 @@ public class Reflections {
             )
     );
 
+    public static final Field field$ClientboundEntityEventPacket$entityId = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundEntityEventPacket, int.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundEntityEventPacket$eventId = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundEntityEventPacket, byte.class, 0
+            )
+    );
+
     public static final Constructor<?> constructor$ClientboundEntityEventPacket = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$ClientboundEntityEventPacket, clazz$Entity, byte.class
