@@ -6,6 +6,15 @@
 </h1>
 
 <p align="center">
+  <a href="https://momi.gtemc.cn/craftengine" alt="GitBook">
+    <img src="https://img.shields.io/badge/%E6%96%87%E6%A1%A3-%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C-D2691E" alt="Gitbook"/>
+  </a>
+  <a href="https://github.com/Xiao-MoMi/craft-engine/">
+    <img src="https://sloc.xyz/github/Xiao-MoMi/craft-engine/?category=codes" alt="SCC数量标识"/>
+  </a>
+</p>
+
+<p align="center">
     <a target="_blank" href="/README.md">English</a> |
     <a target="_blank" href="/readme/README_zh-CN.md">简体中文</a> |
     <a target="_blank" href="/readme/README_zh-TW.md">繁體中文</a>
