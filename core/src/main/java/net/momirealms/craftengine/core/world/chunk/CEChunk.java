@@ -1,13 +1,14 @@
 package net.momirealms.craftengine.core.world.chunk;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.momirealms.craftengine.core.block.BlockEntityState;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.world.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class CEChunk {
     private boolean loaded;
@@ -15,7 +16,7 @@ public class CEChunk {
     private final ChunkPos chunkPos;
     private final CESection[] sections;
     private final WorldHeight worldHeightAccessor;
-    private final List<Vec3d> entities;
+    private final Map<Integer, BlockEntityState> blockEntities;
     private boolean dirty;
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
@@ -23,14 +24,14 @@ public class CEChunk {
         this.chunkPos = chunkPos;
         this.worldHeightAccessor = world.worldHeight();
         this.sections = new CESection[this.worldHeightAccessor.getSectionsCount()];
-        this.entities = new ArrayList<>();
+        this.blockEntities = new Int2ObjectOpenHashMap<>(16, 0.5f);
         this.fillEmptySection();
     }
 
-    public CEChunk(CEWorld world, ChunkPos chunkPos, CESection[] sections, List<Vec3d> entities) {
+    public CEChunk(CEWorld world, ChunkPos chunkPos, CESection[] sections, Map<Integer, BlockEntityState> blockEntities) {
         this.world = world;
         this.chunkPos = chunkPos;
-        this.entities = entities;
+        this.blockEntities = blockEntities;
         this.worldHeightAccessor = world.worldHeight();
         int sectionCount = this.worldHeightAccessor.getSectionsCount();
         this.sections = new CESection[sectionCount];
@@ -45,6 +46,10 @@ public class CEChunk {
         this.fillEmptySection();
     }
 
+    public Map<Integer, BlockEntityState> blockEntities() {
+        return blockEntities;
+    }
+
     public boolean dirty() {
         return dirty;
     }
@@ -54,7 +59,7 @@ public class CEChunk {
     }
 
     public boolean isEmpty() {
-        if (!this.entities.isEmpty()) return false;
+        if (!this.blockEntities.isEmpty()) return false;
         for (CESection section : this.sections) {
             if (section != null && !section.statesContainer().isEmpty()) {
                 return false;

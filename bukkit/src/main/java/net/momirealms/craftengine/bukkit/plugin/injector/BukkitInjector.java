@@ -388,7 +388,7 @@ public class BukkitInjector {
 //        }
 //    }
 
-    public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, CEChunk chunk, SectionPos pos) {
+    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, CEChunk chunk, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!clazz$InjectedPalettedContainer.isInstance(container)) {

@@ -169,7 +169,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.tempVanillaBlockStateModels.clear();
     }
 
-
     @Nullable
     public Object getMinecraftBlockHolder(int stateId) {
         return stateId2BlockHolder.get(stateId);

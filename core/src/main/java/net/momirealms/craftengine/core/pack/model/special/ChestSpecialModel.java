@@ -4,10 +4,8 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class ChestSpecialModel implements SpecialModel {
     public static final Factory FACTORY = new Factory();

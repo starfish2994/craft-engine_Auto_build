@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 public class ShulkerBoxSpecialModel implements SpecialModel {
     public static final Factory FACTORY = new Factory();

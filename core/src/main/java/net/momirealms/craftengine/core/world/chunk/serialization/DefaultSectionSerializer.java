@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.LongStream;
 
-public class DefaultSectionSerializer {
+public final class DefaultSectionSerializer {
 
     @Nullable
     public static CompoundTag serialize(@NotNull CESection section) {
