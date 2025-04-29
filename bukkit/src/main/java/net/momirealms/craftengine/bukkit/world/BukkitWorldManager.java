@@ -273,6 +273,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 }
             }
             if (Config.restoreVanillaBlocks()) {
+                boolean unsaved = false;
                 CESection[] ceSections = ceChunk.sections();
                 Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
                 Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
@@ -282,17 +283,22 @@ public class BukkitWorldManager implements WorldManager, Listener {
                     CESection ceSection = ceSections[i];
                     Object section = sections[i];
                     BukkitInjector.uninjectLevelChunkSection(section);
-                    if (ceSection.statesContainer().isEmpty()) continue;
-                    for (int x = 0; x < 16; x++) {
-                        for (int z = 0; z < 16; z++) {
-                            for (int y = 0; y < 16; y++) {
-                                ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
-                                if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
-                                    FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().handle(), false);
+                    if (!ceSection.statesContainer().isEmpty()) {
+                        for (int x = 0; x < 16; x++) {
+                            for (int z = 0; z < 16; z++) {
+                                for (int y = 0; y < 16; y++) {
+                                    ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
+                                    if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
+                                        FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().handle(), false);
+                                        unsaved = true;
+                                    }
                                 }
                             }
                         }
                     }
+                }
+                if (unsaved && !FastNMS.INSTANCE.method$LevelChunk$isUnsaved(levelChunk)) {
+                    FastNMS.INSTANCE.method$LevelChunk$markUnsaved(levelChunk);
                 }
             }
             ceChunk.unload();
