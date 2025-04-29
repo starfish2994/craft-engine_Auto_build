@@ -33,7 +33,7 @@ public class ConstantTint implements Tint {
 
         @Override
         public Tint create(Map<String, Object> arguments) {
-            Object value = ResourceConfigUtils.requireNonNullOrThrow("warning.config.item.model.special.missing_type", "warning.config.item.model.tint.constant.missing_value");
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("value"), "warning.config.item.model.tint.constant.missing_value");
             return new ConstantTint(parseTintValue(value));
         }
     }
