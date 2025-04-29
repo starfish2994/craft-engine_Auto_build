@@ -258,25 +258,22 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
     }
 
     private void processOpCommand(CommandSender sender, String command) {
-        if (!sender.hasPermission("minecraft.command.op")) return;
-        if (!sender.hasPermission("minecraft.command.deop")) return;
+        if (!sender.hasPermission("minecraft.command.op") || !sender.hasPermission("minecraft.command.deop")) return;
         String input = command.startsWith("/") ? command.substring(1) : command;
         int firstSpaceIndex = input.indexOf(' ');
         String cmdPart = (firstSpaceIndex == -1) ? input : input.substring(0, firstSpaceIndex);
         String argPart = (firstSpaceIndex == -1) ? "" : input.substring(firstSpaceIndex + 1).trim();
         int lastColonIndex = cmdPart.lastIndexOf(':');
         if (lastColonIndex != -1 && !cmdPart.substring(0, lastColonIndex).equals("minecraft")) return;
-        String cmd = lastColonIndex == -1 ? cmdPart : cmdPart.substring(lastColonIndex + 1);
-        cmd = cmd.toLowerCase();
+        String cmd = (lastColonIndex == -1 ? cmdPart : cmdPart.substring(lastColonIndex + 1)).toLowerCase();
         if (!cmd.equals("op") && !cmd.equals("deop")) return;
+        int nextSpaceIndex = argPart.indexOf(' ');
+        String targetName = (nextSpaceIndex == -1) ? argPart : argPart.substring(0, nextSpaceIndex);
+        if (targetName.isEmpty()) return;
         this.plugin.scheduler().asyncLater(
                 () -> {
-                    int nextSpaceIndex = argPart.indexOf(' ');
-                    String targetName = (nextSpaceIndex == -1) ? argPart : argPart.substring(0, nextSpaceIndex);
-                    if (targetName.isEmpty()) return;
                     Player player = Bukkit.getPlayer(targetName);
-                    if (player == null) return;
-                    if (!player.isOnline()) return;
+                    if (player == null || !player.isOnline()) return;
                     removeEmojiSuggestions(player);
                     addEmojiSuggestions(player, getEmojiSuggestion(player));
                 },
