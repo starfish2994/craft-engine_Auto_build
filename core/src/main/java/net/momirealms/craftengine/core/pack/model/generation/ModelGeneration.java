@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.pack.model.generation;
 
 import com.google.gson.JsonObject;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
@@ -21,25 +21,13 @@ public class ModelGeneration {
         this.texturesOverride = texturesOverride;
     }
 
-    public ModelGeneration(Key path, Section section) {
-        this.path = path;
-        this.parentModelPath = Objects.requireNonNull(section.getString("parent"));
-        Section texturesSection = section.getSection("textures");
-        if (texturesSection != null) {
-            this.texturesOverride = new LinkedHashMap<>();
-            for (Map.Entry<String, Object> entry : texturesSection.getStringRouteMappedValues(false).entrySet()) {
-                if (entry.getValue() instanceof String p) {
-                    this.texturesOverride.put(entry.getKey(), p);
-                }
-            }
-        } else {
-            this.texturesOverride = Collections.emptyMap();
-        }
-    }
-
     public ModelGeneration(Key path, Map<String, Object> map) {
         this.path = path;
-        this.parentModelPath = Objects.requireNonNull((String) map.get("parent"));
+        Object parent = map.get("parent");
+        if (parent == null) {
+            throw new LocalizedResourceConfigException("warning.config.model.generation.missing_parent");
+        }
+        this.parentModelPath = parent.toString();
         Map<String, Object> texturesMap = MiscUtils.castToMap(map.get("textures"), true);
         if (texturesMap != null) {
             this.texturesOverride = new LinkedHashMap<>();

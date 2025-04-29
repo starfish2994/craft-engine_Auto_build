@@ -4,12 +4,13 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.condition.ConditionProperties;
 import net.momirealms.craftengine.core.pack.model.condition.ConditionProperty;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ConditionItemModel implements ItemModel {
     public static final Factory FACTORY = new Factory();
@@ -60,13 +61,22 @@ public class ConditionItemModel implements ItemModel {
 
     public static class Factory implements ItemModelFactory {
 
-        @SuppressWarnings("unchecked")
         @Override
         public ItemModel create(Map<String, Object> arguments) {
             ConditionProperty property = ConditionProperties.fromMap(arguments);
-            Map<String, Object> onTrue = Objects.requireNonNull((Map<String, Object>) arguments.get("on-true"), "No 'on-true' set for 'minecraft:condition'");
-            Map<String, Object> onFalse = Objects.requireNonNull((Map<String, Object>) arguments.get("on-false"), "No 'on-false' set for 'minecraft:condition'");
-            return new ConditionItemModel(property, ItemModels.fromMap(onTrue), ItemModels.fromMap(onFalse));
+            ItemModel onTrue;
+            if (arguments.get("on-true") instanceof Map<?,?> map1) {
+                onTrue = ItemModels.fromMap(MiscUtils.castToMap(map1, false));
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.missing_on_true");
+            }
+            ItemModel onFalse;
+            if (arguments.get("on-false") instanceof Map<?,?> map2) {
+                onFalse = ItemModels.fromMap(MiscUtils.castToMap(map2, false));
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.item.model.condition.missing_on_false");
+            }
+            return new ConditionItemModel(property, onTrue, onFalse);
         }
     }
 }

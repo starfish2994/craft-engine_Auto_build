@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -23,10 +24,10 @@ public class HitBoxTypes {
     }
 
     public static HitBox fromMap(Map<String, Object> arguments) {
-        Key type = Optional.ofNullable((String) arguments.get("type")).map(Key::of).orElse(HitBoxTypes.INTERACTION);
+        Key type = Optional.ofNullable(arguments.get("type")).map(String::valueOf).map(Key::of).orElse(HitBoxTypes.INTERACTION);
         HitBoxFactory factory = BuiltInRegistries.HITBOX_FACTORY.getValue(type);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown hitbox type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.furniture.hitbox.invalid_type", type.toString());
         }
         return factory.create(arguments);
     }

@@ -22,6 +22,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
 import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.sound.AbstractSoundManager;
 import net.momirealms.craftengine.core.sound.SoundEvent;
@@ -130,16 +131,6 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void loadInternalPng(String path, Consumer<byte[]> callback) {
-        try (InputStream inputStream = this.plugin.resourceStream(path)) {
-            if (inputStream != null) {
-                callback.accept(inputStream.readAllBytes());
-            }
-        } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load " + path, e);
-        }
-    }
-
     @Override
     public Path resourcePackPath() {
         return this.plugin.dataFolderPath()
@@ -157,6 +148,10 @@ public abstract class AbstractPackManager implements PackManager {
                 // we might add multiple host methods in future versions
                 this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
             } catch (LocalizedException e) {
+                if (e instanceof LocalizedResourceConfigException exception) {
+                    exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
+                    e.setArgument(1, "hosting");
+                }
                 TranslationManager.instance().log(e.node(), e.arguments());
                 this.resourcePackHost = NoneHost.INSTANCE;
             }
@@ -426,7 +421,7 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path path : files.right()) {
                 try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
                     Map<?, ?> dataRaw = GsonHelper.get().fromJson(JsonParser.parseReader(inputStream).getAsJsonObject(), Map.class);
-                    Map<String, Object> data = MiscUtils.castToMap(dataRaw, false);
+                    Map<String, Object> data = castToMap(dataRaw, false);
                     for (Map.Entry<String, Object> entry : data.entrySet()) {
                         processConfigEntry(entry, path, pack);
                     }
@@ -445,20 +440,29 @@ public abstract class AbstractPackManager implements PackManager {
                     String key = configEntry.getKey();
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        if (parser.isTemplate()) {
-                            this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                        } else if (predicate.test(parser)) {
-                            if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                                Map<String, Object> configSection1 = castToMap(configSection0, false);
-                                if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                        try {
+                            if (parser.isTemplate()) {
+                                this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                            } else if (predicate.test(parser)) {
+                                if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
+                                    Map<String, Object> configSection1 = castToMap(configSection0, false);
+                                    if ((boolean) configSection1.getOrDefault("enable", true)) {
+                                        parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                                    }
+                                } else {
+                                    TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
                                 }
-                            } else {
-                                this.plugin.logger().warn(cached.filePath(), "Configuration section is required for " + parser.sectionId()[0] + "." + configEntry.getKey() + " - ");
                             }
+                        } catch (LocalizedException e) {
+                            if (e instanceof LocalizedResourceConfigException exception) {
+                                exception.setPath(cached.filePath());
+                                exception.setId(cached.prefix() + "." + key);
+                            }
+                            TranslationManager.instance().log(e.node(), e.arguments());
+                            this.plugin.debug(e::node);
                         }
                     } catch (Exception e) {
-                        this.plugin.logger().warn(cached.filePath(), "Error loading " + parser.sectionId()[0] + "." + key, e);
+                        this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
                     }
                 }
             }
@@ -475,7 +479,7 @@ public abstract class AbstractPackManager implements PackManager {
             String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
                     .ifPresent(parser -> this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
-                            .add(new CachedConfig(castToMap(typeSections0, false), path, pack)));
+                            .add(new CachedConfig(key, castToMap(typeSections0, false), path, pack)));
         }
     }
 
@@ -499,15 +503,18 @@ public abstract class AbstractPackManager implements PackManager {
             List<Path> folders = new ArrayList<>();
             folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
             folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-
             List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);
             if (!duplicated.isEmpty()) {
-                this.plugin.logger().severe("Duplicated files Found. Please resolve them through config.yml resource-pack.duplicated-files-handler.");
+                plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
+                int x = 1;
                 for (Pair<Path, List<Path>> path : duplicated) {
-                    this.plugin.logger().warn("");
-                    this.plugin.logger().warn("Target: " + path.left());
-                    for (Path path0 : path.right()) {
-                        this.plugin.logger().warn(" - " + path0.toAbsolutePath());
+                    this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
+                    for (int i = 0, size = path.right().size(); i < size; i++) {
+                        if (i == size - 1) {
+                            this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
+                        } else {
+                            this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
+                        }
                     }
                 }
             }
@@ -917,9 +924,10 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        if (Config.packMinVersion() < 21.19f && has) {
-            plugin.logger().warn("You are using item-model component for models which requires 1.21.2+. But the min supported version is " + "1." + Config.packMinVersion());
-        }
+        // TODO it later
+//        if (Config.packMinVersion() < 21.19f && has) {
+//            plugin.logger().warn("You are using 'item-model' component for some models which requires 1.21.2+ client. But the min-supported-version set in 'config.yml' is " + "1." + Config.packMinVersion());
+//        }
     }
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
@@ -1138,7 +1146,7 @@ public abstract class AbstractPackManager implements PackManager {
             if (Files.exists(sourceFolder)) {
                 Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         Path relative = sourceFolder.relativize(file);
                         Path targetPath = targetFolder.resolve(relative);
                         List<Path> conflicts = conflictChecker.computeIfAbsent(relative, k -> new ArrayList<>());

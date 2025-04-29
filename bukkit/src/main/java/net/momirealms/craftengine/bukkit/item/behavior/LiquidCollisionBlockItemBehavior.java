@@ -12,9 +12,11 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -63,9 +65,9 @@ public class LiquidCollisionBlockItemBehavior extends BlockItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
-                throw new IllegalArgumentException("Missing required parameter 'block' for liquid_collision_block_item behavior");
+                throw new LocalizedResourceConfigException("warning.config.item.behavior.liquid_collision.missing_block", new IllegalArgumentException("Missing required parameter 'block' for liquid_collision_block_item behavior"));
             }
-            int offset = MiscUtils.getAsInt(arguments.getOrDefault("y-offset", 1));
+            int offset = ResourceConfigUtils.getAsInt(arguments.getOrDefault("y-offset", 1), "y-offset");
             if (id instanceof Map<?, ?> map) {
                 if (map.containsKey(key.toString())) {
                     // 防呆

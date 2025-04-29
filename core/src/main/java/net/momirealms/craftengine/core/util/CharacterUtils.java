@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.util;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+
 import java.util.stream.IntStream;
 
 public class CharacterUtils {
@@ -11,12 +13,17 @@ public class CharacterUtils {
         int length = processedString.length() / 4;
         char[] chars = new char[length];
         for (int i = 0; i < length; i++) {
-            int codePoint = Integer.parseInt(processedString.substring(i * 4, i * 4 + 4), 16);
-            if (Character.isSupplementaryCodePoint(codePoint)) {
-                chars[i] = Character.highSurrogate(codePoint);
-                chars[++i] = Character.lowSurrogate(codePoint);
-            } else {
-                chars[i] = (char) codePoint;
+            String hex = processedString.substring(i * 4, i * 4 + 4);
+            try {
+                int codePoint = Integer.parseInt(hex, 16);
+                if (Character.isSupplementaryCodePoint(codePoint)) {
+                    chars[i] = Character.highSurrogate(codePoint);
+                    chars[++i] = Character.lowSurrogate(codePoint);
+                } else {
+                    chars[i] = (char) codePoint;
+                }
+            } catch (NumberFormatException e) {
+                throw new LocalizedResourceConfigException("warning.config.image.invalid_hex_value", e, hex);
             }
         }
         return chars;

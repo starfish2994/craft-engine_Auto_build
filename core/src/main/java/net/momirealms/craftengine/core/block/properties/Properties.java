@@ -1,13 +1,11 @@
 package net.momirealms.craftengine.core.block.properties;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.HorizontalDirection;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.*;
 
 import java.util.Map;
 
@@ -34,14 +32,11 @@ public class Properties {
     }
 
     public static Property<?> fromMap(String name, Map<String, Object> map) {
-        String type = (String) map.getOrDefault("type", "empty");
-        if (type == null) {
-            throw new NullPointerException("Property type cannot be null");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.block.state.property.missing_type");
         Key key = Key.withDefaultNamespace(type, "craftengine");
         PropertyFactory factory = BuiltInRegistries.PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown property type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.block.state.property.invalid_type", key.toString(), name);
         }
         return factory.create(name, map);
     }

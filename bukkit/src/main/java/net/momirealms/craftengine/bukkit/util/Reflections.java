@@ -397,7 +397,7 @@ public class Reflections {
     );
 
     public static final Class<?> clazz$HolderLookup$Provider = BukkitReflectionUtils.findReobfOrMojmapClass(
-            "core.HolderLookup$b",
+            VersionHelper.isOrAbove1_20_5() ? "core.HolderLookup$a" : "core.HolderLookup$b",
             "core.HolderLookup$Provider"
     );
 
@@ -2076,6 +2076,12 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$PlacedFeature = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.levelgen.placement.PlacedFeature")
+            )
+    );
+
     // 1.21+
     public static final Class<?> clazz$JukeboxSong =
             ReflectionUtils.getClazz(
@@ -2092,6 +2098,7 @@ public class Reflections {
     public static final Object instance$BuiltInRegistries$ENTITY_TYPE;
     public static final Object instance$BuiltInRegistries$FLUID;
     public static final Object instance$BuiltInRegistries$RECIPE_TYPE;
+    public static final Object instance$BuiltInRegistries$PLACED_FEATURE;
     public static final Object instance$InternalRegistries$DIMENSION_TYPE;
     @Nullable // 1.21+
     public static final Object instance$InternalRegistries$JUKEBOX_SONG;
@@ -2108,6 +2115,7 @@ public class Reflections {
     public static final Object instance$Registries$RECIPE_TYPE;
     public static final Object instance$Registries$DIMENSION_TYPE;
     public static final Object instance$Registries$CONFIGURED_FEATURE;
+    public static final Object instance$Registries$PLACED_FEATURE;
     @Nullable // 1.21+
     public static final Object instance$Registries$JUKEBOX_SONG;
 
@@ -2128,6 +2136,7 @@ public class Reflections {
             Object registries$Fluid  = null;
             Object registries$RecipeType  = null;
             Object registries$ConfiguredFeature  = null;
+            Object registries$PlacedFeature  = null;
             Object registries$JukeboxSong  = null;
             for (Field field : fields) {
                 Type fieldType = field.getGenericType();
@@ -2166,6 +2175,8 @@ public class Reflections {
                                     registries$Fluid = field.get(null);
                                 } else if (VersionHelper.isOrAbove1_21() && type == clazz$JukeboxSong) {
                                     registries$JukeboxSong = field.get(null);
+                                } else if (type == clazz$PlacedFeature) {
+                                    registries$PlacedFeature = field.get(null);
                                 }
                             }
                         }
@@ -2184,6 +2195,7 @@ public class Reflections {
             instance$Registries$FLUID = requireNonNull(registries$Fluid);
             instance$Registries$RECIPE_TYPE = requireNonNull(registries$RecipeType);
             instance$Registries$CONFIGURED_FEATURE = requireNonNull(registries$ConfiguredFeature);
+            instance$Registries$PLACED_FEATURE = requireNonNull(registries$PlacedFeature);
             instance$Registries$JUKEBOX_SONG = registries$JukeboxSong;
             Object server = method$MinecraftServer$getServer.invoke(null);
             Object registries = field$MinecraftServer$registries.get(server);
@@ -2199,6 +2211,7 @@ public class Reflections {
             instance$BuiltInRegistries$ENTITY_TYPE = method$RegistryAccess$registryOrThrow.invoke(instance$registryAccess, registries$EntityType);
             instance$BuiltInRegistries$FLUID = method$RegistryAccess$registryOrThrow.invoke(instance$registryAccess, registries$Fluid);
             instance$BuiltInRegistries$RECIPE_TYPE = method$RegistryAccess$registryOrThrow.invoke(instance$registryAccess, registries$RecipeType);
+            instance$BuiltInRegistries$PLACED_FEATURE = method$RegistryAccess$registryOrThrow.invoke(instance$registryAccess, registries$PlacedFeature);
             if (registries$JukeboxSong == null) instance$InternalRegistries$JUKEBOX_SONG = null;
             else instance$InternalRegistries$JUKEBOX_SONG = method$RegistryAccess$registryOrThrow.invoke(instance$registryAccess, registries$JukeboxSong);
         } catch (ReflectiveOperationException e) {
@@ -3125,6 +3138,18 @@ public class Reflections {
             )
     );
 
+    public static final Field field$ClientboundEntityEventPacket$entityId = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundEntityEventPacket, int.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundEntityEventPacket$eventId = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundEntityEventPacket, byte.class, 0
+            )
+    );
+
     public static final Constructor<?> constructor$ClientboundEntityEventPacket = requireNonNull(
             ReflectionUtils.getConstructor(
                     clazz$ClientboundEntityEventPacket, clazz$Entity, byte.class
@@ -3587,6 +3612,8 @@ public class Reflections {
     public static final Object instance$Blocks$FIRE;
     public static final Object instance$Blocks$SOUL_FIRE;
     public static final Object instance$Blocks$ICE;
+    public static final Object instance$Blocks$SHORT_GRASS;
+    public static final Object instance$Blocks$SHORT_GRASS$defaultState;
 
     static {
         try {
@@ -3602,6 +3629,9 @@ public class Reflections {
             instance$Blocks$STONE$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$STONE);
             Object ice = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "ice");
             instance$Blocks$ICE = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, ice);
+            Object shortGrass = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", VersionHelper.isOrAbove1_20_3() ? "short_grass" : "grass");
+            instance$Blocks$SHORT_GRASS = method$Registry$get.invoke(instance$BuiltInRegistries$BLOCK, shortGrass);
+            instance$Blocks$SHORT_GRASS$defaultState = method$Block$defaultBlockState.invoke(instance$Blocks$SHORT_GRASS);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6571,6 +6601,18 @@ public class Reflections {
     public static final Field field$ServerboundResourcePackPacket$action = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ServerboundResourcePackPacket, clazz$ServerboundResourcePackPacket$Action, 0
+            )
+    );
+
+    public static final Field field$CraftBlockStates$FACTORIES = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$CraftBlockStates, "FACTORIES"
+            )
+    );
+
+    public static final Class<?> clazz$CraftBlockStates$BlockEntityStateFactory = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleCBClass("block.CraftBlockStates$BlockEntityStateFactory")
             )
     );
 }

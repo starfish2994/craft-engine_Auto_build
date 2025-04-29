@@ -9,9 +9,9 @@ import net.momirealms.sparrow.nbt.ListTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Optional;
 
-public class DefaultChunkSerializer {
+public final class DefaultChunkSerializer {
 
     @Nullable
     public static CompoundTag serialize(@NotNull CEChunk chunk) {
@@ -28,7 +28,7 @@ public class DefaultChunkSerializer {
         if (sections.isEmpty()) return null;
         CompoundTag chunkNbt = new CompoundTag();
         chunkNbt.put("sections", sections);
-        chunkNbt.put("entities", new ListTag());
+        chunkNbt.put("block_entities", DefaultBlockEntitySerializer.serialize(chunk.blockEntities()));
         return chunkNbt;
     }
 
@@ -46,7 +46,7 @@ public class DefaultChunkSerializer {
                 }
             }
         }
-        ListTag entities = chunkNbt.getList("entities");
-        return new CEChunk(world, pos, sectionArray, List.of());
+        ListTag blockEntities = Optional.ofNullable(chunkNbt.getList("block_entities")).orElse(new ListTag());
+        return new CEChunk(world, pos, sectionArray, DefaultBlockEntitySerializer.deserialize(blockEntities));
     }
 }

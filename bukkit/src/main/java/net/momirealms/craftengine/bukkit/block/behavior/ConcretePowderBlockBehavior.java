@@ -15,7 +15,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.block.BlockState;
@@ -56,7 +56,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         } else {
             CraftEngine.instance().logger().warn("Failed to create solid block " + this.targetBlock + " in ConcretePowderBlockBehavior");
             this.defaultBlockState = Reflections.instance$Blocks$STONE$defaultState;
-            this.defaultImmutableBlockState = EmptyBlock.INSTANCE.defaultState();
+            this.defaultImmutableBlockState = EmptyBlock.STATE;
         }
         return this.defaultBlockState;
     }
@@ -155,12 +155,9 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
 
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            float hurtAmount = MiscUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f));
-            int hurtMax = MiscUtils.getAsInt(arguments.getOrDefault("max-hurt", -1));
-            String solidBlock = (String) arguments.get("solid-block");
-            if (solidBlock == null) {
-                throw new IllegalArgumentException("No `solid-block` specified for concrete powder block behavior");
-            }
+            float hurtAmount = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f), "hurt-amount");
+            int hurtMax = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-hurt", -1), "max-hurt");
+            String solidBlock = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("solid-block"), "warning.config.block.behavior.concrete.missing_solid");
             return new ConcretePowderBlockBehavior(block, hurtAmount, hurtMax, Key.of(solidBlock));
         }
     }

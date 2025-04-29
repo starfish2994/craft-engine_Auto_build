@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.entity.furniture.ColliderType;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -245,8 +246,11 @@ public class Config {
                 Map<String, Object> args = MiscUtils.castToMap(it, false);
                 return ConditionalResolution.FACTORY.create(args);
             }).toList();
+        } catch (LocalizedResourceConfigException e) {
+            TranslationManager.instance().log(e.node(), e.arguments());
+            resource_pack$duplicated_files_handler = List.of();
         } catch (Exception e) {
-            this.plugin.logger().warn("Failed to load resource pack duplicated files handler", e);
+            this.plugin.logger().warn("Failed to load resource-pack.duplicated-files-handler", e);
             resource_pack$duplicated_files_handler = List.of();
         }
 

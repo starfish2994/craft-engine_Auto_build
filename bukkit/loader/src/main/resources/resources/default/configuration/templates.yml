@@ -314,7 +314,7 @@ templates#models#crossbow:
           threshold: 0.58
         - model:
             type: minecraft:model
-            path: "{pulling_2_path}"
+            path: "{pulling_2_model}"
           threshold: 1.0
       fallback:
         type: minecraft:model

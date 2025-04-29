@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.loot.condition;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -89,14 +90,13 @@ public class LootConditions {
     public static LootCondition fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new NullPointerException("condition type cannot be null");
+            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.missing_type");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootConditionFactory factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown loot condition type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.invalid_type", type);
         }
         return factory.create(map);
     }
-
 }

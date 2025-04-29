@@ -2,10 +2,9 @@ package net.momirealms.craftengine.core.pack.model.generation;
 
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,21 +27,20 @@ public abstract class AbstractModelGenerator implements ModelGenerator {
         this.modelsToGenerate.clear();
     }
 
-    public void prepareModelGeneration(Path path, Key id, ModelGeneration model) {
+    public void prepareModelGeneration(ModelGeneration model) {
         ModelGeneration conflict = this.modelsToGenerate.get(model.path());
         if (conflict != null) {
             if (conflict.equals(model)) {
                 return;
             }
-            TranslationManager.instance().log("warning.config.model.generation.conflict", path.toString(), id.toString(), model.path().toString());
-            return;
+            throw new LocalizedResourceConfigException("warning.config.model.generation.conflict", model.path().toString());
         }
         if (!ResourceLocation.isValid(model.parentModelPath())) {
-            TranslationManager.instance().log("warning.config.model.generation.parent.invalid_resource_location", path.toString(), id.toString(), model.parentModelPath());
+            throw new LocalizedResourceConfigException("warning.config.model.generation.parent.invalid", model.parentModelPath());
         }
         for (Map.Entry<String, String> texture : model.texturesOverride().entrySet()) {
             if (!ResourceLocation.isValid(texture.getValue())) {
-                TranslationManager.instance().log("warning.config.model.generation.texture.invalid_resource_location", path.toString(), id.toString(), texture.getKey(), texture.getValue());
+                throw new LocalizedResourceConfigException("warning.config.model.generation.texture.invalid", texture.getKey(), texture.getValue());
             }
         }
         this.modelsToGenerate.put(model.path(), model);
