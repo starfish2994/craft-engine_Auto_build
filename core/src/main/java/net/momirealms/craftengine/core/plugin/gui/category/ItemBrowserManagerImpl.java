@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.util.context.PlayerContext;
 
@@ -110,7 +111,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             String name = section.getOrDefault("name", id).toString();
             List<String> members = MiscUtils.getAsStringList(section.getOrDefault("list", List.of()));
             Key icon = Key.of(section.getOrDefault("icon", ItemKeys.STONE).toString());
-            int priority = MiscUtils.getAsInt(section.getOrDefault("priority", 0));
+            int priority = ResourceConfigUtils.getAsInt(section.getOrDefault("priority", 0), "priority");
             Category category = new Category(id, name, MiscUtils.getAsStringList(section.getOrDefault("lore", List.of())), icon, members.stream().distinct().toList(), priority, (boolean) section.getOrDefault("hidden", false));
             if (ItemBrowserManagerImpl.this.byId.containsKey(id)) {
                 ItemBrowserManagerImpl.this.byId.get(id).merge(category);

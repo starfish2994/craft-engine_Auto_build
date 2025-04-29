@@ -351,6 +351,8 @@ chunk-system:
   # 4 = LZ4       |     Blazing-Fast        Blazing-Fast        Low                 Low        |
   # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
+  # This might not work for some server forks that modify how Minecraft saves chunks.
+  fast-palette-injection: false
   # Auto-convert custom blocks -> vanilla blocks when unloading chunks
   #
   # - When ENABLED (true):

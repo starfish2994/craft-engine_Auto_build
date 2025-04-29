@@ -7,10 +7,12 @@ import java.util.Map;
 
 public class EmptyBlock extends CustomBlock {
     public static EmptyBlock INSTANCE;
+    public static ImmutableBlockState STATE;
 
     public EmptyBlock(Key id, Holder.Reference<CustomBlock> holder) {
         super(id, holder, Map.of(), Map.of(), Map.of(), BlockSettings.of(), null, null);
         INSTANCE = this;
+        STATE = defaultState();
     }
 
     @Override

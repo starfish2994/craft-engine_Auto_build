@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.collision.AABB;
@@ -87,7 +88,7 @@ public class InteractionHitBox extends AbstractHitBox {
 
         @Override
         public HitBox create(Map<String, Object> arguments) {
-            Vector3f position = MiscUtils.getVector3f(arguments.getOrDefault("position", "0"));
+            Vector3f position = MiscUtils.getAsVector3f(arguments.getOrDefault("position", "0"), "position");
             float width;
             float height;
             if (arguments.containsKey("scale")) {
@@ -95,8 +96,8 @@ public class InteractionHitBox extends AbstractHitBox {
                 width = Float.parseFloat(split[0]);
                 height = Float.parseFloat(split[1]);
             } else {
-                width = MiscUtils.getAsFloat(arguments.getOrDefault("width", "1"));
-                height = MiscUtils.getAsFloat(arguments.getOrDefault("height", "1"));
+                width = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("width", "1"), "width");
+                height = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("height", "1"), "height");
             }
             boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
             boolean interactive = (boolean) arguments.getOrDefault("interactive", true);

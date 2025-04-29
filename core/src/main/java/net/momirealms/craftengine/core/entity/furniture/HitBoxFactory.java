@@ -15,8 +15,8 @@ public interface HitBoxFactory {
         return seats.stream()
                 .map(arg -> {
                     String[] split = arg.split(" ");
-                    if (split.length == 1) return new Seat(MiscUtils.getVector3f(split[0]), 0, false);
-                    return new Seat(MiscUtils.getVector3f(split[0]), Float.parseFloat(split[1]), true);
+                    if (split.length == 1) return new Seat(MiscUtils.getAsVector3f(split[0], "seats"), 0, false);
+                    return new Seat(MiscUtils.getAsVector3f(split[0], "seats"), Float.parseFloat(split[1]), true);
                 })
                 .toArray(Seat[]::new);
     }

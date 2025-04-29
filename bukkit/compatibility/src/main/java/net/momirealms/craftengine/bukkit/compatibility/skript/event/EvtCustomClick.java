@@ -22,6 +22,7 @@ public class EvtCustomClick extends SkriptEvent {
     private final static int RIGHT = 1, LEFT = 2, ANY = RIGHT | LEFT;
     public final static ClickEventTracker interactTracker = new ClickEventTracker(Skript.getInstance());
 
+    @SuppressWarnings("unchecked")
     public static void register() {
         Skript.registerEvent("Interact Custom Block Furniture", EvtCustomClick.class, new Class[]{CustomBlockInteractEvent.class, FurnitureInteractEvent.class},
                         "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] [on %-unsafeblockstatematchers/strings%] [(with|using|holding) %-itemtype%]",

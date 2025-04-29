@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.block;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +55,7 @@ public class BlockSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new IllegalArgumentException("Unknown block settings key: " + entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.block.settings.unknown", entry.getKey());
             }
         }
         return settings;
@@ -330,19 +331,19 @@ public class BlockSettings {
 
         static {
             registerFactory("luminance", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value, "luminance");
                 return settings -> settings.luminance(intValue);
             }));
             registerFactory("block-light", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value,  "block-light");
                 return settings -> settings.blockLight(intValue);
             }));
             registerFactory("hardness", (value -> {
-                float floatValue = MiscUtils.getAsFloat(value);
+                float floatValue = ResourceConfigUtils.getAsFloat(value, "hardness");
                 return settings -> settings.hardness(floatValue);
             }));
             registerFactory("resistance", (value -> {
-                float floatValue = MiscUtils.getAsFloat(value);
+                float floatValue = ResourceConfigUtils.getAsFloat(value, "resistance");
                 return settings -> settings.resistance(floatValue);
             }));
             registerFactory("is-randomly-ticking", (value -> {
@@ -354,7 +355,7 @@ public class BlockSettings {
                 return settings -> settings.pushReaction(reaction);
             }));
             registerFactory("map-color", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value, "map-color");
                 return settings -> settings.mapColor(MapColor.get(intValue));
             }));
             registerFactory("burnable", (value -> {
@@ -374,11 +375,11 @@ public class BlockSettings {
                 return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));
             }));
             registerFactory("burn-chance", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value, "burn-chance");
                 return settings -> settings.burnChance(intValue);
             }));
             registerFactory("fire-spread-chance", (value -> {
-                int intValue = MiscUtils.getAsInt(value);
+                int intValue = ResourceConfigUtils.getAsInt(value, "fire-spread-chance");
                 return settings -> settings.fireSpreadChance(intValue);
             }));
             registerFactory("replaceable", (value -> {
@@ -422,7 +423,7 @@ public class BlockSettings {
                 return settings -> settings.respectToolComponent(booleanValue);
             }));
             registerFactory("incorrect-tool-dig-speed", (value -> {
-                float floatValue = MiscUtils.getAsFloat(value);
+                float floatValue = ResourceConfigUtils.getAsFloat(value, "incorrect-tool-dig-speed");
                 return settings -> settings.incorrectToolSpeed(floatValue);
             }));
             registerFactory("name", (value -> {

@@ -47,7 +47,11 @@ public abstract class CEWorld {
         this.loadedChunkMapLock.readLock().lock();
         try {
             for (Map.Entry<Long, CEChunk> entry : this.loadedChunkMap.entrySet()) {
-                worldDataStorage.writeChunkAt(new ChunkPos(entry.getKey()), entry.getValue(), true);
+                CEChunk chunk = entry.getValue();
+                if (chunk.dirty()) {
+                    worldDataStorage.writeChunkAt(new ChunkPos(entry.getKey()), chunk, true);
+                    chunk.setDirty(false);
+                }
             }
         } catch (IOException e) {
             CraftEngine.instance().logger().warn("Failed to save world chunks", e);

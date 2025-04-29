@@ -28,7 +28,7 @@ import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectPropert
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -240,32 +240,29 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (customItems.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.item.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.item.duplicate");
             }
 
-            // just register for recipes
+            // register for recipes
             Holder.Reference<Key> holder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
                     .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                             .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
             boolean isVanillaItem = id.namespace().equals("minecraft") && Registry.MATERIAL.get(new NamespacedKey(id.namespace(), id.value())) != null;
-            String materialStringId = (String) section.get("material");
-            if (isVanillaItem)
+            String materialStringId;
+            if (isVanillaItem) {
                 materialStringId = id.value();
-            if (materialStringId == null) {
-                TranslationManager.instance().log("warning.config.item.lack_material", path.toString(), id.toString());
-                return;
+            } else {
+                materialStringId = ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material");
             }
 
             Material material = MaterialUtils.getMaterial(materialStringId);
             if (material == null) {
-                TranslationManager.instance().log("warning.config.item.invalid_material", path.toString(), id.toString(), materialStringId);
-                return;
+                throw new LocalizedResourceConfigException("warning.config.item.invalid_material", materialStringId);
             }
             
             Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
-            int customModelData = MiscUtils.getAsInt(section.getOrDefault("custom-model-data", 0));
+            int customModelData = ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
             Key itemModelKey = null;
 
             CustomItem.Builder<ItemStack> itemBuilder = BukkitCustomItem.builder().id(id).material(materialId);
@@ -342,13 +339,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
 
-            ItemSettings itemSettings;
-            if (section.containsKey("settings")) {
-                Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), false);
-                itemSettings = ItemSettings.fromMap(settings);
-            } else {
-                itemSettings = ItemSettings.of();
-            }
+            ItemSettings itemSettings = ItemSettings.fromMap(MiscUtils.castToMap(section.get("settings"), true));
             if (isVanillaItem) {
                 itemSettings.canPlaceRelatedVanillaBlock(true);
             }
@@ -392,6 +383,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 return;
             }
 
+            ItemModel model = ItemModels.fromMap(modelSection);
             boolean hasModel = false;
             if (customModelData != 0) {
                 hasModel= true;
@@ -399,20 +391,18 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // check conflict
                 Map<Integer, Key> conflict = cmdConflictChecker.computeIfAbsent(materialId, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
-                    TranslationManager.instance().log("warning.config.item.custom_model_data_conflict", path.toString(), id.toString(), String.valueOf(customModelData), conflict.get(customModelData).toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
 
                 if (customModelData > 16_777_216) {
-                    TranslationManager.instance().log("warning.config.item.bad_custom_model_data_value", path.toString(), id.toString(), String.valueOf(customModelData));
+                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data", String.valueOf(customModelData));
                 }
 
                 conflict.put(customModelData, id);
 
                 // Parse models
-                ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(path, id, generation);
+                    prepareModelGeneration(generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {
@@ -429,10 +419,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             }
             if (itemModelKey != null) {
                 hasModel = true;
-                // use components
-                ItemModel model = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : model.modelsToGenerate()) {
-                    prepareModelGeneration(path, id, generation);
+                    prepareModelGeneration(generation);
                 }
 
                 if (Config.packMaxVersion() > 21.39f) {
@@ -451,7 +439,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
             if (!hasModel) {
-                TranslationManager.instance().log("warning.config.item.lack_model_id", path.toString(), id.toString());
+                throw new LocalizedResourceConfigException("warning.config.item.missing_model_id");
             }
         }
     }

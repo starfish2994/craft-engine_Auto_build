@@ -2,9 +2,9 @@ package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class SignSpecialModel implements SpecialModel {
     public static final Factory FACTORY = new Factory();
@@ -37,8 +37,8 @@ public class SignSpecialModel implements SpecialModel {
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
             Key type = Key.of(arguments.get("type").toString());
-            String woodType = Objects.requireNonNull(arguments.get("wood-type"), "wood-type").toString();
-            String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
+            String woodType = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("wood-type"), "warning.config.item.model.special.sign.missing_wood_type");
+            String texture = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("texture"), "warning.config.item.model.special.sign.missing_texture");
             return new SignSpecialModel(type, woodType, texture);
         }
     }

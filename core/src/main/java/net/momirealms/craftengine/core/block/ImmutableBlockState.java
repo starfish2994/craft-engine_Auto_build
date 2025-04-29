@@ -51,7 +51,7 @@ public class ImmutableBlockState extends BlockStateHolder {
     }
 
     public boolean isEmpty() {
-        return this == EmptyBlock.INSTANCE.defaultState();
+        return this == EmptyBlock.STATE;
     }
 
     @Override

@@ -8,6 +8,8 @@ public interface PaletteStorage {
 
     void set(int index, int value);
 
+    int getAndSet(int index, int value);
+
     int get(int index);
 
     long[] getData();

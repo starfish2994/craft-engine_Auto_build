@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.block.properties;
 
 import com.google.common.collect.ImmutableMap;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.sparrow.nbt.StringTag;
 import net.momirealms.sparrow.nbt.Tag;
 
@@ -116,10 +115,7 @@ public class EnumProperty<T extends Enum<T>> extends Property<T> {
             A defaultValue = enums.stream()
                     .filter(e -> e.name().toLowerCase(Locale.ENGLISH).equals(defaultValueName))
                     .findFirst()
-                    .orElseGet(() -> {
-                        CraftEngine.instance().logger().warn("Invalid default value '" + defaultValueName + "' for property '" + name + "'");
-                        return enums.get(0);
-                    });
+                    .orElseGet(() -> enums.get(0));
             return EnumProperty.create(name, enumClass, enums, defaultValue);
         }
     }

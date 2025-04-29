@@ -16,8 +16,8 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
-import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.Tuple;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -168,12 +168,9 @@ public class CropBlockBehavior extends BushBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
-            Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
-            if (ageProperty == null) {
-                throw new IllegalArgumentException("age property not set for crop");
-            }
-            int minGrowLight = MiscUtils.getAsInt(arguments.getOrDefault("light-requirement", 9));
-            float growSpeed = MiscUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.125f));
+            Property<Integer> ageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("age"), "warning.config.block.behavior.crop.missing_age");
+            int minGrowLight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("light-requirement", 9), "light-requirement");
+            float growSpeed = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.125f), "grow-speed");
             boolean isBoneMealTarget = (boolean) arguments.getOrDefault("is-bone-meal-target", true);
             NumberProvider boneMealAgeBonus = NumberProviders.fromObject(arguments.getOrDefault("bone-meal-age-bonus", 1));
             return new CropBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right(), ageProperty, growSpeed, minGrowLight, isBoneMealTarget, boneMealAgeBonus);

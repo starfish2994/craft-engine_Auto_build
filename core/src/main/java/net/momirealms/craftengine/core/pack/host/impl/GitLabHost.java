@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
@@ -176,23 +177,23 @@ public class GitLabHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String gitlabUrl = (String) arguments.get("gitlab-url");
+            String gitlabUrl = Optional.ofNullable(arguments.get("gitlab-url")).map(String::valueOf).orElse(null);
             if (gitlabUrl == null || gitlabUrl.isEmpty()) {
-                throw new IllegalArgumentException("'gitlab-url' cannot be empty for GitLab host");
+                throw new LocalizedException("warning.config.host.gitlab.missing_url");
             }
             if (gitlabUrl.endsWith("/")) {
                 gitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
             }
-            String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : (String) arguments.get("access-token");
+            String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : Optional.ofNullable(arguments.get("access-token")).map(String::valueOf).orElse(null);
             if (accessToken == null || accessToken.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'access-token' configuration");
+                throw new LocalizedException("warning.config.host.gitlab.missing_token");
             }
-            String projectId = (String) arguments.get("project-id");
+            String projectId = Optional.ofNullable(arguments.get("project-id")).map(String::valueOf).orElse(null);
             if (projectId == null || projectId.isEmpty()) {
-                throw new IllegalArgumentException("Missing required 'project-id' configuration");
+                throw new LocalizedException("warning.config.host.gitlab.missing_project");
             }
             projectId = URLEncoder.encode(projectId, StandardCharsets.UTF_8).replace("/", "%2F");
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new GitLabHost(gitlabUrl, accessToken, projectId, proxy);
         }
     }

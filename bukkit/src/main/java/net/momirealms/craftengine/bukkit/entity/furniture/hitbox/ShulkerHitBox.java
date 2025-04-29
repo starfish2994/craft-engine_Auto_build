@@ -272,9 +272,9 @@ public class ShulkerHitBox extends AbstractHitBox {
 
         @Override
         public HitBox create(Map<String, Object> arguments) {
-            Vector3f position = MiscUtils.getVector3f(arguments.getOrDefault("position", "0"));
-            float scale = MiscUtils.getAsFloat(arguments.getOrDefault("scale", "1"));
-            byte peek = (byte) MiscUtils.getAsInt(arguments.getOrDefault("peek", 0));
+            Vector3f position = MiscUtils.getAsVector3f(arguments.getOrDefault("position", "0"), "position");
+            float scale = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("scale", "1"), "scale");
+            byte peek = (byte) ResourceConfigUtils.getAsInt(arguments.getOrDefault("peek", 0), "peek");
             Direction directionEnum = Optional.ofNullable(arguments.get("direction")).map(it -> Direction.valueOf(it.toString().toUpperCase(Locale.ENGLISH))).orElse(Direction.UP);
             boolean interactive = (boolean) arguments.getOrDefault("interactive", true);
             boolean interactionEntity = (boolean) arguments.getOrDefault("interaction-entity", true);

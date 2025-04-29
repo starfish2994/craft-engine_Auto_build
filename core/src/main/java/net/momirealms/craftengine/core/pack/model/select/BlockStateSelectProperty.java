@@ -2,9 +2,9 @@ package net.momirealms.craftengine.core.pack.model.select;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class BlockStateSelectProperty implements SelectProperty {
     public static final Factory FACTORY = new Factory();
@@ -29,8 +29,8 @@ public class BlockStateSelectProperty implements SelectProperty {
 
         @Override
         public SelectProperty create(Map<String, Object> arguments) {
-            String blockStateProperty = Objects.requireNonNull(arguments.get("block-state-property")).toString();
-            return new BlockStateSelectProperty(blockStateProperty);
+            String property = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("block-state-property"), "warning.config.item.model.select.block_state.missing_property");
+            return new BlockStateSelectProperty(property);
         }
     }
 }

@@ -34,7 +34,7 @@ public class SimpleDefaultTint implements Tint {
 
         @Override
         public Tint create(Map<String, Object> arguments) {
-            Object value = arguments.get("default");
+            Object value = arguments.getOrDefault("default", 0);
             Key type = Key.of(arguments.get("type").toString());
             return new SimpleDefaultTint(parseTintValue(value), type);
         }

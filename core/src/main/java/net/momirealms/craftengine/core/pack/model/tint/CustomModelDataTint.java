@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.pack.model.tint;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.incendo.cloud.type.Either;
 
 import java.util.List;
@@ -37,8 +37,8 @@ public class CustomModelDataTint implements Tint {
 
         @Override
         public Tint create(Map<String, Object> arguments) {
-            Object value = arguments.get("default");
-            int index = MiscUtils.getAsInt(arguments.getOrDefault("index", 0));
+            Object value = arguments.getOrDefault("default", 0);
+            int index = ResourceConfigUtils.getAsInt(arguments.getOrDefault("index", 0), "index");
             return new CustomModelDataTint(parseTintValue(value), index);
         }
     }

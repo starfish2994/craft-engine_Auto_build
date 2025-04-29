@@ -292,27 +292,21 @@ public class AlistHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String apiUrl = (String) arguments.get("api-url");
-            if (apiUrl == null || apiUrl.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_api_url");
-            }
-            String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : (String) arguments.get("username");
+            String apiUrl = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("api-url"), () -> new LocalizedException("warning.config.host.alist.missing_api_url"));
+            String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : Optional.ofNullable(arguments.get("username")).map(String::valueOf).orElse(null);
             if (userName == null || userName.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_username");
+                throw new LocalizedException("warning.config.host.alist.missing_username");
             }
-            String password =  useEnv ? System.getenv("CE_ALIST_PASSWORD") : (String) arguments.get("password");
+            String password =  useEnv ? System.getenv("CE_ALIST_PASSWORD") : Optional.ofNullable(arguments.get("password")).map(String::valueOf).orElse(null);
             if (password == null || password.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_password");
+                throw new LocalizedException("warning.config.host.alist.missing_password");
             }
-            String filePassword = useEnv ? System.getenv("CE_ALIST_FILE_PASSWORD") : (String) arguments.getOrDefault("file-password", "");
-            String otpCode = (String) arguments.get("otp-code");
+            String filePassword = useEnv ? System.getenv("CE_ALIST_FILE_PASSWORD") : arguments.getOrDefault("file-password", "").toString();
+            String otpCode = Optional.ofNullable(arguments.get("otp-code")).map(String::valueOf).orElse(null);
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
-            String uploadPath = (String) arguments.get("upload-path");
-            if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.alist.lack_upload_path");
-            }
+            String uploadPath = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("upload-path"), () -> new LocalizedException("warning.config.host.alist.missing_upload_path"));
             boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, disableUpload, proxy);
         }
     }

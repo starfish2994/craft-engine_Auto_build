@@ -6,14 +6,12 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,13 +49,10 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
         @SuppressWarnings("unchecked")
         @Override
         public LootFunction<T> create(Map<String, Object> arguments) {
-            String enchantment = (String) arguments.get("enchantment");
-            if (enchantment == null || enchantment.isEmpty()) {
-                throw new IllegalArgumentException("enchantment is required");
-            }
+            String enchantment = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("enchantment"), "warning.config.loot_table.function.apply_bonus.missing_enchantment");
             Map<String, Object> formulaMap = MiscUtils.castToMap(arguments.get("formula"), true);
             if (formulaMap == null) {
-                throw new IllegalArgumentException("formula is required");
+                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.missing_formula");
             }
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
@@ -166,8 +161,8 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
 
             @Override
             public Formula create(Map<String, Object> arguments) {
-                int extra = MiscUtils.getAsInt(arguments.getOrDefault("extra", 1));
-                float probability = MiscUtils.getAsFloat(arguments.getOrDefault("probability", 0.5f));
+                int extra = ResourceConfigUtils.getAsInt(arguments.getOrDefault("extra", 1), "extra");
+                float probability = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("probability", 0.5f), "probability");
                 return new CropDrops(extra, probability);
             }
         }

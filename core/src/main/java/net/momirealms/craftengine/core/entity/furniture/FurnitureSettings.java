@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +39,7 @@ public class FurnitureSettings {
             if (factory != null) {
                 factory.createModifier(entry.getValue()).apply(settings);
             } else {
-                throw new IllegalArgumentException("Unknown item settings key: " + entry.getKey());
+                throw new LocalizedResourceConfigException("warning.config.furniture.settings.unknown", entry.getKey());
             }
         }
         return settings;
@@ -72,10 +73,12 @@ public class FurnitureSettings {
         return this;
     }
 
+    @FunctionalInterface
     public interface Modifier {
 
         void apply(FurnitureSettings settings);
 
+        @FunctionalInterface
         interface Factory {
 
             FurnitureSettings.Modifier createModifier(Object value);

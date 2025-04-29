@@ -2286,4 +2286,19 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket", e);
         }
     };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ENTITY_EVENT = (user, event, packet) -> {
+        try {
+            Object player = user.serverPlayer();
+            if (player == null) return;
+            int entityId = Reflections.field$ClientboundEntityEventPacket$entityId.getInt(packet);
+            if (entityId != FastNMS.INSTANCE.method$Entity$getId(player)) return;
+            byte eventId = Reflections.field$ClientboundEntityEventPacket$eventId.getByte(packet);
+            if (eventId >= 24 && eventId <= 28) {
+                CraftEngine.instance().fontManager().refreshEmojiSuggestions(user.uuid());
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityEventPacket", e);
+        }
+    };
 }
