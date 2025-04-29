@@ -16,10 +16,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.EnumUtils;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Bukkit;
@@ -109,10 +106,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-            String type = (String) section.get("type");
-            if (type == null) {
-                throw new LocalizedResourceConfigException("warning.config.vanilla_loot.missing_type");
-            }
+            String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("type"), "warning.config.vanilla_loot.missing_type");
             VanillaLoot.Type typeEnum;
             try {
                 typeEnum = VanillaLoot.Type.valueOf(type.toUpperCase(Locale.ENGLISH));

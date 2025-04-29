@@ -36,7 +36,7 @@ public class ItemModels {
     }
 
     public static ItemModel fromMap(Map<String, Object> map) {
-        String type = (String) map.getOrDefault("type", "minecraft:model");
+        String type = map.getOrDefault("type", "minecraft:model").toString();
         Key key = Key.withDefaultNamespace(type, "minecraft");
         ItemModelFactory factory = BuiltInRegistries.ITEM_MODEL_FACTORY.getValue(key);
         if (factory == null) {

@@ -206,18 +206,12 @@ public class S3Host implements ResourcePackHost {
 
             Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
             if (proxySetting != null) {
-                String host = Optional.ofNullable(proxySetting.get("host")).map(String::valueOf).orElse(null);
-                if (host == null || host.isEmpty()) {
-                    throw new LocalizedException("warning.config.host.proxy.missing_host");
-                }
+                String host = ResourceConfigUtils.requireNonEmptyStringOrThrow(proxySetting.get("host"), () -> new LocalizedException("warning.config.host.proxy.missing_host"));
                 int port = ResourceConfigUtils.getAsInt(proxySetting.get("port"), "port");
                 if (port <= 0 || port > 65535) {
                     throw new LocalizedException("warning.config.host.proxy.missing_port");
                 }
-                String scheme = Optional.ofNullable(proxySetting.get("scheme")).map(String::valueOf).orElse(null);
-                if (scheme == null || scheme.isEmpty()) {
-                    throw new LocalizedException("warning.config.host.proxy.missing_scheme");
-                }
+                String scheme = ResourceConfigUtils.requireNonEmptyStringOrThrow(proxySetting.get("scheme"), () -> new LocalizedException("warning.config.host.proxy.missing_scheme"));
                 String username = Optional.ofNullable(proxySetting.get("username")).map(String::valueOf).orElse(null);
                 String password = Optional.ofNullable(proxySetting.get("password")).map(String::valueOf).orElse(null);
                 ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);

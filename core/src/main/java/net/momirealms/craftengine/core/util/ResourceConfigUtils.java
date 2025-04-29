@@ -1,6 +1,10 @@
 package net.momirealms.craftengine.core.util;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+
+import java.util.Map;
+import java.util.function.Supplier;
 
 public final class ResourceConfigUtils {
 
@@ -10,6 +14,36 @@ public final class ResourceConfigUtils {
         if (obj == null)
             throw new LocalizedResourceConfigException(node);
         return obj;
+    }
+
+    public static <T> T requireNonNullOrThrow(T obj, Supplier<LocalizedException> exceptionSupplier) {
+        if (obj == null)
+            throw exceptionSupplier.get();
+        return obj;
+    }
+
+    public static String requireNonEmptyStringOrThrow(Object obj, String node) {
+        Object o = requireNonNullOrThrow(obj, node);
+        String s = o.toString();
+        if (s.isEmpty()) throw new LocalizedResourceConfigException(node);
+        return s;
+    }
+
+    public static String requireNonEmptyStringOrThrow(Object obj, Supplier<LocalizedException> exceptionSupplier) {
+        Object o = requireNonNullOrThrow(obj, exceptionSupplier);
+        String s = o.toString();
+        if (s.isEmpty()) throw exceptionSupplier.get();
+        return s;
+    }
+
+    public static Object get(Map<String, Object> arguments, String... keys) {
+        for (String key : keys) {
+            Object value = arguments.get(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     public static int getAsInt(Object o, String option) {

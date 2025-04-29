@@ -207,7 +207,7 @@ public class MergePackMcMetaResolution implements Resolution {
     public static class Factory implements ResolutionFactory {
         @Override
         public Resolution create(Map<String, Object> arguments) {
-            String description = (String) arguments.getOrDefault("description", "<gray>CraftEngine ResourcePack");
+            String description = arguments.getOrDefault("description", "<gray>CraftEngine ResourcePack</gray>").toString();
             return new MergePackMcMetaResolution(description);
         }
     }

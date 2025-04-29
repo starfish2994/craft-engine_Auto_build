@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.pack.model.tint.Tints;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -69,11 +70,7 @@ public class BaseItemModel implements ItemModel {
         @SuppressWarnings("unchecked")
         @Override
         public ItemModel create(Map<String, Object> arguments) {
-            Object path = arguments.get("path");
-            if (path == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.base.missing_path");
-            }
-            String modelPath = path.toString();
+            String modelPath = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("path"), "warning.config.item.model.base.missing_path");
             if (!ResourceLocation.isValid(modelPath)) {
                 throw new LocalizedResourceConfigException("warning.config.item.model.base.invalid_path", modelPath);
             }

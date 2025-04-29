@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.nio.file.Path;
@@ -23,11 +24,8 @@ public class ItemBehaviors {
 
     public static ItemBehavior fromMap(Pack pack, Path path, Key id, Map<String, Object> map) {
         if (map == null || map.isEmpty()) return EmptyItemBehavior.INSTANCE;
-        Object type = map.get("type");
-        if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.behavior.missing_type");
-        }
-        Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.item.behavior.missing_type");
+        Key key = Key.withDefaultNamespace(type, "craftengine");
         ItemBehaviorFactory factory = BuiltInRegistries.ITEM_BEHAVIOR_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedResourceConfigException("warning.config.item.behavior.invalid_type", type.toString());

@@ -14,7 +14,6 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -62,12 +61,9 @@ public class SelfHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             SelfHostHttpServer selfHostHttpServer = SelfHostHttpServer.instance();
-            String ip = Optional.ofNullable(arguments.get("ip")).map(String::valueOf).orElse(null);
-            if (ip == null) {
-                throw new LocalizedException("warning.config.host.self.missing_ip");
-            }
+            String ip = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("ip"), () -> new LocalizedException("warning.config.host.self.missing_ip"));
             int port = ResourceConfigUtils.getAsInt(arguments.getOrDefault("port", 8163), "port");
-            if (port < 0 || port > 65535) {
+            if (port <= 0 || port > 65535) {
                 throw new LocalizedException("warning.config.host.self.invalid_port", String.valueOf(port));
             }
             boolean oneTimeToken = (boolean) arguments.getOrDefault("one-time-token", true);

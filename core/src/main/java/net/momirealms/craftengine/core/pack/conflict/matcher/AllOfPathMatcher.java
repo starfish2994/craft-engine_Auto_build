@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
@@ -44,7 +44,7 @@ public class AllOfPathMatcher implements PathMatcher {
                 Map<String, Object> terms = MiscUtils.castToMap(termsObj, false);
                 return new AllOfPathMatcher(PathMatchers.fromMapList(List.of(terms)));
             } else {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.all_of.missing_terms");
+                throw new LocalizedException("warning.config.conflict_matcher.all_of.missing_terms");
             }
         }
     }

@@ -1,7 +1,8 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -31,11 +32,8 @@ public class ParentPathSuffixMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            Object suffix = arguments.get("suffix");
-            if (suffix == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_suffix.missing_suffix");
-            }
-            return new ParentPathSuffixMatcher(suffix.toString());
+            String suffix = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("suffix"), () -> new LocalizedException("warning.config.conflict_matcher.parent_suffix.missing_suffix"));
+            return new ParentPathSuffixMatcher(suffix);
         }
     }
 }

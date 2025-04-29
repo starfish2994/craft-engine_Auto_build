@@ -240,7 +240,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (customItems.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.item.duplicate", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.duplicate");
             }
 
             // register for recipes
@@ -249,16 +249,16 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                             .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
             boolean isVanillaItem = id.namespace().equals("minecraft") && Registry.MATERIAL.get(new NamespacedKey(id.namespace(), id.value())) != null;
-            String materialStringId = (String) section.get("material");
-            if (isVanillaItem)
+            String materialStringId;
+            if (isVanillaItem) {
                 materialStringId = id.value();
-            if (materialStringId == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.missing_material", path, id);
+            } else {
+                materialStringId = ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material");
             }
 
             Material material = MaterialUtils.getMaterial(materialStringId);
             if (material == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.invalid_material", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.invalid_material", materialStringId);
             }
             
             Key materialId = Key.of(material.getKey().namespace(), material.getKey().value());
@@ -391,11 +391,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 // check conflict
                 Map<Integer, Key> conflict = cmdConflictChecker.computeIfAbsent(materialId, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
-                    throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", path, id, String.valueOf(customModelData), conflict.get(customModelData).toString());
+                    throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
 
                 if (customModelData > 16_777_216) {
-                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data", path, id, String.valueOf(customModelData));
+                    throw new LocalizedResourceConfigException("warning.config.item.bad_custom_model_data", String.valueOf(customModelData));
                 }
 
                 conflict.put(customModelData, id);
@@ -439,7 +439,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
             }
             if (!hasModel) {
-                throw new LocalizedResourceConfigException("warning.config.item.missing_model_id", path, id);
+                throw new LocalizedResourceConfigException("warning.config.item.missing_model_id");
             }
         }
     }

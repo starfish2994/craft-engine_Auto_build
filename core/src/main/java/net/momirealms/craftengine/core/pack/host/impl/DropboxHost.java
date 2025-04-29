@@ -8,10 +8,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
-import net.momirealms.craftengine.core.util.GsonHelper;
-import net.momirealms.craftengine.core.util.HashUtils;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -279,10 +276,7 @@ public class DropboxHost implements ResourcePackHost {
             if (refreshToken == null || refreshToken.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_refresh_token");
             }
-            String uploadPath = Optional.ofNullable(arguments.get("upload-path")).map(String::valueOf).orElse(null);
-            if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.dropbox.missing_upload_path");
-            }
+            String uploadPath = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("upload-path"), () -> new LocalizedException("warning.config.host.dropbox.missing_upload_path"));
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new DropboxHost(appKey, appSecret, refreshToken, "/" + uploadPath, proxy);
         }

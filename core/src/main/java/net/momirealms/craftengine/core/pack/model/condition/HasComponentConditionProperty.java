@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.core.pack.model.condition;
 
 import com.google.gson.JsonObject;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -35,12 +35,8 @@ public class HasComponentConditionProperty implements ConditionProperty {
         @Override
         public ConditionProperty create(Map<String, Object> arguments) {
             boolean ignoreDefault = (boolean) arguments.getOrDefault("ignore-default", false);
-            Object componentObj = arguments.get("component");
-            if (componentObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.condition.has_component.missing_component");
-            }
-            String component = componentObj.toString();
-            return new HasComponentConditionProperty(component, ignoreDefault);
+            String componentObj = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("component"), "warning.config.item.model.condition.has_component.missing_component");
+            return new HasComponentConditionProperty(componentObj, ignoreDefault);
         }
     }
 }

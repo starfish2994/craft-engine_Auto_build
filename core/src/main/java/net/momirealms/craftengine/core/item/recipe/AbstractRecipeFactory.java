@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.EnumUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.*;
 
@@ -34,10 +35,7 @@ public abstract class AbstractRecipeFactory<T> implements RecipeFactory<T> {
     }
 
     protected Object getIngredientOrThrow(Map<String, Object> arguments) {
-        Object ingredient = arguments.get("ingredient");
-        if (ingredient == null) {
-            ingredient = arguments.get("ingredients");
-        }
+        Object ingredient = ResourceConfigUtils.get(arguments, "ingredient", "ingredients");
         if (ingredient == null) {
             throw new LocalizedResourceConfigException("warning.config.recipe.missing_ingredient");
         }

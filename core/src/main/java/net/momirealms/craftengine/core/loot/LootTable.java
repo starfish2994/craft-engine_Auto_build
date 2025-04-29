@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -40,10 +41,7 @@ public class LootTable<T> {
     @SuppressWarnings("unchecked")
     public static <T> LootTable<T> fromMap(Map<String, Object> map) {
         if (map == null || map.isEmpty()) return null;
-        Object pools = map.get("pools");
-        if (pools == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.missing_pools");
-        }
+        Object pools = ResourceConfigUtils.requireNonNullOrThrow(map.get("pools"), "warning.config.loot_table.missing_pools");
         if (!(pools instanceof List<?> list) || list.isEmpty()) {
             throw new LocalizedResourceConfigException("warning.config.loot_table.invalid_pools_type", pools.getClass().getSimpleName());
         }

@@ -1,7 +1,8 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -31,11 +32,8 @@ public class ParentPathPrefixMatcher implements PathMatcher {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            Object prefix = arguments.get("prefix");
-            if (prefix == null) {
-                throw new LocalizedResourceConfigException("warning.config.conflict_matcher.parent_prefix.missing_prefix");
-            }
-            return new ParentPathPrefixMatcher(prefix.toString());
+            String prefix = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("prefix"), () -> new LocalizedException("warning.config.conflict_matcher.parent_prefix.missing_prefix"));
+            return new ParentPathPrefixMatcher(prefix);
         }
     }
 }

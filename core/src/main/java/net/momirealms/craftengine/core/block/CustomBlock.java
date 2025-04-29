@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
@@ -54,13 +55,12 @@ public abstract class CustomBlock {
             String nbtString = entry.getKey();
             CompoundTag tag = BlockNbtParser.deserialize(this, nbtString);
             if (tag == null) {
-                CraftEngine.instance().logger().warn("Illegal block state: " + nbtString);
-                continue;
+                throw new LocalizedResourceConfigException("warning.config.block.state.property.invalid_format", nbtString);
             }
             VariantState variantState = entry.getValue();
             int vanillaStateRegistryId = appearances.getOrDefault(variantState.appearance(), -1);
+            // This should never happen
             if (vanillaStateRegistryId == -1) {
-                CraftEngine.instance().logger().warn("Could not find appearance " + variantState.appearance() + " for block " + id);
                 vanillaStateRegistryId = appearances.values().iterator().next();
             }
             // Late init states

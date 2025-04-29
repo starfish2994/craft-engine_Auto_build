@@ -49,10 +49,7 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
         @SuppressWarnings("unchecked")
         @Override
         public LootFunction<T> create(Map<String, Object> arguments) {
-            String enchantment = (String) arguments.get("enchantment");
-            if (enchantment == null || enchantment.isEmpty()) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.missing_enchantment");
-            }
+            String enchantment = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("enchantment"), "warning.config.loot_table.function.apply_bonus.missing_enchantment");
             Map<String, Object> formulaMap = MiscUtils.castToMap(arguments.get("formula"), true);
             if (formulaMap == null) {
                 throw new LocalizedResourceConfigException("warning.config.loot_table.function.apply_bonus.missing_formula");

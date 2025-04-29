@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Map;
@@ -40,10 +41,7 @@ public class RecipeTypes {
 
     @SuppressWarnings("unchecked")
     public static <T> Recipe<T> fromMap(Key id, Map<String, Object> map) {
-        String type = (String) map.get("type");
-        if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.missing_type");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.recipe.missing_type");
         Key key = Key.withDefaultNamespace(type, "minecraft");
         RecipeFactory<T> factory = (RecipeFactory<T>) BuiltInRegistries.RECIPE_FACTORY.getValue(key);
         if (factory == null) {

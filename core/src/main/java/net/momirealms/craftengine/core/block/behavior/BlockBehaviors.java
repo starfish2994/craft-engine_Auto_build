@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import net.momirealms.craftengine.shared.block.EmptyBlockBehavior;
@@ -25,11 +26,8 @@ public class BlockBehaviors {
 
     public static BlockBehavior fromMap(CustomBlock block, @Nullable Map<String, Object> map) {
         if (map == null || map.isEmpty()) return EmptyBlockBehavior.INSTANCE;
-        Object type = map.get("type");
-        if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.block.behavior.missing_type");
-        }
-        Key key = Key.withDefaultNamespace(type.toString(), "craftengine");
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.block.behavior.missing_type");
+        Key key = Key.withDefaultNamespace(type, "craftengine");
         BlockBehaviorFactory factory = BuiltInRegistries.BLOCK_BEHAVIOR_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedResourceConfigException("warning.config.block.behavior.invalid_type", type.toString());

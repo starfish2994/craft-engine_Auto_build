@@ -97,7 +97,6 @@ public class SelectItemModel implements ItemModel {
         public ItemModel create(Map<String, Object> arguments) {
             SelectProperty property = SelectProperties.fromMap(arguments);
             Map<String, Object> fallback = MiscUtils.castToMap(arguments.get("fallback"), true);
-
             Object casesObj = arguments.get("cases");
             if (casesObj instanceof List<?> list) {
                 List<Map<String, Object>> cases = (List<Map<String, Object>>) list;

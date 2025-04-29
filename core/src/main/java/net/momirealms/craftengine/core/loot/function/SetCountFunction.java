@@ -6,8 +6,8 @@ import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,10 +42,7 @@ public class SetCountFunction<T> extends AbstractLootConditionalFunction<T> {
         @SuppressWarnings("unchecked")
         @Override
         public LootFunction<A> create(Map<String, Object> arguments) {
-            Object value = arguments.get("count");
-            if (value == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.function.set_count.missing_count");
-            }
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("count"), "warning.config.loot_table.function.set_count.missing_count");
             boolean add = (boolean) arguments.getOrDefault("add", false);
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))

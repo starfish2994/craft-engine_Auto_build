@@ -13,7 +13,6 @@ import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -158,10 +157,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             float hurtAmount = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("hurt-amount", -1f), "hurt-amount");
             int hurtMax = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-hurt", -1), "max-hurt");
-            String solidBlock = (String) arguments.get("solid-block");
-            if (solidBlock == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.concrete.missing_solid", new NullPointerException("No `solid-block` specified for concrete powder block behavior"));
-            }
+            String solidBlock = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("solid-block"), "warning.config.block.behavior.concrete.missing_solid");
             return new ConcretePowderBlockBehavior(block, hurtAmount, hurtMax, Key.of(solidBlock));
         }
     }

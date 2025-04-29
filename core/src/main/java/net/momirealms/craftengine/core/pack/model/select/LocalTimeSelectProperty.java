@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.pack.model.select;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,11 +43,7 @@ public class LocalTimeSelectProperty implements SelectProperty {
 
         @Override
         public SelectProperty create(Map<String, Object> arguments) {
-            Object patternObj = arguments.get("pattern");
-            if (patternObj == null) {
-                throw new IllegalArgumentException("warning.config.item.model.select.local_time.missing_pattern", new NullPointerException("pattern should not be null"));
-            }
-            String pattern = patternObj.toString();
+            String pattern = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("pattern"), "warning.config.item.model.select.local_time.missing_pattern");
             String locale = (String) arguments.get("locale");
             String timeZone = (String) arguments.get("time-zone");
             return new LocalTimeSelectProperty(pattern, locale, timeZone);

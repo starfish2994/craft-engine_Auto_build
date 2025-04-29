@@ -14,7 +14,6 @@ import net.momirealms.craftengine.core.block.properties.IntegerProperty;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -199,10 +198,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
-            Property<Integer> ageProperty = (Property<Integer>) block.getProperty("age");
-            if (ageProperty == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.behavior.sugar_cane.missing_age", new IllegalArgumentException("'age' property not set for sugar cane block behavior"));
-            }
+            Property<Integer> ageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("age"), "warning.config.block.behavior.sugar_cane.missing_age");
             int maxHeight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-height", 3), "max-height");
             List<String> nearbyLiquids = MiscUtils.getAsStringList(arguments.getOrDefault("required-adjacent-liquids", List.of()));
             boolean nearWater = nearbyLiquids.contains("water");

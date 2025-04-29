@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -38,16 +37,10 @@ public class HeadSpecialModel implements SpecialModel {
 
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
-            Object kind = arguments.get("kind");
-            if (kind == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.special.head.missing_kind");
-            }
-            Object texture = arguments.get("texture");
-            if (texture == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.special.head.missing_texture");
-            }
+            String kind = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("kind"), "warning.config.item.model.special.head.missing_kind");
+            String texture = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("texture"), "warning.config.item.model.special.head.missing_texture");
             int animation = ResourceConfigUtils.getAsInt(arguments.getOrDefault("animation", 0), "animation");
-            return new HeadSpecialModel(kind.toString(), texture.toString(), animation);
+            return new HeadSpecialModel(kind, texture, animation);
         }
     }
 }

@@ -331,7 +331,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             // check duplicated config
             if (byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.block.duplicate", path, id);
+                throw new LocalizedResourceConfigException("warning.config.block.duplicate");
             }
             // read block settings
             BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
@@ -343,13 +343,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Map<String, Property<?>> properties;
             Map<String, Integer> appearances;
             Map<String, VariantState> variants;
-            Object stateObj = section.get("state");
-            if (stateObj == null) {
-                stateObj = section.get("states");
-            }
-            if (stateObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.block.missing_state", path, id);
-            }
+            Object stateObj = ResourceConfigUtils.requireNonNullOrThrow(ResourceConfigUtils.get(section, "state", "states"), "warning.config.block.missing_state");
             Map<String, Object> stateSection = MiscUtils.castToMap(stateObj, true);
 
             // single state
@@ -357,7 +351,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 properties = Map.of();
                 int internalId = ResourceConfigUtils.getAsInt(stateSection.getOrDefault("id", -1), "id");
                 if (internalId < 0) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_real_id", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_real_id");
                 }
 
                 Pair<Key, Integer> pair = parseAppearanceSection(id, stateSection);
@@ -368,7 +362,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 Key internalBlockId = Key.of(CraftEngine.NAMESPACE, internalBlock);
                 int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                 if (internalBlockRegistryId == -1) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", path, id,
+                    throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id",
                             internalBlock,
                             String.valueOf(registeredRealBlockSlots.get(pair.left()) - 1));
                 }
@@ -377,13 +371,13 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 // properties
                 Map<String, Object> propertySection = MiscUtils.castToMap(stateSection.get("properties"), true);
                 if (propertySection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_properties", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_properties");
                 }
                 properties = parseProperties(propertySection);
                 // appearance
                 Map<String, Object> appearancesSection = MiscUtils.castToMap(stateSection.get("appearances"), true);
                 if (appearancesSection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_appearances", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_appearances");
                 }
                 appearances = new HashMap<>();
                 Map<String, Key> tempTypeMap = new HashMap<>();
@@ -398,7 +392,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 // variants
                 Map<String, Object> variantsSection = MiscUtils.castToMap(stateSection.get("variants"), true);
                 if (variantsSection == null) {
-                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_variants", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.block.state.missing_variants");
                 }
                 variants = new HashMap<>();
                 for (Map.Entry<String, Object> variantEntry : variantsSection.entrySet()) {
@@ -407,17 +401,17 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         String variantName = variantEntry.getKey();
                         String appearance = (String) variantSection.get("appearance");
                         if (appearance == null) {
-                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.missing_appearance", path, id, variantName);
+                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.missing_appearance", variantName);
                         }
                         if (!appearances.containsKey(appearance)) {
-                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.invalid_appearance", path, id, variantName, appearance);
+                            throw new LocalizedResourceConfigException("warning.config.block.state.variant.invalid_appearance", variantName, appearance);
                         }
                         int internalId = ResourceConfigUtils.getAsInt(variantSection.getOrDefault("id", -1), "id");
                         Key baseBlock = tempTypeMap.get(appearance);
                         Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
                         int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                         if (internalBlockRegistryId == -1) {
-                            throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", path, id,
+                            throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id",
                                     internalBlockId.toString(),
                                     String.valueOf(registeredRealBlockSlots.getOrDefault(baseBlock, 1) - 1));
                         }

@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -31,11 +31,8 @@ public class BannerSpecialModel implements SpecialModel {
 
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
-            Object color = arguments.get("color");
-            if (color == null) {
-                throw new LocalizedResourceConfigException("");
-            }
-            return new BannerSpecialModel(color.toString());
+            String color = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("color"), "warning.config.item.model.special.banner.missing_color");
+            return new BannerSpecialModel(color);
         }
     }
 }

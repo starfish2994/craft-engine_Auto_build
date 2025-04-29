@@ -1,11 +1,12 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.ArrayList;
@@ -49,14 +50,11 @@ public class PathMatchers {
     }
 
     public static PathMatcher fromMap(Map<String, Object> map) {
-        String type = (String) map.getOrDefault("type", "empty");
-        if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.conflict_matcher.missing_type");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), () -> new LocalizedException("warning.config.conflict_matcher.missing_type"));
         Key key = Key.withDefaultNamespace(type, "craftengine");
         PathMatcherFactory factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.conflict_matcher.invalid_type", type);
+            throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);
         }
         return factory.create(map);
     }

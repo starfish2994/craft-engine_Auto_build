@@ -24,7 +24,7 @@ public class HitBoxTypes {
     }
 
     public static HitBox fromMap(Map<String, Object> arguments) {
-        Key type = Optional.ofNullable((String) arguments.get("type")).map(Key::of).orElse(HitBoxTypes.INTERACTION);
+        Key type = Optional.ofNullable(arguments.get("type")).map(String::valueOf).map(Key::of).orElse(HitBoxTypes.INTERACTION);
         HitBoxFactory factory = BuiltInRegistries.HITBOX_FACTORY.getValue(type);
         if (factory == null) {
             throw new LocalizedResourceConfigException("warning.config.furniture.hitbox.invalid_type", type.toString());

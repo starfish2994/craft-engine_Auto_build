@@ -36,14 +36,11 @@ public class ChestSpecialModel implements SpecialModel {
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
             float openness = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("openness", 0), "openness");
-            Object texture = arguments.get("texture");
-            if (texture == null) {
-                throw new LocalizedResourceConfigException("warning.config.item.model.special.chest.missing_texture");
-            }
+            String texture = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("texture"), "warning.config.item.model.special.chest.missing_texture");
             if (openness > 1 || openness < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.model.special.chest.invalid_openness", String.valueOf(openness));
             }
-            return new ChestSpecialModel(texture.toString(), openness);
+            return new ChestSpecialModel(texture, openness);
         }
     }
 }
