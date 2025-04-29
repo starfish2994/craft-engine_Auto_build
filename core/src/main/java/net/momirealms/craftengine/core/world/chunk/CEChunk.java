@@ -16,6 +16,7 @@ public class CEChunk {
     private final CESection[] sections;
     private final WorldHeight worldHeightAccessor;
     private final List<Vec3d> entities;
+    private boolean dirty;
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
         this.world = world;
@@ -42,6 +43,14 @@ public class CEChunk {
             }
         }
         this.fillEmptySection();
+    }
+
+    public boolean dirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
     public boolean isEmpty() {
@@ -73,7 +82,10 @@ public class CEChunk {
         if (section == null) {
             return;
         }
-        section.setBlockState((y & 15) << 8 | (z & 15) << 4 | x & 15, state);
+        ImmutableBlockState previous = section.setBlockState((y & 15) << 8 | (z & 15) << 4 | x & 15, state);
+        if (previous != state) {
+            setDirty(true);
+        }
     }
 
     @Nullable

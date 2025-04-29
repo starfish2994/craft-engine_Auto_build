@@ -81,7 +81,7 @@ public class PackedIntegerArray implements PaletteStorage {
         int i = this.getStorageIndex(index);
         long l = this.data[i];
         int j = (index - i * this.elementsPerLong) * this.elementBits;
-        this.data[i] = l & ~(this.maxValue << j) | ((long)value & this.maxValue) << j;
+        this.data[i] = l & ~(this.maxValue << j) | ((long) value & this.maxValue) << j;
     }
 
     @Override
@@ -89,6 +89,15 @@ public class PackedIntegerArray implements PaletteStorage {
         int i = this.getStorageIndex(index);
         long l = this.data[i];
         int j = (index - i * this.elementsPerLong) * this.elementBits;
+        return (int)(l >> j & this.maxValue);
+    }
+
+    @Override
+    public int getAndSet(int index, int value) {
+        int i = this.getStorageIndex(index);
+        long l = this.data[i];
+        int j = (index - i * this.elementsPerLong) * this.elementBits;
+        this.data[i] = l & ~(this.maxValue << j) | ((long) value & this.maxValue) << j;
         return (int)(l >> j & this.maxValue);
     }
 

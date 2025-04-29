@@ -125,6 +125,17 @@ public class PalettedContainer<T> implements PaletteResizeListener<T>, ReadableC
         return data.palette.get(data.storage.get(index));
     }
 
+    public T getAndSet(int index, T state) {
+        this.lock();
+        try {
+            int i = this.data.palette.index(state);
+            int preIndex = this.data.storage.getAndSet(index, i);
+            return this.data.palette.get(preIndex);
+        } finally {
+            this.unlock();
+        }
+    }
+
     public void set(int x, int y, int z, T value) {
         this.lock();
         try {
