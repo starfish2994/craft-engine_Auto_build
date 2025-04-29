@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
@@ -31,10 +32,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -208,11 +206,11 @@ public class S3Host implements ResourcePackHost {
 
             Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
             if (proxySetting != null) {
-                String host = proxySetting.get("host").toString();
+                String host = Optional.ofNullable(proxySetting.get("host")).map(String::valueOf).orElse(null);
                 if (host == null || host.isEmpty()) {
                     throw new LocalizedException("warning.config.host.proxy.missing_host");
                 }
-                int port = (Integer) proxySetting.get("port");
+                int port = ResourceConfigUtils.getAsInt(proxySetting.get("port"), "port");
                 if (port <= 0 || port > 65535) {
                     throw new LocalizedException("warning.config.host.proxy.missing_port");
                 }
@@ -220,8 +218,8 @@ public class S3Host implements ResourcePackHost {
                 if (scheme == null || scheme.isEmpty()) {
                     throw new LocalizedException("warning.config.host.proxy.missing_scheme");
                 }
-                String username = (String) proxySetting.get("username");
-                String password = (String) proxySetting.get("password");
+                String username = Optional.ofNullable(proxySetting.get("username")).map(String::valueOf).orElse(null);
+                String password = Optional.ofNullable(proxySetting.get("password")).map(String::valueOf).orElse(null);
                 ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);
                 if (username != null) builder.username(username);
                 if (password != null) builder.password(password);
