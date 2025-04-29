@@ -131,16 +131,6 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void loadInternalPng(String path, Consumer<byte[]> callback) {
-        try (InputStream inputStream = this.plugin.resourceStream(path)) {
-            if (inputStream != null) {
-                callback.accept(inputStream.readAllBytes());
-            }
-        } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load " + path, e);
-        }
-    }
-
     @Override
     public Path resourcePackPath() {
         return this.plugin.dataFolderPath()
@@ -1156,7 +1146,7 @@ public abstract class AbstractPackManager implements PackManager {
             if (Files.exists(sourceFolder)) {
                 Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
                     @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         Path relative = sourceFolder.relativize(file);
                         Path targetPath = targetFolder.resolve(relative);
                         List<Path> conflicts = conflictChecker.computeIfAbsent(relative, k -> new ArrayList<>());

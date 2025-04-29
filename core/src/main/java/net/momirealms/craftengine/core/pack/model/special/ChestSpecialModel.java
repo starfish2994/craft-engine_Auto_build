@@ -1,8 +1,10 @@
 package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.Map;
 import java.util.Objects;
@@ -36,11 +38,14 @@ public class ChestSpecialModel implements SpecialModel {
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
             float openness = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("openness", 0), "openness");
-            String texture = Objects.requireNonNull(arguments.get("texture"), "texture").toString();
-            if (openness > 1 || openness < 0) {
-                throw new IllegalArgumentException("Invalid openness: " + openness + ". Valid range 0~1");
+            Object texture = arguments.get("texture");
+            if (texture == null) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.special.chest.missing_texture");
             }
-            return new ChestSpecialModel(texture, openness);
+            if (openness > 1 || openness < 0) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.special.chest.invalid_openness", String.valueOf(openness));
+            }
+            return new ChestSpecialModel(texture.toString(), openness);
         }
     }
 }
