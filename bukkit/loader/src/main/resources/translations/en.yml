@@ -257,6 +257,7 @@ warning.config.host.gitlab.missing_token: "<yellow>Issue found in config.yml at 
 warning.config.host.gitlab.missing_project: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'project-id' argument for gitlab host.</yellow>"
 warning.config.host.proxy.missing_host: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'host' argument for proxy.</yellow>"
 warning.config.host.proxy.missing_port: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'port' argument for proxy.</yellow>"
+warning.config.host.proxy.missing_scheme: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'scheme' argument for proxy.</yellow>"
 warning.config.host.proxy.invalid: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Invalid proxy '<arg:0>'.</yellow>"
 warning.config.conflict_matcher.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'type' argument for one of the handlers.</yellow>"
 warning.config.conflict_matcher.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - One of the terms is using the invalid type '<arg:0>'.</yellow>"

@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.HashUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
@@ -31,10 +32,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -158,26 +156,26 @@ public class S3Host implements ResourcePackHost {
         @SuppressWarnings("deprecation")
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String endpoint = (String) arguments.get("endpoint");
+            String endpoint = Optional.ofNullable(arguments.get("endpoint")).map(String::valueOf).orElse(null);
             if (endpoint == null || endpoint.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_endpoint");
             }
-            String protocol = (String) arguments.getOrDefault("protocol", "https");
+            String protocol = arguments.getOrDefault("protocol", "https").toString();
             boolean usePathStyle = (boolean) arguments.getOrDefault("path-style", false);
-            String bucket = (String) arguments.get("bucket");
+            String bucket = Optional.ofNullable(arguments.get("bucket")).map(String::valueOf).orElse(null);
             if (bucket == null || bucket.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_bucket");
             }
-            String region = (String) arguments.getOrDefault("region", "auto");
-            String accessKeyId = useEnv ? System.getenv("CE_S3_ACCESS_KEY_ID") : (String) arguments.get("access-key-id");
+            String region = arguments.getOrDefault("region", "auto").toString();
+            String accessKeyId = useEnv ? System.getenv("CE_S3_ACCESS_KEY_ID") : Optional.ofNullable(arguments.get("access-key-id")).map(String::valueOf).orElse(null);
             if (accessKeyId == null || accessKeyId.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_access_key");
             }
-            String accessKeySecret = useEnv ? System.getenv("CE_S3_ACCESS_KEY_SECRET") : (String) arguments.get("access-key-secret");
+            String accessKeySecret = useEnv ? System.getenv("CE_S3_ACCESS_KEY_SECRET") : Optional.ofNullable(arguments.get("access-key-secret")).map(String::valueOf).orElse(null);
             if (accessKeySecret == null || accessKeySecret.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_secret");
             }
-            String uploadPath = (String) arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip");
+            String uploadPath = arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip").toString();
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_upload_path");
             }
@@ -188,8 +186,8 @@ public class S3Host implements ResourcePackHost {
             String cdnDomain = null;
             String cdnProtocol = "https";
             if (cdn != null) {
-                cdnDomain = (String) cdn.get("domain");
-                cdnProtocol = (String) cdn.getOrDefault("protocol", "https");
+                cdnDomain = Optional.ofNullable(arguments.get("domain")).map(String::valueOf).orElse(null);
+                cdnProtocol = arguments.getOrDefault("protocol", "https").toString();
             }
 
             AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, accessKeySecret);
@@ -208,14 +206,20 @@ public class S3Host implements ResourcePackHost {
 
             Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
             if (proxySetting != null) {
-                String host = (String) proxySetting.get("host");
-                int port = (Integer) proxySetting.get("port");
-                String scheme = (String) proxySetting.get("scheme");
-                String username = (String) proxySetting.get("username");
-                String password = (String) proxySetting.get("password");
-                if (host == null || host.isEmpty() || port <= 0 || port > 65535 || scheme == null || scheme.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid proxy configuration");
+                String host = Optional.ofNullable(proxySetting.get("host")).map(String::valueOf).orElse(null);
+                if (host == null || host.isEmpty()) {
+                    throw new LocalizedException("warning.config.host.proxy.missing_host");
                 }
+                int port = ResourceConfigUtils.getAsInt(proxySetting.get("port"), "port");
+                if (port <= 0 || port > 65535) {
+                    throw new LocalizedException("warning.config.host.proxy.missing_port");
+                }
+                String scheme = Optional.ofNullable(proxySetting.get("scheme")).map(String::valueOf).orElse(null);
+                if (scheme == null || scheme.isEmpty()) {
+                    throw new LocalizedException("warning.config.host.proxy.missing_scheme");
+                }
+                String username = Optional.ofNullable(proxySetting.get("username")).map(String::valueOf).orElse(null);
+                String password = Optional.ofNullable(proxySetting.get("password")).map(String::valueOf).orElse(null);
                 ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);
                 if (username != null) builder.username(username);
                 if (password != null) builder.password(password);
