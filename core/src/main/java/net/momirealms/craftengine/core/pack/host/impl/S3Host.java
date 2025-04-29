@@ -214,7 +214,7 @@ public class S3Host implements ResourcePackHost {
                 if (port <= 0 || port > 65535) {
                     throw new LocalizedException("warning.config.host.proxy.missing_port");
                 }
-                String scheme = (String) proxySetting.get("scheme");
+                String scheme = Optional.ofNullable(proxySetting.get("scheme")).map(String::valueOf).orElse(null);
                 if (scheme == null || scheme.isEmpty()) {
                     throw new LocalizedException("warning.config.host.proxy.missing_scheme");
                 }
