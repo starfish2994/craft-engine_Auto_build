@@ -208,7 +208,7 @@ public class S3Host implements ResourcePackHost {
 
             Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
             if (proxySetting != null) {
-                String host = (String) proxySetting.get("host");
+                String host = proxySetting.get("host").toString();
                 if (host == null || host.isEmpty()) {
                     throw new LocalizedException("warning.config.host.proxy.missing_host");
                 }
