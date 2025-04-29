@@ -100,6 +100,7 @@ public class Config {
     protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
     protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
     protected int chunk_system$delay_serialization;
+    protected boolean chunk_system$fast_paletted_injection;
 
     protected boolean furniture$handle_invalid_furniture_on_chunk_load$enable;
     protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
@@ -271,6 +272,7 @@ public class Config {
         chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.restore-custom-blocks-on-chunk-load", true);
         chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
         chunk_system$delay_serialization = config.getInt("chunk-system.delay-serialization", 20);
+        chunk_system$fast_paletted_injection = config.getBoolean("chunk-system.fast-palette-injection", false);
 
         // furniture
         furniture$handle_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.handle-invalid-furniture-on-chunk-load.enable", false);
@@ -691,6 +693,10 @@ public class Config {
 
     public static int delaySerialization() {
         return instance.chunk_system$delay_serialization;
+    }
+
+    public static boolean fastPaletteInjection() {
+        return instance.chunk_system$fast_paletted_injection;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {
