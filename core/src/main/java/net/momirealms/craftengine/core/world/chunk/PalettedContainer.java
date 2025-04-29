@@ -69,7 +69,7 @@ public class PalettedContainer<T> implements PaletteResizeListener<T>, ReadableC
     public boolean isEmpty() {
         Data<T> data = this.data;
         if (data.palette instanceof SingularPalette<T> singularPalette) {
-            return singularPalette.get(0) == EmptyBlock.INSTANCE;
+            return singularPalette.get(0) == EmptyBlock.STATE;
         }
         return false;
     }

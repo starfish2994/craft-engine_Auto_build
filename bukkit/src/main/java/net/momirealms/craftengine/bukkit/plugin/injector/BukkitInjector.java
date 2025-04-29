@@ -690,7 +690,7 @@ public class BukkitInjector {
                 // 如果是原版方块
                 if (BlockStateUtils.isVanillaBlock(stateId)) {
                     // 那么应该情况自定义块
-                    ImmutableBlockState previous = section.setBlockState(x, y, z, EmptyBlock.INSTANCE.defaultState());
+                    ImmutableBlockState previous = section.setBlockState(x, y, z, EmptyBlock.STATE);
                     // 如果先前不是空气则标记
                     if (!previous.isEmpty()) {
                         holder.ceChunk().setDirty(true);

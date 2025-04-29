@@ -264,29 +264,31 @@ public class BukkitWorldManager implements WorldManager, Listener {
         ChunkPos pos = new ChunkPos(chunk.getX(), chunk.getZ());
         CEChunk ceChunk = world.getChunkAtIfLoaded(chunk.getX(), chunk.getZ());
         if (ceChunk != null) {
-            try {
-                world.worldDataStorage().writeChunkAt(pos, ceChunk, false);
-            } catch (IOException e) {
-                this.plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
-            } finally {
-                if (Config.restoreVanillaBlocks()) {
-                    CESection[] ceSections = ceChunk.sections();
-                    Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
-                    Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
-                    Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, chunk.getX(), chunk.getZ());
-                    Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
-                    for (int i = 0; i < ceSections.length; i++) {
-                        CESection ceSection = ceSections[i];
-                        Object section = sections[i];
-                        BukkitInjector.uninjectLevelChunkSection(section);
-                        if (ceSection.statesContainer().isEmpty()) continue;
-                        for (int x = 0; x < 16; x++) {
-                            for (int z = 0; z < 16; z++) {
-                                for (int y = 0; y < 16; y++) {
-                                    ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
-                                    if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
-                                        FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().handle(), false);
-                                    }
+            if (ceChunk.dirty()) {
+                try {
+                    world.worldDataStorage().writeChunkAt(pos, ceChunk, false);
+                    ceChunk.setDirty(false);
+                } catch (IOException e) {
+                    this.plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
+                }
+            }
+            if (Config.restoreVanillaBlocks()) {
+                CESection[] ceSections = ceChunk.sections();
+                Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
+                Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
+                Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, chunk.getX(), chunk.getZ());
+                Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
+                for (int i = 0; i < ceSections.length; i++) {
+                    CESection ceSection = ceSections[i];
+                    Object section = sections[i];
+                    BukkitInjector.uninjectLevelChunkSection(section);
+                    if (ceSection.statesContainer().isEmpty()) continue;
+                    for (int x = 0; x < 16; x++) {
+                        for (int z = 0; z < 16; z++) {
+                            for (int y = 0; y < 16; y++) {
+                                ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
+                                if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
+                                    FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().handle(), false);
                                 }
                             }
                         }

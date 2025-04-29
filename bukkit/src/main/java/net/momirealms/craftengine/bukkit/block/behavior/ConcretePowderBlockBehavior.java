@@ -57,7 +57,7 @@ public class ConcretePowderBlockBehavior extends FallingBlockBehavior {
         } else {
             CraftEngine.instance().logger().warn("Failed to create solid block " + this.targetBlock + " in ConcretePowderBlockBehavior");
             this.defaultBlockState = Reflections.instance$Blocks$STONE$defaultState;
-            this.defaultImmutableBlockState = EmptyBlock.INSTANCE.defaultState();
+            this.defaultImmutableBlockState = EmptyBlock.STATE;
         }
         return this.defaultBlockState;
     }

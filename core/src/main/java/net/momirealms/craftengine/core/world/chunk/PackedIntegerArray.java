@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.world.chunk;
 
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
+
 import java.util.function.IntConsumer;
 
 public class PackedIntegerArray implements PaletteStorage {

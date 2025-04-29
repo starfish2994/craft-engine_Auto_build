@@ -31,7 +31,7 @@ public class DefaultSectionSerializer {
         ReadableContainer.Serialized<ImmutableBlockState> serialized = section.statesContainer().serialize(null, PalettedContainer.PaletteProvider.CUSTOM_BLOCK_STATE);
         ListTag palettes = new ListTag();
         List<ImmutableBlockState> states = serialized.paletteEntries();
-        if (states.size() == 1 && states.get(0) == EmptyBlock.INSTANCE.defaultState()) {
+        if (states.size() == 1 && states.get(0) == EmptyBlock.STATE) {
             return null;
         }
         CompoundTag sectionNbt = new CompoundTag();

@@ -140,8 +140,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.appearanceToRealState.clear();
         this.blockStateOverrides.clear();
         this.modBlockStates.clear();
-        if (EmptyBlock.INSTANCE != null)
-            Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.INSTANCE.defaultState());
+        if (EmptyBlock.STATE != null)
+            Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.STATE);
     }
 
     @Override
