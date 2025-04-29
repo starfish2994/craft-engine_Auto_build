@@ -177,18 +177,18 @@ public class GitLabHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String gitlabUrl = (String) arguments.get("gitlab-url");
+            String gitlabUrl = Optional.ofNullable(arguments.get("gitlab-url")).map(String::valueOf).orElse(null);
             if (gitlabUrl == null || gitlabUrl.isEmpty()) {
                 throw new LocalizedException("warning.config.host.gitlab.missing_url");
             }
             if (gitlabUrl.endsWith("/")) {
                 gitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
             }
-            String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : (String) arguments.get("access-token");
+            String accessToken = useEnv ? System.getenv("CE_GITLAB_ACCESS_TOKEN") : Optional.ofNullable(arguments.get("access-token")).map(String::valueOf).orElse(null);
             if (accessToken == null || accessToken.isEmpty()) {
                 throw new LocalizedException("warning.config.host.gitlab.missing_token");
             }
-            String projectId = (String) arguments.get("project-id");
+            String projectId = Optional.ofNullable(arguments.get("project-id")).map(String::valueOf).orElse(null);
             if (projectId == null || projectId.isEmpty()) {
                 throw new LocalizedException("warning.config.host.gitlab.missing_project");
             }

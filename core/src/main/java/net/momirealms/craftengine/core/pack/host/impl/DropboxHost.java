@@ -267,19 +267,19 @@ public class DropboxHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String appKey = useEnv ? System.getenv("CE_DROPBOX_APP_KEY") : (String) arguments.get("app-key");
+            String appKey = useEnv ? System.getenv("CE_DROPBOX_APP_KEY") : Optional.ofNullable(arguments.get("app-key")).map(String::valueOf).orElse(null);
             if (appKey == null || appKey.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_app_key");
             }
-            String appSecret = useEnv ? System.getenv("CE_DROPBOX_APP_SECRET") : (String) arguments.get("app-secret");
+            String appSecret = useEnv ? System.getenv("CE_DROPBOX_APP_SECRET") : Optional.ofNullable(arguments.get("app-secret")).map(String::valueOf).orElse(null);
             if (appSecret == null || appSecret.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_app_secret");
             }
-            String refreshToken = useEnv ? System.getenv("CE_DROPBOX_REFRESH_TOKEN") : (String) arguments.get("refresh-token");
+            String refreshToken = useEnv ? System.getenv("CE_DROPBOX_REFRESH_TOKEN") : Optional.ofNullable(arguments.get("refresh-token")).map(String::valueOf).orElse(null);
             if (refreshToken == null || refreshToken.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_refresh_token");
             }
-            String uploadPath = (String) arguments.get("upload-path");
+            String uploadPath = Optional.ofNullable(arguments.get("upload-path")).map(String::valueOf).orElse(null);
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_upload_path");
             }

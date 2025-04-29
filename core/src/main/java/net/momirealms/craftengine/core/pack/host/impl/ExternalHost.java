@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.util.Key;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -45,19 +46,16 @@ public class ExternalHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            String url = (String) arguments.get("url");
+            String url = Optional.ofNullable(arguments.get("url")).map(String::valueOf).orElse(null);
             if (url == null || url.isEmpty()) {
                 throw new LocalizedException("warning.config.host.external.missing_url");
             }
-            String uuid = (String) arguments.get("uuid");
+            String uuid = Optional.ofNullable(arguments.get("uuid")).map(String::valueOf).orElse(null);
             if (uuid == null || uuid.isEmpty()) {
                 uuid = UUID.nameUUIDFromBytes(url.getBytes()).toString();
             }
             UUID hostUUID = UUID.fromString(uuid);
-            String sha1 = (String) arguments.get("sha1");
-            if (sha1 == null) {
-                sha1 = "";
-            }
+            String sha1 = arguments.getOrDefault("sha1", "").toString();
             return new ExternalHost(new ResourcePackDownloadData(url, hostUUID, sha1));
         }
     }

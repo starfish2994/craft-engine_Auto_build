@@ -156,26 +156,26 @@ public class S3Host implements ResourcePackHost {
         @SuppressWarnings("deprecation")
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String endpoint = (String) arguments.get("endpoint");
+            String endpoint = Optional.ofNullable(arguments.get("endpoint")).map(String::valueOf).orElse(null);
             if (endpoint == null || endpoint.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_endpoint");
             }
-            String protocol = (String) arguments.getOrDefault("protocol", "https");
+            String protocol = arguments.getOrDefault("protocol", "https").toString();
             boolean usePathStyle = (boolean) arguments.getOrDefault("path-style", false);
-            String bucket = (String) arguments.get("bucket");
+            String bucket = Optional.ofNullable(arguments.get("bucket")).map(String::valueOf).orElse(null);
             if (bucket == null || bucket.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_bucket");
             }
-            String region = (String) arguments.getOrDefault("region", "auto");
-            String accessKeyId = useEnv ? System.getenv("CE_S3_ACCESS_KEY_ID") : (String) arguments.get("access-key-id");
+            String region = arguments.getOrDefault("region", "auto").toString();
+            String accessKeyId = useEnv ? System.getenv("CE_S3_ACCESS_KEY_ID") : Optional.ofNullable(arguments.get("access-key-id")).map(String::valueOf).orElse(null);
             if (accessKeyId == null || accessKeyId.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_access_key");
             }
-            String accessKeySecret = useEnv ? System.getenv("CE_S3_ACCESS_KEY_SECRET") : (String) arguments.get("access-key-secret");
+            String accessKeySecret = useEnv ? System.getenv("CE_S3_ACCESS_KEY_SECRET") : Optional.ofNullable(arguments.get("access-key-secret")).map(String::valueOf).orElse(null);
             if (accessKeySecret == null || accessKeySecret.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_secret");
             }
-            String uploadPath = (String) arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip");
+            String uploadPath = arguments.getOrDefault("upload-path", "craftengine/resource_pack.zip").toString();
             if (uploadPath == null || uploadPath.isEmpty()) {
                 throw new LocalizedException("warning.config.host.s3.missing_upload_path");
             }
@@ -186,8 +186,8 @@ public class S3Host implements ResourcePackHost {
             String cdnDomain = null;
             String cdnProtocol = "https";
             if (cdn != null) {
-                cdnDomain = (String) cdn.get("domain");
-                cdnProtocol = (String) cdn.getOrDefault("protocol", "https");
+                cdnDomain = Optional.ofNullable(arguments.get("domain")).map(String::valueOf).orElse(null);
+                cdnProtocol = arguments.getOrDefault("protocol", "https").toString();
             }
 
             AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, accessKeySecret);

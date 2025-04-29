@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -61,7 +62,7 @@ public class SelfHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             SelfHostHttpServer selfHostHttpServer = SelfHostHttpServer.instance();
-            String ip = (String) arguments.get("ip");
+            String ip = Optional.ofNullable(arguments.get("ip")).map(String::valueOf).orElse(null);
             if (ip == null) {
                 throw new LocalizedException("warning.config.host.self.missing_ip");
             }
@@ -70,7 +71,7 @@ public class SelfHost implements ResourcePackHost {
                 throw new LocalizedException("warning.config.host.self.invalid_port", String.valueOf(port));
             }
             boolean oneTimeToken = (boolean) arguments.getOrDefault("one-time-token", true);
-            String protocol = (String) arguments.getOrDefault("protocol", "http");
+            String protocol = arguments.getOrDefault("protocol", "http").toString();
             boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
             Map<String, Object> rateMap = MiscUtils.castToMap(arguments.get("rate-map"), true);
             int maxRequests = 5;
