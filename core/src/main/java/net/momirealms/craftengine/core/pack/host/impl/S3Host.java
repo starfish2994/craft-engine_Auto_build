@@ -209,13 +209,19 @@ public class S3Host implements ResourcePackHost {
             Map<String, Object> proxySetting = MiscUtils.castToMap(arguments.get("proxy"), true);
             if (proxySetting != null) {
                 String host = (String) proxySetting.get("host");
+                if (host == null || host.isEmpty()) {
+                    throw new LocalizedException("warning.config.host.proxy.missing_host");
+                }
                 int port = (Integer) proxySetting.get("port");
+                if (port <= 0 || port > 65535) {
+                    throw new LocalizedException("warning.config.host.proxy.missing_port");
+                }
                 String scheme = (String) proxySetting.get("scheme");
+                if (scheme == null || scheme.isEmpty()) {
+                    throw new LocalizedException("warning.config.host.s3.proxy.missing_scheme");
+                }
                 String username = (String) proxySetting.get("username");
                 String password = (String) proxySetting.get("password");
-                if (host == null || host.isEmpty() || port <= 0 || port > 65535 || scheme == null || scheme.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid proxy configuration");
-                }
                 ProxyConfiguration.Builder builder = ProxyConfiguration.builder().host(host).port(port).scheme(scheme);
                 if (username != null) builder.username(username);
                 if (password != null) builder.password(password);
