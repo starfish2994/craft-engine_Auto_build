@@ -15,7 +15,6 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,14 +25,12 @@ import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class BukkitFontManager extends AbstractFontManager implements Listener {
     private final BukkitCraftEngine plugin;
@@ -113,15 +110,9 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         this.processChatEvent(event);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onServerCommand(ServerCommandEvent event) {
-        this.processOpCommand(event.getSender(), event.getCommand());
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        this.processOpCommand(player, event.getMessage());
         if (!Config.filterCommand()) return;
         if (!player.hasPermission(FontManager.BYPASS_COMMAND)) {
             IllegalCharacterProcessResult result = processIllegalCharacters(event.getMessage());
@@ -255,28 +246,5 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void processOpCommand(CommandSender sender, String command) {
-        if (!sender.hasPermission("minecraft.command.op") || !sender.hasPermission("minecraft.command.deop")) return;
-        String input = command.startsWith("/") ? command.substring(1) : command;
-        int firstSpaceIndex = input.indexOf(' ');
-        String cmdPart = (firstSpaceIndex == -1) ? input : input.substring(0, firstSpaceIndex);
-        String argPart = (firstSpaceIndex == -1) ? "" : input.substring(firstSpaceIndex + 1).trim();
-        int lastColonIndex = cmdPart.lastIndexOf(':');
-        if (lastColonIndex != -1 && !cmdPart.substring(0, lastColonIndex).equals("minecraft")) return;
-        String cmd = (lastColonIndex == -1 ? cmdPart : cmdPart.substring(lastColonIndex + 1)).toLowerCase();
-        if (!cmd.equals("op") && !cmd.equals("deop")) return;
-        int nextSpaceIndex = argPart.indexOf(' ');
-        String targetName = (nextSpaceIndex == -1) ? argPart : argPart.substring(0, nextSpaceIndex);
-        if (targetName.isEmpty()) return;
-        this.plugin.scheduler().asyncLater(
-                () -> {
-                    Player player = Bukkit.getPlayer(targetName);
-                    if (player == null || !player.isOnline()) return;
-                    removeEmojiSuggestions(player);
-                    addEmojiSuggestions(player, getEmojiSuggestion(player));
-                },
-                1L, TimeUnit.SECONDS);
     }
 }
