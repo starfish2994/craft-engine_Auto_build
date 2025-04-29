@@ -218,7 +218,7 @@ public class S3Host implements ResourcePackHost {
                 }
                 String scheme = (String) proxySetting.get("scheme");
                 if (scheme == null || scheme.isEmpty()) {
-                    throw new LocalizedException("warning.config.host.s3.proxy.missing_scheme");
+                    throw new LocalizedException("warning.config.host.proxy.missing_scheme");
                 }
                 String username = (String) proxySetting.get("username");
                 String password = (String) proxySetting.get("password");
