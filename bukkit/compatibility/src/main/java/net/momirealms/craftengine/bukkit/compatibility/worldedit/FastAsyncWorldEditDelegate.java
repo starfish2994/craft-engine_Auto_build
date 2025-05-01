@@ -17,6 +17,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.world.ChunkPos;
 import org.bukkit.Bukkit;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
@@ -69,9 +70,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 if (ceWorld == null) continue;
                 var ceChunk = ceWorld.getChunkAtIfLoaded(chunkX, chunkZ);
                 if (ceChunk == null) {
-                    world.loadChunk(chunkX, chunkZ);
-                    ceChunk = ceWorld.getChunkAtIfLoaded(chunkX, chunkZ);
-                    if (ceChunk == null) continue;
+                    ceChunk = ceWorld.worldDataStorage().readChunkAt(ceWorld, new ChunkPos(chunkX, chunkZ));
                 }
                 var immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
                 if (immutableBlockState == null) {
