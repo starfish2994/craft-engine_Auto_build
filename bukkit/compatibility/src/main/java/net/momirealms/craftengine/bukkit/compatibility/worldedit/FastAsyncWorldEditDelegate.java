@@ -74,10 +74,8 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
                 if (BlockStateUtils.isVanillaBlock(stateId) && BlockStateUtils.isVanillaBlock(oldStateId)) continue;
                 var ceChunk = ceWorld.getChunkAtIfLoaded(chunkX, chunkZ);
-                boolean needSave = false;
                 if (ceChunk == null) {
                     ceChunk = ceWorld.worldDataStorage().readChunkAt(ceWorld, new ChunkPos(chunkX, chunkZ));
-                    needSave = true;
                 }
                 var immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
                 if (immutableBlockState == null) {
@@ -85,7 +83,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 } else {
                     ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
                 }
-                if (needSave) needSaveChunks.add(ceChunk);
+                needSaveChunks.add(ceChunk);
             }
             for (CEChunk ceChunk : needSaveChunks) {
                 ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
