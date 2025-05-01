@@ -1,34 +1,25 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.condition.AllOfCondition;
+import net.momirealms.craftengine.core.util.context.Condition;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-public class AllOfPathMatcher implements PathMatcher {
+public class AllOfPathMatcher extends AllOfCondition<PathContext> implements PathMatcher {
     public static final Factory FACTORY = new Factory();
-    private final List<PathMatcher> matchers;
 
-    public AllOfPathMatcher(List<PathMatcher> matchers) {
-        this.matchers = matchers;
+    public AllOfPathMatcher(List<? extends Condition<PathContext>> conditions) {
+        super(conditions);
     }
 
     @Override
     public Key type() {
         return PathMatchers.ALL_OF;
-    }
-
-    @Override
-    public boolean test(Path path) {
-        for (PathMatcher matcher : matchers) {
-            if (!matcher.test(path)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public static class Factory implements PathMatcherFactory {

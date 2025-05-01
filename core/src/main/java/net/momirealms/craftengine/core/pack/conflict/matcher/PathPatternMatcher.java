@@ -1,10 +1,10 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -21,8 +21,8 @@ public class PathPatternMatcher implements PathMatcher {
     }
 
     @Override
-    public boolean test(Path path) {
-        String pathStr = path.toString().replace("\\", "/");
+    public boolean test(PathContext path) {
+        String pathStr = path.path().toString().replace("\\", "/");
         return this.pattern.matcher(pathStr).matches();
     }
 

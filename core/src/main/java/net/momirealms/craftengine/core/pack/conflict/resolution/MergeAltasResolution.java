@@ -3,12 +3,12 @@ package net.momirealms.craftengine.core.pack.conflict.resolution;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -17,10 +17,10 @@ public class MergeAltasResolution implements Resolution {
     public static final MergeAltasResolution INSTANCE = new MergeAltasResolution();
 
     @Override
-    public void run(Path existing, Path conflict) {
+    public void run(PathContext existing, PathContext conflict) {
         try {
-            JsonObject j1 = GsonHelper.readJsonFile(existing).getAsJsonObject();
-            JsonObject j2 = GsonHelper.readJsonFile(conflict).getAsJsonObject();
+            JsonObject j1 = GsonHelper.readJsonFile(existing.path()).getAsJsonObject();
+            JsonObject j2 = GsonHelper.readJsonFile(conflict.path()).getAsJsonObject();
             JsonObject j3 = new JsonObject();
             JsonArray ja1 = j1.getAsJsonArray("sources");
             JsonArray ja2 = j2.getAsJsonArray("sources");
@@ -37,7 +37,7 @@ public class MergeAltasResolution implements Resolution {
                 }
             }
             j3.add("sources", ja3);
-            GsonHelper.writeJsonFile(j3, existing);
+            GsonHelper.writeJsonFile(j3, existing.path());
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to merge json when resolving file conflicts", e);
         }

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
 import com.google.gson.*;
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;
@@ -191,9 +192,9 @@ public class MergePackMcMetaResolution implements Resolution {
     }
 
     @Override
-    public void run(Path existing, Path conflict) {
+    public void run(PathContext existing, PathContext conflict) {
         try {
-            mergeMcMeta(existing, conflict, AdventureHelper.componentToJsonElement(AdventureHelper.miniMessage().deserialize(this.description)));
+            mergeMcMeta(existing.path(), conflict.path(), AdventureHelper.componentToJsonElement(AdventureHelper.miniMessage().deserialize(this.description)));
         } catch (IOException e) {
             CraftEngine.instance().logger().severe("Failed to merge pack.mcmeta when resolving file conflicts", e);
         }

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -16,8 +17,8 @@ public class ParentPathPrefixMatcher implements PathMatcher {
     }
 
     @Override
-    public boolean test(Path path) {
-        Path parent = path.getParent();
+    public boolean test(PathContext path) {
+        Path parent = path.path().getParent();
         if (parent == null) return false;
         String pathStr = parent.toString().replace("\\", "/");
         return pathStr.startsWith(this.prefix);

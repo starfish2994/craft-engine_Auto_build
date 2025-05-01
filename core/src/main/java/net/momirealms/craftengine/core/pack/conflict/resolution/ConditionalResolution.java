@@ -1,18 +1,18 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcher;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatchers;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 public record ConditionalResolution(PathMatcher matcher, Resolution resolution) implements Resolution {
     public static final Factory FACTORY = new Factory();
 
     @Override
-    public void run(Path existing, Path conflict) {
+    public void run(PathContext existing, PathContext conflict) {
         if (this.matcher.test(existing)) {
             this.resolution.run(existing, conflict);
         }

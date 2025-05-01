@@ -1,10 +1,10 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 public class FilenameMatcher implements PathMatcher {
@@ -16,8 +16,8 @@ public class FilenameMatcher implements PathMatcher {
     }
 
     @Override
-    public boolean test(Path path) {
-        String fileName = String.valueOf(path.getFileName());
+    public boolean test(PathContext path) {
+        String fileName = String.valueOf(path.path().getFileName());
         return fileName.equals(name);
     }
 

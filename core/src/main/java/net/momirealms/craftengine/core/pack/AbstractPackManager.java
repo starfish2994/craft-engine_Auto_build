@@ -6,6 +6,7 @@ import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
@@ -1155,9 +1156,12 @@ public abstract class AbstractPackManager implements PackManager {
                             Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
                             conflicts.add(file);
                         } else {
+                            PathContext relativeCTX = PathContext.of(relative);
+                            PathContext targetCTX = PathContext.of(targetPath);
+                            PathContext fileCTX = PathContext.of(file);
                             for (ConditionalResolution resolution : Config.resolutions()) {
-                                if (resolution.matcher().test(relative)) {
-                                    resolution.resolution().run(targetPath, file);
+                                if (resolution.matcher().test(relativeCTX)) {
+                                    resolution.resolution().run(targetCTX, fileCTX);
                                     return FileVisitResult.CONTINUE;
                                 }
                             }

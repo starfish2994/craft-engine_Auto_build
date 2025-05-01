@@ -1,29 +1,24 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.util.condition.InvertedCondition;
 
-import java.nio.file.Path;
 import java.util.Map;
 
-public class InvertedPathMatcher implements PathMatcher {
+public class InvertedPathMatcher extends InvertedCondition<PathContext> implements PathMatcher {
     public static final Factory FACTORY = new Factory();
-    private final PathMatcher matcher;
 
-    public InvertedPathMatcher(PathMatcher matcher) {
-        this.matcher = matcher;
+    public InvertedPathMatcher(PathMatcher condition) {
+        super(condition);
     }
 
     @Override
     public Key type() {
         return PathMatchers.INVERTED;
-    }
-
-    @Override
-    public boolean test(Path path) {
-        return !matcher.test(path);
     }
 
     public static class Factory implements PathMatcherFactory {
