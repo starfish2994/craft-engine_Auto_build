@@ -8,12 +8,12 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.util.*;
 
-public class MatchItemCondition implements LootCondition {
+public class LootConditionMatchItem implements LootCondition {
     public static final Factory FACTORY = new Factory();
     private final Set<String> ids;
     private final boolean regexMatch;
 
-    public MatchItemCondition(Collection<String> ids, boolean regexMatch) {
+    public LootConditionMatchItem(Collection<String> ids, boolean regexMatch) {
         this.ids = new HashSet<>(ids);
         this.regexMatch = regexMatch;
     }
@@ -46,7 +46,7 @@ public class MatchItemCondition implements LootCondition {
         public LootCondition create(Map<String, Object> arguments) {
             List<String> ids = MiscUtils.getAsStringList(arguments.get("id"));
             boolean regex = (boolean) arguments.getOrDefault("regex", false);
-            return new MatchItemCondition(ids, regex);
+            return new LootConditionMatchItem(ids, regex);
         }
     }
 }

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class NamedArgumentTag implements TagResolver {
     private static final String NAME_0 = "argument";
@@ -29,11 +30,12 @@ public class NamedArgumentTag implements TagResolver {
             return null;
         }
         String argumentKey = arguments.popOr("No argument key provided").toString();
-        ContextKey<String> key = ContextKey.of(Key.of(argumentKey));
-        if (!this.context.contexts().has(key)) {
+        ContextKey<?> key = ContextKey.of(Key.withDefaultNamespace(argumentKey, "craftengine"));
+        Optional<?> optional = this.context.getOptionalParameter(key);
+        if (optional.isEmpty()) {
             throw ctx.newException("Invalid argument key", arguments);
         }
-        return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(this.context.contexts().getOrThrow(key), this.context.tagResolvers()));
+        return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(String.valueOf(optional.get()), this.context.tagResolvers()));
     }
 
     @Override

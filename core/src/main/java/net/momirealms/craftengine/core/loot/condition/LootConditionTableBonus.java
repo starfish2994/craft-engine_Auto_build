@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class TableBonusCondition implements LootCondition {
+public class LootConditionTableBonus implements LootCondition {
     public static final Factory FACTORY = new Factory();
     private final Key enchantmentType;
     private final List<Float> values;
 
-    public TableBonusCondition(Key enchantmentType, List<Float> values) {
+    public LootConditionTableBonus(Key enchantmentType, List<Float> values) {
         this.enchantmentType = enchantmentType;
         this.values = values;
     }
@@ -47,13 +47,13 @@ public class TableBonusCondition implements LootCondition {
             Object chances = arguments.get("chances");
             if (chances != null) {
                 if (chances instanceof Number number) {
-                    return new TableBonusCondition(enchantmentType, List.of(number.floatValue()));
+                    return new LootConditionTableBonus(enchantmentType, List.of(number.floatValue()));
                 } else if (chances instanceof List<?> list) {
                     List<Float> values = new ArrayList<>(list.size());
                     for (Object o : list) {
                         values.add(ResourceConfigUtils.getAsFloat(o, "chances"));
                     }
-                    return new TableBonusCondition(enchantmentType, values);
+                    return new LootConditionTableBonus(enchantmentType, values);
                 }
             }
             throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.missing_chances");

@@ -24,10 +24,6 @@ public class LootContext extends CommonContext {
         return this.randomSource;
     }
 
-    public <T> Optional<T> getOptionalParameter(ContextKey<T> parameter) {
-        return super.contexts.getOptional(parameter);
-    }
-
     public float luck() {
         return luck;
     }

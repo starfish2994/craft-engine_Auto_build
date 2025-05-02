@@ -11,7 +11,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerContext;
+import net.momirealms.craftengine.core.util.context.PlayerOptionalContext;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 import org.jetbrains.annotations.NotNull;
@@ -121,7 +121,7 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             Component content = AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player, ContextHolder.builder()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
                             .build()).tagResolvers()
@@ -167,7 +167,7 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player, ContextHolder.builder()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
                             .build()).tagResolvers())
@@ -199,7 +199,7 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player,
+                    PlayerOptionalContext.of(player,
                             ContextHolder.builder()
                                     .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                                     .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))

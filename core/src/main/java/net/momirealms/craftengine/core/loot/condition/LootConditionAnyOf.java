@@ -6,11 +6,11 @@ import net.momirealms.craftengine.core.util.Key;
 import java.util.List;
 import java.util.Map;
 
-public class AnyOfCondition implements LootCondition {
+public class LootConditionAnyOf implements LootCondition {
     public static final Factory FACTORY = new Factory();
     private final List<LootCondition> conditions;
 
-    public AnyOfCondition(List<LootCondition> conditions) {
+    public LootConditionAnyOf(List<LootCondition> conditions) {
         this.conditions = conditions;
     }
 
@@ -34,7 +34,7 @@ public class AnyOfCondition implements LootCondition {
         @Override
         public LootCondition create(Map<String, Object> arguments) {
             List<Map<String, Object>> terms = (List<Map<String, Object>>) arguments.get("terms");
-            return new AnyOfCondition(LootConditions.fromMapList(terms));
+            return new LootConditionAnyOf(LootConditions.fromMapList(terms));
         }
     }
 }

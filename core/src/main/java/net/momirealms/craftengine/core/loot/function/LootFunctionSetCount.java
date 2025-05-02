@@ -6,7 +6,6 @@ import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -15,36 +14,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class DropExpFunction<T> extends AbstractLootConditionalFunction<T> {
+public class LootFunctionSetCount<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
+
     private final NumberProvider value;
+    private final boolean add;
 
-    public DropExpFunction(NumberProvider value, List<LootCondition> predicates) {
-        super(predicates);
+    public LootFunctionSetCount(List<LootCondition> conditions, NumberProvider value, boolean add) {
+        super(conditions);
         this.value = value;
-    }
-
-    @Override
-    protected Item<T> applyInternal(Item<T> item, LootContext context) {
-        context.getOptionalParameter(LootParameters.WORLD)
-                .ifPresent(it -> context.getOptionalParameter(LootParameters.LOCATION).ifPresent(loc -> it.dropExp(loc.toCenter(), value.getInt(context))));
-        return item;
+        this.add = add;
     }
 
     @Override
     public Key type() {
-        return LootFunctions.DROP_EXP;
+        return LootFunctions.SET_COUNT;
     }
 
-    public static class Factory<T> implements LootFunctionFactory<T> {
+    @Override
+    protected Item<T> applyInternal(Item<T> item, LootContext context) {
+        int amount = this.add ? item.count() : 0;
+        item.count(amount + this.value.getInt(context));
+        return item;
+    }
+
+    public static class Factory<A> implements LootFunctionFactory<A> {
         @SuppressWarnings("unchecked")
         @Override
-        public LootFunction<T> create(Map<String, Object> arguments) {
-            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("count"), "warning.config.loot_table.function.drop_exp.missing_count");
+        public LootFunction<A> create(Map<String, Object> arguments) {
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("count"), "warning.config.loot_table.function.set_count.missing_count");
+            boolean add = (boolean) arguments.getOrDefault("add", false);
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());
-            return new DropExpFunction<>(NumberProviders.fromObject(value), conditions);
+            return new LootFunctionSetCount<>(conditions, NumberProviders.fromObject(value), add);
         }
     }
 }
