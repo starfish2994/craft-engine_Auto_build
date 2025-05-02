@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.world;
 
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 
-public interface WorldBlock {
+public interface BlockInWorld {
 
     default boolean canBeReplaced(BlockPlaceContext blockPlaceContext) {
         return false;
@@ -11,4 +11,10 @@ public interface WorldBlock {
     default boolean isWaterSource(BlockPlaceContext blockPlaceContext) {
         return false;
     }
+
+    int x();
+
+    int y();
+
+    int z();
 }

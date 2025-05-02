@@ -8,12 +8,12 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class ParentPathSuffixMatcher implements PathMatcher {
+public class PathMatcherParentPrefix implements PathMatcher {
     public static final Factory FACTORY = new Factory();
-    private final String suffix;
+    private final String prefix;
 
-    public ParentPathSuffixMatcher(String suffix) {
-        this.suffix = suffix;
+    public PathMatcherParentPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     @Override
@@ -21,20 +21,20 @@ public class ParentPathSuffixMatcher implements PathMatcher {
         Path parent = path.path().getParent();
         if (parent == null) return false;
         String pathStr = parent.toString().replace("\\", "/");
-        return pathStr.endsWith(suffix);
+        return pathStr.startsWith(this.prefix);
     }
 
     @Override
     public Key type() {
-        return PathMatchers.PARENT_PATH_SUFFIX;
+        return PathMatchers.PARENT_PATH_PREFIX;
     }
 
     public static class Factory implements PathMatcherFactory {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String suffix = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("suffix"), () -> new LocalizedException("warning.config.conflict_matcher.parent_suffix.missing_suffix"));
-            return new ParentPathSuffixMatcher(suffix);
+            String prefix = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("prefix"), () -> new LocalizedException("warning.config.conflict_matcher.parent_prefix.missing_prefix"));
+            return new PathMatcherParentPrefix(prefix);
         }
     }
 }

@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class MatchBlockPropertyCondition implements LootCondition {
+public class LootConditionMatchBlockProperty implements LootCondition {
     public static final Factory FACTORY = new Factory();
     private final List<Pair<String, String>> properties;
 
-    public MatchBlockPropertyCondition(List<Pair<String, String>> properties) {
+    public LootConditionMatchBlockProperty(List<Pair<String, String>> properties) {
         this.properties = properties;
     }
 
@@ -55,7 +55,7 @@ public class MatchBlockPropertyCondition implements LootCondition {
             for (Map.Entry<String, Object> entry : properties.entrySet()) {
                 propertyList.add(new Pair<>(entry.getKey(), entry.getValue().toString()));
             }
-            return new MatchBlockPropertyCondition(propertyList);
+            return new LootConditionMatchBlockProperty(propertyList);
         }
     }
 }

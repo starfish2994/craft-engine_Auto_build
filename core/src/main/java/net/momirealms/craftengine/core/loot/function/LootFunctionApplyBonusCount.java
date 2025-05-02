@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<T> {
+public class LootFunctionApplyBonusCount<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
     private final Key enchantment;
     private final Formula formula;
 
-    public ApplyBonusCountFunction(List<LootCondition> predicates, Key enchantment, Formula formula) {
+    public LootFunctionApplyBonusCount(List<LootCondition> predicates, Key enchantment, Formula formula) {
         super(predicates);
         this.enchantment = enchantment;
         this.formula = formula;
@@ -57,7 +57,7 @@ public class ApplyBonusCountFunction<T> extends AbstractLootConditionalFunction<
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());
-            return new ApplyBonusCountFunction<>(conditions, Key.from(enchantment), Formulas.fromMap(formulaMap));
+            return new LootFunctionApplyBonusCount<>(conditions, Key.from(enchantment), Formulas.fromMap(formulaMap));
         }
     }
 

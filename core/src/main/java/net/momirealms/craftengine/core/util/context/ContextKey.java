@@ -22,7 +22,7 @@ public class ContextKey<T> {
 
     @NotNull
     public static <T> ContextKey<T> of(@NotNull String id) {
-        return new ContextKey<>(Key.of(id));
+        return new ContextKey<>(Key.withDefaultNamespace(id, "craftengine"));
     }
 
     @Override

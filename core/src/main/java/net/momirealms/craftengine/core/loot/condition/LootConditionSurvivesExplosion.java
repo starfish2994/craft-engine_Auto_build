@@ -7,9 +7,9 @@ import net.momirealms.craftengine.core.util.Key;
 import java.util.Map;
 import java.util.Optional;
 
-public class SurvivesExplosionCondition implements LootCondition {
+public class LootConditionSurvivesExplosion implements LootCondition {
     public static final Factory FACTORY = new Factory();
-    private static final SurvivesExplosionCondition INSTANCE = new SurvivesExplosionCondition();
+    private static final LootConditionSurvivesExplosion INSTANCE = new LootConditionSurvivesExplosion();
 
     @Override
     public Key type() {

@@ -23,10 +23,10 @@ public class LootFunctions {
     public static final Key DROP_EXP = Key.from("craftengine:drop_exp");
 
     static {
-        register(SET_COUNT, SetCountFunction.FACTORY);
-        register(EXPLOSION_DECAY, ExplosionDecayFunction.FACTORY);
-        register(APPLY_BONUS, ApplyBonusCountFunction.FACTORY);
-        register(DROP_EXP, DropExpFunction.FACTORY);
+        register(SET_COUNT, LootFunctionSetCount.FACTORY);
+        register(EXPLOSION_DECAY, LootFunctionExplosionDecay.FACTORY);
+        register(APPLY_BONUS, LootFunctionApplyBonusCount.FACTORY);
+        register(DROP_EXP, LootFunctionDropExp.FACTORY);
     }
 
     public static <T> void register(Key key, LootFunctionFactory<T> factory) {

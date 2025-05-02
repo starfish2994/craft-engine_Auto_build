@@ -17,7 +17,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerContext;
+import net.momirealms.craftengine.core.util.context.PlayerOptionalContext;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -177,7 +177,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.BROWSER_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.BROWSER_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -292,7 +292,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.CATEGORY_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.CATEGORY_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -353,7 +353,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_NONE_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_NONE_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -578,7 +578,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_SMITHING_TRANSFORM_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_SMITHING_TRANSFORM_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -711,7 +711,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_STONECUTTING_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_STONECUTTING_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -861,7 +861,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(title, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(title, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }
@@ -1056,7 +1056,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     }
                 })
                 .build()
-                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_CRAFTING_TITLE, PlayerContext.of(player, ContextHolder.EMPTY).tagResolvers()))
+                .title(AdventureHelper.miniMessage().deserialize(Constants.RECIPE_CRAFTING_TITLE, PlayerOptionalContext.of(player, ContextHolder.EMPTY).tagResolvers()))
                 .refresh()
                 .open(player);
     }

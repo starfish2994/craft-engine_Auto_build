@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.condition.AllOfCondition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +26,15 @@ public class PathMatchers {
     public static final Key INVERTED = Key.of("craftengine:inverted");
 
     static {
-        register(PARENT_PATH_SUFFIX, ParentPathSuffixMatcher.FACTORY);
-        register(PARENT_PATH_PREFIX, ParentPathPrefixMatcher.FACTORY);
+        register(PARENT_PATH_SUFFIX, PathMatcherParentSuffix.FACTORY);
+        register(PARENT_PATH_PREFIX, PathMatcherParentPrefix.FACTORY);
         register(PATTERN, PathPatternMatcher.FACTORY);
-        register(EXACT, ExactPathMatcher.FACTORY);
-        register(FILENAME, FilenameMatcher.FACTORY);
-        register(ANY_OF, AnyOfPathMatcher.FACTORY);
-        register(ALL_OF, AllOfPathMatcher.FACTORY);
-        register(INVERTED, InvertedPathMatcher.FACTORY);
-        register(CONTAINS, PathContainsMatcher.FACTORY);
+        register(EXACT, PathMatcherExact.FACTORY);
+        register(FILENAME, PathMatcherFilename.FACTORY);
+        register(ANY_OF, PathMatcherAnyOf.FACTORY);
+        register(ALL_OF, PathMatcherAllOf.FACTORY);
+        register(INVERTED, PathMatcherInverted.FACTORY);
+        register(CONTAINS, PathMatcherContains.FACTORY);
     }
 
     public static void register(Key key, PathMatcherFactory factory) {

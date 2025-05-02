@@ -26,16 +26,16 @@ public class LootConditions {
     public static final Key FALLING_BLOCK = Key.from("craftengine:falling_block");
 
     static {
-        register(MATCH_ITEM, MatchItemCondition.FACTORY);
-        register(MATCH_BLOCK_PROPERTY, MatchBlockPropertyCondition.FACTORY);
-        register(TABLE_BONUS, TableBonusCondition.FACTORY);
-        register(SURVIVES_EXPLOSION, SurvivesExplosionCondition.FACTORY);
-        register(ANY_OF, AnyOfCondition.FACTORY);
-        register(ALL_OF, AllOfCondition.FACTORY);
-        register(ENCHANTMENT, EnchantmentCondition.FACTORY);
-        register(INVERTED, InvertedCondition.FACTORY);
-        register(FALLING_BLOCK, FallingCondition.FACTORY);
-        register(RANDOM, RandomCondition.FACTORY);
+        register(MATCH_ITEM, LootConditionMatchItem.FACTORY);
+        register(MATCH_BLOCK_PROPERTY, LootConditionMatchBlockProperty.FACTORY);
+        register(TABLE_BONUS, LootConditionTableBonus.FACTORY);
+        register(SURVIVES_EXPLOSION, LootConditionSurvivesExplosion.FACTORY);
+        register(ANY_OF, LootConditionAnyOf.FACTORY);
+        register(ALL_OF, LootConditionAllOf.FACTORY);
+        register(ENCHANTMENT, LootConditionEnchantment.FACTORY);
+        register(INVERTED, LootConditionInverted.FACTORY);
+        register(FALLING_BLOCK, LootConditionFalling.FACTORY);
+        register(RANDOM, LootConditionRandom.FACTORY);
     }
 
     public static void register(Key key, LootConditionFactory factory) {

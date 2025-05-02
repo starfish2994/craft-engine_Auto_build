@@ -9,10 +9,10 @@ import net.momirealms.craftengine.core.util.Key;
 
 import java.util.*;
 
-public class ExplosionDecayFunction<T> extends AbstractLootConditionalFunction<T> {
+public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
 
-    public ExplosionDecayFunction(List<LootCondition> predicates) {
+    public LootFunctionExplosionDecay(List<LootCondition> predicates) {
         super(predicates);
     }
 
@@ -46,7 +46,7 @@ public class ExplosionDecayFunction<T> extends AbstractLootConditionalFunction<T
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());
-            return new ExplosionDecayFunction<>(conditions);
+            return new LootFunctionExplosionDecay<>(conditions);
         }
     }
 }
