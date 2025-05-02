@@ -9,11 +9,11 @@ import net.momirealms.craftengine.core.util.Key;
 import java.io.IOException;
 import java.util.Map;
 
-public class MergeJsonResolution implements Resolution {
+public class ResolutionMergeJson implements Resolution {
     public static final Factory FACTORY = new Factory();
     private final boolean deeply;
 
-    public MergeJsonResolution(boolean deeply) {
+    public ResolutionMergeJson(boolean deeply) {
         this.deeply = deeply;
     }
 
@@ -44,7 +44,7 @@ public class MergeJsonResolution implements Resolution {
         @Override
         public Resolution create(Map<String, Object> arguments) {
             boolean deeply = (boolean) arguments.getOrDefault("deeply", false);
-            return new MergeJsonResolution(deeply);
+            return new ResolutionMergeJson(deeply);
         }
     }
 }

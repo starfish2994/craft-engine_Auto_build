@@ -9,16 +9,11 @@ import net.momirealms.craftengine.core.util.condition.InvertedCondition;
 
 import java.util.Map;
 
-public class InvertedPathMatcher extends InvertedCondition<PathContext> implements PathMatcher {
+public class PathMatcherInverted extends InvertedCondition<PathContext> implements PathMatcher {
     public static final Factory FACTORY = new Factory();
 
-    public InvertedPathMatcher(PathMatcher condition) {
+    public PathMatcherInverted(PathMatcher condition) {
         super(condition);
-    }
-
-    @Override
-    public Key type() {
-        return PathMatchers.INVERTED;
     }
 
     public static class Factory implements PathMatcherFactory {
@@ -27,7 +22,7 @@ public class InvertedPathMatcher extends InvertedCondition<PathContext> implemen
         public PathMatcher create(Map<String, Object> arguments) {
             Object inverted = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("term"), () -> new LocalizedException("warning.config.conflict_matcher.inverted.missing_term"));
             Map<String, Object> term = MiscUtils.castToMap(inverted, false);
-            return new InvertedPathMatcher(PathMatchers.fromMap(term));
+            return new PathMatcherInverted(PathMatchers.fromMap(term));
         }
     }
 }

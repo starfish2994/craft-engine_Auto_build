@@ -80,7 +80,7 @@ public class LootTable<T> {
     }
 
     public ArrayList<Item<T>> getRandomItems(ContextHolder parameters, World world) {
-        return this.getRandomItems(new LootContext(world, parameters, ThreadLocalRandom.current(), 1));
+        return this.getRandomItems(new LootContext(world, 1, ThreadLocalRandom.current(), parameters));
     }
 
     private ArrayList<Item<T>> getRandomItems(LootContext context) {

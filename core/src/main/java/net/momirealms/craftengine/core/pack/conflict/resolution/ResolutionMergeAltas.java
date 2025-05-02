@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 
-public class MergeAltasResolution implements Resolution {
+public class ResolutionMergeAltas implements Resolution {
     public static final Factory FACTORY = new Factory();
-    public static final MergeAltasResolution INSTANCE = new MergeAltasResolution();
+    public static final ResolutionMergeAltas INSTANCE = new ResolutionMergeAltas();
 
     @Override
     public void run(PathContext existing, PathContext conflict) {

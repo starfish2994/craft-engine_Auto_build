@@ -148,10 +148,10 @@ public class CropBlockBehavior extends BushBlockBehavior {
         int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
 
         net.momirealms.craftengine.core.world.World wrappedWorld = new BukkitWorld(world);
-        int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(new LootContext(wrappedWorld, ContextHolder.builder()
+        int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(new LootContext(wrappedWorld, 1, ThreadLocalRandom.current(), ContextHolder.builder()
                 .withParameter(LootParameters.WORLD, wrappedWorld)
                 .withParameter(LootParameters.LOCATION, Vec3d.atCenterOf(new Vec3i(x, y, z)))
-                .build(), ThreadLocalRandom.current(), 1));
+                .build()));
         int maxAge = this.ageProperty.max;
         if (i > maxAge) {
             i = maxAge;

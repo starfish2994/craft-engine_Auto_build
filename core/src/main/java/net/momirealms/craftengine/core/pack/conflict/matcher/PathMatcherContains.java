@@ -7,11 +7,11 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
-public class PathContainsMatcher implements PathMatcher {
+public class PathMatcherContains implements PathMatcher {
     public static final Factory FACTORY = new Factory();
     private final String path;
 
-    public PathContainsMatcher(String path) {
+    public PathMatcherContains(String path) {
         this.path = path;
     }
 
@@ -31,7 +31,7 @@ public class PathContainsMatcher implements PathMatcher {
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
             String path = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("path"), () -> new LocalizedException("warning.config.conflict_matcher.contains.missing_path"));
-            return new PathContainsMatcher(path);
+            return new PathMatcherContains(path);
         }
     }
 }

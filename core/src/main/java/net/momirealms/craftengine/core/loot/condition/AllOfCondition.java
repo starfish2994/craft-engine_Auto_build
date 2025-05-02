@@ -30,6 +30,7 @@ public class AllOfCondition implements LootCondition {
     }
 
     public static class Factory implements LootConditionFactory {
+
         @SuppressWarnings("unchecked")
         @Override
         public LootCondition create(Map<String, Object> arguments) {

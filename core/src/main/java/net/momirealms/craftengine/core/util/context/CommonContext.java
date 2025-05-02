@@ -1,14 +1,14 @@
 package net.momirealms.craftengine.core.util.context;
 
 public abstract class CommonContext implements Context {
-    protected final ContextHolder holder;
+    protected final ContextHolder contexts;
 
-    public CommonContext(ContextHolder holder) {
-        this.holder = holder;
+    public CommonContext(ContextHolder contexts) {
+        this.contexts = contexts;
     }
 
     @Override
     public ContextHolder contexts() {
-        return holder;
+        return contexts;
     }
 }
