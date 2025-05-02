@@ -113,13 +113,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     protected Operation commitBefore() {
-        try {
-            for (CEChunk ceChunk : this.needSaveChunks) {
-                this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation chunks", e);
-        }
+        saveAllChunks();
         return super.commitBefore();
     }
 
@@ -133,6 +127,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 int blockZ = position.z();
                 this.processBlock(blockX, blockY, blockZ, blockState, oldBlockState);
             }
+            saveAllChunks();
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
         }
@@ -155,5 +150,17 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
         }
         this.needSaveChunks.add(ceChunk);
+    }
+
+    private void saveAllChunks() {
+        try {
+            for (CEChunk ceChunk : this.needSaveChunks) {
+                System.out.println("saveAllChunks");
+                this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
+            }
+            this.needSaveChunks.clear();
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation chunks", e);
+        }
     }
 }
