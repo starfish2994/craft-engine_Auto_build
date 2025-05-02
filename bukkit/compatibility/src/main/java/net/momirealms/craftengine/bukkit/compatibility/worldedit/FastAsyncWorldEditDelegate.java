@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
 import com.fastasyncworldedit.core.configuration.Settings;
-import com.fastasyncworldedit.core.queue.implementation.ParallelQueueExtent;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
