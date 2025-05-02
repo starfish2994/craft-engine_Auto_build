@@ -5,28 +5,39 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
-import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
 import com.sk89q.worldedit.world.block.BaseBlock;
-import com.sk89q.worldedit.world.block.BlockState;
+import com.sk89q.worldedit.world.block.BlockStateHolder;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.bukkit.Bukkit;
 
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
-    protected FastAsyncWorldEditDelegate(Extent extent) {
-        super(extent);
+    private final Set<CEChunk> needSaveChunks;
+    private final CEWorld ceWorld;
+
+    protected FastAsyncWorldEditDelegate(EditSessionEvent event) {
+        super(event.getExtent());
+        this.needSaveChunks = new HashSet<>();
+        var weWorld = event.getWorld();
+        var world = Bukkit.getWorld(Objects.requireNonNull(weWorld).getName());
+        var ceWorld = CraftEngine.instance().worldManager().getWorld(Objects.requireNonNull(world).getUID());
+        this.ceWorld = Objects.requireNonNull(ceWorld);
     }
 
     public static void init() {
@@ -36,7 +47,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             @SuppressWarnings("unused")
             public void onEditSessionEvent(EditSessionEvent event) {
                 if (event.getStage() != EditSession.Stage.BEFORE_HISTORY) return;
-                event.setExtent(new FastAsyncWorldEditDelegate(event.getExtent()));
+                event.setExtent(new FastAsyncWorldEditDelegate(event));
             }
         });
     }
@@ -53,43 +64,60 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         return super.replaceBlocks(region, mask, pattern);
     }
 
+    @Override
+    public <T extends BlockStateHolder<T>> boolean setBlock(int x, int y, int z, T block) {
+        try {
+            BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
+            this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
+        }
+        return super.setBlock(x, y, z, block);
+    }
+
+    @Override
+    protected Operation commitBefore() {
+        try {
+            for (CEChunk ceChunk : this.needSaveChunks) {
+                this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation chunks", e);
+        }
+        return super.commitBefore();
+    }
+
     private void processBlocks(Region region, Pattern pattern) {
         try {
-            var weWorld = region.getWorld();
-            if (weWorld == null) return;
-            var world = Bukkit.getWorld(weWorld.getName());
-            if (world == null) return;
-            var ceWorld = CraftEngine.instance().worldManager().getWorld(world.getUID());
-            if (ceWorld == null) return;
-            Set<CEChunk> needSaveChunks = new HashSet<>();
             for (BlockVector3 position : region) {
                 BaseBlock blockState = pattern.applyBlock(position);
-                BlockState oldBlockState = getBlock(position);
+                BaseBlock oldBlockState = getBlock(position).toBaseBlock();
                 int blockX = position.x();
                 int blockY = position.y();
                 int blockZ = position.z();
-                int chunkX = blockX >> 4;
-                int chunkZ = blockZ >> 4;
-                int stateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(blockState.getAsString()));
-                int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
-                if (BlockStateUtils.isVanillaBlock(stateId) && BlockStateUtils.isVanillaBlock(oldStateId)) continue;
-                var ceChunk = ceWorld.getChunkAtIfLoaded(chunkX, chunkZ);
-                if (ceChunk == null) {
-                    ceChunk = ceWorld.worldDataStorage().readChunkAt(ceWorld, new ChunkPos(chunkX, chunkZ));
-                }
-                var immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-                if (immutableBlockState == null) {
-                    ceChunk.setBlockState(blockX, blockY, blockZ, EmptyBlock.STATE);
-                } else {
-                    ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
-                }
-                needSaveChunks.add(ceChunk);
-            }
-            for (CEChunk ceChunk : needSaveChunks) {
-                ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
+                this.processBlock(blockX, blockY, blockZ, blockState, oldBlockState);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
         }
+    }
+
+    private void processBlock(int blockX, int blockY, int blockZ, BaseBlock blockState, BaseBlock oldBlockState) throws IOException {
+        int chunkX = blockX >> 4;
+        int chunkZ = blockZ >> 4;
+        int stateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(blockState.getAsString()));
+        int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
+        if (BlockStateUtils.isVanillaBlock(stateId) && BlockStateUtils.isVanillaBlock(oldStateId)) return;
+        var ceChunk = this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ);
+        if (ceChunk == null) {
+            ceChunk = this.ceWorld.worldDataStorage().readChunkAt(this.ceWorld, new ChunkPos(chunkX, chunkZ));
+        }
+        var immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (immutableBlockState == null) {
+            ceChunk.setBlockState(blockX, blockY, blockZ, EmptyBlock.STATE);
+        } else {
+            ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
+        }
+        this.needSaveChunks.add(ceChunk);
     }
 }
