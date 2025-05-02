@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.util.condition;
 
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.context.Condition;
 
 public abstract class InvertedCondition<CTX> implements Condition<CTX> {
@@ -12,5 +13,10 @@ public abstract class InvertedCondition<CTX> implements Condition<CTX> {
     @Override
     public boolean test(CTX ctx) {
         return !this.condition.test(ctx);
+    }
+
+    @Override
+    public Key type() {
+        return CommonConditions.INVERTED;
     }
 }

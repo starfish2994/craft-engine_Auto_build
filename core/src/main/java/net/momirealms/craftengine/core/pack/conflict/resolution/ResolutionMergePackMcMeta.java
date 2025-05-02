@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class MergePackMcMetaResolution implements Resolution {
+public class ResolutionMergePackMcMeta implements Resolution {
     public static final Factory FACTORY = new Factory();
     private final String description;
 
-    public MergePackMcMetaResolution(String description) {
+    public ResolutionMergePackMcMeta(String description) {
         this.description = description;
     }
 
@@ -209,7 +209,7 @@ public class MergePackMcMetaResolution implements Resolution {
         @Override
         public Resolution create(Map<String, Object> arguments) {
             String description = arguments.getOrDefault("description", "<gray>CraftEngine ResourcePack</gray>").toString();
-            return new MergePackMcMetaResolution(description);
+            return new ResolutionMergePackMcMeta(description);
         }
     }
 }

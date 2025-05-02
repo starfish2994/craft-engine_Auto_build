@@ -7,31 +7,31 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
-public class FilenameMatcher implements PathMatcher {
+public class PathMatcherExact implements PathMatcher {
     public static final Factory FACTORY = new Factory();
-    private final String name;
+    private final String path;
 
-    public FilenameMatcher(String name) {
-        this.name = name;
+    public PathMatcherExact(String path) {
+        this.path = path;
     }
 
     @Override
     public boolean test(PathContext path) {
-        String fileName = String.valueOf(path.path().getFileName());
-        return fileName.equals(name);
+        String pathStr = path.path().toString().replace("\\", "/");
+        return pathStr.equals(this.path);
     }
 
     @Override
     public Key type() {
-        return PathMatchers.FILENAME;
+        return PathMatchers.EXACT;
     }
 
     public static class Factory implements PathMatcherFactory {
 
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            String name = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("name"), () -> new LocalizedException("warning.config.conflict_matcher.filename.missing_name"));
-            return new FilenameMatcher(name);
+            String path = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("path"), () -> new LocalizedException("warning.config.conflict_matcher.exact.missing_path"));
+            return new PathMatcherExact(path);
         }
     }
 }

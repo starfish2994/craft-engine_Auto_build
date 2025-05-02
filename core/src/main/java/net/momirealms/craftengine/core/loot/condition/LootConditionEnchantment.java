@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class EnchantmentCondition implements LootCondition {
+public class LootConditionEnchantment implements LootCondition {
     public static final Factory FACTORY = new Factory();
     private final Key id;
     private final Function<Integer, Boolean> expression;
 
-    public EnchantmentCondition(Key id, Function<Integer, Boolean> expression) {
+    public LootConditionEnchantment(Key id, Function<Integer, Boolean> expression) {
         this.id = id;
         this.expression = expression;
     }
@@ -50,7 +50,7 @@ public class EnchantmentCondition implements LootCondition {
                 case ">=" -> expression = (i -> i >= level);
                 default -> throw new IllegalArgumentException("Unknown operator: " + operator);
             }
-            return new EnchantmentCondition(Key.of(split[0]), expression);
+            return new LootConditionEnchantment(Key.of(split[0]), expression);
         }
     }
 }

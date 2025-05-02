@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
 import net.momirealms.craftengine.core.loot.condition.LootConditionFactory;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
-import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
+import net.momirealms.craftengine.core.loot.function.LootFunctionApplyBonusCount;
 import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
 import net.momirealms.craftengine.core.loot.number.NumberProviderFactory;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcherFactory;
@@ -43,7 +43,7 @@ public class BuiltInRegistries {
     public static final Registry<ConditionPropertyFactory> CONDITION_PROPERTY_FACTORY = createRegistry(Registries.CONDITION_PROPERTY_FACTORY);
     public static final Registry<SelectPropertyFactory> SELECT_PROPERTY_FACTORY = createRegistry(Registries.SELECT_PROPERTY_FACTORY);
     public static final Registry<RecipeFactory<?>> RECIPE_FACTORY = createRegistry(Registries.RECIPE_FACTORY);
-    public static final Registry<ApplyBonusCountFunction.FormulaFactory> FORMULA_FACTORY = createRegistry(Registries.FORMULA_FACTORY);
+    public static final Registry<LootFunctionApplyBonusCount.FormulaFactory> FORMULA_FACTORY = createRegistry(Registries.FORMULA_FACTORY);
     public static final Registry<PathMatcherFactory> PATH_MATCHER_FACTORY = createRegistry(Registries.PATH_MATCHER_FACTORY);
     public static final Registry<ResolutionFactory> RESOLUTION_FACTORY = createRegistry(Registries.RESOLUTION_FACTORY);
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);

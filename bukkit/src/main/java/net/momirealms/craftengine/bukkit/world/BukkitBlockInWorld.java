@@ -12,25 +12,26 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.text.minimessage.NamedArgumentTag;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.world.WorldBlock;
+import net.momirealms.craftengine.core.world.BlockInWorld;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class BukkitWorldBlock implements WorldBlock {
+public class BukkitBlockInWorld implements BlockInWorld {
     private final Block block;
 
-    public BukkitWorldBlock(Block block) {
+    public BukkitBlockInWorld(Block block) {
         this.block = block;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public boolean canBeReplaced(BlockPlaceContext context) {
-        ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
+        ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(this.block.getBlockData()));
         if (customState != null && !customState.isEmpty()) {
             Key clickedBlockId = customState.owner().value().id();
             Item<ItemStack> item = (Item<ItemStack>) context.getPlayer().getItemInHand(context.getHand());
@@ -45,14 +46,14 @@ public class BukkitWorldBlock implements WorldBlock {
                 }
             }
         }
-        return block.isReplaceable();
+        return this.block.isReplaceable();
     }
 
     @Override
     public boolean isWaterSource(BlockPlaceContext blockPlaceContext) {
         try {
-            Location location = block.getLocation();
-            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(block.getWorld());
+            Location location = this.block.getLocation();
+            Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.block.getWorld());
             Object fluidData = Reflections.method$Level$getFluidState.invoke(serverLevel, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
             if (fluidData == null) return false;
             return Reflections.method$FluidState$getType.invoke(fluidData) == Reflections.instance$Fluids$WATER;
@@ -60,6 +61,21 @@ public class BukkitWorldBlock implements WorldBlock {
             CraftEngine.instance().logger().warn("Failed to check if water source is available", e);
             return false;
         }
+    }
+
+    @Override
+    public int x() {
+        return this.block.getX();
+    }
+
+    @Override
+    public int y() {
+        return this.block.getY();
+    }
+
+    @Override
+    public int z() {
+        return this.block.getZ();
     }
 
     public Block block() {

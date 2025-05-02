@@ -2,11 +2,11 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerContext;
+import net.momirealms.craftengine.core.util.context.PlayerOptionalContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ItemBuildContext extends PlayerContext {
+public class ItemBuildContext extends PlayerOptionalContext {
     public static final ItemBuildContext EMPTY = new ItemBuildContext(null, ContextHolder.EMPTY);
 
     public ItemBuildContext(@Nullable Player player, @NotNull ContextHolder contexts) {

@@ -20,10 +20,10 @@ public class Resolutions {
 
     static {
         register(RETAIN_MATCHING, RetainMatchingResolution.FACTORY);
-        register(MERGE_JSON, MergeJsonResolution.FACTORY);
-        register(CONDITIONAL, ConditionalResolution.FACTORY);
-        register(MERGE_PACK_MCMETA, MergePackMcMetaResolution.FACTORY);
-        register(MERGE_ATLAS, MergeAltasResolution.FACTORY);
+        register(MERGE_JSON, ResolutionMergeJson.FACTORY);
+        register(CONDITIONAL, ResolutionConditional.FACTORY);
+        register(MERGE_PACK_MCMETA, ResolutionMergePackMcMeta.FACTORY);
+        register(MERGE_ATLAS, ResolutionMergeAltas.FACTORY);
     }
 
     public static void register(Key key, ResolutionFactory factory) {

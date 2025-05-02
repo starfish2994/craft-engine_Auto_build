@@ -10,16 +10,11 @@ import net.momirealms.craftengine.core.util.context.Condition;
 import java.util.List;
 import java.util.Map;
 
-public class AllOfPathMatcher extends AllOfCondition<PathContext> implements PathMatcher {
+public class PathMatcherAllOf extends AllOfCondition<PathContext> implements PathMatcher {
     public static final Factory FACTORY = new Factory();
 
-    public AllOfPathMatcher(List<? extends Condition<PathContext>> conditions) {
+    public PathMatcherAllOf(List<? extends Condition<PathContext>> conditions) {
         super(conditions);
-    }
-
-    @Override
-    public Key type() {
-        return PathMatchers.ALL_OF;
     }
 
     public static class Factory implements PathMatcherFactory {
@@ -30,10 +25,10 @@ public class AllOfPathMatcher extends AllOfCondition<PathContext> implements Pat
             Object termsObj = arguments.get("terms");
             if (termsObj instanceof List<?> list) {
                 List<Map<String, Object>> terms = (List<Map<String, Object>>) list;
-                return new AllOfPathMatcher(PathMatchers.fromMapList(terms));
+                return new PathMatcherAllOf(PathMatchers.fromMapList(terms));
             } else if (termsObj instanceof Map<?, ?>) {
                 Map<String, Object> terms = MiscUtils.castToMap(termsObj, false);
-                return new AllOfPathMatcher(PathMatchers.fromMapList(List.of(terms)));
+                return new PathMatcherAllOf(PathMatchers.fromMapList(List.of(terms)));
             } else {
                 throw new LocalizedException("warning.config.conflict_matcher.all_of.missing_terms");
             }
