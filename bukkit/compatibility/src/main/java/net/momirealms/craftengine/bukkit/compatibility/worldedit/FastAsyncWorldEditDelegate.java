@@ -102,6 +102,17 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     }
 
     @Override
+    public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 position, T block) {
+        try {
+            BaseBlock oldBlockState = getBlock(position).toBaseBlock();
+            this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
+        }
+        return super.setBlock(position, block);
+    }
+
+    @Override
     protected Operation commitBefore() {
         try {
             for (CEChunk ceChunk : this.needSaveChunks) {
