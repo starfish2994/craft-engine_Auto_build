@@ -155,7 +155,6 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private void saveAllChunks() {
         try {
             for (CEChunk ceChunk : this.needSaveChunks) {
-                System.out.println("saveAllChunks");
                 this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
             }
             this.needSaveChunks.clear();
