@@ -482,7 +482,7 @@ public abstract class AbstractFontManager implements FontManager {
                     }
                 }
                 if (codepoints.length == 0) {
-                    throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+                    throw new LocalizedResourceConfigException("warning.config.image.invalid_char", path, id);
                 }
                 codepointGrid[i] = codepoints;
                 if (size == -1) size = codepoints.length;
