@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
 import com.fastasyncworldedit.core.configuration.Settings;
+import com.fastasyncworldedit.core.queue.implementation.ParallelQueueExtent;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
@@ -24,8 +25,9 @@ import org.bukkit.Bukkit;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private final Set<CEChunk> needSaveChunks;
@@ -35,9 +37,9 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         super(event.getExtent());
         this.needSaveChunks = new HashSet<>();
         var weWorld = event.getWorld();
-        var world = Bukkit.getWorld(Objects.requireNonNull(weWorld).getName());
-        var ceWorld = CraftEngine.instance().worldManager().getWorld(Objects.requireNonNull(world).getUID());
-        this.ceWorld = Objects.requireNonNull(ceWorld);
+        var world = Bukkit.getWorld(requireNonNull(weWorld).getName());
+        var ceWorld = CraftEngine.instance().worldManager().getWorld(requireNonNull(world).getUID());
+        this.ceWorld = requireNonNull(ceWorld);
     }
 
     public static void init() {
@@ -53,15 +55,39 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     }
 
     @Override
+    public int setBlocks(final Set<BlockVector3> vset, final Pattern pattern) {
+        this.processBlocks(vset, pattern);
+        return super.setBlocks(vset, pattern);
+    }
+
+    @Override
     public int setBlocks(final Region region, final Pattern pattern) {
         this.processBlocks(region, pattern);
         return super.setBlocks(region, pattern);
+    }
+
+
+    @Override
+    public <B extends BlockStateHolder<B>> int setBlocks(final Region region, final B block) {
+        this.processBlocks(region, block);
+        return super.setBlocks(region, block);
     }
 
     @Override
     public int replaceBlocks(Region region, Mask mask, Pattern pattern) {
         this.processBlocks(region, pattern);
         return super.replaceBlocks(region, mask, pattern);
+    }
+    @Override
+    public <B extends BlockStateHolder<B>> int replaceBlocks(final Region region, final Set<BaseBlock> filter, final B replacement) {
+        this.processBlocks(region, replacement);
+        return super.replaceBlocks(region, filter, replacement);
+    }
+
+    @Override
+    public int replaceBlocks(final Region region, final Set<BaseBlock> filter, final Pattern pattern) {
+        this.processBlocks(region, pattern);
+        return super.replaceBlocks(region, filter, pattern);
     }
 
     @Override
@@ -87,7 +113,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         return super.commitBefore();
     }
 
-    private void processBlocks(Region region, Pattern pattern) {
+    private void processBlocks(Iterable<BlockVector3> region, Pattern pattern) {
         try {
             for (BlockVector3 position : region) {
                 BaseBlock blockState = pattern.applyBlock(position);
