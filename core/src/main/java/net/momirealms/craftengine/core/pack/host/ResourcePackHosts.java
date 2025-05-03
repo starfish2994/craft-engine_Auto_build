@@ -27,7 +27,7 @@ public class ResourcePackHosts {
         register(SELF, SelfHost.FACTORY);
         register(EXTERNAL, ExternalHost.FACTORY);
         register(LOBFILE, LobFileHost.FACTORY);
-        register(S3, S3Host.FACTORY);
+        register(S3, S3HostFactory.INSTANCE);
         register(ALIST, AlistHost.FACTORY);
         register(DROPBOX, DropboxHost.FACTORY);
         register(ONEDRIVE, OneDriveHost.FACTORY);
