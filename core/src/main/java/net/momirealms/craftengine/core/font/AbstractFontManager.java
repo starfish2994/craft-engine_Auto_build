@@ -462,7 +462,18 @@ public abstract class AbstractFontManager implements FontManager {
                     if (character.length() == 1) {
                         chars = List.of(character.toCharArray());
                     } else {
-                        chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                        if (character.startsWith("\\u")) {
+                            chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                        } else {
+                            if (CharacterUtils.containsCombinedCharacter(character)) {
+                                TranslationManager.instance().log("warning.config.image.invalid_char", path.toString(), id.toString());
+                            }
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (char c : character.toCharArray()) {
+                                stringBuilder.append(String.format("\\u%04x", (int) c));
+                            }
+                            chars = List.of(CharacterUtils.decodeUnicodeToChars(stringBuilder.toString()));
+                        }
                     }
                 }
             }

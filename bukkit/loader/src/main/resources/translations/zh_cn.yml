@@ -80,6 +80,7 @@ warning.config.image.invalid_font_chars: "<yellow>在文件 <arg:0> 发现问题
 warning.config.image.missing_char: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 缺少必需的 'char' 参数</yellow>"
 warning.config.image.codepoint_conflict: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 在字体 <arg:2> 中使用的字符 '<arg:3>(<arg:4>)' 已被其他图片 '<arg:5>' 占用</yellow>"
 warning.config.image.invalid_codepoint_grid: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 的 'chars' 码位网格无效</yellow>"
+warning.config.image.invalid_char: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 的 'char' 参数包含组合字符可能导致图片分裂</yellow>"
 warning.config.image.file_not_found: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 的 PNG 文件 '<arg:2>' 未找到</yellow>"
 warning.config.image.invalid_hex_value: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 使用的 Unicode 字符 '<arg:2>' 不是有效的十六进制值</yellow>"
 warning.config.recipe.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重复的配方 '<arg:1>' 请检查其他文件中是否存在相同配置</yellow>"
