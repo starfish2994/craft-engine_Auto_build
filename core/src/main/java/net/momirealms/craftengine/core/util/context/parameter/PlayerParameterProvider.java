@@ -24,6 +24,7 @@ public class PlayerParameterProvider implements LazyContextParameterProvider {
         CONTEXT_FUNCTIONS.put(PlayerParameters.BLOCK_Z, p -> MCUtils.fastFloor(p.z()));
         CONTEXT_FUNCTIONS.put(PlayerParameters.NAME, Player::name);
         CONTEXT_FUNCTIONS.put(PlayerParameters.UUID, Player::uuid);
+        CONTEXT_FUNCTIONS.put(PlayerParameters.WORLD_NAME, p -> p.world().name());
     }
 
     private final Player player;

@@ -1354,7 +1354,7 @@ public class PacketConsumers {
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
                     }
-                }, (World) player.level().platformWorld(), (MCUtils.fastFloor(player.x())) >> 4, (MCUtils.fastFloor(player.z())) >> 4);
+                }, (World) player.world().platformWorld(), (MCUtils.fastFloor(player.x())) >> 4, (MCUtils.fastFloor(player.z())) >> 4);
             } else {
                 handleSetCreativeSlotPacketOnMainThread(player, packet);
             }

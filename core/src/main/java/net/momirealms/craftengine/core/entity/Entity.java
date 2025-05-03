@@ -19,7 +19,7 @@ public abstract class Entity {
 
     public abstract float getYRot();
 
-    public abstract World level();
+    public abstract World world();
 
     public abstract Direction getDirection();
 

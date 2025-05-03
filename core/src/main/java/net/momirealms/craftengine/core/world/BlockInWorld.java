@@ -17,6 +17,8 @@ public interface BlockInWorld {
 
     String getAsString();
 
+    World world();
+
     int x();
 
     int y();

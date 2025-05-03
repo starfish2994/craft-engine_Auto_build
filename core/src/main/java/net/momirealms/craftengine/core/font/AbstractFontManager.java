@@ -170,7 +170,8 @@ public abstract class AbstractFontManager implements FontManager {
                     PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                            .build()).tagResolvers())
+                            .build())
+                            .tagResolvers())
             );
             if (emojis.size() >= maxTimes) break;
         }

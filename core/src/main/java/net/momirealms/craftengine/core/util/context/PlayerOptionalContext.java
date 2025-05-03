@@ -8,7 +8,7 @@ import net.momirealms.craftengine.core.util.context.parameter.PlayerParameterPro
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
 
 public class PlayerOptionalContext extends AbstractAdditionalCommonContext implements MiniMessageTagContext {
     public static final PlayerOptionalContext EMPTY = new PlayerOptionalContext(null, ContextHolder.EMPTY);

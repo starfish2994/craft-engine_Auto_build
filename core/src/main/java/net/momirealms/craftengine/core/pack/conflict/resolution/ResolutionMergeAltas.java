@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 

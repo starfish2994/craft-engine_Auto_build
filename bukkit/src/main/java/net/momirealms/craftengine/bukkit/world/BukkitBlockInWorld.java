@@ -14,9 +14,9 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.text.minimessage.NamedArgumentTag;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockInWorld;
+import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
@@ -78,6 +78,11 @@ public class BukkitBlockInWorld implements BlockInWorld {
     @Override
     public int z() {
         return this.block.getZ();
+    }
+
+    @Override
+    public World world() {
+        return new BukkitWorld(this.block.getWorld());
     }
 
     @Override

@@ -22,6 +22,7 @@ public class BlockParameterProvider implements LazyContextParameterProvider {
         CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_Z, BlockInWorld::z);
         CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_OWNER, BlockInWorld::owner);
         CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_STATE, BlockInWorld::getAsString);
+        CONTEXT_FUNCTIONS.put(BlockParameters.WORLD_NAME, b -> b.world().name());
     }
 
     private final BlockInWorld block;
