@@ -45,7 +45,7 @@ public class ResourcePackHosts {
         if (type == null) {
             throw new LocalizedException("warning.config.host.missing_type");
         }
-        Key key = Key.withDefaultNamespace(type, "craftengine");
+        Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         ResourcePackHostFactory factory = BuiltInRegistries.RESOURCE_PACK_HOST_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedException("warning.config.host.invalid_type", type);

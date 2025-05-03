@@ -427,8 +427,8 @@ public class BukkitServerPlayer extends Player {
             } else {
                 if (VersionHelper.isOrAbove1_20_5()) {
                     Object attributeModifier = VersionHelper.isOrAbove1_21() ?
-                            Reflections.constructor$AttributeModifier.newInstance(KeyUtils.toResourceLocation("craftengine", "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
-                            Reflections.constructor$AttributeModifier.newInstance(UUID.randomUUID(), "craftengine:custom_hardness", -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE);
+                            Reflections.constructor$AttributeModifier.newInstance(KeyUtils.toResourceLocation(Key.DEFAULT_NAMESPACE, "custom_hardness"), -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE) :
+                            Reflections.constructor$AttributeModifier.newInstance(UUID.randomUUID(), Key.DEFAULT_NAMESPACE + ":custom_hardness", -9999d, Reflections.instance$AttributeModifier$Operation$ADD_VALUE);
                     Object attributeSnapshot = Reflections.constructor$ClientboundUpdateAttributesPacket$AttributeSnapshot.newInstance(Reflections.instance$Holder$Attribute$block_break_speed, 1d, Lists.newArrayList(attributeModifier));
                     Object newPacket = Reflections.constructor$ClientboundUpdateAttributesPacket1.newInstance(entityID(), Lists.newArrayList(attributeSnapshot));
                     sendPacket(newPacket, true);

@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.pack.conflict;
 
-import net.momirealms.craftengine.core.util.context.AbstractCommonContext;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.AbstractCommonContext;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 
 import java.nio.file.Path;
 

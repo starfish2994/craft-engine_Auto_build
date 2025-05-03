@@ -42,7 +42,6 @@ import java.util.function.Supplier;
 
 public abstract class CraftEngine implements Plugin {
     public static final String MOD_CLASS = "net.momirealms.craftengine.mod.CraftEnginePlugin";
-    public static final String NAMESPACE = "craftengine";
     private static CraftEngine instance;
     protected PluginLogger logger;
     protected Consumer<Supplier<String>> debugger = (s) -> {};

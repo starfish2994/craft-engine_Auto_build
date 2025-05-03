@@ -51,7 +51,7 @@ public class PathMatchers {
 
     public static PathMatcher fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), () -> new LocalizedException("warning.config.conflict_matcher.missing_type"));
-        Key key = Key.withDefaultNamespace(type, "craftengine");
+        Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         PathMatcherFactory factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);

@@ -33,7 +33,7 @@ public class Resolutions {
 
     public static Resolution fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), () -> new LocalizedException("warning.config.conflict_resolution.missing_type"));
-        Key key = Key.withDefaultNamespace(type, "craftengine");
+        Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         ResolutionFactory factory = BuiltInRegistries.RESOLUTION_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedException("warning.config.conflict_resolution.invalid_type", type);

@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -144,6 +144,6 @@ public class ImmutableBlockState extends BlockStateHolder {
         if (block == null) return List.of();
         LootTable<Object> lootTable = (LootTable<Object>) block.lootTable();
         if (lootTable == null) return List.of();
-        return lootTable.getRandomItems(builder.withParameter(LootParameters.BLOCK_STATE, this).build(), world);
+        return lootTable.getRandomItems(builder.withParameter(CommonParameters.BLOCK_STATE, this).build(), world);
     }
 }

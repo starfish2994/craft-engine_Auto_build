@@ -11,13 +11,13 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.AbstractVanillaLootManager;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.loot.VanillaLoot;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -68,13 +68,14 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
             net.momirealms.craftengine.core.world.World world = new BukkitWorld(entity.getWorld());
             Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
             ContextHolder.Builder builder = ContextHolder.builder();
-            builder.withParameter(LootParameters.WORLD, world);
-            builder.withParameter(LootParameters.LOCATION, vec3d);
+            builder.withParameter(CommonParameters.WORLD, world);
+            builder.withParameter(CommonParameters.LOCATION, vec3d);
+            // TODO Vanilla State Parameter
             if (VersionHelper.isOrAbove1_20_5()) {
                 if (event.getDamageSource().getCausingEntity() instanceof Player player) {
                     BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
-                    builder.withParameter(LootParameters.PLAYER, serverPlayer);
-                    builder.withOptionalParameter(LootParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                    builder.withParameter(CommonParameters.PLAYER, serverPlayer);
+                    builder.withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                 }
             }
             ContextHolder contextHolder = builder.build();

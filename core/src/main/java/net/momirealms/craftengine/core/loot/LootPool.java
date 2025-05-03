@@ -2,13 +2,13 @@ package net.momirealms.craftengine.core.loot;
 
 import com.google.common.collect.Lists;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.entry.LootEntry;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainer;
 import net.momirealms.craftengine.core.loot.function.LootFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctions;
-import net.momirealms.craftengine.core.loot.number.NumberProvider;
+import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.MutableInt;
 
@@ -20,14 +20,14 @@ import java.util.function.Predicate;
 
 public class LootPool<T> {
     private final List<LootEntryContainer<T>> entryContainers;
-    private final List<LootCondition> conditions;
+    private final List<Condition<LootContext>> conditions;
     private final Predicate<LootContext> compositeCondition;
     private final List<LootFunction<T>> functions;
     private final BiFunction<Item<T>, LootContext, Item<T>> compositeFunction;
     private final NumberProvider rolls;
     private final NumberProvider bonusRolls;
 
-    public LootPool(List<LootEntryContainer<T>> entryContainers, List<LootCondition> conditions, List<LootFunction<T>> functions, NumberProvider rolls, NumberProvider bonusRolls) {
+    public LootPool(List<LootEntryContainer<T>> entryContainers, List<Condition<LootContext>> conditions, List<LootFunction<T>> functions, NumberProvider rolls, NumberProvider bonusRolls) {
         this.entryContainers = entryContainers;
         this.conditions = conditions;
         this.functions = functions;
@@ -38,7 +38,7 @@ public class LootPool<T> {
     }
 
     public void addRandomItems(Consumer<Item<T>> lootConsumer, LootContext context) {
-        for (LootCondition condition : this.conditions) {
+        for (Condition<LootContext> condition : this.conditions) {
             if (!condition.test(context)) {
                 return;
             }

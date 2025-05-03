@@ -13,13 +13,13 @@ import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.IntegerProperty;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootContext;
-import net.momirealms.craftengine.core.loot.number.NumberProvider;
-import net.momirealms.craftengine.core.loot.number.NumberProviders;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProviders;
+import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.Tuple;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.Vec3i;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
@@ -149,8 +149,8 @@ public class CropBlockBehavior extends BushBlockBehavior {
 
         net.momirealms.craftengine.core.world.World wrappedWorld = new BukkitWorld(world);
         int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(new LootContext(wrappedWorld, 1, ThreadLocalRandom.current(), ContextHolder.builder()
-                .withParameter(LootParameters.WORLD, wrappedWorld)
-                .withParameter(LootParameters.LOCATION, Vec3d.atCenterOf(new Vec3i(x, y, z)))
+                .withParameter(CommonParameters.WORLD, wrappedWorld)
+                .withParameter(CommonParameters.LOCATION, Vec3d.atCenterOf(new Vec3i(x, y, z)))
                 .build()));
         int maxAge = this.ageProperty.max;
         if (i > maxAge) {

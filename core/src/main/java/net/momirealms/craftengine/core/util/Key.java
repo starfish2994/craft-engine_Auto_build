@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.util;
 
 public record Key(String namespace, String value) {
-
     public static final String DEFAULT_NAMESPACE = "craftengine";
 
     public static Key withDefaultNamespace(String value) {

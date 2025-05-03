@@ -359,7 +359,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
                 appearances = Map.of("default", pair.right());
                 String internalBlock = pair.left().value() + "_" + internalId;
-                Key internalBlockId = Key.of(CraftEngine.NAMESPACE, internalBlock);
+                Key internalBlockId = Key.of(Key.DEFAULT_NAMESPACE, internalBlock);
                 int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                 if (internalBlockRegistryId == -1) {
                     throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id",
@@ -408,7 +408,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         }
                         int internalId = ResourceConfigUtils.getAsInt(variantSection.getOrDefault("id", -1), "id");
                         Key baseBlock = tempTypeMap.get(appearance);
-                        Key internalBlockId = Key.of(CraftEngine.NAMESPACE, baseBlock.value() + "_" + internalId);
+                        Key internalBlockId = Key.of(Key.DEFAULT_NAMESPACE, baseBlock.value() + "_" + internalId);
                         int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
                         if (internalBlockRegistryId == -1) {
                             throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id",
@@ -782,7 +782,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     private Key createRealBlockKey(Key replacedBlock, int index) {
-        return Key.of(CraftEngine.NAMESPACE, replacedBlock.value() + "_" + index);
+        return Key.of(Key.DEFAULT_NAMESPACE, replacedBlock.value() + "_" + index);
     }
 
     private Object createBlockProperties(Key realBlockKey) throws Exception {

@@ -2,18 +2,18 @@ package net.momirealms.craftengine.core.loot;
 
 import com.google.common.collect.Lists;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainer;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainers;
 import net.momirealms.craftengine.core.loot.function.LootFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctions;
-import net.momirealms.craftengine.core.loot.number.NumberProvider;
-import net.momirealms.craftengine.core.loot.number.NumberProviders;
+import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProviders;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +52,7 @@ public class LootTable<T> {
                 Map<String, Object> pool = MiscUtils.castToMap(rawPoolMap, false);
                 NumberProvider rolls = NumberProviders.fromObject(pool.getOrDefault("rolls", 1));
                 NumberProvider bonus_rolls = NumberProviders.fromObject(pool.getOrDefault("bonus_rolls", 0));
-                List<LootCondition> conditions = Optional.ofNullable(pool.get("conditions"))
+                List<Condition<LootContext>> conditions = Optional.ofNullable(pool.get("conditions"))
                         .map(it -> LootConditions.fromMapList(castToMapListOrThrow(it,
                                 () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_conditions_type", it.getClass().getSimpleName()))))
                         .orElse(Lists.newArrayList());

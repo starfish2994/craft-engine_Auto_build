@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.font;
 
-import net.momirealms.craftengine.core.util.context.ContextKey;
+import net.momirealms.craftengine.core.plugin.context.ContextKey;
 
 public final class EmojiParameters {
     private EmojiParameters() {}
