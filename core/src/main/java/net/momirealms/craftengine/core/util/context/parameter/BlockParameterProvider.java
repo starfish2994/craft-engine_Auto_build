@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.util.context.parameter;
 
-import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.context.ContextKey;
 import net.momirealms.craftengine.core.util.context.LazyContextParameterProvider;
 import net.momirealms.craftengine.core.world.BlockInWorld;
@@ -15,9 +14,14 @@ import java.util.function.Function;
 public class BlockParameterProvider implements LazyContextParameterProvider {
     private static final Map<ContextKey<?>, Function<BlockInWorld, Object>> CONTEXT_FUNCTIONS = new HashMap<>();
     static {
-        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_X, b -> MCUtils.fastFloor(b.x()));
-        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_Y, b -> MCUtils.fastFloor(b.y()));
-        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_Z, b -> MCUtils.fastFloor(b.z()));
+        CONTEXT_FUNCTIONS.put(BlockParameters.X, BlockInWorld::x);
+        CONTEXT_FUNCTIONS.put(BlockParameters.Y, BlockInWorld::y);
+        CONTEXT_FUNCTIONS.put(BlockParameters.Z, BlockInWorld::z);
+        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_X, BlockInWorld::x);
+        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_Y, BlockInWorld::y);
+        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_Z, BlockInWorld::z);
+        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_OWNER, BlockInWorld::owner);
+        CONTEXT_FUNCTIONS.put(BlockParameters.BLOCK_STATE, BlockInWorld::getAsString);
     }
 
     private final BlockInWorld block;

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.world;
 
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
+import net.momirealms.craftengine.core.util.Key;
 
 public interface BlockInWorld {
 
@@ -11,6 +12,10 @@ public interface BlockInWorld {
     default boolean isWaterSource(BlockPlaceContext blockPlaceContext) {
         return false;
     }
+
+    Key owner();
+
+    String getAsString();
 
     int x();
 

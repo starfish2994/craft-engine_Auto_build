@@ -454,11 +454,17 @@ public abstract class AbstractFontManager implements FontManager {
                         return it.toCharArray();
                     }
                 }).toList();
+                if (chars.isEmpty()) {
+                    throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+                }
             } else {
                 if (charsObj instanceof Integer integer) {
                     chars = List.of(new char[]{(char) integer.intValue()});
                 } else {
                     String character = charsObj.toString();
+                    if (character.isEmpty()) {
+                        throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+                    }
                     if (character.length() == 1) {
                         chars = List.of(character.toCharArray());
                     } else {

@@ -17,5 +17,4 @@ public final class BlockParameters {
     public static final ContextKey<Integer> BLOCK_Z = new ContextKey<>(Key.of("craftengine:block.block_z"));
     public static final ContextKey<ImmutableBlockState> BLOCK_STATE = new ContextKey<>(Key.of("craftengine:block.state"));
     public static final ContextKey<Key> BLOCK_OWNER = new ContextKey<>(Key.of("craftengine:block.owner"));
-
 }

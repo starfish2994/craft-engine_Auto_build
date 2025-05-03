@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class CharacterUtils {
+    private static final Pattern PATTERN = Pattern.compile("[\\p{Mn}\\p{Me}\\p{Mc}\\p{Cf}]");
 
     private CharacterUtils() {}
 
@@ -87,7 +88,7 @@ public class CharacterUtils {
                     type == Character.CONTROL ||
                     type == Character.SURROGATE ||
                     type == Character.PRIVATE_USE ||
-                    Pattern.compile("[\\p{Mn}\\p{Me}\\p{Mc}\\p{Cf}]").matcher(new String(Character.toChars(codePoint))).find()
+                    PATTERN.matcher(new String(Character.toChars(codePoint))).find()
             ) return true;
             if (i < input.length()) {
                 int nextCodePoint = input.codePointAt(i);

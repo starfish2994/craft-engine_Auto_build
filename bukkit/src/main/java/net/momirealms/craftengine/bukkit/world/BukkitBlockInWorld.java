@@ -1,10 +1,12 @@
 package net.momirealms.craftengine.bukkit.world;
 
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -78,7 +80,25 @@ public class BukkitBlockInWorld implements BlockInWorld {
         return this.block.getZ();
     }
 
+    @Override
+    public String getAsString() {
+        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(this.block);
+        if (state != null) {
+            return state.toString();
+        }
+        return this.block.getBlockData().getAsString();
+    }
+
+    @Override
+    public Key owner() {
+        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(this.block);
+        if (state != null) {
+            return state.owner().value().id();
+        }
+        return KeyUtils.namespacedKey2Key(this.block.getType().getKey());
+    }
+
     public Block block() {
-        return block;
+        return this.block;
     }
 }

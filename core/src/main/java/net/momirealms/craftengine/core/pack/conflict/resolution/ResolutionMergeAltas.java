@@ -27,18 +27,18 @@ public class ResolutionMergeAltas implements Resolution {
             JsonArray ja3 = new JsonArray();
             HashSet<String> elements = new HashSet<>();
             for (JsonElement je : ja1) {
-                if (elements.add(je.getAsString())) {
+                if (elements.add(je.toString())) {
                     ja3.add(je);
                 }
             }
             for (JsonElement je : ja2) {
-                if (elements.add(je.getAsString())) {
+                if (elements.add(je.toString())) {
                     ja3.add(je);
                 }
             }
             j3.add("sources", ja3);
             GsonHelper.writeJsonFile(j3, existing.path());
-        } catch (IOException e) {
+        } catch (Exception e) {
             CraftEngine.instance().logger().severe("Failed to merge json when resolving file conflicts", e);
         }
     }
