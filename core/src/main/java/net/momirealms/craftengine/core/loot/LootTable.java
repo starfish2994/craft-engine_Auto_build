@@ -10,7 +10,9 @@ import net.momirealms.craftengine.core.loot.function.LootFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctions;
 import net.momirealms.craftengine.core.loot.number.NumberProvider;
 import net.momirealms.craftengine.core.loot.number.NumberProviders;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class LootTable<T> {
     private final List<LootPool<T>> pools;
@@ -38,25 +41,40 @@ public class LootTable<T> {
     @SuppressWarnings("unchecked")
     public static <T> LootTable<T> fromMap(Map<String, Object> map) {
         if (map == null || map.isEmpty()) return null;
-        List<Map<String, Object>> poolList = (List<Map<String, Object>>) map.get("pools");
+        Object pools = ResourceConfigUtils.requireNonNullOrThrow(map.get("pools"), "warning.config.loot_table.missing_pools");
+        if (!(pools instanceof List<?> list) || list.isEmpty()) {
+            throw new LocalizedResourceConfigException("warning.config.loot_table.invalid_pools_type", pools.getClass().getSimpleName());
+        }
+        List<Object> poolList = (List<Object>) map.get("pools");
         List<LootPool<T>> lootPools = new ArrayList<>();
-        for (Map<String, Object> pool : poolList) {
-            NumberProvider rolls = NumberProviders.fromObject(pool.getOrDefault("rolls", 1));
-            NumberProvider bonus_rolls = NumberProviders.fromObject(pool.getOrDefault("bonus_rolls", 0));
-            List<LootCondition> conditions = Optional.ofNullable(pool.get("conditions"))
-                    .map(it -> LootConditions.fromMapList(MiscUtils.castToMapListOrThrow(it, () -> new RuntimeException("'conditions' should be a map list, current type: " + it.getClass().getSimpleName()))))
-                    .orElse(Lists.newArrayList());
-            List<LootEntryContainer<T>> containers = Optional.ofNullable(pool.get("entries"))
-                    .map(it -> (List<LootEntryContainer<T>>) new ArrayList<LootEntryContainer<T>>(LootEntryContainers.fromMapList(MiscUtils.castToMapListOrThrow(it, () -> new RuntimeException("'entries' should be a map list, current type: " + it.getClass().getSimpleName())))))
-                    .orElse(Lists.newArrayList());
-            List<LootFunction<T>> functions = Optional.ofNullable(pool.get("functions"))
-                    .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(MiscUtils.castToMapListOrThrow(it, () -> new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName())))))
-                    .orElse(Lists.newArrayList());
-            lootPools.add(new LootPool<>(containers, conditions, functions, rolls, bonus_rolls));
+        for (Object rawPool : poolList) {
+            if (rawPool instanceof Map<?,?> rawPoolMap) {
+                Map<String, Object> pool = MiscUtils.castToMap(rawPoolMap, false);
+                NumberProvider rolls = NumberProviders.fromObject(pool.getOrDefault("rolls", 1));
+                NumberProvider bonus_rolls = NumberProviders.fromObject(pool.getOrDefault("bonus_rolls", 0));
+                List<LootCondition> conditions = Optional.ofNullable(pool.get("conditions"))
+                        .map(it -> LootConditions.fromMapList(castToMapListOrThrow(it,
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_conditions_type", it.getClass().getSimpleName()))))
+                        .orElse(Lists.newArrayList());
+                List<LootEntryContainer<T>> containers = Optional.ofNullable(pool.get("entries"))
+                        .map(it -> (List<LootEntryContainer<T>>) new ArrayList<LootEntryContainer<T>>(LootEntryContainers.fromMapList(castToMapListOrThrow(it,
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_entries_type", it.getClass().getSimpleName())))))
+                        .orElse(Lists.newArrayList());
+                List<LootFunction<T>> functions = Optional.ofNullable(pool.get("functions"))
+                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", it.getClass().getSimpleName())))))
+                        .orElse(Lists.newArrayList());
+                lootPools.add(new LootPool<>(containers, conditions, functions, rolls, bonus_rolls));
+            } else if (rawPool instanceof String string) {
+                LootPool<T> lootPool = readFlatFormatLootPool(string);
+                if (lootPool != null)
+                    lootPools.add(lootPool);
+            }
         }
         return new LootTable<>(lootPools,
                 Optional.ofNullable(map.get("functions"))
-                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(MiscUtils.castToMapListOrThrow(it, () -> new RuntimeException("'functions' should be a map list, current type: " + it.getClass().getSimpleName())))))
+                        .map(it -> (List<LootFunction<T>>) new ArrayList<LootFunction<T>>(LootFunctions.fromMapList(castToMapListOrThrow(it,
+                                () -> new LocalizedResourceConfigException("warning.config.loot_table.invalid_functions_type", it.getClass().getSimpleName())))))
                         .orElse(Lists.newArrayList())
         );
     }
@@ -103,6 +121,20 @@ public class LootTable<T> {
         Consumer<Item<T>> consumer = LootFunction.decorate(this.compositeFunction, lootConsumer, context);
         for (LootPool<T> pool : this.pools) {
             pool.addRandomItems(consumer, context);
+        }
+    }
+
+    // TODO https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/loot-system/flat-format
+    public static <T> LootPool<T> readFlatFormatLootPool(String pool) {
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> castToMapListOrThrow(Object obj, Supplier<RuntimeException> exceptionSupplier) {
+        if (obj instanceof List<?> list) {
+            return (List<Map<String, Object>>) list;
+        } else {
+            throw exceptionSupplier.get();
         }
     }
 }

@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.advancement.AbstractAdvancementManager;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -51,8 +51,7 @@ public class BukkitAdvancementManager extends AbstractAdvancementManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (advancements.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.advancement.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.advancement.duplicate", path, id);
             }
             JsonElement jsonTree = GsonHelper.get().toJsonTree(section);
             FastNMS.INSTANCE.registerAdvancement(id.decompose(), jsonTree);

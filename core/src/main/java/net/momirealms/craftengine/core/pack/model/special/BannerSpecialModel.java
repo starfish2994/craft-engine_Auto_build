@@ -2,9 +2,9 @@ package net.momirealms.craftengine.core.pack.model.special;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class BannerSpecialModel implements SpecialModel {
     public static final Factory FACTORY = new Factory();
@@ -31,7 +31,7 @@ public class BannerSpecialModel implements SpecialModel {
 
         @Override
         public SpecialModel create(Map<String, Object> arguments) {
-            String color = Objects.requireNonNull(arguments.get("color"), "color").toString();
+            String color = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("color"), "warning.config.item.model.special.banner.missing_color");
             return new BannerSpecialModel(color);
         }
     }

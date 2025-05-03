@@ -1,15 +1,12 @@
 package net.momirealms.craftengine.core.util;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import org.joml.Quaternionf;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class MiscUtils {
 
@@ -24,26 +21,6 @@ public class MiscUtils {
             return (Map<String, Object>) map;
         }
         throw new IllegalArgumentException("Expected Map, got: " + (obj == null ? null : obj.getClass().getSimpleName()));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static List<Map<String, Object>> castToMapListOrThrow(Object obj, Supplier<RuntimeException> exceptionSupplier) {
-        if (obj instanceof List<?> list) {
-            return (List<Map<String, Object>>) list;
-        } else {
-            throw exceptionSupplier.get();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static List<Object> castToList(Object obj, boolean allowNull) {
-        if (allowNull && obj == null) {
-            return null;
-        }
-        if (obj instanceof List<?> list) {
-            return (List<Object>) list;
-        }
-        throw new IllegalArgumentException("Expected List, got: " + obj.getClass().getSimpleName());
     }
 
     public static List<String> getAsStringList(Object o) {
@@ -62,84 +39,8 @@ public class MiscUtils {
         return list;
     }
 
-    public static List<Float> getAsFloatList(Object o) {
-        List<Float> list = new ArrayList<>();
-        if (o instanceof List<?>) {
-            for (Object object : (List<?>) o) {
-                if (object instanceof Number) {
-                    list.add(((Number) object).floatValue());
-                } else if (object instanceof String) {
-                    try {
-                        list.add(Float.parseFloat((String) object));
-                    } catch (NumberFormatException e) {
-                        throw new RuntimeException("Cannot convert " + object + " to float");
-                    }
-                } else {
-                    throw new RuntimeException("Cannot convert " + object + " to float");
-                }
-            }
-        } else if (o instanceof Float) {
-            list.add((Float) o);
-        } else if (o instanceof String) {
-            try {
-                list.add(Float.parseFloat((String) o));
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Cannot convert " + o + " to float");
-            }
-        } else {
-            throw new RuntimeException("Cannot convert " + o + " to float");
-        }
-        return list;
-    }
-
-    public static int getAsInt(Object o) {
-        if (o instanceof Integer) {
-            return (Integer) o;
-        } else if (o instanceof String) {
-            try {
-                return Integer.parseInt((String) o);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Cannot convert " + o + " to int");
-            }
-        } else if (o instanceof Boolean) {
-            return (Boolean) o ? 1 : 0;
-        } else if (o instanceof Number) {
-            return ((Number) o).intValue();
-        }
-        throw new RuntimeException("Cannot convert " + o + " to int");
-    }
-
-    public static double getAsDouble(Object o) {
-        if (o instanceof Double) {
-            return (Double) o;
-        } else if (o instanceof String) {
-            try {
-                return Double.parseDouble((String) o);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Cannot convert " + o + " to double");
-            }
-        } else if (o instanceof Number) {
-            return ((Number) o).doubleValue();
-        }
-        throw new RuntimeException("Cannot convert " + o + " to double");
-    }
-
-    public static float getAsFloat(Object o) {
-        if (o instanceof Float) {
-            return (Float) o;
-        } else if (o instanceof String) {
-            try {
-                return Float.parseFloat((String) o);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Cannot convert " + o + " to float");
-            }
-        } else if (o instanceof Number) {
-            return ((Number) o).floatValue();
-        }
-        throw new RuntimeException("Cannot convert " + o + " to float");
-    }
-
-    public static Vector3f getVector3f(Object o) {
+    public static Vector3f getAsVector3f(Object o, String option) {
+        if (o == null) return new Vector3f();
         String stringFormat = o.toString();
         String[] split = stringFormat.split(",");
         if (split.length == 3) {
@@ -147,23 +48,12 @@ public class MiscUtils {
         } else if (split.length == 1) {
             return new Vector3f(Float.parseFloat(split[0]));
         } else {
-            throw new RuntimeException("Cannot convert " + o + " to Vector3f");
+            throw new LocalizedResourceConfigException("warning.config.type.vector3f", stringFormat, option);
         }
     }
 
-    public static Vector3d getVector3d(Object o) {
-        String stringFormat = o.toString();
-        String[] split = stringFormat.split(",");
-        if (split.length == 3) {
-            return new Vector3d(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
-        } else if (split.length == 1) {
-            return new Vector3d(Double.parseDouble(split[0]));
-        } else {
-            throw new RuntimeException("Cannot convert " + o + " to Vector3d");
-        }
-    }
-
-    public static Quaternionf getQuaternionf(Object o) {
+    public static Quaternionf getAsQuaternionf(Object o, String option) {
+        if (o == null) return new Quaternionf();
         String stringFormat = o.toString();
         String[] split = stringFormat.split(",");
         if (split.length == 4) {
@@ -171,22 +61,7 @@ public class MiscUtils {
         } else if (split.length == 1) {
             return QuaternionUtils.toQuaternionf(0, Math.toRadians(Float.parseFloat(split[0])), 0);
         } else {
-            throw new RuntimeException("Cannot convert " + o + " to Quaternionf");
+            throw new LocalizedResourceConfigException("warning.config.type.quaternionf", stringFormat, option);
         }
-    }
-
-    public static ProxySelector getProxySelector(Object o) {
-        Map<String, Object> proxySetting = castToMap(o, true);
-        ProxySelector proxy = ProxySelector.getDefault();
-        if (proxySetting != null) {
-            String proxyHost = (String) proxySetting.get("host");
-            int proxyPort = (int) proxySetting.get("port");
-            if (proxyHost == null || proxyHost.isEmpty() || proxyPort <= 0 || proxyPort > 65535) {
-                throw new IllegalArgumentException("Invalid proxy setting");
-            } else {
-                proxy = ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort));
-            }
-        }
-        return proxy;
     }
 }

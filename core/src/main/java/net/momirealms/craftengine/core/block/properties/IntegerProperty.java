@@ -1,7 +1,8 @@
 package net.momirealms.craftengine.core.block.properties;
 
 import it.unimi.dsi.fastutil.ints.IntImmutableList;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.sparrow.nbt.IntTag;
 import net.momirealms.sparrow.nbt.NumericTag;
 import net.momirealms.sparrow.nbt.Tag;
@@ -89,10 +90,17 @@ public class IntegerProperty extends Property<Integer> {
         public Property<?> create(String name, Map<String, Object> arguments) {
             String range = arguments.getOrDefault("range", "1~1").toString();
             String[] split = range.split("~");
-            int min = Integer.parseInt(split[0]);
-            int max = Integer.parseInt(split[1]);
-            int defaultValue = MiscUtils.getAsInt(arguments.getOrDefault("default", min));
-            return IntegerProperty.create(name, min, max,defaultValue);
+            if (split.length != 2) {
+                throw new LocalizedResourceConfigException("warning.config.block.state.property.integer.invalid_range", range, name);
+            }
+            try {
+                int min = Integer.parseInt(split[0]);
+                int max = Integer.parseInt(split[1]);
+                int defaultValue = ResourceConfigUtils.getAsInt(arguments.getOrDefault("default", min), "default");
+                return IntegerProperty.create(name, min, max,defaultValue);
+            } catch (NumberFormatException e) {
+                throw new LocalizedResourceConfigException("warning.config.block.state.property.integer.invalid_range", e, range, name);
+            }
         }
     }
 }

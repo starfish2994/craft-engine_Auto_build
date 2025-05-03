@@ -1,10 +1,12 @@
 package net.momirealms.craftengine.core.pack.model.select;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Map;
@@ -39,14 +41,11 @@ public class SelectProperties {
     }
 
     public static SelectProperty fromMap(Map<String, Object> map) {
-        String type = (String) map.get("property");
-        if (type == null) {
-            throw new NullPointerException("property type cannot be null");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("property"), "warning.config.item.model.select.missing_property");
         Key key = Key.withDefaultNamespace(type, "minecraft");
         SelectPropertyFactory factory = BuiltInRegistries.SELECT_PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown property type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.select.invalid_property", type);
         }
         return factory.create(map);
     }

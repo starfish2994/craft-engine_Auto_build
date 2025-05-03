@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.block.properties;
 
 import com.google.common.collect.ImmutableMap;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.sparrow.nbt.StringTag;
 import net.momirealms.sparrow.nbt.Tag;
@@ -99,10 +98,7 @@ public class StringProperty extends Property<String> {
             String defaultValue = values.stream()
                     .filter(e -> e.toLowerCase(Locale.ENGLISH).equals(defaultValueName))
                     .findFirst()
-                    .orElseGet(() -> {
-                        CraftEngine.instance().logger().warn("Invalid default value '" + defaultValueName + "' for property '" + name + "'");
-                        return values.getFirst();
-                    });
+                    .orElseGet(() -> values.get(0));
             return StringProperty.create(name, values, defaultValue);
         }
     }

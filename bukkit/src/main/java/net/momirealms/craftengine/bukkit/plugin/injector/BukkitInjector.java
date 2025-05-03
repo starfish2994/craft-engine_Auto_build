@@ -49,6 +49,7 @@ import net.momirealms.craftengine.core.util.SectionPosUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.SectionPos;
+import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.CESection;
 import net.momirealms.craftengine.core.world.chunk.InjectedPalettedContainerHolder;
 import net.momirealms.craftengine.shared.ObjectHolder;
@@ -101,8 +102,9 @@ public class BukkitInjector {
                     .name("net.minecraft.world.level.chunk.InjectedPalettedContainer")
                     .implement(InjectedPalettedContainerHolder.class)
                     .defineField("target", Reflections.clazz$PalettedContainer, Visibility.PRIVATE)
-                    .defineField("cesection", CESection.class, Visibility.PRIVATE)
                     .defineField("ceworld", CEWorld.class, Visibility.PRIVATE)
+                    .defineField("cesection", CESection.class, Visibility.PRIVATE)
+                    .defineField("cechunk", CEChunk.class, Visibility.PRIVATE)
                     .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
                     .method(ElementMatchers.any()
                             .and(ElementMatchers.not(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet)))
@@ -117,6 +119,8 @@ public class BukkitInjector {
                     .intercept(FieldAccessor.ofField("target"))
                     .method(ElementMatchers.named("ceSection"))
                     .intercept(FieldAccessor.ofField("cesection"))
+                    .method(ElementMatchers.named("ceChunk"))
+                    .intercept(FieldAccessor.ofField("cechunk"))
                     .method(ElementMatchers.named("ceWorld"))
                     .intercept(FieldAccessor.ofField("ceworld"))
                     .method(ElementMatchers.named("cePos"))
@@ -384,14 +388,20 @@ public class BukkitInjector {
 //        }
 //    }
 
-    public static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, SectionPos pos) {
+    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, CEChunk chunk, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!clazz$InjectedPalettedContainer.isInstance(container)) {
-                InjectedPalettedContainerHolder injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
-                varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
-                injectedObject.ceSection(ceSection);
+                InjectedPalettedContainerHolder injectedObject;
+                if (Config.fastPaletteInjection()) {
+                    injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
+                } else {
+                    injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
+                    varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
+                }
                 injectedObject.ceWorld(ceWorld);
+                injectedObject.ceChunk(chunk);
+                injectedObject.ceSection(ceSection);
                 injectedObject.cePos(pos);
                 Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
                 Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
@@ -682,16 +692,24 @@ public class BukkitInjector {
                 Object newState = args[3];
                 int stateId = BlockStateUtils.blockStateToId(newState);
                 CESection section = holder.ceSection();
+                // 如果是原版方块
                 if (BlockStateUtils.isVanillaBlock(stateId)) {
-                    section.setBlockState(x, y, z, EmptyBlock.INSTANCE.defaultState());
+                    // 那么应该情况自定义块
+                    ImmutableBlockState previous = section.setBlockState(x, y, z, EmptyBlock.STATE);
+                    // 如果先前不是空气则标记
+                    if (!previous.isEmpty()) {
+                        holder.ceChunk().setDirty(true);
+                    }
                     if (Config.enableLightSystem() && Config.forceUpdateLight()) {
                         updateLightIfChanged(holder, previousState, newState, null, y, z, x);
                     }
                 } else {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
-                    section.setBlockState(x, y, z, immutableBlockState);
-                    if (!immutableBlockState.isEmpty()) {
-                        if (Config.enableLightSystem()) {
+                    ImmutableBlockState previousImmutableBlockState = section.setBlockState(x, y, z, immutableBlockState);
+                    // 如果之前的自定义块(空气)和当前自定义块不同
+                    if (previousImmutableBlockState != immutableBlockState) {
+                        holder.ceChunk().setDirty(true);
+                        if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
                             updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
                         }
                     }

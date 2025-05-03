@@ -43,7 +43,7 @@ public class ResourcePackHosts {
     public static ResourcePackHost fromMap(Map<String, Object> map) {
         String type = (String) map.get("type");
         if (type == null) {
-            throw new LocalizedException("warning.config.host.external.lack_url");
+            throw new LocalizedException("warning.config.host.missing_type");
         }
         Key key = Key.withDefaultNamespace(type, "craftengine");
         ResourcePackHostFactory factory = BuiltInRegistries.RESOURCE_PACK_HOST_FACTORY.getValue(key);

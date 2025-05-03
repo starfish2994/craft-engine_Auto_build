@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
@@ -15,6 +16,10 @@ import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 import org.jetbrains.annotations.NotNull;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -352,19 +357,16 @@ public abstract class AbstractFontManager implements FontManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (emojis.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.emoji.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.emoji.duplicate", path, id);
             }
             String permission = (String) section.get("permission");
             Object keywordsRaw = section.get("keywords");
             if (keywordsRaw == null) {
-                TranslationManager.instance().log("warning.config.emoji.lack_keywords", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.emoji.missing_keywords", path, id);
             }
             List<String> keywords = MiscUtils.getAsStringList(keywordsRaw);
             if (keywords.isEmpty()) {
-                TranslationManager.instance().log("warning.config.emoji.lack_keywords", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.emoji.missing_keywords", path, id);
             }
             String content = section.getOrDefault("content", "<arg:emoji>").toString();
             String image = null;
@@ -377,8 +379,7 @@ public abstract class AbstractFontManager implements FontManager {
                     if (bitmapImage.isPresent()) {
                         image = bitmapImage.get().miniMessage(0, 0);
                     } else {
-                        TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
-                        return;
+                        throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                     }
                 } else if (split.length == 4) {
                     Key imageId = new Key(split[0], split[1]);
@@ -387,16 +388,13 @@ public abstract class AbstractFontManager implements FontManager {
                         try {
                             image = bitmapImage.get().miniMessage(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
                         } catch (ArrayIndexOutOfBoundsException e) {
-                            TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
-                            return;
+                            throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                         }
                     } else {
-                        TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
-                        return;
+                        throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                     }
                 } else {
-                    TranslationManager.instance().log("warning.config.emoji.invalid_image", path.toString(), id.toString(), rawImage);
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                 }
             }
             Emoji emoji = new Emoji(content, permission, image, keywords);
@@ -420,46 +418,36 @@ public abstract class AbstractFontManager implements FontManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (images.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.image.duplicated", path.toString(), id.toString());
-                return;
-            }
-
-            Object heightObj = section.get("height");
-            if (heightObj == null) {
-                TranslationManager.instance().log("warning.config.image.lack_height", path.toString(), id.toString());
-                return;
-            }
-
-            int height = MiscUtils.getAsInt(heightObj);
-            int ascent = MiscUtils.getAsInt(section.getOrDefault("ascent", height - 1));
-            if (height < ascent) {
-                TranslationManager.instance().log("warning.config.image.height_smaller_than_ascent", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.image.duplicate", path, id);
             }
 
             Object file = section.get("file");
             if (file == null) {
-                TranslationManager.instance().log("warning.config.image.no_file", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.image.missing_file", path, id);
             }
 
             String resourceLocation = file.toString().replace("\\", "/");
             if (!ResourceLocation.isValid(resourceLocation)) {
-                TranslationManager.instance().log("warning.config.image.invalid_resource_location", path.toString(), id.toString(), resourceLocation);
-                return;
+                throw new LocalizedResourceConfigException("warning.config.image.invalid_file_chars", path, id, resourceLocation);
             }
 
             String fontName = (String) section.getOrDefault("font", "minecraft:default");
             if (!ResourceLocation.isValid(fontName)) {
-                TranslationManager.instance().log("warning.config.image.invalid_font_name", path.toString(), id.toString(), fontName);
-                return;
+                throw new LocalizedResourceConfigException("warning.config.image.invalid_font_chars", path, id, fontName);
             }
 
             Key fontKey = Key.withDefaultNamespace(fontName, id.namespace());
             Font font = getOrCreateFont(fontKey);
             List<char[]> chars;
-            if (section.containsKey("chars")) {
-                chars = MiscUtils.getAsStringList(section.get("chars")).stream().map(it -> {
+            Object charsObj = section.get("chars");
+            if (charsObj == null) {
+                charsObj = section.get("char");
+            }
+            if (charsObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+            }
+            if (charsObj instanceof List<?> list) {
+                chars = MiscUtils.getAsStringList(list).stream().map(it -> {
                     if (it.startsWith("\\u")) {
                         return CharacterUtils.decodeUnicodeToChars(it);
                     } else {
@@ -467,15 +455,10 @@ public abstract class AbstractFontManager implements FontManager {
                     }
                 }).toList();
             } else {
-                Object c = section.get("char");
-                if (c == null) {
-                    TranslationManager.instance().log("warning.config.image.lack_char", path.toString(), id.toString());
-                    return;
-                }
-                if (c instanceof Integer integer) {
+                if (charsObj instanceof Integer integer) {
                     chars = List.of(new char[]{(char) integer.intValue()});
                 } else {
-                    String character = c.toString();
+                    String character = charsObj.toString();
                     if (character.length() == 1) {
                         chars = List.of(character.toCharArray());
                     } else {
@@ -491,28 +474,24 @@ public abstract class AbstractFontManager implements FontManager {
                 for (int codepoint : codepoints) {
                     if (font.isCodepointInUse(codepoint)) {
                         BitmapImage image = font.bitmapImageByCodepoint(codepoint);
-                        TranslationManager.instance().log("warning.config.image.codepoint_in_use",
-                                path.toString(),
-                                id.toString(),
+                        throw new LocalizedResourceConfigException("warning.config.image.codepoint_conflict", path, id,
                                 fontKey.toString(),
                                 CharacterUtils.encodeCharsToUnicode(Character.toChars(codepoint)),
                                 new String(Character.toChars(codepoint)),
-                                image.id().toString()
-                        );
-                        return;
+                                image.id().toString());
                     }
                 }
                 if (codepoints.length == 0) {
-                    TranslationManager.instance().log("warning.config.image.lack_char", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
                 }
                 codepointGrid[i] = codepoints;
                 if (size == -1) size = codepoints.length;
                 if (size != codepoints.length) {
-                    TranslationManager.instance().log("warning.config.image.invalid_codepoint_grid", path.toString(), id.toString());
-                    return;
+                    throw new LocalizedResourceConfigException("warning.config.image.invalid_codepoint_grid", path, id);
                 }
             }
+
+            Object heightObj = section.get("height");
 
             if (!resourceLocation.endsWith(".png")) resourceLocation += ".png";
             Key namespacedPath = Key.of(resourceLocation);
@@ -523,8 +502,26 @@ public abstract class AbstractFontManager implements FontManager {
                     .resolve(namespacedPath.value());
 
             if (!Files.exists(targetImagePath)) {
-                TranslationManager.instance().log("warning.config.image.file_not_exist", path.toString(), id.toString(), targetImagePath.toString());
+                TranslationManager.instance().log("warning.config.image.file_not_found", path.toString(), id.toString(), targetImagePath.toString());
                 // DO NOT RETURN, JUST GIVE WARNINGS
+            } else if (heightObj == null) {
+                try (InputStream in = Files.newInputStream(targetImagePath)) {
+                    BufferedImage image = ImageIO.read(in);
+                    heightObj = image.getHeight() / codepointGrid.length;
+                } catch (IOException e) {
+                    plugin.logger().warn("Failed to load image " + targetImagePath, e);
+                    return;
+                }
+            }
+
+            if (heightObj == null) {
+                throw new LocalizedResourceConfigException("warning.config.image.missing_height", path, id);
+            }
+
+            int height = ResourceConfigUtils.getAsInt(heightObj, "height");
+            int ascent = ResourceConfigUtils.getAsInt(section.getOrDefault("ascent", height - 1), "ascent");
+            if (height < ascent) {
+                throw new LocalizedResourceConfigException("warning.config.image.height_ascent_conflict", path, id, String.valueOf(height), String.valueOf(ascent));
             }
 
             BitmapImage bitmapImage = new BitmapImage(id, fontKey, height, ascent, resourceLocation, codepointGrid);
@@ -534,7 +531,7 @@ public abstract class AbstractFontManager implements FontManager {
                 }
             }
 
-            AbstractFontManager.this.images.put(id, bitmapImage);
+            images.put(id, bitmapImage);
         }
     }
 }

@@ -3,7 +3,7 @@ package net.momirealms.craftengine.core.pack.model.rangedisptach;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.LegacyModelPredicate;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public class CustomModelDataRangeDispatchProperty implements RangeDispatchProper
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            int index = MiscUtils.getAsInt(arguments.getOrDefault("index", 0));
+            int index = ResourceConfigUtils.getAsInt(arguments.getOrDefault("index", 0), "index");
             return new CustomModelDataRangeDispatchProperty(index);
         }
     }

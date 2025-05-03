@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack.model;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -35,11 +36,11 @@ public class ItemModels {
     }
 
     public static ItemModel fromMap(Map<String, Object> map) {
-        String type = (String) map.getOrDefault("type", "minecraft:model");
+        String type = map.getOrDefault("type", "minecraft:model").toString();
         Key key = Key.withDefaultNamespace(type, "minecraft");
         ItemModelFactory factory = BuiltInRegistries.ITEM_MODEL_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown model type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.invalid_type", type);
         }
         return factory.create(map);
     }

@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -187,7 +188,7 @@ public class BlockItemBehavior extends ItemBehavior {
         public ItemBehavior create(Pack pack, Path path, Key key, Map<String, Object> arguments) {
             Object id = arguments.get("block");
             if (id == null) {
-                throw new IllegalArgumentException("Missing required parameter 'block' for block_item behavior");
+                throw new LocalizedResourceConfigException("warning.config.item.behavior.block.missing_block", new IllegalArgumentException("Missing required parameter 'block' for block_item behavior"));
             }
             if (id instanceof Map<?, ?> map) {
                 if (map.containsKey(key.toString())) {

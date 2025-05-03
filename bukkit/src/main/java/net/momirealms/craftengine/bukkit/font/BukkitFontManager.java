@@ -112,8 +112,9 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
+        Player player = event.getPlayer();
         if (!Config.filterCommand()) return;
-        if (!event.getPlayer().hasPermission(FontManager.BYPASS_COMMAND)) {
+        if (!player.hasPermission(FontManager.BYPASS_COMMAND)) {
             IllegalCharacterProcessResult result = processIllegalCharacters(event.getMessage());
             if (result.has()) {
                 event.setMessage(result.text());

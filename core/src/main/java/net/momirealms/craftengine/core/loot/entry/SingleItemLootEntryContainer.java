@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.loot.function.LootFunctions;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public class SingleItemLootEntryContainer<T> extends AbstractSingleLootEntryCont
         if (tItem != null) {
             lootConsumer.accept(tItem);
         } else {
-            CraftEngine.instance().logger().warn("Failed to create item: " + this.item);
+            CraftEngine.instance().logger().warn("Failed to create item: " + this.item + " as loots. Please check if this item exists.");
         }
     }
 
@@ -42,9 +43,10 @@ public class SingleItemLootEntryContainer<T> extends AbstractSingleLootEntryCont
         @SuppressWarnings("unchecked")
         @Override
         public LootEntryContainer<A> create(Map<String, Object> arguments) {
-            Key item = Key.from((String) arguments.get("item"));
-            int weight = (int) arguments.getOrDefault("weight", 1);
-            int quality = (int) arguments.getOrDefault("quality", 0);
+            String itemObj = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("item"), "warning.config.loot_table.entry.item.missing_item");
+            Key item = Key.from(itemObj);
+            int weight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("weight", 1), "weight");
+            int quality = ResourceConfigUtils.getAsInt(arguments.getOrDefault("quality", 0), "quality");
             List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());

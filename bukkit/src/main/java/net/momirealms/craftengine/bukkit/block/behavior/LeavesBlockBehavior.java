@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.parameter.LootParameters;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -172,14 +173,8 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
     public static class Factory implements BlockBehaviorFactory {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Property<Boolean> persistent = (Property<Boolean>) block.getProperty("persistent");
-            if (persistent == null) {
-                throw new NullPointerException("persistent property not set for block " + block.id());
-            }
-            Property<Integer> distance = (Property<Integer>) block.getProperty("distance");
-            if (distance == null) {
-                throw new NullPointerException("distance not set for block " + block.id());
-            }
+            Property<Boolean> persistent = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("persistent"), "warning.config.block.behavior.leaves.missing_persistent");
+            Property<Integer> distance = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("distance"), "warning.config.block.behavior.leaves.missing_distance");
             Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
             int actual = distance.possibleValues().get(distance.possibleValues().size() - 1);
             return new LeavesBlockBehavior(block, actual, distance, persistent, waterlogged);

@@ -1,6 +1,9 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -25,10 +28,10 @@ public class InvertedPathMatcher implements PathMatcher {
 
     public static class Factory implements PathMatcherFactory {
 
-        @SuppressWarnings("unchecked")
         @Override
         public PathMatcher create(Map<String, Object> arguments) {
-            Map<String, Object> term = (Map<String, Object>) arguments.get("term");
+            Object inverted = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("term"), () -> new LocalizedException("warning.config.conflict_matcher.inverted.missing_term"));
+            Map<String, Object> term = MiscUtils.castToMap(inverted, false);
             return new InvertedPathMatcher(PathMatchers.fromMap(term));
         }
     }
