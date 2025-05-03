@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,23 @@ public class NumberProviders {
         if (object instanceof Number number) {
             return new FixedNumberProvider(number.floatValue());
         } else if (object instanceof String string) {
-            return new FixedNumberProvider(Float.parseFloat(string));
+            if (string.contains("~")) {
+                int first = string.indexOf('~');
+                int second = string.indexOf('~', first + 1);
+                if (second == -1) {
+                    try {
+                        float min = Float.parseFloat(string.substring(0, first));
+                        float max = Float.parseFloat(string.substring(first + 1));
+                        return new UniformNumberProvider(min, max);
+                    } catch (NumberFormatException e) {
+                        throw e;
+                    }
+                } else {
+                    throw new IllegalArgumentException("Illegal number format: " + string);
+                }
+            } else {
+                return new FixedNumberProvider(Float.parseFloat(string));
+            }
         } else if (object instanceof Map<?,?> map) {
             return fromMap((Map<String, Object>) map);
         }

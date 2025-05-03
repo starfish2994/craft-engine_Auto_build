@@ -1,9 +1,9 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
-import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcher;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatchers;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
@@ -14,9 +14,9 @@ import java.util.Map;
 
 public class RetainMatchingResolution implements Resolution {
     public static final Factory FACTORY = new Factory();
-    private final PathMatcher matcher;
+    private final Condition<PathContext> matcher;
 
-    public RetainMatchingResolution(PathMatcher matcher) {
+    public RetainMatchingResolution(Condition<PathContext> matcher) {
         this.matcher = matcher;
     }
 

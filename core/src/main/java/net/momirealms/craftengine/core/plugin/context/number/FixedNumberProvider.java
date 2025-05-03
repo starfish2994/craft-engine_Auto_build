@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.plugin.context.number;
 
-import net.momirealms.craftengine.core.loot.LootContext;
+import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ public class FixedNumberProvider implements NumberProvider {
     }
 
     @Override
-    public float getFloat(LootContext context) {
+    public float getFloat(Context context) {
         return this.value;
     }
 

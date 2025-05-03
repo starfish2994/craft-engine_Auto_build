@@ -11,7 +11,7 @@ import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
 import net.momirealms.craftengine.core.loot.function.LootFunctionApplyBonusCount;
 import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
-import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcherFactory;
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionFactory;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHostFactory;
 import net.momirealms.craftengine.core.pack.model.ItemModelFactory;
@@ -46,7 +46,7 @@ public class BuiltInRegistries {
     public static final Registry<SelectPropertyFactory> SELECT_PROPERTY_FACTORY = createRegistry(Registries.SELECT_PROPERTY_FACTORY);
     public static final Registry<RecipeFactory<?>> RECIPE_FACTORY = createRegistry(Registries.RECIPE_FACTORY);
     public static final Registry<LootFunctionApplyBonusCount.FormulaFactory> FORMULA_FACTORY = createRegistry(Registries.FORMULA_FACTORY);
-    public static final Registry<PathMatcherFactory> PATH_MATCHER_FACTORY = createRegistry(Registries.PATH_MATCHER_FACTORY);
+    public static final Registry<Factory<Condition<PathContext>>> PATH_MATCHER_FACTORY = createRegistry(Registries.PATH_MATCHER_FACTORY);
     public static final Registry<ResolutionFactory> RESOLUTION_FACTORY = createRegistry(Registries.RESOLUTION_FACTORY);
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);
     public static final Registry<HitBoxFactory> HITBOX_FACTORY = createRegistry(Registries.HITBOX_FACTORY);

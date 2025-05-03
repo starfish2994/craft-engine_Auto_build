@@ -61,6 +61,7 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
     public synchronized void close() throws IOException {
         this.saveCache();
         super.close();
+        this.chunkCache.cleanUp();
     }
 
     private void saveCache() {

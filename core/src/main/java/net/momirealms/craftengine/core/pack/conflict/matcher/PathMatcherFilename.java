@@ -1,14 +1,15 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
+import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
-public class PathMatcherFilename implements PathMatcher {
-    public static final Factory FACTORY = new Factory();
+public class PathMatcherFilename implements Condition<PathContext> {
     private final String name;
 
     public PathMatcherFilename(String name) {
@@ -26,10 +27,10 @@ public class PathMatcherFilename implements PathMatcher {
         return PathMatchers.FILENAME;
     }
 
-    public static class Factory implements PathMatcherFactory {
+    public static class FactoryImpl implements Factory<Condition<PathContext>> {
 
         @Override
-        public PathMatcher create(Map<String, Object> arguments) {
+        public Condition<PathContext> create(Map<String, Object> arguments) {
             String name = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("name"), () -> new LocalizedException("warning.config.conflict_matcher.filename.missing_name"));
             return new PathMatcherFilename(name);
         }

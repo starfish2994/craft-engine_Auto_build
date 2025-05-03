@@ -1,7 +1,8 @@
 package net.momirealms.craftengine.core.plugin.context.number;
 
-import net.momirealms.craftengine.core.loot.LootContext;
+import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.RandomUtils;
 
 import java.util.Map;
 
@@ -15,14 +16,19 @@ public class UniformNumberProvider implements NumberProvider {
         this.max = max;
     }
 
-    @Override
-    public int getInt(LootContext context) {
-        return context.randomSource().nextInt(this.min.getInt(context), this.max.getInt(context) + 1);
+    public UniformNumberProvider(float min, float max) {
+        this.min = new FixedNumberProvider(min);
+        this.max = new FixedNumberProvider(max);
     }
 
     @Override
-    public float getFloat(LootContext context) {
-        return context.randomSource().nextFloat(this.min.getFloat(context), this.max.getFloat(context));
+    public int getInt(Context context) {
+        return RandomUtils.generateRandomInt(this.min.getInt(context), this.max.getInt(context));
+    }
+
+    @Override
+    public float getFloat(Context context) {
+        return RandomUtils.generateRandomFloat(this.min.getFloat(context), this.max.getFloat(context));
     }
 
     @Override
