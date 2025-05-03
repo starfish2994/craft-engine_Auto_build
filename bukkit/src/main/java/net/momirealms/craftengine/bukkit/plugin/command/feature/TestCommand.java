@@ -1,13 +1,16 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import com.saicone.rtag.util.ChatComponent;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
+import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
-import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.AdventureHelper;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
+import org.incendo.cloud.parser.standard.StringParser;
 
 public class TestCommand extends BukkitCommandFeature<CommandSender> {
 
@@ -19,9 +22,12 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
     public Command.Builder<? extends CommandSender> assembleCommand(org.incendo.cloud.CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
+                .required("text", StringParser.greedyStringParser())
                 .handler(context -> {
-                    Player player = context.sender();
-                    player.getInventory().addItem(BukkitItemManager.instance().createWrappedItem(Key.from("default:topaz"), null).getItem());
+                    plugin().senderFactory().wrap(context.sender()).sendMessage(Component.text(
+                            ChatComponent.toTag(ComponentUtils.adventureToMinecraft(AdventureHelper.miniMessage().deserialize(context.get("text")))).toString()
+                    ));
+                    plugin().senderFactory().wrap(context.sender()).sendMessage(AdventureHelper.miniMessage().deserialize(context.get("text")));
                 });
     }
 

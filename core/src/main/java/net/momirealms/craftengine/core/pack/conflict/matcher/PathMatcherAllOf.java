@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.condition.AllOfCondition;
 import net.momirealms.craftengine.core.util.context.Condition;

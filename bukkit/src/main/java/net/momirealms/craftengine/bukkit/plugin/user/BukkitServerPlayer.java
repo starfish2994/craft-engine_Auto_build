@@ -677,7 +677,7 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public World level() {
+    public World world() {
         return new BukkitWorld(platformPlayer().getWorld());
     }
 

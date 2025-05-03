@@ -14,7 +14,10 @@ public class CommonParameterProvider implements LazyContextParameterProvider {
 
     private static final Map<ContextKey<?>, Function<CommonParameterProvider, Object>> CONTEXT_FUNCTIONS = new HashMap<>();
     static {
-        CONTEXT_FUNCTIONS.put(CommonParameters.RANDOM, (f) -> RandomUtils.generateRandomDouble(0,1));
+        CONTEXT_FUNCTIONS.put(CommonParameters.RANDOM, (f) -> {
+            f.lastRandom = RandomUtils.generateRandomDouble(0,1);
+            return f.lastRandom;
+        });
         CONTEXT_FUNCTIONS.put(CommonParameters.LAST_RANDOM, (f) -> {
             if (f.lastRandom == -1) {
                 f.lastRandom = RandomUtils.generateRandomDouble(0, 1);

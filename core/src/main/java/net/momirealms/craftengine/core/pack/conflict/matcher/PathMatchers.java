@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
-import net.momirealms.craftengine.core.util.condition.AllOfCondition;
 
 import java.util.ArrayList;
 import java.util.List;

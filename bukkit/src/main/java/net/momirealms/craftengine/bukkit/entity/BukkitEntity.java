@@ -49,7 +49,7 @@ public class BukkitEntity extends Entity {
     }
 
     @Override
-    public World level() {
+    public World world() {
         return new BukkitWorld(literalObject().getWorld());
     }
 
