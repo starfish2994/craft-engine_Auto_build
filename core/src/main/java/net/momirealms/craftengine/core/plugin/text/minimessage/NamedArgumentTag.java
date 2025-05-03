@@ -18,9 +18,9 @@ public class NamedArgumentTag implements TagResolver {
     private static final String NAME_0 = "argument";
     private static final String NAME_1 = "arg";
 
-    private final MiniMessageTextContext context;
+    private final MiniMessageTagContext context;
 
-    public NamedArgumentTag(@NotNull MiniMessageTextContext context) {
+    public NamedArgumentTag(@NotNull MiniMessageTagContext context) {
         this.context = Objects.requireNonNull(context, "context holder");
     }
 

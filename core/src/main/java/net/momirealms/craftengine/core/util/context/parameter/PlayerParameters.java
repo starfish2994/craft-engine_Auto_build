@@ -1,6 +1,7 @@
-package net.momirealms.craftengine.core.util.context;
+package net.momirealms.craftengine.core.util.context.parameter;
 
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.context.ContextKey;
 
 import java.util.UUID;
 

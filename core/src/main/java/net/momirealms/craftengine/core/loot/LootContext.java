@@ -1,14 +1,12 @@
 package net.momirealms.craftengine.core.loot;
 
-import net.momirealms.craftengine.core.util.context.CommonContext;
+import net.momirealms.craftengine.core.util.context.AbstractCommonContext;
 import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.ContextKey;
 import net.momirealms.craftengine.core.world.World;
 
-import java.util.Optional;
 import java.util.Random;
 
-public class LootContext extends CommonContext {
+public class LootContext extends AbstractCommonContext {
     private final World world;
     private final Random randomSource;
     private final float luck;

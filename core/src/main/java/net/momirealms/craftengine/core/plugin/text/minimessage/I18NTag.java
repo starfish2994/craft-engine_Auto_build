@@ -11,9 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class I18NTag implements TagResolver {
-    private final MiniMessageTextContext context;
+    private final MiniMessageTagContext context;
 
-    public I18NTag(MiniMessageTextContext context) {
+    public I18NTag(MiniMessageTagContext context) {
         this.context = context;
     }
 
