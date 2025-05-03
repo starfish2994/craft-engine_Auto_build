@@ -152,6 +152,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, Reflections.clazz$ServerboundLoginAcknowledgedPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, Reflections.clazz$ServerboundResourcePackPacket);
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, Reflections.clazz$ClientboundEntityEventPacket);
+        registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_DATA, Reflections.clazz$ClientboundSetEntityDataPacket);
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
@@ -170,7 +171,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
         registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
         registerByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_ENTITY_DATA, this.packetIds.clientboundSetEntityDataPacket());
+        registerByteBufPacketConsumer(PacketConsumers.SET_ENTITY_DATA_BYTEBUFFER, this.packetIds.clientboundSetEntityDataPacket());
     }
 
     public static BukkitNetworkManager instance() {

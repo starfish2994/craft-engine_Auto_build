@@ -558,7 +558,6 @@ public class Reflections {
             )
     );
 
-    @Deprecated
     public static final Field field$ClientboundAddEntityPacket$type = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundAddEntityPacket, clazz$EntityType, 0
@@ -3811,6 +3810,8 @@ public class Reflections {
     public static final Object instance$EntityType$INTERACTION;
     public static final Object instance$EntityType$SHULKER;
     public static final Object instance$EntityType$OAK_BOAT;
+    public static final Object instance$EntityType$TRIDENT;
+    public static final Object instance$EntityType$SNOWBALL;
 
     static {
         try {
@@ -3830,6 +3831,10 @@ public class Reflections {
             instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
             Object oakBoat = VersionHelper.isOrAbove1_21_2() ? FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "oak_boat") : FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "boat");
             instance$EntityType$OAK_BOAT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, oakBoat);
+            Object trident = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "trident");
+            instance$EntityType$TRIDENT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, trident);
+            Object snowball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "snowball");
+            instance$EntityType$SNOWBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, snowball);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6615,4 +6620,56 @@ public class Reflections {
                     BukkitReflectionUtils.assembleCBClass("block.CraftBlockStates$BlockEntityStateFactory")
             )
     );
+
+    public static final Field field$clazz$ClientboundSetEntityDataPacket$id = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundSetEntityDataPacket, int.class, 0
+            )
+    );
+
+    // public static final Class<?> clazz$PositionMoveRotation =
+    //         ReflectionUtils.getClazz(
+    //                 BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation")
+    //         );
+    //
+    // public static final Field field$ClientboundEntityPositionSyncPacket$values = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
+    //         .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$PositionMoveRotation, 0))
+    //         .orElse(null);
+    //
+    // public static final Class<?> clazz$ClientboundTeleportEntityPacket = requireNonNull(
+    //         BukkitReflectionUtils.findReobfOrMojmapClass(
+    //                 "network.protocol.game.PacketPlayOutEntityTeleport",
+    //                 "network.protocol.game.ClientboundTeleportEntityPacket"
+    //         )
+    // );
+    //
+    // /**
+    //  * 实体移动数据包
+    //  *
+    //  * <p><b>1.20 ~ 1.21.1 版本传入参数：</b></p>
+    //  * <ul>
+    //  *   <li>{@code FriendlyByteBuf} 需要按顺序写入：
+    //  *     <ul>
+    //  *       <li>{@code id} - VarInt 实体ID</li>
+    //  *       <li>{@code x} - Double X坐标</li>
+    //  *       <li>{@code y} - Double Y坐标</li>
+    //  *       <li>{@code z} - Double Z坐标</li>
+    //  *       <li>{@code yRot} - Byte 垂直旋转角度</li>
+    //  *       <li>{@code xRot} - Byte 水平旋转角度</li>
+    //  *       <li>{@code onGround} - Boolean 着地状态</li>
+    //  *     </ul>
+    //  *   </li>
+    //  * </ul>
+    //  *
+    //  * <p><b>1.21.2+ 版本传入参数：</b></p>
+    //  * <ul>
+    //  *   <li>{@code id} - int 实体ID</li>
+    //  *   <li>{@code PositionMoveRotation change} - 位置和移动向量和旋转</li>
+    //  *   <li>{@code Set<Relative> relatives} - 相对坐标标记集合</li>
+    //  *   <li>{@code onGround} - boolean 着地状态</li>
+    //  * </ul>
+    //  */
+    // public static final Constructor<?> constructor$ClientboundTeleportEntityPacket = requireNonNull(
+    //         ReflectionUtils.getConstructor(clazz$ClientboundTeleportEntityPacket, VersionHelper.isOrAbove1_21_2() ? 0 : 1)
+    // );
 }

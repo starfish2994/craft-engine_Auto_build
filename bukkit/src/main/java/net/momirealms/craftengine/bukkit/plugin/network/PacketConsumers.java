@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
@@ -9,8 +10,10 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
@@ -48,8 +51,10 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Trident;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -1590,6 +1595,32 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
+            } else if (entityType == Reflections.instance$EntityType$TRIDENT) {
+                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
+                Player player = (Player) user.platformPlayer();
+                Trident trident = (Trident) FastNMS.INSTANCE.getBukkitEntityById(player.getWorld(), entityId);
+                PersistentDataContainerView container = trident.getItemStack().getPersistentDataContainer();
+                if (container == null) return;
+                String customTrident = container.get(Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident")), PersistentDataType.STRING);
+                int interpolationDelay = container.get(Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay")), PersistentDataType.INTEGER);
+                int transformationInterpolationDuration = container.get(Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration")), PersistentDataType.INTEGER);
+                int positionRotationInterpolationDuration = container.get(Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration")), PersistentDataType.INTEGER);
+                if (customTrident == null) return;
+                Reflections.field$ClientboundAddEntityPacket$type.set(packet, Reflections.instance$EntityType$ITEM_DISPLAY);
+                List<Object> itemDisplayValues = new ArrayList<>();
+                Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
+                ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(interpolationDelay, itemDisplayValues);
+                if (VersionHelper.isOrAbove1_20_2()) {
+                    ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
+                    ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(positionRotationInterpolationDuration, itemDisplayValues);
+                } else {
+                    ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
+                }
+                ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), itemDisplayValues);
+                user.tridentView().put(entityId, itemDisplayValues);
+                event.addDelayedTask(() -> {
+                    user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
+                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -1600,6 +1631,12 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
+            // if (user.tridentView().contains(entityId)) {
+            //     if (!VersionHelper.isOrAbove1_21_3()) return;
+            //     Object values = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
+            //     user.sendPacket(Reflections.constructor$ClientboundTeleportEntityPacket.newInstance(entityId, values, Set.of(), false), true);
+            //     Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("Sync entity position: " + values));
+            // }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
@@ -1628,6 +1665,7 @@ public class PacketConsumers {
                 int entityId = intList.getInt(i);
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
+                user.tridentView().remove(entityId);
                 if (entities == null) continue;
                 for (int subEntityId : entities) {
                     isChange = true;
@@ -1979,7 +2017,7 @@ public class PacketConsumers {
     };
 
     @SuppressWarnings("unchecked")
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA_BYTEBUFFER = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
@@ -2299,6 +2337,17 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityEventPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
+        try {
+            int entityId = Reflections.field$clazz$ClientboundSetEntityDataPacket$id.getInt(packet);
+            if (user.tridentView().containsKey(entityId)) {
+                event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, user.tridentView().get(entityId)));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }
     };
 }

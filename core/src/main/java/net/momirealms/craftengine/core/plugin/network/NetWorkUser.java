@@ -46,6 +46,8 @@ public interface NetWorkUser {
 
     Map<Integer, Object> entityView();
 
+    Map<Integer, List<Object>> tridentView();
+
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);

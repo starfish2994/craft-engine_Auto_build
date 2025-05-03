@@ -90,6 +90,7 @@ public class BukkitServerPlayer extends Player {
     // for better fake furniture visual sync
     private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
     private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
+    private final Map<Integer, List<Object>> tridentView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -721,6 +722,11 @@ public class BukkitServerPlayer extends Player {
     @Override
     public Map<Integer, Object> entityView() {
         return this.entityTypeView;
+    }
+
+    @Override
+    public Map<Integer, List<Object>> tridentView() {
+        return this.tridentView;
     }
 
     public void setResendSound() {
