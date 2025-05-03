@@ -1604,14 +1604,13 @@ public class PacketConsumers {
                 NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
                 NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
                 NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
+                NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
                 String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
                 Integer interpolationDelay = container.get(interpolationDelayKey, PersistentDataType.INTEGER);
                 Integer transformationInterpolationDuration = container.get(transformationInterpolationDurationaKey, PersistentDataType.INTEGER);
                 Integer positionRotationInterpolationDuration = container.get(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER);
+                Byte displayType = container.get(displayTypeKey, PersistentDataType.BYTE);
                 if (customTrident == null) return;
-                if (interpolationDelay == null) return;
-                if (transformationInterpolationDuration == null) return;
-                if (positionRotationInterpolationDuration == null) return;
                 Reflections.field$ClientboundAddEntityPacket$type.set(packet, Reflections.instance$EntityType$ITEM_DISPLAY);
                 List<Object> itemDisplayValues = new ArrayList<>();
                 Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
@@ -1623,6 +1622,7 @@ public class PacketConsumers {
                     ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
                 }
                 ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), itemDisplayValues);
+                ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(displayType, itemDisplayValues);
                 user.tridentView().put(entityId, itemDisplayValues);
                 event.addDelayedTask(() -> {
                     user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);

@@ -14,6 +14,7 @@ import org.incendo.cloud.Command;
 import org.incendo.cloud.bukkit.parser.NamespacedKeyParser;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.parser.standard.ByteParser;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.suggestion.SuggestionProvider;
@@ -40,15 +41,22 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .required("interpolationDelay", IntegerParser.integerParser())
                 .required("transformationInterpolationDuration", IntegerParser.integerParser())
                 .required("positionRotationInterpolationDuration", IntegerParser.integerParser())
+                .required("displayType", ByteParser.byteParser())
                 .handler(context -> {
                     Player player = context.sender();
                     NamespacedKey namespacedKey = context.get("id");
                     var item = ItemStack.of(Material.TRIDENT);
+                    NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
+                    NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
+                    NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
+                    NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
+                    NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
                     item.editPersistentDataContainer(container -> {
-                        container.set(Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident")), PersistentDataType.STRING, namespacedKey.asString());
-                        container.set(Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay")), PersistentDataType.INTEGER, context.get("interpolationDelay"));
-                        container.set(Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration")), PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
-                        container.set(Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration")), PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
+                        container.set(customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
+                        container.set(interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
+                        container.set(transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
+                        container.set(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
+                        container.set(displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
                     });
                     player.getInventory().addItem(item);
                 });
