@@ -5,8 +5,10 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +25,7 @@ public class EnchantmentCondition<CTX extends Context> implements Condition<CTX>
 
     @Override
     public Key type() {
-        return SharedConditions.ENCHANTMENT;
+        return CommonConditions.ENCHANTMENT;
     }
 
     @Override
@@ -39,9 +41,14 @@ public class EnchantmentCondition<CTX extends Context> implements Condition<CTX>
 
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
-            String predicate = (String) arguments.get("predicate");
+            String predicate = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("predicate"), "warning.config.condition.enchantment.missing_predicate");
             String[] split = predicate.split("(<=|>=|<|>|==|=)", 2);
-            int level = Integer.parseInt(split[1]);
+            int level;
+            try {
+                level = Integer.parseInt(split[1]);
+            } catch (NumberFormatException e) {
+                throw new LocalizedResourceConfigException("warning.config.condition.enchantment.invalid_predicate", e, predicate);
+            }
             String operator = predicate.substring(split[0].length(), predicate.length() - split[1].length());
             Function<Integer, Boolean> expression;
             switch (operator) {
@@ -50,7 +57,7 @@ public class EnchantmentCondition<CTX extends Context> implements Condition<CTX>
                 case "==", "=" -> expression = (i -> i == level);
                 case "<=" -> expression = (i -> i <= level);
                 case ">=" -> expression = (i -> i >= level);
-                default -> throw new IllegalArgumentException("Unknown operator: " + operator);
+                default -> throw new LocalizedResourceConfigException("warning.config.condition.enchantment.invalid_predicate", predicate);
             }
             return new EnchantmentCondition<>(Key.of(split[0]), expression);
         }

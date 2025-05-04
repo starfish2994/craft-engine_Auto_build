@@ -14,7 +14,7 @@ public class SurvivesExplosionCondition<CTX extends Context> implements Conditio
 
     @Override
     public Key type() {
-        return SharedConditions.SURVIVES_EXPLOSION;
+        return CommonConditions.SURVIVES_EXPLOSION;
     }
 
     @Override

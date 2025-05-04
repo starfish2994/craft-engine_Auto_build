@@ -124,7 +124,7 @@ public abstract class AbstractFontManager implements FontManager {
                     PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                            .build()).tagResolvers()
+                    ).tagResolvers()
             );
             replacements.put(fragment, AdventureHelper.componentToMiniMessage(content));
         }
@@ -170,8 +170,7 @@ public abstract class AbstractFontManager implements FontManager {
                     PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                            .build())
-                            .tagResolvers())
+                    ).tagResolvers())
             );
             if (emojis.size() >= maxTimes) break;
         }
@@ -200,11 +199,9 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerOptionalContext.of(player,
-                            ContextHolder.builder()
-                                    .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
-                                    .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                                    .build()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
+                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
                     ).tagResolvers()
             ));
             if (emojis.size() >= maxTimes) break;

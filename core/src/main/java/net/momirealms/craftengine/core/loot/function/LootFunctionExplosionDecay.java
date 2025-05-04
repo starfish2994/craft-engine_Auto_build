@@ -6,8 +6,12 @@ import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.RandomUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -20,12 +24,11 @@ public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFuncti
     protected Item<T> applyInternal(Item<T> item, LootContext context) {
         Optional<Float> radius = context.getOptionalParameter(CommonParameters.EXPLOSION_RADIUS);
         if (radius.isPresent()) {
-            Random random = context.randomSource();
             float f = 1f / radius.get();
             int amount = item.count();
             int survive = 0;
             for (int j = 0; j < amount; j++) {
-                if (random.nextFloat() <= f) {
+                if (RandomUtils.generateRandomFloat(0, 1) <= f) {
                     survive++;
                 }
             }

@@ -1,13 +1,15 @@
 package net.momirealms.craftengine.core.plugin.context.number;
 
 import net.momirealms.craftengine.core.plugin.context.Context;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.RandomUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
 public class UniformNumberProvider implements NumberProvider {
-    public static final Factory FACTORY = new Factory();
+    public static final FactoryImpl FACTORY = new FactoryImpl();
     private final NumberProvider min;
     private final NumberProvider max;
 
@@ -16,14 +18,17 @@ public class UniformNumberProvider implements NumberProvider {
         this.max = max;
     }
 
-    public UniformNumberProvider(float min, float max) {
-        this.min = new FixedNumberProvider(min);
-        this.max = new FixedNumberProvider(max);
+    public NumberProvider max() {
+        return max;
+    }
+
+    public NumberProvider min() {
+        return min;
     }
 
     @Override
     public int getInt(Context context) {
-        return RandomUtils.generateRandomInt(this.min.getInt(context), this.max.getInt(context));
+        return RandomUtils.generateRandomInt(this.min.getInt(context), this.max.getInt(context) + 1);
     }
 
     @Override
@@ -36,11 +41,12 @@ public class UniformNumberProvider implements NumberProvider {
         return NumberProviders.UNIFORM;
     }
 
-    public static class Factory implements NumberProviderFactory {
+    public static class FactoryImpl implements Factory<NumberProvider> {
+
         @Override
         public NumberProvider create(Map<String, Object> arguments) {
-            Object min = arguments.getOrDefault("min", 1);
-            Object max = arguments.getOrDefault("max", 1);
+            Object min = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("min"), "warning.config.number.uniform.missing_min");
+            Object max = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("max"), "warning.config.number.uniform.missing_max");
             return new UniformNumberProvider(NumberProviders.fromObject(min), NumberProviders.fromObject(max));
         }
     }

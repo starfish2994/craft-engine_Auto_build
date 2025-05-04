@@ -21,16 +21,16 @@ import java.util.function.Predicate;
 public class LootConditions {
 
     static {
-        register(SharedConditions.MATCH_ITEM, new MatchItemCondition.FactoryImpl<>());
-        register(SharedConditions.MATCH_BLOCK_PROPERTY, new MatchBlockPropertyCondition.FactoryImpl<>());
-        register(SharedConditions.TABLE_BONUS, new TableBonusCondition.FactoryImpl<>());
-        register(SharedConditions.SURVIVES_EXPLOSION, new SurvivesExplosionCondition.FactoryImpl<>());
-        register(SharedConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(LootConditions::fromMap));
-        register(SharedConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(LootConditions::fromMap));
-        register(SharedConditions.ENCHANTMENT, new EnchantmentCondition.FactoryImpl<>());
-        register(SharedConditions.INVERTED, new InvertedCondition.FactoryImpl<>(LootConditions::fromMap));
-        register(SharedConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
-        register(SharedConditions.RANDOM, new RandomCondition.FactoryImpl<>());
+        register(CommonConditions.MATCH_ITEM, new MatchItemCondition.FactoryImpl<>());
+        register(CommonConditions.MATCH_BLOCK_PROPERTY, new MatchBlockPropertyCondition.FactoryImpl<>());
+        register(CommonConditions.TABLE_BONUS, new TableBonusCondition.FactoryImpl<>());
+        register(CommonConditions.SURVIVES_EXPLOSION, new SurvivesExplosionCondition.FactoryImpl<>());
+        register(CommonConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(CommonConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(CommonConditions.ENCHANTMENT, new EnchantmentCondition.FactoryImpl<>());
+        register(CommonConditions.INVERTED, new InvertedCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(CommonConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
+        register(CommonConditions.RANDOM, new RandomCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, Factory<Condition<LootContext>> factory) {

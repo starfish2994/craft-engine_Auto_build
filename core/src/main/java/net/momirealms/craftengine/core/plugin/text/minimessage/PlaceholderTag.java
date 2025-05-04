@@ -23,8 +23,11 @@ public class PlaceholderTag implements TagResolver {
         if (!this.has(name) || !CraftEngine.instance().compatibilityManager().hasPlaceholderAPI()) {
             return null;
         }
-        String placeholder = arguments.popOr("No argument placeholder provided").toString();
-        String parsed = CraftEngine.instance().compatibilityManager().parse(player, "%" + placeholder + "%");
+        String placeholder = "%" + arguments.popOr("No argument placeholder provided") + "%";
+        String parsed = CraftEngine.instance().compatibilityManager().parse(player, placeholder);
+        if (parsed.equals(placeholder)) {
+            parsed = arguments.popOr("No default papi value provided").toString();
+        }
         return Tag.inserting(AdventureHelper.miniMessage().deserialize(parsed));
     }
 

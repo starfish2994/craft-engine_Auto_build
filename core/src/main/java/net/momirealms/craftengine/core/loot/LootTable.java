@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -80,7 +79,7 @@ public class LootTable<T> {
     }
 
     public ArrayList<Item<T>> getRandomItems(ContextHolder parameters, World world) {
-        return this.getRandomItems(new LootContext(world, 1, ThreadLocalRandom.current(), parameters));
+        return this.getRandomItems(new LootContext(world, 1, parameters));
     }
 
     private ArrayList<Item<T>> getRandomItems(LootContext context) {

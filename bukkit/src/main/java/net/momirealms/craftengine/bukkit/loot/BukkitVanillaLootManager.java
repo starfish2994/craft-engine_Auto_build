@@ -70,7 +70,6 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
             ContextHolder.Builder builder = ContextHolder.builder();
             builder.withParameter(CommonParameters.WORLD, world);
             builder.withParameter(CommonParameters.LOCATION, vec3d);
-            // TODO Vanilla State Parameter
             if (VersionHelper.isOrAbove1_20_5()) {
                 if (event.getDamageSource().getCausingEntity() instanceof Player player) {
                     BukkitServerPlayer serverPlayer = this.plugin.adapt(player);

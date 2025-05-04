@@ -7,7 +7,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.ContextKey;
 import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,13 +28,13 @@ public class NamedArgumentTag implements TagResolver {
         if (!has(name)) {
             return null;
         }
-        String argumentKey = arguments.popOr("No argument key provided").toString();
-        ContextKey<?> key = ContextKey.of(Key.withDefaultNamespace(argumentKey, Key.DEFAULT_NAMESPACE));
+        ContextKey<?> key = ContextKey.of(arguments.popOr("No argument key provided").toString());
         Optional<?> optional = this.context.getOptionalParameter(key);
-        if (optional.isEmpty()) {
-            throw ctx.newException("Invalid argument key", arguments);
+        Object value = optional.orElse(null);
+        if (value == null) {
+            value = arguments.popOr("No default value provided").toString();
         }
-        return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(String.valueOf(optional.get()), this.context.tagResolvers()));
+        return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(String.valueOf(value), this.context.tagResolvers()));
     }
 
     @Override

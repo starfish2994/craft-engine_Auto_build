@@ -1,11 +1,10 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
-import com.saicone.rtag.util.ChatComponent;
-import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
-import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,10 +23,9 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .senderType(Player.class)
                 .required("text", StringParser.greedyStringParser())
                 .handler(context -> {
-                    plugin().senderFactory().wrap(context.sender()).sendMessage(Component.text(
-                            ChatComponent.toTag(ComponentUtils.adventureToMinecraft(AdventureHelper.miniMessage().deserialize(context.get("text")))).toString()
-                    ));
-                    plugin().senderFactory().wrap(context.sender()).sendMessage(AdventureHelper.miniMessage().deserialize(context.get("text")));
+                    String text = "<red><arg:1:0912012><papi:player_name></red>";
+                    PlayerOptionalContext context1 = PlayerOptionalContext.of(plugin().adapt(context.sender()), ContextHolder.builder());
+                    plugin().senderFactory().wrap(context.sender()).sendMessage(AdventureHelper.customMiniMessage().deserialize(text, context1.tagResolvers()));
                 });
     }
 

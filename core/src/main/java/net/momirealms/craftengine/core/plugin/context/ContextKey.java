@@ -1,28 +1,22 @@
 package net.momirealms.craftengine.core.plugin.context;
 
-import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 
 public class ContextKey<T> {
-    private final Key id;
+    private final String id;
 
-    public ContextKey(@NotNull Key id) {
+    public ContextKey(@NotNull String id) {
         this.id = id;
     }
 
     @NotNull
-    public Key id() {
+    public String id() {
         return id;
     }
 
     @NotNull
-    public static <T> ContextKey<T> of(@NotNull Key id) {
-        return new ContextKey<>(id);
-    }
-
-    @NotNull
     public static <T> ContextKey<T> of(@NotNull String id) {
-        return new ContextKey<>(Key.withDefaultNamespace(id, "craftengine"));
+        return new ContextKey<>(id);
     }
 
     @Override

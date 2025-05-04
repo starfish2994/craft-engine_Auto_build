@@ -752,7 +752,7 @@ public class RecipeEventListener implements Listener {
                 return;
             }
 
-            Item<ItemStack> newItem = customItem.buildItem(ItemBuildContext.of(plugin.adapt(player), ContextHolder.EMPTY));
+            Item<ItemStack> newItem = customItem.buildItem(ItemBuildContext.of(plugin.adapt(player)));
             int remainingDurability = totalMaxDamage - totalDamage;
             int newItemDamage = Math.max(0, newItem.maxDamage().get() - remainingDurability);
             newItem.damage(newItemDamage);

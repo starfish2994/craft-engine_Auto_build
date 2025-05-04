@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.condition.AllOfCondition;
 import net.momirealms.craftengine.core.plugin.context.condition.AnyOfCondition;
 import net.momirealms.craftengine.core.plugin.context.condition.InvertedCondition;
-import net.momirealms.craftengine.core.plugin.context.condition.SharedConditions;
+import net.momirealms.craftengine.core.plugin.context.condition.CommonConditions;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -29,9 +29,9 @@ public class PathMatchers {
     public static final Key PATTERN = Key.of("craftengine:pattern");
 
     static {
-        register(SharedConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(PathMatchers::fromMap));
-        register(SharedConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(PathMatchers::fromMap));
-        register(SharedConditions.INVERTED, new InvertedCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(CommonConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(CommonConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(CommonConditions.INVERTED, new InvertedCondition.FactoryImpl<>(PathMatchers::fromMap));
         register(PARENT_PATH_SUFFIX, new PathMatcherParentSuffix.FactoryImpl());
         register(PARENT_PATH_PREFIX, new PathMatcherParentPrefix.FactoryImpl());
         register(PATTERN, new PathPatternMatcher.FactoryImpl());
