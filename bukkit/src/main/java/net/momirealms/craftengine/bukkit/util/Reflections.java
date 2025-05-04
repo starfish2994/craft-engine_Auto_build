@@ -6627,21 +6627,21 @@ public class Reflections {
             )
     );
 
-    // public static final Class<?> clazz$PositionMoveRotation =
-    //         ReflectionUtils.getClazz(
-    //                 BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation")
-    //         );
-    //
-    // public static final Field field$ClientboundEntityPositionSyncPacket$values = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
-    //         .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$PositionMoveRotation, 0))
-    //         .orElse(null);
-    //
-    // public static final Class<?> clazz$ClientboundTeleportEntityPacket = requireNonNull(
-    //         BukkitReflectionUtils.findReobfOrMojmapClass(
-    //                 "network.protocol.game.PacketPlayOutEntityTeleport",
-    //                 "network.protocol.game.ClientboundTeleportEntityPacket"
-    //         )
-    // );
+    public static final Class<?> clazz$PositionMoveRotation =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation")
+            );
+
+    public static final Field field$ClientboundEntityPositionSyncPacket$values = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$PositionMoveRotation, 0))
+            .orElse(null);
+
+    public static final Class<?> clazz$ClientboundTeleportEntityPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutEntityTeleport",
+                    "network.protocol.game.ClientboundTeleportEntityPacket"
+            )
+    );
     //
     // /**
     //  * 实体移动数据包

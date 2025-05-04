@@ -36,6 +36,7 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
+import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -1344,7 +1345,7 @@ public class PacketConsumers {
     // When the hotbar is full, the latest creative mode inventory can only be accessed when the player opens the inventory screen. Currently, it is not worth further handling this issue.
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_CREATIVE_SLOT = (user, event, packet) -> {
         try {
-            if (VersionHelper.isOrAbove1_21_4()) return;
+            if (ProtocolVersionUtils.isVersionNewerThan(user.protocolVersion(), ProtocolVersion.V1_21_4)) return;
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (VersionHelper.isFolia()) {
@@ -1612,6 +1613,7 @@ public class PacketConsumers {
                 Byte displayType = container.get(displayTypeKey, PersistentDataType.BYTE);
                 if (customTrident == null) return;
                 Reflections.field$ClientboundAddEntityPacket$type.set(packet, Reflections.instance$EntityType$ITEM_DISPLAY);
+                // System.out.println(packet);
                 List<Object> itemDisplayValues = new ArrayList<>();
                 Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
                 ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(interpolationDelay, itemDisplayValues);
@@ -1637,12 +1639,11 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
-            // if (user.tridentView().contains(entityId)) {
-            //     if (!VersionHelper.isOrAbove1_21_3()) return;
-            //     Object values = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
-            //     user.sendPacket(Reflections.constructor$ClientboundTeleportEntityPacket.newInstance(entityId, values, Set.of(), false), true);
-            //     Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("Sync entity position: " + values));
-            // }
+            if (user.tridentView().containsKey(entityId)) {
+                if (!VersionHelper.isOrAbove1_21_3()) return;
+                Object values = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
+                // Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("Sync entity position: " + values));
+            }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
