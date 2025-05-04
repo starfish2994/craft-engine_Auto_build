@@ -1,10 +1,7 @@
 package net.momirealms.craftengine.core.plugin.context;
 
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.momirealms.craftengine.core.plugin.text.minimessage.I18NTag;
-import net.momirealms.craftengine.core.plugin.text.minimessage.ImageTag;
-import net.momirealms.craftengine.core.plugin.text.minimessage.NamedArgumentTag;
-import net.momirealms.craftengine.core.plugin.text.minimessage.ShiftTag;
+import net.momirealms.craftengine.core.plugin.text.minimessage.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -26,7 +23,7 @@ public abstract class AbstractCommonContext implements Context {
     @NotNull
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new I18NTag(this), new NamedArgumentTag(this)};
+            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new I18NTag(this), new NamedArgumentTag(this), new PlaceholderTag(null)};
         }
         return this.tagResolvers;
     }

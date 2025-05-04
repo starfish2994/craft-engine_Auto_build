@@ -11,9 +11,9 @@ import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.MutableInt;
+import net.momirealms.craftengine.core.util.RandomUtils;
 
 import java.util.List;
-import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -62,7 +62,6 @@ public class LootPool<T> {
     }
 
     private void addRandomItem(Consumer<Item<T>> lootConsumer, LootContext context) {
-        Random randomSource = context.randomSource();
         List<LootEntry<T>> list = Lists.newArrayList();
         MutableInt mutableInt = new MutableInt(0);
         for (LootEntryContainer<T> lootPoolEntryContainer : this.entryContainers) {
@@ -79,7 +78,7 @@ public class LootPool<T> {
             if (i == 1) {
                 list.get(0).createItem(lootConsumer, context);
             } else {
-                int j = randomSource.nextInt(mutableInt.intValue());
+                int j = RandomUtils.generateRandomInt(0, mutableInt.intValue());
                 for (LootEntry<T> loot : list) {
                     j -= loot.getWeight(context.luck());
                     if (j < 0) {

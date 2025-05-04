@@ -150,11 +150,11 @@ public class BlockEventListener implements Listener {
                 }
 
                 // drop items
-                ContextHolder.Builder builder = ContextHolder.builder();
-                builder.withParameter(CommonParameters.WORLD, world);
-                builder.withParameter(CommonParameters.LOCATION, vec3d);
-                builder.withParameter(CommonParameters.PLAYER, serverPlayer);
-                builder.withOptionalParameter(CommonParameters.TOOL, itemInHand);
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(CommonParameters.WORLD, world)
+                        .withParameter(CommonParameters.LOCATION, vec3d)
+                        .withParameter(CommonParameters.PLAYER, serverPlayer)
+                        .withOptionalParameter(CommonParameters.TOOL, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }
@@ -171,11 +171,11 @@ public class BlockEventListener implements Listener {
                     BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                     net.momirealms.craftengine.core.world.World world = new BukkitWorld(player.getWorld());
                     Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                    ContextHolder.Builder builder = ContextHolder.builder();
-                    builder.withParameter(CommonParameters.WORLD, world);
-                    builder.withParameter(CommonParameters.LOCATION, vec3d);
-                    builder.withParameter(CommonParameters.PLAYER, serverPlayer);
-                    builder.withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                    ContextHolder.Builder builder = ContextHolder.builder()
+                            .withParameter(CommonParameters.WORLD, world)
+                            .withParameter(CommonParameters.LOCATION, vec3d)
+                            .withParameter(CommonParameters.PLAYER, serverPlayer)
+                            .withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
                         for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
@@ -213,9 +213,9 @@ public class BlockEventListener implements Listener {
                 Location location = block.getLocation();
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(block.getWorld());
                 Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                ContextHolder.Builder builder = ContextHolder.builder();
-                builder.withParameter(CommonParameters.WORLD, world);
-                builder.withParameter(CommonParameters.LOCATION, vec3d);
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(CommonParameters.WORLD, world)
+                        .withParameter(CommonParameters.LOCATION, vec3d);
                 for (Item<?> item : immutableBlockState.getDrops(builder, world)) {
                     world.dropItemNaturally(vec3d, item);
                 }

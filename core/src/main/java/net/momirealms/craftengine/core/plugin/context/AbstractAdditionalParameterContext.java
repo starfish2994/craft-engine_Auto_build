@@ -5,15 +5,15 @@ import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameterP
 import java.util.List;
 import java.util.Optional;
 
-public abstract class AbstractAdditionalCommonContext extends AbstractCommonContext {
+public abstract class AbstractAdditionalParameterContext extends AbstractCommonContext {
     private final List<LazyContextParameterProvider> providers;
 
-    public AbstractAdditionalCommonContext(ContextHolder contexts, List<LazyContextParameterProvider> providers) {
+    public AbstractAdditionalParameterContext(ContextHolder contexts, List<LazyContextParameterProvider> providers) {
         super(contexts);
         this.providers = providers;
     }
 
-    public AbstractAdditionalCommonContext(ContextHolder contexts) {
+    public AbstractAdditionalParameterContext(ContextHolder contexts) {
         super(contexts);
         this.providers = List.of(new CommonParameterProvider());
     }

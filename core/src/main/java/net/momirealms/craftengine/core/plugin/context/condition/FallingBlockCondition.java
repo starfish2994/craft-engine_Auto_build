@@ -12,7 +12,7 @@ public class FallingBlockCondition<CTX extends Context> implements Condition<CTX
 
     @Override
     public Key type() {
-        return SharedConditions.FALLING_BLOCK;
+        return CommonConditions.FALLING_BLOCK;
     }
 
     @Override

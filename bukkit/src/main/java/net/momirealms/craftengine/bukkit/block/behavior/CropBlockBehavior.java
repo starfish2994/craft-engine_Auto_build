@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class CropBlockBehavior extends BushBlockBehavior {
     public static final Factory FACTORY = new Factory();
@@ -148,7 +147,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
 
         net.momirealms.craftengine.core.world.World wrappedWorld = new BukkitWorld(world);
-        int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(new LootContext(wrappedWorld, 1, ThreadLocalRandom.current(), ContextHolder.builder()
+        int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(new LootContext(wrappedWorld, 1, ContextHolder.builder()
                 .withParameter(CommonParameters.WORLD, wrappedWorld)
                 .withParameter(CommonParameters.LOCATION, Vec3d.atCenterOf(new Vec3i(x, y, z)))
                 .build()));

@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -21,7 +22,7 @@ public class MatchItemCondition<CTX extends Context> implements Condition<CTX> {
 
     @Override
     public Key type() {
-        return SharedConditions.MATCH_ITEM;
+        return CommonConditions.MATCH_ITEM;
     }
 
     @Override
@@ -47,6 +48,9 @@ public class MatchItemCondition<CTX extends Context> implements Condition<CTX> {
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
             List<String> ids = MiscUtils.getAsStringList(arguments.get("id"));
+            if (ids.isEmpty()) {
+                throw new LocalizedResourceConfigException("warning.config.condition.match_item.missing_id");
+            }
             boolean regex = (boolean) arguments.getOrDefault("regex", false);
             return new MatchItemCondition<>(ids, regex);
         }

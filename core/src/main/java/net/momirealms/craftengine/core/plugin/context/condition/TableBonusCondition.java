@@ -27,7 +27,7 @@ public class TableBonusCondition<CTX extends Context> implements Condition<CTX> 
 
     @Override
     public Key type() {
-        return SharedConditions.TABLE_BONUS;
+        return CommonConditions.TABLE_BONUS;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class TableBonusCondition<CTX extends Context> implements Condition<CTX> 
         public Condition<CTX> create(Map<String, Object> arguments) {
             Object enchantmentObj = arguments.get("enchantment");
             if (enchantmentObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.missing_enchantment");
+                throw new LocalizedResourceConfigException("warning.config.condition.table_bonus.missing_enchantment");
             }
             Key enchantmentType = Key.of(enchantmentObj.toString());
             Object chances = arguments.get("chances");
@@ -59,7 +59,7 @@ public class TableBonusCondition<CTX extends Context> implements Condition<CTX> 
                     return new TableBonusCondition<>(enchantmentType, values);
                 }
             }
-            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.table_bonus.missing_chances");
+            throw new LocalizedResourceConfigException("warning.config.condition.table_bonus.missing_chances");
         }
     }
 }

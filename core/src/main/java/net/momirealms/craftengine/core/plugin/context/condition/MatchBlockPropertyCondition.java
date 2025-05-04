@@ -5,9 +5,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
-import net.momirealms.craftengine.core.util.Factory;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.Pair;
+import net.momirealms.craftengine.core.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,7 @@ public class MatchBlockPropertyCondition<CTX extends Context> implements Conditi
 
     @Override
     public Key type() {
-        return SharedConditions.MATCH_BLOCK_PROPERTY;
+        return CommonConditions.MATCH_BLOCK_PROPERTY;
     }
 
     @Override
@@ -45,15 +43,11 @@ public class MatchBlockPropertyCondition<CTX extends Context> implements Conditi
 
     public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
 
-        @SuppressWarnings("unchecked")
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
-            Map<String, Object> properties = (Map<String, Object>) arguments.get("properties");
-            if (properties == null) {
-                throw new IllegalArgumentException("Missing 'properties' argument for 'match_block_property'");
-            }
+            Object propertyObj = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("properties"), "warning.config.condition.match_block_property.missing_properties");
             List<Pair<String, String>> propertyList = new ArrayList<>();
-            for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            for (Map.Entry<String, Object> entry : MiscUtils.castToMap(propertyObj, false).entrySet()) {
                 propertyList.add(new Pair<>(entry.getKey(), entry.getValue().toString()));
             }
             return new MatchBlockPropertyCondition<>(propertyList);

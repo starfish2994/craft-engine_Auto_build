@@ -13,7 +13,7 @@ public class ContextHolder {
     public static final ContextHolder EMPTY = ContextHolder.builder().immutable(true).build();
     protected final Map<ContextKey<?>, Supplier<Object>> params;
 
-    protected ContextHolder(Map<ContextKey<?>, Supplier<Object>> params) {
+    public ContextHolder(Map<ContextKey<?>, Supplier<Object>> params) {
         this.params = params;
     }
 

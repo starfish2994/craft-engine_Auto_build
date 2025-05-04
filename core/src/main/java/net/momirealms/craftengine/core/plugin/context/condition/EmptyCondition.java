@@ -11,7 +11,7 @@ public class EmptyCondition<CTX extends Context> implements Condition<CTX> {
 
     @Override
     public Key type() {
-        return SharedConditions.EMPTY;
+        return CommonConditions.EMPTY;
     }
 
     @Override

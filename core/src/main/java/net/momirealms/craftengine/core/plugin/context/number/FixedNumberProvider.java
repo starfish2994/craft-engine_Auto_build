@@ -1,12 +1,16 @@
 package net.momirealms.craftengine.core.plugin.context.number;
 
+import com.ezylang.evalex.Expression;
 import net.momirealms.craftengine.core.plugin.context.Context;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
 public class FixedNumberProvider implements NumberProvider {
-    public static final Factory FACTORY = new Factory();
+    public static final FactoryImpl FACTORY = new FactoryImpl();
     private final float value;
 
     public FixedNumberProvider(float value) {
@@ -23,11 +27,22 @@ public class FixedNumberProvider implements NumberProvider {
         return NumberProviders.FIXED;
     }
 
-    public static class Factory implements NumberProviderFactory {
+    public static class FactoryImpl implements Factory<NumberProvider> {
+
         @Override
         public NumberProvider create(Map<String, Object> arguments) {
-            Number value = (Number) arguments.get("value");
-            return new FixedNumberProvider(value.floatValue());
+            String plainOrExpression = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("value"), "warning.config.number.fixed.missing_value");
+            try {
+                float value = Float.parseFloat(plainOrExpression);
+                return new FixedNumberProvider(value);
+            } catch (NumberFormatException e) {
+                Expression expression = new Expression(plainOrExpression);
+                try {
+                    return new FixedNumberProvider(expression.evaluate().getNumberValue().floatValue());
+                } catch (Exception e1) {
+                    throw new LocalizedResourceConfigException("warning.config.number.fixed.invalid_value", e1, plainOrExpression);
+                }
+            }
         }
     }
 }

@@ -2,8 +2,11 @@ package net.momirealms.craftengine.core.plugin.context.condition;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,7 @@ public class AnyOfCondition<CTX extends Context> implements Condition<CTX> {
 
     @Override
     public Key type() {
-        return SharedConditions.ANY_OF;
+        return CommonConditions.ANY_OF;
     }
 
     public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
@@ -42,12 +45,21 @@ public class AnyOfCondition<CTX extends Context> implements Condition<CTX> {
         @SuppressWarnings("unchecked")
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
-            List<Map<String, Object>> terms = (List<Map<String, Object>>) arguments.get("terms");
-            List<Condition<CTX>> conditions = new ArrayList<>();
-            for (Map<String, Object> term : terms) {
-                conditions.add(factory.apply(term));
+            Object termsArg = ResourceConfigUtils.requireNonNullOrThrow(
+                    ResourceConfigUtils.get(arguments, "terms", "term"),
+                    "warning.config.condition.any_of.missing_terms"
+            );
+            if (termsArg instanceof Map<?, ?> map) {
+                return new AnyOfCondition<>(List.of(factory.apply(MiscUtils.castToMap(map, false))));
+            } else if (termsArg instanceof List<?> list) {
+                List<Condition<CTX>> conditions = new ArrayList<>();
+                for (Map<String, Object> term : (List<Map<String, Object>>) list) {
+                    conditions.add(factory.apply(term));
+                }
+                return new AnyOfCondition<>(conditions);
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.condition.any_of.invalid_terms_type", termsArg.getClass().getSimpleName());
             }
-            return new AnyOfCondition<>(conditions);
         }
     }
 }

@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class LootFunctionApplyBonusCount<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -108,7 +107,7 @@ public class LootFunctionApplyBonusCount<T> extends AbstractLootConditionalFunct
         @Override
         public int apply(int initialCount, int enchantmentLevel) {
             if (enchantmentLevel > 0) {
-                int i = ThreadLocalRandom.current().nextInt(enchantmentLevel + 2) - 1;
+                int i = RandomUtils.generateRandomInt(0, enchantmentLevel + 2) - 1;
                 if (i < 0) {
                     i = 0;
                 }

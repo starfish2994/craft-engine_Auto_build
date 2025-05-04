@@ -205,7 +205,6 @@ public class PacketConsumers {
             buf.writeInt(chunkZ);
             if (VersionHelper.isOrAbove1_21_5()) {
                 buf.writeVarInt(heightmapsCount);
-                assert heightmapsMap != null;
                 for (Map.Entry<Integer, long[]> entry : heightmapsMap.entrySet()) {
                     buf.writeVarInt(entry.getKey());
                     buf.writeLongArray(entry.getValue());
