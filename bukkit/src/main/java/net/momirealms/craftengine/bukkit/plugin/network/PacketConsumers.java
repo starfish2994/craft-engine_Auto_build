@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
+import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -331,8 +332,17 @@ public class PacketConsumers {
             Tag displayName = buf.readNbt(false);
             if (displayName == null) return;
             byte friendlyFlags = buf.readByte();
-            String nameTagVisibility = buf.readUtf(40);
-            String collisionRule = buf.readUtf(40);
+
+            Either<String, Integer> eitherVisibility;
+            Either<String, Integer> eitherCollisionRule;
+
+            if (VersionHelper.isOrAbove1_21_5()) {
+                eitherVisibility = Either.right(buf.readVarInt());
+                eitherCollisionRule = Either.right(buf.readVarInt());
+            } else {
+                eitherVisibility = Either.left(buf.readUtf(40));
+                eitherCollisionRule = Either.left(buf.readUtf(40));
+            }
             int color = buf.readVarInt();
             Tag prefix = buf.readNbt(false);
             if (prefix == null) return;
@@ -368,8 +378,8 @@ public class PacketConsumers {
             }
 
             buf.writeByte(friendlyFlags);
-            buf.writeUtf(nameTagVisibility);
-            buf.writeUtf(collisionRule);
+            eitherVisibility.ifLeft(buf::writeUtf).ifRight(buf::writeVarInt);
+            eitherCollisionRule.ifLeft(buf::writeUtf).ifRight(buf::writeVarInt);
             buf.writeVarInt(color);
 
             if (!tokens2.isEmpty()) {

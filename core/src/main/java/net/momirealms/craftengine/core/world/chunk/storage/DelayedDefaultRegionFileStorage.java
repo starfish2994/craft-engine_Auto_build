@@ -15,13 +15,14 @@ import java.util.concurrent.TimeUnit;
 
 public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
     private final Cache<ChunkPos, CEChunk> chunkCache;
+    private boolean isClosed;
 
     public DelayedDefaultRegionFileStorage(Path directory, int time) {
         super(directory);
         this.chunkCache = Caffeine.newBuilder()
                 .expireAfterWrite(time, TimeUnit.SECONDS)
                 .removalListener((ChunkPos key, CEChunk value, RemovalCause cause) -> {
-                    if (key == null || value == null) {
+                    if (key == null || value == null || isClosed) {
                         return;
                     }
                     if (cause == RemovalCause.EXPIRED || cause == RemovalCause.SIZE) {
@@ -60,8 +61,9 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
     @Override
     public synchronized void close() throws IOException {
         this.saveCache();
-        super.close();
         this.chunkCache.cleanUp();
+        this.isClosed = true;
+        super.close();
     }
 
     private void saveCache() {
