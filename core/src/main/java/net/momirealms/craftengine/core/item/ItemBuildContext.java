@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

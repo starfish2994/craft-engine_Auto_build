@@ -2,9 +2,9 @@ package net.momirealms.craftengine.core.loot.function;
 
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootContext;
-import net.momirealms.craftengine.core.loot.condition.LootCondition;
 import net.momirealms.craftengine.core.loot.condition.LootConditions;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.*;
@@ -12,13 +12,13 @@ import java.util.*;
 public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
 
-    public LootFunctionExplosionDecay(List<LootCondition> predicates) {
+    public LootFunctionExplosionDecay(List<Condition<LootContext>> predicates) {
         super(predicates);
     }
 
     @Override
     protected Item<T> applyInternal(Item<T> item, LootContext context) {
-        Optional<Float> radius = context.getOptionalParameter(LootParameters.EXPLOSION_RADIUS);
+        Optional<Float> radius = context.getOptionalParameter(CommonParameters.EXPLOSION_RADIUS);
         if (radius.isPresent()) {
             Random random = context.randomSource();
             float f = 1f / radius.get();
@@ -43,7 +43,7 @@ public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFuncti
         @SuppressWarnings("unchecked")
         @Override
         public LootFunction<T> create(Map<String, Object> arguments) {
-            List<LootCondition> conditions = Optional.ofNullable(arguments.get("conditions"))
+            List<Condition<LootContext>> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());
             return new LootFunctionExplosionDecay<>(conditions);

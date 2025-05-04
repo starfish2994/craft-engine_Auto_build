@@ -1,14 +1,14 @@
 package net.momirealms.craftengine.core.pack.conflict.resolution;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
-import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatcher;
 import net.momirealms.craftengine.core.pack.conflict.matcher.PathMatchers;
+import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.util.Map;
 
-public record ResolutionConditional(PathMatcher matcher, Resolution resolution) implements Resolution {
+public record ResolutionConditional(Condition<PathContext> matcher, Resolution resolution) implements Resolution {
     public static final Factory FACTORY = new Factory();
 
     @Override

@@ -184,7 +184,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
             if (type == null) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.missing_type");
             }
-            Key key = Key.withDefaultNamespace(type, "craftengine");
+            Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
             ItemDataProcessor.Factory factory = BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY.getValue(key);
             if (factory == null) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.invalid_type", type);

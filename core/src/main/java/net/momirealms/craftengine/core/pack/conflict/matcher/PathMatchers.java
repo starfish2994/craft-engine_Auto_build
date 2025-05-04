@@ -1,10 +1,17 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
+import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.condition.AllOfCondition;
+import net.momirealms.craftengine.core.plugin.context.condition.AnyOfCondition;
+import net.momirealms.craftengine.core.plugin.context.condition.InvertedCondition;
+import net.momirealms.craftengine.core.plugin.context.condition.SharedConditions;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
@@ -20,39 +27,36 @@ public class PathMatchers {
     public static final Key PARENT_PATH_SUFFIX = Key.of("craftengine:parent_path_suffix");
     public static final Key PARENT_PATH_PREFIX = Key.of("craftengine:parent_path_prefix");
     public static final Key PATTERN = Key.of("craftengine:pattern");
-    public static final Key ANY_OF = Key.of("craftengine:any_of");
-    public static final Key ALL_OF = Key.of("craftengine:all_of");
-    public static final Key INVERTED = Key.of("craftengine:inverted");
 
     static {
-        register(PARENT_PATH_SUFFIX, PathMatcherParentSuffix.FACTORY);
-        register(PARENT_PATH_PREFIX, PathMatcherParentPrefix.FACTORY);
-        register(PATTERN, PathPatternMatcher.FACTORY);
-        register(EXACT, PathMatcherExact.FACTORY);
-        register(FILENAME, PathMatcherFilename.FACTORY);
-        register(ANY_OF, PathMatcherAnyOf.FACTORY);
-        register(ALL_OF, PathMatcherAllOf.FACTORY);
-        register(INVERTED, PathMatcherInverted.FACTORY);
-        register(CONTAINS, PathMatcherContains.FACTORY);
+        register(SharedConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(SharedConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(SharedConditions.INVERTED, new InvertedCondition.FactoryImpl<>(PathMatchers::fromMap));
+        register(PARENT_PATH_SUFFIX, new PathMatcherParentSuffix.FactoryImpl());
+        register(PARENT_PATH_PREFIX, new PathMatcherParentPrefix.FactoryImpl());
+        register(PATTERN, new PathPatternMatcher.FactoryImpl());
+        register(EXACT, new PathMatcherExact.FactoryImpl());
+        register(FILENAME, new PathMatcherFilename.FactoryImpl());
+        register(CONTAINS, new PathMatcherContains.FactoryImpl());
     }
 
-    public static void register(Key key, PathMatcherFactory factory) {
-        Holder.Reference<PathMatcherFactory> holder = ((WritableRegistry<PathMatcherFactory>) BuiltInRegistries.PATH_MATCHER_FACTORY).registerForHolder(new ResourceKey<>(Registries.PATH_MATCHER_FACTORY.location(), key));
+    public static void register(Key key, Factory<Condition<PathContext>> factory) {
+        Holder.Reference<Factory<Condition<PathContext>>> holder = ((WritableRegistry<Factory<Condition<PathContext>>>) BuiltInRegistries.PATH_MATCHER_FACTORY).registerForHolder(new ResourceKey<>(Registries.PATH_MATCHER_FACTORY.location(), key));
         holder.bindValue(factory);
     }
 
-    public static List<PathMatcher> fromMapList(List<Map<String, Object>> arguments) {
-        List<PathMatcher> matchers = new ArrayList<>();
+    public static List<Condition<PathContext>> fromMapList(List<Map<String, Object>> arguments) {
+        List<Condition<PathContext>> matchers = new ArrayList<>();
         for (Map<String, Object> term : arguments) {
             matchers.add(PathMatchers.fromMap(term));
         }
         return matchers;
     }
 
-    public static PathMatcher fromMap(Map<String, Object> map) {
+    public static Condition<PathContext> fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), () -> new LocalizedException("warning.config.conflict_matcher.missing_type"));
-        Key key = Key.withDefaultNamespace(type, "craftengine");
-        PathMatcherFactory factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
+        Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
+        Factory<Condition<PathContext>> factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);
         }

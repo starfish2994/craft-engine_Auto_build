@@ -1,15 +1,16 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
+import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.nio.file.Path;
 import java.util.Map;
 
-public class PathMatcherParentSuffix implements PathMatcher {
-    public static final Factory FACTORY = new Factory();
+public class PathMatcherParentSuffix implements Condition<PathContext> {
     private final String suffix;
 
     public PathMatcherParentSuffix(String suffix) {
@@ -29,10 +30,10 @@ public class PathMatcherParentSuffix implements PathMatcher {
         return PathMatchers.PARENT_PATH_SUFFIX;
     }
 
-    public static class Factory implements PathMatcherFactory {
+    public static class FactoryImpl implements Factory<Condition<PathContext>> {
 
         @Override
-        public PathMatcher create(Map<String, Object> arguments) {
+        public Condition<PathContext> create(Map<String, Object> arguments) {
             String suffix = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("suffix"), () -> new LocalizedException("warning.config.conflict_matcher.parent_suffix.missing_suffix"));
             return new PathMatcherParentSuffix(suffix);
         }

@@ -12,9 +12,9 @@ import net.momirealms.craftengine.core.entity.furniture.CustomFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
-import net.momirealms.craftengine.core.loot.parameter.LootParameters;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
@@ -271,11 +271,11 @@ public final class CraftEngineFurniture {
         World world = new BukkitWorld(location.getWorld());
         if (dropLoot && lootTable != null) {
             ContextHolder.Builder builder = ContextHolder.builder();
-            builder.withParameter(LootParameters.LOCATION, vec3d);
-            builder.withParameter(LootParameters.WORLD, world);
+            builder.withParameter(CommonParameters.LOCATION, vec3d);
+            builder.withParameter(CommonParameters.WORLD, world);
             if (player != null) {
-                builder.withParameter(LootParameters.PLAYER, player);
-                builder.withOptionalParameter(LootParameters.TOOL, player.getItemInHand(InteractionHand.MAIN_HAND));
+                builder.withParameter(CommonParameters.PLAYER, player);
+                builder.withOptionalParameter(CommonParameters.TOOL, player.getItemInHand(InteractionHand.MAIN_HAND));
             }
             List<Item<ItemStack>> items = lootTable.getRandomItems(builder.build(), world);
             for (Item<ItemStack> item : items) {

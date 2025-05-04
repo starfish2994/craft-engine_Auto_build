@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld;
 
 import com.flowpowered.nbt.ByteArrayTag;
-import com.flowpowered.nbt.CompoundMap;
 import com.infernalsuite.aswm.api.world.SlimeChunk;
 import com.infernalsuite.aswm.api.world.SlimeWorld;
 import net.momirealms.craftengine.core.world.CEWorld;
@@ -40,18 +39,6 @@ public class LegacySlimeWorldDataStorage implements WorldDataStorage {
         } catch (Exception e) {
             throw new RuntimeException("Failed to read chunk tag from slime world. " + pos, e);
         }
-    }
-
-    private CompoundMap createOrGetDataMap(SlimeWorld world) {
-        Optional<com.flowpowered.nbt.CompoundTag> optionalCompoundTag = world.getExtraData().getAsCompoundTag("craftengine");
-        CompoundMap ccDataMap;
-        if (optionalCompoundTag.isEmpty()) {
-            ccDataMap = new CompoundMap();
-            world.getExtraData().getValue().put(new com.flowpowered.nbt.CompoundTag("customcrops", ccDataMap));
-        } else {
-            ccDataMap = optionalCompoundTag.get().getValue();
-        }
-        return ccDataMap;
     }
 
     @Override

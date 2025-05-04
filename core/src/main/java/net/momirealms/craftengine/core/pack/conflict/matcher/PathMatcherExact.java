@@ -1,14 +1,15 @@
 package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
+import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
-public class PathMatcherExact implements PathMatcher {
-    public static final Factory FACTORY = new Factory();
+public class PathMatcherExact implements Condition<PathContext> {
     private final String path;
 
     public PathMatcherExact(String path) {
@@ -26,10 +27,10 @@ public class PathMatcherExact implements PathMatcher {
         return PathMatchers.EXACT;
     }
 
-    public static class Factory implements PathMatcherFactory {
+    public static class FactoryImpl implements Factory<Condition<PathContext>> {
 
         @Override
-        public PathMatcher create(Map<String, Object> arguments) {
+        public Condition<PathContext> create(Map<String, Object> arguments) {
             String path = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("path"), () -> new LocalizedException("warning.config.conflict_matcher.exact.missing_path"));
             return new PathMatcherExact(path);
         }

@@ -1,11 +1,16 @@
 package net.momirealms.craftengine.core.loot.condition;
 
+import net.momirealms.craftengine.core.loot.LootContext;
+import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.condition.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
+import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.ArrayList;
@@ -14,32 +19,22 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class LootConditions {
-    public static final Key MATCH_ITEM = Key.from("craftengine:match_item");
-    public static final Key MATCH_BLOCK_PROPERTY = Key.from("craftengine:match_block_property");
-    public static final Key TABLE_BONUS = Key.from("craftengine:table_bonus");
-    public static final Key SURVIVES_EXPLOSION = Key.from("craftengine:survives_explosion");
-    public static final Key RANDOM = Key.from("craftengine:random");
-    public static final Key ANY_OF = Key.from("craftengine:any_of");
-    public static final Key ALL_OF = Key.from("craftengine:all_of");
-    public static final Key ENCHANTMENT = Key.from("craftengine:enchantment");
-    public static final Key INVERTED = Key.from("craftengine:inverted");
-    public static final Key FALLING_BLOCK = Key.from("craftengine:falling_block");
 
     static {
-        register(MATCH_ITEM, LootConditionMatchItem.FACTORY);
-        register(MATCH_BLOCK_PROPERTY, LootConditionMatchBlockProperty.FACTORY);
-        register(TABLE_BONUS, LootConditionTableBonus.FACTORY);
-        register(SURVIVES_EXPLOSION, LootConditionSurvivesExplosion.FACTORY);
-        register(ANY_OF, LootConditionAnyOf.FACTORY);
-        register(ALL_OF, LootConditionAllOf.FACTORY);
-        register(ENCHANTMENT, LootConditionEnchantment.FACTORY);
-        register(INVERTED, LootConditionInverted.FACTORY);
-        register(FALLING_BLOCK, LootConditionFalling.FACTORY);
-        register(RANDOM, LootConditionRandom.FACTORY);
+        register(SharedConditions.MATCH_ITEM, new MatchItemCondition.FactoryImpl<>());
+        register(SharedConditions.MATCH_BLOCK_PROPERTY, new MatchBlockPropertyCondition.FactoryImpl<>());
+        register(SharedConditions.TABLE_BONUS, new TableBonusCondition.FactoryImpl<>());
+        register(SharedConditions.SURVIVES_EXPLOSION, new SurvivesExplosionCondition.FactoryImpl<>());
+        register(SharedConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(SharedConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(SharedConditions.ENCHANTMENT, new EnchantmentCondition.FactoryImpl<>());
+        register(SharedConditions.INVERTED, new InvertedCondition.FactoryImpl<>(LootConditions::fromMap));
+        register(SharedConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
+        register(SharedConditions.RANDOM, new RandomCondition.FactoryImpl<>());
     }
 
-    public static void register(Key key, LootConditionFactory factory) {
-        Holder.Reference<LootConditionFactory> holder = ((WritableRegistry<LootConditionFactory>) BuiltInRegistries.LOOT_CONDITION_FACTORY)
+    public static void register(Key key, Factory<Condition<LootContext>> factory) {
+        Holder.Reference<Factory<Condition<LootContext>>> holder = ((WritableRegistry<Factory<Condition<LootContext>>>) BuiltInRegistries.LOOT_CONDITION_FACTORY)
                 .registerForHolder(new ResourceKey<>(Registries.LOOT_CONDITION_FACTORY.location(), key));
         holder.bindValue(factory);
     }
@@ -78,22 +73,19 @@ public class LootConditions {
         };
     }
 
-    public static List<LootCondition> fromMapList(List<Map<String, Object>> mapList) {
+    public static List<Condition<LootContext>> fromMapList(List<Map<String, Object>> mapList) {
         if (mapList == null || mapList.isEmpty()) return List.of();
-        List<LootCondition> functions = new ArrayList<>();
+        List<Condition<LootContext>> functions = new ArrayList<>();
         for (Map<String, Object> map : mapList) {
             functions.add(fromMap(map));
         }
         return functions;
     }
 
-    public static LootCondition fromMap(Map<String, Object> map) {
-        String type = (String) map.get("type");
-        if (type == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.missing_type");
-        }
-        Key key = Key.withDefaultNamespace(type, "craftengine");
-        LootConditionFactory factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);
+    public static Condition<LootContext> fromMap(Map<String, Object> map) {
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.loot_table.condition.missing_type");
+        Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
+        Factory<Condition<LootContext>> factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);
         if (factory == null) {
             throw new LocalizedResourceConfigException("warning.config.loot_table.condition.invalid_type", type);
         }
