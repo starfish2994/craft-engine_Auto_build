@@ -2,8 +2,8 @@ package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -30,7 +30,7 @@ public class PathMatcherParentSuffix implements Condition<PathContext> {
         return PathMatchers.PARENT_PATH_SUFFIX;
     }
 
-    public static class FactoryImpl implements Factory<Condition<PathContext>> {
+    public static class FactoryImpl implements ConditionFactory<PathContext> {
 
         @Override
         public Condition<PathContext> create(Map<String, Object> arguments) {

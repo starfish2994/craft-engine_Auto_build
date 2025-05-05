@@ -153,9 +153,9 @@ public class BlockEventListener implements Listener {
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(CommonParameters.WORLD, world)
                         .withParameter(CommonParameters.LOCATION, vec3d)
-                        .withParameter(CommonParameters.PLAYER, serverPlayer)
-                        .withOptionalParameter(CommonParameters.TOOL, itemInHand);
-                for (Item<Object> item : state.getDrops(builder, world)) {
+                        .withParameter(CommonParameters.PLAYER, serverPlayer);
+                        //mark item .withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, itemInHand);
+                for (Item<Object> item : state.getDrops(builder, world, serverPlayer)) {
                     world.dropItemNaturally(vec3d, item);
                 }
             }
@@ -174,11 +174,11 @@ public class BlockEventListener implements Listener {
                     ContextHolder.Builder builder = ContextHolder.builder()
                             .withParameter(CommonParameters.WORLD, world)
                             .withParameter(CommonParameters.LOCATION, vec3d)
-                            .withParameter(CommonParameters.PLAYER, serverPlayer)
-                            .withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                            .withParameter(CommonParameters.PLAYER, serverPlayer);
+                            //mark item .withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
-                        for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
+                        for (Item<?> item : lootTable.getRandomItems(contextHolder, world, serverPlayer)) {
                             world.dropItemNaturally(vec3d, item);
                         }
                     }
@@ -216,7 +216,7 @@ public class BlockEventListener implements Listener {
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(CommonParameters.WORLD, world)
                         .withParameter(CommonParameters.LOCATION, vec3d);
-                for (Item<?> item : immutableBlockState.getDrops(builder, world)) {
+                for (Item<?> item : immutableBlockState.getDrops(builder, world, null)) {
                     world.dropItemNaturally(vec3d, item);
                 }
             }
@@ -236,7 +236,7 @@ public class BlockEventListener implements Listener {
                 builder.withParameter(CommonParameters.LOCATION, vec3d);
                 ContextHolder contextHolder = builder.build();
                 for (LootTable<?> lootTable : it.lootTables()) {
-                    for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
+                    for (Item<?> item : lootTable.getRandomItems(contextHolder, world, null)) {
                         world.dropItemNaturally(vec3d, item);
                     }
                 }
@@ -334,7 +334,7 @@ public class BlockEventListener implements Listener {
                 if (yield < 1f) {
                     builder.withParameter(CommonParameters.EXPLOSION_RADIUS, 1.0f / yield);
                 }
-                for (Item<Object> item : state.getDrops(builder, world)) {
+                for (Item<Object> item : state.getDrops(builder, world, null)) {
                     world.dropItemNaturally(vec3d, item);
                 }
                 world.playBlockSound(vec3d, state.sounds().breakSound());

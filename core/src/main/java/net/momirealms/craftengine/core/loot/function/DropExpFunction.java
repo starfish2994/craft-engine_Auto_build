@@ -1,55 +1,50 @@
 package net.momirealms.craftengine.core.loot.function;
 
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.loot.LootConditions;
 import net.momirealms.craftengine.core.loot.LootContext;
-import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProviders;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.RandomUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class LootFunctionExplosionDecay<T> extends AbstractLootConditionalFunction<T> {
+public class DropExpFunction<T> extends AbstractLootConditionalFunction<T> {
     public static final Factory<?> FACTORY = new Factory<>();
+    private final NumberProvider value;
 
-    public LootFunctionExplosionDecay(List<Condition<LootContext>> predicates) {
+    public DropExpFunction(NumberProvider value, List<Condition<LootContext>> predicates) {
         super(predicates);
+        this.value = value;
     }
 
     @Override
     protected Item<T> applyInternal(Item<T> item, LootContext context) {
-        Optional<Float> radius = context.getOptionalParameter(CommonParameters.EXPLOSION_RADIUS);
-        if (radius.isPresent()) {
-            float f = 1f / radius.get();
-            int amount = item.count();
-            int survive = 0;
-            for (int j = 0; j < amount; j++) {
-                if (RandomUtils.generateRandomFloat(0, 1) <= f) {
-                    survive++;
-                }
-            }
-            item.count(survive);
-        }
+        context.getOptionalParameter(CommonParameters.WORLD)
+                .ifPresent(it -> context.getOptionalParameter(CommonParameters.LOCATION).ifPresent(loc -> it.dropExp(loc.toCenter(), value.getInt(context))));
         return item;
     }
 
     @Override
     public Key type() {
-        return LootFunctions.EXPLOSION_DECAY;
+        return LootFunctions.DROP_EXP;
     }
 
     public static class Factory<T> implements LootFunctionFactory<T> {
         @SuppressWarnings("unchecked")
         @Override
         public LootFunction<T> create(Map<String, Object> arguments) {
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("count"), "warning.config.loot_table.function.drop_exp.missing_count");
             List<Condition<LootContext>> conditions = Optional.ofNullable(arguments.get("conditions"))
                     .map(it -> LootConditions.fromMapList((List<Map<String, Object>>) it))
                     .orElse(Collections.emptyList());
-            return new LootFunctionExplosionDecay<>(conditions);
+            return new DropExpFunction<>(NumberProviders.fromObject(value), conditions);
         }
     }
 }

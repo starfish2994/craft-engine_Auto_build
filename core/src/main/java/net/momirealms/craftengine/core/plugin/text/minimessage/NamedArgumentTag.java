@@ -14,9 +14,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class NamedArgumentTag implements TagResolver {
-    private static final String NAME_0 = "argument";
-    private static final String NAME_1 = "arg";
-
     private final Context context;
 
     public NamedArgumentTag(@NotNull Context context) {
@@ -39,6 +36,6 @@ public class NamedArgumentTag implements TagResolver {
 
     @Override
     public boolean has(@NotNull String name) {
-        return name.equals(NAME_0) || name.equals(NAME_1);
+        return name.equals("arg");
     }
 }

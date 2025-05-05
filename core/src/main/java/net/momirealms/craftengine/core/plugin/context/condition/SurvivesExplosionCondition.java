@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin.context.condition;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.RandomUtils;
 
@@ -27,7 +26,7 @@ public class SurvivesExplosionCondition<CTX extends Context> implements Conditio
         return true;
     }
 
-    public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
+    public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
 
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {

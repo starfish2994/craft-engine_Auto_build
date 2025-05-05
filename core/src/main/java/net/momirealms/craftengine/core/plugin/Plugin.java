@@ -90,4 +90,6 @@ public interface Plugin {
     void debug(Supplier<String> message);
 
     CompatibilityManager compatibilityManager();
+
+    Platform platform();
 }

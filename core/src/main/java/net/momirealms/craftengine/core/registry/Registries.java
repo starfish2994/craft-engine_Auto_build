@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
 import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
-import net.momirealms.craftengine.core.loot.function.LootFunctionApplyBonusCount;
+import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
 import net.momirealms.craftengine.core.loot.function.LootFunctionFactory;
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionFactory;
@@ -22,6 +22,9 @@ import net.momirealms.craftengine.core.pack.model.special.SpecialModelFactory;
 import net.momirealms.craftengine.core.pack.model.tint.TintFactory;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateArgumentFactory;
 import net.momirealms.craftengine.core.plugin.context.Condition;
+import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
+import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
 import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
@@ -36,7 +39,7 @@ public class Registries {
     public static final ResourceKey<Registry<ItemBehaviorFactory>> ITEM_BEHAVIOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("item_behavior_factory"));
     public static final ResourceKey<Registry<LootFunctionFactory<?>>> LOOT_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("loot_function_factory"));
     public static final ResourceKey<Registry<LootEntryContainerFactory<?>>> LOOT_ENTRY_CONTAINER_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("loot_entry_container_factory"));
-    public static final ResourceKey<Registry<Factory<Condition<LootContext>>>> LOOT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("loot_condition_factory"));
+    public static final ResourceKey<Registry<ConditionFactory<LootContext>>> LOOT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("loot_condition_factory"));
     public static final ResourceKey<Registry<Factory<NumberProvider>>> NUMBER_PROVIDER_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("number_provider_factory"));
     public static final ResourceKey<Registry<TemplateArgumentFactory>> TEMPLATE_ARGUMENT_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("template_argument_factory"));
     public static final ResourceKey<Registry<ItemModelFactory>> ITEM_MODEL_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("item_model_factory"));
@@ -46,10 +49,12 @@ public class Registries {
     public static final ResourceKey<Registry<ConditionPropertyFactory>> CONDITION_PROPERTY_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("condition_property_factory"));
     public static final ResourceKey<Registry<SelectPropertyFactory>> SELECT_PROPERTY_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("select_property_factory"));
     public static final ResourceKey<Registry<RecipeFactory<?>>> RECIPE_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_factory"));
-    public static final ResourceKey<Registry<LootFunctionApplyBonusCount.FormulaFactory>> FORMULA_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("formula_factory"));
-    public static final ResourceKey<Registry<Factory<Condition<PathContext>>>> PATH_MATCHER_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("path_matcher_factory"));
+    public static final ResourceKey<Registry<ApplyBonusCountFunction.FormulaFactory>> FORMULA_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("formula_factory"));
+    public static final ResourceKey<Registry<ConditionFactory<PathContext>>> PATH_MATCHER_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("path_matcher_factory"));
     public static final ResourceKey<Registry<ResolutionFactory>> RESOLUTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resolution_factory"));
-    public static final ResourceKey<Registry<CustomSmithingTransformRecipe.ItemDataProcessor.Factory>> SMITHING_RESULT_PROCESSOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("smithing_result_processor_factory"));
+    public static final ResourceKey<Registry<CustomSmithingTransformRecipe.ItemDataProcessor.ProcessorFactory>> SMITHING_RESULT_PROCESSOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("smithing_result_processor_factory"));
     public static final ResourceKey<Registry<HitBoxFactory>> HITBOX_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("hitbox_factory"));
     public static final ResourceKey<Registry<ResourcePackHostFactory>> RESOURCE_PACK_HOST_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resource_pack_host_factory"));
+    public static final ResourceKey<Registry<Factory<Function<PlayerBlockActionContext>>>> PLAYER_BLOCK_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_function_factory"));
+    public static final ResourceKey<Registry<Factory<Condition<PlayerBlockActionContext>>>> PLAYER_BLOCK_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_condition_factory"));
 }

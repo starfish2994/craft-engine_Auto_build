@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.loot.entry;
 
+import net.momirealms.craftengine.core.loot.LootConditions;
 import net.momirealms.craftengine.core.loot.LootContext;
-import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.util.Key;
 

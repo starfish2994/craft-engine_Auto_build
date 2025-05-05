@@ -63,7 +63,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(CommonParameters.LOCATION, vec3d)
                         .withParameter(CommonParameters.WORLD, world);
-                for (Item<Object> item : currentState.getDrops(builder, world)) {
+                for (Item<Object> item : currentState.getDrops(builder, world, null)) {
                     world.dropItemNaturally(vec3d, item);
                 }
                 world.playBlockSound(vec3d, currentState.sounds().breakSound());

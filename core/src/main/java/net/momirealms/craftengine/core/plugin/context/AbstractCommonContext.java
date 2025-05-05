@@ -23,7 +23,8 @@ public abstract class AbstractCommonContext implements Context {
     @NotNull
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new I18NTag(this), new NamedArgumentTag(this), new PlaceholderTag(null)};
+            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new I18NTag(this), new NamedArgumentTag(this),
+                    new PlaceholderTag(null), new ExpressionTag(this)};
         }
         return this.tagResolvers;
     }
@@ -38,9 +39,10 @@ public abstract class AbstractCommonContext implements Context {
         return this.contexts.getOrThrow(parameter);
     }
 
-    @Override
-    public <T> AbstractCommonContext withParameter(ContextKey<T> parameter, T value) {
-        this.contexts.withParameter(parameter, value);
-        return this;
-    }
+    // It's not designed as mutable
+//    @Override
+//    public <T> AbstractCommonContext withParameter(ContextKey<T> parameter, T value) {
+//        this.contexts.withParameter(parameter, value);
+//        return this;
+//    }
 }

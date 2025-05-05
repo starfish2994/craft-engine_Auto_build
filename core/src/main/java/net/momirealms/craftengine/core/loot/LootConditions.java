@@ -1,6 +1,5 @@
-package net.momirealms.craftengine.core.loot.condition;
+package net.momirealms.craftengine.core.loot;
 
-import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.condition.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
@@ -8,7 +7,6 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
@@ -31,10 +29,11 @@ public class LootConditions {
         register(CommonConditions.INVERTED, new InvertedCondition.FactoryImpl<>(LootConditions::fromMap));
         register(CommonConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
         register(CommonConditions.RANDOM, new RandomCondition.FactoryImpl<>());
+        register(CommonConditions.DISTANCE, new DistanceCondition.FactoryImpl<>());
     }
 
-    public static void register(Key key, Factory<Condition<LootContext>> factory) {
-        Holder.Reference<Factory<Condition<LootContext>>> holder = ((WritableRegistry<Factory<Condition<LootContext>>>) BuiltInRegistries.LOOT_CONDITION_FACTORY)
+    public static void register(Key key, ConditionFactory<LootContext> factory) {
+        Holder.Reference<ConditionFactory<LootContext>> holder = ((WritableRegistry<ConditionFactory<LootContext>>) BuiltInRegistries.LOOT_CONDITION_FACTORY)
                 .registerForHolder(new ResourceKey<>(Registries.LOOT_CONDITION_FACTORY.location(), key));
         holder.bindValue(factory);
     }
@@ -85,10 +84,18 @@ public class LootConditions {
     public static Condition<LootContext> fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.loot_table.condition.missing_type");
         Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
-        Factory<Condition<LootContext>> factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);
-        if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.condition.invalid_type", type);
+        if (key.value().charAt(0) == '!') {
+            ConditionFactory<LootContext> factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
+            if (factory == null) {
+                throw new LocalizedResourceConfigException("warning.config.loot_table.condition.invalid_type", type);
+            }
+            return new InvertedCondition<>(factory.create(map));
+        } else {
+            ConditionFactory<LootContext> factory = BuiltInRegistries.LOOT_CONDITION_FACTORY.getValue(key);
+            if (factory == null) {
+                throw new LocalizedResourceConfigException("warning.config.loot_table.condition.invalid_type", type);
+            }
+            return factory.create(map);
         }
-        return factory.create(map);
     }
 }
