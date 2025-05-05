@@ -23,7 +23,6 @@ import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.bukkit.Bukkit;
-import org.bukkit.block.data.BlockData;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -142,18 +141,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private void processBlock(int blockX, int blockY, int blockZ, BaseBlock blockState, BaseBlock oldBlockState) throws IOException {
         int chunkX = blockX >> 4;
         int chunkZ = blockZ >> 4;
-        String stringBlockState;
-        if (blockState.getStates().isEmpty()) {
-            stringBlockState =  blockState.getBlockType().id();
-        } else {
-            String properties = blockState.getStates().entrySet().stream()
-                    .map(entry -> entry.getKey().getName()
-                            + "="
-                            + entry.getValue().toString().toLowerCase(Locale.ROOT))
-                    .collect(Collectors.joining(","));
-            stringBlockState =  blockState.getBlockType().id() + "[" + properties + "]";
-        }
-        int newStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(stringBlockState));
+        int newStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(getStringBlockState(blockState)));
 //        int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
         if (BlockStateUtils.isVanillaBlock(newStateId) /* && BlockStateUtils.isVanillaBlock(oldStateId) */)
             return;
@@ -176,6 +164,19 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             this.chunksToSave.clear();
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation chunks", e);
+        }
+    }
+
+    private String getStringBlockState(BaseBlock blockState) {
+        if (blockState.getStates().isEmpty()) {
+            return blockState.getBlockType().id();
+        } else {
+            String properties = blockState.getStates().entrySet().stream()
+                    .map(entry -> entry.getKey().getName()
+                            + "="
+                            + entry.getValue().toString().toLowerCase(Locale.ROOT))
+                    .collect(Collectors.joining(","));
+            return blockState.getBlockType().id() + "[" + properties + "]";
         }
     }
 }
