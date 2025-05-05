@@ -23,6 +23,7 @@ import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.bukkit.Bukkit;
+import org.bukkit.block.data.BlockData;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -139,7 +140,13 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private void processBlock(int blockX, int blockY, int blockZ, BaseBlock blockState, BaseBlock oldBlockState) throws IOException {
         int chunkX = blockX >> 4;
         int chunkZ = blockZ >> 4;
-        int newStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(blockState.getAsString()));
+        BlockData blockData;
+        try {
+            blockData = Bukkit.createBlockData(blockState.getAsString());
+        } catch (IllegalArgumentException e) {
+            blockData = Bukkit.createBlockData(blockState.getBlockType().id());
+        }
+        int newStateId = BlockStateUtils.blockDataToId(blockData);
 //        int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
         if (BlockStateUtils.isVanillaBlock(newStateId) /* && BlockStateUtils.isVanillaBlock(oldStateId) */)
             return;
