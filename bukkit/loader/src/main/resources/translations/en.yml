@@ -272,6 +272,7 @@ warning.config.host.s3.missing_secret: "<yellow>Issue found in config.yml at 're
 warning.config.host.s3.missing_upload_path: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'upload-path' argument for s3 host.</yellow>"
 warning.config.host.self.missing_ip: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'ip' argument for self host.</yellow>"
 warning.config.host.self.invalid_port: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Invalid port '<arg:0>' for self host.</yellow>"
+warning.config.host.self.invalid_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Invalid url '<arg:0>' for self host.</yellow>"
 warning.config.host.gitlab.missing_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'gitlab-url' argument for gitlab host.</yellow>"
 warning.config.host.gitlab.missing_token: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'access-token' argument for gitlab host.</yellow>"
 warning.config.host.gitlab.missing_project: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'project-id' argument for gitlab host.</yellow>"
@@ -292,3 +293,4 @@ warning.config.conflict_matcher.all_of.missing_terms: "<yellow>Issue found in co
 warning.config.conflict_matcher.any_of.missing_terms: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'terms' argument for 'any_of' matcher.</yellow>"
 warning.config.conflict_resolution.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'type' argument for one of the resolutions.</yellow>"
 warning.config.conflict_resolution.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - One of the resolutions is using the invalid type '<arg:0>'.</yellow>"
+warning.resource_pack.generation_in_progress: "<yellow>Resource pack generation is already in progress. Please wait until it finishes.</yellow>"

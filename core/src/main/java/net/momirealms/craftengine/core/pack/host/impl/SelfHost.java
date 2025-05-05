@@ -66,7 +66,13 @@ public class SelfHost implements ResourcePackHost {
             if (port <= 0 || port > 65535) {
                 throw new LocalizedException("warning.config.host.self.invalid_port", String.valueOf(port));
             }
-            String url = arguments.get("url").toString();
+            String url = arguments.getOrDefault("url", "").toString();
+            if (!url.isEmpty()) {
+                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                    throw new LocalizedException("warning.config.host.self.invalid_url", url);
+                }
+                if (!url.endsWith("/")) url  += "/";
+            }
             boolean oneTimeToken = (boolean) arguments.getOrDefault("one-time-token", true);
             String protocol = arguments.getOrDefault("protocol", "http").toString();
             boolean denyNonMinecraftRequest = (boolean) arguments.getOrDefault("deny-non-minecraft-request", true);
