@@ -73,7 +73,7 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 builder.withParameter(CommonParameters.LOCATION, vec3d);
                 builder.withParameter(CommonParameters.WORLD, world);
-                for (Item<Object> item : previousState.getDrops(builder, world)) {
+                for (Item<Object> item : previousState.getDrops(builder, world, null)) {
                     world.dropItemNaturally(vec3d, item);
                 }
                 world.playBlockSound(vec3d, previousState.sounds().breakSound());

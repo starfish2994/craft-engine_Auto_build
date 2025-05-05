@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class PlayerOptionalContext extends AbstractAdditionalParameterContext implements Context {
     public static final PlayerOptionalContext EMPTY = new PlayerOptionalContext(null, ContextHolder.EMPTY);
-    private final Player player;
+    protected final Player player;
 
     public PlayerOptionalContext(@Nullable Player player, @NotNull ContextHolder contexts) {
         super(contexts, player == null ? List.of(new CommonParameterProvider()) : List.of(new CommonParameterProvider(), new PlayerParameterProvider(player)));
@@ -52,7 +52,7 @@ public class PlayerOptionalContext extends AbstractAdditionalParameterContext im
     @NotNull
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new PlaceholderTag(this.player), new I18NTag(this), new NamedArgumentTag(this)};
+            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new PlaceholderTag(this.player), new I18NTag(this), new NamedArgumentTag(this), new ExpressionTag(this)};
         }
         return this.tagResolvers;
     }

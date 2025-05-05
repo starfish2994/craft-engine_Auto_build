@@ -9,7 +9,6 @@ import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.furniture.AnchorType;
 import net.momirealms.craftengine.core.entity.furniture.CustomFurniture;
-import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
@@ -275,9 +274,9 @@ public final class CraftEngineFurniture {
             builder.withParameter(CommonParameters.WORLD, world);
             if (player != null) {
                 builder.withParameter(CommonParameters.PLAYER, player);
-                builder.withOptionalParameter(CommonParameters.TOOL, player.getItemInHand(InteractionHand.MAIN_HAND));
+                //mark item builder.withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, player.getItemInHand(InteractionHand.MAIN_HAND));
             }
-            List<Item<ItemStack>> items = lootTable.getRandomItems(builder.build(), world);
+            List<Item<ItemStack>> items = lootTable.getRandomItems(builder.build(), world, player);
             for (Item<ItemStack> item : items) {
                 world.dropItemNaturally(vec3d, item);
             }

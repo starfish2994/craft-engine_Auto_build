@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.loot;
 
 import com.google.common.collect.Lists;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.entry.LootEntry;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainer;
 import net.momirealms.craftengine.core.loot.function.LootFunction;

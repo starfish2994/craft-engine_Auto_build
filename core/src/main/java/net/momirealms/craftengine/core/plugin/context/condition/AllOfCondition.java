@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin.context.condition;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -35,7 +34,7 @@ public class AllOfCondition<CTX extends Context> implements Condition<CTX> {
         return CommonConditions.ALL_OF;
     }
 
-    public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
+    public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
         private final Function<Map<String, Object>, Condition<CTX>> factory;
 
         public FactoryImpl(Function<Map<String, Object>, Condition<CTX>> factory) {

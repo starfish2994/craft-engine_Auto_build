@@ -4,9 +4,8 @@ import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.parameter.PlayerParameters;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -30,14 +29,14 @@ public class EnchantmentCondition<CTX extends Context> implements Condition<CTX>
 
     @Override
     public boolean test(CTX ctx) {
-        Optional<Item<?>> item = ctx.getOptionalParameter(CommonParameters.TOOL);
+        Optional<Item<?>> item = ctx.getOptionalParameter(PlayerParameters.MAIN_HAND_ITEM);
         if (item.isEmpty()) return false;
         Optional<Enchantment> enchantment = item.get().getEnchantment(id);
         int level = enchantment.map(Enchantment::level).orElse(0);
         return this.expression.apply(level);
     }
 
-    public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
+    public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
 
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {

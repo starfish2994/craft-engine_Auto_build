@@ -6,7 +6,6 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
-import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.AbstractVanillaLootManager;
 import net.momirealms.craftengine.core.loot.LootTable;
@@ -70,16 +69,17 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
             ContextHolder.Builder builder = ContextHolder.builder();
             builder.withParameter(CommonParameters.WORLD, world);
             builder.withParameter(CommonParameters.LOCATION, vec3d);
+            BukkitServerPlayer optionalPlayer = null;
             if (VersionHelper.isOrAbove1_20_5()) {
                 if (event.getDamageSource().getCausingEntity() instanceof Player player) {
-                    BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
-                    builder.withParameter(CommonParameters.PLAYER, serverPlayer);
-                    builder.withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                    optionalPlayer = this.plugin.adapt(player);
+                    builder.withParameter(CommonParameters.PLAYER, optionalPlayer);
+                    //mark item builder.withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                 }
             }
             ContextHolder contextHolder = builder.build();
             for (LootTable<?> lootTable : loot.lootTables()) {
-                for (Item<?> item : lootTable.getRandomItems(contextHolder, world)) {
+                for (Item<?> item : lootTable.getRandomItems(contextHolder, world, optionalPlayer)) {
                     world.dropItemNaturally(vec3d, item);
                 }
             }

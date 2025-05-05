@@ -10,7 +10,6 @@ import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
-import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
@@ -176,9 +175,9 @@ public final class CraftEngineBlocks {
             BukkitServerPlayer serverPlayer = BukkitCraftEngine.instance().adapt(player);
             if (player != null) {
                 builder.withParameter(CommonParameters.PLAYER, serverPlayer);
-                builder.withOptionalParameter(CommonParameters.TOOL, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                //mark item builder.withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
             }
-            for (Item<?> item : state.getDrops(builder, world)) {
+            for (Item<?> item : state.getDrops(builder, world, serverPlayer)) {
                 world.dropItemNaturally(vec3d, item);
             }
         }

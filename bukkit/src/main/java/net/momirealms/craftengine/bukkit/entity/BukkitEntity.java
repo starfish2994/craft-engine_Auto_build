@@ -1,8 +1,10 @@
 package net.momirealms.craftengine.bukkit.entity;
 
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.Entity;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.World;
 
 import java.lang.ref.WeakReference;
@@ -61,5 +63,10 @@ public class BukkitEntity extends Entity {
     @Override
     public org.bukkit.entity.Entity literalObject() {
         return this.entity.get();
+    }
+
+    @Override
+    public Key type() {
+        return KeyUtils.namespacedKey2Key(literalObject().getType().getKey());
     }
 }

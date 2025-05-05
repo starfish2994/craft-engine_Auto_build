@@ -26,6 +26,8 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -804,6 +806,20 @@ public class BukkitServerPlayer extends Player {
                 sendPacket(FastNMS.INSTANCE.constructor$ClientboundResourcePackPopPacket(u), true);
             }
             this.resourcePackUUID.clear();
+        }
+    }
+
+    @Override
+    public void performCommand(String command) {
+        platformPlayer().performCommand(command);
+    }
+
+    @Override
+    public double luck() {
+        if (VersionHelper.isOrAbove1_21_3()) {
+            return Optional.ofNullable(platformPlayer().getAttribute(Attribute.LUCK)).map(AttributeInstance::getValue).orElse(1d);
+        } else {
+            return LegacyAttributeUtils.getLuck(platformPlayer());
         }
     }
 }

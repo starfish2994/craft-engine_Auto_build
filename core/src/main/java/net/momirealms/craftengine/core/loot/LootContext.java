@@ -1,25 +1,38 @@
 package net.momirealms.craftengine.core.loot;
 
+import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
 import net.momirealms.craftengine.core.world.World;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 public class LootContext extends PlayerOptionalContext {
     private final World world;
     private final float luck;
+    private Item<?> tempLoot;
 
-    public LootContext(World world, float luck, ContextHolder contexts) {
-        super(contexts.getOptional(CommonParameters.PLAYER).orElse(null), contexts);
+    public LootContext(@NotNull World world, @Nullable Player player, float luck, @NotNull ContextHolder contexts) {
+        super(player, contexts);
         this.world = world;
         this.luck = luck;
     }
 
     public float luck() {
-        return luck;
+        return this.luck;
     }
 
     public World world() {
-        return world;
+        return this.world;
+    }
+
+    public Item<?> tempLoot() {
+        return this.tempLoot;
+    }
+
+    public void setTempLoot(Item<?> tempLoot) {
+        this.tempLoot = tempLoot;
     }
 }

@@ -46,6 +46,7 @@ public abstract class CraftEngine implements Plugin {
     protected PluginLogger logger;
     protected Consumer<Supplier<String>> debugger = (s) -> {};
     protected Config config;
+    protected Platform platform;
     protected ClassPathAppender classPathAppender;
     protected DependencyManager dependencyManager;
     protected SchedulerAdapter<?> scheduler;
@@ -427,5 +428,10 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public CompatibilityManager compatibilityManager() {
         return compatibilityManager;
+    }
+
+    @Override
+    public Platform platform() {
+        return platform;
     }
 }

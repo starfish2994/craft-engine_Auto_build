@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.core.loot;
 
 import com.google.common.collect.Lists;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.loot.condition.LootConditions;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainer;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainers;
 import net.momirealms.craftengine.core.loot.function.LootFunction;
@@ -79,7 +79,11 @@ public class LootTable<T> {
     }
 
     public ArrayList<Item<T>> getRandomItems(ContextHolder parameters, World world) {
-        return this.getRandomItems(new LootContext(world, 1, parameters));
+        return this.getRandomItems(parameters, world, null);
+    }
+
+    public ArrayList<Item<T>> getRandomItems(ContextHolder parameters, World world, @Nullable Player player) {
+        return this.getRandomItems(new LootContext(world, player, player == null ? 1f : (float) player.luck(), parameters));
     }
 
     private ArrayList<Item<T>> getRandomItems(LootContext context) {

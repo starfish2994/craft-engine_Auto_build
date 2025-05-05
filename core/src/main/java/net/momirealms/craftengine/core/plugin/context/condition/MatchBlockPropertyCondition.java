@@ -5,7 +5,10 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
-import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.Pair;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +44,7 @@ public class MatchBlockPropertyCondition<CTX extends Context> implements Conditi
         }).orElse(false);
     }
 
-    public static class FactoryImpl<CTX extends Context> implements Factory<Condition<CTX>> {
+    public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
 
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {

@@ -293,4 +293,5 @@ warning.config.conflict_matcher.all_of.missing_terms: "<yellow>Issue found in co
 warning.config.conflict_matcher.any_of.missing_terms: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'terms' argument for 'any_of' matcher.</yellow>"
 warning.config.conflict_resolution.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'type' argument for one of the resolutions.</yellow>"
 warning.config.conflict_resolution.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - One of the resolutions is using the invalid type '<arg:0>'.</yellow>"
+warning.config.function.command.missing_command: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'command' argument for 'command' function.</yellow>"
 warning.resource_pack.generation_in_progress: "<yellow>Resource pack generation is already in progress. Please wait until it finishes.</yellow>"

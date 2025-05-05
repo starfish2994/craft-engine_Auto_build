@@ -2,16 +2,12 @@ package net.momirealms.craftengine.core.pack.conflict.matcher;
 
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.plugin.context.Condition;
-import net.momirealms.craftengine.core.plugin.context.condition.AllOfCondition;
-import net.momirealms.craftengine.core.plugin.context.condition.AnyOfCondition;
-import net.momirealms.craftengine.core.plugin.context.condition.InvertedCondition;
-import net.momirealms.craftengine.core.plugin.context.condition.CommonConditions;
+import net.momirealms.craftengine.core.plugin.context.condition.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.Factory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
@@ -40,8 +36,9 @@ public class PathMatchers {
         register(CONTAINS, new PathMatcherContains.FactoryImpl());
     }
 
-    public static void register(Key key, Factory<Condition<PathContext>> factory) {
-        Holder.Reference<Factory<Condition<PathContext>>> holder = ((WritableRegistry<Factory<Condition<PathContext>>>) BuiltInRegistries.PATH_MATCHER_FACTORY).registerForHolder(new ResourceKey<>(Registries.PATH_MATCHER_FACTORY.location(), key));
+    public static void register(Key key, ConditionFactory<PathContext> factory) {
+        Holder.Reference<ConditionFactory<PathContext>> holder = ((WritableRegistry<ConditionFactory<PathContext>>) BuiltInRegistries.PATH_MATCHER_FACTORY)
+                .registerForHolder(new ResourceKey<>(Registries.PATH_MATCHER_FACTORY.location(), key));
         holder.bindValue(factory);
     }
 
@@ -56,10 +53,18 @@ public class PathMatchers {
     public static Condition<PathContext> fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), () -> new LocalizedException("warning.config.conflict_matcher.missing_type"));
         Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
-        Factory<Condition<PathContext>> factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
-        if (factory == null) {
-            throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);
+        if (key.value().charAt(0) == '!') {
+            ConditionFactory<PathContext> factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
+            if (factory == null) {
+                throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);
+            }
+            return new InvertedCondition<>(factory.create(map));
+        } else {
+            ConditionFactory<PathContext> factory = BuiltInRegistries.PATH_MATCHER_FACTORY.getValue(key);
+            if (factory == null) {
+                throw new LocalizedException("warning.config.conflict_matcher.invalid_type", type);
+            }
+            return factory.create(map);
         }
-        return factory.create(map);
     }
 }
