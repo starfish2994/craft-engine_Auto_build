@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.mod;
 
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;

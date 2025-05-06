@@ -222,6 +222,8 @@ warning.config.block.behavior.leaves.missing_distance: "<yellow>Issue found in f
 warning.config.block.behavior.sapling.missing_stage: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'stage' property for 'sapling_block' behavior.</yellow>"
 warning.config.block.behavior.sapling.missing_feature: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'feature' argument for 'sapling_block' behavior.</yellow>"
 warning.config.block.behavior.strippable.missing_stripped: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'stripped' argument for 'strippable_block' behavior.</yellow>"
+warning.config.block.event.condition.missing_type: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'type' argument for event condition.</yellow>"
+warning.config.block.event.condition.invalid_type: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is using an invalid 'type' argument for event condition.</yellow>"
 warning.config.model.generation.missing_parent: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'parent' argument in 'generation' section.</yellow>"
 warning.config.model.generation.conflict: "<yellow>Issue found in file <arg:0> - Failed to generate model for '<arg:1>' as two or more configurations attempt to generate different json models with the same path: '<arg:2>'.</yellow>"
 warning.config.model.generation.texture.invalid: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' has a texture '<arg:2>' with path '<arg:3>' that contains illegal characters. Please read https://minecraft.wiki/w/Resource_location#Legal_characters.</yellow>"
