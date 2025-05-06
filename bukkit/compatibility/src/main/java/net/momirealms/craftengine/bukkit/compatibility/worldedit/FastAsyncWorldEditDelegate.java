@@ -52,7 +52,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     public static void init() {
         Settings.settings().EXTENT.ALLOWED_PLUGINS.add(FastAsyncWorldEditDelegate.class.getCanonicalName());
-        FaweAdapter<?, ?> adapter= (FaweAdapter<?, ?>) WorldEditPlugin.getInstance().getBukkitImplAdapter();
+        FaweAdapter<?, ?> adapter = (FaweAdapter<?, ?>) WorldEditPlugin.getInstance().getBukkitImplAdapter();
         Method ordinalToIbdIDMethod = ReflectionUtils.getDeclaredMethod(CachedBukkitAdapter.class, int.class.arrayType(), new String[]{"getOrdinalToIbdID"});
         try {
             assert ordinalToIbdIDMethod != null;
@@ -109,23 +109,15 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(int x, int y, int z, T block) {
-        try {
-            BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
-            this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
-        }
+        BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
+        this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
         return super.setBlock(x, y, z, block);
     }
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 position, T block) {
-        try {
-            BaseBlock oldBlockState = getBlock(position).toBaseBlock();
-            this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
-        }
+        BaseBlock oldBlockState = getBlock(position).toBaseBlock();
+        this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
         return super.setBlock(position, block);
     }
 
@@ -136,37 +128,37 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     }
 
     private void processBlocks(Iterable<BlockVector3> region, Pattern pattern) {
-        try {
-            for (BlockVector3 position : region) {
-                BaseBlock blockState = pattern.applyBlock(position);
-                BaseBlock oldBlockState = getBlock(position).toBaseBlock();
-                int blockX = position.x();
-                int blockY = position.y();
-                int blockZ = position.z();
-                this.processBlock(blockX, blockY, blockZ, blockState, oldBlockState);
-            }
-            saveAllChunks();
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
+        for (BlockVector3 position : region) {
+            BaseBlock blockState = pattern.applyBlock(position);
+            BaseBlock oldBlockState = getBlock(position).toBaseBlock();
+            int blockX = position.x();
+            int blockY = position.y();
+            int blockZ = position.z();
+            this.processBlock(blockX, blockY, blockZ, blockState, oldBlockState);
         }
+        saveAllChunks();
     }
 
-    private void processBlock(int blockX, int blockY, int blockZ, BaseBlock newBlock, BaseBlock oldBlock) throws IOException {
+    private void processBlock(int blockX, int blockY, int blockZ, BaseBlock newBlock, BaseBlock oldBlock) {
         int chunkX = blockX >> 4;
         int chunkZ = blockZ >> 4;
         int newStateId = ordinalToIbdID[newBlock.getOrdinal()];
         int oldStateId = ordinalToIbdID[oldBlock.getOrdinal()];
-        CraftEngine.instance().debug(() -> "Processing block at " + blockX + ", " + blockY + ", " + blockZ + ": " + oldStateId + " -> " + newStateId);
+        //CraftEngine.instance().debug(() -> "Processing block at " + blockX + ", " + blockY + ", " + blockZ + ": " + oldStateId + " -> " + newStateId);
         if (BlockStateUtils.isVanillaBlock(newStateId) && BlockStateUtils.isVanillaBlock(oldStateId)) return;
-        CEChunk ceChunk = Optional.ofNullable(this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ))
-                .orElse(this.ceWorld.worldDataStorage().readChunkAt(this.ceWorld, new ChunkPos(chunkX, chunkZ)));
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(newStateId);
-        if (immutableBlockState == null) {
-            ceChunk.setBlockState(blockX, blockY, blockZ, EmptyBlock.STATE);
-        } else {
-            ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
+        try {
+            CEChunk ceChunk = Optional.ofNullable(this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ))
+                    .orElse(this.ceWorld.worldDataStorage().readChunkAt(this.ceWorld, new ChunkPos(chunkX, chunkZ)));
+            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(newStateId);
+            if (immutableBlockState == null) {
+                ceChunk.setBlockState(blockX, blockY, blockZ, EmptyBlock.STATE);
+            } else {
+                ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
+            }
+            this.chunksToSave.add(ceChunk);
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation blocks", e);
         }
-        this.chunksToSave.add(ceChunk);
     }
 
     private void saveAllChunks() {
@@ -176,7 +168,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
             }
             this.chunksToSave.clear();
-        } catch (Exception e) {
+        } catch (IOException e) {
             CraftEngine.instance().logger().warn("Error when recording FastAsyncWorldEdit operation chunks", e);
         }
     }
