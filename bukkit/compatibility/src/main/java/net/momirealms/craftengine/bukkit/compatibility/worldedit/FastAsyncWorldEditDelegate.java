@@ -25,7 +25,6 @@ import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.SectionPos;
@@ -82,6 +81,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         CESection[] ceSections = ceChunk.sections();
         Object worldServer = ceChunk.world().world().serverWorld();
         Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
+        // TODO THREAD SAFETY?
         Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, pos.x, pos.z);
         Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
         for (int i = 0; i < ceSections.length; i++) {
@@ -143,6 +143,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     protected Operation commitBefore() {
+        saveAllChunks();
         List<ChunkPos> chunks = new ArrayList<>(BROKEN_CHUNKS);
         BROKEN_CHUNKS.clear();
         for (ChunkPos chunk : chunks) {
@@ -163,7 +164,6 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             int blockZ = position.z();
             this.processBlock(blockX, blockY, blockZ, blockState, oldBlockState);
         }
-        saveAllChunks();
     }
 
     private void processBlock(int blockX, int blockY, int blockZ, BaseBlock newBlock, BaseBlock oldBlock) {
