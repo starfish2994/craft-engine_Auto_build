@@ -18,6 +18,8 @@ import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -25,7 +27,9 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.craftengine.core.world.SectionPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
+import net.momirealms.craftengine.core.world.chunk.CESection;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;
@@ -40,6 +44,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private final Set<CEChunk> chunksToSave;
     private final CEWorld ceWorld;
     private static int[] ordinalToIbdID;
+    private static final Set<CEChunk> chunksNeedInjection = new HashSet<>();
 
     protected FastAsyncWorldEditDelegate(EditSessionEvent event) {
         super(event.getExtent());
@@ -58,7 +63,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             assert ordinalToIbdIDMethod != null;
             ordinalToIbdID = (int[]) ordinalToIbdIDMethod.invoke(adapter);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to init FAWE compatibility", e);
+            throw new RuntimeException("Failed to init FastAsyncWorldEdit compatibility", e);
         }
         WorldEdit.getInstance().getEventBus().register(new Object() {
             @Subscribe
@@ -66,9 +71,38 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             public void onEditSessionEvent(EditSessionEvent event) {
                 if (event.getStage() == EditSession.Stage.BEFORE_CHANGE) {
                     event.setExtent(new FastAsyncWorldEditDelegate(event));
+                } else if (event.getStage() == EditSession.Stage.BEFORE_HISTORY) {
+                    event.setExtent(new AbstractDelegateExtent(event.getExtent()) {
+                        @Override
+                        public Operation commit() {
+                            Set<CEChunk> processedChunk = new HashSet<>();
+                            org.bukkit.World world = Bukkit.getWorld(requireNonNull(event.getWorld()).getName());
+                            CEWorld ceWorld = CraftEngine.instance().worldManager().getWorld(requireNonNull(world).getUID());
+                            chunksNeedInjection.forEach(ceChunk -> {
+                                injectLevelChunk(requireNonNull(ceWorld), ceChunk);
+                                processedChunk.add(ceChunk);
+                            });
+                            processedChunk.forEach(chunksNeedInjection::remove);
+                            return super.commit();
+                        }
+                    });
                 }
             }
         });
+    }
+
+    private static void injectLevelChunk(CEWorld ceWorld, CEChunk ceChunk) {
+        ChunkPos pos = ceChunk.chunkPos();
+        CESection[] ceSections = ceChunk.sections();
+        Object worldServer = ceWorld.world().serverWorld();
+        Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
+        Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, pos.x, pos.z);
+        Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
+        for (int i = 0; i < ceSections.length; i++) {
+            CESection ceSection = ceSections[i];
+            Object section = sections[i];
+            BukkitInjector.injectLevelChunkSection(section, ceSection, ceWorld, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+        }
     }
 
     @Override
@@ -165,6 +199,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         try {
             for (CEChunk ceChunk : this.chunksToSave) {
                 CraftEngine.instance().debug(() -> "Saving chunk " + ceChunk.chunkPos());
+                chunksNeedInjection.add(ceChunk);
                 this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
             }
             this.chunksToSave.clear();
