@@ -74,7 +74,6 @@ public abstract class AbstractPackManager implements PackManager {
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
     protected BiConsumer<Path, Path> zipGenerator;
     protected ResourcePackHost resourcePackHost;
-    private boolean generateResourcePack = false;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -519,10 +518,6 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void generateResourcePack() {
-        if (this.generateResourcePack) {
-            throw new LocalizedException("command.resource_pack.generation_in_progress");
-        }
-        this.generateResourcePack = true;
         this.plugin.logger().info("Generating resource pack...");
         long start = System.currentTimeMillis();
         // get the target location
@@ -584,7 +579,6 @@ public abstract class AbstractPackManager implements PackManager {
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
         this.eventDispatcher.accept(generatedPackPath, zipFile);
-        this.generateResourcePack = false;
     }
 
     private void generateParticle(Path generatedPackPath) {
