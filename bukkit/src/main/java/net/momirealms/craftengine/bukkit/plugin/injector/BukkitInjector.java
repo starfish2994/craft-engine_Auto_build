@@ -712,8 +712,6 @@ public class BukkitInjector {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     ImmutableBlockState previousImmutableBlockState = section.setBlockState(x, y, z, immutableBlockState);
                     // 如果之前的自定义块(空气)和当前自定义块不同
-                    System.out.println("1:" + immutableBlockState);
-                    System.out.println("2:" + previousImmutableBlockState);
                     if (previousImmutableBlockState != immutableBlockState) {
                         holder.ceChunk().setDirty(true);
                         if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
