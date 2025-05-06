@@ -76,18 +76,17 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         });
     }
 
-    private static void injectLevelChunk(CEChunk ceChunk) {
+    private static void injectLevelChunk(Object chunkSource, CEChunk ceChunk) {
         ChunkPos pos = ceChunk.chunkPos();
-        CESection[] ceSections = ceChunk.sections();
-        Object worldServer = ceChunk.world().world().serverWorld();
-        Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
-        // TODO THREAD SAFETY?
-        Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, pos.x, pos.z);
-        Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
-        for (int i = 0; i < ceSections.length; i++) {
-            CESection ceSection = ceSections[i];
-            Object section = sections[i];
-            BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+        Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunk(chunkSource, pos.x, pos.z, false);
+        if (levelChunk != null) {
+            Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
+            CESection[] ceSections = ceChunk.sections();
+            for (int i = 0; i < ceSections.length; i++) {
+                CESection ceSection = ceSections[i];
+                Object section = sections[i];
+                BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+            }
         }
     }
 
@@ -146,11 +145,13 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         saveAllChunks();
         List<ChunkPos> chunks = new ArrayList<>(BROKEN_CHUNKS);
         BROKEN_CHUNKS.clear();
+        Object worldServer = this.ceWorld.world().serverWorld();
+        Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
         for (ChunkPos chunk : chunks) {
             CEChunk loaded = this.ceWorld.getChunkAtIfLoaded(chunk.longKey());
             // only inject loaded chunks
             if (loaded == null) continue;
-            injectLevelChunk(loaded);
+            injectLevelChunk(chunkSource, loaded);
         }
         return super.commitBefore();
     }
