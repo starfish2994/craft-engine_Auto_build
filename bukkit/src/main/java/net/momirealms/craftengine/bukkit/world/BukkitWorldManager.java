@@ -383,7 +383,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                             }
                         }
                     }
-                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceWorld, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
                 }
                 if (Config.enableRecipeSystem()) {
                     @SuppressWarnings("unchecked")
