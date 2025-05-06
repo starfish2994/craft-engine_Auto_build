@@ -353,8 +353,15 @@ chunk-system:
   # 4 = LZ4       |     Blazing-Fast        Blazing-Fast        Low                 Low        |
   # 5 = ZSTD      |     Medium-Fast            Fast             High               Medium      |
   compression-method: 4
-  # This might not work for some server forks that modify how Minecraft saves chunks.
-  fast-palette-injection: false
+  # Settings for injection
+  injection:
+    # Requires a restart to apply
+    # SECTION: Inject the LevelChunkSection (Faster, but may conflict with some plugins)
+    # PALETTE: Inject the PalettedContainer
+    target: PALETTE
+    # Enables faster injection method
+    # Note: May not work with certain server forks that alter chunk saving behavior
+    use-fast-method: false
   # Auto-convert custom blocks -> vanilla blocks when unloading chunks
   #
   # - When ENABLED (true):
