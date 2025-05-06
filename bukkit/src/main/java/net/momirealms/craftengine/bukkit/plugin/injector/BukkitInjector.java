@@ -391,7 +391,7 @@ public class BukkitInjector {
     public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, CEChunk chunk, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
-            if (!clazz$InjectedPalettedContainer.isInstance(container)) {
+            if (!(container instanceof InjectedPalettedContainerHolder)) {
                 InjectedPalettedContainerHolder injectedObject;
                 if (Config.fastPaletteInjection()) {
                     injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
@@ -409,6 +409,11 @@ public class BukkitInjector {
         } catch (Exception e) {
             CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
         }
+    }
+
+    public static boolean isSectionInjected(Object section) {
+        Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
+        return container instanceof InjectedPalettedContainerHolder;
     }
 
     public synchronized static void uninjectLevelChunkSection(Object section) {
@@ -707,6 +712,8 @@ public class BukkitInjector {
                     ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                     ImmutableBlockState previousImmutableBlockState = section.setBlockState(x, y, z, immutableBlockState);
                     // 如果之前的自定义块(空气)和当前自定义块不同
+                    System.out.println("1:" + immutableBlockState);
+                    System.out.println("2:" + previousImmutableBlockState);
                     if (previousImmutableBlockState != immutableBlockState) {
                         holder.ceChunk().setDirty(true);
                         if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
