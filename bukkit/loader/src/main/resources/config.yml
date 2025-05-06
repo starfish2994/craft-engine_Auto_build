@@ -78,6 +78,8 @@ resource-pack:
         ip: "localhost"
         port: 8163
         protocol: "http"
+        # The optional URL must be complete and include a trailing slash / at the end.
+        #url: "http://localhost:8163/"
         deny-non-minecraft-request: true
         one-time-token: true
         rate-limit:

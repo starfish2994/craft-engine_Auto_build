@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
@@ -73,6 +74,7 @@ public abstract class AbstractPackManager implements PackManager {
     private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
     protected BiConsumer<Path, Path> zipGenerator;
     protected ResourcePackHost resourcePackHost;
+    private boolean generateResourcePack = false;
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -141,6 +143,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
+        initFileSystemProvider();
         List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
         if (list == null || list.isEmpty()) {
             this.resourcePackHost = NoneHost.INSTANCE;
@@ -484,8 +487,42 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
+    private static void initFileSystemProvider() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String providerClass = null;
+        if (osName.contains("win")) {
+            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
+        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
+        } else if (osName.contains("mac")) {
+            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
+        }
+        if (providerClass != null) {
+            try {
+                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private static void deleteDirectory(Path folder) throws IOException {
+        if (!Files.exists(folder)) return;
+        try (Stream<Path> walk = Files.walk(folder)) {
+            walk.sorted(Comparator.reverseOrder())
+                    .parallel()
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException ignored) {}
+                    });
+        }
+    }
+
     @Override
     public void generateResourcePack() {
+        if (this.generateResourcePack) {
+            throw new LocalizedException("warning.resource_pack.generation_in_progress");
+        }
+        this.generateResourcePack = true;
         this.plugin.logger().info("Generating resource pack...");
         long start = System.currentTimeMillis();
         // get the target location
@@ -494,7 +531,7 @@ public abstract class AbstractPackManager implements PackManager {
                 .resolve("resource_pack");
 
         try {
-            org.apache.commons.io.FileUtils.deleteDirectory(generatedPackPath.toFile());
+            deleteDirectory(generatedPackPath);
         } catch (IOException e) {
             this.plugin.logger().severe("Error deleting previous resource pack", e);
         }
@@ -547,6 +584,7 @@ public abstract class AbstractPackManager implements PackManager {
         long end = System.currentTimeMillis();
         this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
         this.eventDispatcher.accept(generatedPackPath, zipFile);
+        this.generateResourcePack = false;
     }
 
     private void generateParticle(Path generatedPackPath) {

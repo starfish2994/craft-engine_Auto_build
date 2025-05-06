@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.MessageConstants;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.Command;
@@ -68,7 +69,9 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                                 long time2 = System.currentTimeMillis();
                                 long packTime = time2 - time1;
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_SUCCESS, Component.text(packTime));
-
+                            } catch (LocalizedException e) {
+                                handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
+                                plugin().logger().warn(e.getMessage());
                             } catch (Exception e) {
                                 handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
                                 plugin().logger().warn("Failed to generate resource pack", e);
@@ -89,6 +92,9 @@ public class ReloadCommand extends BukkitCommandFeature<CommandSender> {
                                             Component.text(reloadResult.syncTime()),
                                             Component.text(packTime)
                                     );
+                                } catch (LocalizedException e) {
+                                    handleFeedback(context, MessageConstants.COMMAND_RELOAD_PACK_FAILURE);
+                                    plugin().logger().warn(e.getMessage());
                                 } finally {
                                     RELOAD_PACK_FLAG = false;
                                 }
