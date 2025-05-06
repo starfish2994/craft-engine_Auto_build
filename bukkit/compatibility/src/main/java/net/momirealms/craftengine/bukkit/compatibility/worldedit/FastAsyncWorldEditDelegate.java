@@ -64,8 +64,9 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             @Subscribe
             @SuppressWarnings("unused")
             public void onEditSessionEvent(EditSessionEvent event) {
-                if (event.getStage() != EditSession.Stage.BEFORE_HISTORY) return;
-                event.setExtent(new FastAsyncWorldEditDelegate(event));
+                if (event.getStage() == EditSession.Stage.BEFORE_HISTORY || event.getStage() == EditSession.Stage.BEFORE_CHANGE) {
+                    event.setExtent(new FastAsyncWorldEditDelegate(event));
+                }
             }
         });
     }
