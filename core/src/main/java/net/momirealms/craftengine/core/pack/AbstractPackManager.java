@@ -520,7 +520,7 @@ public abstract class AbstractPackManager implements PackManager {
     @Override
     public void generateResourcePack() {
         if (this.generateResourcePack) {
-            throw new LocalizedException("warning.resource_pack.generation_in_progress");
+            throw new LocalizedException("command.resource_pack.generation_in_progress");
         }
         this.generateResourcePack = true;
         this.plugin.logger().info("Generating resource pack...");

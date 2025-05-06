@@ -64,6 +64,7 @@ command.upload.failure.not_supported: "<red>Current hosting method '<arg:0>' doe
 command.upload.on_progress: "<white>Started uploading progress. Check the console for more information.</white>"
 command.send_resource_pack.success.single: "<white>Sent resource pack to <arg:0>.</white>"
 command.send_resource_pack.success.multiple: "<white>Send resource packs to <arg:0> players.</white>"
+command.resource_pack.generation_in_progress: "<yellow>Resource pack generation is already in progress. Please wait until it finishes.</yellow>"
 warning.config.pack.duplicated_files: "</red>Duplicated files Found. Please resolve them through config.yml 'resource-pack.duplicated-files-handler' section.</red>"
 warning.config.type.int: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to integer type for option '<arg:3>'.</yellow>"
 warning.config.type.float: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to float type for option '<arg:3>'.</yellow>"
@@ -294,4 +295,3 @@ warning.config.conflict_matcher.any_of.missing_terms: "<yellow>Issue found in co
 warning.config.conflict_resolution.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'type' argument for one of the resolutions.</yellow>"
 warning.config.conflict_resolution.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - One of the resolutions is using the invalid type '<arg:0>'.</yellow>"
 warning.config.function.command.missing_command: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'command' argument for 'command' function.</yellow>"
-warning.resource_pack.generation_in_progress: "<yellow>Resource pack generation is already in progress. Please wait until it finishes.</yellow>"
