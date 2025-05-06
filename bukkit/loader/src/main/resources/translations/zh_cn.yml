@@ -295,4 +295,3 @@ warning.config.conflict_matcher.all_of.missing_terms: "<yellow>在 config.yml �
 warning.config.conflict_matcher.any_of.missing_terms: "<yellow>在 config.yml 的 'resource-pack.duplicated-files-handler' 处发现问题 - 任一匹配器缺少必需的 'terms' 参数</yellow>"
 warning.config.conflict_resolution.missing_type: "<yellow>在 config.yml 的 'resource-pack.duplicated-files-handler' 处发现问题 - 文件冲突处理器的某个解决方案缺少必需的 'type' 参数</yellow>"
 warning.config.conflict_resolution.invalid_type: "<yellow>在 config.yml 的 'resource-pack.duplicated-files-handler' 处发现问题 - 文件冲突处理器的某个解决方案使用了无效类型 '<arg:0>'</yellow>"
-warning.resource_pack.generation_in_progress: "<yellow>资源包正在生成中, 请等待完成再试</yellow>"
