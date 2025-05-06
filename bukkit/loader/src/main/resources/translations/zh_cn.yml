@@ -274,6 +274,7 @@ warning.config.host.s3.missing_secret: "<yellow>在 config.yml 的 'resource-pac
 warning.config.host.s3.missing_upload_path: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - S3 托管缺少必需的 'upload-path' 参数</yellow>"
 warning.config.host.self.missing_ip: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 自托管托管缺少必需的 'ip' 参数</yellow>"
 warning.config.host.self.invalid_port: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 自托管托管的端口 '<arg:0>' 无效</yellow>"
+warning.config.host.self.invalid_url: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 自托管托管的 URL '<arg:0>' 无效</yellow>"
 warning.config.host.gitlab.missing_url: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - GitLab 托管缺少必需的 'gitlab-url' 参数</yellow>"
 warning.config.host.gitlab.missing_token: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - GitLab 托管缺少必需的 'access-token' 参数</yellow>"
 warning.config.host.gitlab.missing_project: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - GitLab 托管缺少必需的 'project-id' 参数</yellow>"

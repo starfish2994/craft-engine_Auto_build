@@ -1,8 +1,10 @@
 package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
+import com.fastasyncworldedit.bukkit.adapter.FaweAdapter;
 import com.fastasyncworldedit.core.configuration.Settings;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.function.mask.Mask;
@@ -32,6 +34,7 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
+    private final FaweAdapter<?, ?> adapter = (FaweAdapter<?, ?>) WorldEditPlugin.getInstance().getBukkitImplAdapter();
     private final Set<CEChunk> chunksToSave;
     private final CEWorld ceWorld;
 
@@ -139,10 +142,10 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private void processBlock(int blockX, int blockY, int blockZ, BaseBlock blockState, BaseBlock oldBlockState) throws IOException {
         int chunkX = blockX >> 4;
         int chunkZ = blockZ >> 4;
-        int newStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(blockState.getAsString()));
-//        int oldStateId = BlockStateUtils.blockDataToId(Bukkit.createBlockData(oldBlockState.getAsString()));
-        if (BlockStateUtils.isVanillaBlock(newStateId) /* && BlockStateUtils.isVanillaBlock(oldStateId) */)
-            return;
+        int newStateId = BlockStateUtils.blockDataToId(this.adapter.adapt(blockState));
+        int oldStateId = BlockStateUtils.blockDataToId(this.adapter.adapt(oldBlockState));
+        CraftEngine.instance().debug(() -> "Processing block at " + blockX + ", " + blockY + ", " + blockZ + ": " + oldStateId + " -> " + newStateId);
+        if (BlockStateUtils.isVanillaBlock(newStateId) && BlockStateUtils.isVanillaBlock(oldStateId)) return;
         CEChunk ceChunk = Optional.ofNullable(this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ))
                 .orElse(this.ceWorld.worldDataStorage().readChunkAt(this.ceWorld, new ChunkPos(chunkX, chunkZ)));
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(newStateId);
@@ -157,6 +160,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private void saveAllChunks() {
         try {
             for (CEChunk ceChunk : this.chunksToSave) {
+                CraftEngine.instance().debug(() -> "Saving chunk " + ceChunk.chunkPos());
                 this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
             }
             this.chunksToSave.clear();

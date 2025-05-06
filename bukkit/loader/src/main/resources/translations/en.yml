@@ -272,6 +272,7 @@ warning.config.host.s3.missing_secret: "<yellow>Issue found in config.yml at 're
 warning.config.host.s3.missing_upload_path: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'upload-path' argument for s3 host.</yellow>"
 warning.config.host.self.missing_ip: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'ip' argument for self host.</yellow>"
 warning.config.host.self.invalid_port: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Invalid port '<arg:0>' for self host.</yellow>"
+warning.config.host.self.invalid_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Invalid url '<arg:0>' for self host.</yellow>"
 warning.config.host.gitlab.missing_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'gitlab-url' argument for gitlab host.</yellow>"
 warning.config.host.gitlab.missing_token: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'access-token' argument for gitlab host.</yellow>"
 warning.config.host.gitlab.missing_project: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'project-id' argument for gitlab host.</yellow>"
