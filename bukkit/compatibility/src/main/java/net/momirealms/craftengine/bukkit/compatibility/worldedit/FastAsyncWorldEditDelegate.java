@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
+import com.fastasyncworldedit.bukkit.adapter.CachedBukkitAdapter;
 import com.fastasyncworldedit.bukkit.adapter.FaweAdapter;
 import com.fastasyncworldedit.core.configuration.Settings;
 import com.sk89q.worldedit.EditSession;
@@ -21,12 +22,14 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -34,9 +37,9 @@ import java.util.Set;
 import static java.util.Objects.requireNonNull;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
-    private final FaweAdapter<?, ?> adapter = (FaweAdapter<?, ?>) WorldEditPlugin.getInstance().getBukkitImplAdapter();
     private final Set<CEChunk> chunksToSave;
     private final CEWorld ceWorld;
+    private static int[] ordinalToIbdID;
 
     protected FastAsyncWorldEditDelegate(EditSessionEvent event) {
         super(event.getExtent());
@@ -49,12 +52,21 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     public static void init() {
         Settings.settings().EXTENT.ALLOWED_PLUGINS.add(FastAsyncWorldEditDelegate.class.getCanonicalName());
+        FaweAdapter<?, ?> adapter= (FaweAdapter<?, ?>) WorldEditPlugin.getInstance().getBukkitImplAdapter();
+        Method ordinalToIbdIDMethod = ReflectionUtils.getDeclaredMethod(CachedBukkitAdapter.class, int.class.arrayType(), new String[]{"getOrdinalToIbdID"});
+        try {
+            assert ordinalToIbdIDMethod != null;
+            ordinalToIbdID = (int[]) ordinalToIbdIDMethod.invoke(adapter);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to init FAWE compatibility", e);
+        }
         WorldEdit.getInstance().getEventBus().register(new Object() {
             @Subscribe
             @SuppressWarnings("unused")
             public void onEditSessionEvent(EditSessionEvent event) {
-                if (event.getStage() != EditSession.Stage.BEFORE_HISTORY) return;
-                event.setExtent(new FastAsyncWorldEditDelegate(event));
+                if (event.getStage() == EditSession.Stage.BEFORE_HISTORY || event.getStage() == EditSession.Stage.BEFORE_CHANGE) {
+                    event.setExtent(new FastAsyncWorldEditDelegate(event));
+                }
             }
         });
     }
@@ -139,11 +151,11 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         }
     }
 
-    private void processBlock(int blockX, int blockY, int blockZ, BaseBlock blockState, BaseBlock oldBlockState) throws IOException {
+    private void processBlock(int blockX, int blockY, int blockZ, BaseBlock newBlock, BaseBlock oldBlock) throws IOException {
         int chunkX = blockX >> 4;
         int chunkZ = blockZ >> 4;
-        int newStateId = BlockStateUtils.blockDataToId(this.adapter.adapt(blockState));
-        int oldStateId = BlockStateUtils.blockDataToId(this.adapter.adapt(oldBlockState));
+        int newStateId = ordinalToIbdID[newBlock.getOrdinal()];
+        int oldStateId = ordinalToIbdID[oldBlock.getOrdinal()];
         CraftEngine.instance().debug(() -> "Processing block at " + blockX + ", " + blockY + ", " + blockZ + ": " + oldStateId + " -> " + newStateId);
         if (BlockStateUtils.isVanillaBlock(newStateId) && BlockStateUtils.isVanillaBlock(oldStateId)) return;
         CEChunk ceChunk = Optional.ofNullable(this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ))
