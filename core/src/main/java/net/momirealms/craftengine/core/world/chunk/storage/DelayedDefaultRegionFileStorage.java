@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,11 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
                     if (cause == RemovalCause.EXPIRED || cause == RemovalCause.SIZE) {
                         try {
                             super.writeChunkAt(key, value, true);
+                        } catch (ClosedChannelException e) {
+                            if (this.isClosed) {
+                                return;
+                            }
+                            CraftEngine.instance().logger().warn("Failed to write chunk at " + key, e);
                         } catch (IOException e) {
                             CraftEngine.instance().logger().warn("Failed to write chunk at " + key, e);
                         }
@@ -60,9 +66,9 @@ public class DelayedDefaultRegionFileStorage extends DefaultRegionFileStorage {
 
     @Override
     public synchronized void close() throws IOException {
+        this.isClosed = true;
         this.saveCache();
         this.chunkCache.cleanUp();
-        this.isClosed = true;
         super.close();
     }
 

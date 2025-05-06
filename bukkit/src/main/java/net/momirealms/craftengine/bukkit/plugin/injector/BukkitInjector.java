@@ -388,7 +388,7 @@ public class BukkitInjector {
 //        }
 //    }
 
-    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEWorld ceWorld, CEChunk chunk, SectionPos pos) {
+    public synchronized static void injectLevelChunkSection(Object targetSection, CESection ceSection, CEChunk chunk, SectionPos pos) {
         try {
             Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
             if (!(container instanceof InjectedPalettedContainerHolder)) {
@@ -399,7 +399,7 @@ public class BukkitInjector {
                     injectedObject = (InjectedPalettedContainerHolder) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
                     varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
                 }
-                injectedObject.ceWorld(ceWorld);
+                injectedObject.ceWorld(chunk.world());
                 injectedObject.ceChunk(chunk);
                 injectedObject.ceSection(ceSection);
                 injectedObject.cePos(pos);
@@ -422,7 +422,7 @@ public class BukkitInjector {
             if (states instanceof InjectedPalettedContainerHolder holder) {
                 Reflections.field$LevelChunkSection$states.set(section, holder.target());
             }
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
         }
     }

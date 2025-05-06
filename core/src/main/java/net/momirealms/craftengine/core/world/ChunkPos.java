@@ -12,6 +12,10 @@ public class ChunkPos {
         this.longKey = asLong(this.x, this.z);
     }
 
+    public static ChunkPos of(final int x, final int z) {
+        return new ChunkPos(x, z);
+    }
+
     public ChunkPos(BlockPos pos) {
         this.x = SectionPos.blockToSectionCoord(pos.x());
         this.z = SectionPos.blockToSectionCoord(pos.z());
