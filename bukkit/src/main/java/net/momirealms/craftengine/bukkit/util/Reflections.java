@@ -1928,7 +1928,6 @@ public class Reflections {
 //        field$ChunkAccess$blockEntities = targetField;
 //    }
 
-    @Deprecated
     public static final Method method$LevelChunkSection$setBlockState = requireNonNull(
             ReflectionUtils.getMethod(
                     clazz$LevelChunkSection, clazz$BlockState, int.class, int.class, int.class, clazz$BlockState, boolean.class

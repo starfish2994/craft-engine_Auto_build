@@ -282,7 +282,11 @@ public class BukkitWorldManager implements WorldManager, Listener {
                 for (int i = 0; i < ceSections.length; i++) {
                     CESection ceSection = ceSections[i];
                     Object section = sections[i];
-                    BukkitInjector.uninjectLevelChunkSection(section);
+                    Object uninjectedSection = BukkitInjector.uninjectLevelChunkSection(section);
+                    if (uninjectedSection != section) {
+                        sections[i] = uninjectedSection;
+                        section = uninjectedSection;
+                    }
                     if (!ceSection.statesContainer().isEmpty()) {
                         for (int x = 0; x < 16; x++) {
                             for (int z = 0; z < 16; z++) {
@@ -383,7 +387,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
                             }
                         }
                     }
-                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+                    int finalI = i;
+                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
+                            (injected) -> sections[finalI] = injected);
                 }
                 if (Config.enableRecipeSystem()) {
                     @SuppressWarnings("unchecked")

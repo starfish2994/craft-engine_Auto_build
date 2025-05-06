@@ -39,10 +39,10 @@ import java.util.*;
 import static java.util.Objects.requireNonNull;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
+    private static int[] ordinalToIbdID;
     private final Set<CEChunk> chunksToSave;
     private final CEWorld ceWorld;
-    private static int[] ordinalToIbdID;
-    private static final Set<ChunkPos> BROKEN_CHUNKS = Collections.synchronizedSet(new HashSet<>());
+    private final Set<ChunkPos> brokenChunks = Collections.synchronizedSet(new HashSet<>());
 
     protected FastAsyncWorldEditDelegate(EditSessionEvent event) {
         super(event.getExtent());
@@ -85,7 +85,9 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             for (int i = 0; i < ceSections.length; i++) {
                 CESection ceSection = ceSections[i];
                 Object section = sections[i];
-                BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+                int finalI = i;
+                BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
+                        (injected) -> sections[finalI] = injected);
             }
         }
     }
@@ -143,8 +145,8 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     @Override
     protected Operation commitBefore() {
         saveAllChunks();
-        List<ChunkPos> chunks = new ArrayList<>(BROKEN_CHUNKS);
-        BROKEN_CHUNKS.clear();
+        List<ChunkPos> chunks = new ArrayList<>(this.brokenChunks);
+        this.brokenChunks.clear();
         Object worldServer = this.ceWorld.world().serverWorld();
         Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
         for (ChunkPos chunk : chunks) {
@@ -172,7 +174,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         int chunkZ = blockZ >> 4;
         int newStateId = ordinalToIbdID[newBlock.getOrdinal()];
         int oldStateId = ordinalToIbdID[oldBlock.getOrdinal()];
-        BROKEN_CHUNKS.add(ChunkPos.of(chunkX, chunkZ));
+        this.brokenChunks.add(ChunkPos.of(chunkX, chunkZ));
         //CraftEngine.instance().debug(() -> "Processing block at " + blockX + ", " + blockY + ", " + blockZ + ": " + oldStateId + " -> " + newStateId);
         if (BlockStateUtils.isVanillaBlock(newStateId) && BlockStateUtils.isVanillaBlock(oldStateId)) return;
         try {
