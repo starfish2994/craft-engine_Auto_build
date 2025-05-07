@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
@@ -324,6 +325,7 @@ public class BukkitServerPlayer extends Player {
     public void tick() {
         // not fully online
         if (serverPlayer() == null) return;
+
         if (VersionHelper.isFolia()) {
             try {
                 Object serverPlayer = serverPlayer();
@@ -334,6 +336,9 @@ public class BukkitServerPlayer extends Player {
             }
         } else {
             this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
+        }
+        if (this.gameTicks % 15 == 0) {
+            this.updateGUI();
         }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
@@ -348,6 +353,13 @@ public class BukkitServerPlayer extends Player {
                 this.previousEyeLocation = eyeLocation;
                 this.predictNextBlockToMine();
             }
+        }
+    }
+
+    private void updateGUI() {
+        org.bukkit.inventory.Inventory top = !VersionHelper.isOrAbove1_21() ? LegacyInventoryUtils.getTopInventory(platformPlayer()) : platformPlayer().getOpenInventory().getTopInventory();
+        if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
+            holder.gui().onTimer();
         }
     }
 
