@@ -309,9 +309,6 @@ public class RegionFile implements AutoCloseable {
     }
 
     public void clear(ChunkPos pos) throws IOException {
-        if (!this.fileChannel.isOpen()) {
-            throw new ClosedChannelException();
-        }
         int chunkLocation = RegionFile.getChunkLocation(pos);
         int sectorInfo = this.sectorInfo.get(chunkLocation);
         if (sectorInfo != INFO_NOT_PRESENT) {
@@ -325,9 +322,6 @@ public class RegionFile implements AutoCloseable {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     protected synchronized void write(ChunkPos pos, ByteBuffer buf) throws IOException {
-        if (!this.fileChannel.isOpen()) {
-            throw new ClosedChannelException();
-        }
         // get old offset info
         int offsetIndex = RegionFile.getChunkLocation(pos);
         int previousSectorInfo = this.sectorInfo.get(offsetIndex);

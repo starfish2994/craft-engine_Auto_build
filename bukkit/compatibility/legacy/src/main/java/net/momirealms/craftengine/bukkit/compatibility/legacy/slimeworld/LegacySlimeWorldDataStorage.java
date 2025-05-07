@@ -42,7 +42,7 @@ public class LegacySlimeWorldDataStorage implements WorldDataStorage {
     }
 
     @Override
-    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk, boolean immediately) {
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk) {
         SlimeChunk slimeChunk = getWorld().getChunk(pos.x, pos.z);
         if (slimeChunk == null) return;
         CompoundTag nbt = DefaultChunkSerializer.serialize(chunk);

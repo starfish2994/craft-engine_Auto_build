@@ -43,11 +43,11 @@ public class NumberProviders {
     }
 
     public static NumberProvider fromMap(Map<String, Object> map) {
-        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.loot_table.number.missing_type");
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.number.missing_type");
         Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         Factory<NumberProvider> factory = BuiltInRegistries.NUMBER_PROVIDER_FACTORY.getValue(key);
         if (factory == null) {
-            throw new LocalizedResourceConfigException("warning.config.loot_table.number.invalid_type", type);
+            throw new LocalizedResourceConfigException("warning.config.number.invalid_type", type);
         }
         return factory.create(map);
     }

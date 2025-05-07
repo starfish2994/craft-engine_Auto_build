@@ -1,7 +1,6 @@
 # Don't change this
 lang-version: "${lang_version}"
 
-# Commands
 exception.invalid_syntax: "<red>Invalid syntax. Correct syntax: <white><arg:0></white></red>"
 exception.invalid_argument: "<red>Invalid argument. Reason: <white><arg:0></white></red>"
 exception.invalid_sender: "<red><arg:0> is not allowed to execute that command. Must be of type <arg:1></red>"
@@ -70,6 +69,8 @@ warning.config.type.float: "<yellow>Issue found in file <arg:0> - Failed to load
 warning.config.type.double: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to double type for option '<arg:3>'.</yellow>"
 warning.config.type.quaternionf: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to Quaternionf type for option '<arg:3>'.</yellow>"
 warning.config.type.vector3f: "<yellow>Issue found in file <arg:0> - Failed to load '<arg:1>': Cannot cast '<arg:2>' to Vector3f type for option '<arg:3>'.</yellow>"
+warning.config.number.missing_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'type' argument for number argument.</yellow>"
+warning.config.number.invalid_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid number argument type '<arg:2>'.</yellow>"
 warning.config.number.missing_argument: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the argument for 'number'.</yellow>"
 warning.config.number.invalid_format: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid number format '<arg:2>'.</yellow>"
 warning.config.number.fixed.missing_value: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'value' argument for 'constant' number.</yellow>"
@@ -223,7 +224,7 @@ warning.config.block.behavior.sapling.missing_stage: "<yellow>Issue found in fil
 warning.config.block.behavior.sapling.missing_feature: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'feature' argument for 'sapling_block' behavior.</yellow>"
 warning.config.block.behavior.strippable.missing_stripped: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'stripped' argument for 'strippable_block' behavior.</yellow>"
 warning.config.block.event.condition.missing_type: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'type' argument for event condition.</yellow>"
-warning.config.block.event.condition.invalid_type: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is using an invalid 'type' argument for event condition.</yellow>"
+warning.config.block.event.condition.invalid_type: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is using an invalid 'type' argument '<arg:2>' for event condition.</yellow>"
 warning.config.model.generation.missing_parent: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'parent' argument in 'generation' section.</yellow>"
 warning.config.model.generation.conflict: "<yellow>Issue found in file <arg:0> - Failed to generate model for '<arg:1>' as two or more configurations attempt to generate different json models with the same path: '<arg:2>'.</yellow>"
 warning.config.model.generation.texture.invalid: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' has a texture '<arg:2>' with path '<arg:3>' that contains illegal characters. Please read https://minecraft.wiki/w/Resource_location#Legal_characters.</yellow>"
@@ -249,8 +250,6 @@ warning.config.loot_table.entry.exp.missing_count: "<yellow>Issue found in file 
 warning.config.loot_table.entry.item.missing_item: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, entry 'item' is missing the required 'item' argument.</yellow>"
 warning.config.loot_table.condition.missing_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the conditions is missing the required 'type' argument.</yellow>"
 warning.config.loot_table.condition.invalid_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the conditions is using an invalid condition type '<arg:2>'.</yellow>"
-warning.config.loot_table.number.missing_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the numbers is missing the required 'type' argument.</yellow>"
-warning.config.loot_table.number.invalid_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the numbers is using an invalid number type '<arg:2>'.</yellow>"
 warning.config.host.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'type' argument for host.</yellow>"
 warning.config.host.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Host type '<arg:0>' is invalid. Please read https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host.</yellow>"
 warning.config.host.external.missing_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'url' argument for external host.</yellow>"

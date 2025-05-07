@@ -49,7 +49,7 @@ public abstract class CEWorld {
             for (Map.Entry<Long, CEChunk> entry : this.loadedChunkMap.entrySet()) {
                 CEChunk chunk = entry.getValue();
                 if (chunk.dirty()) {
-                    worldDataStorage.writeChunkAt(new ChunkPos(entry.getKey()), chunk, true);
+                    worldDataStorage.writeChunkAt(new ChunkPos(entry.getKey()), chunk);
                     chunk.setDirty(false);
                 }
             }

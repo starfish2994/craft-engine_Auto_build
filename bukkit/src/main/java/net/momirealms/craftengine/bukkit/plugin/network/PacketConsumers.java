@@ -59,6 +59,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -1484,7 +1485,7 @@ public class PacketConsumers {
         if (state == null) return;
         Key itemId = state.settings().itemId();
         if (itemId == null) return;
-        pickItem(player, itemId);
+        pickItem(player, itemId, pos, null);
     }
 
     // 1.21.4+
@@ -1523,18 +1524,24 @@ public class PacketConsumers {
     private static void handlePickItemFromEntityOnMainThread(Player player, LoadedFurniture furniture) throws Exception {
         Key itemId = furniture.config().settings().itemId();
         if (itemId == null) return;
-        pickItem(player, itemId);
+        pickItem(player, itemId, null, FastNMS.INSTANCE.method$CraftEntity$getHandle(furniture.baseEntity()));
     }
 
-    private static void pickItem(Player player, Key itemId) throws IllegalAccessException, InvocationTargetException {
+    private static void pickItem(Player player, Key itemId, @Nullable Object blockPos, @Nullable Object entity) throws IllegalAccessException, InvocationTargetException {
         ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, BukkitCraftEngine.instance().adapt(player));
         if (itemStack == null) {
             CraftEngine.instance().logger().warn("Item: " + itemId + " is not a valid item");
             return;
         }
         assert Reflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
-        Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
+        if (VersionHelper.isOrAbove1_21_5()) {
+            Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
+                    Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)),
+                    FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack), blockPos, entity, true);
+        } else {
+            Reflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
+                    Reflections.field$ServerPlayer$connection.get(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
+        }
     }
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {

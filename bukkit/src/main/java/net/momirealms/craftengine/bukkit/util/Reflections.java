@@ -4967,10 +4967,10 @@ public class Reflections {
 
     public static final Method method$BonemealableBlock$isValidBonemealTarget = requireNonNull(
             VersionHelper.isOrAbove1_20_2() ?
-                    ReflectionUtils.getMethod(
+                    ReflectionUtils.getInstanceMethod(
                             clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState
                     ) :
-                    ReflectionUtils.getMethod(
+                    ReflectionUtils.getInstanceMethod(
                             clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState, boolean.class
                     )
     );
@@ -5034,6 +5034,10 @@ public class Reflections {
     );
 
     public static final Method method$ServerGamePacketListenerImpl$tryPickItem =
+            VersionHelper.isOrAbove1_21_5() ?
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack, clazz$BlockPos, clazz$Entity, boolean.class
+            ) :
             ReflectionUtils.getDeclaredMethod(
                     clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack
             );
