@@ -4,6 +4,10 @@ import net.momirealms.craftengine.core.world.SectionPos;
 
 public interface InjectedHolder {
 
+    boolean isActive();
+
+    void setActive(boolean active);
+
     CESection ceSection();
 
     void ceSection(CESection section);
@@ -22,5 +26,7 @@ public interface InjectedHolder {
     interface Palette extends InjectedHolder {
 
         Object target();
+
+        void setTarget(Object target);
     }
 }

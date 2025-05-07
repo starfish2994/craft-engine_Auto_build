@@ -196,7 +196,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         try {
             for (CEChunk ceChunk : this.chunksToSave) {
                 CraftEngine.instance().debug(() -> "Saving chunk " + ceChunk.chunkPos());
-                this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk, true);
+                this.ceWorld.worldDataStorage().writeChunkAt(ceChunk.chunkPos(), ceChunk);
             }
             this.chunksToSave.clear();
         } catch (IOException e) {

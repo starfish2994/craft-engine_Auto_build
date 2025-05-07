@@ -68,4 +68,17 @@ public class ChunkPos {
     public static long asLong(int chunkX, int chunkZ) {
         return (long) chunkX & 4294967295L | ((long) chunkZ & 4294967295L) << 32;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof ChunkPos chunkPos)) return false;
+        return x == chunkPos.x && z == chunkPos.z;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = x;
+        result = 31 * result + z;
+        return result;
+    }
 }

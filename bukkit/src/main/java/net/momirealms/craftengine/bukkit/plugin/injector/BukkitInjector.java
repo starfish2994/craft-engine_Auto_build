@@ -17,6 +17,7 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;
 import net.bytebuddy.implementation.bind.annotation.This;
+import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import net.bytebuddy.implementation.bytecode.assign.TypeCasting;
 import net.bytebuddy.implementation.bytecode.member.FieldAccess;
 import net.bytebuddy.implementation.bytecode.member.MethodReturn;
@@ -77,6 +78,7 @@ public class BukkitInjector {
 
     private static Class<?> clazz$InjectedPalettedContainer;
     private static Class<?> clazz$InjectedLevelChunkSection;
+    private static MethodHandle constructor$InjectedLevelChunkSection;
 
     private static VarHandle varHandle$InjectedPalettedContainer$target;
 
@@ -104,6 +106,7 @@ public class BukkitInjector {
                     .name("net.minecraft.world.level.chunk.InjectedPalettedContainer")
                     .implement(InjectedHolder.Palette.class)
                     .defineField("target", Reflections.clazz$PalettedContainer, Visibility.PUBLIC)
+                    .defineField("active", boolean.class, Visibility.PUBLIC)
                     .defineField("cesection", CESection.class, Visibility.PRIVATE)
                     .defineField("cechunk", CEChunk.class, Visibility.PRIVATE)
                     .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
@@ -116,6 +119,10 @@ public class BukkitInjector {
                     .intercept(MethodDelegation.to(GetAndSetInterceptor.INSTANCE))
                     .method(ElementMatchers.named("target"))
                     .intercept(FieldAccessor.ofField("target"))
+                    .method(ElementMatchers.named("setTarget"))
+                    .intercept(FieldAccessor.ofField("target").withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC))
+                    .method(ElementMatchers.named("isActive").or(ElementMatchers.named("setActive")))
+                    .intercept(FieldAccessor.ofField("active"))
                     .method(ElementMatchers.named("ceSection"))
                     .intercept(FieldAccessor.ofField("cesection"))
                     .method(ElementMatchers.named("ceChunk"))
@@ -125,13 +132,14 @@ public class BukkitInjector {
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
-            varHandle$InjectedPalettedContainer$target = Objects.requireNonNull(ReflectionUtils.findVarHandle(clazz$InjectedPalettedContainer, "target", Reflections.clazz$PalettedContainer));
+            //varHandle$InjectedPalettedContainer$target = Objects.requireNonNull(ReflectionUtils.findVarHandle(clazz$InjectedPalettedContainer, "target", Reflections.clazz$PalettedContainer));
 
             // Level Chunk Section
             clazz$InjectedLevelChunkSection = byteBuddy
-                    .subclass(Reflections.clazz$LevelChunkSection)
+                    .subclass(Reflections.clazz$LevelChunkSection, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .name("net.minecraft.world.level.chunk.InjectedLevelChunkSection")
                     .implement(InjectedHolder.Section.class)
+                    .defineField("active", boolean.class, Visibility.PUBLIC)
                     .defineField("cesection", CESection.class, Visibility.PRIVATE)
                     .defineField("cechunk", CEChunk.class, Visibility.PRIVATE)
                     .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
@@ -143,9 +151,15 @@ public class BukkitInjector {
                     .intercept(FieldAccessor.ofField("cechunk"))
                     .method(ElementMatchers.named("cePos"))
                     .intercept(FieldAccessor.ofField("cepos"))
+                    .method(ElementMatchers.named("isActive").or(ElementMatchers.named("setActive")))
+                    .intercept(FieldAccessor.ofField("active"))
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
+
+            constructor$InjectedLevelChunkSection = MethodHandles.publicLookup().in(clazz$InjectedLevelChunkSection)
+                    .findConstructor(clazz$InjectedLevelChunkSection, MethodType.methodType(void.class, Reflections.clazz$PalettedContainer, Reflections.clazz$PalettedContainer))
+                    .asType(MethodType.methodType(Reflections.clazz$LevelChunkSection, Reflections.clazz$PalettedContainer, Reflections.clazz$PalettedContainer));
 
             // State Predicate
             DynamicType.Unloaded<?> alwaysTrue = byteBuddy
@@ -408,32 +422,50 @@ public class BukkitInjector {
         try {
             if (Config.injectionTarget()) {
                 Object container = FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection);
-                if (!(container instanceof InjectedHolder.Palette)) {
+                if (!(container instanceof InjectedHolder.Palette holder)) {
                     InjectedHolder.Palette injectedObject;
                     if (Config.fastInjection()) {
                         injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
                     } else {
                         injectedObject = (InjectedHolder.Palette) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
-                        varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
+                        injectedObject.setTarget(container);
+                        //varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
                     }
                     injectedObject.ceChunk(chunk);
                     injectedObject.ceSection(ceSection);
                     injectedObject.cePos(pos);
+                    injectedObject.setActive(true);
                     Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
                     Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
+                } else {
+                    holder.ceChunk(chunk);
+                    holder.ceSection(ceSection);
+                    holder.cePos(pos);
+                    holder.setActive(true);
                 }
             } else {
-                InjectedHolder.Section injectedObject;
-                if (true) {
-                    injectedObject = FastNMS.INSTANCE.createInjectedLevelChunkSectionHolder(targetSection);
+                if (!(targetSection instanceof InjectedHolder.Section holder)) {
+                    InjectedHolder.Section injectedObject;
+                    if (Config.fastInjection()) {
+                        injectedObject = FastNMS.INSTANCE.createInjectedLevelChunkSectionHolder(targetSection);
+                    } else {
+                        injectedObject = (InjectedHolder.Section) constructor$InjectedLevelChunkSection.invoke(
+                                FastNMS.INSTANCE.field$LevelChunkSection$states(targetSection), FastNMS.INSTANCE.field$LevelChunkSection$biomes(targetSection));
+                    }
+                    injectedObject.ceChunk(chunk);
+                    injectedObject.ceSection(ceSection);
+                    injectedObject.cePos(pos);
+                    injectedObject.setActive(true);
+                    callback.accept(injectedObject);
+                } else {
+                    holder.ceChunk(chunk);
+                    holder.ceSection(ceSection);
+                    holder.cePos(pos);
+                    holder.setActive(true);
                 }
-                injectedObject.ceChunk(chunk);
-                injectedObject.ceSection(ceSection);
-                injectedObject.cePos(pos);
-                callback.accept(injectedObject);
             }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().severe("Failed to inject chunk section " + pos, e);
         }
     }
 
@@ -450,15 +482,17 @@ public class BukkitInjector {
         if (Config.injectionTarget()) {
             Object states = FastNMS.INSTANCE.field$LevelChunkSection$states(section);
             if (states instanceof InjectedHolder.Palette holder) {
-                try {
-                    Reflections.field$LevelChunkSection$states.set(section, holder.target());
-                } catch (ReflectiveOperationException e) {
-                    CraftEngine.instance().logger().severe("Failed to uninject palette", e);
-                }
+                holder.setActive(false);
+//                try {
+//                    Reflections.field$LevelChunkSection$states.set(section, holder.target());
+//                } catch (ReflectiveOperationException e) {
+//                    CraftEngine.instance().logger().severe("Failed to uninject palette", e);
+//                }
             }
         } else {
             if (section instanceof InjectedHolder.Section holder) {
-                return FastNMS.INSTANCE.constructor$LevelChunkSection(holder);
+                holder.setActive(false);
+                //return FastNMS.INSTANCE.constructor$LevelChunkSection(holder);
             }
         }
         return section;
@@ -730,7 +764,9 @@ public class BukkitInjector {
             int z = (int) args[2];
             Object newState = args[3];
             Object previousState = superMethod.call();
-            compareAndUpdateBlockState(x, y, z, newState, previousState, holder);
+            if (holder.isActive()) {
+                compareAndUpdateBlockState(x, y, z, newState, previousState, holder);
+            }
             return previousState;
         }
     }
@@ -747,7 +783,9 @@ public class BukkitInjector {
             int z = (int) args[2];
             Object newState = args[3];
             Object previousState = FastNMS.INSTANCE.method$PalettedContainer$getAndSet(targetStates, x, y, z, newState);
-            compareAndUpdateBlockState(x, y, z, newState, previousState, holder);
+            if (holder.isActive()) {
+                compareAndUpdateBlockState(x, y, z, newState, previousState, holder);
+            }
             return previousState;
         }
     }

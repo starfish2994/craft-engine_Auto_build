@@ -345,8 +345,9 @@ light-system:
   force-update-light: false
 
 chunk-system:
-  # Unloaded chunks may be loaded soon. Delaying serialization can improve performance, especially for those double-dimension mob farms.
-  delay-serialization: 20 # seconds    -1 = disable
+  # With cache system, those frequently load/unload chunks would consume fewer resources on serialization
+  # Enabling this option will increase memory consumption to a certain extent
+  cache-system: true
   # 1 = NONE      |  Compression Speed | Decompress Speed | Compression Ratio | Memory Usage   |
   # 2 = DEFLATE   |     Medium-Slow           Medium          Moderate              Low        |
   # 3 = GZIP      |     Medium-Slow           Medium          Moderate              Low        |
