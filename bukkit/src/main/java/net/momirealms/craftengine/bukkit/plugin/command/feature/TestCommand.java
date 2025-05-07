@@ -1,8 +1,11 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
+import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
@@ -14,12 +17,12 @@ import org.incendo.cloud.Command;
 import org.incendo.cloud.bukkit.parser.NamespacedKeyParser;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
-import org.incendo.cloud.parser.standard.ByteParser;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.suggestion.SuggestionProvider;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class TestCommand extends BukkitCommandFeature<CommandSender> {
@@ -29,6 +32,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Command.Builder<? extends CommandSender> assembleCommand(org.incendo.cloud.CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
@@ -41,22 +45,37 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .required("interpolationDelay", IntegerParser.integerParser())
                 .required("transformationInterpolationDuration", IntegerParser.integerParser())
                 .required("positionRotationInterpolationDuration", IntegerParser.integerParser())
-                .required("displayType", ByteParser.byteParser())
+                // .required("displayType", ByteParser.byteParser())
+                // .required("x", FloatParser.floatParser())
+                // .required("y", FloatParser.floatParser())
+                // .required("z", FloatParser.floatParser())
+                // .required("w", FloatParser.floatParser())
                 .handler(context -> {
                     Player player = context.sender();
                     NamespacedKey namespacedKey = context.get("id");
-                    var item = ItemStack.of(Material.TRIDENT);
+                    ItemStack item = new ItemStack(Material.TRIDENT);
                     NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
                     NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
                     NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
                     NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
-                    NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
-                    item.editPersistentDataContainer(container -> {
-                        container.set(customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
-                        container.set(interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
-                        container.set(transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
-                        container.set(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
-                        container.set(displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
+                    // NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
+                    // NamespacedKey customTridentX = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_x"));
+                    // NamespacedKey customTridentY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_y"));
+                    // NamespacedKey customTridentZ = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_z"));
+                    // NamespacedKey customTridentW = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_w"));
+                    item.editMeta(meta -> {
+                        meta.getPersistentDataContainer().set(customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
+                        meta.getPersistentDataContainer().set(interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
+                        meta.getPersistentDataContainer().set(transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
+                        meta.getPersistentDataContainer().set(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
+                        // container.set(displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
+                        // container.set(customTridentX, PersistentDataType.FLOAT, context.get("x"));
+                        // container.set(customTridentY, PersistentDataType.FLOAT, context.get("y"));
+                        // container.set(customTridentZ, PersistentDataType.FLOAT, context.get("z"));
+                        // container.set(customTridentW, PersistentDataType.FLOAT, context.get("w"));
+                        Item<ItemStack> ceItem = BukkitItemManager.instance().createWrappedItem(Key.of(namespacedKey.asString()), null);
+                        Optional<Integer> customModelData = ceItem.customModelData();
+                        customModelData.ifPresent(meta::setCustomModelData);
                     });
                     player.getInventory().addItem(item);
                 });

@@ -184,4 +184,17 @@ public class MCUtils {
         }
         return next;
     }
+
+    public static int floor(float value) {
+        int i = (int) value;
+        return value < (float)i ? i - 1 : i;
+    }
+
+    public static byte packDegrees(float degrees) {
+        return (byte)floor(degrees * 256.0F / 360.0F);
+    }
+
+    public static float unpackDegrees(byte degrees) {
+        return (float)(degrees * 360) / 256.0F;
+    }
 }

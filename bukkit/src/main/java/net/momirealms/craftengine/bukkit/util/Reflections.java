@@ -3984,7 +3984,7 @@ public class Reflections {
             )
     );
 
-    // 1.21.3+
+    // 1.21.2+
     public static final Class<?> clazz$ClientboundEntityPositionSyncPacket =
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundEntityPositionSyncPacket")
@@ -6635,14 +6635,66 @@ public class Reflections {
                     BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation")
             );
 
+    public static final Constructor<?> constructor$PositionMoveRotation = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getTheOnlyConstructor(it))
+            .orElse(null);
+
     public static final Field field$ClientboundEntityPositionSyncPacket$values = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
             .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$PositionMoveRotation, 0))
+            .orElse(null);
+
+    public static final Field field$ClientboundEntityPositionSyncPacket$onGround = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, boolean.class, 0))
+            .orElse(null);
+
+    public static final Field field$PositionMoveRotation$position = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$Vec3, 0))
+            .orElse(null);
+
+    public static final Field field$PositionMoveRotation$deltaMovement = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, clazz$Vec3, 1))
+            .orElse(null);
+
+    public static final Field field$PositionMoveRotation$yRot = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, float.class, 0))
+            .orElse(null);
+
+    public static final Field field$PositionMoveRotation$xRot = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getInstanceDeclaredField(it, float.class, 1))
             .orElse(null);
 
     public static final Class<?> clazz$ClientboundTeleportEntityPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayOutEntityTeleport",
                     "network.protocol.game.ClientboundTeleportEntityPacket"
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundEntityPositionSyncPacket = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
+            .map(it -> ReflectionUtils.getTheOnlyConstructor(it))
+            .orElse(null);
+
+    public static final Field field$ClientboundAddEntityPacket$xRot = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundAddEntityPacket, byte.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundAddEntityPacket$yRot = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundAddEntityPacket, byte.class, 1
+            )
+    );
+
+    public static final Field field$ClientboundMoveEntityPacket$xRot = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundMoveEntityPacket, byte.class, 1
+            )
+    );
+
+    public static final Field field$ClientboundMoveEntityPacket$yRot = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundMoveEntityPacket, byte.class, 0
             )
     );
     //

@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.papermc.paper.persistence.PersistentDataContainerView;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
@@ -56,10 +55,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -1616,23 +1618,28 @@ public class PacketConsumers {
                 int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 Player player = (Player) user.platformPlayer();
                 Trident trident = (Trident) FastNMS.INSTANCE.getBukkitEntityById(player.getWorld(), entityId);
-                PersistentDataContainerView container = trident.getItemStack().getPersistentDataContainer();
+                PersistentDataContainer container = trident.getItemStack().getItemMeta().getPersistentDataContainer();
                 NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
+                String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
+                if (customTrident == null) return;
+                user.tridentView().put(entityId, List.of());
                 NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
                 NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
                 NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
-                NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
-                String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
                 Integer interpolationDelay = container.get(interpolationDelayKey, PersistentDataType.INTEGER);
                 Integer transformationInterpolationDuration = container.get(transformationInterpolationDurationaKey, PersistentDataType.INTEGER);
                 Integer positionRotationInterpolationDuration = container.get(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER);
-                Byte displayType = container.get(displayTypeKey, PersistentDataType.BYTE);
-                if (customTrident == null) return;
+                float yRot = MCUtils.unpackDegrees(Reflections.field$ClientboundAddEntityPacket$yRot.getByte(packet));
+                float xRot = MCUtils.unpackDegrees(Reflections.field$ClientboundAddEntityPacket$xRot.getByte(packet));
+                player.sendMessage("加载自定义三叉戟实体1: " + packet);
                 Reflections.field$ClientboundAddEntityPacket$type.set(packet, Reflections.instance$EntityType$ITEM_DISPLAY);
-                // System.out.println(packet);
+                Reflections.field$ClientboundAddEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
+                Reflections.field$ClientboundAddEntityPacket$xRot.setByte(packet, MCUtils.packDegrees(Math.clamp(-xRot, -90.0F, 90.0F)));
                 List<Object> itemDisplayValues = new ArrayList<>();
                 Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
                 ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(interpolationDelay, itemDisplayValues);
+                ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(new Vector3f(0, 0, -2), itemDisplayValues);
+                ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(new Quaternionf(1, 1, 1, 1), itemDisplayValues);
                 if (VersionHelper.isOrAbove1_20_2()) {
                     ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
                     ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(positionRotationInterpolationDuration, itemDisplayValues);
@@ -1640,10 +1647,12 @@ public class PacketConsumers {
                     ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
                 }
                 ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), itemDisplayValues);
-                ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(displayType, itemDisplayValues);
+                ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue((byte) 0, itemDisplayValues);
                 user.tridentView().put(entityId, itemDisplayValues);
+                player.sendMessage("加载自定义三叉戟实体2: " + entityId);
                 event.addDelayedTask(() -> {
                     user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
+                    player.sendMessage("加载自定义三叉戟实体3: " + itemDisplayValues);
                 });
             }
         } catch (Exception e) {
@@ -1651,14 +1660,22 @@ public class PacketConsumers {
         }
     };
 
-    // 1.21.3+
+    // 1.21.2+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
             if (user.tridentView().containsKey(entityId)) {
-                if (!VersionHelper.isOrAbove1_21_3()) return;
-                Object values = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
-                // Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("Sync entity position: " + values));
+                Player player = (Player) user.platformPlayer();
+                player.sendMessage("同步三叉戟实体位置: " + packet);
+                Object positionMoveRotation = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
+                boolean onGround = Reflections.field$ClientboundEntityPositionSyncPacket$onGround.getBoolean(packet);
+                Object position = Reflections.field$PositionMoveRotation$position.get(positionMoveRotation);
+                Object deltaMovement = Reflections.field$PositionMoveRotation$deltaMovement.get(positionMoveRotation);
+                float yRot = Reflections.field$PositionMoveRotation$yRot.getFloat(positionMoveRotation);
+                float xRot = Reflections.field$PositionMoveRotation$xRot.getFloat(positionMoveRotation);
+                Object newPositionMoveRotation = Reflections.constructor$PositionMoveRotation.newInstance(position, deltaMovement, -yRot, Math.clamp(-xRot, -90.0F, 90.0F));
+                event.replacePacket(Reflections.constructor$ClientboundEntityPositionSyncPacket.newInstance(entityId, newPositionMoveRotation, onGround));
+                return;
             }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
@@ -1688,7 +1705,11 @@ public class PacketConsumers {
                 int entityId = intList.getInt(i);
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
-                user.tridentView().remove(entityId);
+                var removeTrident = user.tridentView().remove(entityId);
+                if (removeTrident != null && !removeTrident.isEmpty()) {
+                    Player player = (Player) user.platformPlayer();
+                    player.sendMessage("移除三叉戟实体: " + removeTrident);
+                }
                 if (entities == null) continue;
                 for (int subEntityId : entities) {
                     isChange = true;
@@ -2367,10 +2388,29 @@ public class PacketConsumers {
         try {
             int entityId = Reflections.field$clazz$ClientboundSetEntityDataPacket$id.getInt(packet);
             if (user.tridentView().containsKey(entityId)) {
-                event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, user.tridentView().get(entityId)));
+                Player player = (Player) user.platformPlayer();
+                Object newPacket = FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, user.tridentView().get(entityId));
+                player.sendMessage("设置三叉戟实体数据: " + newPacket);
+                event.replacePacket(newPacket);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY_ALL = (user, event, packet) -> {
+        try {
+            int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+            if (user.tridentView().containsKey(entityId)) {
+                float xRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$xRot.getByte(packet));
+                float yRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$yRot.getByte(packet));
+                Reflections.field$ClientboundMoveEntityPacket$xRot.setByte(packet, MCUtils.packDegrees(Math.clamp(-xRot, -90.0F, 90.0F)));
+                Reflections.field$ClientboundMoveEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
+                Player player = (Player) user.platformPlayer();
+                player.sendMessage("同步三叉戟实体位置: " + Math.clamp(-xRot, -90.0F, 90.0F) + ", " + -yRot);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
     };
 }
