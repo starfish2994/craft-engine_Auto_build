@@ -1,6 +1,6 @@
 # Don't change this
 lang-version: "${lang_version}"
-# Commands
+
 exception.invalid_syntax: "<red>Geçersiz sözdizimi. Doğru kullanım: <white><arg:0></white></red>"
 exception.invalid_argument: "<red>Geçersiz argüman. Neden: <white><arg:0></white></red>"
 exception.invalid_sender: "<red><arg:0> bu komutu çalıştırmaya yetkili değil. <arg:1> türünde olmalı</red>"
@@ -226,10 +226,6 @@ warning.config.loot_table.entry.exp.missing_count: "<yellow><arg:0> dosyasında 
 warning.config.loot_table.entry.item.missing_item: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, 'item' girişi için gerekli 'item' argümanı eksik.</yellow>"
 warning.config.loot_table.condition.missing_type: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, koşullardan biri için gerekli 'type' argümanı eksik.</yellow>"
 warning.config.loot_table.condition.invalid_type: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, koşullardan biri geçersiz bir koşul türü '<arg:2>' kullanıyor.</yellow>"
-warning.config.loot_table.condition.table_bonus.missing_enchantment: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, 'table_bonus' koşulu için gerekli 'enchantment' argümanı eksik.</yellow>"
-warning.config.loot_table.condition.table_bonus.missing_chances: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, 'table_bonus' koşulu için gerekli 'chances' argümanı eksik.</yellow>"
-warning.config.loot_table.number.missing_type: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, sayılardan biri için gerekli 'type' argümanı eksik.</yellow>"
-warning.config.loot_table.number.invalid_type: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>', yanlış yapılandırılmış bir ganimet tablosuna sahip, sayılardan biri geçersiz bir sayı türü '<arg:2>' kullanıyor.</yellow>"
 warning.config.host.missing_type: "<yellow>config.yml dosyasında 'resource-pack.delivery.hosting' bölümünde sorun bulundu - Host için gerekli 'type' argümanı eksik.</yellow>"
 warning.config.host.invalid_type: "<yellow>config.yml dosyasında 'resource-pack.delivery.hosting' bölümünde sorun bulundu - Host türü '<arg:0>' geçersiz. Lütfen https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host sayfasını okuyun.</yellow>"
 warning.config.host.external.missing_url: "<yellow>config.yml dosyasında 'resource-pack.delivery.hosting' bölümünde sorun bulundu - Harici host için gerekli 'url' argümanı eksik.</yellow>"
