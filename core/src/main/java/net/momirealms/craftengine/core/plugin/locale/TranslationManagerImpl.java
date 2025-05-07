@@ -93,7 +93,7 @@ public class TranslationManagerImpl implements TranslationManager {
             this.plugin.saveResource("translations/" + lang + ".yml");
         }
 
-        this.registry = MiniMessageTranslationRegistry.create(Key.key("craftengine", "main"), AdventureHelper.miniMessage());
+        this.registry = MiniMessageTranslationRegistry.create(Key.key(net.momirealms.craftengine.core.util.Key.DEFAULT_NAMESPACE, "main"), AdventureHelper.miniMessage());
         this.registry.defaultLocale(DEFAULT_LOCALE);
         this.loadFromFileSystem(this.translationsDirectory, false);
         MiniMessageTranslator.translator().addSource(this.registry);

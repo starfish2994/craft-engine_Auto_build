@@ -266,23 +266,24 @@ public class BukkitWorldManager implements WorldManager, Listener {
         if (ceChunk != null) {
             if (ceChunk.dirty()) {
                 try {
-                    world.worldDataStorage().writeChunkAt(pos, ceChunk, false);
+                    this.plugin.debug(() -> "[Dirty Chunk]" + pos + " unloaded");
+                    world.worldDataStorage().writeChunkAt(pos, ceChunk);
                     ceChunk.setDirty(false);
                 } catch (IOException e) {
                     this.plugin.logger().warn("Failed to write chunk tag at " + chunk.getX() + " " + chunk.getZ(), e);
                 }
             }
-            if (Config.restoreVanillaBlocks()) {
-                boolean unsaved = false;
-                CESection[] ceSections = ceChunk.sections();
-                Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
-                Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
-                Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, chunk.getX(), chunk.getZ());
-                Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
-                for (int i = 0; i < ceSections.length; i++) {
-                    CESection ceSection = ceSections[i];
-                    Object section = sections[i];
-                    BukkitInjector.uninjectLevelChunkSection(section);
+            boolean unsaved = false;
+            CESection[] ceSections = ceChunk.sections();
+            Object worldServer = FastNMS.INSTANCE.field$CraftChunk$worldServer(chunk);
+            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
+            Object levelChunk = FastNMS.INSTANCE.method$ServerChunkCache$getChunkAtIfLoadedMainThread(chunkSource, chunk.getX(), chunk.getZ());
+            Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
+            for (int i = 0; i < ceSections.length; i++) {
+                CESection ceSection = ceSections[i];
+                Object section = sections[i];
+                BukkitInjector.uninjectLevelChunkSection(section);
+                if (Config.restoreVanillaBlocks()) {
                     if (!ceSection.statesContainer().isEmpty()) {
                         for (int x = 0; x < 16; x++) {
                             for (int z = 0; z < 16; z++) {
@@ -297,9 +298,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
                         }
                     }
                 }
-                if (unsaved && !FastNMS.INSTANCE.method$LevelChunk$isUnsaved(levelChunk)) {
-                    FastNMS.INSTANCE.method$LevelChunk$markUnsaved(levelChunk);
-                }
+            }
+            if (unsaved && !FastNMS.INSTANCE.method$LevelChunk$isUnsaved(levelChunk)) {
+                FastNMS.INSTANCE.method$LevelChunk$markUnsaved(levelChunk);
             }
             ceChunk.unload();
         }
@@ -383,7 +384,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
                             }
                         }
                     }
-                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceWorld, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z));
+                    int finalI = i;
+                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
+                            (injected) -> sections[finalI] = injected);
                 }
                 if (Config.enableRecipeSystem()) {
                     @SuppressWarnings("unchecked")
