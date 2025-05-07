@@ -4962,10 +4962,10 @@ public class Reflections {
 
     public static final Method method$BonemealableBlock$isValidBonemealTarget = requireNonNull(
             VersionHelper.isOrAbove1_20_2() ?
-                    ReflectionUtils.getMethod(
+                    ReflectionUtils.getInstanceMethod(
                             clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState
                     ) :
-                    ReflectionUtils.getMethod(
+                    ReflectionUtils.getInstanceMethod(
                             clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState, boolean.class
                     )
     );
