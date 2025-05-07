@@ -10,14 +10,14 @@ import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-public class CachedDefaultRegionFileStorage extends DefaultRegionFileStorage {
+public class CachedStorage<T extends WorldDataStorage> implements WorldDataStorage {
+    private final T storage;
     private final Cache<ChunkPos, CEChunk> chunkCache;
 
-    public CachedDefaultRegionFileStorage(Path directory) {
-        super(directory);
+    public CachedStorage(T storage) {
+        this.storage = storage;
         this.chunkCache = Caffeine.newBuilder()
                 .executor(CraftEngine.instance().scheduler().async())
                 .scheduler(Scheduler.systemScheduler())
@@ -31,13 +31,23 @@ public class CachedDefaultRegionFileStorage extends DefaultRegionFileStorage {
         if (chunk != null) {
             return chunk;
         }
-        chunk = super.readChunkAt(world, pos);
+        chunk = this.storage.readChunkAt(world, pos);
         this.chunkCache.put(pos, chunk);
         return chunk;
     }
 
     @Override
-    public synchronized void close() throws IOException {
-        super.close();
+    public void writeChunkAt(@NotNull ChunkPos pos, @NotNull CEChunk chunk) throws IOException {
+        this.storage.writeChunkAt(pos, chunk);
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.storage.close();
+    }
+
+    @Override
+    public void flush() throws IOException {
+        this.storage.flush();
     }
 }

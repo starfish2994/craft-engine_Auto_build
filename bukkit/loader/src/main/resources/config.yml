@@ -357,11 +357,11 @@ chunk-system:
   # Settings for injection
   injection:
     # Requires a restart to apply
-    # SECTION: Inject the LevelChunkSection (Faster, but may conflict with some plugins)
+    # SECTION: Inject the LevelChunkSection (Faster & Experimental) since 0.0.53
     # PALETTE: Inject the PalettedContainer
     target: PALETTE
     # Enables faster injection method
-    # Note: May not work with certain server forks that alter chunk saving behavior
+    # Note: May not work with certain server forks that alter chunk class structure (In most cases it won't conflict)
     use-fast-method: false
   # Auto-convert custom blocks -> vanilla blocks when unloading chunks
   #
