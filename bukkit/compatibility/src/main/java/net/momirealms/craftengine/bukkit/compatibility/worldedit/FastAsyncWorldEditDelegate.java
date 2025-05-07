@@ -31,6 +31,7 @@ import net.momirealms.craftengine.core.world.SectionPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.CESection;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -143,7 +144,8 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     }
 
     @Override
-    protected Operation commitBefore() {
+    public @Nullable Operation commit() {
+        Operation operation = super.commit();
         saveAllChunks();
         List<ChunkPos> chunks = new ArrayList<>(this.brokenChunks);
         this.brokenChunks.clear();
@@ -155,7 +157,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
             if (loaded == null) continue;
             injectLevelChunk(chunkSource, loaded);
         }
-        return super.commitBefore();
+        return operation;
     }
 
     private void processBlocks(Iterable<BlockVector3> region, Pattern pattern) {
