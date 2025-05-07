@@ -5029,6 +5029,10 @@ public class Reflections {
     );
 
     public static final Method method$ServerGamePacketListenerImpl$tryPickItem =
+            VersionHelper.isOrAbove1_21_5() ?
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack, clazz$BlockPos, clazz$Entity, boolean.class
+            ) :
             ReflectionUtils.getDeclaredMethod(
                     clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack
             );
