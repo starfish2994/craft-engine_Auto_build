@@ -6,7 +6,8 @@ import dev.dejvokep.boostedyaml.block.implementation.Section;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
-import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
+import net.momirealms.craftengine.core.pack.conflict.PathContext;
+import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionConditional;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
@@ -140,6 +142,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
+        initFileSystemProvider();
         List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
         if (list == null || list.isEmpty()) {
             this.resourcePackHost = NoneHost.INSTANCE;
@@ -483,6 +486,36 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
+    private static void initFileSystemProvider() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String providerClass = null;
+        if (osName.contains("win")) {
+            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
+        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
+        } else if (osName.contains("mac")) {
+            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
+        }
+        if (providerClass != null) {
+            try {
+                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private static void deleteDirectory(Path folder) throws IOException {
+        if (!Files.exists(folder)) return;
+        try (Stream<Path> walk = Files.walk(folder)) {
+            walk.sorted(Comparator.reverseOrder())
+                    .parallel()
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException ignored) {}
+                    });
+        }
+    }
+
     @Override
     public void generateResourcePack() {
         this.plugin.logger().info("Generating resource pack...");
@@ -493,7 +526,7 @@ public abstract class AbstractPackManager implements PackManager {
                 .resolve("resource_pack");
 
         try {
-            org.apache.commons.io.FileUtils.deleteDirectory(generatedPackPath.toFile());
+            deleteDirectory(generatedPackPath);
         } catch (IOException e) {
             this.plugin.logger().severe("Error deleting previous resource pack", e);
         }
@@ -1155,9 +1188,12 @@ public abstract class AbstractPackManager implements PackManager {
                             Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
                             conflicts.add(file);
                         } else {
-                            for (ConditionalResolution resolution : Config.resolutions()) {
-                                if (resolution.matcher().test(relative)) {
-                                    resolution.resolution().run(targetPath, file);
+                            PathContext relativeCTX = PathContext.of(relative);
+                            PathContext targetCTX = PathContext.of(targetPath);
+                            PathContext fileCTX = PathContext.of(file);
+                            for (ResolutionConditional resolution : Config.resolutions()) {
+                                if (resolution.matcher().test(relativeCTX)) {
+                                    resolution.resolution().run(targetCTX, fileCTX);
                                     return FileVisitResult.CONTINUE;
                                 }
                             }

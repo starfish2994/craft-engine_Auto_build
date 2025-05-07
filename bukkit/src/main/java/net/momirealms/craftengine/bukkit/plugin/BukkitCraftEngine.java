@@ -75,6 +75,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.classPathAppender = new ReflectionClassPathAppender(this);
         super.scheduler = new BukkitSchedulerAdapter(this);
         super.logger = new JavaPluginLogger(bootstrap.getLogger());
+        super.platform = new BukkitPlatform();
         // find mod class if present
         Class<?> modClass = ReflectionUtils.getClazz(MOD_CLASS);
         if (modClass != null) {

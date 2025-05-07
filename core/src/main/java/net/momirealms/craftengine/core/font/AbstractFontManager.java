@@ -7,11 +7,11 @@ import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.util.context.ContextHolder;
-import net.momirealms.craftengine.core.util.context.PlayerContext;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
 import org.jetbrains.annotations.NotNull;
@@ -121,10 +121,10 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             Component content = AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player, ContextHolder.builder()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                            .build()).tagResolvers()
+                    ).tagResolvers()
             );
             replacements.put(fragment, AdventureHelper.componentToMiniMessage(content));
         }
@@ -167,10 +167,10 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player, ContextHolder.builder()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
                             .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
                             .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                            .build()).tagResolvers())
+                    ).tagResolvers())
             );
             if (emojis.size() >= maxTimes) break;
         }
@@ -199,11 +199,9 @@ public abstract class AbstractFontManager implements FontManager {
                 continue;
             emojis.put(fragment, AdventureHelper.miniMessage().deserialize(
                     emoji.content(),
-                    PlayerContext.of(player,
-                            ContextHolder.builder()
-                                    .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
-                                    .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
-                                    .build()
+                    PlayerOptionalContext.of(player, ContextHolder.builder()
+                            .withOptionalParameter(EmojiParameters.EMOJI, emoji.emojiImage())
+                            .withParameter(EmojiParameters.KEYWORD, emoji.keywords().get(0))
                     ).tagResolvers()
             ));
             if (emojis.size() >= maxTimes) break;
@@ -454,15 +452,32 @@ public abstract class AbstractFontManager implements FontManager {
                         return it.toCharArray();
                     }
                 }).toList();
+                if (chars.isEmpty()) {
+                    throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+                }
             } else {
                 if (charsObj instanceof Integer integer) {
                     chars = List.of(new char[]{(char) integer.intValue()});
                 } else {
                     String character = charsObj.toString();
+                    if (character.isEmpty()) {
+                        throw new LocalizedResourceConfigException("warning.config.image.missing_char", path, id);
+                    }
                     if (character.length() == 1) {
                         chars = List.of(character.toCharArray());
                     } else {
-                        chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                        if (character.startsWith("\\u")) {
+                            chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
+                        } else {
+                            if (CharacterUtils.containsCombinedCharacter(character)) {
+                                TranslationManager.instance().log("warning.config.image.invalid_char", path.toString(), id.toString());
+                            }
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (char c : character.toCharArray()) {
+                                stringBuilder.append(String.format("\\u%04x", (int) c));
+                            }
+                            chars = List.of(CharacterUtils.decodeUnicodeToChars(stringBuilder.toString()));
+                        }
                     }
                 }
             }
