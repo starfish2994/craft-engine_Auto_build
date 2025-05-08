@@ -27,7 +27,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectProperty;
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -164,7 +164,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    public ConfigSectionParser parser() {
+    public ConfigParser parser() {
         return this.itemParser;
     }
 
@@ -224,7 +224,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return wrapped.id();
     }
 
-    public class ItemParser implements ConfigSectionParser {
+    public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
 
         @Override

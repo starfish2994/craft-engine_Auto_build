@@ -11,7 +11,7 @@ import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
@@ -86,11 +86,11 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     }
 
     @Override
-    public ConfigSectionParser parser() {
+    public ConfigParser parser() {
         return this.furnitureParser;
     }
 
-    public class FurnitureParser implements ConfigSectionParser {
+    public class FurnitureParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] { "furniture" };
 
         @Override

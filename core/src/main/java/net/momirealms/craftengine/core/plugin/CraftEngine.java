@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateManager;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateManagerImpl;
+import net.momirealms.craftengine.core.plugin.context.GlobalVariableManager;
 import net.momirealms.craftengine.core.plugin.dependency.Dependencies;
 import net.momirealms.craftengine.core.plugin.dependency.Dependency;
 import net.momirealms.craftengine.core.plugin.dependency.DependencyManager;
@@ -68,6 +69,7 @@ public abstract class CraftEngine implements Plugin {
     protected VanillaLootManager vanillaLootManager;
     protected AdvancementManager advancementManager;
     protected CompatibilityManager compatibilityManager;
+    protected GlobalVariableManager globalVariableManager;
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
@@ -133,6 +135,7 @@ public abstract class CraftEngine implements Plugin {
                 this.translationManager.reload();
                 // clear the outdated cache by reloading the managers
                 this.templateManager.reload();
+                this.globalVariableManager.reload();
                 this.furnitureManager.reload();
                 this.fontManager.reload();
                 this.itemManager.reload();
@@ -198,6 +201,7 @@ public abstract class CraftEngine implements Plugin {
         this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
+        this.globalVariableManager = new GlobalVariableManager();
         this.itemBrowserManager = new ItemBrowserManagerImpl(this);
         this.commandManager.registerDefaultFeatures();
         // delay the reload so other plugins can register some custom parsers
@@ -245,6 +249,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.soundManager != null) this.soundManager.disable();
         if (this.vanillaLootManager != null) this.vanillaLootManager.disable();
         if (this.translationManager != null) this.translationManager.disable();
+        if (this.globalVariableManager != null) this.globalVariableManager.disable();
         if (this.scheduler != null) this.scheduler.shutdownScheduler();
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
@@ -255,6 +260,8 @@ public abstract class CraftEngine implements Plugin {
     protected void registerDefaultParsers() {
         // register template parser
         this.packManager.registerConfigSectionParser(this.templateManager.parser());
+        // register global variables parser
+        this.packManager.registerConfigSectionParser(this.globalVariableManager.parser());
         // register font parser
         this.packManager.registerConfigSectionParsers(this.fontManager.parsers());
         // register item parser
@@ -428,6 +435,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public CompatibilityManager compatibilityManager() {
         return compatibilityManager;
+    }
+
+    @Override
+    public GlobalVariableManager globalVariableManager() {
+        return globalVariableManager;
     }
 
     @Override
