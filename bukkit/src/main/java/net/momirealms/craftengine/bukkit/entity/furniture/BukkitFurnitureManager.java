@@ -124,6 +124,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 AnchorType anchorType = AnchorType.valueOf(entry.getKey().toUpperCase(Locale.ENGLISH));
                 Map<String, Object> placementArguments = MiscUtils.castToMap(entry.getValue(), true);
 
+                Optional<Vector3f> optionalLootSpawnOffset = Optional.ofNullable(placementArguments.get("loot-spawn-offset")).map(it -> MiscUtils.getAsVector3f(it, "loot-spawn-offset"));
+
                 // furniture display elements
                 List<FurnitureElement> elements = new ArrayList<>();
                 List<Map<String, Object>> elementConfigs = (List<Map<String, Object>>) placementArguments.getOrDefault("elements", List.of());
@@ -178,7 +180,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                             hitboxes.toArray(new HitBox[0]),
                             rotationRule,
                             alignmentRule,
-                            externalModel
+                            externalModel,
+                            optionalLootSpawnOffset
                     ));
                 } else {
                     placements.put(anchorType, new CustomFurniture.Placement(
@@ -186,7 +189,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                             hitboxes.toArray(new HitBox[0]),
                             RotationRule.ANY,
                             AlignmentRule.CENTER,
-                            externalModel
+                            externalModel,
+                            optionalLootSpawnOffset
                     ));
                 }
             }
