@@ -1051,7 +1051,7 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE_1_21_3 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_PARTICLE_1_21_4 = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             boolean overrideLimiter = buf.readBoolean();
