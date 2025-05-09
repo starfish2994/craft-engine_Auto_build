@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.desktop.OpenFilesEvent;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;

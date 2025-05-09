@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class SpecialItemModel implements ItemModel {
     public static final Factory FACTORY = new Factory();
@@ -69,7 +68,7 @@ public class SpecialItemModel implements ItemModel {
             Map<String, Object> generation = MiscUtils.castToMap(arguments.get("generation"), true);
             ModelGeneration modelGeneration = null;
             if (generation != null) {
-                modelGeneration = new ModelGeneration(Key.of(base), generation);
+                modelGeneration = ModelGeneration.of(Key.of(base), generation);
             }
             Map<String, Object> model = MiscUtils.castToMap(arguments.get("model"), false);
             return new SpecialItemModel(SpecialModels.fromMap(model), base, modelGeneration);

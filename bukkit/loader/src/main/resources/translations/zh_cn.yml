@@ -228,6 +228,8 @@ warning.config.block.event.condition.missing_type: "<yellow>在文件 <arg:0> - 
 warning.config.block.event.condition.invalid_type: "<yellow>在文件 <arg:0> - 方块 '<arg:1>' 使用了无效的事件条件类型 '<arg:2>'</yellow>"
 warning.config.model.generation.missing_parent: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 的 'generation' 段落缺少必需的 'parent' 参数</yellow>"
 warning.config.model.generation.conflict: "<yellow>在文件 <arg:0> 发现问题 - 无法为 '<arg:1>' 生成模型 存在多个配置尝试使用相同路径 '<arg:2>' 生成不同的 JSON 模型</yellow>"
+warning.config.model.generation.invalid_display_position: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 在 'generation.display' 区域使用了无效的 display 位置类型 '<arg:2>'. 可用展示类型: [<arg:3>]</yellow>"
+warning.config.model.generation.invalid_gui_light: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 在 'generation' 区域使用了无效的GUI光照 '<arg:2>'. 可用GUI光照: [<arg:3>]</yellow>"
 warning.config.model.generation.texture.invalid: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 的纹理 '<arg:2>' 路径 '<arg:3>' 包含非法字符 请参考 https://zh.minecraft.wiki/w/%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4ID#%E5%90%88%E6%B3%95%E5%AD%97%E7%AC%A6</yellow>"
 warning.config.model.generation.parent.invalid: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 的父级参数 '<arg:2>' 包含非法字符 请参考 https://zh.minecraft.wiki/w/%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4ID#%E5%90%88%E6%B3%95%E5%AD%97%E7%AC%A6</yellow>"
 warning.config.emoji.missing_keywords: "<yellow>在文件 <arg:0> 发现问题 - 表情 '<arg:1>' 缺少必需的 'keywords' 参数</yellow>"

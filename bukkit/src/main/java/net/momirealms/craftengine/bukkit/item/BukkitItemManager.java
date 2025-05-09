@@ -463,6 +463,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     baseModel.path(),
                     customModelData
             ));
+        } else if (currentModel instanceof SpecialItemModel specialModel) {
+            resultList.add(new LegacyOverridesModel(
+                    new LinkedHashMap<>(accumulatedPredicates),
+                    specialModel.base(),
+                    customModelData
+            ));
         }
     }
 

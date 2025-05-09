@@ -832,7 +832,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             try (BufferedWriter writer = Files.newBufferedWriter(modelPath)) {
-                GsonHelper.get().toJson(generation.getJson(), writer);
+                GsonHelper.get().toJson(generation.get(), writer);
             } catch (IOException e) {
                 plugin.logger().warn("Failed to generate model: " + modelPath.toAbsolutePath(), e);
             }

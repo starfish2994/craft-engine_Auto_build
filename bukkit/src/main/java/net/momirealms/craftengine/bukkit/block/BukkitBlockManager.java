@@ -537,7 +537,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (singleModelMap.containsKey("weight")) json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
-            prepareModelGeneration(new ModelGeneration(Key.of(modelPath), generationMap));
+            prepareModelGeneration(ModelGeneration.of(Key.of(modelPath), generationMap));
         }
         variants.add(json);
     }
