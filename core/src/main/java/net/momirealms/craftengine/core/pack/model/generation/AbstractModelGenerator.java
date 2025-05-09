@@ -41,8 +41,10 @@ public abstract class AbstractModelGenerator implements ModelGenerator {
         Map<String, String> textures = model.texturesOverride();
         if (textures != null) {
             for (Map.Entry<String, String> texture : textures.entrySet()) {
-                if (!ResourceLocation.isValid(texture.getValue())) {
-                    throw new LocalizedResourceConfigException("warning.config.model.generation.texture.invalid", texture.getKey(), texture.getValue());
+                if (texture.getValue().charAt(0) != '#') {
+                    if (!ResourceLocation.isValid(texture.getValue())) {
+                        throw new LocalizedResourceConfigException("warning.config.model.generation.texture.invalid", texture.getKey(), texture.getValue());
+                    }
                 }
             }
         }
