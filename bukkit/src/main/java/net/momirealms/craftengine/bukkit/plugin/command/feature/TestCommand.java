@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
+import net.momirealms.craftengine.bukkit.util.CustomTridentUtils;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
@@ -54,20 +55,16 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     Player player = context.sender();
                     NamespacedKey namespacedKey = context.get("id");
                     ItemStack item = new ItemStack(Material.TRIDENT);
-                    NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
-                    NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
-                    NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
-                    NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
                     // NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
                     // NamespacedKey customTridentX = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_x"));
                     // NamespacedKey customTridentY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_y"));
                     // NamespacedKey customTridentZ = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_z"));
                     // NamespacedKey customTridentW = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_w"));
                     item.editMeta(meta -> {
-                        meta.getPersistentDataContainer().set(customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
-                        meta.getPersistentDataContainer().set(interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
-                        meta.getPersistentDataContainer().set(transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
-                        meta.getPersistentDataContainer().set(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
+                        meta.getPersistentDataContainer().set(CustomTridentUtils.customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
+                        meta.getPersistentDataContainer().set(CustomTridentUtils.interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
+                        meta.getPersistentDataContainer().set(CustomTridentUtils.transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
+                        meta.getPersistentDataContainer().set(CustomTridentUtils.positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
                         // container.set(displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
                         // container.set(customTridentX, PersistentDataType.FLOAT, context.get("x"));
                         // container.set(customTridentY, PersistentDataType.FLOAT, context.get("y"));
