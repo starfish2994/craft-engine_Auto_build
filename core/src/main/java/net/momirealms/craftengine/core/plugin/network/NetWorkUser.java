@@ -48,6 +48,8 @@ public interface NetWorkUser {
 
     Map<Integer, List<Object>> tridentView();
 
+    Map<Integer, Object> addTridentPacketView();
+
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);

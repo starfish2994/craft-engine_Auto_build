@@ -1620,7 +1620,7 @@ public class PacketConsumers {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
             if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentPositionSync(event, packet, entityId);
+                CustomTridentUtils.modifyCustomTridentPositionSync(user, event, packet, entityId);
                 return;
             }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
@@ -2329,9 +2329,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
         try {
             int entityId = Reflections.field$clazz$ClientboundSetEntityDataPacket$id.getInt(packet);
-            if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentSetEntityData(user, event, entityId);
-            }
+            CustomTridentUtils.modifyCustomTridentSetEntityData(user, event, entityId);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }
@@ -2341,7 +2339,7 @@ public class PacketConsumers {
         try {
             int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
             if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentMove(packet);
+                CustomTridentUtils.modifyCustomTridentMove(packet, user);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);

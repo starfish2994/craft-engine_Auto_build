@@ -6103,6 +6103,10 @@ public class Reflections {
             )
     );
 
+    public static final Constructor<?> constructor$ClientboundMoveEntityPacket$PosRot = requireNonNull(
+            ReflectionUtils.getTheOnlyConstructor(clazz$ClientboundMoveEntityPacket$PosRot)
+    );
+
     public static final Class<?> clazz$ClientboundRotateHeadPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayOutEntityHeadRotation",
@@ -6400,14 +6404,18 @@ public class Reflections {
     );
 
     public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
+    public static final int instance$EntityType$ITEM_DISPLAY$registryId;
     public static final int instance$EntityType$TEXT_DISPLAY$registryId;
     public static final int instance$EntityType$FALLING_BLOCK$registryId;
+    public static final int instance$EntityType$TRIDENT$registryId;
 
     static {
         try {
             instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$BLOCK_DISPLAY);
+            instance$EntityType$ITEM_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM_DISPLAY);
             instance$EntityType$TEXT_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TEXT_DISPLAY);
             instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
+            instance$EntityType$TRIDENT$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TRIDENT);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -6636,7 +6644,7 @@ public class Reflections {
             );
 
     public static final Constructor<?> constructor$PositionMoveRotation = Optional.ofNullable(clazz$PositionMoveRotation)
-            .map(it -> ReflectionUtils.getTheOnlyConstructor(it))
+            .map(ReflectionUtils::getTheOnlyConstructor)
             .orElse(null);
 
     public static final Field field$ClientboundEntityPositionSyncPacket$values = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
@@ -6664,7 +6672,7 @@ public class Reflections {
             .orElse(null);
 
     public static final Constructor<?> constructor$ClientboundEntityPositionSyncPacket = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
-            .map(it -> ReflectionUtils.getTheOnlyConstructor(it))
+            .map(ReflectionUtils::getTheOnlyConstructor)
             .orElse(null);
 
     public static final Field field$ClientboundAddEntityPacket$xRot = requireNonNull(
@@ -6688,6 +6696,24 @@ public class Reflections {
     public static final Field field$ClientboundMoveEntityPacket$yRot = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundMoveEntityPacket, byte.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundMoveEntityPacket$xa = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundMoveEntityPacket, short.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundMoveEntityPacket$ya = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundMoveEntityPacket, short.class, 1
+            )
+    );
+
+    public static final Field field$ClientboundMoveEntityPacket$za = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ClientboundMoveEntityPacket, short.class, 2
             )
     );
 }

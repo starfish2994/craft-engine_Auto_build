@@ -4,12 +4,14 @@ import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.network.NMSPacketEvent;
+import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
 import org.bukkit.inventory.ItemStack;
@@ -33,25 +35,30 @@ public class CustomTridentUtils {
     public static void handleCustomTrident(NetWorkUser user, NMSPacketEvent event, Object packet) throws IllegalAccessException {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
         Trident trident = getTridentById(user, entityId);
-        if (!isCustomTrident(trident)) return;
+        if (notCustomTrident(trident)) return;
         user.tridentView().put(entityId, List.of());
         modifyCustomTridentPacket(packet);
+        user.addTridentPacketView().put(entityId, packet);
         List<Object> itemDisplayValues = buildEntityDataValues(trident);
         user.tridentView().put(entityId, itemDisplayValues);
-        event.addDelayedTask(() -> user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true));
+        user.sendPacket(packet, true);
+        user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
+        event.setCancelled(true);
     }
 
     @Nullable
     public static Trident getTridentById(NetWorkUser user, int entityId) {
         Player player = (Player) user.platformPlayer();
-        return (Trident) FastNMS.INSTANCE.getBukkitEntityById(player.getWorld(), entityId);
+        Entity entity = FastNMS.INSTANCE.getBukkitEntityById(player.getWorld(), entityId);
+        if (entity instanceof Trident trident) return trident;
+        return null;
     }
 
-    public static boolean isCustomTrident(Trident trident) {
-        if (trident == null) return false;
+    public static boolean notCustomTrident(Trident trident) {
+        if (trident == null) return true;
         PersistentDataContainer container = trident.getItemStack().getItemMeta().getPersistentDataContainer();
         String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
-        return customTrident != null;
+        return customTrident == null;
     }
 
     public static void modifyCustomTridentPacket(Object packet) throws IllegalAccessException {
@@ -64,9 +71,11 @@ public class CustomTridentUtils {
 
     public static List<Object> buildEntityDataValues(Trident trident) {
         List<Object> itemDisplayValues = new ArrayList<>();
-        PersistentDataContainer container = trident.getItemStack().getItemMeta().getPersistentDataContainer();
+        ItemStack itemStack = trident.getItemStack();
+        PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
         String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
         Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
+        itemStack.getEnchantments().forEach((enchantment, level) -> item.addEnchantment(new Enchantment(Key.of(enchantment.getKey().toString()), level)));
         Integer interpolationDelay = container.get(interpolationDelayKey, PersistentDataType.INTEGER);
         Integer transformationInterpolationDuration = container.get(transformationInterpolationDurationaKey, PersistentDataType.INTEGER);
         Integer positionRotationInterpolationDuration = container.get(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER);
@@ -85,7 +94,7 @@ public class CustomTridentUtils {
     }
 
     // 这里需要补 ClientboundMoveEntityPacket 包 1.21.2+
-    public static void modifyCustomTridentPositionSync(NMSPacketEvent event, Object packet, int entityId) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static void modifyCustomTridentPositionSync(NetWorkUser user, NMSPacketEvent event, Object packet, int entityId) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Object positionMoveRotation = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
         boolean onGround = Reflections.field$ClientboundEntityPositionSyncPacket$onGround.getBoolean(packet);
         Object position = Reflections.field$PositionMoveRotation$position.get(positionMoveRotation);
@@ -94,11 +103,18 @@ public class CustomTridentUtils {
         float xRot = Reflections.field$PositionMoveRotation$xRot.getFloat(positionMoveRotation);
         Object newPositionMoveRotation = Reflections.constructor$PositionMoveRotation.newInstance(position, deltaMovement, -yRot, Math.clamp(-xRot, -90.0F, 90.0F));
         event.replacePacket(Reflections.constructor$ClientboundEntityPositionSyncPacket.newInstance(entityId, newPositionMoveRotation, onGround));
+        // List<SmoothMovementPathUtils.Vector3> path = SmoothMovementPathUtils.calculatePath(start, move, yRot, xRot);
+        // ((Player)user.platformPlayer()).sendMessage("entityId: " + entityId + " position: " + position + " deltaMovement: " + deltaMovement + " xRot: " + xRot + " yRot: " + yRot);
     }
 
-    public static void modifyCustomTridentMove(Object packet) throws IllegalAccessException {
+    public static void modifyCustomTridentMove(Object packet, NetWorkUser user) throws IllegalAccessException {
+        // int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+        // double xa = Reflections.field$ClientboundMoveEntityPacket$xa.getShort(packet);
+        // double ya = Reflections.field$ClientboundMoveEntityPacket$ya.getShort(packet);
+        // double za = Reflections.field$ClientboundMoveEntityPacket$za.getShort(packet);
         float xRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$xRot.getByte(packet));
         float yRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$yRot.getByte(packet));
+        // ((Player)user.platformPlayer()).sendMessage("entityId: " + entityId + " xa: " + xa + " ya: " + ya + " za: " + za + " xRot: " + xRot + " yRot: " + yRot);
         Reflections.field$ClientboundMoveEntityPacket$xRot.setByte(packet, MCUtils.packDegrees(Math.clamp(-xRot, -90.0F, 90.0F)));
         Reflections.field$ClientboundMoveEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
     }
@@ -107,7 +123,7 @@ public class CustomTridentUtils {
         List<Object> newData = user.tridentView().getOrDefault(entityId, List.of());
         if (newData.isEmpty()) {
             Trident trident = getTridentById(user, entityId);
-            if (!isCustomTrident(trident)) return null;
+            if (notCustomTrident(trident)) return null;
             newData = buildEntityDataValues(trident);
             user.tridentView().put(entityId, newData);
         }
@@ -115,8 +131,17 @@ public class CustomTridentUtils {
     }
 
     public static void modifyCustomTridentSetEntityData(NetWorkUser user, NMSPacketEvent event, int entityId) {
-        Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
-        if (packet == null) return;
-        event.replacePacket(packet);
+        if (user.tridentView().containsKey(entityId)) {
+            Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
+            if (packet == null) return;
+            event.replacePacket(packet);
+        } else {
+            Trident trident = getTridentById(user, entityId);
+            if (trident == null) return;
+            if (notCustomTrident(trident)) return;
+            Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
+            if (packet == null) return;
+            event.replacePacket(packet);
+        }
     }
 }

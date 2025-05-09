@@ -309,7 +309,7 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
         Object enchant = item.getComponent(ComponentTypes.ENCHANTMENTS);
         try {
             Map<String, Integer> map = EnchantmentUtils.toMap(enchant);
-            map.put(enchantment.toString(), enchantment.level());
+            map.put(enchantment.id().toString(), enchantment.level());
             item.setJavaComponent(ComponentTypes.ENCHANTMENTS, map);
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to add enchantment", e);
@@ -321,7 +321,7 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
         Object enchant = item.getComponent(ComponentTypes.STORED_ENCHANTMENTS);
         try {
             Map<String, Integer> map = EnchantmentUtils.toMap(enchant);
-            map.put(enchantment.toString(), enchantment.level());
+            map.put(enchantment.id().toString(), enchantment.level());
             item.setJavaComponent(ComponentTypes.STORED_ENCHANTMENTS, map);
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to add stored enchantment", e);
