@@ -6663,13 +6663,6 @@ public class Reflections {
             .map(it -> ReflectionUtils.getInstanceDeclaredField(it, float.class, 1))
             .orElse(null);
 
-    public static final Class<?> clazz$ClientboundTeleportEntityPacket = requireNonNull(
-            BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "network.protocol.game.PacketPlayOutEntityTeleport",
-                    "network.protocol.game.ClientboundTeleportEntityPacket"
-            )
-    );
-
     public static final Constructor<?> constructor$ClientboundEntityPositionSyncPacket = Optional.ofNullable(clazz$ClientboundEntityPositionSyncPacket)
             .map(it -> ReflectionUtils.getTheOnlyConstructor(it))
             .orElse(null);
@@ -6697,34 +6690,4 @@ public class Reflections {
                     clazz$ClientboundMoveEntityPacket, byte.class, 0
             )
     );
-    //
-    // /**
-    //  * 实体移动数据包
-    //  *
-    //  * <p><b>1.20 ~ 1.21.1 版本传入参数：</b></p>
-    //  * <ul>
-    //  *   <li>{@code FriendlyByteBuf} 需要按顺序写入：
-    //  *     <ul>
-    //  *       <li>{@code id} - VarInt 实体ID</li>
-    //  *       <li>{@code x} - Double X坐标</li>
-    //  *       <li>{@code y} - Double Y坐标</li>
-    //  *       <li>{@code z} - Double Z坐标</li>
-    //  *       <li>{@code yRot} - Byte 垂直旋转角度</li>
-    //  *       <li>{@code xRot} - Byte 水平旋转角度</li>
-    //  *       <li>{@code onGround} - Boolean 着地状态</li>
-    //  *     </ul>
-    //  *   </li>
-    //  * </ul>
-    //  *
-    //  * <p><b>1.21.2+ 版本传入参数：</b></p>
-    //  * <ul>
-    //  *   <li>{@code id} - int 实体ID</li>
-    //  *   <li>{@code PositionMoveRotation change} - 位置和移动向量和旋转</li>
-    //  *   <li>{@code Set<Relative> relatives} - 相对坐标标记集合</li>
-    //  *   <li>{@code onGround} - boolean 着地状态</li>
-    //  * </ul>
-    //  */
-    // public static final Constructor<?> constructor$ClientboundTeleportEntityPacket = requireNonNull(
-    //         ReflectionUtils.getConstructor(clazz$ClientboundTeleportEntityPacket, VersionHelper.isOrAbove1_21_2() ? 0 : 1)
-    // );
 }
