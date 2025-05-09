@@ -48,11 +48,16 @@ public class PlayerOptionalContext extends AbstractAdditionalParameterContext im
         return this.player;
     }
 
+    public boolean isPlayerPresent() {
+        return this.player != null;
+    }
+
     @Override
     @NotNull
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new PlaceholderTag(this.player), new I18NTag(this), new NamedArgumentTag(this), new ExpressionTag(this)};
+            this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new PlaceholderTag(this.player), new I18NTag(this),
+                    new NamedArgumentTag(this), new ExpressionTag(this), new GlobalVariableTag(this)};
         }
         return this.tagResolvers;
     }

@@ -19,7 +19,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
 import net.momirealms.craftengine.core.plugin.locale.I18NData;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
@@ -70,8 +70,8 @@ public abstract class AbstractPackManager implements PackManager {
     private final CraftEngine plugin;
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
-    private final Map<String, ConfigSectionParser> sectionParsers = new HashMap<>();
-    private final TreeMap<ConfigSectionParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+    private final Map<String, ConfigParser> sectionParsers = new HashMap<>();
+    private final TreeMap<ConfigParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
     protected BiConsumer<Path, Path> zipGenerator;
     protected ResourcePackHost resourcePackHost;
 
@@ -211,7 +211,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     @Override
-    public boolean registerConfigSectionParser(ConfigSectionParser parser) {
+    public boolean registerConfigSectionParser(ConfigParser parser) {
         for (String id : parser.sectionId()) {
             if (this.sectionParsers.containsKey(id)) return false;
         }
@@ -404,7 +404,7 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/gui/sprites/tooltip/topaz_frame.png.mcmeta");
     }
 
-    private void loadResourceConfigs(Predicate<ConfigSectionParser> predicate) {
+    private void loadResourceConfigs(Predicate<ConfigParser> predicate) {
         long o1 = System.nanoTime();
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
@@ -435,8 +435,8 @@ public abstract class AbstractPackManager implements PackManager {
         }
         long o2 = System.nanoTime();
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
-        for (Map.Entry<ConfigSectionParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
-            ConfigSectionParser parser = entry.getKey();
+        for (Map.Entry<ConfigParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
+            ConfigParser parser = entry.getKey();
             long t1 = System.nanoTime();
             for (CachedConfig cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
@@ -444,8 +444,8 @@ public abstract class AbstractPackManager implements PackManager {
                     try {
                         Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                         try {
-                            if (parser.isTemplate()) {
-                                this.plugin.templateManager().addTemplate(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                            if (parser.supportsParsingObject()) {
+                                parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
                             } else if (predicate.test(parser)) {
                                 if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                     Map<String, Object> configSection1 = castToMap(configSection0, false);
@@ -832,7 +832,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             try (BufferedWriter writer = Files.newBufferedWriter(modelPath)) {
-                GsonHelper.get().toJson(generation.getJson(), writer);
+                GsonHelper.get().toJson(generation.get(), writer);
             } catch (IOException e) {
                 plugin.logger().warn("Failed to generate model: " + modelPath.toAbsolutePath(), e);
             }

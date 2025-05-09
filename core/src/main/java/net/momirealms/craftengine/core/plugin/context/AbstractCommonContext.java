@@ -24,7 +24,7 @@ public abstract class AbstractCommonContext implements Context {
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
             this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE, new I18NTag(this), new NamedArgumentTag(this),
-                    new PlaceholderTag(null), new ExpressionTag(this)};
+                    new PlaceholderTag(null), new ExpressionTag(this), new GlobalVariableTag(this)};
         }
         return this.tagResolvers;
     }

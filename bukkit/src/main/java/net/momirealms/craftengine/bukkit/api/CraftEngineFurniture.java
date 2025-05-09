@@ -263,7 +263,7 @@ public final class CraftEngineFurniture {
                               @Nullable net.momirealms.craftengine.core.entity.player.Player player,
                               boolean dropLoot,
                               boolean playSound) {
-        Location location = loadedFurniture.location();
+        Location location = loadedFurniture.dropLocation();
         loadedFurniture.destroy();
         LootTable<ItemStack> lootTable = (LootTable<ItemStack>) loadedFurniture.config().lootTable();
         Vec3d vec3d = LocationUtils.toVec3d(location);
