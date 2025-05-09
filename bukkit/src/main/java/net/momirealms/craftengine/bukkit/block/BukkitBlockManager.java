@@ -25,7 +25,7 @@ import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
+import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -193,7 +193,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Override
-    public ConfigSectionParser parser() {
+    public ConfigParser parser() {
         return this.blockParser;
     }
 
@@ -314,7 +314,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    public class BlockParser implements ConfigSectionParser {
+    public class BlockParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"blocks", "block"};
 
         @Override
@@ -537,7 +537,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (singleModelMap.containsKey("weight")) json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
-            prepareModelGeneration(new ModelGeneration(Key.of(modelPath), generationMap));
+            prepareModelGeneration(ModelGeneration.of(Key.of(modelPath), generationMap));
         }
         variants.add(json);
     }
