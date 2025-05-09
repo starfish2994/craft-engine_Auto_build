@@ -38,9 +38,7 @@ public class CustomTridentUtils {
         modifyCustomTridentPacket(packet);
         List<Object> itemDisplayValues = buildEntityDataValues(trident);
         user.tridentView().put(entityId, itemDisplayValues);
-        event.addDelayedTask(() -> {
-            user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
-        });
+        event.addDelayedTask(() -> user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true));
     }
 
     @Nullable
@@ -105,14 +103,20 @@ public class CustomTridentUtils {
         Reflections.field$ClientboundMoveEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
     }
 
-    public static void modifyCustomTridentSetEntityData(NetWorkUser user, NMSPacketEvent event, int entityId) {
-        List<Object> newData = user.tridentView().get(entityId);
+    public static Object buildCustomTridentSetEntityDataPacket(NetWorkUser user, int entityId) {
+        List<Object> newData = user.tridentView().getOrDefault(entityId, List.of());
         if (newData.isEmpty()) {
             Trident trident = getTridentById(user, entityId);
-            if (!isCustomTrident(trident)) return;
+            if (!isCustomTrident(trident)) return null;
             newData = buildEntityDataValues(trident);
             user.tridentView().put(entityId, newData);
         }
-        event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, newData));
+        return FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, newData);
+    }
+
+    public static void modifyCustomTridentSetEntityData(NetWorkUser user, NMSPacketEvent event, int entityId) {
+        Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
+        if (packet == null) return;
+        event.replacePacket(packet);
     }
 }

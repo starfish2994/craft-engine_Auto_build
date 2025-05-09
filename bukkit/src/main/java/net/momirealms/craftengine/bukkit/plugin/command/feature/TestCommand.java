@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.util.CustomTridentUtils;
 import net.momirealms.craftengine.core.item.Item;
@@ -11,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Trident;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -18,11 +20,14 @@ import org.incendo.cloud.Command;
 import org.incendo.cloud.bukkit.parser.NamespacedKeyParser;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.parser.standard.BooleanParser;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.suggestion.SuggestionProvider;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,6 +42,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
     public Command.Builder<? extends CommandSender> assembleCommand(org.incendo.cloud.CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
+                .required("forceUpdate", BooleanParser.booleanParser())
                 .required("id", NamespacedKeyParser.namespacedKeyComponent().suggestionProvider(new SuggestionProvider<>() {
                     @Override
                     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
@@ -53,6 +59,18 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 // .required("w", FloatParser.floatParser())
                 .handler(context -> {
                     Player player = context.sender();
+                    if (context.get("forceUpdate")) {
+                        net.momirealms.craftengine.core.entity.player.Player cePlayer = plugin().adapt(player);
+                        Collection<Trident> tridents = player.getWorld().getEntitiesByClass(Trident.class);
+                        List<Object> packets = new ArrayList<>();
+                        for (Trident trident : tridents) {
+                            int entityId = FastNMS.INSTANCE.method$Entity$getId(FastNMS.INSTANCE.method$CraftEntity$getHandle(trident));
+                            player.sendMessage("COMMAND entityId: " + entityId);
+                            packets.add(CustomTridentUtils.buildCustomTridentSetEntityDataPacket(cePlayer, entityId));
+                        }
+                        cePlayer.sendPackets(packets, true);
+                        return;
+                    }
                     NamespacedKey namespacedKey = context.get("id");
                     ItemStack item = new ItemStack(Material.TRIDENT);
                     // NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
