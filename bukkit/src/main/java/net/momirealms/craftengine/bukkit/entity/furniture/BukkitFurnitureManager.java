@@ -4,6 +4,7 @@ import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.InteractionHitB
 import net.momirealms.craftengine.bukkit.nms.CollisionEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.FurniturePacketHandler;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.furniture.*;
@@ -301,14 +302,14 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
                 furniture.initializeColliders();
                 for (Player player : display.getTrackedPlayers()) {
-                    this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                    this.plugin.adapt(player).entityPacketHandlers().computeIfAbsent(furniture.baseEntityId(), k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
                     this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
                 }
             }
         } else {
             LoadedFurniture furniture = addNewFurniture(display, customFurniture, getAnchorType(display, customFurniture));
             for (Player player : display.getTrackedPlayers()) {
-                this.plugin.adapt(player).furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                this.plugin.adapt(player).entityPacketHandlers().computeIfAbsent(furniture.baseEntityId(), k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
                 this.plugin.networkManager().sendPacket(player, furniture.spawnPacket(player));
             }
             if (preventChange) {

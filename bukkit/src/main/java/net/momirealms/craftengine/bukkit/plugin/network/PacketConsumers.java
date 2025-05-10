@@ -17,6 +17,10 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.ArmorStandPacketHandler;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.BlockDisplayPacketHandler;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.FurniturePacketHandler;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.TextDisplayPacketHandler;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -31,11 +35,7 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.plugin.network.ConnectionState;
-import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
-import net.momirealms.craftengine.core.plugin.network.NetworkManager;
-import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
-import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -421,7 +421,8 @@ public class PacketConsumers {
                 return;
             }
             EnumSet<? extends Enum<?>> enums = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$actions(packet);
-            outer: {
+            outer:
+            {
                 for (Object entry : enums) {
                     if (entry == Reflections.instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME) {
                         break outer;
@@ -1578,9 +1579,11 @@ public class PacketConsumers {
                     buf.writeShort(za);
                 }
             } else if (type == Reflections.instance$EntityType$BLOCK_DISPLAY$registryId) {
-                user.entityView().put(id, Reflections.instance$EntityType$BLOCK_DISPLAY);
+                user.entityPacketHandlers().put(id, BlockDisplayPacketHandler.INSTANCE);
             } else if (type == Reflections.instance$EntityType$TEXT_DISPLAY$registryId) {
-                user.entityView().put(id, Reflections.instance$EntityType$TEXT_DISPLAY);
+                user.entityPacketHandlers().put(id, TextDisplayPacketHandler.INSTANCE);
+            } else if (type == Reflections.instance$EntityType$ARMOR_STAND$registryId) {
+                user.entityPacketHandlers().put(id, ArmorStandPacketHandler.INSTANCE);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -1595,7 +1598,7 @@ public class PacketConsumers {
                 int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
-                    user.furnitureView().computeIfAbsent(furniture.baseEntityId(), k -> new ArrayList<>()).addAll(furniture.fakeEntityIds());
+                    user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
                     if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
@@ -1608,8 +1611,6 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
-            } else if (entityType == Reflections.instance$EntityType$TRIDENT) {
-                CustomTridentUtils.handleCustomTrident(user, event, packet);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -1620,10 +1621,6 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
-            if (user.tridentView().containsKey(entityId)) {
-                event.replacePacket(CustomTridentUtils.buildCustomTridentPositionSync(packet, entityId));
-                return;
-            }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
@@ -1650,17 +1647,9 @@ public class PacketConsumers {
             IntList intList = buf.readIntIdList();
             for (int i = 0, size = intList.size(); i < size; i++) {
                 int entityId = intList.getInt(i);
-                user.entityView().remove(entityId);
-                List<Integer> entities = user.furnitureView().remove(entityId);
-                SchedulerTask task = user.tridentTaskView().remove(entityId);
-                if (task != null) {
-                    task.cancel();
-                }
-                user.tridentView().remove(entityId);
-                if (entities == null) continue;
-                for (int subEntityId : entities) {
+                EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
+                if (handler != null && handler.handleEntitiesRemove(intList)) {
                     isChange = true;
-                    intList.add(subEntityId);
                 }
             }
             if (isChange) {
@@ -2012,131 +2001,11 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
-            if (user.tridentView().containsKey(id)) {
-                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-                List<Object> newPackedItems = CustomTridentUtils.buildCustomTridentSetEntityDataPacket(user, packedItems, id);
-                event.setChanged(true);
-                buf.clear();
-                buf.writeVarInt(event.packetID());
-                buf.writeVarInt(id);
-                FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(newPackedItems, buf);
-                return;
+            EntityPacketHandler handler = user.entityPacketHandlers().get(id);
+            if (handler != null) {
+                handler.handleSetEntityData(user, event);
             }
-            Object entityType = user.entityView().get(id);
-            if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
-                boolean isChanged = false;
-                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-                for (int i = 0; i < packedItems.size(); i++) {
-                    Object packedItem = packedItems.get(i);
-                    int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                    if (entityDataId == EntityDataUtils.BLOCK_STATE_DATA_ID) {
-                        Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                        int stateId = BlockStateUtils.blockStateToId(blockState);
-                        int newStateId;
-                        if (!user.clientModEnabled()) {
-                            newStateId = remap(stateId);
-                        } else {
-                            newStateId = remapMOD(stateId);
-                        }
-                        Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                        packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                                entityDataId, serializer, BlockStateUtils.idToBlockState(newStateId)
-                        ));
-                        isChanged = true;
-                    } else if (Config.interceptEntityName() && entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
-                        Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                        if (optionalTextComponent.isPresent()) {
-                            Object textComponent = optionalTextComponent.get();
-                            String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
-                            if (!tokens.isEmpty()) {
-                                Component component = AdventureHelper.jsonToComponent(json);
-                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                                }
-                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
-                                        entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))
-                                ));
-                                isChanged = true;
-                            }
-                        }
-                    }
-                }
-                if (isChanged) {
-                    event.setChanged(true);
-                    buf.clear();
-                    buf.writeVarInt(event.packetID());
-                    buf.writeVarInt(id);
-                    FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
-                }
-            } else if (entityType == Reflections.instance$EntityType$TEXT_DISPLAY) {
-                if (Config.interceptTextDisplay()) {
-                    boolean isChanged = false;
-                    List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-                    for (int i = 0; i < packedItems.size(); i++) {
-                        Object packedItem = packedItems.get(i);
-                        int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                        if (entityDataId == EntityDataUtils.TEXT_DATA_ID) {
-                            Object textComponent = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                            if (textComponent == Reflections.instance$Component$empty) break;
-                            String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
-                            if (!tokens.isEmpty()) {
-                                Component component = AdventureHelper.jsonToComponent(json);
-                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                                }
-                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, ComponentUtils.adventureToMinecraft(component)));
-                                isChanged = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (isChanged) {
-                        event.setChanged(true);
-                        buf.clear();
-                        buf.writeVarInt(event.packetID());
-                        buf.writeVarInt(id);
-                        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
-                    }
-                }
-            } else if (entityType == Reflections.instance$EntityType$ARMOR_STAND) {
-                if (Config.interceptArmorStand()) {
-                    boolean isChanged = false;
-                    List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-                    for (int i = 0; i < packedItems.size(); i++) {
-                        Object packedItem = packedItems.get(i);
-                        int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                        if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
-                            Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                            if (optionalTextComponent.isPresent()) {
-                                Object textComponent = optionalTextComponent.get();
-                                String json = ComponentUtils.minecraftToJson(textComponent);
-                                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
-                                if (!tokens.isEmpty()) {
-                                    Component component = AdventureHelper.jsonToComponent(json);
-                                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                                    }
-                                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
-                                    isChanged = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (isChanged) {
-                        event.setChanged(true);
-                        buf.clear();
-                        buf.writeVarInt(event.packetID());
-                        buf.writeVarInt(id);
-                        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(packedItems, buf);
-                    }
-                }
-            } else if (Config.interceptEntityName()) {
+            if (Config.interceptEntityName()) {
                 boolean isChanged = false;
                 List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
                 for (int i = 0; i < packedItems.size(); i++) {
@@ -2187,7 +2056,8 @@ public class PacketConsumers {
             if (hasDisplay) {
                 displayName = buf.readNbt(false);
             }
-            outside : if (displayName != null) {
+            outside:
+            if (displayName != null) {
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                 if (tokens.isEmpty()) break outside;
                 Component component = AdventureHelper.tagToComponent(displayName);
@@ -2341,12 +2211,10 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY_ALL = (user, event, packet) -> {
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_AND_ROTATE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
-            if (user.tridentView().containsKey(entityId)) {
-                event.replacePacket(CustomTridentUtils.buildCustomTridentMove(packet, entityId));
-            }
+
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }

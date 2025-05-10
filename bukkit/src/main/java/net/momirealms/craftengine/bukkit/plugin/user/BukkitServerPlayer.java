@@ -19,8 +19,8 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
+import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
-import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -91,11 +91,8 @@ public class BukkitServerPlayer extends Player {
     // cache interaction range here
     private int lastUpdateInteractionRangeTick;
     private double cachedInteractionRange;
-    // for better fake furniture visual sync
-    private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
-    private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
-    private final Map<Integer, List<Object>> tridentView = new ConcurrentHashMap<>();
-    private final Map<Integer, SchedulerTask> addTridentPacketView = new ConcurrentHashMap<>();
+
+    private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -107,13 +104,6 @@ public class BukkitServerPlayer extends Player {
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
         this.uuid = player.getUniqueId();
         this.name = player.getName();
-//        if (Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck != null) {
-//            try {
-//                Reflections.method$CraftPlayer$setSimplifyContainerDesyncCheck.invoke(player, true);
-//            } catch (Exception e) {
-//                this.plugin.logger().warn("Failed to setSimplifyContainerDesyncCheck", e);
-//            }
-//        }
     }
 
     @Override
@@ -731,23 +721,8 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public Map<Integer, List<Integer>> furnitureView() {
-        return this.furnitureView;
-    }
-
-    @Override
-    public Map<Integer, Object> entityView() {
+    public Map<Integer, EntityPacketHandler> entityPacketHandlers() {
         return this.entityTypeView;
-    }
-
-    @Override
-    public Map<Integer, List<Object>> tridentView() {
-        return this.tridentView;
-    }
-
-    @Override
-    public Map<Integer, SchedulerTask> tridentTaskView() {
-        return this.addTridentPacketView;
     }
 
     public void setResendSound() {
@@ -812,7 +787,6 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void clearView() {
         this.entityTypeView.clear();
-        this.furnitureView.clear();
     }
 
     @Override

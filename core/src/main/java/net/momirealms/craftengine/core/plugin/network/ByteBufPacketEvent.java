@@ -1,31 +1,28 @@
-package net.momirealms.craftengine.bukkit.plugin.network;
+package net.momirealms.craftengine.core.plugin.network;
 
 import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 public class ByteBufPacketEvent implements Cancellable {
     private boolean cancelled;
-    private List<Runnable> delayedTasks = null;
     private final FriendlyByteBuf buf;
     private boolean changed;
     private final int packetID;
+    private final int preIndex;
 
-    public ByteBufPacketEvent(int packetID, FriendlyByteBuf buf) {
+    public ByteBufPacketEvent(int packetID, FriendlyByteBuf buf, int preIndex) {
         this.buf = buf;
         this.packetID = packetID;
+        this.preIndex = preIndex;
     }
 
     public int packetID() {
-        return packetID;
+        return this.packetID;
     }
 
     public FriendlyByteBuf getBuffer() {
-        return buf;
+        this.buf.readerIndex(this.preIndex);
+        return this.buf;
     }
 
     public void setChanged(boolean dirty) {
@@ -33,18 +30,7 @@ public class ByteBufPacketEvent implements Cancellable {
     }
 
     public boolean changed() {
-        return changed;
-    }
-
-    public void addDelayedTask(Runnable task) {
-        if (delayedTasks == null) {
-            delayedTasks = new ArrayList<>();
-        }
-        delayedTasks.add(task);
-    }
-
-    public List<Runnable> getDelayedTasks() {
-        return Optional.ofNullable(delayedTasks).orElse(Collections.emptyList());
+        return this.changed;
     }
 
     @Override

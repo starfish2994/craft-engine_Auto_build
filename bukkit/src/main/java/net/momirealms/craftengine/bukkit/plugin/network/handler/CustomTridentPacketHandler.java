@@ -1,16 +1,15 @@
-package net.momirealms.craftengine.bukkit.util;
+package net.momirealms.craftengine.bukkit.plugin.network.handler;
 
 import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.network.NMSPacketEvent;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.CustomTrident;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.network.NMSPacketEvent;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
-import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -25,9 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-public class CustomTridentUtils {
+public final class CustomTridentPacketHandler {
+
+    private CustomTridentPacketHandler() {}
 
     public static void handleCustomTrident(NetWorkUser user, NMSPacketEvent event, Object packet) {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
@@ -40,19 +40,10 @@ public class CustomTridentUtils {
         if (notCustomTrident(trident)) return;
         Object newPacket = modifyCustomTridentPacket(packet, entityId);
         List<Object> itemDisplayValues = buildEntityDataValues(trident);
-        user.tridentView().put(entityId, itemDisplayValues);
         user.sendPacket(newPacket, true);
         user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
         event.setCancelled(true);
         if (serverEntity != null) {
-            // 这里直接暴力更新
-            SchedulerTask task = CraftEngine.instance().scheduler().asyncRepeating(() -> {
-                FastNMS.INSTANCE.method$ServerEntity$sendChanges(serverEntity);
-                if (canSpawnParticle(nmsEntity)) {
-                    world.spawnParticle(ParticleUtils.getParticle("BUBBLE"), trident.getLocation(), 1, 0, 0, 0, 0);
-                }
-            }, 0, 5, TimeUnit.MILLISECONDS);
-            user.tridentTaskView().put(entityId, task);
         }
     }
 
@@ -150,14 +141,6 @@ public class CustomTridentUtils {
                 newPackedItems.add(packedItem);
             }
         }
-        List<Object> newData = user.tridentView().getOrDefault(entityId, List.of());
-        if (newData.isEmpty()) {
-            Trident trident = getTridentById(user, entityId);
-            if (notCustomTrident(trident)) return newPackedItems;
-            newData = buildEntityDataValues(trident);
-            user.tridentView().put(entityId, newData);
-        }
-        newPackedItems.addAll(newData);
         return newPackedItems;
     }
 }

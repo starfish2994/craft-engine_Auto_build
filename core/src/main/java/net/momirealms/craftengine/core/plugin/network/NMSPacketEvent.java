@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network;
+package net.momirealms.craftengine.core.plugin.network;
 
 import net.momirealms.craftengine.core.util.Cancellable;
 import org.jetbrains.annotations.NotNull;

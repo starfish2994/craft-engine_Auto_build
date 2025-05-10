@@ -6408,6 +6408,7 @@ public class Reflections {
     public static final int instance$EntityType$TEXT_DISPLAY$registryId;
     public static final int instance$EntityType$FALLING_BLOCK$registryId;
     public static final int instance$EntityType$TRIDENT$registryId;
+    public static final int instance$EntityType$ARMOR_STAND$registryId;
 
     static {
         try {
@@ -6416,6 +6417,7 @@ public class Reflections {
             instance$EntityType$TEXT_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TEXT_DISPLAY);
             instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
             instance$EntityType$TRIDENT$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TRIDENT);
+            instance$EntityType$ARMOR_STAND$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ARMOR_STAND);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

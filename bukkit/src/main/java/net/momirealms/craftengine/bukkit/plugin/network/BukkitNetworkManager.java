@@ -14,9 +14,7 @@ import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20_5;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.network.ConnectionState;
-import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
-import net.momirealms.craftengine.core.plugin.network.NetworkManager;
+import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -152,7 +150,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, Reflections.clazz$ServerboundLoginAcknowledgedPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, Reflections.clazz$ServerboundResourcePackPacket);
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, Reflections.clazz$ClientboundEntityEventPacket);
-        registerNMSPacketConsumer(PacketConsumers.MOVE_ENTITY_ALL, Reflections.clazz$ClientboundMoveEntityPacket$PosRot);
+        registerNMSPacketConsumer(PacketConsumers.MOVE_AND_ROTATE_ENTITY, Reflections.clazz$ClientboundMoveEntityPacket$PosRot);
         registerByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
@@ -549,7 +547,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 FriendlyByteBuf buf = new FriendlyByteBuf(buffer);
                 int preProcessIndex = buf.readerIndex();
                 int packetId = buf.readVarInt();
-                ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf);
+                int preIndex = buf.readerIndex();
+                ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
                 BukkitNetworkManager.this.handleByteBufPacket(this.player, event);
                 if (event.isCancelled()) {
                     buf.clear();
