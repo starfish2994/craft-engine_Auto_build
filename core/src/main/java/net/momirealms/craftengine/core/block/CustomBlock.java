@@ -6,6 +6,9 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.function.Function;
+import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
@@ -15,10 +18,7 @@ import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public abstract class CustomBlock {
@@ -29,6 +29,7 @@ public abstract class CustomBlock {
     protected final BlockBehavior behavior;
     protected final List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements;
     protected final ImmutableBlockState defaultState;
+    protected final EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events;
     @Nullable
     protected final LootTable<?> lootTable;
 
@@ -39,6 +40,7 @@ public abstract class CustomBlock {
             @NotNull Map<String, Integer> appearances,
             @NotNull Map<String, VariantState> variantMapper,
             @NotNull BlockSettings settings,
+            @NotNull EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events,
             @Nullable Map<String, Object> behavior,
             @Nullable LootTable<?> lootTable
     ) {
@@ -48,6 +50,7 @@ public abstract class CustomBlock {
         this.lootTable = lootTable;
         this.properties = properties;
         this.placements = new ArrayList<>();
+        this.events = events;
         this.variantProvider = new BlockStateVariantProvider(holder, ImmutableBlockState::new, properties);
         this.defaultState = this.variantProvider.getDefaultState();
         this.behavior = BlockBehaviors.fromMap(this, behavior);
@@ -168,9 +171,15 @@ public abstract class CustomBlock {
         protected BlockSettings settings;
         protected Map<String, Object> behavior;
         protected LootTable<?> lootTable;
+        protected EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events;
 
         protected Builder(Key id) {
             this.id = id;
+        }
+
+        public Builder events(EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events) {
+            this.events = events;
+            return this;
         }
 
         public Builder appearances(Map<String, Integer> appearances) {

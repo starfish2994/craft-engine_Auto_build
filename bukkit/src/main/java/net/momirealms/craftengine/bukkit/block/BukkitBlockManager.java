@@ -26,6 +26,10 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
+import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.function.Function;
+import net.momirealms.craftengine.core.plugin.event.BlockEventFunctions;
+import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -421,6 +425,37 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
+            Object eventsObj = ResourceConfigUtils.get(section, "events");
+            EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = new EnumMap<>(EventTrigger.class);
+            if (eventsObj instanceof Map<?, ?> eventsSection) {
+                Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
+                for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
+                    try {
+                        EventTrigger eventTrigger = EventTrigger.valueOf(eventEntry.getKey().toUpperCase(Locale.ENGLISH));
+                        if (eventEntry.getValue() instanceof List<?> list) {
+                            if (list.size() == 1) {
+                                events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false))));
+                            } else if (list.size() == 2) {
+                                events.put(eventTrigger, List.of(
+                                        BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false)),
+                                        BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
+                                ));
+                            } else {
+                                List<Function<PlayerBlockActionContext>> eventsList = new ArrayList<>();
+                                for (Object event : list) {
+                                    eventsList.add(BlockEventFunctions.fromMap(MiscUtils.castToMap(event, false)));
+                                }
+                                events.put(eventTrigger, eventsList);
+                            }
+                        } else if (eventEntry.getValue() instanceof Map<?, ?> eventSection) {
+                            events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(eventSection, false))));
+                        }
+                    } catch (IllegalArgumentException e) {
+                        throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", eventEntry.getKey());
+                    }
+                }
+            }
+
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
             CustomBlock block = BukkitCustomBlock.builder(id)
                         .appearances(appearances)
@@ -429,6 +464,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                         .properties(properties)
                         .settings(settings)
                         .behavior(behaviors)
+                        .events(events)
                         .build();
 
             // bind appearance and real state
