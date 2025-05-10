@@ -60,14 +60,14 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     @EventHandler(ignoreCancelled = true,  priority = EventPriority.HIGHEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         Projectile projectile = event.getEntity();
-        handleProjectileLoad(projectile, true);
+        handleProjectileLoad(projectile);
     }
 
     @EventHandler(ignoreCancelled = true,  priority = EventPriority.HIGHEST)
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         for (Entity entity : event.getEntities()) {
             if (entity instanceof Projectile projectile) {
-                handleProjectileLoad(projectile, false);
+                handleProjectileLoad(projectile);
             }
         }
     }
@@ -77,7 +77,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         this.projectiles.remove(event.getEntity().getEntityId());
     }
 
-    private void handleProjectileLoad(Projectile projectile, boolean delay) {
+    private void handleProjectileLoad(Projectile projectile) {
         ItemStack projectileItem;
         if (projectile instanceof ThrowableProjectile throwableProjectile) {
             projectileItem = throwableProjectile.getItem();
@@ -92,14 +92,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             ProjectileMeta meta = it.settings().projectileMeta();
             if (meta != null) {
                 this.projectiles.put(projectile.getEntityId(), new BukkitCustomProjectile(meta, projectile, wrapped));
-                ProjectileInjectTask task = new ProjectileInjectTask(projectile);
-                if (!delay) {
-                    task.run();
-                } else if (VersionHelper.isFolia()) {
-
-                } else {
-                    plugin.scheduler().sync().runDelayed(task);
-                }
+                new ProjectileInjectTask(projectile);
             }
         });
     }

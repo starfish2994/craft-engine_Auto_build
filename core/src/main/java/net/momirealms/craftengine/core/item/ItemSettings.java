@@ -212,9 +212,10 @@ public class ItemSettings {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
                 ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
-                Vector3f translation = MiscUtils.getAsVector3f(args.get("translation"), "translation");
-                Quaternionf rotationLefts = MiscUtils.getAsQuaternionf(args.get("rotation-left"), "rotation-left");
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, translation, rotationLefts));
+                Vector3f translation = MiscUtils.getAsVector3f(args.getOrDefault("translation", "0"), "translation");
+                Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
+                Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation));
             }));
         }
 

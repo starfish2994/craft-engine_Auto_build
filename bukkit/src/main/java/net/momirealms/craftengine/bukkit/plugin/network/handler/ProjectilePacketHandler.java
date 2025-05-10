@@ -101,6 +101,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         displayedItem = this.projectile.item().mergeCopy(displayedItem);
         ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(-1, itemDisplayValues);
         ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(meta.translation(), itemDisplayValues);
+        ItemDisplayEntityData.Scale.addEntityDataIfNotDefaultValue(meta.scale(), itemDisplayValues);
         ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(meta.rotation(), itemDisplayValues);
         if (VersionHelper.isOrAbove1_20_2()) {
             ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(1, itemDisplayValues);
