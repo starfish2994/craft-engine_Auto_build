@@ -26,22 +26,24 @@ import java.util.UUID;
 
 public class ProjectilePacketHandler implements EntityPacketHandler {
     private final CustomProjectile projectile;
+    private final Object cachedPacket;
+    private final List<Object> cachedData;
 
-    public ProjectilePacketHandler(CustomProjectile projectile) {
+    public ProjectilePacketHandler(CustomProjectile projectile, int entityId) {
         this.projectile = projectile;
+        this.cachedData = createCustomProjectileEntityDataValues();
+        this.cachedPacket = FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, this.cachedData);
     }
 
     @Override
     public void handleSetEntityData(NetWorkUser user, ByteBufPacketEvent event) {
         FriendlyByteBuf buf = event.getBuffer();
         int id = buf.readVarInt();
-        List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
-        List<Object> newPackedItems = convertCustomProjectileSetEntityDataPacket(packedItems);
         event.setChanged(true);
         buf.clear();
         buf.writeVarInt(event.packetID());
         buf.writeVarInt(id);
-        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(newPackedItems, buf);
+        FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(this.cachedData, buf);
     }
 
     @Override
@@ -52,11 +54,15 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
 
     @Override
     public void handleMoveAndRotate(NetWorkUser user, NMSPacketEvent event, Object packet) {
-        Object converted = convertCustomProjectileMovePacket(packet);
-        event.replacePacket(converted);
+        int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+        Object converted = convertCustomProjectileMovePacket(packet, entityId);
+        event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundBundlePacket(List.of(
+                this.cachedPacket,
+                converted
+        )));
     }
 
-    public static Object convertAddCustomProjectPacket(Object packet) {
+    public Object convertAddCustomProjectilePacket(Object packet) {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
         UUID uuid = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$uuid(packet);
         double x = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$x(packet);
@@ -70,11 +76,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         double ya = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$ya(packet);
         double za = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$za(packet);
         double yHeadRot = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$yHeadRot(packet);
-        return FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                entityId, uuid, x, y, z,
-                MCUtils.clamp(-xRot, -90.0F, 90.0F), -yRot,
-                type, data, FastNMS.INSTANCE.constructor$Vec3(xa, ya, za), yHeadRot
-        );
+        return FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(entityId, uuid, x, y, z, MCUtils.clamp(-xRot, -90.0F, 90.0F), -yRot, type, data, FastNMS.INSTANCE.constructor$Vec3(xa, ya, za), yHeadRot);
     }
 
     private Object convertCustomProjectilePositionSyncPacket(Object packet) {
@@ -89,24 +91,11 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         return FastNMS.INSTANCE.constructor$ClientboundEntityPositionSyncPacket(entityId, newPositionMoveRotation, onGround);
     }
 
-    // 将原有的投掷物的entity data转化为展示实体的数据包
-    public List<Object> convertCustomProjectileSetEntityDataPacket(List<Object> packedItems) {
-        List<Object> newPackedItems = new ArrayList<>();
-        for (Object packedItem : packedItems) {
-            int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-            if (entityDataId < 8) {
-                newPackedItems.add(packedItem);
-            }
-        }
-        newPackedItems.addAll(createCustomProjectileEntityDataValues());
-        return newPackedItems;
-    }
-
-    private List<Object> createCustomProjectileEntityDataValues() {
+    public List<Object> createCustomProjectileEntityDataValues() {
         List<Object> itemDisplayValues = new ArrayList<>();
         Optional<CustomItem<ItemStack>> customItem = BukkitItemManager.instance().getCustomItem(this.projectile.metadata().item());
         if (customItem.isEmpty()) return itemDisplayValues;
-        ProjectileMeta meta = projectile.metadata();
+        ProjectileMeta meta = this.projectile.metadata();
         Item<?> displayedItem = customItem.get().buildItem(ItemBuildContext.EMPTY);
         // 我们应当使用新的展示物品的组件覆盖原物品的组件，以完成附魔，附魔光效等组件的继承
         displayedItem = this.projectile.item().mergeCopy(displayedItem);
@@ -114,18 +103,17 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(meta.translation(), itemDisplayValues);
         ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(meta.rotation(), itemDisplayValues);
         if (VersionHelper.isOrAbove1_20_2()) {
-            ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(2, itemDisplayValues);
-            ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(2, itemDisplayValues);
+            ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(1, itemDisplayValues);
+            ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(1, itemDisplayValues);
         } else {
-            ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(2, itemDisplayValues);
+            ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(1, itemDisplayValues);
         }
         ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(displayedItem.getLiteralObject(), itemDisplayValues);
         ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(meta.displayType().id(), itemDisplayValues);
         return itemDisplayValues;
     }
 
-    private static Object convertCustomProjectileMovePacket(Object packet) {
-        int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+    private Object convertCustomProjectileMovePacket(Object packet, int entityId) {
         short xa = FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$xa(packet);
         short ya = FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$ya(packet);
         short za = FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$za(packet);

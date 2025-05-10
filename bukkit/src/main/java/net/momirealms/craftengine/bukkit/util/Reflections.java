@@ -6634,4 +6634,15 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$ServerEntity = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "server.level.EntityTrackerEntry",
+                    "server.level.ServerEntity")
+    );
+
+    public static final Field field$ServerEntity$updateInterval = requireNonNull(
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$ServerEntity, int.class, 0
+            )
+    );
 }

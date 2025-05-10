@@ -1611,8 +1611,9 @@ public class PacketConsumers {
                 }
             } else {
                 BukkitProjectileManager.instance().projectileByEntityId(entityId).ifPresent(customProjectile -> {
-                    event.replacePacket(ProjectilePacketHandler.convertAddCustomProjectPacket(packet));
-                    user.entityPacketHandlers().put(entityId, new ProjectilePacketHandler(customProjectile));
+                    ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, entityId);
+                    event.replacePacket(handler.convertAddCustomProjectilePacket(packet));
+                    user.entityPacketHandlers().put(entityId, handler);
                 });
             }
         } catch (Exception e) {
@@ -1630,17 +1631,6 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY = (user, event, packet) -> {
-        try {
-            int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
-            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
-                event.setCancelled(true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$Pos", e);
         }
     };
 
@@ -2215,7 +2205,18 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_AND_ROTATE_ENTITY = (user, event, packet) -> {
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_ENTITY = (user, event, packet) -> {
+        try {
+            int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_AND_ROTATE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
             EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
