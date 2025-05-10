@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.plugin.network;
 
 import io.netty.channel.Channel;
 import net.momirealms.craftengine.core.plugin.Plugin;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -48,7 +49,7 @@ public interface NetWorkUser {
 
     Map<Integer, List<Object>> tridentView();
 
-    Map<Integer, Object> addTridentPacketView();
+    Map<Integer, SchedulerTask> tridentTaskView();
 
     boolean clientModEnabled();
 

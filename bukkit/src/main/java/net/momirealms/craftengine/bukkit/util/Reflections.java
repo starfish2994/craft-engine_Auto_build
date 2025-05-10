@@ -6699,21 +6699,35 @@ public class Reflections {
             )
     );
 
-    public static final Field field$ClientboundMoveEntityPacket$xa = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ClientboundMoveEntityPacket, short.class, 0
+    public static final Class<?> clazz$ServerEntity = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "server.level.EntityTrackerEntry",
+                    "server.level.ServerEntity"
             )
     );
 
-    public static final Field field$ClientboundMoveEntityPacket$ya = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$ClientboundMoveEntityPacket, short.class, 1
+    public static final Method method$ServerEntity$sendChanges = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$ServerEntity, void.class, new String[]{ "sendChanges", "a" }
             )
     );
 
-    public static final Field field$ClientboundMoveEntityPacket$za = requireNonNull(
+    public static final Class<?> clazz$ChunkMap$TrackedEntity = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "server.level.PlayerChunkMap$EntityTracker",
+                    "server.level.ChunkMap$TrackedEntity"
+            )
+    );
+
+    public static final Field field$Entity$trackedEntity = requireNonNull(
             ReflectionUtils.getDeclaredField(
-                    clazz$ClientboundMoveEntityPacket, short.class, 2
+                    clazz$Entity, clazz$ChunkMap$TrackedEntity, 0
+            )
+    );
+
+    public static final Field field$ChunkMap$TrackedEntity$serverEntity = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ChunkMap$TrackedEntity, clazz$ServerEntity, 0
             )
     );
 }

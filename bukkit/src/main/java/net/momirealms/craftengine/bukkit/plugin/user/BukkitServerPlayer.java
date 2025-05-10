@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -94,7 +95,7 @@ public class BukkitServerPlayer extends Player {
     private final Map<Integer, List<Integer>> furnitureView = new ConcurrentHashMap<>();
     private final Map<Integer, Object> entityTypeView = new ConcurrentHashMap<>();
     private final Map<Integer, List<Object>> tridentView = new ConcurrentHashMap<>();
-    private final Map<Integer, Object> addTridentPacketView = new ConcurrentHashMap<>();
+    private final Map<Integer, SchedulerTask> addTridentPacketView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -745,7 +746,7 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public Map<Integer, Object> addTridentPacketView() {
+    public Map<Integer, SchedulerTask> tridentTaskView() {
         return this.addTridentPacketView;
     }
 

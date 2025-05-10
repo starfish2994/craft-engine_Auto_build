@@ -6,7 +6,9 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.network.NMSPacketEvent;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -25,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class CustomTridentUtils {
     public static final NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
@@ -35,15 +38,33 @@ public class CustomTridentUtils {
     public static void handleCustomTrident(NetWorkUser user, NMSPacketEvent event, Object packet) throws IllegalAccessException {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
         Trident trident = getTridentById(user, entityId);
+        Object serverEntity;
+        Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(trident);
+        Object tracker = Reflections.field$Entity$trackedEntity.get(nmsEntity);
+        if (tracker != null) {
+            serverEntity = Reflections.field$ChunkMap$TrackedEntity$serverEntity.get(tracker);
+        } else {
+            serverEntity = null;
+        }
         if (notCustomTrident(trident)) return;
         user.tridentView().put(entityId, List.of());
         modifyCustomTridentPacket(packet);
-        user.addTridentPacketView().put(entityId, packet);
         List<Object> itemDisplayValues = buildEntityDataValues(trident);
         user.tridentView().put(entityId, itemDisplayValues);
         user.sendPacket(packet, true);
         user.sendPacket(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, itemDisplayValues), true);
         event.setCancelled(true);
+        if (serverEntity != null) {
+            // 这里直接暴力更新
+            SchedulerTask task = CraftEngine.instance().scheduler().asyncRepeating(() -> {
+                try {
+                    Reflections.method$ServerEntity$sendChanges.invoke(serverEntity);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    CraftEngine.instance().logger().warn("Failed to send entity data packet", e);
+                }
+            }, 5, 5, TimeUnit.MILLISECONDS);
+            user.tridentTaskView().put(entityId, task);
+        }
     }
 
     @Nullable
@@ -93,8 +114,7 @@ public class CustomTridentUtils {
         return itemDisplayValues;
     }
 
-    // 这里需要补 ClientboundMoveEntityPacket 包 1.21.2+
-    public static void modifyCustomTridentPositionSync(NetWorkUser user, NMSPacketEvent event, Object packet, int entityId) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static void modifyCustomTridentPositionSync(NMSPacketEvent event, Object packet, int entityId) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Object positionMoveRotation = Reflections.field$ClientboundEntityPositionSyncPacket$values.get(packet);
         boolean onGround = Reflections.field$ClientboundEntityPositionSyncPacket$onGround.getBoolean(packet);
         Object position = Reflections.field$PositionMoveRotation$position.get(positionMoveRotation);
@@ -103,18 +123,11 @@ public class CustomTridentUtils {
         float xRot = Reflections.field$PositionMoveRotation$xRot.getFloat(positionMoveRotation);
         Object newPositionMoveRotation = Reflections.constructor$PositionMoveRotation.newInstance(position, deltaMovement, -yRot, Math.clamp(-xRot, -90.0F, 90.0F));
         event.replacePacket(Reflections.constructor$ClientboundEntityPositionSyncPacket.newInstance(entityId, newPositionMoveRotation, onGround));
-        // List<SmoothMovementPathUtils.Vector3> path = SmoothMovementPathUtils.calculatePath(start, move, yRot, xRot);
-        // ((Player)user.platformPlayer()).sendMessage("entityId: " + entityId + " position: " + position + " deltaMovement: " + deltaMovement + " xRot: " + xRot + " yRot: " + yRot);
     }
 
-    public static void modifyCustomTridentMove(Object packet, NetWorkUser user) throws IllegalAccessException {
-        // int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
-        // double xa = Reflections.field$ClientboundMoveEntityPacket$xa.getShort(packet);
-        // double ya = Reflections.field$ClientboundMoveEntityPacket$ya.getShort(packet);
-        // double za = Reflections.field$ClientboundMoveEntityPacket$za.getShort(packet);
+    public static void modifyCustomTridentMove(Object packet) throws IllegalAccessException {
         float xRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$xRot.getByte(packet));
         float yRot = MCUtils.unpackDegrees(Reflections.field$ClientboundMoveEntityPacket$yRot.getByte(packet));
-        // ((Player)user.platformPlayer()).sendMessage("entityId: " + entityId + " xa: " + xa + " ya: " + ya + " za: " + za + " xRot: " + xRot + " yRot: " + yRot);
         Reflections.field$ClientboundMoveEntityPacket$xRot.setByte(packet, MCUtils.packDegrees(Math.clamp(-xRot, -90.0F, 90.0F)));
         Reflections.field$ClientboundMoveEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
     }

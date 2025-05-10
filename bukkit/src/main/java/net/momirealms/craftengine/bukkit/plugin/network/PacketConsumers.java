@@ -35,6 +35,7 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -1620,7 +1621,7 @@ public class PacketConsumers {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
             if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentPositionSync(user, event, packet, entityId);
+                CustomTridentUtils.modifyCustomTridentPositionSync(event, packet, entityId);
                 return;
             }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
@@ -1651,6 +1652,10 @@ public class PacketConsumers {
                 int entityId = intList.getInt(i);
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
+                SchedulerTask task = user.tridentTaskView().remove(entityId);
+                if (task != null) {
+                    task.cancel();
+                }
                 user.tridentView().remove(entityId);
                 if (entities == null) continue;
                 for (int subEntityId : entities) {
@@ -2339,7 +2344,7 @@ public class PacketConsumers {
         try {
             int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
             if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentMove(packet, user);
+                CustomTridentUtils.modifyCustomTridentMove(packet);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
