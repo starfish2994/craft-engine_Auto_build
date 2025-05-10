@@ -2334,7 +2334,9 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
         try {
             int entityId = Reflections.field$clazz$ClientboundSetEntityDataPacket$id.getInt(packet);
-            CustomTridentUtils.modifyCustomTridentSetEntityData(user, event, entityId);
+            if (user.tridentView().containsKey(entityId)) {
+                CustomTridentUtils.modifyCustomTridentSetEntityData(user, event, entityId);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }

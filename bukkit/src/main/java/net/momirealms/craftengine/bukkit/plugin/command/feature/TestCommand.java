@@ -14,14 +14,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bukkit.parser.NamespacedKeyParser;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
-import org.incendo.cloud.parser.standard.BooleanParser;
-import org.incendo.cloud.parser.standard.IntegerParser;
+import org.incendo.cloud.parser.standard.*;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.suggestion.SuggestionProvider;
 
@@ -49,14 +49,10 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                         return CompletableFuture.completedFuture(plugin().itemManager().cachedSuggestions());
                     }
                 }))
-                .required("interpolationDelay", IntegerParser.integerParser())
-                .required("transformationInterpolationDuration", IntegerParser.integerParser())
-                .required("positionRotationInterpolationDuration", IntegerParser.integerParser())
-                // .required("displayType", ByteParser.byteParser())
-                // .required("x", FloatParser.floatParser())
-                // .required("y", FloatParser.floatParser())
-                // .required("z", FloatParser.floatParser())
-                // .required("w", FloatParser.floatParser())
+                .required("interpolationDuration", IntegerParser.integerParser())
+                .required("displayType", ByteParser.byteParser((byte) 0, (byte) 8))
+                .required("translation", StringParser.stringParser())
+                .required("rotationLeft", StringParser.stringParser())
                 .handler(context -> {
                     Player player = context.sender();
                     if (context.get("forceUpdate")) {
@@ -73,21 +69,13 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     }
                     NamespacedKey namespacedKey = context.get("id");
                     ItemStack item = new ItemStack(Material.TRIDENT);
-                    // NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
-                    // NamespacedKey customTridentX = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_x"));
-                    // NamespacedKey customTridentY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_y"));
-                    // NamespacedKey customTridentZ = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_z"));
-                    // NamespacedKey customTridentW = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident_w"));
-                    item.editMeta(meta -> {
-                        meta.getPersistentDataContainer().set(CustomTridentUtils.customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
-                        meta.getPersistentDataContainer().set(CustomTridentUtils.interpolationDelayKey, PersistentDataType.INTEGER, context.get("interpolationDelay"));
-                        meta.getPersistentDataContainer().set(CustomTridentUtils.transformationInterpolationDurationaKey, PersistentDataType.INTEGER, context.get("transformationInterpolationDuration"));
-                        meta.getPersistentDataContainer().set(CustomTridentUtils.positionRotationInterpolationDurationKey, PersistentDataType.INTEGER, context.get("positionRotationInterpolationDuration"));
-                        // container.set(displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
-                        // container.set(customTridentX, PersistentDataType.FLOAT, context.get("x"));
-                        // container.set(customTridentY, PersistentDataType.FLOAT, context.get("y"));
-                        // container.set(customTridentZ, PersistentDataType.FLOAT, context.get("z"));
-                        // container.set(customTridentW, PersistentDataType.FLOAT, context.get("w"));
+                    item.editMeta((meta) -> {
+                        PersistentDataContainer container = meta.getPersistentDataContainer();
+                        container.set(CustomTridentUtils.customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
+                        container.set(CustomTridentUtils.interpolationDurationaKey, PersistentDataType.INTEGER, context.get("interpolationDuration"));
+                        container.set(CustomTridentUtils.displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
+                        container.set(CustomTridentUtils.translationKey, PersistentDataType.STRING, context.get("translation"));
+                        container.set(CustomTridentUtils.rotationLeftKey, PersistentDataType.STRING, context.get("rotationLeft"));
                         Item<ItemStack> ceItem = BukkitItemManager.instance().createWrappedItem(Key.of(namespacedKey.asString()), null);
                         Optional<Integer> customModelData = ceItem.customModelData();
                         customModelData.ifPresent(meta::setCustomModelData);

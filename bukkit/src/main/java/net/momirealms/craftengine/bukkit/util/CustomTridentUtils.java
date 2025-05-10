@@ -31,9 +31,10 @@ import java.util.concurrent.TimeUnit;
 
 public class CustomTridentUtils {
     public static final NamespacedKey customTridentKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:custom_trident"));
-    public static final NamespacedKey interpolationDelayKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_delay"));
-    public static final NamespacedKey transformationInterpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:transformation_interpolation_duration"));
-    public static final NamespacedKey positionRotationInterpolationDurationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:position_rotation_interpolation_duration"));
+    public static final NamespacedKey interpolationDurationaKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:interpolation_duration"));
+    public static final NamespacedKey displayTypeKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:display_type"));
+    public static final NamespacedKey translationKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:translation"));
+    public static final NamespacedKey rotationLeftKey = Objects.requireNonNull(NamespacedKey.fromString("craftengine:rotation_left"));
 
     public static void handleCustomTrident(NetWorkUser user, NMSPacketEvent event, Object packet) throws IllegalAccessException {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
@@ -47,7 +48,6 @@ public class CustomTridentUtils {
             serverEntity = null;
         }
         if (notCustomTrident(trident)) return;
-        user.tridentView().put(entityId, List.of());
         modifyCustomTridentPacket(packet);
         List<Object> itemDisplayValues = buildEntityDataValues(trident);
         user.tridentView().put(entityId, itemDisplayValues);
@@ -94,23 +94,26 @@ public class CustomTridentUtils {
         List<Object> itemDisplayValues = new ArrayList<>();
         ItemStack itemStack = trident.getItemStack();
         PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
-        String customTrident = container.get(customTridentKey, PersistentDataType.STRING);
+        String customTrident = container.getOrDefault(customTridentKey, PersistentDataType.STRING, "craftengine:empty");
         Item<ItemStack> item = BukkitItemManager.instance().createWrappedItem(Key.of(customTrident), null);
         itemStack.getEnchantments().forEach((enchantment, level) -> item.addEnchantment(new Enchantment(Key.of(enchantment.getKey().toString()), level)));
-        Integer interpolationDelay = container.get(interpolationDelayKey, PersistentDataType.INTEGER);
-        Integer transformationInterpolationDuration = container.get(transformationInterpolationDurationaKey, PersistentDataType.INTEGER);
-        Integer positionRotationInterpolationDuration = container.get(positionRotationInterpolationDurationKey, PersistentDataType.INTEGER);
-        ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(interpolationDelay, itemDisplayValues);
-        ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(new Vector3f(0, 0, -2), itemDisplayValues);
-        ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(new Quaternionf(1, 1, 1, 1), itemDisplayValues);
+        Integer interpolationDurationa = container.getOrDefault(interpolationDurationaKey, PersistentDataType.INTEGER, 2);
+        Byte displayType = container.getOrDefault(displayTypeKey, PersistentDataType.BYTE, (byte) 0);
+        String translation = container.getOrDefault(translationKey, PersistentDataType.STRING, "0+0+0");
+        String[] translations = translation.split("\\+");
+        String rotationLeft = container.getOrDefault(rotationLeftKey, PersistentDataType.STRING, "0+0+0+0");
+        String[] rotationLefts = rotationLeft.split("\\+");
+        ItemDisplayEntityData.InterpolationDelay.addEntityDataIfNotDefaultValue(-1, itemDisplayValues);
+        ItemDisplayEntityData.Translation.addEntityDataIfNotDefaultValue(new Vector3f(Float.parseFloat(translations[0]), Float.parseFloat(translations[1]), Float.parseFloat(translations[2])), itemDisplayValues);
+        ItemDisplayEntityData.RotationLeft.addEntityDataIfNotDefaultValue(new Quaternionf(Float.parseFloat(rotationLefts[0]), Float.parseFloat(rotationLefts[1]), Float.parseFloat(rotationLefts[2]), Float.parseFloat(rotationLefts[3])), itemDisplayValues);
         if (VersionHelper.isOrAbove1_20_2()) {
-            ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
-            ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(positionRotationInterpolationDuration, itemDisplayValues);
+            ItemDisplayEntityData.TransformationInterpolationDuration.addEntityDataIfNotDefaultValue(interpolationDurationa, itemDisplayValues);
+            ItemDisplayEntityData.PositionRotationInterpolationDuration.addEntityDataIfNotDefaultValue(interpolationDurationa, itemDisplayValues);
         } else {
-            ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(transformationInterpolationDuration, itemDisplayValues);
+            ItemDisplayEntityData.InterpolationDuration.addEntityDataIfNotDefaultValue(interpolationDurationa, itemDisplayValues);
         }
         ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), itemDisplayValues);
-        ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue((byte) 0, itemDisplayValues);
+        ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(displayType, itemDisplayValues);
         return itemDisplayValues;
     }
 
@@ -144,17 +147,8 @@ public class CustomTridentUtils {
     }
 
     public static void modifyCustomTridentSetEntityData(NetWorkUser user, NMSPacketEvent event, int entityId) {
-        if (user.tridentView().containsKey(entityId)) {
-            Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
-            if (packet == null) return;
-            event.replacePacket(packet);
-        } else {
-            Trident trident = getTridentById(user, entityId);
-            if (trident == null) return;
-            if (notCustomTrident(trident)) return;
-            Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
-            if (packet == null) return;
-            event.replacePacket(packet);
-        }
+        Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
+        if (packet == null) return;
+        event.replacePacket(packet);
     }
 }
