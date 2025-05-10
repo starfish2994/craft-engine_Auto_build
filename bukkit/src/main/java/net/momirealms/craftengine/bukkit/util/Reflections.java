@@ -558,7 +558,6 @@ public class Reflections {
             )
     );
 
-    @Deprecated
     public static final Field field$ClientboundAddEntityPacket$type = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundAddEntityPacket, clazz$EntityType, 0
@@ -3810,6 +3809,8 @@ public class Reflections {
     public static final Object instance$EntityType$INTERACTION;
     public static final Object instance$EntityType$SHULKER;
     public static final Object instance$EntityType$OAK_BOAT;
+    public static final Object instance$EntityType$TRIDENT;
+    public static final Object instance$EntityType$SNOWBALL;
 
     static {
         try {
@@ -3829,6 +3830,10 @@ public class Reflections {
             instance$EntityType$ARMOR_STAND = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, armorStand);
             Object oakBoat = VersionHelper.isOrAbove1_21_2() ? FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "oak_boat") : FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "boat");
             instance$EntityType$OAK_BOAT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, oakBoat);
+            Object trident = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "trident");
+            instance$EntityType$TRIDENT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, trident);
+            Object snowball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "snowball");
+            instance$EntityType$SNOWBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, snowball);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -3979,7 +3984,7 @@ public class Reflections {
             )
     );
 
-    // 1.21.3+
+    // 1.21.2+
     public static final Class<?> clazz$ClientboundEntityPositionSyncPacket =
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundEntityPositionSyncPacket")
@@ -6098,6 +6103,10 @@ public class Reflections {
             )
     );
 
+    public static final Constructor<?> constructor$ClientboundMoveEntityPacket$PosRot = requireNonNull(
+            ReflectionUtils.getTheOnlyConstructor(clazz$ClientboundMoveEntityPacket$PosRot)
+    );
+
     public static final Class<?> clazz$ClientboundRotateHeadPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayOutEntityHeadRotation",
@@ -6395,14 +6404,18 @@ public class Reflections {
     );
 
     public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
+    public static final int instance$EntityType$ITEM_DISPLAY$registryId;
     public static final int instance$EntityType$TEXT_DISPLAY$registryId;
     public static final int instance$EntityType$FALLING_BLOCK$registryId;
+    public static final int instance$EntityType$TRIDENT$registryId;
 
     static {
         try {
             instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$BLOCK_DISPLAY);
+            instance$EntityType$ITEM_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM_DISPLAY);
             instance$EntityType$TEXT_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TEXT_DISPLAY);
             instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
+            instance$EntityType$TRIDENT$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TRIDENT);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -6618,4 +6631,5 @@ public class Reflections {
                     BukkitReflectionUtils.assembleCBClass("block.CraftBlockStates$BlockEntityStateFactory")
             )
     );
+
 }

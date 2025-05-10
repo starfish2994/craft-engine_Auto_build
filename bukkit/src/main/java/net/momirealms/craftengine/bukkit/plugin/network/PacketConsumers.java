@@ -35,6 +35,7 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -1607,16 +1608,22 @@ public class PacketConsumers {
                 if (furniture != null) {
                     event.setCancelled(true);
                 }
+            } else if (entityType == Reflections.instance$EntityType$TRIDENT) {
+                CustomTridentUtils.handleCustomTrident(user, event, packet);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
         }
     };
 
-    // 1.21.3+
+    // 1.21.2+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
+            if (user.tridentView().containsKey(entityId)) {
+                event.replacePacket(CustomTridentUtils.buildCustomTridentPositionSync(packet, entityId));
+                return;
+            }
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
             }
@@ -1645,6 +1652,11 @@ public class PacketConsumers {
                 int entityId = intList.getInt(i);
                 user.entityView().remove(entityId);
                 List<Integer> entities = user.furnitureView().remove(entityId);
+                SchedulerTask task = user.tridentTaskView().remove(entityId);
+                if (task != null) {
+                    task.cancel();
+                }
+                user.tridentView().remove(entityId);
                 if (entities == null) continue;
                 for (int subEntityId : entities) {
                     isChange = true;
@@ -2000,6 +2012,16 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
+            if (user.tridentView().containsKey(id)) {
+                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
+                List<Object> newPackedItems = CustomTridentUtils.buildCustomTridentSetEntityDataPacket(user, packedItems, id);
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(id);
+                FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(newPackedItems, buf);
+                return;
+            }
             Object entityType = user.entityView().get(id);
             if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
                 boolean isChanged = false;
@@ -2316,6 +2338,17 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityEventPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_ENTITY_ALL = (user, event, packet) -> {
+        try {
+            int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+            if (user.tridentView().containsKey(entityId)) {
+                event.replacePacket(CustomTridentUtils.buildCustomTridentMove(packet, entityId));
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
     };
 }

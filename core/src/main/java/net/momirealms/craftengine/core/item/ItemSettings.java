@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.entity.CustomTrident;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
@@ -9,6 +10,8 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +25,7 @@ public class ItemSettings {
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
     boolean canPlaceRelatedVanillaBlock = false;
+    CustomTrident customTrident;
 
     private ItemSettings() {}
 
@@ -50,6 +54,7 @@ public class ItemSettings {
         newSettings.anvilRepairItems = settings.anvilRepairItems;
         newSettings.renameable = settings.renameable;
         newSettings.canPlaceRelatedVanillaBlock = settings.canPlaceRelatedVanillaBlock;
+        newSettings.customTrident = settings.customTrident;
         return newSettings;
     }
 
@@ -63,6 +68,10 @@ public class ItemSettings {
             }
         }
         return settings;
+    }
+
+    public CustomTrident customTrident() {
+        return customTrident;
     }
 
     public boolean canPlaceRelatedVanillaBlock() {
@@ -106,6 +115,11 @@ public class ItemSettings {
 
     public ItemSettings renameable(boolean renameable) {
         this.renameable = renameable;
+        return this;
+    }
+
+    public ItemSettings customTrident(CustomTrident customTrident) {
+        this.customTrident = customTrident;
         return this;
     }
 
@@ -192,6 +206,14 @@ public class ItemSettings {
             registerFactory("can-place", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.canPlaceRelatedVanillaBlock(bool);
+            }));
+            registerFactory("custom-trident", (value -> {
+                Map<String, Object> args = MiscUtils.castToMap(value, false);
+                Key customTridentItemId = Key.of(args.get("custom-trident-item").toString());
+                Byte displayType = Byte.valueOf(args.get("display-type").toString());
+                Vector3f translation = MiscUtils.getAsVector3f(args.get("translation"), "translation");
+                Quaternionf rotationLefts = MiscUtils.getAsQuaternionf(args.get("rotation-left"), "rotation-left");
+                return settings -> settings.customTrident(new CustomTrident(customTridentItemId, displayType, translation, rotationLefts));
             }));
         }
 
