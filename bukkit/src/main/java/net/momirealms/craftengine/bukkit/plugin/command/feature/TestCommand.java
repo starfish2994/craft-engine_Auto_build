@@ -48,7 +48,6 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                         return CompletableFuture.completedFuture(plugin().itemManager().cachedSuggestions());
                     }
                 }))
-                .required("interpolationDuration", IntegerParser.integerParser())
                 .required("displayType", ByteParser.byteParser((byte) 0, (byte) 8))
                 .required("translation", StringParser.stringParser())
                 .required("rotationLeft", StringParser.stringParser())
@@ -57,12 +56,6 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     NamespacedKey namespacedKey = context.get("id");
                     ItemStack item = new ItemStack(Material.TRIDENT);
                     item.editMeta((meta) -> {
-                        PersistentDataContainer container = meta.getPersistentDataContainer();
-                        container.set(CustomTridentUtils.customTridentKey, PersistentDataType.STRING, namespacedKey.asString());
-                        container.set(CustomTridentUtils.interpolationDurationaKey, PersistentDataType.INTEGER, context.get("interpolationDuration"));
-                        container.set(CustomTridentUtils.displayTypeKey, PersistentDataType.BYTE, context.get("displayType"));
-                        container.set(CustomTridentUtils.translationKey, PersistentDataType.STRING, context.get("translation"));
-                        container.set(CustomTridentUtils.rotationLeftKey, PersistentDataType.STRING, context.get("rotationLeft"));
                         Item<ItemStack> ceItem = BukkitItemManager.instance().createWrappedItem(Key.of(namespacedKey.asString()), null);
                         Optional<Integer> customModelData = ceItem.customModelData();
                         customModelData.ifPresent(meta::setCustomModelData);
