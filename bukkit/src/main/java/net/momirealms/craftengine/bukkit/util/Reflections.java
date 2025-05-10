@@ -6645,4 +6645,11 @@ public class Reflections {
                     clazz$ServerEntity, int.class, 0
             )
     );
+
+    public static final Class<?> clazz$AbstractArrow = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.entity.projectile.EntityArrow",
+                    "world.entity.projectile.AbstractArrow"
+            )
+    );
 }
