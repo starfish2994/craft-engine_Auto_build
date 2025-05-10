@@ -1085,6 +1085,8 @@ public abstract class AbstractPackManager implements PackManager {
             if (originalItemModel == null) {
                 plugin.logger().warn("Failed to load item model for [" + key + "] (legacy)");
                 continue;
+            } else {
+                originalItemModel = originalItemModel.deepCopy();
             }
             JsonArray overrides;
             if (originalItemModel.has("overrides")) {
