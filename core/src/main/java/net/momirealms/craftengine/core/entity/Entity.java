@@ -5,31 +5,28 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 
-public abstract class Entity {
+public interface Entity {
+    Key type();
 
-    public abstract Key type();
+    double x();
 
-    public abstract double x();
+    double y();
 
-    public abstract double y();
+    double z();
 
-    public abstract double z();
+    Vec3d position();
 
-    public Vec3d position() {
-        return new Vec3d(x(), y(), z());
-    }
+    void tick();
 
-    public abstract void tick();
+    float getXRot();
 
-    public abstract int entityID();
+    int entityID();
 
-    public abstract float getXRot();
+    float getYRot();
 
-    public abstract float getYRot();
+    World world();
 
-    public abstract World world();
+    Direction getDirection();
 
-    public abstract Direction getDirection();
-
-    public abstract Object literalObject();
+    Object literalObject();
 }

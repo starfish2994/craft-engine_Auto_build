@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.plugin.context.parameter;
 
-import net.momirealms.craftengine.core.entity.Entity;
+import net.momirealms.craftengine.core.entity.AbstractEntity;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.context.ContextKey;
@@ -17,10 +17,10 @@ import java.util.function.Function;
 public class PlayerParameterProvider implements LazyContextParameterProvider {
     private static final Map<ContextKey<?>, Function<Player, Object>> CONTEXT_FUNCTIONS = new HashMap<>();
     static {
-        CONTEXT_FUNCTIONS.put(PlayerParameters.X, Entity::x);
-        CONTEXT_FUNCTIONS.put(PlayerParameters.Y, Entity::y);
-        CONTEXT_FUNCTIONS.put(PlayerParameters.Z, Entity::z);
-        CONTEXT_FUNCTIONS.put(PlayerParameters.POS, Entity::position);
+        CONTEXT_FUNCTIONS.put(PlayerParameters.X, AbstractEntity::x);
+        CONTEXT_FUNCTIONS.put(PlayerParameters.Y, AbstractEntity::y);
+        CONTEXT_FUNCTIONS.put(PlayerParameters.Z, AbstractEntity::z);
+        CONTEXT_FUNCTIONS.put(PlayerParameters.POS, AbstractEntity::position);
         CONTEXT_FUNCTIONS.put(PlayerParameters.BLOCK_X, p -> MCUtils.fastFloor(p.x()));
         CONTEXT_FUNCTIONS.put(PlayerParameters.BLOCK_Y, p -> MCUtils.fastFloor(p.y()));
         CONTEXT_FUNCTIONS.put(PlayerParameters.BLOCK_Z, p -> MCUtils.fastFloor(p.z()));

@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.entity.player;
 
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.core.entity.Entity;
+import net.momirealms.craftengine.core.entity.AbstractEntity;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.Key;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public abstract class Player extends Entity implements NetWorkUser {
+public abstract class Player extends AbstractEntity implements NetWorkUser {
     private static final Key TYPE = Key.of("minecraft:player");
 
     public abstract boolean isSecondaryUseActive();

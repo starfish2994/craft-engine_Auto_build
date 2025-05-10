@@ -10,4 +10,10 @@ public interface EntityPacketHandler {
 
     default void handleSetEntityData(NetWorkUser user, ByteBufPacketEvent event) {
     }
+
+    default void handleSyncEntityPosition(NetWorkUser user, NMSPacketEvent event, Object packet) {
+    }
+
+    default void handleMoveAndRotate(NetWorkUser user, NMSPacketEvent event, Object packet) {
+    }
 }

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin;
 import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
@@ -70,6 +71,7 @@ public abstract class CraftEngine implements Plugin {
     protected AdvancementManager advancementManager;
     protected CompatibilityManager compatibilityManager;
     protected GlobalVariableManager globalVariableManager;
+    protected ProjectileManager projectileManager;
 
     private final Consumer<CraftEngine> reloadEventDispatcher;
     private boolean isReloading;
@@ -147,6 +149,7 @@ public abstract class CraftEngine implements Plugin {
                 this.guiManager.reload();
                 this.packManager.reload();
                 this.advancementManager.reload();
+                this.projectileManager.reload();
                 if (reloadRecipe) {
                     this.recipeManager.reload();
                 }
@@ -218,6 +221,7 @@ public abstract class CraftEngine implements Plugin {
             this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
             this.advancementManager.delayedInit();
+            this.projectileManager.delayedInit();
             // reload the plugin
             try {
                 this.reloadPlugin(Runnable::run, Runnable::run, true);
@@ -250,6 +254,7 @@ public abstract class CraftEngine implements Plugin {
         if (this.vanillaLootManager != null) this.vanillaLootManager.disable();
         if (this.translationManager != null) this.translationManager.disable();
         if (this.globalVariableManager != null) this.globalVariableManager.disable();
+        if (this.projectileManager != null) this.projectileManager.disable();
         if (this.scheduler != null) this.scheduler.shutdownScheduler();
         if (this.scheduler != null) this.scheduler.shutdownExecutor();
         if (this.commandManager != null) this.commandManager.unregisterFeatures();
@@ -440,6 +445,11 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public GlobalVariableManager globalVariableManager() {
         return globalVariableManager;
+    }
+
+    @Override
+    public ProjectileManager projectileManager() {
+        return projectileManager;
     }
 
     @Override

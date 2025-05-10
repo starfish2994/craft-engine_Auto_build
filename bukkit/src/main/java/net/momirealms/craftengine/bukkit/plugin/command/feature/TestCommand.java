@@ -43,7 +43,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 }))
                 .required("displayType", ByteParser.byteParser((byte) 0, (byte) 8))
                 .required("translation", StringParser.stringParser())
-                .required("rotationLeft", StringParser.stringParser())
+                .required("rotation", StringParser.stringParser())
                 .handler(context -> {
                     Player player = context.sender();
                     NamespacedKey namespacedKey = context.get("id");

@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
+import net.momirealms.craftengine.core.entity.Billboard;
+import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.World;
 import org.joml.Quaternionf;

@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
-import net.momirealms.craftengine.core.entity.Entity;
+import net.momirealms.craftengine.core.entity.AbstractEntity;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.util.Key;
@@ -31,7 +31,7 @@ public interface FurnitureManager extends Manageable {
     Furniture loadedFurnitureByRealEntityId(int entityId);
 
     @Nullable
-    default Furniture loadedFurnitureByRealEntity(Entity entity) {
+    default Furniture loadedFurnitureByRealEntity(AbstractEntity entity) {
         return loadedFurnitureByRealEntityId(entity.entityID());
     }
 

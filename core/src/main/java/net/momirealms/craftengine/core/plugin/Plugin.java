@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin;
 import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
@@ -93,6 +94,8 @@ public interface Plugin {
     CompatibilityManager compatibilityManager();
 
     GlobalVariableManager globalVariableManager();
+
+    ProjectileManager projectileManager();
 
     Platform platform();
 }

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item;
 
-import net.momirealms.craftengine.core.entity.CustomTrident;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
+import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
@@ -25,7 +26,7 @@ public class ItemSettings {
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
     boolean canPlaceRelatedVanillaBlock = false;
-    CustomTrident customTrident;
+    ProjectileMeta projectileMeta;
 
     private ItemSettings() {}
 
@@ -54,7 +55,7 @@ public class ItemSettings {
         newSettings.anvilRepairItems = settings.anvilRepairItems;
         newSettings.renameable = settings.renameable;
         newSettings.canPlaceRelatedVanillaBlock = settings.canPlaceRelatedVanillaBlock;
-        newSettings.customTrident = settings.customTrident;
+        newSettings.projectileMeta = settings.projectileMeta;
         return newSettings;
     }
 
@@ -70,8 +71,8 @@ public class ItemSettings {
         return settings;
     }
 
-    public CustomTrident customTrident() {
-        return customTrident;
+    public ProjectileMeta projectileMeta() {
+        return projectileMeta;
     }
 
     public boolean canPlaceRelatedVanillaBlock() {
@@ -118,8 +119,8 @@ public class ItemSettings {
         return this;
     }
 
-    public ItemSettings customTrident(CustomTrident customTrident) {
-        this.customTrident = customTrident;
+    public ItemSettings projectileMeta(ProjectileMeta projectileMeta) {
+        this.projectileMeta = projectileMeta;
         return this;
     }
 
@@ -207,13 +208,13 @@ public class ItemSettings {
                 boolean bool = (boolean) value;
                 return settings -> settings.canPlaceRelatedVanillaBlock(bool);
             }));
-            registerFactory("custom-trident", (value -> {
+            registerFactory("projectile", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                Key customTridentItemId = Key.of(args.get("custom-trident-item").toString());
-                Byte displayType = Byte.valueOf(args.get("display-type").toString());
+                Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
+                ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                 Vector3f translation = MiscUtils.getAsVector3f(args.get("translation"), "translation");
                 Quaternionf rotationLefts = MiscUtils.getAsQuaternionf(args.get("rotation-left"), "rotation-left");
-                return settings -> settings.customTrident(new CustomTrident(customTridentItemId, displayType, translation, rotationLefts));
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, translation, rotationLefts));
             }));
         }
 

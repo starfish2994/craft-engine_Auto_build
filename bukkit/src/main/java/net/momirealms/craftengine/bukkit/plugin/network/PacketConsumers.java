@@ -12,15 +12,13 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
-import net.momirealms.craftengine.bukkit.plugin.network.handler.ArmorStandPacketHandler;
-import net.momirealms.craftengine.bukkit.plugin.network.handler.BlockDisplayPacketHandler;
-import net.momirealms.craftengine.bukkit.plugin.network.handler.FurniturePacketHandler;
-import net.momirealms.craftengine.bukkit.plugin.network.handler.TextDisplayPacketHandler;
+import net.momirealms.craftengine.bukkit.plugin.network.handler.*;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -1593,9 +1591,9 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
         try {
             Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
+            int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
             if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
-                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
@@ -1606,11 +1604,16 @@ public class PacketConsumers {
                 }
             } else if (entityType == BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE) {
                 // Cancel collider entity packet
-                int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
+                    user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
                 }
+            } else {
+                BukkitProjectileManager.instance().projectileByEntityId(entityId).ifPresent(customProjectile -> {
+                    event.replacePacket(ProjectilePacketHandler.convertAddCustomProjectPacket(packet));
+                    user.entityPacketHandlers().put(entityId, new ProjectilePacketHandler(customProjectile));
+                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -1621,8 +1624,9 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
-            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
-                event.setCancelled(true);
+            EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
+            if (handler != null) {
+                handler.handleSyncEntityPosition(user, event, packet);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
@@ -2214,7 +2218,10 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_AND_ROTATE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
-
+            EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
+            if (handler != null) {
+                handler.handleMoveAndRotate(user, event, packet);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
