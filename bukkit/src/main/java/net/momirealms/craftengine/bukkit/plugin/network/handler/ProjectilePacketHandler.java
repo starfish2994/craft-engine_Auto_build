@@ -55,10 +55,9 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
     @Override
     public void handleMoveAndRotate(NetWorkUser user, NMSPacketEvent event, Object packet) {
         int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
-        Object converted = convertCustomProjectileMovePacket(packet, entityId);
         event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundBundlePacket(List.of(
                 this.cachedPacket,
-                converted
+                convertCustomProjectileMovePacket(packet, entityId)
         )));
     }
 
@@ -123,6 +122,17 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         boolean onGround = FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$onGround(packet);
         return FastNMS.INSTANCE.constructor$ClientboundMoveEntityPacket$PosRot(
                 entityId, xa, ya, za,
+                MCUtils.packDegrees(-yRot), MCUtils.packDegrees(MCUtils.clamp(-xRot, -90.0F, 90.0F)),
+                onGround
+        );
+    }
+
+    private Object convertCustomProjectileTeleportPacket(Object packet, int entityId) {
+        float xRot = MCUtils.unpackDegrees(FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$xRot(packet));
+        float yRot = MCUtils.unpackDegrees(FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$yRot(packet));
+        boolean onGround = FastNMS.INSTANCE.field$ClientboundMoveEntityPacket$onGround(packet);
+        return FastNMS.INSTANCE.constructor$ClientboundTeleportEntityPacket(
+                entityId, this.projectile.projectile().x(), this.projectile.projectile().y(), this.projectile.projectile().z(),
                 MCUtils.packDegrees(-yRot), MCUtils.packDegrees(MCUtils.clamp(-xRot, -90.0F, 90.0F)),
                 onGround
         );

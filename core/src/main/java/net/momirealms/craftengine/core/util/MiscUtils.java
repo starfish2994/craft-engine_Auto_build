@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.util;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.ArrayList;
 import java.util.List;
