@@ -2008,10 +2008,20 @@ public class PacketConsumers {
     };
 
     @SuppressWarnings("unchecked")
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA_BYTEBUFFER = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
+            if (user.tridentView().containsKey(id)) {
+                List<Object> packedItems = FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$unpack(buf);
+                List<Object> newPackedItems = CustomTridentUtils.buildCustomTridentSetEntityDataPacket(user, packedItems, id);
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(id);
+                FastNMS.INSTANCE.method$ClientboundSetEntityDataPacket$pack(newPackedItems, buf);
+                return;
+            }
             Object entityType = user.entityView().get(id);
             if (entityType == Reflections.instance$EntityType$BLOCK_DISPLAY) {
                 boolean isChanged = false;
@@ -2328,17 +2338,6 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityEventPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_DATA = (user, event, packet) -> {
-        try {
-            int entityId = Reflections.field$clazz$ClientboundSetEntityDataPacket$id.getInt(packet);
-            if (user.tridentView().containsKey(entityId)) {
-                CustomTridentUtils.modifyCustomTridentSetEntityData(user, event, entityId);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityDataPacket", e);
         }
     };
 

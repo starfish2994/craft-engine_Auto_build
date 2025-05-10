@@ -6632,7 +6632,7 @@ public class Reflections {
             )
     );
 
-    public static final Field field$clazz$ClientboundSetEntityDataPacket$id = requireNonNull(
+    public static final Field field$ClientboundSetEntityDataPacket$id = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$ClientboundSetEntityDataPacket, int.class, 0
             )
@@ -6730,4 +6730,32 @@ public class Reflections {
                     clazz$ChunkMap$TrackedEntity, clazz$ServerEntity, 0
             )
     );
+
+    public static final Field field$Entity$wasTouchingWater = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$Entity, VersionHelper.isOrAbove1_21_2()
+                            ? new String[]{ "wasTouchingWater", "ag" } : VersionHelper.isOrAbove1_20_5()
+                            ? new String[]{ "wasTouchingWater", "aj" } : VersionHelper.isOrAbove1_20_2()
+                            ? new String[]{ "wasTouchingWater", "ai" } : new String[]{ "wasTouchingWater", "ah" }
+            )
+    );
+
+    public static final Class<?> clazz$AbstractArrow = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.entity.projectile.EntityArrow",
+                    "world.entity.projectile.AbstractArrow"
+            )
+    );
+
+    // 1.20~1.21.1
+    public static final Field field$AbstractArrow$inGround =
+            ReflectionUtils.getDeclaredField(
+                    clazz$AbstractArrow, boolean.class, 0
+            );
+
+    // 1.21.2+
+    public static final Method method$AbstractArrow$isInGround =
+            ReflectionUtils.getMethod(
+                    clazz$AbstractArrow, boolean.class, VersionHelper.isOrAbove1_21_5() ? new String[]{ "isInGround", "e" } : new String[]{ "isInGround", "l" }
+            );
 }

@@ -42,7 +42,6 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
     public Command.Builder<? extends CommandSender> assembleCommand(org.incendo.cloud.CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
-                .required("forceUpdate", BooleanParser.booleanParser())
                 .required("id", NamespacedKeyParser.namespacedKeyComponent().suggestionProvider(new SuggestionProvider<>() {
                     @Override
                     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
@@ -55,18 +54,6 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .required("rotationLeft", StringParser.stringParser())
                 .handler(context -> {
                     Player player = context.sender();
-                    if (context.get("forceUpdate")) {
-                        net.momirealms.craftengine.core.entity.player.Player cePlayer = plugin().adapt(player);
-                        Collection<Trident> tridents = player.getWorld().getEntitiesByClass(Trident.class);
-                        List<Object> packets = new ArrayList<>();
-                        for (Trident trident : tridents) {
-                            int entityId = FastNMS.INSTANCE.method$Entity$getId(FastNMS.INSTANCE.method$CraftEntity$getHandle(trident));
-                            player.sendMessage("COMMAND entityId: " + entityId);
-                            packets.add(CustomTridentUtils.buildCustomTridentSetEntityDataPacket(cePlayer, entityId));
-                        }
-                        cePlayer.sendPackets(packets, true);
-                        return;
-                    }
                     NamespacedKey namespacedKey = context.get("id");
                     ItemStack item = new ItemStack(Material.TRIDENT);
                     item.editMeta((meta) -> {

@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -39,6 +40,8 @@ public class CustomTridentUtils {
     public static void handleCustomTrident(NetWorkUser user, NMSPacketEvent event, Object packet) throws IllegalAccessException {
         int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
         Trident trident = getTridentById(user, entityId);
+        if (trident == null) return;
+        World world = trident.getWorld();
         Object serverEntity;
         Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(trident);
         Object tracker = Reflections.field$Entity$trackedEntity.get(nmsEntity);
@@ -59,11 +62,23 @@ public class CustomTridentUtils {
             SchedulerTask task = CraftEngine.instance().scheduler().asyncRepeating(() -> {
                 try {
                     Reflections.method$ServerEntity$sendChanges.invoke(serverEntity);
+                    if (!isInGround(nmsEntity)) {
+                        world.spawnParticle(ParticleUtils.getParticle("BUBBLE"), trident.getLocation(), 1, 0, 0, 0, 0);
+                    }
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     CraftEngine.instance().logger().warn("Failed to send entity data packet", e);
                 }
-            }, 5, 5, TimeUnit.MILLISECONDS);
+            }, 0, 5, TimeUnit.MILLISECONDS);
             user.tridentTaskView().put(entityId, task);
+        }
+    }
+
+    private static boolean isInGround(Object nmsEntity) throws IllegalAccessException, InvocationTargetException {
+        if (!Reflections.field$Entity$wasTouchingWater.getBoolean(nmsEntity)) return true;
+        if (VersionHelper.isOrAbove1_21_2()) {
+            return (boolean) Reflections.method$AbstractArrow$isInGround.invoke(nmsEntity);
+        } else {
+            return Reflections.field$AbstractArrow$inGround.getBoolean(nmsEntity);
         }
     }
 
@@ -135,20 +150,22 @@ public class CustomTridentUtils {
         Reflections.field$ClientboundMoveEntityPacket$yRot.setByte(packet, MCUtils.packDegrees(-yRot));
     }
 
-    public static Object buildCustomTridentSetEntityDataPacket(NetWorkUser user, int entityId) {
+    public static List<Object> buildCustomTridentSetEntityDataPacket(NetWorkUser user, List<Object> packedItems, int entityId) {
+        List<Object> newPackedItems = new ArrayList<>();
+        for (Object packedItem : packedItems) {
+            int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
+            if (entityDataId < 8) {
+                newPackedItems.add(packedItem);
+            }
+        }
         List<Object> newData = user.tridentView().getOrDefault(entityId, List.of());
         if (newData.isEmpty()) {
             Trident trident = getTridentById(user, entityId);
-            if (notCustomTrident(trident)) return null;
+            if (notCustomTrident(trident)) return newPackedItems;
             newData = buildEntityDataValues(trident);
             user.tridentView().put(entityId, newData);
         }
-        return FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, newData);
-    }
-
-    public static void modifyCustomTridentSetEntityData(NetWorkUser user, NMSPacketEvent event, int entityId) {
-        Object packet = buildCustomTridentSetEntityDataPacket(user, entityId);
-        if (packet == null) return;
-        event.replacePacket(packet);
+        newPackedItems.addAll(newData);
+        return newPackedItems;
     }
 }
