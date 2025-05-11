@@ -6,6 +6,9 @@ import net.momirealms.craftengine.bukkit.item.behavior.BoneMealItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
+import net.momirealms.craftengine.bukkit.item.listener.ArmorEventListener;
+import net.momirealms.craftengine.bukkit.item.listener.DebugStickListener;
+import net.momirealms.craftengine.bukkit.item.listener.ItemEventListener;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
@@ -63,6 +66,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final BukkitCraftEngine plugin;
     private final ItemEventListener itemEventListener;
     private final DebugStickListener debugStickListener;
+    private final ArmorEventListener armorEventListener;
     private final ItemParser itemParser;
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
@@ -72,6 +76,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.factory = BukkitItemFactory.create(plugin);
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
+        this.armorEventListener = new ArmorEventListener();
         this.itemParser = new ItemParser();
         this.registerAllVanillaItems();
         if (plugin.hasMod()) {
@@ -130,6 +135,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, this.plugin.bootstrap());
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this.armorEventListener, this.plugin.bootstrap());
     }
 
     public static BukkitItemManager instance() {
@@ -162,6 +168,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.unload();
         HandlerList.unregisterAll(this.itemEventListener);
         HandlerList.unregisterAll(this.debugStickListener);
+        HandlerList.unregisterAll(this.armorEventListener);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.item;
+package net.momirealms.craftengine.bukkit.item.listener;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
