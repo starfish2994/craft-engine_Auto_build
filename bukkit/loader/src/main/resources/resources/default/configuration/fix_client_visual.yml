@@ -23,4 +23,4 @@ blocks:
   minecraft:note_block:
     settings:
       client-bound-tags:
-        - minecraft:beacon_base_block
+        - minecraft:beacon_base_blocks
