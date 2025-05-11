@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldPosition;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -94,10 +95,12 @@ public class LoadedFurniture implements Furniture {
         List<Collider> colliders = new ArrayList<>();
 
         World world = world();
+        WorldPosition position = new WorldPosition(world, x, y, z, yaw, 0);
+        Integer dyedColor = this.extraData.dyedColor().orElse(null);
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.initPackets(entityId, world, x, y, z, yaw, conjugated, packet -> {
+            element.initPackets(entityId, position, conjugated, dyedColor, packet -> {
                 packets.add(packet);
                 if (this.minimized) minimizedPackets.add(packet);
             });
@@ -109,7 +112,7 @@ public class LoadedFurniture implements Furniture {
                 mainEntityIds.add(entityId);
                 this.hitBoxes.put(entityId, hitBox);
             }
-            hitBox.initPacketsAndColliders(ids, world, x, y, z, yaw, conjugated, (packet, canBeMinimized) -> {
+            hitBox.initPacketsAndColliders(ids, position, conjugated, (packet, canBeMinimized) -> {
                 packets.add(packet);
                 if (this.minimized && !canBeMinimized) {
                     minimizedPackets.add(packet);

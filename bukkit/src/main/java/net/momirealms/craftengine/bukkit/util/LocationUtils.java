@@ -13,7 +13,7 @@ public class LocationUtils {
     private LocationUtils() {}
 
     public static Location toLocation(WorldPosition position) {
-        return new Location((World) position.world().platformWorld(), position.position().x(), position.position().y(), position.position().z());
+        return new Location((World) position.world().platformWorld(), position.x(), position.y(), position.z(), position.xRot(), position.yRot());
     }
 
     public static Vec3d toVec3d(Location loc) {
@@ -33,11 +33,7 @@ public class LocationUtils {
     }
 
     public static Object above(Object blockPos) throws ReflectiveOperationException {
-        return toBlockPos(
-                FastNMS.INSTANCE.field$Vec3i$x(blockPos),
-            FastNMS.INSTANCE.field$Vec3i$y(blockPos) + 1,
-            FastNMS.INSTANCE.field$Vec3i$z(blockPos)
-        );
+        return toBlockPos(FastNMS.INSTANCE.field$Vec3i$x(blockPos), FastNMS.INSTANCE.field$Vec3i$y(blockPos) + 1, FastNMS.INSTANCE.field$Vec3i$z(blockPos));
     }
 
     public static Object toBlockPos(int x, int y, int z) {

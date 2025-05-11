@@ -68,8 +68,8 @@ public class FurnitureExtraData {
             return this;
         }
 
-        public Builder dyedColor(int color) {
-            if (color < 0) return this;
+        public Builder dyedColor(Integer color) {
+            if (color == null) return this;
             this.data.putInt(DYED_COLOR, color);
             return this;
         }

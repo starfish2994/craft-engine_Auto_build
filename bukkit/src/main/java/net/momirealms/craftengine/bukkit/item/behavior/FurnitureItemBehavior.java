@@ -134,7 +134,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
                 FurnitureExtraData.builder()
                         .item(item.copyWithCount(1))
                         .anchorType(anchorType)
-                        .dyedColor(item.dyedColor().orElse(-1))
+                        .dyedColor(item.dyedColor().orElse(null))
                         .build(), false);
 
         FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation, context.getHand());

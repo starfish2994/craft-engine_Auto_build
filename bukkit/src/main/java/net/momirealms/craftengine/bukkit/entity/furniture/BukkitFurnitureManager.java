@@ -151,7 +151,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                             MiscUtils.getAsVector3f(element.getOrDefault("scale", "1"), "scale"),
                             MiscUtils.getAsVector3f(element.getOrDefault("translation", "0"), "translation"),
                             MiscUtils.getAsVector3f(element.getOrDefault("position", "0"), "position"),
-                            MiscUtils.getAsQuaternionf(element.getOrDefault("rotation", "0"), "rotation")
+                            MiscUtils.getAsQuaternionf(element.getOrDefault("rotation", "0"), "rotation"),
+                            (boolean) element.getOrDefault("apply-dyed-color", true)
                     );
                     elements.add(furnitureElement);
                 }
