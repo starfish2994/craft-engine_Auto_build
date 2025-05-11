@@ -1740,7 +1740,7 @@ public class PacketConsumers {
                     } else {
                         furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
                             if (furniture.tryOccupySeat(seatPos)) {
-                                furniture.spawnSeatEntityForPlayer(Objects.requireNonNull(player.getPlayer()), seatPos);
+                                furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
                             }
                         });
                     }

@@ -331,7 +331,7 @@ public class LoadedFurniture implements Furniture {
         }
     }
 
-    public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {
+    private void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {
         Location location = this.calculateSeatLocation(seat);
         Entity seatEntity = seat.limitPlayerRotation() ?
                 EntityUtils.spawnEntity(player.getWorld(), VersionHelper.isOrAbove1_20_2() ? location.subtract(0,0.9875,0) : location.subtract(0,0.990625,0), EntityType.ARMOR_STAND, entity -> {
