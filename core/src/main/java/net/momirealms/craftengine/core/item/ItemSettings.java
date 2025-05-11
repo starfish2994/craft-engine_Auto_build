@@ -27,6 +27,7 @@ public class ItemSettings {
     boolean renameable = true;
     boolean canPlaceRelatedVanillaBlock = false;
     ProjectileMeta projectileMeta;
+    boolean dyeable = false;
 
     private ItemSettings() {}
 
@@ -56,6 +57,7 @@ public class ItemSettings {
         newSettings.renameable = settings.renameable;
         newSettings.canPlaceRelatedVanillaBlock = settings.canPlaceRelatedVanillaBlock;
         newSettings.projectileMeta = settings.projectileMeta;
+        newSettings.dyeable = settings.dyeable;
         return newSettings;
     }
 
@@ -93,6 +95,10 @@ public class ItemSettings {
 
     public Set<Key> tags() {
         return tags;
+    }
+
+    public boolean dyeable() {
+        return dyeable;
     }
 
     public List<AnvilRepairItem> repairItems() {
@@ -141,6 +147,11 @@ public class ItemSettings {
 
     public ItemSettings equipment(EquipmentGeneration equipment) {
         this.equipment = equipment;
+        return this;
+    }
+
+    public ItemSettings dyeable(boolean bool) {
+        this.dyeable = bool;
         return this;
     }
 
@@ -216,6 +227,10 @@ public class ItemSettings {
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
                 return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation));
+            }));
+            registerFactory("dyeable", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.dyeable(bool);
             }));
         }
 

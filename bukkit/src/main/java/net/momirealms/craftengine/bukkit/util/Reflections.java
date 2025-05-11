@@ -5269,6 +5269,13 @@ public class Reflections {
             )
     );
 
+    public static final Class<?> clazz$ArmorDyeRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeArmorDye",
+                    "world.item.crafting.ArmorDyeRecipe"
+            )
+    );
+
     public static final Field field$CraftComplexRecipe$recipe = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$CraftComplexRecipe, clazz$CustomRecipe, 0
