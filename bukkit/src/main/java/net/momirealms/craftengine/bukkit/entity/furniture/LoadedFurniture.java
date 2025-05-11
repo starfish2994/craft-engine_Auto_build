@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
@@ -32,7 +33,7 @@ public class LoadedFurniture implements Furniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
-    private final FurnitureExtraData extraData;
+    private FurnitureExtraData extraData;
     // location
     private final Location location;
     // base entity
@@ -313,6 +314,21 @@ public class LoadedFurniture implements Furniture {
     @Override
     public FurnitureExtraData extraData() {
         return this.extraData;
+    }
+
+    @Override
+    public void setExtraData(FurnitureExtraData extraData) {
+        this.extraData = extraData;
+        this.save();
+    }
+
+    @Override
+    public void save() {
+        try {
+            this.baseEntity().getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_EXTRA_DATA_KEY, PersistentDataType.BYTE_ARRAY, this.extraData.toBytes());
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to save furniture data.", e);
+        }
     }
 
     public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {

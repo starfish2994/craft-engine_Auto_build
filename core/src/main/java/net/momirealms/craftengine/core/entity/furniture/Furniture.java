@@ -48,4 +48,8 @@ public interface Furniture {
     void spawnSeatEntityForPlayer(Player player, Seat seat);
 
     FurnitureExtraData extraData();
+
+    void setExtraData(FurnitureExtraData extraData);
+
+    void save();
 }

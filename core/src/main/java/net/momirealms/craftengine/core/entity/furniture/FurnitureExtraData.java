@@ -19,6 +19,18 @@ public class FurnitureExtraData {
         this.data = data;
     }
 
+    public static FurnitureExtraData of(CompoundTag data) {
+        return new FurnitureExtraData(data);
+    }
+
+    public CompoundTag copyTag() {
+        return this.data.copy();
+    }
+
+    public CompoundTag unsafeTag() {
+        return this.data;
+    }
+
     public Optional<Item<?>> item() {
         byte[] data = this.data.getByteArray(ITEM);
         if (data == null) return Optional.empty();
