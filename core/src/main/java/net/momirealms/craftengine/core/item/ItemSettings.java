@@ -27,7 +27,7 @@ public class ItemSettings {
     boolean renameable = true;
     boolean canPlaceRelatedVanillaBlock = false;
     ProjectileMeta projectileMeta;
-    boolean dyeable = false;
+    boolean dyeable = true;
 
     private ItemSettings() {}
 

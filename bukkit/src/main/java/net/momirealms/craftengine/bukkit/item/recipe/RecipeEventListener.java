@@ -755,31 +755,13 @@ public class RecipeEventListener implements Listener {
                 inventory.setResult(newItem.load());
             } else if (Reflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
                 ItemStack[] itemStacks = inventory.getMatrix();
-                Pair<ItemStack, ItemStack> onlyTwoItems = getTheOnlyTwoItem(itemStacks);
-                if (onlyTwoItems.left() == null || onlyTwoItems.right() == null) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                Item<ItemStack> left = plugin.itemManager().wrap(onlyTwoItems.left());
-                Item<ItemStack> right = plugin.itemManager().wrap(onlyTwoItems.right());
-                // can't be two custom items
-                if (left.isCustomItem() && right.isCustomItem()) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                Optional<CustomItem<ItemStack>> customLeftItem = left.getCustomItem();
-                if (customLeftItem.isPresent()) {
-                    if (!customLeftItem.get().settings().dyeable()) {
+                for (ItemStack itemStack : itemStacks) {
+                    if (itemStack == null) continue;
+                    Item<ItemStack> item = plugin.itemManager().wrap(itemStack);
+                    Optional<CustomItem<ItemStack>> optionalCustomItem = item.getCustomItem();
+                    if (optionalCustomItem.isPresent() && !optionalCustomItem.get().settings().dyeable()) {
                         inventory.setResult(null);
-                    }
-                } else {
-                    Optional<CustomItem<ItemStack>> customRightItem = right.getCustomItem();
-                    if (customRightItem.isPresent()) {
-                        if (!customRightItem.get().settings().dyeable()) {
-                            inventory.setResult(null);
-                        }
+                        return;
                     }
                 }
             } else {
