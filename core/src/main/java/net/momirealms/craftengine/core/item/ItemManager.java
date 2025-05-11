@@ -41,6 +41,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     Item<T> wrap(T itemStack);
 
+    Item<T> fromByteArray(byte[] bytes);
+
     Collection<Key> items();
 
     Key itemId(T itemStack);

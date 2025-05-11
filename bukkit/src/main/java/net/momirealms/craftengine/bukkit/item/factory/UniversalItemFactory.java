@@ -153,6 +153,21 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
+    protected Optional<Integer> dyedColor(LegacyItemWrapper item) {
+        if (!item.hasTag("display", "color")) return Optional.empty();
+        return Optional.of(item.get("display", "color"));
+    }
+
+    @Override
+    protected void dyedColor(LegacyItemWrapper item, Integer color) {
+        if (color == null) {
+            item.remove("display", "color");
+        } else {
+            item.set(color, "display", "color");
+        }
+    }
+
+    @Override
     protected Optional<Integer> maxDamage(LegacyItemWrapper item) {
         return Optional.of((int) item.getItem().getType().getMaxDurability());
     }

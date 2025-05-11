@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
 import com.google.gson.JsonElement;
+import com.saicone.rtag.item.ItemTagStream;
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.EquipmentData;
@@ -44,6 +45,11 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
             }
             default -> throw new IllegalStateException("Unsupported server version: " + plugin.serverVersion());
         }
+    }
+
+    @Override
+    protected byte[] toByteArray(W item) {
+        return ItemTagStream.INSTANCE.toBytes(item.getItem());
     }
 
     @Override

@@ -245,6 +245,26 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
+    protected Optional<Integer> dyedColor(ComponentItemWrapper item) {
+        if (!item.hasComponent(ComponentTypes.DYED_COLOR)) return Optional.empty();
+        return Optional.ofNullable(
+                (Integer) ComponentType.encodeJava(
+                        ComponentTypes.DYED_COLOR,
+                        item.getComponent(ComponentTypes.DYED_COLOR)
+                ).orElse(null)
+        );
+    }
+
+    @Override
+    protected void dyedColor(ComponentItemWrapper item, Integer color) {
+        if (color == null) {
+            item.resetComponent(ComponentTypes.DYED_COLOR);
+        } else {
+            item.setJavaComponent(ComponentTypes.DYED_COLOR, color);
+        }
+    }
+
+    @Override
     protected Optional<Integer> maxDamage(ComponentItemWrapper item) {
         if (!item.hasComponent(ComponentTypes.MAX_DAMAGE)) return Optional.of((int) item.getItem().getType().getMaxDurability());
         return Optional.ofNullable(

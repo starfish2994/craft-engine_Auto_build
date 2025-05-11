@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import com.saicone.rtag.item.ItemTagStream;
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BoneMealItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
@@ -161,6 +162,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.unload();
         HandlerList.unregisterAll(this.itemEventListener);
         HandlerList.unregisterAll(this.debugStickListener);
+    }
+
+    @Override
+    public Item<ItemStack> fromByteArray(byte[] bytes) {
+        return this.factory.wrap(ItemTagStream.INSTANCE.fromBytes(bytes));
     }
 
     @Override

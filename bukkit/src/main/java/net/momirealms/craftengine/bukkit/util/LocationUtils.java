@@ -3,12 +3,18 @@ package net.momirealms.craftengine.bukkit.util;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 public class LocationUtils {
 
     private LocationUtils() {}
+
+    public static Location toLocation(WorldPosition position) {
+        return new Location((World) position.world().platformWorld(), position.position().x(), position.position().y(), position.position().z());
+    }
 
     public static Vec3d toVec3d(Location loc) {
         return new Vec3d(loc.getX(), loc.getY(), loc.getZ());

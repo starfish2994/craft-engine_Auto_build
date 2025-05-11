@@ -9,6 +9,7 @@ import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.furniture.AnchorType;
 import net.momirealms.craftengine.core.entity.furniture.CustomFurniture;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureExtraData;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
@@ -41,7 +42,7 @@ public final class CraftEngineFurniture {
     }
 
     /**
-     * Places furniture at the certain location
+     * Places furniture at certain location
      *
      * @param location    location
      * @param furnitureId furniture to place
@@ -55,7 +56,7 @@ public final class CraftEngineFurniture {
     }
 
     /**
-     * Places furniture at the certain location
+     * Places furniture at certain location
      *
      * @param location    location
      * @param furnitureId furniture to place
@@ -66,11 +67,11 @@ public final class CraftEngineFurniture {
     public static LoadedFurniture place(Location location, Key furnitureId, AnchorType anchorType) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
-        return BukkitFurnitureManager.instance().place(furniture, location, anchorType, true);
+        return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), true);
     }
 
     /**
-     * Places furniture at the certain location
+     * Places furniture at certain location
      *
      * @param location   location
      * @param furniture  furniture to place
@@ -79,11 +80,11 @@ public final class CraftEngineFurniture {
      */
     @NotNull
     public static LoadedFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType) {
-        return BukkitFurnitureManager.instance().place(furniture, location, anchorType, true);
+        return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), true);
     }
 
     /**
-     * Places furniture at the certain location
+     * Places furniture at certain location
      *
      * @param location    location
      * @param furnitureId furniture to place
@@ -95,11 +96,11 @@ public final class CraftEngineFurniture {
     public static LoadedFurniture place(Location location, Key furnitureId, AnchorType anchorType, boolean playSound) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
-        return BukkitFurnitureManager.instance().place(furniture, location, anchorType, playSound);
+        return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), playSound);
     }
 
     /**
-     * Places furniture at the certain location
+     * Places furniture at certain location
      *
      * @param location   location
      * @param furniture  furniture to place
@@ -109,7 +110,7 @@ public final class CraftEngineFurniture {
      */
     @NotNull
     public static LoadedFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType, boolean playSound) {
-        return BukkitFurnitureManager.instance().place(furniture, location, anchorType, playSound);
+        return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), playSound);
     }
 
     /**
@@ -222,7 +223,7 @@ public final class CraftEngineFurniture {
     }
 
     /**
-     * Removes furniture by providing a plugin furniture instance
+     * Removes furniture by providing furniture instance
      *
      * @param loadedFurniture loaded furniture
      * @param dropLoot whether to drop loots
@@ -235,7 +236,7 @@ public final class CraftEngineFurniture {
     }
 
     /**
-     * Removes furniture by providing a plugin furniture instance
+     * Removes furniture by providing furniture instance
      *
      * @param loadedFurniture loaded furniture
      * @param player the player who removes the furniture
@@ -251,7 +252,7 @@ public final class CraftEngineFurniture {
     }
 
     /**
-     * Removes furniture by providing a plugin furniture instance
+     * Removes furniture by providing furniture instance
      *
      * @param loadedFurniture loaded furniture
      * @param player the player who removes the furniture
@@ -272,6 +273,7 @@ public final class CraftEngineFurniture {
             ContextHolder.Builder builder = ContextHolder.builder();
             builder.withParameter(CommonParameters.LOCATION, vec3d);
             builder.withParameter(CommonParameters.WORLD, world);
+            builder.withOptionalParameter(CommonParameters.FURNITURE_ITEM, loadedFurniture.extraData().item().orElse(null));
             if (player != null) {
                 builder.withParameter(CommonParameters.PLAYER, player);
                 //mark item builder.withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, player.getItemInHand(InteractionHand.MAIN_HAND));

@@ -31,6 +31,7 @@ public class LoadedFurniture implements Furniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
+    private final FurnitureExtraData extraData;
     // location
     private final Location location;
     // base entity
@@ -54,10 +55,11 @@ public class LoadedFurniture implements Furniture {
 
     public LoadedFurniture(Entity baseEntity,
                            CustomFurniture furniture,
-                           AnchorType anchorType) {
+                           FurnitureExtraData extraData) {
         this.id = furniture.id();
+        this.extraData = extraData;
         this.baseEntityId = baseEntity.getEntityId();
-        this.anchorType = anchorType;
+        this.anchorType = extraData.anchorType().orElse(furniture.getAnyPlacement());
         this.location = baseEntity.getLocation();
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
@@ -303,6 +305,11 @@ public class LoadedFurniture implements Furniture {
     @Override
     public void spawnSeatEntityForPlayer(net.momirealms.craftengine.core.entity.player.Player player, Seat seat) {
         spawnSeatEntityForPlayer((Player) player.platformPlayer(), seat);
+    }
+
+    @Override
+    public FurnitureExtraData extraData() {
+        return this.extraData;
     }
 
     public void spawnSeatEntityForPlayer(org.bukkit.entity.Player player, Seat seat) {

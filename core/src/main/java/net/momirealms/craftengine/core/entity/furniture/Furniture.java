@@ -46,4 +46,6 @@ public interface Furniture {
     boolean hasExternalModel();
 
     void spawnSeatEntityForPlayer(Player player, Seat seat);
+
+    FurnitureExtraData extraData();
 }

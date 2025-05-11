@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.core.entity.furniture.AnchorType;
 import net.momirealms.craftengine.core.entity.furniture.CustomFurniture;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureExtraData;
 import net.momirealms.craftengine.core.entity.furniture.HitBox;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -126,7 +127,15 @@ public class FurnitureItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
 
-        LoadedFurniture loadedFurniture = BukkitFurnitureManager.instance().place(customFurniture, furnitureLocation.clone(), anchorType, false);
+        Item<?> item = context.getItem();
+
+        LoadedFurniture loadedFurniture = BukkitFurnitureManager.instance().place(
+                furnitureLocation.clone(), customFurniture,
+                FurnitureExtraData.builder()
+                        .item(item.copyWithCount(1))
+                        .anchorType(anchorType)
+                        .dyedColor(item.dyedColor().orElse(-1))
+                        .build(), false);
 
         FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, loadedFurniture, furnitureLocation, context.getHand());
         if (EventUtils.fireAndCheckCancel(placeEvent)) {
@@ -135,7 +144,6 @@ public class FurnitureItemBehavior extends ItemBehavior {
         }
 
         if (!player.isCreativeMode()) {
-            Item<?> item = context.getItem();
             item.count(item.count() - 1);
             item.load();
         }

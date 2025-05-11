@@ -71,7 +71,7 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
 
     @Override
     public ItemWrapper<ItemStack> copyWithCount(int count) {
-        ItemStack copied = item.clone();
+        ItemStack copied = this.item.clone();
         copied.setAmount(count);
         return new ComponentItemWrapper(copied);
     }
