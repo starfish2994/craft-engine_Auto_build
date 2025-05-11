@@ -11,10 +11,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
-import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
-import net.momirealms.craftengine.bukkit.util.RegistryUtils;
+import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.properties.Properties;
 import net.momirealms.craftengine.core.block.properties.Property;
@@ -34,12 +31,15 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
+import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +49,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BukkitBlockManager extends AbstractBlockManager {
     private static BukkitBlockManager instance;
@@ -91,6 +92,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // Event listeners
     private final BlockEventListener blockEventListener;
     private final FallingBlockRemoveListener fallingBlockRemoveListener;
+
+    private Map<Integer, List<String>> clientBoundTags = Map.of();
+    private Map<Integer, List<String>> previousTags = Map.of();
+    protected Object cachedUpdateTagsPacket;
 
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -146,6 +151,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.modBlockStates.clear();
         if (EmptyBlock.STATE != null)
             Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.STATE);
+        this.previousTags = this.clientBoundTags;
+        this.clientBoundTags = new HashMap<>();
     }
 
     @Override
@@ -165,6 +172,26 @@ public class BukkitBlockManager extends AbstractBlockManager {
         initSuggestions();
         resetPacketConsumers();
         clearCache();
+        resendTags();
+    }
+
+    private void resendTags() {
+        // if there's no change
+        if (this.clientBoundTags.equals(this.previousTags)) return;
+        List<TagUtils.TagEntry> list = new ArrayList<>();
+        for (Map.Entry<Integer, List<String>> entry : this.clientBoundTags.entrySet()) {
+            list.add(new TagUtils.TagEntry(entry.getKey(), entry.getValue()));
+        }
+        Object packet = TagUtils.createUpdateTagsPacket(Map.of(Reflections.instance$Registries$BLOCK, list));
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            this.plugin.networkManager().sendPacket(player, packet);
+        }
+        // 如果空，那么新来的玩家就没必要收到更新包了
+        if (list.isEmpty()) {
+            this.cachedUpdateTagsPacket = null;
+        } else {
+            this.cachedUpdateTagsPacket = packet;
+        }
     }
 
     private void clearCache() {
@@ -333,10 +360,18 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
-            // check duplicated config
-            if (byId.containsKey(id)) {
-                throw new LocalizedResourceConfigException("warning.config.block.duplicate");
+            if (id.namespace().equals("minecraft") && Registry.MATERIAL.get(KeyUtils.toNamespacedKey(id)) != null) {
+                parseVanillaBlock(pack, path, id, section);
+            } else {
+                // check duplicated config
+                if (byId.containsKey(id)) {
+                    throw new LocalizedResourceConfigException("warning.config.block.duplicate");
+                }
+                parseCustomBlock(pack, path, id, section);
             }
+        }
+
+        private void parseCustomBlock(Pack pack, Path path, Key id, Map<String, Object> section) {
             // read block settings
             BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.getOrDefault("settings", Map.of()), false));
 
@@ -458,14 +493,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
             CustomBlock block = BukkitCustomBlock.builder(id)
-                        .appearances(appearances)
-                        .variantMapper(variants)
-                        .lootTable(lootTable)
-                        .properties(properties)
-                        .settings(settings)
-                        .behavior(behaviors)
-                        .events(events)
-                        .build();
+                    .appearances(appearances)
+                    .variantMapper(variants)
+                    .lootTable(lootTable)
+                    .properties(properties)
+                    .settings(settings)
+                    .behavior(behaviors)
+                    .events(events)
+                    .build();
 
             // bind appearance and real state
             for (ImmutableBlockState state : block.variantProvider().states()) {
@@ -479,13 +514,30 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 appearanceToRealState.computeIfAbsent(state.vanillaBlockState().registryId(), k -> new ArrayList<>()).add(state.customBlockState().registryId());
             }
 
-            byId.put(id, block);
+            BukkitBlockManager.this.byId.put(id, block);
 
             // generate mod assets
             if (Config.generateModAssets()) {
                 for (ImmutableBlockState state : block.variantProvider().states()) {
                     Key realBlockId = BlockStateUtils.getBlockOwnerIdFromState(state.customBlockState());
                     modBlockStates.put(realBlockId, tempVanillaBlockStateModels.get(state.vanillaBlockState().registryId()));
+                }
+            }
+        }
+
+        private void parseVanillaBlock(Pack pack, Path path, Key id, Map<String, Object> section) {
+            Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), true);
+            if (settings != null) {
+                Object clientBoundTags = settings.get("client-bound-tags");
+                if (clientBoundTags instanceof List<?> list) {
+                    List<String> clientSideTags = MiscUtils.getAsStringList(list).stream().filter(ResourceLocation::isValid).toList();
+                    try {
+                        Object nmsBlock = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, KeyUtils.toResourceLocation(id));
+                        FastNMS.INSTANCE.method$IdMap$getId(Reflections.instance$BuiltInRegistries$BLOCK, nmsBlock).ifPresent(i ->
+                                BukkitBlockManager.this.clientBoundTags.put(i, clientSideTags));
+                    } catch (ReflectiveOperationException e) {
+                        BukkitBlockManager.this.plugin.logger().warn("Unable to get block " + id, e);
+                    }
                 }
             }
         }

@@ -1790,7 +1790,7 @@ public class PacketConsumers {
                     buf.writeLong(seed);
                 }
             } else {
-                Optional<Object> optionalSound = FastNMS.INSTANCE.method$BuiltInRegistries$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
+                Optional<Object> optionalSound = FastNMS.INSTANCE.method$IdMap$byId(Reflections.instance$BuiltInRegistries$SOUND_EVENT, id - 1);
                 if (optionalSound.isEmpty()) return;
                 Object soundEvent = optionalSound.get();
                 Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(soundEvent));
