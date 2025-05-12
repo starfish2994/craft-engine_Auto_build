@@ -17,7 +17,7 @@ import java.nio.file.Path;
 
 public class ModConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("craft-engine-fabric-mod/config.yml");
-    public static boolean enableNetwork = true;
+    public static boolean enableNetwork = false;
     public static boolean enableCancelBlockUpdate = false;
 
     public static Screen getConfigScreen(Screen parent) {
@@ -33,7 +33,7 @@ public class ModConfig {
                 Text.translatable("option.craftengine.enable_network")
                         .formatted(Formatting.WHITE),
                         enableNetwork)
-                .setDefaultValue(true)
+                .setDefaultValue(false)
                 .setSaveConsumer(newValue -> enableNetwork = newValue)
                 .setTooltip(
                         Text.translatable("tooltip.craftengine.enable_network")

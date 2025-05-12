@@ -53,7 +53,7 @@ public class CraftEngineFabricMod implements ModInitializer {
     @SuppressWarnings("unchecked")
     private void loadConfig() {
         if (!Files.exists(CONFIG_PATH)) {
-            ModConfig.enableNetwork = true;
+            ModConfig.enableNetwork = false;
             ModConfig.enableCancelBlockUpdate = false;
             return;
         }
@@ -61,11 +61,11 @@ public class CraftEngineFabricMod implements ModInitializer {
             Yaml yaml = new Yaml();
             var config = yaml.loadAs(inputStream, java.util.Map.class);
             if (config == null) {
-                ModConfig.enableNetwork = true;
+                ModConfig.enableNetwork = false;
                 ModConfig.enableCancelBlockUpdate = false;
                 return;
             }
-            ModConfig.enableNetwork = (Boolean) config.getOrDefault("enable-network", true);
+            ModConfig.enableNetwork = (Boolean) config.getOrDefault("enable-network", false);
             ModConfig.enableCancelBlockUpdate = (Boolean) config.getOrDefault("enable-cancel-block-update", false);
         } catch (IOException e) {
             e.printStackTrace();
