@@ -1961,14 +1961,10 @@ public class PacketConsumers {
                 } else {
                     data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
                 }
-                String decodeData = new String(data, StandardCharsets.UTF_8);
-                if (decodeData.endsWith("init")) {
-                    int firstColon = decodeData.indexOf(':');
-                    if (firstColon == -1) return;
-                    int secondColon = decodeData.indexOf(':', firstColon + 1);
-                    if (secondColon == -1) return;
-                    String payloadData = decodeData.substring(firstColon + 1, secondColon);
-                    int clientBlockRegistrySize = Integer.parseInt(payloadData);
+                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+                NetWorkDataTypes dataType = buf.readEnumConstant(NetWorkDataTypes.class);
+                if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
+                    int clientBlockRegistrySize = dataType.decode(buf);
                     int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
                     if (clientBlockRegistrySize != serverBlockRegistrySize) {
                         Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
@@ -1985,23 +1981,16 @@ public class PacketConsumers {
                         return;
                     }
                     user.setClientModState(true);
-                } else if (decodeData.endsWith("cancel")) {
+                } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
                     if (!VersionHelper.isOrAbove1_20_2()) return;
-                    int firstColon = decodeData.indexOf(':');
-                    if (firstColon == -1) return;
-                    int secondColon = decodeData.indexOf(':', firstColon + 1);
-                    if (secondColon == -1) return;
-                    String payloadData = decodeData.substring(firstColon + 1, secondColon);
-                    boolean cancel = Boolean.parseBoolean(payloadData);
-                    if (cancel) {
-                        user.nettyChannel().writeAndFlush(
-                                Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(
-                                        Reflections.constructor$DiscardedPayload.newInstance(
-                                                KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL)),
-                                                (":true:cancel").getBytes(StandardCharsets.UTF_8)
-                                        )
-                                )
-                        );
+                    if (dataType.decode(buf)) {
+                        FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
+                        bufPayload.writeEnumConstant(dataType);
+                        dataType.encode(bufPayload, true);
+                        Object channelKey = KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL));
+                        Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, bufPayload.array());
+                        Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
+                        user.nettyChannel().writeAndFlush(responsePacket);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.fabric.client;
 
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,14 +15,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.color.world.BiomeColors;
 import net.minecraft.client.network.ClientConfigurationNetworkHandler;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.FoliageColors;
 import net.momirealms.craftengine.fabric.client.blocks.CustomBlock;
 import net.momirealms.craftengine.fabric.client.config.ModConfig;
 import net.momirealms.craftengine.fabric.client.network.CraftEnginePayload;
-
-import java.nio.charset.StandardCharsets;
+import net.momirealms.craftengine.fabric.client.util.NetWorkDataTypes;
 
 @Environment(EnvType.CLIENT)
 public class CraftEngineFabricModClient implements ClientModInitializer {
@@ -65,34 +66,33 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
     }
 
     private static void initChannel(ClientConfigurationNetworkHandler handler, MinecraftClient client) {
-        if (ModConfig.enableNetwork) {
-            registerChannel(handler);
-        } else if (ModConfig.enableCancelBlockUpdate) {
-            registerCancelBlockUpdateChannel(handler);
-        } else {
+        if (!ModConfig.enableNetwork && !ModConfig.enableCancelBlockUpdate) {
             ClientConfigurationNetworking.unregisterGlobalReceiver(CraftEnginePayload.ID);
+            return;
         }
+
+        NetWorkDataTypes type = ModConfig.enableNetwork
+                ? NetWorkDataTypes.CLIENT_CUSTOM_BLOCK
+                : NetWorkDataTypes.CANCEL_BLOCK_UPDATE;
+
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        buf.writeEnumConstant(type);
+
+        if (ModConfig.enableNetwork) {
+            type.encode(buf, Block.STATE_IDS.size());
+        } else if (ModConfig.enableCancelBlockUpdate) {
+            type.encode(buf, true);
+        }
+
+        ClientConfigurationNetworking.send(new CraftEnginePayload(buf.array()));
     }
 
     private static void handleReceiver(CraftEnginePayload payload, ClientConfigurationNetworking.Context context) {
         byte[] data = payload.data();
-        String decodeData = new String(data, StandardCharsets.UTF_8);
-        if (decodeData.endsWith("cancel")) {
-            int firstColon = decodeData.indexOf(':');
-            if (firstColon == -1) return;
-            int secondColon = decodeData.indexOf(':', firstColon + 1);
-            if (secondColon == -1) return;
-            String payloadData = decodeData.substring(firstColon + 1, secondColon);
-            serverInstalled = Boolean.parseBoolean(payloadData);
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(data));
+        NetWorkDataTypes type = buf.readEnumConstant(NetWorkDataTypes.class);
+        if (type == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
+            serverInstalled = type.decode(buf);
         }
-    }
-
-    private static void registerChannel(ClientConfigurationNetworkHandler handler) {
-        ClientConfigurationNetworking.send(new CraftEnginePayload((":" + Block.STATE_IDS.size() + ":init").getBytes(StandardCharsets.UTF_8)));
-    }
-
-    private static void registerCancelBlockUpdateChannel(ClientConfigurationNetworkHandler handler) {
-        ClientConfigurationNetworking.send(new CraftEnginePayload((":true:cancel").getBytes(StandardCharsets.UTF_8)));
-
     }
 }
