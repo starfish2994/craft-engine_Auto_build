@@ -2,34 +2,62 @@ package net.momirealms.craftengine.fabric.client.util;
 
 import net.minecraft.network.PacketByteBuf;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public enum NetWorkDataTypes {
-    CLIENT_CUSTOM_BLOCK(
-            PacketByteBuf::readInt,
-            PacketByteBuf::writeInt
-    ),
-    CANCEL_BLOCK_UPDATE(
-            PacketByteBuf::readBoolean,
-            PacketByteBuf::writeBoolean
-    );
+public class NetWorkDataTypes<T> {
+    private static final Map<Integer, NetWorkDataTypes<?>> id2NetWorkDataTypes = new HashMap<>();
 
-    private final Function<PacketByteBuf, ?> decoder;
-    private final BiConsumer<PacketByteBuf, Object> encoder;
+    public static final NetWorkDataTypes<Integer> CLIENT_CUSTOM_BLOCK =
+            new NetWorkDataTypes<>(0, PacketByteBuf::readInt, PacketByteBuf::writeInt);
 
-    @SuppressWarnings("unchecked")
-    <T> NetWorkDataTypes(Function<PacketByteBuf, T> decoder, BiConsumer<PacketByteBuf, T> encoder) {
+    public static final NetWorkDataTypes<Boolean> CANCEL_BLOCK_UPDATE =
+            new NetWorkDataTypes<>(1, PacketByteBuf::readBoolean, PacketByteBuf::writeBoolean);
+
+    static {
+        register(CLIENT_CUSTOM_BLOCK);
+        register(CANCEL_BLOCK_UPDATE);
+    }
+
+    private static void register(NetWorkDataTypes<?> type) {
+        id2NetWorkDataTypes.put(type.id, type);
+    }
+
+    private final int id;
+    private final Function<PacketByteBuf, T> decoder;
+    private final BiConsumer<PacketByteBuf, T> encoder;
+
+    public NetWorkDataTypes(int id, Function<PacketByteBuf, T> decoder, BiConsumer<PacketByteBuf, T> encoder) {
+        this.id = id;
         this.decoder = decoder;
-        this.encoder = (buf, data) -> encoder.accept(buf, (T) data);
+        this.encoder = encoder;
+    }
+
+    public T decode(PacketByteBuf buf) {
+        return decoder.apply(buf);
+    }
+
+    public void encode(PacketByteBuf buf, T data) {
+        encoder.accept(buf, data);
+    }
+
+    public int id() {
+        return id;
+    }
+
+    public void writeType(PacketByteBuf buf) {
+        buf.writeVarInt(id);
+    }
+
+    public static NetWorkDataTypes<?> readType(PacketByteBuf buf) {
+        int id = buf.readVarInt();
+        return id2NetWorkDataTypes.get(id);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T decode(PacketByteBuf buf) {
-        return (T) decoder.apply(buf);
-    }
-
-    public <T> void encode(PacketByteBuf buf, T data) {
-        encoder.accept(buf, data);
+    public <R> NetWorkDataTypes<R> as(Class<R> clazz) {
+        return (NetWorkDataTypes<R>) this;
     }
 }

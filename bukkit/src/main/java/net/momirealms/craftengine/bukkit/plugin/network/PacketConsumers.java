@@ -1962,9 +1962,9 @@ public class PacketConsumers {
                     data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
                 }
                 FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
-                NetWorkDataTypes dataType = buf.readEnumConstant(NetWorkDataTypes.class);
+                NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
                 if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
-                    int clientBlockRegistrySize = dataType.decode(buf);
+                    int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
                     int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
                     if (clientBlockRegistrySize != serverBlockRegistrySize) {
                         Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
@@ -1983,10 +1983,10 @@ public class PacketConsumers {
                     user.setClientModState(true);
                 } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
                     if (!VersionHelper.isOrAbove1_20_2()) return;
-                    if (dataType.decode(buf)) {
+                    if (dataType.as(Boolean.class).decode(buf)) {
                         FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
-                        bufPayload.writeEnumConstant(dataType);
-                        dataType.encode(bufPayload, true);
+                        dataType.writeType(bufPayload);
+                        dataType.as(Boolean.class).encode(bufPayload, true);
                         Object channelKey = KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL));
                         Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, bufPayload.array());
                         Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);

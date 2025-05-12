@@ -71,16 +71,15 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
             return;
         }
 
-        NetWorkDataTypes type = ModConfig.enableNetwork
-                ? NetWorkDataTypes.CLIENT_CUSTOM_BLOCK
-                : NetWorkDataTypes.CANCEL_BLOCK_UPDATE;
-
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeEnumConstant(type);
 
         if (ModConfig.enableNetwork) {
+            NetWorkDataTypes<Integer> type = NetWorkDataTypes.CLIENT_CUSTOM_BLOCK;
+            type.writeType(buf);
             type.encode(buf, Block.STATE_IDS.size());
         } else if (ModConfig.enableCancelBlockUpdate) {
+            NetWorkDataTypes<Boolean> type = NetWorkDataTypes.CANCEL_BLOCK_UPDATE;
+            type.writeType(buf);
             type.encode(buf, true);
         }
 
@@ -90,9 +89,9 @@ public class CraftEngineFabricModClient implements ClientModInitializer {
     private static void handleReceiver(CraftEnginePayload payload, ClientConfigurationNetworking.Context context) {
         byte[] data = payload.data();
         PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(data));
-        NetWorkDataTypes type = buf.readEnumConstant(NetWorkDataTypes.class);
+        NetWorkDataTypes<?> type = NetWorkDataTypes.readType(buf);
         if (type == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
-            serverInstalled = type.decode(buf);
+            serverInstalled = type.as(Boolean.class).decode(buf);
         }
     }
 }
