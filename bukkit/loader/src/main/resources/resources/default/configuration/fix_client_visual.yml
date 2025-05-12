@@ -24,3 +24,4 @@ blocks:
     settings:
       client-bound-tags:
         - minecraft:beacon_base_blocks
+        - minecraft:mineable/axe
