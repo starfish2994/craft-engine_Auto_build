@@ -6659,4 +6659,20 @@ public class Reflections {
                     "world.entity.projectile.AbstractArrow"
             )
     );
+
+    public static final Class<?> clazz$ClientboundCustomPayloadPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    List.of("network.protocol.game.PacketPlayOutCustomPayload", "network.protocol.common.ClientboundCustomPayloadPacket"),
+                    List.of("network.protocol.game.ClientboundCustomPayloadPacket", "network.protocol.common.ClientboundCustomPayloadPacket")
+            )
+    );
+
+    public static final Constructor<?> constructor$ClientboundCustomPayloadPacket = requireNonNull(
+            ReflectionUtils.getTheOnlyConstructor(clazz$ClientboundCustomPayloadPacket)
+    );
+
+    // 1.20.2+
+    public static final Constructor<?> constructor$DiscardedPayload = Optional.ofNullable(clazz$DiscardedPayload)
+            .map(clazz -> ReflectionUtils.getTheOnlyConstructor(clazz))
+            .orElse(null);
 }

@@ -1961,29 +1961,38 @@ public class PacketConsumers {
                 } else {
                     data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
                 }
-                String decodeData = new String(data, StandardCharsets.UTF_8);
-                if (!decodeData.endsWith("init")) return;
-                int firstColon = decodeData.indexOf(':');
-                if (firstColon == -1) return;
-                int secondColon = decodeData.indexOf(':', firstColon + 1);
-                if (secondColon == -1) return;
-                int clientBlockRegistrySize = Integer.parseInt(decodeData.substring(firstColon + 1, secondColon));
-                int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
-                if (clientBlockRegistrySize != serverBlockRegistrySize) {
-                    Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
-                            ComponentUtils.adventureToMinecraft(
-                                    Component.translatable(
-                                            "disconnect.craftengine.block_registry_mismatch",
-                                            TranslationArgument.numeric(clientBlockRegistrySize),
-                                            TranslationArgument.numeric(serverBlockRegistrySize)
-                                    )
-                            )
-                    );
-                    user.nettyChannel().writeAndFlush(kickPacket);
-                    user.nettyChannel().disconnect();
-                    return;
+                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+                NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
+                if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
+                    int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
+                    int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
+                    if (clientBlockRegistrySize != serverBlockRegistrySize) {
+                        Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
+                                ComponentUtils.adventureToMinecraft(
+                                        Component.translatable(
+                                                "disconnect.craftengine.block_registry_mismatch",
+                                                TranslationArgument.numeric(clientBlockRegistrySize),
+                                                TranslationArgument.numeric(serverBlockRegistrySize)
+                                        )
+                                )
+                        );
+                        user.nettyChannel().writeAndFlush(kickPacket);
+                        user.nettyChannel().disconnect();
+                        return;
+                    }
+                    user.setClientModState(true);
+                } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
+                    if (!VersionHelper.isOrAbove1_20_2()) return;
+                    if (dataType.as(Boolean.class).decode(buf)) {
+                        FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
+                        dataType.writeType(bufPayload);
+                        dataType.as(Boolean.class).encode(bufPayload, true);
+                        Object channelKey = KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL));
+                        Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, bufPayload.array());
+                        Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
+                        user.nettyChannel().writeAndFlush(responsePacket);
+                    }
                 }
-                user.setClientModState(true);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
