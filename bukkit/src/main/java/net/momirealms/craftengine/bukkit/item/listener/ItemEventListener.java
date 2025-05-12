@@ -73,11 +73,6 @@ public class ItemEventListener implements Listener {
         Object blockState = BlockStateUtils.blockDataToBlockState(blockData);
         ImmutableBlockState immutableBlockState = null;
         int stateId = BlockStateUtils.blockStateToId(blockState);
-        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
-
-        Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand == null ? Optional.empty() : itemInHand.getCustomItem();
-        boolean hasItem = itemInHand != null;
-        boolean hasCustomItem = optionalCustomItem.isPresent();
 
         // 处理自定义方块
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
@@ -98,6 +93,7 @@ public class ItemEventListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
+
             // run custom functions
             CustomBlock customBlock = immutableBlockState.owner().value();
             PlayerBlockActionContext context = PlayerBlockActionContext.of(serverPlayer, new BukkitBlockInWorld(block), ContextHolder.builder()
@@ -111,6 +107,11 @@ public class ItemEventListener implements Listener {
             if (action.isRightClick()) customBlock.execute(context, EventTrigger.RIGHT_CLICK);
             else customBlock.execute(context, EventTrigger.LEFT_CLICK);
         }
+
+        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand == null ? Optional.empty() : itemInHand.getCustomItem();
+        boolean hasItem = itemInHand != null;
+        boolean hasCustomItem = optionalCustomItem.isPresent();
 
         // interact block with items
         if (hasItem && action == Action.RIGHT_CLICK_BLOCK) {
