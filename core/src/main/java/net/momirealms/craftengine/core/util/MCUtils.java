@@ -116,7 +116,6 @@ public class MCUtils {
                     return false;
                 }
             }
-
             return true;
         };
     }
@@ -144,6 +143,70 @@ public class MCUtils {
                 @SuppressWarnings("unchecked")
                 Predicate<? super T>[] predicates2 = predicates.toArray(Predicate[]::new);
                 yield allOf(predicates2);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> anyOf() {
+        return o -> false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Predicate<T> anyOf(Predicate<? super T> a) {
+        return (Predicate<T>) a;
+    }
+
+    public static <T> Predicate<T> anyOf(Predicate<? super T> a, Predicate<? super T> b) {
+        return o -> a.test(o) || b.test(o);
+    }
+
+    public static <T> Predicate<T> anyOf(Predicate<? super T> a, Predicate<? super T> b, Predicate<? super T> c) {
+        return o -> a.test(o) || b.test(o) || c.test(o);
+    }
+
+    public static <T> Predicate<T> anyOf(Predicate<? super T> a, Predicate<? super T> b, Predicate<? super T> c, Predicate<? super T> d) {
+        return o -> a.test(o) || b.test(o) || c.test(o) || d.test(o);
+    }
+
+    public static <T> Predicate<T> anyOf(Predicate<? super T> a, Predicate<? super T> b, Predicate<? super T> c, Predicate<? super T> d, Predicate<? super T> e) {
+        return o -> a.test(o) || b.test(o) || c.test(o) || d.test(o) || e.test(o);
+    }
+
+    @SafeVarargs
+    public static <T> Predicate<T> anyOf(Predicate<? super T>... predicates) {
+        return o -> {
+            for (Predicate<? super T> predicate : predicates) {
+                if (predicate.test(o)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+
+    public static <T> Predicate<T> anyOf(List<? extends Predicate<? super T>> predicates) {
+        return switch (predicates.size()) {
+            case 0 -> anyOf();
+            case 1 -> anyOf((Predicate<? super T>) predicates.get(0));
+            case 2 -> anyOf((Predicate<? super T>) predicates.get(0), (Predicate<? super T>) predicates.get(1));
+            case 3 -> anyOf((Predicate<? super T>) predicates.get(0), (Predicate<? super T>) predicates.get(1), (Predicate<? super T>) predicates.get(2));
+            case 4 -> anyOf(
+                    (Predicate<? super T>) predicates.get(0),
+                    (Predicate<? super T>) predicates.get(1),
+                    (Predicate<? super T>) predicates.get(2),
+                    (Predicate<? super T>) predicates.get(3)
+            );
+            case 5 -> anyOf(
+                    (Predicate<? super T>) predicates.get(0),
+                    (Predicate<? super T>) predicates.get(1),
+                    (Predicate<? super T>) predicates.get(2),
+                    (Predicate<? super T>) predicates.get(3),
+                    (Predicate<? super T>) predicates.get(4)
+            );
+            default -> {
+                @SuppressWarnings("unchecked")
+                Predicate<? super T>[] predicates2 = predicates.toArray(Predicate[]::new);
+                yield anyOf(predicates2);
             }
         };
     }

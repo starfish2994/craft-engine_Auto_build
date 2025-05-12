@@ -35,6 +35,10 @@ public abstract class AbstractConditionalFunction<CTX extends Context> implement
             this.factory = factory;
         }
 
+        public java.util.function.Function<Map<String, Object>, Condition<CTX>> conditionFactory() {
+            return factory;
+        }
+
         protected List<Condition<CTX>> getPredicates(Map<String, Object> arguments) {
             Object predicates = arguments.get("conditions");
             if (predicates == null) return List.of();
