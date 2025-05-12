@@ -4,14 +4,6 @@ import java.util.concurrent.Callable;
 
 public abstract class BlockBehavior {
 
-//    public Object useItemOn(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return superMethod.call();
-//    }
-//
-//    public Object useWithoutItem(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return superMethod.call();
-//    }
-
     public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         return superMethod.call();
     }
@@ -56,20 +48,4 @@ public abstract class BlockBehavior {
 
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
     }
-
-//
-//    public Object getFluidState(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return superMethod.call();
-//    }
-//    public boolean canPlaceLiquid(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return (boolean) superMethod.call();
-//    }
-//
-//    public boolean placeLiquid(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return (boolean) superMethod.call();
-//    }
-//
-//    public Object pickupBlock(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-//        return superMethod.call();
-//    }
 }

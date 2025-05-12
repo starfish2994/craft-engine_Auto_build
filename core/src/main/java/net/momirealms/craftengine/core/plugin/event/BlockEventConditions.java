@@ -2,28 +2,52 @@ package net.momirealms.craftengine.core.plugin.event;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
-import net.momirealms.craftengine.core.plugin.context.condition.InvertedCondition;
+import net.momirealms.craftengine.core.plugin.context.condition.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.util.Factory;
+import net.momirealms.craftengine.core.registry.Holder;
+import net.momirealms.craftengine.core.registry.Registries;
+import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Map;
 
 public class BlockEventConditions {
 
+    static {
+        register(CommonConditions.MATCH_ITEM, new MatchItemCondition.FactoryImpl<>());
+        register(CommonConditions.MATCH_BLOCK_PROPERTY, new MatchBlockPropertyCondition.FactoryImpl<>());
+        register(CommonConditions.TABLE_BONUS, new TableBonusCondition.FactoryImpl<>());
+        register(CommonConditions.SURVIVES_EXPLOSION, new SurvivesExplosionCondition.FactoryImpl<>());
+        register(CommonConditions.ANY_OF, new AnyOfCondition.FactoryImpl<>(BlockEventConditions::fromMap));
+        register(CommonConditions.ALL_OF, new AllOfCondition.FactoryImpl<>(BlockEventConditions::fromMap));
+        register(CommonConditions.ENCHANTMENT, new EnchantmentCondition.FactoryImpl<>());
+        register(CommonConditions.INVERTED, new InvertedCondition.FactoryImpl<>(BlockEventConditions::fromMap));
+        register(CommonConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
+        register(CommonConditions.RANDOM, new RandomCondition.FactoryImpl<>());
+        register(CommonConditions.DISTANCE, new DistanceCondition.FactoryImpl<>());
+        register(CommonConditions.CLICK_TYPE, new ClickTypeCondition.FactoryImpl<>());
+    }
+
+    public static void register(Key key, ConditionFactory<PlayerBlockActionContext> factory) {
+        Holder.Reference<ConditionFactory<PlayerBlockActionContext>> holder = ((WritableRegistry<ConditionFactory<PlayerBlockActionContext>>) BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY)
+                .registerForHolder(new ResourceKey<>(Registries.PLAYER_BLOCK_CONDITION_FACTORY.location(), key));
+        holder.bindValue(factory);
+    }
+
     public static Condition<PlayerBlockActionContext> fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.block.event.condition.missing_type");
         Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         if (key.value().charAt(0) == '!') {
-            Factory<Condition<PlayerBlockActionContext>> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
+            ConditionFactory<PlayerBlockActionContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
             if (factory == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.event.condition.invalid_type", type);
             }
             return new InvertedCondition<>(factory.create(map));
         } else {
-            Factory<Condition<PlayerBlockActionContext>> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(key);
+            ConditionFactory<PlayerBlockActionContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(key);
             if (factory == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.event.condition.invalid_type", type);
             }

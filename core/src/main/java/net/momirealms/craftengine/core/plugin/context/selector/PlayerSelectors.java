@@ -3,6 +3,8 @@ package net.momirealms.craftengine.core.plugin.context.selector;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.util.Key;
 
+import java.util.Map;
+
 public class PlayerSelectors {
     public static final Key ALL = Key.of("craftengine:all");
     public static final Key SELF = Key.of("craftengine:self");
@@ -15,6 +17,7 @@ public class PlayerSelectors {
             } else if (string.equals("all") || string.equals("@all") || string.equals("@a")) {
                 return new AllPlayerSelector<>();
             }
+        } else if (object instanceof Map<?,?> map) {
         }
         throw new UnsupportedOperationException("Not supported yet.");
     }

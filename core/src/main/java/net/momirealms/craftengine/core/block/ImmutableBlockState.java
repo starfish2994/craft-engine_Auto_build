@@ -20,9 +20,7 @@ import java.util.List;
 
 public class ImmutableBlockState extends BlockStateHolder {
     private CompoundTag tag;
-    @Nullable
     private PackedBlockState customBlockState;
-    @Nullable
     private PackedBlockState vanillaBlockState;
 
     private BlockBehavior behavior;
@@ -84,18 +82,18 @@ public class ImmutableBlockState extends BlockStateHolder {
     }
 
     public PackedBlockState customBlockState() {
-        return customBlockState;
+        return this.customBlockState;
     }
 
     public PackedBlockState vanillaBlockState() {
-        return vanillaBlockState;
+        return this.vanillaBlockState;
     }
 
-    public void setCustomBlockState(@Nullable PackedBlockState customBlockState) {
+    public void setCustomBlockState(@NotNull PackedBlockState customBlockState) {
         this.customBlockState = customBlockState;
     }
 
-    public void setVanillaBlockState(@Nullable PackedBlockState vanillaBlockState) {
+    public void setVanillaBlockState(@NotNull PackedBlockState vanillaBlockState) {
         this.vanillaBlockState = vanillaBlockState;
     }
 
