@@ -317,7 +317,6 @@ public class BukkitServerPlayer extends Player {
     public void tick() {
         // not fully online
         if (serverPlayer() == null) return;
-
         if (VersionHelper.isFolia()) {
             try {
                 Object serverPlayer = serverPlayer();
@@ -329,7 +328,7 @@ public class BukkitServerPlayer extends Player {
         } else {
             this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
         }
-        if (this.gameTicks % 15 == 0) {
+        if (this.gameTicks % 30 == 0) {
             this.updateGUI();
         }
         if (this.isDestroyingBlock)  {

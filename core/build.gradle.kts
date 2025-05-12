@@ -1,5 +1,5 @@
 plugins {
-    id("com.gradleup.shadow") version "9.0.0-beta11"
+    id("com.gradleup.shadow") version "9.0.0-beta13"
     id("maven-publish")
 }
 
@@ -52,9 +52,7 @@ dependencies {
     // Aho-Corasick java implementation
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
     // Amazon S3
-    compileOnly("software.amazon.awssdk:s3:${rootProject.properties["amazon_awssdk_version"]}") {
-
-    }
+    compileOnly("software.amazon.awssdk:s3:${rootProject.properties["amazon_awssdk_version"]}")
     compileOnly("software.amazon.awssdk:netty-nio-client:${rootProject.properties["amazon_awssdk_version"]}")
     // EvalEx
     compileOnly("com.ezylang:EvalEx:${rootProject.properties["evalex_version"]}")

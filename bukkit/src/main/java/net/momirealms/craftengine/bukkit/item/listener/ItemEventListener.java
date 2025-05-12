@@ -122,6 +122,7 @@ public class ItemEventListener implements Listener {
         Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
         BukkitServerPlayer player = this.plugin.adapt(bukkitPlayer);
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        // 如果同一tick已经处理过交互，则忽略
         if (cancelEventIfHasInteraction(event, player, hand)) {
             return;
         }
@@ -132,6 +133,7 @@ public class ItemEventListener implements Listener {
         Optional<List<ItemBehavior>> optionalItemBehaviors = itemInHand.getItemBehavior();
 
         // has custom item behavior
+        // 物品类型是否包含自定义物品行为，行为不一定来自于自定义物品，部分原版物品也包含了新的行为
         if (optionalItemBehaviors.isPresent()) {
             BlockPos pos = LocationUtils.toBlockPos(clickedBlock.getLocation());
             Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
@@ -140,12 +142,17 @@ public class ItemEventListener implements Listener {
             boolean interactable = InteractUtils.isInteractable(BlockStateUtils.getBlockOwnerId(clickedBlock), bukkitPlayer, clickedBlock.getBlockData(), hitResult, itemInHand);
 
             // do not allow to place block if it's a vanilla block
+            // 如果这个是自定义物品，那么会阻止玩家放置其对应的原版方块
             Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
             if (itemInHand.isBlockItem() && optionalCustomItem.isPresent()) {
                 // it's a custom item, but now it's ignored
+                // 如果用户设置了允许放置对应的原版方块，那么直接返回。
+                // todo 实际上这里的处理并不正确，因为判断玩家是否能够放置那个方块需要更加细节的判断。比如玩家无法对着树叶放置火把，但是交互事件依然触发，此情况下不可丢弃自定义行为。
                 if (optionalCustomItem.get().settings().canPlaceRelatedVanillaBlock()) {
                     return;
                 }
+                // 如果玩家潜行放置或者交互对象不可交互，那么取消掉事件以防止玩家放置。
+                // todo 这些处理应该要搬到BlockPlaceEvent?
                 if (!interactable || player.isSecondaryUseActive()) {
                     event.setCancelled(true);
                 }
@@ -180,10 +187,10 @@ public class ItemEventListener implements Listener {
                     return;
                 }
             }
-            return;
         }
 
         // it's a vanilla block
+        // 这部分代码是处理放置原版方块“缺失的”声音和挥手动画
         if (itemInHand.isBlockItem() && !itemInHand.isCustomItem()) {
             // client won't have sounds if the fake block is interactable
             // so we should check and resend sounds on interact

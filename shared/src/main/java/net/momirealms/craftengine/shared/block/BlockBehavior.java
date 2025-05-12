@@ -4,6 +4,14 @@ import java.util.concurrent.Callable;
 
 public abstract class BlockBehavior {
 
+//    public Object useItemOn(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+//        return superMethod.call();
+//    }
+//
+//    public Object useWithoutItem(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+//        return superMethod.call();
+//    }
+
     public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         return superMethod.call();
     }

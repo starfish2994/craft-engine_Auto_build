@@ -5,13 +5,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
@@ -23,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 public class CraftEngineBlock
         extends Block
         implements BehaviorHolder, ShapeHolder, NoteBlockIndicator, Fallable, BonemealableBlock
-        //TODO , SimpleWaterloggedBlock
 {
     private static final StoneBlockShape STONE = new StoneBlockShape(Blocks.STONE.defaultBlockState());
     private boolean isNoteBlock;
@@ -146,14 +150,14 @@ public class CraftEngineBlock
     }
 
     @Override
-    protected BlockState updateShape(@NotNull BlockState state,
-                                     @NotNull LevelReader level,
-                                     @NotNull ScheduledTickAccess scheduledTickAccess,
-                                     @NotNull BlockPos pos,
-                                     @NotNull Direction direction,
-                                     @NotNull BlockPos neighborPos,
-                                     @NotNull BlockState neighborState,
-                                     @NotNull RandomSource random) {
+    protected @NotNull BlockState updateShape(@NotNull BlockState state,
+                                              @NotNull LevelReader level,
+                                              @NotNull ScheduledTickAccess scheduledTickAccess,
+                                              @NotNull BlockPos pos,
+                                              @NotNull Direction direction,
+                                              @NotNull BlockPos neighborPos,
+                                              @NotNull BlockState neighborState,
+                                              @NotNull RandomSource random) {
         try {
             if (isNoteBlock && level instanceof ServerLevel serverLevel) {
                 startNoteBlockChain(direction, serverLevel, pos);
@@ -188,16 +192,6 @@ public class CraftEngineBlock
             noteBlockChainUpdate(level, chunkSource, direction, relativePos, times+1);
         }
     }
-
-//    @Override
-//    protected @NotNull FluidState getFluidState(@NotNull BlockState state) {
-//        try {
-//            return (FluidState) behaviorHolder.value().getFluidState(this, new Object[]{state}, () -> super.getFluidState(state));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return super.getFluidState(state);
-//        }
-//    }
 
     @Override
     public boolean isValidBonemealTarget(@NotNull LevelReader levelReader, @NotNull BlockPos blockPos, @NotNull BlockState blockState) {
@@ -236,35 +230,24 @@ public class CraftEngineBlock
             e.printStackTrace();
         }
     }
-
+//
 //    @Override
-//    public boolean canPlaceLiquid(@Nullable Player player, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Fluid fluid) {
+//    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
 //        try {
-//            return behaviorHolder.value().canPlaceLiquid(this, new Object[]{player, level, pos, state, fluid}, () -> SimpleWaterloggedBlock.super.canPlaceLiquid(player, level, pos, state, fluid));
+//            return (InteractionResult) behaviorHolder.value().useWithoutItem(this, new Object[]{state, level, pos, player, hitResult}, () -> super.useWithoutItem(state, level, pos, player, hitResult));
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//            return SimpleWaterloggedBlock.super.canPlaceLiquid(player, level, pos, state, fluid);
+//            return super.useWithoutItem(state, level, pos, player, hitResult);
 //        }
 //    }
 //
 //    @Override
-//    public boolean placeLiquid(@NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull FluidState fluidState) {
+//    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
 //        try {
-//            return behaviorHolder.value().placeLiquid(this, new Object[]{level, pos, state, fluidState}, () -> SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidState));
+//            return (InteractionResult) behaviorHolder.value().useItemOn(this, new Object[]{stack, stack, level, pos, player, hand, hitResult}, () -> super.useItemOn(stack, state, level, pos, player, hand, hitResult));
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//            return SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidState);
-//        }
-//    }
-//
-//    @NotNull
-//    @Override
-//    public ItemStack pickupBlock(@Nullable Player player, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockState state) {
-//        try {
-//            return (ItemStack) behaviorHolder.value().pickupBlock(this, new Object[]{player, level, pos, state}, () -> SimpleWaterloggedBlock.super.pickupBlock(player, level, pos, state));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return SimpleWaterloggedBlock.super.pickupBlock(player, level, pos, state);
+//            return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
 //        }
 //    }
 }
