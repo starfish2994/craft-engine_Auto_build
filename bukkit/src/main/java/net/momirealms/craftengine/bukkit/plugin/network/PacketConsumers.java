@@ -1962,28 +1962,48 @@ public class PacketConsumers {
                     data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
                 }
                 String decodeData = new String(data, StandardCharsets.UTF_8);
-                if (!decodeData.endsWith("init")) return;
-                int firstColon = decodeData.indexOf(':');
-                if (firstColon == -1) return;
-                int secondColon = decodeData.indexOf(':', firstColon + 1);
-                if (secondColon == -1) return;
-                int clientBlockRegistrySize = Integer.parseInt(decodeData.substring(firstColon + 1, secondColon));
-                int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
-                if (clientBlockRegistrySize != serverBlockRegistrySize) {
-                    Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
-                            ComponentUtils.adventureToMinecraft(
-                                    Component.translatable(
-                                            "disconnect.craftengine.block_registry_mismatch",
-                                            TranslationArgument.numeric(clientBlockRegistrySize),
-                                            TranslationArgument.numeric(serverBlockRegistrySize)
-                                    )
-                            )
-                    );
-                    user.nettyChannel().writeAndFlush(kickPacket);
-                    user.nettyChannel().disconnect();
-                    return;
+                if (decodeData.endsWith("init")) {
+                    int firstColon = decodeData.indexOf(':');
+                    if (firstColon == -1) return;
+                    int secondColon = decodeData.indexOf(':', firstColon + 1);
+                    if (secondColon == -1) return;
+                    String payloadData = decodeData.substring(firstColon + 1, secondColon);
+                    int clientBlockRegistrySize = Integer.parseInt(payloadData);
+                    int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
+                    if (clientBlockRegistrySize != serverBlockRegistrySize) {
+                        Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
+                                ComponentUtils.adventureToMinecraft(
+                                        Component.translatable(
+                                                "disconnect.craftengine.block_registry_mismatch",
+                                                TranslationArgument.numeric(clientBlockRegistrySize),
+                                                TranslationArgument.numeric(serverBlockRegistrySize)
+                                        )
+                                )
+                        );
+                        user.nettyChannel().writeAndFlush(kickPacket);
+                        user.nettyChannel().disconnect();
+                        return;
+                    }
+                    user.setClientModState(true);
+                } else if (decodeData.endsWith("cancel")) {
+                    if (!VersionHelper.isOrAbove1_20_2()) return;
+                    int firstColon = decodeData.indexOf(':');
+                    if (firstColon == -1) return;
+                    int secondColon = decodeData.indexOf(':', firstColon + 1);
+                    if (secondColon == -1) return;
+                    String payloadData = decodeData.substring(firstColon + 1, secondColon);
+                    boolean cancel = Boolean.parseBoolean(payloadData);
+                    if (cancel) {
+                        user.nettyChannel().writeAndFlush(
+                                Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(
+                                        Reflections.constructor$DiscardedPayload.newInstance(
+                                                KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL)),
+                                                (":true:cancel").getBytes(StandardCharsets.UTF_8)
+                                        )
+                                )
+                        );
+                    }
                 }
-                user.setClientModState(true);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
