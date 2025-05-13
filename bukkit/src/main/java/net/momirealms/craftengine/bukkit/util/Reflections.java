@@ -3367,11 +3367,23 @@ public class Reflections {
     );
 
     public static final Object instance$SoundEvent$EMPTY;
+    public static final Object instance$SoundEvent$TRIDENT_RIPTIDE_1;
+    public static final Object instance$SoundEvent$TRIDENT_RIPTIDE_2;
+    public static final Object instance$SoundEvent$TRIDENT_RIPTIDE_3;
+    public static final Object instance$SoundEvent$TRIDENT_THROW;
 
     static {
         try {
-            Object key = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "intentionally_empty");
-            instance$SoundEvent$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, key);
+            Object intentionallyEmpty = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "intentionally_empty");
+            instance$SoundEvent$EMPTY = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, intentionallyEmpty);
+            Object tridentRiptide1 = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item.trident_riptide_1");
+            instance$SoundEvent$TRIDENT_RIPTIDE_1 = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, tridentRiptide1);
+            Object tridentRiptide2 = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item.trident_riptide_2");
+            instance$SoundEvent$TRIDENT_RIPTIDE_2 = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, tridentRiptide2);
+            Object tridentRiptide3 = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item.trident.riptide_3");
+            instance$SoundEvent$TRIDENT_RIPTIDE_3 = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, tridentRiptide3);
+            Object tridentThrow = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item.trident.throw");
+            instance$SoundEvent$TRIDENT_THROW = method$Registry$get.invoke(instance$BuiltInRegistries$SOUND_EVENT, tridentThrow);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6668,11 +6680,107 @@ public class Reflections {
     );
 
     public static final Constructor<?> constructor$ClientboundCustomPayloadPacket = requireNonNull(
-            ReflectionUtils.getTheOnlyConstructor(clazz$ClientboundCustomPayloadPacket)
+            ReflectionUtils.getConstructor(clazz$ClientboundCustomPayloadPacket, 0)
     );
 
     // 1.20.2+
     public static final Constructor<?> constructor$DiscardedPayload = Optional.ofNullable(clazz$DiscardedPayload)
             .map(clazz -> ReflectionUtils.getTheOnlyConstructor(clazz))
             .orElse(null);
+
+    public static final Method method$SoundSource$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$SoundSource, clazz$SoundSource.arrayType()
+            )
+    );
+
+    public static final Object instance$SoundSource$MASTER;
+    public static final Object instance$SoundSource$MUSIC;
+    public static final Object instance$SoundSource$RECORDS;
+    public static final Object instance$SoundSource$WEATHER;
+    public static final Object instance$SoundSource$BLOCKS;
+    public static final Object instance$SoundSource$HOSTILE;
+    public static final Object instance$SoundSource$NEUTRAL;
+    public static final Object instance$SoundSource$PLAYERS;
+    public static final Object instance$SoundSource$AMBIENT;
+    public static final Object instance$SoundSource$VOICE;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$SoundSource$values.invoke(null);
+            instance$SoundSource$MASTER = values[0];
+            instance$SoundSource$MUSIC = values[1];
+            instance$SoundSource$RECORDS = values[2];
+            instance$SoundSource$WEATHER = values[3];
+            instance$SoundSource$BLOCKS = values[4];
+            instance$SoundSource$HOSTILE = values[5];
+            instance$SoundSource$NEUTRAL = values[6];
+            instance$SoundSource$PLAYERS = values[7];
+            instance$SoundSource$AMBIENT = values[8];
+            instance$SoundSource$VOICE = values[9];
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public static final Class<?> clazz$MoverType = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.entity.EnumMoveType",
+                    "world.entity.MoverType"
+            )
+    );
+
+    public static final Method method$MoverType$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$MoverType, clazz$MoverType.arrayType()
+            )
+    );
+
+    public static final Object instance$MoverType$SELF;
+    public static final Object instance$MoverType$PLAYER;
+    public static final Object instance$MoverType$PISTON;
+    public static final Object instance$MoverType$SHULKER_BOX;
+    public static final Object instance$MoverType$SHULKER;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$MoverType$values.invoke(null);
+            instance$MoverType$SELF = values[0];
+            instance$MoverType$PLAYER = values[1];
+            instance$MoverType$PISTON = values[2];
+            instance$MoverType$SHULKER_BOX = values[3];
+            instance$MoverType$SHULKER = values[4];
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public static final Class<?> clazz$AbstractArrow$Pickup = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.entity.projectile.EntityArrow$PickupStatus",
+                    "world.entity.projectile.AbstractArrow$Pickup"
+            )
+    );
+
+    public static final Method method$AbstractArrow$Pickup$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$AbstractArrow$Pickup, clazz$AbstractArrow$Pickup.arrayType()
+            )
+    );
+
+    public static final Object instance$AbstractArrow$Pickup$DISALLOWED;
+    public static final Object instance$AbstractArrow$Pickup$ALLOWED;
+    public static final Object instance$AbstractArrow$Pickup$CREATIVE_ONLY;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$AbstractArrow$Pickup$values.invoke(null);
+            instance$AbstractArrow$Pickup$DISALLOWED = values[0];
+            instance$AbstractArrow$Pickup$ALLOWED = values[1];
+            instance$AbstractArrow$Pickup$CREATIVE_ONLY = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
 }
