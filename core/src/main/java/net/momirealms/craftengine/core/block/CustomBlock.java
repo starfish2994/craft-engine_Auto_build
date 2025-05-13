@@ -93,6 +93,12 @@ public abstract class CustomBlock {
         return lootTable;
     }
 
+    public void execute(PlayerBlockActionContext context, EventTrigger trigger) {
+        for (Function<PlayerBlockActionContext> function : Optional.ofNullable(this.events.get(trigger)).orElse(Collections.emptyList())) {
+            function.run(context);
+        }
+    }
+
     @NotNull
     public BlockStateVariantProvider variantProvider() {
         return variantProvider;

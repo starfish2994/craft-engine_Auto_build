@@ -31,7 +31,6 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
@@ -49,7 +48,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BukkitBlockManager extends AbstractBlockManager {
     private static BukkitBlockManager instance;
@@ -252,7 +250,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (int i = 0; i < size; i++) {
             states[i] = new PackedBlockState(BlockStateUtils.idToBlockState(i), i);
         }
-        BlockRegistryMirror.init(states);
+        BlockRegistryMirror.init(states, new PackedBlockState(Reflections.instance$Blocks$STONE$defaultState, BlockStateUtils.blockStateToId(Reflections.instance$Blocks$STONE$defaultState)));
     }
 
     private void registerEmptyBlock() {
@@ -460,36 +458,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
-            Object eventsObj = ResourceConfigUtils.get(section, "events");
-            EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = new EnumMap<>(EventTrigger.class);
-            if (eventsObj instanceof Map<?, ?> eventsSection) {
-                Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
-                for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
-                    try {
-                        EventTrigger eventTrigger = EventTrigger.valueOf(eventEntry.getKey().toUpperCase(Locale.ENGLISH));
-                        if (eventEntry.getValue() instanceof List<?> list) {
-                            if (list.size() == 1) {
-                                events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false))));
-                            } else if (list.size() == 2) {
-                                events.put(eventTrigger, List.of(
-                                        BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false)),
-                                        BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
-                                ));
-                            } else {
-                                List<Function<PlayerBlockActionContext>> eventsList = new ArrayList<>();
-                                for (Object event : list) {
-                                    eventsList.add(BlockEventFunctions.fromMap(MiscUtils.castToMap(event, false)));
-                                }
-                                events.put(eventTrigger, eventsList);
-                            }
-                        } else if (eventEntry.getValue() instanceof Map<?, ?> eventSection) {
-                            events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(eventSection, false))));
-                        }
-                    } catch (IllegalArgumentException e) {
-                        throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", eventEntry.getKey());
-                    }
-                }
-            }
+            Object eventsObj = ResourceConfigUtils.get(section, "events", "event");
+            EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = parseEvents(eventsObj);
 
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
             CustomBlock block = BukkitCustomBlock.builder(id)
@@ -541,6 +511,55 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
         }
+    }
+
+    private EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> parseEvents(Object eventsObj) {
+        EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = new EnumMap<>(EventTrigger.class);
+        if (eventsObj instanceof Map<?, ?> eventsSection) {
+            Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
+            for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
+                try {
+                    EventTrigger eventTrigger = EventTrigger.byName(eventEntry.getKey());
+                    if (eventEntry.getValue() instanceof List<?> list) {
+                        if (list.size() == 1) {
+                            events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false))));
+                        } else if (list.size() == 2) {
+                            events.put(eventTrigger, List.of(
+                                    BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false)),
+                                    BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
+                            ));
+                        } else {
+                            List<Function<PlayerBlockActionContext>> eventsList = new ArrayList<>();
+                            for (Object event : list) {
+                                eventsList.add(BlockEventFunctions.fromMap(MiscUtils.castToMap(event, false)));
+                            }
+                            events.put(eventTrigger, eventsList);
+                        }
+                    } else if (eventEntry.getValue() instanceof Map<?, ?> eventSection) {
+                        events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(eventSection, false))));
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", eventEntry.getKey());
+                }
+            }
+        } else if (eventsObj instanceof List<?> list) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> eventsList = (List<Map<String, Object>>) list;
+            for (Map<String, Object> eventSection : eventsList) {
+                Object onObj = eventSection.get("on");
+                if (onObj == null) {
+                    throw new LocalizedResourceConfigException("warning.config.event.missing_trigger");
+                }
+                try {
+                    EventTrigger eventTrigger = EventTrigger.byName(onObj.toString());
+                    Function<PlayerBlockActionContext> function = BlockEventFunctions.fromMap(eventSection);
+                    events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(function);
+                } catch (IllegalArgumentException e) {
+                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", onObj.toString());
+                }
+            }
+        }
+        return events;
     }
 
     private Map<String, Property<?>> parseProperties(Map<String, Object> propertiesSection) {

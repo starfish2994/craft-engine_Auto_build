@@ -90,6 +90,7 @@ warning.config.condition.match_block_property.missing_properties: "<yellow>Issue
 warning.config.condition.match_item.missing_id: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'id' argument for 'match_item' condition.</yellow>"
 warning.config.condition.table_bonus.missing_enchantment: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'enchantment' argument for 'table_bonus' condition.</yellow>"
 warning.config.condition.table_bonus.missing_chances: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'chances' argument for 'table_bonus' condition.</yellow>"
+warning.config.condition.click_type.missing_click_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'click-type' argument for 'click_type' condition.</yellow>"
 warning.config.structure.not_section: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is expected to be a config section while it's actually a(n) '<arg:2>'.</yellow>"
 warning.config.image.duplicate: "<yellow>Issue found in file <arg:0> - Duplicated image '<arg:1>'. Please check if there is the same configuration in other files.</yellow>"
 warning.config.image.missing_height: "<yellow>Issue found in file <arg:0> - The image '<arg:1>' is missing the required 'height' argument.</yellow>"
@@ -298,4 +299,5 @@ warning.config.conflict_matcher.any_of.missing_terms: "<yellow>Issue found in co
 warning.config.conflict_resolution.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - Missing required 'type' argument for one of the resolutions.</yellow>"
 warning.config.conflict_resolution.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.duplicated-files-handler' - One of the resolutions is using the invalid type '<arg:0>'.</yellow>"
 warning.config.function.command.missing_command: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'command' argument for 'command' function.</yellow>"
+warning.config.event.missing_trigger: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'on' argument for event triggers.</yellow>"
 warning.config.event.invalid_trigger: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid event trigger '<arg:2>'.</yellow>"

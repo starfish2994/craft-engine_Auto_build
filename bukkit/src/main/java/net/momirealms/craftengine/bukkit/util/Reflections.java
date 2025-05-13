@@ -27,6 +27,7 @@ import sun.misc.Unsafe;
 import java.io.BufferedReader;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
+import java.net.URLClassLoader;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -6686,6 +6687,14 @@ public class Reflections {
     // 1.20.2+
     public static final Constructor<?> constructor$DiscardedPayload = Optional.ofNullable(clazz$DiscardedPayload)
             .map(clazz -> ReflectionUtils.getTheOnlyConstructor(clazz))
+            .orElse(null);
+
+    public static final Class<?> clazz$PaperPluginClassLoader = ReflectionUtils.getClazz(
+            "io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader"
+    );
+
+    public static final Field field$PaperPluginClassLoader$libraryLoader = Optional.ofNullable(clazz$PaperPluginClassLoader)
+            .map(it -> ReflectionUtils.getDeclaredField(it, URLClassLoader.class, 0))
             .orElse(null);
 
     public static final Method method$SoundSource$values = requireNonNull(
