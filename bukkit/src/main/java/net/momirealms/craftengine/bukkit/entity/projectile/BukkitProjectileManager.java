@@ -124,7 +124,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
             Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
             boolean success = TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-            player.sendMessage("释放成功: " + success);
+            // player.sendMessage("释放成功: " + success);
         }
     }
 
