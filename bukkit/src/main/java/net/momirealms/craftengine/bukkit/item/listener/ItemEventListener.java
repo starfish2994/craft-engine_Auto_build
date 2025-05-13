@@ -15,8 +15,8 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.util.ClickType;
 import net.momirealms.craftengine.core.util.Direction;
@@ -96,12 +96,11 @@ public class ItemEventListener implements Listener {
 
             // run custom functions
             CustomBlock customBlock = immutableBlockState.owner().value();
-            PlayerBlockActionContext context = PlayerBlockActionContext.of(serverPlayer, new BukkitBlockInWorld(block), ContextHolder.builder()
-                    .withParameter(CommonParameters.BLOCK_STATE, immutableBlockState)
-                    .withParameter(CommonParameters.PLAYER, serverPlayer)
-                    .withParameter(CommonParameters.WORLD, serverPlayer.world())
-                    .withParameter(CommonParameters.LOCATION, new Vec3d(block.getX(), block.getY(), block.getZ()))
-                    .withParameter(CommonParameters.CLICK_TYPE, action.isRightClick() ? ClickType.RIGHT : ClickType.LEFT)
+            PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                    .withParameter(DirectContextParameters.PLAYER, serverPlayer)
+                    .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                    .withParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                    .withParameter(DirectContextParameters.CLICK_TYPE, action.isRightClick() ? ClickType.RIGHT : ClickType.LEFT)
                     .build());
             customBlock.execute(context, EventTrigger.CLICK);
             if (action.isRightClick()) customBlock.execute(context, EventTrigger.RIGHT_CLICK);

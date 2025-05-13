@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -37,7 +37,7 @@ public class BukkitCustomBlock extends CustomBlock {
             Map<String, Integer> appearances,
             Map<String, VariantState> variantMapper,
             BlockSettings settings,
-            @NotNull EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events,
+            @NotNull EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events,
             @Nullable Map<String, Object> behavior,
             @Nullable LootTable<?> lootTable
     ) {

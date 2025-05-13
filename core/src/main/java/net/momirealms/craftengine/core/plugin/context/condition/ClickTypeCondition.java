@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.plugin.context.condition;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.ClickType;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -25,7 +25,7 @@ public class ClickTypeCondition<CTX extends Context> implements Condition<CTX> {
 
     @Override
     public boolean test(CTX ctx) {
-        Optional<ClickType> clickTypeOptional = ctx.getOptionalParameter(CommonParameters.CLICK_TYPE);
+        Optional<ClickType> clickTypeOptional = ctx.getOptionalParameter(DirectContextParameters.CLICK_TYPE);
         if (clickTypeOptional.isPresent()) {
             ClickType clickType = clickTypeOptional.get();
             return clickType.equals(this.clickType);

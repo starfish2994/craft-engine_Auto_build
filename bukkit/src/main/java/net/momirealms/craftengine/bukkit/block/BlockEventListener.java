@@ -14,10 +14,11 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -146,8 +147,8 @@ public class BlockEventListener implements Listener {
                     }
                 }
                 // play sound
-                Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                world.playBlockSound(vec3d, state.sounds().breakSound());
+                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                world.playBlockSound(position, state.sounds().breakSound());
                 if (player.getGameMode() == GameMode.CREATIVE || !customBreakEvent.dropItems()) {
                     return;
                 }
@@ -160,12 +161,11 @@ public class BlockEventListener implements Listener {
 
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(CommonParameters.WORLD, world)
-                        .withParameter(CommonParameters.LOCATION, vec3d)
-                        .withParameter(CommonParameters.PLAYER, serverPlayer);
+                        .withParameter(DirectContextParameters.POSITION, position)
+                        .withParameter(DirectContextParameters.PLAYER, serverPlayer);
                         //mark item .withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world, serverPlayer)) {
-                    world.dropItemNaturally(vec3d, item);
+                    world.dropItemNaturally(position, item);
                 }
             }
         } else {
@@ -179,16 +179,14 @@ public class BlockEventListener implements Listener {
                     Location location = block.getLocation();
                     BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                     net.momirealms.craftengine.core.world.World world = new BukkitWorld(player.getWorld());
-                    Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                    WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                     ContextHolder.Builder builder = ContextHolder.builder()
-                            .withParameter(CommonParameters.WORLD, world)
-                            .withParameter(CommonParameters.LOCATION, vec3d)
-                            .withParameter(CommonParameters.PLAYER, serverPlayer);
-                            //mark item .withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
+                            .withParameter(DirectContextParameters.POSITION, position)
+                            .withParameter(DirectContextParameters.PLAYER, serverPlayer);
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
                         for (Item<?> item : lootTable.getRandomItems(contextHolder, world, serverPlayer)) {
-                            world.dropItemNaturally(vec3d, item);
+                            world.dropItemNaturally(position, item);
                         }
                     }
                 });
@@ -221,12 +219,11 @@ public class BlockEventListener implements Listener {
             if (!immutableBlockState.isEmpty()) {
                 Location location = block.getLocation();
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(block.getWorld());
-                Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(CommonParameters.WORLD, world)
-                        .withParameter(CommonParameters.LOCATION, vec3d);
+                        .withParameter(DirectContextParameters.POSITION, position);
                 for (Item<?> item : immutableBlockState.getDrops(builder, world, null)) {
-                    world.dropItemNaturally(vec3d, item);
+                    world.dropItemNaturally(position, item);
                 }
             }
         } else {
@@ -238,15 +235,14 @@ public class BlockEventListener implements Listener {
                 }
 
                 Location location = block.getLocation();
-                Vec3d vec3d = new Vec3d(location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
-                ContextHolder.Builder builder = ContextHolder.builder();
-                builder.withParameter(CommonParameters.WORLD, world);
-                builder.withParameter(CommonParameters.LOCATION, vec3d);
+                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(DirectContextParameters.POSITION, position);
                 ContextHolder contextHolder = builder.build();
                 for (LootTable<?> lootTable : it.lootTables()) {
                     for (Item<?> item : lootTable.getRandomItems(contextHolder, world, null)) {
-                        world.dropItemNaturally(vec3d, item);
+                        world.dropItemNaturally(position, item);
                     }
                 }
             });
@@ -336,17 +332,16 @@ public class BlockEventListener implements Listener {
             BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
             ImmutableBlockState state = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
             if (state != null && !state.isEmpty()) {
-                ContextHolder.Builder builder = ContextHolder.builder();
-                Vec3d vec3d = Vec3d.atCenterOf(blockPos);
-                builder.withParameter(CommonParameters.LOCATION, vec3d);
-                builder.withParameter(CommonParameters.WORLD, world);
+                WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(blockPos));
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(DirectContextParameters.POSITION, position);
                 if (yield < 1f) {
-                    builder.withParameter(CommonParameters.EXPLOSION_RADIUS, 1.0f / yield);
+                    builder.withParameter(DirectContextParameters.EXPLOSION_RADIUS, 1.0f / yield);
                 }
                 for (Item<Object> item : state.getDrops(builder, world, null)) {
-                    world.dropItemNaturally(vec3d, item);
+                    world.dropItemNaturally(position, item);
                 }
-                world.playBlockSound(vec3d, state.sounds().breakSound());
+                world.playBlockSound(position, state.sounds().breakSound());
             }
         }
     }

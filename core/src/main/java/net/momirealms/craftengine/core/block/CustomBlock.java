@@ -6,7 +6,7 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
@@ -29,7 +29,7 @@ public abstract class CustomBlock {
     protected final BlockBehavior behavior;
     protected final List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements;
     protected final ImmutableBlockState defaultState;
-    protected final EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events;
+    protected final EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events;
     @Nullable
     protected final LootTable<?> lootTable;
 
@@ -40,7 +40,7 @@ public abstract class CustomBlock {
             @NotNull Map<String, Integer> appearances,
             @NotNull Map<String, VariantState> variantMapper,
             @NotNull BlockSettings settings,
-            @NotNull EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events,
+            @NotNull EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events,
             @Nullable Map<String, Object> behavior,
             @Nullable LootTable<?> lootTable
     ) {
@@ -93,8 +93,8 @@ public abstract class CustomBlock {
         return lootTable;
     }
 
-    public void execute(PlayerBlockActionContext context, EventTrigger trigger) {
-        for (Function<PlayerBlockActionContext> function : Optional.ofNullable(this.events.get(trigger)).orElse(Collections.emptyList())) {
+    public void execute(PlayerOptionalContext context, EventTrigger trigger) {
+        for (Function<PlayerOptionalContext> function : Optional.ofNullable(this.events.get(trigger)).orElse(Collections.emptyList())) {
             function.run(context);
         }
     }
@@ -177,13 +177,13 @@ public abstract class CustomBlock {
         protected BlockSettings settings;
         protected Map<String, Object> behavior;
         protected LootTable<?> lootTable;
-        protected EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events;
+        protected EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events;
 
         protected Builder(Key id) {
             this.id = id;
         }
 
-        public Builder events(EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events) {
+        public Builder events(EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
             this.events = events;
             return this;
         }

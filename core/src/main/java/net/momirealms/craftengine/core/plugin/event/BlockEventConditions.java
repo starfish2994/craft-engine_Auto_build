@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.core.plugin.event;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.condition.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -31,23 +31,23 @@ public class BlockEventConditions {
         register(CommonConditions.CLICK_TYPE, new ClickTypeCondition.FactoryImpl<>());
     }
 
-    public static void register(Key key, ConditionFactory<PlayerBlockActionContext> factory) {
-        Holder.Reference<ConditionFactory<PlayerBlockActionContext>> holder = ((WritableRegistry<ConditionFactory<PlayerBlockActionContext>>) BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY)
+    public static void register(Key key, ConditionFactory<PlayerOptionalContext> factory) {
+        Holder.Reference<ConditionFactory<PlayerOptionalContext>> holder = ((WritableRegistry<ConditionFactory<PlayerOptionalContext>>) BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY)
                 .registerForHolder(new ResourceKey<>(Registries.PLAYER_BLOCK_CONDITION_FACTORY.location(), key));
         holder.bindValue(factory);
     }
 
-    public static Condition<PlayerBlockActionContext> fromMap(Map<String, Object> map) {
+    public static Condition<PlayerOptionalContext> fromMap(Map<String, Object> map) {
         String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.block.event.condition.missing_type");
         Key key = Key.withDefaultNamespace(type, Key.DEFAULT_NAMESPACE);
         if (key.value().charAt(0) == '!') {
-            ConditionFactory<PlayerBlockActionContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
+            ConditionFactory<PlayerOptionalContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(new Key(key.namespace(), key.value().substring(1)));
             if (factory == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.event.condition.invalid_type", type);
             }
             return new InvertedCondition<>(factory.create(map));
         } else {
-            ConditionFactory<PlayerBlockActionContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(key);
+            ConditionFactory<PlayerOptionalContext> factory = BuiltInRegistries.PLAYER_BLOCK_CONDITION_FACTORY.getValue(key);
             if (factory == null) {
                 throw new LocalizedResourceConfigException("warning.config.block.event.condition.invalid_type", type);
             }

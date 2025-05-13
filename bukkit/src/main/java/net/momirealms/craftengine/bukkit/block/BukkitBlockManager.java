@@ -23,7 +23,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.plugin.event.BlockEventFunctions;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
@@ -459,7 +459,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             }
 
             Object eventsObj = ResourceConfigUtils.get(section, "events", "event");
-            EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = parseEvents(eventsObj);
+            EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = parseEvents(eventsObj);
 
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
             CustomBlock block = BukkitCustomBlock.builder(id)
@@ -513,8 +513,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> parseEvents(Object eventsObj) {
-        EnumMap<EventTrigger, List<Function<PlayerBlockActionContext>>> events = new EnumMap<>(EventTrigger.class);
+    private EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> parseEvents(Object eventsObj) {
+        EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = new EnumMap<>(EventTrigger.class);
         if (eventsObj instanceof Map<?, ?> eventsSection) {
             Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
             for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
@@ -529,7 +529,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                                     BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
                             ));
                         } else {
-                            List<Function<PlayerBlockActionContext>> eventsList = new ArrayList<>();
+                            List<Function<PlayerOptionalContext>> eventsList = new ArrayList<>();
                             for (Object event : list) {
                                 eventsList.add(BlockEventFunctions.fromMap(MiscUtils.castToMap(event, false)));
                             }
@@ -552,7 +552,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
                 try {
                     EventTrigger eventTrigger = EventTrigger.byName(onObj.toString());
-                    Function<PlayerBlockActionContext> function = BlockEventFunctions.fromMap(eventSection);
+                    Function<PlayerOptionalContext> function = BlockEventFunctions.fromMap(eventSection);
                     events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(function);
                 } catch (IllegalArgumentException e) {
                     throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", onObj.toString());

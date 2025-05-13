@@ -21,7 +21,7 @@ import net.momirealms.craftengine.core.pack.model.select.SelectPropertyFactory;
 import net.momirealms.craftengine.core.pack.model.special.SpecialModelFactory;
 import net.momirealms.craftengine.core.pack.model.tint.TintFactory;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateArgumentFactory;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
@@ -53,6 +53,6 @@ public class Registries {
     public static final ResourceKey<Registry<CustomSmithingTransformRecipe.ItemDataProcessor.ProcessorFactory>> SMITHING_RESULT_PROCESSOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("smithing_result_processor_factory"));
     public static final ResourceKey<Registry<HitBoxFactory>> HITBOX_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("hitbox_factory"));
     public static final ResourceKey<Registry<ResourcePackHostFactory>> RESOURCE_PACK_HOST_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resource_pack_host_factory"));
-    public static final ResourceKey<Registry<FunctionFactory<PlayerBlockActionContext>>> PLAYER_BLOCK_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_function_factory"));
-    public static final ResourceKey<Registry<ConditionFactory<PlayerBlockActionContext>>> PLAYER_BLOCK_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_condition_factory"));
+    public static final ResourceKey<Registry<FunctionFactory<PlayerOptionalContext>>> PLAYER_BLOCK_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_function_factory"));
+    public static final ResourceKey<Registry<ConditionFactory<PlayerOptionalContext>>> PLAYER_BLOCK_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_condition_factory"));
 }

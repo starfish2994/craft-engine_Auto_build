@@ -58,6 +58,8 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
 
     public abstract void sendActionBar(Component text);
 
+    public abstract void sendMessage(Component text, boolean overlay);
+
     public abstract boolean updateLastSuccessfulInteractionTick(int tick);
 
     public abstract int lastSuccessfulInteractionTick();

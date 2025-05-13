@@ -4,7 +4,7 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.Platform;
 import net.momirealms.craftengine.core.plugin.context.*;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelector;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectors;
 import net.momirealms.craftengine.core.plugin.context.text.TextProvider;
@@ -33,7 +33,7 @@ public class CommandFunction<CTX extends Context> extends AbstractConditionalFun
     @Override
     public void runInternal(CTX ctx) {
         if (this.asPlayer) {
-            Optional<Player> owner = ctx.getOptionalParameter(CommonParameters.PLAYER);
+            Optional<Player> owner = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
             if (this.selector == null) {
                 owner.ifPresent(it -> {
                     for (TextProvider c : this.command) {

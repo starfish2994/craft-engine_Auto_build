@@ -21,7 +21,7 @@ import net.momirealms.craftengine.core.pack.model.select.SelectPropertyFactory;
 import net.momirealms.craftengine.core.pack.model.special.SpecialModelFactory;
 import net.momirealms.craftengine.core.pack.model.tint.TintFactory;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateArgumentFactory;
-import net.momirealms.craftengine.core.plugin.context.PlayerBlockActionContext;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
@@ -52,8 +52,8 @@ public class BuiltInRegistries {
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.ProcessorFactory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);
     public static final Registry<HitBoxFactory> HITBOX_FACTORY = createRegistry(Registries.HITBOX_FACTORY);
     public static final Registry<ResourcePackHostFactory> RESOURCE_PACK_HOST_FACTORY = createRegistry(Registries.RESOURCE_PACK_HOST_FACTORY);
-    public static final Registry<FunctionFactory<PlayerBlockActionContext>> PLAYER_BLOCK_FUNCTION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_FUNCTION_FACTORY);
-    public static final Registry<ConditionFactory<PlayerBlockActionContext>> PLAYER_BLOCK_CONDITION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_CONDITION_FACTORY);
+    public static final Registry<FunctionFactory<PlayerOptionalContext>> PLAYER_BLOCK_FUNCTION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_FUNCTION_FACTORY);
+    public static final Registry<ConditionFactory<PlayerOptionalContext>> PLAYER_BLOCK_CONDITION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_CONDITION_FACTORY);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);

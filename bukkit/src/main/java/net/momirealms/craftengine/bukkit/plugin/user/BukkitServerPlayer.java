@@ -171,12 +171,14 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void sendActionBar(Component text) {
-        try {
-            Object packet = Reflections.constructor$ClientboundSetActionBarTextPacket.newInstance(ComponentUtils.adventureToMinecraft(text));
-            sendPacket(packet, false);
-        } catch (ReflectiveOperationException e) {
-            plugin.logger().warn("Failed to send action bar", e);
-        }
+        Object packet = FastNMS.INSTANCE.constructor$ClientboundActionBarPacket(ComponentUtils.adventureToMinecraft(text));
+        sendPacket(packet, false);
+    }
+
+    @Override
+    public void sendMessage(Component text, boolean overlay) {
+        Object packet = FastNMS.INSTANCE.constructor$ClientboundSystemChatPacket(ComponentUtils.adventureToMinecraft(text), overlay);
+        sendPacket(packet, false);
     }
 
     @Override
@@ -657,12 +659,12 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public float getYRot() {
-        return platformPlayer().getLocation().getPitch();
+        return platformPlayer().getPitch();
     }
 
     @Override
     public float getXRot() {
-        return platformPlayer().getLocation().getYaw();
+        return platformPlayer().getYaw();
     }
 
     @Override
@@ -689,17 +691,17 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public double x() {
-        return platformPlayer().getLocation().getX();
+        return platformPlayer().getX();
     }
 
     @Override
     public double y() {
-        return platformPlayer().getLocation().getY();
+        return platformPlayer().getY();
     }
 
     @Override
     public double z() {
-        return platformPlayer().getLocation().getZ();
+        return platformPlayer().getZ();
     }
 
     @Override

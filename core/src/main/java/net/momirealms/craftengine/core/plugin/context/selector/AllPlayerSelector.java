@@ -6,7 +6,7 @@ import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
-import net.momirealms.craftengine.core.plugin.context.parameter.CommonParameters;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MCUtils;
 
@@ -35,8 +35,7 @@ public class AllPlayerSelector<CTX extends Context> implements PlayerSelector<CT
             List<Player> players = new ArrayList<>();
             for (Player player : CraftEngine.instance().networkManager().onlineUsers()) {
                 PlayerOptionalContext newContext = PlayerOptionalContext.of(player, ContextHolder.builder()
-                        .withOptionalParameter(CommonParameters.WORLD, context.getOptionalParameter(CommonParameters.WORLD).orElse(null))
-                        .withOptionalParameter(CommonParameters.LOCATION, context.getOptionalParameter(CommonParameters.LOCATION).orElse(null))
+                        .withOptionalParameter(DirectContextParameters.POSITION, context.getOptionalParameter(DirectContextParameters.POSITION).orElse(null))
                 );
                 if (!this.predicate.test((CTX) newContext)) {
                     continue;
