@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.World;
 
 import java.lang.ref.WeakReference;
+import java.util.UUID;
 
 public class BukkitEntity extends AbstractEntity {
     private final WeakReference<org.bukkit.entity.Entity> entity;
@@ -68,5 +69,15 @@ public class BukkitEntity extends AbstractEntity {
     @Override
     public Key type() {
         return KeyUtils.namespacedKey2Key(literalObject().getType().getKey());
+    }
+
+    @Override
+    public String name() {
+        return literalObject().getName();
+    }
+
+    @Override
+    public UUID uuid() {
+        return literalObject().getUniqueId();
     }
 }

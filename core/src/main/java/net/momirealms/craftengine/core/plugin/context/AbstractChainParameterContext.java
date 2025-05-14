@@ -14,6 +14,8 @@ public abstract class AbstractChainParameterContext extends AbstractCommonContex
         CHAIN_PARAMETERS.put(DirectContextParameters.WORLD, new WorldParameterProvider());
         CHAIN_PARAMETERS.put(DirectContextParameters.BLOCK, new BlockParameterProvider());
         CHAIN_PARAMETERS.put(DirectContextParameters.POSITION, new PositionParameterProvider());
+        CHAIN_PARAMETERS.put(DirectContextParameters.FURNITURE, new FurnitureParameterProvider());
+        CHAIN_PARAMETERS.put(DirectContextParameters.ENTITY, new EntityParameterProvider());
         ItemParameterProvider itemProvider = new ItemParameterProvider();
         CHAIN_PARAMETERS.put(DirectContextParameters.MAIN_HAND_ITEM, itemProvider);
         CHAIN_PARAMETERS.put(DirectContextParameters.OFF_HAND_ITEM, itemProvider);

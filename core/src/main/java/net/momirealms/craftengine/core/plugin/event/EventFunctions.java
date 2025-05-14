@@ -1,10 +1,7 @@
 package net.momirealms.craftengine.core.plugin.event;
 
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
-import net.momirealms.craftengine.core.plugin.context.function.CommandFunction;
-import net.momirealms.craftengine.core.plugin.context.function.CommonFunctions;
-import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
+import net.momirealms.craftengine.core.plugin.context.function.*;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -24,6 +21,10 @@ public class EventFunctions {
 
     static {
         register(CommonFunctions.COMMAND, new CommandFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.MESSAGE, new MessageFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.ACTIONBAR, new ActionBarFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.TITLE, new TitleFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.CANCEL_EVENT, new CancelEventFunction.FactoryImpl<>(EventConditions::fromMap));
     }
 
     public static void register(Key key, FunctionFactory<PlayerOptionalContext> factory) {

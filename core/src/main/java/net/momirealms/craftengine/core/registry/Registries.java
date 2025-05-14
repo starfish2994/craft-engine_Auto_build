@@ -25,6 +25,7 @@ import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
+import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectorFactory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
@@ -53,6 +54,7 @@ public class Registries {
     public static final ResourceKey<Registry<CustomSmithingTransformRecipe.ItemDataProcessor.ProcessorFactory>> SMITHING_RESULT_PROCESSOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("smithing_result_processor_factory"));
     public static final ResourceKey<Registry<HitBoxFactory>> HITBOX_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("hitbox_factory"));
     public static final ResourceKey<Registry<ResourcePackHostFactory>> RESOURCE_PACK_HOST_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resource_pack_host_factory"));
-    public static final ResourceKey<Registry<FunctionFactory<PlayerOptionalContext>>> EVENT_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_function_factory"));
-    public static final ResourceKey<Registry<ConditionFactory<PlayerOptionalContext>>> EVENT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_block_condition_factory"));
+    public static final ResourceKey<Registry<FunctionFactory<PlayerOptionalContext>>> EVENT_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_function_factory"));
+    public static final ResourceKey<Registry<ConditionFactory<PlayerOptionalContext>>> EVENT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_condition_factory"));
+    public static final ResourceKey<Registry<PlayerSelectorFactory<?>>> PLAYER_SELECTOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_selector"));
 }

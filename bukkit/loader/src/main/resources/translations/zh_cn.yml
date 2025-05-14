@@ -90,7 +90,8 @@ warning.config.condition.match_block_property.missing_properties: "<yellow>在�
 warning.config.condition.match_item.missing_id: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'match_item' 条件所需的 'id' 参数</yellow>"
 warning.config.condition.table_bonus.missing_enchantment: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'table_bonus' 条件所需的 'enchantment' 参数</yellow>"
 warning.config.condition.table_bonus.missing_chances: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'table_bonus' 条件所需的 'chances' 参数</yellow>"
-warning.config.condition.click_type.missing_click_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'click-type' argument for 'click_type' condition.</yellow>"
+
+
 warning.config.structure.not_section: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 应为配置段落 但实际类型为 '<arg:2>'</yellow>"
 warning.config.image.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重复的图片配置 '<arg:1>' 请检查其他文件中是否存在相同配置</yellow>"
 warning.config.image.missing_height: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 缺少必需的 'height' 参数</yellow>"

@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -42,6 +43,7 @@ import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BlockEventListener implements Listener {
     private final BukkitCraftEngine plugin;
@@ -121,11 +123,35 @@ public class BlockEventListener implements Listener {
         Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
         int stateId = BlockStateUtils.blockStateToId(blockState);
         Player player = event.getPlayer();
+        Location location = block.getLocation();
+        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        net.momirealms.craftengine.core.world.World world = new BukkitWorld(player.getWorld());
+        WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+
+        if (itemInHand != null) {
+            Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+            if (optionalCustomItem.isPresent()) {
+                Cancellable dummy = Cancellable.dummy();
+                optionalCustomItem.get().execute(
+                        PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                            .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                            .withParameter(DirectContextParameters.POSITION, position)
+                            .withParameter(DirectContextParameters.PLAYER, serverPlayer)
+                            .withParameter(DirectContextParameters.EVENT, dummy)
+                            .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                        ), EventTrigger.BREAK
+                );
+                if (dummy.isCancelled()) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
             ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
             if (!state.isEmpty()) {
-                Location location = block.getLocation();
-                BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
                 // double check adventure mode to prevent dupe
                 if (!FastNMS.INSTANCE.mayBuild(serverPlayer.serverPlayer()) && !serverPlayer.canBreak(LocationUtils.toBlockPos(location), null)) {
                     return;
@@ -138,10 +164,6 @@ public class BlockEventListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-
-                Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
-                net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
-                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
 
                 // execute functions
                 Cancellable cancellable = Cancellable.dummy();
@@ -180,12 +202,12 @@ public class BlockEventListener implements Listener {
                 }
 
                 // drop items
-                ContextHolder.Builder builder = ContextHolder.builder()
+                ContextHolder.Builder lootContext = ContextHolder.builder()
                         .withParameter(DirectContextParameters.POSITION, position)
                         .withParameter(DirectContextParameters.PLAYER, serverPlayer)
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                         .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand);
-                for (Item<Object> item : state.getDrops(builder, world, serverPlayer)) {
+                for (Item<Object> item : state.getDrops(lootContext, world, serverPlayer)) {
                     world.dropItemNaturally(position, item);
                 }
             }
@@ -197,23 +219,19 @@ public class BlockEventListener implements Listener {
                         event.setDropItems(false);
                         event.setExpToDrop(0);
                     }
-                    Location location = block.getLocation();
-                    BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
-                    net.momirealms.craftengine.core.world.World world = new BukkitWorld(player.getWorld());
-                    WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                    ContextHolder.Builder builder = ContextHolder.builder()
+                    ContextHolder lootContext = ContextHolder.builder()
                             .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                             .withParameter(DirectContextParameters.POSITION, position)
                             .withParameter(DirectContextParameters.PLAYER, serverPlayer)
-                            .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
-                    ContextHolder contextHolder = builder.build();
+                            .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand).build();
                     for (LootTable<?> lootTable : it.lootTables()) {
-                        for (Item<?> item : lootTable.getRandomItems(contextHolder, world, serverPlayer)) {
+                        for (Item<?> item : lootTable.getRandomItems(lootContext, world, serverPlayer)) {
                             world.dropItemNaturally(position, item);
                         }
                     }
                 });
             }
+
             // sound system
             if (Config.enableSoundSystem()) {
                 Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);

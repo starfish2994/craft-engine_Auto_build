@@ -25,6 +25,7 @@ import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory;
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
+import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectorFactory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
@@ -54,6 +55,7 @@ public class BuiltInRegistries {
     public static final Registry<ResourcePackHostFactory> RESOURCE_PACK_HOST_FACTORY = createRegistry(Registries.RESOURCE_PACK_HOST_FACTORY);
     public static final Registry<FunctionFactory<PlayerOptionalContext>> EVENT_FUNCTION_FACTORY = createRegistry(Registries.EVENT_FUNCTION_FACTORY);
     public static final Registry<ConditionFactory<PlayerOptionalContext>> EVENT_CONDITION_FACTORY = createRegistry(Registries.EVENT_CONDITION_FACTORY);
+    public static final Registry<PlayerSelectorFactory<?>> PLAYER_SELECTOR_FACTORY = createRegistry(Registries.PLAYER_SELECTOR_FACTORY);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);

@@ -2,8 +2,10 @@ package net.momirealms.craftengine.core.plugin.context.parameter;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.entity.Entity;
 import net.momirealms.craftengine.core.entity.furniture.AnchorType;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
+import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
@@ -29,6 +31,7 @@ public final class DirectContextParameters {
     public static final ContextKey<Boolean> FALLING_BLOCK = ContextKey.direct("falling_block");
     public static final ContextKey<Float> EXPLOSION_RADIUS = ContextKey.direct("explosion_radius");
     public static final ContextKey<Player> PLAYER = ContextKey.direct("player");
+    public static final ContextKey<Entity> ENTITY = ContextKey.direct("entity");
     public static final ContextKey<ImmutableBlockState> BLOCK_STATE = ContextKey.direct("custom_block_state");
     public static final ContextKey<Position> COORDINATE = ContextKey.direct("coordinate");
     public static final ContextKey<WorldPosition> POSITION = ContextKey.direct("position");
@@ -51,4 +54,8 @@ public final class DirectContextParameters {
     public static final ContextKey<AnchorType> ANCHOR_TYPE = ContextKey.direct("anchor_type");
     public static final ContextKey<InteractionHand> HAND = ContextKey.direct("hand");
     public static final ContextKey<Cancellable> EVENT = ContextKey.direct("event");
+    public static final ContextKey<Boolean> IS_FLYING = ContextKey.direct("is_flying");
+    public static final ContextKey<Boolean> IS_SNEAKING = ContextKey.direct("is_sneaking");
+    public static final ContextKey<Boolean> IS_CUSTOM = ContextKey.direct("is_custom");
+    public static final ContextKey<GameMode> GAMEMODE = ContextKey.direct("gamemode");
 }

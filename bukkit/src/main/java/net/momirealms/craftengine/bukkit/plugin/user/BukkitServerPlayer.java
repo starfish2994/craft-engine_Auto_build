@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.PackedBlockState;
+import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
@@ -27,7 +28,10 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
-import org.bukkit.*;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
@@ -145,18 +149,18 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public boolean isCreativeMode() {
-        return platformPlayer().getGameMode() == GameMode.CREATIVE;
+    public GameMode gameMode() {
+        return switch (platformPlayer().getGameMode()) {
+            case CREATIVE -> GameMode.CREATIVE;
+            case SPECTATOR -> GameMode.SPECTATOR;
+            case ADVENTURE -> GameMode.ADVENTURE;
+            case SURVIVAL -> GameMode.SURVIVAL;
+        };
     }
 
     @Override
-    public boolean isSpectatorMode() {
-        return platformPlayer().getGameMode() == GameMode.SPECTATOR;
-    }
-
-    @Override
-    public boolean isAdventureMode() {
-        return platformPlayer().getGameMode() == GameMode.ADVENTURE;
+    public void setGameMode(GameMode gameMode) {
+        platformPlayer().setGameMode(Objects.requireNonNull(org.bukkit.GameMode.getByValue(gameMode.id())));
     }
 
     @Override
@@ -173,6 +177,14 @@ public class BukkitServerPlayer extends Player {
     public void sendActionBar(Component text) {
         Object packet = FastNMS.INSTANCE.constructor$ClientboundActionBarPacket(ComponentUtils.adventureToMinecraft(text));
         sendPacket(packet, false);
+    }
+
+    @Override
+    public void sendTitle(Component title, Component subtitle, int fadeIn, int stay, int fadeOut) {
+        Object titlePacket = FastNMS.INSTANCE.constructor$ClientboundSetTitleTextPacket(ComponentUtils.adventureToMinecraft(title));
+        Object subtitlePacket = FastNMS.INSTANCE.constructor$ClientboundSetSubtitleTextPacket(ComponentUtils.adventureToMinecraft(subtitle));
+        Object timePacket = FastNMS.INSTANCE.constructor$ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut);
+        sendPackets(List.of(titlePacket, subtitlePacket, timePacket), false);
     }
 
     @Override
@@ -815,5 +827,10 @@ public class BukkitServerPlayer extends Player {
         } else {
             return LegacyAttributeUtils.getLuck(platformPlayer());
         }
+    }
+
+    @Override
+    public boolean isFlying() {
+        return platformPlayer().isFlying();
     }
 }

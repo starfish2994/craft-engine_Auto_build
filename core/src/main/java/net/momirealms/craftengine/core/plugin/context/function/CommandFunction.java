@@ -23,7 +23,7 @@ public class CommandFunction<CTX extends Context> extends AbstractConditionalFun
     private final boolean asPlayer;
     private final PlayerSelector<CTX> selector;
 
-    public CommandFunction(List<Condition<CTX>> predicates, List<TextProvider> command, boolean asPlayer, @Nullable PlayerSelector<CTX> selector) {
+    public CommandFunction(List<Condition<CTX>> predicates, @Nullable PlayerSelector<CTX> selector, List<TextProvider> command, boolean asPlayer) {
         super(predicates);
         this.asPlayer = asPlayer;
         this.command = command;
@@ -72,7 +72,7 @@ public class CommandFunction<CTX extends Context> extends AbstractConditionalFun
             Object command = ResourceConfigUtils.requireNonNullOrThrow(ResourceConfigUtils.get(arguments, "command", "commands"), "warning.config.function.command.missing_command");
             List<TextProvider> commands = MiscUtils.getAsStringList(command).stream().map(TextProviders::fromString).toList();
             boolean asPlayer = (boolean) arguments.getOrDefault("as-player", false);
-            return new CommandFunction<>(getPredicates(arguments), commands, asPlayer, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()));
+            return new CommandFunction<>(getPredicates(arguments), PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), commands, asPlayer);
         }
     }
 }

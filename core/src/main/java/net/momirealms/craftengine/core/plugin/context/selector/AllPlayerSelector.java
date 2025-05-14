@@ -13,6 +13,8 @@ import net.momirealms.craftengine.core.util.MCUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class AllPlayerSelector<CTX extends Context> implements PlayerSelector<CTX> {
@@ -49,5 +51,15 @@ public class AllPlayerSelector<CTX extends Context> implements PlayerSelector<CT
     @Override
     public Key type() {
         return PlayerSelectors.ALL;
+    }
+
+    public static class FactoryImpl<CTX extends Context> implements PlayerSelectorFactory<CTX> {
+
+        @Override
+        public PlayerSelector<CTX> create(Map<String, Object> args, Function<Map<String, Object>, Condition<CTX>> conditionFactory) {
+
+
+            return null;
+        }
     }
 }
