@@ -132,18 +132,17 @@ public class BlockEventListener implements Listener {
         if (itemInHand != null) {
             Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
             if (optionalCustomItem.isPresent()) {
-                Cancellable dummy = Cancellable.dummy();
+                Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
                 optionalCustomItem.get().execute(
                         PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                             .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                             .withParameter(DirectContextParameters.POSITION, position)
                             .withParameter(DirectContextParameters.PLAYER, serverPlayer)
-                            .withParameter(DirectContextParameters.EVENT, dummy)
+                            .withParameter(DirectContextParameters.EVENT, cancellable)
                             .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
                         ), EventTrigger.BREAK
                 );
-                if (dummy.isCancelled()) {
-                    event.setCancelled(true);
+                if (cancellable.isCancelled()) {
                     return;
                 }
             }
@@ -166,7 +165,7 @@ public class BlockEventListener implements Listener {
                 }
 
                 // execute functions
-                Cancellable cancellable = Cancellable.dummy();
+                Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
                 PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                         .withParameter(DirectContextParameters.BLOCK_STATE, state)
@@ -176,7 +175,6 @@ public class BlockEventListener implements Listener {
                 );
                 state.owner().value().execute(context, EventTrigger.BREAK);
                 if (cancellable.isCancelled()) {
-                    event.setCancelled(true);
                     return;
                 }
 

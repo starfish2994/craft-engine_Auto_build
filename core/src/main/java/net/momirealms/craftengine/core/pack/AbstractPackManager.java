@@ -560,13 +560,13 @@ public abstract class AbstractPackManager implements PackManager {
         }
 
         this.generateFonts(generatedPackPath);
+        this.generateItemModels(generatedPackPath, this.plugin.itemManager());
+        this.generateItemModels(generatedPackPath, this.plugin.blockManager());
+        this.generateBlockOverrides(generatedPackPath);
         this.generateLegacyItemOverrides(generatedPackPath);
         this.generateModernItemOverrides(generatedPackPath);
         this.generateModernItemModels1_21_2(generatedPackPath);
         this.generateModernItemModels1_21_4(generatedPackPath);
-        this.generateBlockOverrides(generatedPackPath);
-        this.generateItemModels(generatedPackPath, this.plugin.itemManager());
-        this.generateItemModels(generatedPackPath, this.plugin.blockManager());
         this.generateOverrideSounds(generatedPackPath);
         this.generateCustomSounds(generatedPackPath);
         this.generateClientLang(generatedPackPath);
@@ -911,60 +911,67 @@ public abstract class AbstractPackManager implements PackManager {
         if (Config.packMaxVersion() < 21.19f) return;
         if (Config.packMinVersion() > 21.39f) return;
 
-        boolean has = false;
-        for (Map.Entry<Key, List<LegacyOverridesModel>> entry : plugin.itemManager().modernItemModels1_21_2().entrySet()) {
-            has = true;
-            Key key = entry.getKey();
+        // 此段代码生成1.21.2专用的item model文件，情况非常复杂！
+        for (Map.Entry<Key, List<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
+            Key itemModelPath = entry.getKey();
             List<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
-            boolean first = true;
-            JsonObject jsonObject = new JsonObject();
-            JsonArray overrides = new JsonArray();
-            for (LegacyOverridesModel model : legacyOverridesModels) {
-                if (first) {
-                    jsonObject.addProperty("parent", model.model());
-                    if (model.hasPredicate()) {
-                        overrides.add(model.toLegacyPredicateElement());
-                    }
-                    first = false;
-                } else {
-                    overrides.add(model.toLegacyPredicateElement());
-                }
-            }
-            if (!overrides.isEmpty()) {
-                jsonObject.add("overrides", overrides);
+
+            // 检测item model合法性
+            if (PRESET_MODERN_MODELS_ITEM.containsKey(itemModelPath) || PRESET_LEGACY_MODELS_ITEM.containsKey(itemModelPath)) {
+                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict", itemModelPath.asString());
+                continue;
             }
 
+            // 要检查目标生成路径是否已经存在模型，如果存在模型，应该只为其生成overrides
             Path itemPath = generatedPackPath
                     .resolve("assets")
-                    .resolve(key.namespace())
+                    .resolve(itemModelPath.namespace())
                     .resolve("models")
                     .resolve("item")
-                    .resolve(key.value() + ".json");
-            if (Files.exists(itemPath)) {
-                plugin.logger().warn("Failed to generate item model for [" + key + "] because " + itemPath.toAbsolutePath() + " already exists");
-            } else {
-                if (PRESET_MODERN_MODELS_ITEM.containsKey(key) || PRESET_LEGACY_MODELS_ITEM.containsKey(key)) {
-                    plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
+                    .resolve(itemModelPath.value() + ".json");
+
+            boolean modelExists = Files.exists(itemPath);
+            JsonObject itemJson;
+            if (modelExists) {
+                // 路径已经存在了，那么就应该把模型读入
+                try {
+                    itemJson = GsonHelper.readJsonFile(itemPath).getAsJsonObject();
+                    // 野心真大，已经自己写了overrides，那么不管你了
+                    if (itemJson.has("overrides")) {
+                        continue;
+                    }
+                    JsonArray overrides = new JsonArray();
+                    for (LegacyOverridesModel legacyOverridesModel : legacyOverridesModels) {
+                        overrides.add(legacyOverridesModel.toLegacyPredicateElement());
+                    }
+                    itemJson.add("overrides", overrides);
+                } catch (IOException e) {
+                    this.plugin.logger().warn("Failed to read item json " + itemPath.toAbsolutePath());
                     continue;
                 }
+            } else {
+                // 如果路径不存在，则需要我们创建一个json对象，并对接model的路径
+                itemJson = new JsonObject();
+                LegacyOverridesModel firstModel = legacyOverridesModels.getFirst();
+                itemJson.addProperty("parent", firstModel.model());
+                JsonArray overrides = new JsonArray();
+                for (LegacyOverridesModel legacyOverridesModel : legacyOverridesModels) {
+                    overrides.add(legacyOverridesModel.toLegacyPredicateElement());
+                }
+                itemJson.add("overrides", overrides);
             }
             try {
                 Files.createDirectories(itemPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + itemPath.toAbsolutePath());
+                plugin.logger().severe("Error creating " + itemPath.toAbsolutePath(), e);
                 continue;
             }
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
-                GsonHelper.get().toJson(jsonObject, writer);
+                GsonHelper.get().toJson(itemJson, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to save item model for [" + key + "]");
+                plugin.logger().warn("Failed to save item model for " + itemModelPath, e);
             }
         }
-
-        // TODO it later
-//        if (Config.packMinVersion() < 21.19f && has) {
-//            plugin.logger().warn("You are using 'item-model' component for some models which requires 1.21.2+ client. But the min-supported-version set in 'config.yml' is " + "1." + Config.packMinVersion());
-//        }
     }
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {

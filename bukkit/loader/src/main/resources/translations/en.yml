@@ -311,3 +311,5 @@ warning.config.function.message.missing_message: "<yellow>Issue found in file <a
 warning.config.selector.missing_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'type' argument for selector.</yellow>"
 warning.config.selector.invalid_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector type '<arg:2>'.</yellow>"
 warning.config.selector.invalid_target: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector target '<arg:2>'.</yellow>"
+warning.config.resource_pack.item_model.conflict: "<yellow>Failed to generate item model for '<arg:0>' because this item model has been occupied by a vanilla item.</yellow>"
+warning.config.resource_pack.item_model.v1_21_2.conflict: "<yellow>Failed to generate item model(v1.21.2) for '<arg:0>'.</yellow>"
