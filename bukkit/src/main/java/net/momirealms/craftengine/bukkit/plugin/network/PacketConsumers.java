@@ -1695,9 +1695,8 @@ public class PacketConsumers {
                         PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                                 .withParameter(DirectContextParameters.FURNITURE, furniture)
                                 .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
-                                .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.LEFT));
+                        );
                         furniture.config().execute(context, EventTrigger.LEFT_CLICK);
-                        furniture.config().execute(context, EventTrigger.CLICK);
                         furniture.config().execute(context, EventTrigger.BREAK);
 
                         CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
@@ -1726,9 +1725,8 @@ public class PacketConsumers {
                     PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
                             .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
-                            .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.RIGHT));
-                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
-                    furniture.config().execute(context, EventTrigger.CLICK);
+                    );
+                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);;
 
                     if (player.isSneaking()) {
                         // try placing another furniture above it

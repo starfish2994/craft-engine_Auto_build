@@ -18,6 +18,7 @@ import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -25,7 +26,6 @@ import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -131,7 +131,7 @@ public class BlockEventListener implements Listener {
                     return;
                 }
 
-                // trigger event
+                // trigger api event
                 CustomBlockBreakEvent customBreakEvent = new CustomBlockBreakEvent(serverPlayer, location, block, state);
                 boolean isCancelled = EventUtils.fireAndCheckCancel(customBreakEvent);
                 if (isCancelled) {
@@ -139,12 +139,24 @@ public class BlockEventListener implements Listener {
                     return;
                 }
 
-                // execute functions
+                Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
+                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
+
+                // execute functions
+                Cancellable cancellable = Cancellable.dummy();
                 PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                        .withParameter(DirectContextParameters.BLOCK_STATE, state));
+                        .withParameter(DirectContextParameters.BLOCK_STATE, state)
+                        .withParameter(DirectContextParameters.EVENT, cancellable)
+                        .withParameter(DirectContextParameters.POSITION, position)
+                        .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                );
                 state.owner().value().execute(context, EventTrigger.BREAK);
+                if (cancellable.isCancelled()) {
+                    event.setCancelled(true);
+                    return;
+                }
 
                 // handle waterlogged blocks
                 @SuppressWarnings("unchecked")
@@ -157,13 +169,11 @@ public class BlockEventListener implements Listener {
                 }
 
                 // play sound
-                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 world.playBlockSound(position, state.sounds().breakSound());
                 if (player.getGameMode() == GameMode.CREATIVE || !customBreakEvent.dropItems()) {
                     return;
                 }
 
-                Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
                 // do not drop if it's not the correct tool
                 if (!BlockStateUtils.isCorrectTool(state, itemInHand)) {
                     return;
@@ -172,8 +182,9 @@ public class BlockEventListener implements Listener {
                 // drop items
                 ContextHolder.Builder builder = ContextHolder.builder()
                         .withParameter(DirectContextParameters.POSITION, position)
-                        .withParameter(DirectContextParameters.PLAYER, serverPlayer);
-                        //mark item .withOptionalParameter(CommonParameters.MAIN_HAND_ITEM, itemInHand);
+                        .withParameter(DirectContextParameters.PLAYER, serverPlayer)
+                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                        .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand);
                 for (Item<Object> item : state.getDrops(builder, world, serverPlayer)) {
                     world.dropItemNaturally(position, item);
                 }
@@ -191,8 +202,10 @@ public class BlockEventListener implements Listener {
                     net.momirealms.craftengine.core.world.World world = new BukkitWorld(player.getWorld());
                     WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                     ContextHolder.Builder builder = ContextHolder.builder()
+                            .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                             .withParameter(DirectContextParameters.POSITION, position)
-                            .withParameter(DirectContextParameters.PLAYER, serverPlayer);
+                            .withParameter(DirectContextParameters.PLAYER, serverPlayer)
+                            .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND));
                     ContextHolder contextHolder = builder.build();
                     for (LootTable<?> lootTable : it.lootTables()) {
                         for (Item<?> item : lootTable.getRandomItems(contextHolder, world, serverPlayer)) {
@@ -230,9 +243,9 @@ public class BlockEventListener implements Listener {
                 Location location = block.getLocation();
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(block.getWorld());
                 WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position);
-                for (Item<?> item : immutableBlockState.getDrops(builder, world, null)) {
+                for (Item<?> item : immutableBlockState.getDrops(ContextHolder.builder()
+                        .withParameter(DirectContextParameters.POSITION, position)
+                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block)), world, null)) {
                     world.dropItemNaturally(position, item);
                 }
             }
@@ -243,15 +256,14 @@ public class BlockEventListener implements Listener {
                     event.getDrops().clear();
                     event.setExpToDrop(0);
                 }
-
                 Location location = block.getLocation();
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
                 WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position);
-                ContextHolder contextHolder = builder.build();
+                        .withParameter(DirectContextParameters.POSITION, position)
+                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block));
                 for (LootTable<?> lootTable : it.lootTables()) {
-                    for (Item<?> item : lootTable.getRandomItems(contextHolder, world, null)) {
+                    for (Item<?> item : lootTable.getRandomItems(builder.build(), world, null)) {
                         world.dropItemNaturally(position, item);
                     }
                 }
@@ -259,65 +271,43 @@ public class BlockEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onStep(GenericGameEvent event) {
         if (event.getEvent() != GameEvent.STEP) return;
         Entity entity = event.getEntity();
         if (!(entity instanceof Player player)) return;
         BlockPos pos = EntityUtils.getOnPos(player);
-        Location playerLocation = player.getLocation();
-        BlockData blockData = player.getWorld().getBlockData(pos.x(), pos.y(), pos.z());
-        Object blockState = BlockStateUtils.blockDataToBlockState(blockData);
+        Block block = player.getWorld().getBlockAt(pos.x(), pos.y(), pos.z());
+        Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
         int stateId = BlockStateUtils.blockStateToId(blockState);
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
+            Location location = player.getLocation();
             ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
-            player.playSound(playerLocation, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume(), state.sounds().stepSound().pitch());
+            Cancellable cancellable = Cancellable.dummy();
+            state.owner().value().execute(PlayerOptionalContext.of(this.plugin.adapt(player), ContextHolder.builder()
+                    .withParameter(DirectContextParameters.EVENT, cancellable)
+                    .withParameter(DirectContextParameters.POSITION, new WorldPosition(new BukkitWorld(event.getWorld()), LocationUtils.toVec3d(location)))
+                    .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                    .withParameter(DirectContextParameters.BLOCK_STATE, state)
+            ), EventTrigger.STEP);
+            if (cancellable.isCancelled()) {
+                event.setCancelled(true);
+                return;
+            }
+            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume(), state.sounds().stepSound().pitch());
         } else if (Config.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
             if (manager.isBlockSoundRemoved(ownerBlock)) {
                 try {
                     Object soundType = Reflections.field$BlockBehaviour$soundType.get(ownerBlock);
                     Object stepSound = Reflections.field$SoundType$stepSound.get(soundType);
-                    player.playSound(playerLocation, FastNMS.INSTANCE.field$SoundEvent$location(stepSound).toString(), SoundCategory.BLOCKS, 0.15f, 1f);
+                    player.playSound(player.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(stepSound).toString(), SoundCategory.BLOCKS, 0.15f, 1f);
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to get sound type", e);
                 }
             }
         }
     }
-
-// Use BlockBreakBlock event
-//    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-//    public void onPistonRetract(BlockPistonRetractEvent event) {
-//        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
-//    }
-//
-//    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-//    public void onPistonExtend(BlockPistonExtendEvent event) {
-//        handlePistonEvent(event.getDirection(), event.getBlocks(), event.getBlock());
-//    }
-//
-//    private void handlePistonEvent(BlockFace face, List<Block> blocksList, Block piston) {
-//        int blocks = blocksList.size();
-//        net.momirealms.craftengine.core.world.World world = new BukkitWorld(piston.getWorld());
-//        for (int i = blocks - 1; i >= 0; --i) {
-//            Location oldLocation = blocksList.get(i).getLocation();
-//            BlockPos oldPos = new BlockPos(oldLocation.getBlockX(), oldLocation.getBlockY(), oldLocation.getBlockZ());
-//            Block block = blocksList.get(i);
-//            ImmutableBlockState blockState = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
-//            if (blockState != null && blockState.pushReaction() == PushReaction.DESTROY) {
-//                // break actions
-//                ContextHolder.Builder builder = ContextHolder.builder();
-//                Vec3d vec3d = Vec3d.atCenterOf(oldPos);
-//                builder.withParameter(LootParameters.LOCATION, vec3d);
-//                builder.withParameter(LootParameters.WORLD, world);
-//                for (Item<Object> item : blockState.getDrops(builder, world)) {
-//                    world.dropItemNaturally(vec3d, item);
-//                }
-//                world.playBlockSound(vec3d, blockState.sounds().breakSound());
-//            }
-//        }
-//    }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityExplode(EntityExplodeEvent event) {
@@ -344,7 +334,8 @@ public class BlockEventListener implements Listener {
             if (state != null && !state.isEmpty()) {
                 WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(blockPos));
                 ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position);
+                        .withParameter(DirectContextParameters.POSITION, position)
+                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block));
                 if (yield < 1f) {
                     builder.withParameter(DirectContextParameters.EXPLOSION_RADIUS, 1.0f / yield);
                 }

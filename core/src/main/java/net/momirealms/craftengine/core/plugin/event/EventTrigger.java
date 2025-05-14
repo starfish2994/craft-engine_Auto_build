@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public enum EventTrigger {
-    CLICK("click", "interact"),
     LEFT_CLICK("attack", "left_click"),
     RIGHT_CLICK("right_click", "use_on", "use", "use_item_on"),
     CONSUME("eat", "consume", "drink"),
     BREAK("break", "dig"),
-    PLACE("place", "build"),;
+    PLACE("place", "build"),
+    STEP("step"),;
 
     public static final Map<String, EventTrigger> BY_NAME = new HashMap<>();
     private final String[] names;

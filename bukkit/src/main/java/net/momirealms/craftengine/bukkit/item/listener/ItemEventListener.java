@@ -14,12 +14,11 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
-import net.momirealms.craftengine.core.plugin.context.CommonParameterProvider;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
-import net.momirealms.craftengine.core.util.ClickType;
+import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -75,6 +74,7 @@ public class ItemEventListener implements Listener {
         Object blockState = BlockStateUtils.blockDataToBlockState(blockData);
         ImmutableBlockState immutableBlockState = null;
         int stateId = BlockStateUtils.blockStateToId(blockState);
+        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
 
         // 处理自定义方块
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
@@ -96,19 +96,25 @@ public class ItemEventListener implements Listener {
                 return;
             }
 
+            Cancellable dummy = Cancellable.dummy();
             // run custom functions
             CustomBlock customBlock = immutableBlockState.owner().value();
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                     .withParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
                     .withParameter(DirectContextParameters.HAND, hand)
-                    .withParameter(DirectContextParameters.CLICK_TYPE, action.isRightClick() ? ClickType.RIGHT : ClickType.LEFT));
-            customBlock.execute(context, EventTrigger.CLICK);
+                    .withParameter(DirectContextParameters.EVENT, dummy)
+                    .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
+                    .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+            );
             if (action.isRightClick()) customBlock.execute(context, EventTrigger.RIGHT_CLICK);
             else customBlock.execute(context, EventTrigger.LEFT_CLICK);
+            if (dummy.isCancelled()) {
+                event.setCancelled(true);
+                return;
+            }
         }
 
-        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand == null ? Optional.empty() : itemInHand.getCustomItem();
         boolean hasItem = itemInHand != null;
         boolean hasCustomItem = optionalCustomItem.isPresent();
@@ -157,16 +163,23 @@ public class ItemEventListener implements Listener {
                 }
             }
 
-            // execute item functions
+            // execute item right click functions
             if (hasCustomItem) {
+                Cancellable dummy = Cancellable.dummy();
                 PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                         .withOptionalParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                        .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                        .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
                         .withParameter(DirectContextParameters.HAND, hand)
-                        .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.RIGHT));
+                        .withParameter(DirectContextParameters.EVENT, dummy)
+                );
                 CustomItem<ItemStack> customItem = optionalCustomItem.get();
-                customItem.execute(context, EventTrigger.CLICK);
                 customItem.execute(context, EventTrigger.RIGHT_CLICK);
+                if (dummy.isCancelled()) {
+                    event.setCancelled(true);
+                    return;
+                }
             }
 
             // 检查其他的物品行为，物品行为理论只在交互时处理
@@ -196,14 +209,20 @@ public class ItemEventListener implements Listener {
         }
 
         if (hasCustomItem && action == Action.LEFT_CLICK_BLOCK) {
+            Cancellable dummy = Cancellable.dummy();
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
                     .withOptionalParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                    .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                    .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
                     .withParameter(DirectContextParameters.HAND, hand)
-                    .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.LEFT));
+            );
             CustomItem<ItemStack> customItem = optionalCustomItem.get();
-            customItem.execute(context, EventTrigger.CLICK);
             customItem.execute(context, EventTrigger.LEFT_CLICK);
+            if (dummy.isCancelled()) {
+                event.setCancelled(true);
+                return;
+            }
         }
     }
 
@@ -222,17 +241,18 @@ public class ItemEventListener implements Listener {
         // should never be null
         if (itemInHand == null) return;
 
-        if (cancelEventIfHasInteraction(event, serverPlayer, hand)) {
-            return;
-        }
+        // todo 真的需要这个吗
+//        if (cancelEventIfHasInteraction(event, serverPlayer, hand)) {
+//            return;
+//        }
 
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
         if (optionalCustomItem.isPresent()) {
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.HAND, hand)
-                    .withParameter(DirectContextParameters.CLICK_TYPE, action.isRightClick() ? ClickType.RIGHT : ClickType.LEFT));
+                    .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+            );
             CustomItem<ItemStack> customItem = optionalCustomItem.get();
-            customItem.execute(context, EventTrigger.CLICK);
             if (action.isRightClick()) customItem.execute(context, EventTrigger.RIGHT_CLICK);
             else customItem.execute(context, EventTrigger.LEFT_CLICK);
         }
@@ -254,7 +274,7 @@ public class ItemEventListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onConsumeItem(PlayerItemConsumeEvent event) {
         ItemStack consumedItem = event.getItem();
         if (ItemUtils.isEmpty(consumedItem)) return;
@@ -263,12 +283,18 @@ public class ItemEventListener implements Listener {
         if (optionalCustomItem.isEmpty()) {
             return;
         }
+        Cancellable dummy = Cancellable.dummy();
         CustomItem<ItemStack> customItem = optionalCustomItem.get();
         PlayerOptionalContext context = PlayerOptionalContext.of(this.plugin.adapt(event.getPlayer()), ContextHolder.builder()
                 .withParameter(DirectContextParameters.CONSUMED_ITEM, wrapped)
+                .withParameter(DirectContextParameters.EVENT, dummy)
                 .withParameter(DirectContextParameters.HAND, event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
         );
         customItem.execute(context, EventTrigger.CONSUME);
+        if (dummy.isCancelled()) {
+            event.setCancelled(true);
+            return;
+        }
     }
 
     private boolean cancelEventIfHasInteraction(PlayerInteractEvent event, BukkitServerPlayer player, InteractionHand hand) {

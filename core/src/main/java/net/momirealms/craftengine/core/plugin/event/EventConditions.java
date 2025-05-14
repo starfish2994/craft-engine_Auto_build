@@ -28,7 +28,6 @@ public class EventConditions {
         register(CommonConditions.FALLING_BLOCK, new FallingBlockCondition.FactoryImpl<>());
         register(CommonConditions.RANDOM, new RandomCondition.FactoryImpl<>());
         register(CommonConditions.DISTANCE, new DistanceCondition.FactoryImpl<>());
-        register(CommonConditions.CLICK_TYPE, new ClickTypeCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, ConditionFactory<PlayerOptionalContext> factory) {

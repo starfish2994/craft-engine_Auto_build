@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.api.event.CustomBlockPlaceEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.*;
+import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
@@ -22,12 +23,17 @@ import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.GameEvent;
 import org.bukkit.Location;
@@ -137,6 +143,20 @@ public class BlockItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
 
+        WorldPosition position = new WorldPosition(context.getLevel(), pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5);
+        Cancellable dummy = Cancellable.dummy();
+        PlayerOptionalContext functionContext = PlayerOptionalContext.of(player, ContextHolder.builder()
+                .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(bukkitBlock))
+                .withParameter(DirectContextParameters.POSITION, position)
+                .withParameter(DirectContextParameters.EVENT, dummy)
+                .withParameter(DirectContextParameters.HAND, context.getHand())
+                .withParameter(DirectContextParameters.ITEM_IN_HAND, context.getItem())
+        );
+        block.execute(functionContext, EventTrigger.PLACE);
+        if (dummy.isCancelled()) {
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+
         if (!player.isCreativeMode()) {
             Item<?> item = context.getItem();
             item.count(item.count() - 1);
@@ -144,7 +164,7 @@ public class BlockItemBehavior extends ItemBehavior {
         }
 
         player.swingHand(context.getHand());
-        context.getLevel().playBlockSound(new Vec3d(pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5), blockStateToPlace.sounds().placeSound());
+        context.getLevel().playBlockSound(position, blockStateToPlace.sounds().placeSound());
         world.sendGameEvent(bukkitPlayer, GameEvent.BLOCK_PLACE, new Vector(pos.x(), pos.y(), pos.z()));
         return InteractionResult.SUCCESS;
     }

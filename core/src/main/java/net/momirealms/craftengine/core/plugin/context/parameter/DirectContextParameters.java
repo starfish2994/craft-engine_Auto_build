@@ -8,9 +8,12 @@ import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextKey;
-import net.momirealms.craftengine.core.util.ClickType;
+import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.BlockInWorld;
+import net.momirealms.craftengine.core.world.Position;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldPosition;
 
 import java.util.UUID;
 
@@ -22,11 +25,10 @@ public final class DirectContextParameters {
     public static final ContextKey<World> WORLD = ContextKey.direct("world");
     public static final ContextKey<Item<?>> FURNITURE_ITEM = ContextKey.direct("furniture_item");
     public static final ContextKey<Item<?>> CONSUMED_ITEM = ContextKey.direct("consumed_item");
-    public static final ContextKey<Item<?>> TOOL = ContextKey.direct("tool");
+    public static final ContextKey<Item<?>> ITEM_IN_HAND = ContextKey.direct("item_in_hand");
     public static final ContextKey<Boolean> FALLING_BLOCK = ContextKey.direct("falling_block");
     public static final ContextKey<Float> EXPLOSION_RADIUS = ContextKey.direct("explosion_radius");
     public static final ContextKey<Player> PLAYER = ContextKey.direct("player");
-    public static final ContextKey<ClickType> CLICK_TYPE = ContextKey.direct("click_type");
     public static final ContextKey<ImmutableBlockState> BLOCK_STATE = ContextKey.direct("custom_block_state");
     public static final ContextKey<Position> COORDINATE = ContextKey.direct("coordinate");
     public static final ContextKey<WorldPosition> POSITION = ContextKey.direct("position");
@@ -48,4 +50,5 @@ public final class DirectContextParameters {
     public static final ContextKey<Furniture> FURNITURE = ContextKey.direct("furniture");
     public static final ContextKey<AnchorType> ANCHOR_TYPE = ContextKey.direct("anchor_type");
     public static final ContextKey<InteractionHand> HAND = ContextKey.direct("hand");
+    public static final ContextKey<Cancellable> EVENT = ContextKey.direct("event");
 }

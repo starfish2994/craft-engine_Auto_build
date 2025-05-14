@@ -19,7 +19,7 @@ public abstract class AbstractChainParameterContext extends AbstractCommonContex
         CHAIN_PARAMETERS.put(DirectContextParameters.OFF_HAND_ITEM, itemProvider);
         CHAIN_PARAMETERS.put(DirectContextParameters.FURNITURE_ITEM, itemProvider);
         CHAIN_PARAMETERS.put(DirectContextParameters.CONSUMED_ITEM, itemProvider);
-        CHAIN_PARAMETERS.put(DirectContextParameters.TOOL, itemProvider);
+        CHAIN_PARAMETERS.put(DirectContextParameters.ITEM_IN_HAND, itemProvider);
     }
 
     @SuppressWarnings("unchecked")

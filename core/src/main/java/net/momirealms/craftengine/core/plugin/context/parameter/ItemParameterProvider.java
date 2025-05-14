@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.plugin.context.parameter;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ChainParameterProvider;
 import net.momirealms.craftengine.core.plugin.context.ContextKey;
-import net.momirealms.craftengine.core.world.World;
 
 import java.util.HashMap;
 import java.util.Map;

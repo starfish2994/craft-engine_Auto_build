@@ -6,7 +6,10 @@ import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.BlockInWorld;
+import net.momirealms.craftengine.core.world.Position;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldHeight;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.EntityType;
@@ -32,11 +35,7 @@ public class BukkitWorld implements World {
 
     @Override
     public Object serverWorld() {
-        try {
-            return FastNMS.INSTANCE.field$CraftWorld$ServerLevel(platformWorld());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get server world", e);
-        }
+        return FastNMS.INSTANCE.field$CraftWorld$ServerLevel(platformWorld());
     }
 
     @Override
