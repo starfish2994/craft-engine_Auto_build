@@ -33,12 +33,13 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.BlockHitResult;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.EntityHitResult;
-import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.*;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
@@ -46,6 +47,7 @@ import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -1688,6 +1690,16 @@ public class PacketConsumers {
                         if (EventUtils.fireAndCheckCancel(breakEvent)) {
                             return;
                         }
+
+                        // execute functions
+                        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                                .withParameter(DirectContextParameters.FURNITURE, furniture)
+                                .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                                .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.LEFT));
+                        furniture.config().execute(context, EventTrigger.LEFT_CLICK);
+                        furniture.config().execute(context, EventTrigger.CLICK);
+                        furniture.config().execute(context, EventTrigger.BREAK);
+
                         CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
                     }
                 } else if (actionType == Reflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
@@ -1709,6 +1721,14 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
+
+                    // execute functions
+                    PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                            .withParameter(DirectContextParameters.FURNITURE, furniture)
+                            .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                            .withParameter(DirectContextParameters.CLICK_TYPE, ClickType.RIGHT));
+                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
+                    furniture.config().execute(context, EventTrigger.CLICK);
 
                     if (player.isSneaking()) {
                         // try placing another furniture above it

@@ -2,11 +2,14 @@ package net.momirealms.craftengine.core.plugin.context.parameter;
 
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.entity.furniture.AnchorType;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextKey;
 import net.momirealms.craftengine.core.util.ClickType;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.*;
 
 import java.util.UUID;
@@ -18,6 +21,8 @@ public final class DirectContextParameters {
     public static final ContextKey<Double> LAST_RANDOM = ContextKey.direct("last_random");
     public static final ContextKey<World> WORLD = ContextKey.direct("world");
     public static final ContextKey<Item<?>> FURNITURE_ITEM = ContextKey.direct("furniture_item");
+    public static final ContextKey<Item<?>> CONSUMED_ITEM = ContextKey.direct("consumed_item");
+    public static final ContextKey<Item<?>> TOOL = ContextKey.direct("tool");
     public static final ContextKey<Boolean> FALLING_BLOCK = ContextKey.direct("falling_block");
     public static final ContextKey<Float> EXPLOSION_RADIUS = ContextKey.direct("explosion_radius");
     public static final ContextKey<Player> PLAYER = ContextKey.direct("player");
@@ -38,5 +43,9 @@ public final class DirectContextParameters {
     public static final ContextKey<CustomBlock> CUSTOM_BLOCK = ContextKey.direct("custom_block");
     public static final ContextKey<BlockInWorld> BLOCK = ContextKey.direct("block");
     public static final ContextKey<Long> TIME = ContextKey.direct("time");
+    public static final ContextKey<Key> ID = ContextKey.direct("id");
+    public static final ContextKey<Integer> CUSTOM_MODEL_DATA = ContextKey.direct("custom_model_data");
     public static final ContextKey<Furniture> FURNITURE = ContextKey.direct("furniture");
+    public static final ContextKey<AnchorType> ANCHOR_TYPE = ContextKey.direct("anchor_type");
+    public static final ContextKey<InteractionHand> HAND = ContextKey.direct("hand");
 }

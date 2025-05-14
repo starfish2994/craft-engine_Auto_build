@@ -25,7 +25,7 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.BlockEventFunctions;
+import net.momirealms.craftengine.core.plugin.event.EventFunctions;
 import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
@@ -459,7 +459,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             }
 
             Object eventsObj = ResourceConfigUtils.get(section, "events", "event");
-            EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = parseEvents(eventsObj);
+            EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = EventFunctions.parseEvents(eventsObj);
 
             Map<String, Object> behaviors = MiscUtils.castToMap(section.getOrDefault("behavior", Map.of()), false);
             CustomBlock block = BukkitCustomBlock.builder(id)
@@ -511,55 +511,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
         }
-    }
-
-    private EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> parseEvents(Object eventsObj) {
-        EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = new EnumMap<>(EventTrigger.class);
-        if (eventsObj instanceof Map<?, ?> eventsSection) {
-            Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
-            for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
-                try {
-                    EventTrigger eventTrigger = EventTrigger.byName(eventEntry.getKey());
-                    if (eventEntry.getValue() instanceof List<?> list) {
-                        if (list.size() == 1) {
-                            events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false))));
-                        } else if (list.size() == 2) {
-                            events.put(eventTrigger, List.of(
-                                    BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false)),
-                                    BlockEventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
-                            ));
-                        } else {
-                            List<Function<PlayerOptionalContext>> eventsList = new ArrayList<>();
-                            for (Object event : list) {
-                                eventsList.add(BlockEventFunctions.fromMap(MiscUtils.castToMap(event, false)));
-                            }
-                            events.put(eventTrigger, eventsList);
-                        }
-                    } else if (eventEntry.getValue() instanceof Map<?, ?> eventSection) {
-                        events.put(eventTrigger, List.of(BlockEventFunctions.fromMap(MiscUtils.castToMap(eventSection, false))));
-                    }
-                } catch (IllegalArgumentException e) {
-                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", eventEntry.getKey());
-                }
-            }
-        } else if (eventsObj instanceof List<?> list) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> eventsList = (List<Map<String, Object>>) list;
-            for (Map<String, Object> eventSection : eventsList) {
-                Object onObj = eventSection.get("on");
-                if (onObj == null) {
-                    throw new LocalizedResourceConfigException("warning.config.event.missing_trigger");
-                }
-                try {
-                    EventTrigger eventTrigger = EventTrigger.byName(onObj.toString());
-                    Function<PlayerOptionalContext> function = BlockEventFunctions.fromMap(eventSection);
-                    events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(function);
-                } catch (IllegalArgumentException e) {
-                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", onObj.toString());
-                }
-            }
-        }
-        return events;
     }
 
     private Map<String, Property<?>> parseProperties(Map<String, Object> propertiesSection) {

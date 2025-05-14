@@ -14,6 +14,12 @@ public abstract class AbstractChainParameterContext extends AbstractCommonContex
         CHAIN_PARAMETERS.put(DirectContextParameters.WORLD, new WorldParameterProvider());
         CHAIN_PARAMETERS.put(DirectContextParameters.BLOCK, new BlockParameterProvider());
         CHAIN_PARAMETERS.put(DirectContextParameters.POSITION, new PositionParameterProvider());
+        ItemParameterProvider itemProvider = new ItemParameterProvider();
+        CHAIN_PARAMETERS.put(DirectContextParameters.MAIN_HAND_ITEM, itemProvider);
+        CHAIN_PARAMETERS.put(DirectContextParameters.OFF_HAND_ITEM, itemProvider);
+        CHAIN_PARAMETERS.put(DirectContextParameters.FURNITURE_ITEM, itemProvider);
+        CHAIN_PARAMETERS.put(DirectContextParameters.CONSUMED_ITEM, itemProvider);
+        CHAIN_PARAMETERS.put(DirectContextParameters.TOOL, itemProvider);
     }
 
     @SuppressWarnings("unchecked")

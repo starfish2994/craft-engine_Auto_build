@@ -9,7 +9,8 @@ public enum EventTrigger {
     LEFT_CLICK("attack", "left_click"),
     RIGHT_CLICK("right_click", "use_on", "use", "use_item_on"),
     CONSUME("eat", "consume", "drink"),
-    BREAK("break", "dig"),;
+    BREAK("break", "dig"),
+    PLACE("place", "build"),;
 
     public static final Map<String, EventTrigger> BY_NAME = new HashMap<>();
     private final String[] names;

@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
+import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
@@ -14,7 +15,9 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -136,7 +139,13 @@ public class BlockEventListener implements Listener {
                     return;
                 }
 
+                // execute functions
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(location.getWorld());
+                PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                        .withParameter(DirectContextParameters.BLOCK_STATE, state));
+                state.owner().value().execute(context, EventTrigger.BREAK);
+
                 // handle waterlogged blocks
                 @SuppressWarnings("unchecked")
                 Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
@@ -146,6 +155,7 @@ public class BlockEventListener implements Listener {
                         location.getWorld().setBlockData(location, Material.WATER.createBlockData());
                     }
                 }
+
                 // play sound
                 WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
                 world.playBlockSound(position, state.sounds().breakSound());

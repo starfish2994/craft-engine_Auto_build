@@ -33,6 +33,7 @@ import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectPrope
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.event.EventFunctions;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -357,6 +358,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 itemSettings.canPlaceRelatedVanillaBlock(true);
             }
             itemBuilder.settings(itemSettings);
+            itemBuilder.events(EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event")));
 
             CustomItem<ItemStack> customItem = itemBuilder.build();
             customItems.put(id, customItem);

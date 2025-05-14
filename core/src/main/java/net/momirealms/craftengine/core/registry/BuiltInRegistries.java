@@ -52,8 +52,8 @@ public class BuiltInRegistries {
     public static final Registry<CustomSmithingTransformRecipe.ItemDataProcessor.ProcessorFactory> SMITHING_RESULT_PROCESSOR_FACTORY = createRegistry(Registries.SMITHING_RESULT_PROCESSOR_FACTORY);
     public static final Registry<HitBoxFactory> HITBOX_FACTORY = createRegistry(Registries.HITBOX_FACTORY);
     public static final Registry<ResourcePackHostFactory> RESOURCE_PACK_HOST_FACTORY = createRegistry(Registries.RESOURCE_PACK_HOST_FACTORY);
-    public static final Registry<FunctionFactory<PlayerOptionalContext>> PLAYER_BLOCK_FUNCTION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_FUNCTION_FACTORY);
-    public static final Registry<ConditionFactory<PlayerOptionalContext>> PLAYER_BLOCK_CONDITION_FACTORY = createRegistry(Registries.PLAYER_BLOCK_CONDITION_FACTORY);
+    public static final Registry<FunctionFactory<PlayerOptionalContext>> EVENT_FUNCTION_FACTORY = createRegistry(Registries.EVENT_FUNCTION_FACTORY);
+    public static final Registry<ConditionFactory<PlayerOptionalContext>> EVENT_CONDITION_FACTORY = createRegistry(Registries.EVENT_CONDITION_FACTORY);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);
