@@ -588,16 +588,16 @@ public abstract class AbstractPackManager implements PackManager {
     private void generateParticle(Path generatedPackPath) {
         if (!Config.removeTintedLeavesParticle()) return;
         if (Config.packMaxVersion() < 21.49f) return;
-        var json = new JsonObject();
-        var textures = new JsonArray();
+        JsonObject particleJson = new JsonObject();
+        JsonArray textures = new JsonArray();
         textures.add("empty");
-        json.add("textures", textures);
-        var jsonPath = generatedPackPath
+        particleJson.add("textures", textures);
+        Path jsonPath = generatedPackPath
                 .resolve("assets")
                 .resolve("minecraft")
                 .resolve("particles")
                 .resolve("tinted_leaves.json");
-        var pngPath = generatedPackPath
+        Path pngPath = generatedPackPath
                 .resolve("assets")
                 .resolve("minecraft")
                 .resolve("textures")
@@ -607,11 +607,11 @@ public abstract class AbstractPackManager implements PackManager {
             Files.createDirectories(jsonPath.getParent());
             Files.createDirectories(pngPath.getParent());
         } catch (IOException e) {
-            plugin.logger().severe("Error creating directories", e);
+            this.plugin.logger().severe("Error creating directories", e);
             return;
         }
         try {
-            GsonHelper.writeJsonFile(json, jsonPath);
+            GsonHelper.writeJsonFile(particleJson, jsonPath);
             Files.write(pngPath, EMPTY_IMAGE);
         } catch (IOException e) {
             this.plugin.logger().severe("Error writing particles file", e);
@@ -822,19 +822,16 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve(generation.path().namespace())
                     .resolve("models")
                     .resolve(generation.path().value() + ".json");
-
             if (Files.exists(modelPath)) {
-                plugin.logger().warn("Failed to generate model because " + modelPath.toAbsolutePath() + " already exists");
+                TranslationManager.instance().log("warning.config.resource_pack.model.generation.already_exist", modelPath.toAbsolutePath().toString());
                 continue;
             }
-
             try {
                 Files.createDirectories(modelPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + modelPath.toAbsolutePath());
+                plugin.logger().severe("Error creating " + modelPath.toAbsolutePath(), e);
                 continue;
             }
-
             try (BufferedWriter writer = Files.newBufferedWriter(modelPath)) {
                 GsonHelper.get().toJson(generation.get(), writer);
             } catch (IOException e) {
@@ -871,13 +868,13 @@ public abstract class AbstractPackManager implements PackManager {
             try {
                 Files.createDirectories(overridedBlockPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + overridedBlockPath.toAbsolutePath());
+                plugin.logger().severe("Error creating " + overridedBlockPath.toAbsolutePath(), e);
                 continue;
             }
             try (BufferedWriter writer = Files.newBufferedWriter(overridedBlockPath)) {
                 GsonHelper.get().toJson(stateJson, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to create block states for [" + key + "]");
+                plugin.logger().warn("Failed to create block states for " + key, e);
             }
         }
 
@@ -896,13 +893,13 @@ public abstract class AbstractPackManager implements PackManager {
             try {
                 Files.createDirectories(overridedBlockPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + overridedBlockPath.toAbsolutePath());
+                plugin.logger().severe("Error creating " + overridedBlockPath.toAbsolutePath(), e);
                 continue;
             }
             try (BufferedWriter writer = Files.newBufferedWriter(overridedBlockPath)) {
                 GsonHelper.get().toJson(stateJson, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to create block states for [" + key + "]");
+                plugin.logger().warn("Failed to create block states for " + key, e);
             }
         }
     }
@@ -918,7 +915,7 @@ public abstract class AbstractPackManager implements PackManager {
 
             // 检测item model合法性
             if (PRESET_MODERN_MODELS_ITEM.containsKey(itemModelPath) || PRESET_LEGACY_MODELS_ITEM.containsKey(itemModelPath)) {
-                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict", itemModelPath.asString());
+                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict.vanilla", itemModelPath.asString());
                 continue;
             }
 
@@ -976,25 +973,26 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, ItemModel> entry : plugin.itemManager().modernItemModels1_21_4().entrySet()) {
+        for (Map.Entry<Key, ItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
                     .resolve("assets")
                     .resolve(key.namespace())
                     .resolve("items")
                     .resolve(key.value() + ".json");
+
+            if (PRESET_ITEMS.containsKey(key)) {
+                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict.vanilla", key.asString());
+                continue;
+            }
             if (Files.exists(itemPath)) {
-                plugin.logger().warn("Failed to generate item model for [" + key + "] because " + itemPath.toAbsolutePath() + " already exists");
-            } else {
-                if (PRESET_ITEMS.containsKey(key)) {
-                    plugin.logger().warn("Failed to generate item model for [" + key + "] because it conflicts with vanilla item");
-                    continue;
-                }
+                TranslationManager.instance().log("warning.config.resource_pack.item_model.already_exist", key.asString(), itemPath.toAbsolutePath().toString());
+                continue;
             }
             try {
                 Files.createDirectories(itemPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + itemPath.toAbsolutePath());
+                this.plugin.logger().severe("Error creating " + itemPath.toAbsolutePath(), e);
                 continue;
             }
             JsonObject model = new JsonObject();
@@ -1002,40 +1000,39 @@ public abstract class AbstractPackManager implements PackManager {
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
                 GsonHelper.get().toJson(model, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to save item model for [" + key + "]");
+                this.plugin.logger().warn("Failed to save item model for " + key, e);
             }
         }
     }
 
     private void generateModernItemOverrides(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, TreeMap<Integer, ItemModel>> entry : plugin.itemManager().modernItemOverrides().entrySet()) {
-            Key key = entry.getKey();
+        for (Map.Entry<Key, TreeMap<Integer, ItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
+            Key vanillaItemModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
                     .resolve("assets")
-                    .resolve(key.namespace())
+                    .resolve(vanillaItemModel.namespace())
                     .resolve("items")
-                    .resolve(key.value() + ".json");
+                    .resolve(vanillaItemModel.value() + ".json");
 
             JsonObject originalItemModel;
             if (Files.exists(overridedItemPath)) {
                 try {
                     originalItemModel = GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject();
                 } catch (IOException e) {
-                    plugin.logger().warn("Failed to load existing item model (modern)", e);
+                    this.plugin.logger().warn("Failed to load existing item model (modern)", e);
                     continue;
                 }
             } else {
-                originalItemModel = PRESET_ITEMS.get(key);
+                originalItemModel = PRESET_ITEMS.get(vanillaItemModel);
                 if (originalItemModel == null) {
-                    plugin.logger().warn("Failed to load existing item model for [" + key + "] (modern)");
+                    this.plugin.logger().warn("Failed to load existing item model for " + vanillaItemModel + " (modern)");
                     continue;
                 }
             }
 
             boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
             JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
-
             JsonObject newJson = new JsonObject();
             JsonObject model = new JsonObject();
             newJson.add("model", model);
@@ -1044,6 +1041,7 @@ public abstract class AbstractPackManager implements PackManager {
             if (!handAnimationOnSwap) {
                 model.addProperty("hand_animation_on_swap", false);
             }
+            // 将原有的json读成fallback
             model.add("fallback", fallbackModel);
             JsonArray entries = new JsonArray();
             model.add("entries", entries);
@@ -1056,43 +1054,42 @@ public abstract class AbstractPackManager implements PackManager {
             try {
                 Files.createDirectories(overridedItemPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath());
+                this.plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath(), e);
                 continue;
             }
             try (BufferedWriter writer = Files.newBufferedWriter(overridedItemPath)) {
                 GsonHelper.get().toJson(newJson, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to save item model for [" + key + "]");
+                this.plugin.logger().warn("Failed to save item model for " + vanillaItemModel, e);
             }
         }
     }
 
     private void generateLegacyItemOverrides(Path generatedPackPath) {
         if (Config.packMinVersion() > 21.39f) return;
-        for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : plugin.itemManager().legacyItemOverrides().entrySet()) {
-            Key key = entry.getKey();
+        for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().legacyItemOverrides().entrySet()) {
+            Key vanillaLegacyModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
                     .resolve("assets")
-                    .resolve(key.namespace())
+                    .resolve(vanillaLegacyModel.namespace())
                     .resolve("models")
                     .resolve("item")
-                    .resolve(key.value() + ".json");
+                    .resolve(vanillaLegacyModel.value() + ".json");
 
             JsonObject originalItemModel;
             if (Files.exists(overridedItemPath)) {
                 try (BufferedReader reader = Files.newBufferedReader(overridedItemPath)) {
                     originalItemModel = JsonParser.parseReader(reader).getAsJsonObject();
                 } catch (IOException e) {
-                    plugin.logger().warn("Failed to load existing item model (legacy)", e);
+                    this.plugin.logger().warn("Failed to load existing item model (legacy)", e);
                     continue;
                 }
             } else {
-                originalItemModel = PRESET_LEGACY_MODELS_ITEM.get(key);
-            }
-            if (originalItemModel == null) {
-                plugin.logger().warn("Failed to load item model for [" + key + "] (legacy)");
-                continue;
-            } else {
+                originalItemModel = PRESET_LEGACY_MODELS_ITEM.get(vanillaLegacyModel);
+                if (originalItemModel == null) {
+                    this.plugin.logger().warn("Failed to load item model for " + vanillaLegacyModel + " (legacy)");
+                    continue;
+                }
                 originalItemModel = originalItemModel.deepCopy();
             }
             JsonArray overrides;
@@ -1109,14 +1106,13 @@ public abstract class AbstractPackManager implements PackManager {
             try {
                 Files.createDirectories(overridedItemPath.getParent());
             } catch (IOException e) {
-                plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath());
+                plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath(), e);
                 continue;
             }
-
             try (BufferedWriter writer = Files.newBufferedWriter(overridedItemPath)) {
                 GsonHelper.get().toJson(originalItemModel, writer);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to save item model for [" + key + "]");
+                plugin.logger().warn("Failed to save item model for " + vanillaLegacyModel, e);
             }
         }
     }
