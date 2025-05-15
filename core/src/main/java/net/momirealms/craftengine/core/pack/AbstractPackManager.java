@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.pack;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
@@ -535,64 +537,57 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin.logger().info("Generating resource pack...");
         long start = System.currentTimeMillis();
         // get the target location
-        Path generatedPackPath = this.plugin.dataFolderPath()
-                .resolve("generated")
-                .resolve("resource_pack");
-
-        try {
-            deleteDirectory(generatedPackPath);
-        } catch (IOException e) {
-            this.plugin.logger().severe("Error deleting previous resource pack", e);
-        }
-
-        // firstly merge existing folders
-        try {
-            List<Path> folders = new ArrayList<>();
-            folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
-            folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-            List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, generatedPackPath);
-            if (!duplicated.isEmpty()) {
-                plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
-                int x = 1;
-                for (Pair<Path, List<Path>> path : duplicated) {
-                    this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
-                    for (int i = 0, size = path.right().size(); i < size; i++) {
-                        if (i == size - 1) {
-                            this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
-                        } else {
-                            this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
+        try (FileSystem fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())) {
+            // firstly merge existing folders
+            try {
+                Path generatedPackPath = fs.getPath("resource_pack");
+                List<Path> folders = new ArrayList<>();
+                folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
+                folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
+                List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, fs);
+                if (!duplicated.isEmpty()) {
+                    plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
+                    int x = 1;
+                    for (Pair<Path, List<Path>> path : duplicated) {
+                        this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
+                        for (int i = 0, size = path.right().size(); i < size; i++) {
+                            if (i == size - 1) {
+                                this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
+                            } else {
+                                this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
+                            }
                         }
                     }
                 }
+
+                this.generateFonts(generatedPackPath);
+                this.generateItemModels(generatedPackPath, this.plugin.itemManager());
+                this.generateItemModels(generatedPackPath, this.plugin.blockManager());
+                this.generateBlockOverrides(generatedPackPath);
+                this.generateLegacyItemOverrides(generatedPackPath);
+                this.generateModernItemOverrides(generatedPackPath);
+                this.generateModernItemModels1_21_2(generatedPackPath);
+                this.generateModernItemModels1_21_4(generatedPackPath);
+                this.generateOverrideSounds(generatedPackPath);
+                this.generateCustomSounds(generatedPackPath);
+                this.generateClientLang(generatedPackPath);
+                this.generateEquipments(generatedPackPath);
+                this.generateParticle(generatedPackPath);
+                Path zipFile = resourcePackPath();
+                try {
+                    this.zipGenerator.accept(generatedPackPath, zipFile);
+                } catch (Exception e) {
+                    this.plugin.logger().severe("Error zipping resource pack", e);
+                }
+                long end = System.currentTimeMillis();
+                this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
+                this.eventDispatcher.accept(generatedPackPath, zipFile);
+            } catch (Exception e) {
+                this.plugin.logger().severe("Error merging resource pack", e);
             }
         } catch (IOException e) {
-            this.plugin.logger().severe("Error merging resource pack", e);
+            throw new RuntimeException(e);
         }
-
-        this.generateFonts(generatedPackPath);
-        this.generateItemModels(generatedPackPath, this.plugin.itemManager());
-        this.generateItemModels(generatedPackPath, this.plugin.blockManager());
-        this.generateBlockOverrides(generatedPackPath);
-        this.generateLegacyItemOverrides(generatedPackPath);
-        this.generateModernItemOverrides(generatedPackPath);
-        this.generateModernItemModels1_21_2(generatedPackPath);
-        this.generateModernItemModels1_21_4(generatedPackPath);
-        this.generateOverrideSounds(generatedPackPath);
-        this.generateCustomSounds(generatedPackPath);
-        this.generateClientLang(generatedPackPath);
-        this.generateEquipments(generatedPackPath);
-        this.generateParticle(generatedPackPath);
-
-        Path zipFile = resourcePackPath();
-        try {
-            this.zipGenerator.accept(generatedPackPath, zipFile);
-        } catch (Exception e) {
-            this.plugin.logger().severe("Error zipping resource pack", e);
-        }
-
-        long end = System.currentTimeMillis();
-        this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-        this.eventDispatcher.accept(generatedPackPath, zipFile);
     }
 
     private void generateParticle(Path generatedPackPath) {
@@ -1166,11 +1161,16 @@ public abstract class AbstractPackManager implements PackManager {
                 providers.add(image.get());
             }
 
-            try (FileWriter fileWriter = new FileWriter(fontPath.toFile())) {
-                fileWriter.write(fontJson.toString().replace("\\\\u", "\\u"));
+            try {
+                Files.writeString(fontPath, fontJson.toString().replace("\\\\u", "\\u"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+//            try (FileWriter fileWriter = new FileWriter(fontPath.toFile())) {
+//                fileWriter.write(fontJson.toString().replace("\\\\u", "\\u"));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
 
         if (Config.resourcePack$overrideUniform()) {
@@ -1192,7 +1192,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, Path targetFolder) throws IOException {
+    private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, FileSystem fs) throws IOException {
         Map<Path, List<Path>> conflictChecker = new HashMap<>();
         for (Path sourceFolder : sourceFolders) {
             if (Files.exists(sourceFolder)) {
@@ -1200,7 +1200,7 @@ public abstract class AbstractPackManager implements PackManager {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         Path relative = sourceFolder.relativize(file);
-                        Path targetPath = targetFolder.resolve(relative);
+                        Path targetPath = fs.getPath("resource_pack/" + relative.toString().replace("\\", "/"));
                         List<Path> conflicts = conflictChecker.computeIfAbsent(relative, k -> new ArrayList<>());
                         if (conflicts.isEmpty()) {
                             Files.createDirectories(targetPath.getParent());

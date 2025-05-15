@@ -56,6 +56,8 @@ dependencies {
     compileOnly("software.amazon.awssdk:netty-nio-client:${rootProject.properties["amazon_awssdk_version"]}")
     // EvalEx
     compileOnly("com.ezylang:EvalEx:${rootProject.properties["evalex_version"]}")
+    // Jimfs
+    compileOnly("com.google.jimfs:jimfs:${rootProject.properties["jimfs_version"]}")
 }
 
 java {
@@ -88,6 +90,7 @@ tasks {
         relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk") // awssdk
         relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream") // awssdk
         relocate("com.ezylang.evalex", "net.momirealms.craftengine.libraries.evalex")
+        relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
     }
 }
 

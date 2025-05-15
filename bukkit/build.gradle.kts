@@ -95,6 +95,7 @@ tasks {
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("com.ezylang.evalex", "net.momirealms.craftengine.libraries.evalex")
+        relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
     }
 }
 
