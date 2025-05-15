@@ -365,6 +365,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
             // cache command suggestions
             cachedSuggestions.add(Suggestion.suggestion(id.toString()));
+
+            // TODO Deprecated 理论支持任意物品类型
             if (material == Material.TOTEM_OF_UNDYING)
                 cachedTotemSuggestions.add(Suggestion.suggestion(id.toString()));
 
@@ -426,6 +428,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 }
 
                 if (Config.packMinVersion() < 21.39f) {
+                    // TODO 手动指定旧版格式
                     List<LegacyOverridesModel> legacyOverridesModels = new ArrayList<>();
                     processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, materialId, customModelData);
                     TreeSet<LegacyOverridesModel> lom = legacyOverrides.computeIfAbsent(materialId, k -> new TreeSet<>());

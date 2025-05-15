@@ -71,9 +71,10 @@ public abstract class AbstractPackManager implements PackManager {
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigParser> sectionParsers = new HashMap<>();
-    private final TreeMap<ConfigParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
     protected BiConsumer<Path, Path> zipGenerator;
     protected ResourcePackHost resourcePackHost;
+
+    private Map<Path, CachedConfigFile> cachedConfigFiles = Collections.emptyMap();
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -175,7 +176,6 @@ public abstract class AbstractPackManager implements PackManager {
     @Override
     public void unload() {
         this.loadedPacks.clear();
-        this.cachedConfigs.clear();
     }
 
     @Override
@@ -408,38 +408,48 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/gui/sprites/tooltip/topaz_frame.png.mcmeta");
     }
 
-    private void loadResourceConfigs(Predicate<ConfigParser> predicate) {
-        long o1 = System.nanoTime();
+    private void updateCachedConfigFiles() {
+        Map<Path, CachedConfigFile> previousFiles = this.cachedConfigFiles;
+        this.cachedConfigFiles = new HashMap<>();
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
-            Pair<List<Path>, List<Path>> files = FileUtils.getConfigsDeeply(pack.configurationFolder());
-            for (Path path : files.left()) {
-                try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
-                    Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
-                    Map<String, Object> data = yaml.load(inputStream);
-                    if (data == null) continue;
-                    for (Map.Entry<String, Object> entry : data.entrySet()) {
-                        processConfigEntry(entry, path, pack);
+            List<Path> files = FileUtils.getYmlConfigsDeeply(pack.configurationFolder());
+            for (Path path : files) {
+                CachedConfigFile cachedFile = previousFiles.get(path);
+                try {
+                    long lastModifiedTime = Files.getLastModifiedTime(path).toMillis();
+                    if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime) {
+                        this.cachedConfigFiles.put(path, cachedFile);
+                        continue;
                     }
-                } catch (Exception e) {
-                    this.plugin.logger().warn(path, "Error loading config file", e);
+                    try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+                        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
+                        Map<String, Object> data = yaml.load(inputStream);
+                        this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime));
+                    } catch (Exception e) {
+                        this.plugin.logger().warn(path, "Error loading config file", e);
+                    }
+                } catch (IOException e) {
+                    this.plugin.logger().warn(path, "Error reading last modified time", e);
                 }
             }
-            for (Path path : files.right()) {
-                try (InputStreamReader inputStream = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
-                    Map<?, ?> dataRaw = GsonHelper.get().fromJson(JsonParser.parseReader(inputStream).getAsJsonObject(), Map.class);
-                    Map<String, Object> data = castToMap(dataRaw, false);
-                    for (Map.Entry<String, Object> entry : data.entrySet()) {
-                        processConfigEntry(entry, path, pack);
-                    }
-                } catch (Exception e) {
-                    this.plugin.logger().warn(path, "Error loading config file", e);
-                }
+        }
+    }
+
+    private void loadResourceConfigs(Predicate<ConfigParser> predicate) {
+        TreeMap<ConfigParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+        long o1 = System.nanoTime();
+        this.updateCachedConfigFiles();
+        for (Map.Entry<Path, CachedConfigFile> fileEntry : this.cachedConfigFiles.entrySet()) {
+            CachedConfigFile cachedFile = fileEntry.getValue();
+            for (Map.Entry<String, Object> entry : cachedFile.config().entrySet()) {
+                processConfigEntry(entry, fileEntry.getKey(), cachedFile.pack(), (p, c) ->
+                        cachedConfigs.computeIfAbsent(p, k -> new ArrayList<>()).add(c));
             }
         }
         long o2 = System.nanoTime();
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
-        for (Map.Entry<ConfigParser, List<CachedConfig>> entry : this.cachedConfigs.entrySet()) {
+        for (Map.Entry<ConfigParser, List<CachedConfig>> entry : cachedConfigs.entrySet()) {
             ConfigParser parser = entry.getKey();
             long t1 = System.nanoTime();
             for (CachedConfig cached : entry.getValue()) {
@@ -476,17 +486,17 @@ public abstract class AbstractPackManager implements PackManager {
             long t2 = System.nanoTime();
             this.plugin.logger().info("Loaded " + parser.sectionId()[0] + " in " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
         }
-        this.cachedConfigs.clear();
     }
 
-    private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack) {
+    private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack, BiConsumer<ConfigParser, CachedConfig> callback) {
         if (entry.getValue() instanceof Map<?,?> typeSections0) {
             String key = entry.getKey();
             int hashIndex = key.indexOf('#');
             String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
-                    .ifPresent(parser -> this.cachedConfigs.computeIfAbsent(parser, k -> new ArrayList<>())
-                            .add(new CachedConfig(key, castToMap(typeSections0, false), path, pack)));
+                    .ifPresent(parser -> {
+                        callback.accept(parser, new CachedConfig(key, castToMap(typeSections0, false), path, pack));
+                    });
         }
     }
 
