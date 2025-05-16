@@ -234,6 +234,7 @@ public abstract class CraftEngine implements Plugin {
             // set up some platform extra tasks
             this.platformDelayedEnable();
             this.isInitializing = false;
+            this.scheduler.executeAsync(() -> this.packManager.initCachedAssets());
         });
     }
 

@@ -19,7 +19,6 @@ import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
-import net.momirealms.craftengine.core.pack.obfuscation.ObfH;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -32,6 +31,7 @@ import net.momirealms.craftengine.core.sound.AbstractSoundManager;
 import net.momirealms.craftengine.core.sound.SoundEvent;
 import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -73,10 +73,10 @@ public abstract class AbstractPackManager implements PackManager {
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigParser> sectionParsers = new HashMap<>();
+    private Map<Path, CachedConfigFile> cachedConfigFiles = Collections.emptyMap();
+    private Map<Path, CachedAssetFile> cachedAssetFiles = Collections.emptyMap();
     protected BiConsumer<Path, Path> zipGenerator;
     protected ResourcePackHost resourcePackHost;
-
-    private Map<Path, CachedConfigFile> cachedConfigFiles = Collections.emptyMap();
 
     public AbstractPackManager(CraftEngine plugin, BiConsumer<Path, Path> eventDispatcher) {
         this.plugin = plugin;
@@ -204,6 +204,15 @@ public abstract class AbstractPackManager implements PackManager {
        } catch (Exception e) {
            this.plugin.logger().warn("Failed to initialize pack manager", e);
        }
+    }
+
+    @Override
+    public void initCachedAssets() {
+        try {
+            this.updateCachedAssets(null);
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to update cached assets", e);
+        }
     }
 
     @NotNull
@@ -420,7 +429,8 @@ public abstract class AbstractPackManager implements PackManager {
                 CachedConfigFile cachedFile = previousFiles.get(path);
                 try {
                     long lastModifiedTime = Files.getLastModifiedTime(path).toMillis();
-                    if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime) {
+                    long size = Files.size(path);
+                    if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime && cachedFile.size() == size) {
                         this.cachedConfigFiles.put(path, cachedFile);
                         continue;
                     }
@@ -428,7 +438,8 @@ public abstract class AbstractPackManager implements PackManager {
                         Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
                         Map<String, Object> data = yaml.load(inputStream);
                         if (data == null) continue;
-                        this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime));
+
+                        this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime, size));
                     } catch (Exception e) {
                         this.plugin.logger().warn(path, "Error loading config file", e);
                     }
@@ -440,7 +451,7 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void loadResourceConfigs(Predicate<ConfigParser> predicate) {
-        TreeMap<ConfigParser, List<CachedConfig>> cachedConfigs = new TreeMap<>();
+        TreeMap<ConfigParser, List<CachedConfigSection>> cachedConfigs = new TreeMap<>();
         long o1 = System.nanoTime();
         this.updateCachedConfigFiles();
         for (Map.Entry<Path, CachedConfigFile> fileEntry : this.cachedConfigFiles.entrySet()) {
@@ -452,10 +463,10 @@ public abstract class AbstractPackManager implements PackManager {
         }
         long o2 = System.nanoTime();
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
-        for (Map.Entry<ConfigParser, List<CachedConfig>> entry : cachedConfigs.entrySet()) {
+        for (Map.Entry<ConfigParser, List<CachedConfigSection>> entry : cachedConfigs.entrySet()) {
             ConfigParser parser = entry.getKey();
             long t1 = System.nanoTime();
-            for (CachedConfig cached : entry.getValue()) {
+            for (CachedConfigSection cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
                     try {
@@ -491,14 +502,14 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack, BiConsumer<ConfigParser, CachedConfig> callback) {
+    private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack, BiConsumer<ConfigParser, CachedConfigSection> callback) {
         if (entry.getValue() instanceof Map<?,?> typeSections0) {
             String key = entry.getKey();
             int hashIndex = key.indexOf('#');
             String configType = hashIndex != -1 ? key.substring(0, hashIndex) : key;
             Optional.ofNullable(this.sectionParsers.get(configType))
                     .ifPresent(parser -> {
-                        callback.accept(parser, new CachedConfig(key, castToMap(typeSections0, false), path, pack));
+                        callback.accept(parser, new CachedConfigSection(key, castToMap(typeSections0, false), path, pack));
                     });
         }
     }
@@ -533,22 +544,79 @@ public abstract class AbstractPackManager implements PackManager {
 //        }
 //    }
 
-    private void updateAssetsCache(List<Path> folders) {
-
+    private List<Pair<Path, List<Path>>> updateCachedAssets(@Nullable FileSystem fs) throws IOException {
+        List<Path> folders = new ArrayList<>();
+        Map<Path, List<Path>> conflictChecker = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+        Map<Path, CachedAssetFile> previousFiles = this.cachedAssetFiles;
+        this.cachedAssetFiles = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+        folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
+        folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
+        for (Path sourceFolder : folders) {
+            if (Files.exists(sourceFolder)) {
+                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
+                    @Override
+                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                        CachedAssetFile cachedAsset = previousFiles.get(file);
+                        long lastModified = Files.getLastModifiedTime(file).toMillis();
+                        long size = Files.size(file);
+                        if (cachedAsset != null && cachedAsset.lastModified() == lastModified && cachedAsset.size() == size) {
+                            AbstractPackManager.this.cachedAssetFiles.put(file, cachedAsset);
+                        } else {
+                            cachedAsset = new CachedAssetFile(Files.readAllBytes(file), lastModified, size);
+                            AbstractPackManager.this.cachedAssetFiles.put(file, cachedAsset);
+                        }
+                        if (fs == null) return FileVisitResult.CONTINUE;
+                        Path relative = sourceFolder.relativize(file);
+                        Path targetPath = fs.getPath("resource_pack/" + relative.toString().replace("\\", "/"));
+                        List<Path> conflicts = conflictChecker.get(relative);
+                        if (conflicts == null) {
+                            Files.createDirectories(targetPath.getParent());
+                            Files.write(targetPath, cachedAsset.data());
+                            conflictChecker.put(relative, List.of(file));
+                        } else {
+                            PathContext relativeCTX = PathContext.of(relative);
+                            PathContext targetCTX = PathContext.of(targetPath);
+                            PathContext fileCTX = PathContext.of(file);
+                            for (ResolutionConditional resolution : Config.resolutions()) {
+                                if (resolution.matcher().test(relativeCTX)) {
+                                    resolution.resolution().run(targetCTX, fileCTX);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            }
+                            switch (conflicts.size()) {
+                                case 1 -> conflictChecker.put(relative, List.of(conflicts.get(0), file));
+                                case 2 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), file));
+                                case 3 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), file));
+                                case 4 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), conflicts.get(3), file));
+                                default -> {
+                                    // just ignore it if it has many conflict files
+                                }
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+        List<Pair<Path, List<Path>>> conflicts = new ArrayList<>();
+        for (Map.Entry<Path, List<Path>> entry : conflictChecker.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                conflicts.add(Pair.of(entry.getKey(), entry.getValue()));
+            }
+        }
+        return conflicts;
     }
 
     @Override
     public void generateResourcePack() throws IOException {
         this.plugin.logger().info("Generating resource pack...");
         long start = System.currentTimeMillis();
+
         // get the target location
         try (FileSystem fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())) {
             // firstly merge existing folders
             Path generatedPackPath = fs.getPath("resource_pack");
-            List<Path> folders = new ArrayList<>();
-            folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
-            folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-            List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, fs);
+            List<Pair<Path, List<Path>>> duplicated = this.updateCachedAssets(fs);
             if (!duplicated.isEmpty()) {
                 plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
                 int x = 1;
@@ -1181,45 +1249,5 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
         }
-    }
-
-    private List<Pair<Path, List<Path>>> mergeFolder(Collection<Path> sourceFolders, FileSystem fs) throws IOException {
-        Map<Path, List<Path>> conflictChecker = new HashMap<>();
-        for (Path sourceFolder : sourceFolders) {
-            if (Files.exists(sourceFolder)) {
-                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
-                    @Override
-                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                        Path relative = sourceFolder.relativize(file);
-                        Path targetPath = fs.getPath("resource_pack/" + relative.toString().replace("\\", "/"));
-                        List<Path> conflicts = conflictChecker.computeIfAbsent(relative, k -> new ArrayList<>());
-                        if (conflicts.isEmpty()) {
-                            Files.createDirectories(targetPath.getParent());
-                            Files.copy(file, targetPath, StandardCopyOption.REPLACE_EXISTING);
-                            conflicts.add(file);
-                        } else {
-                            PathContext relativeCTX = PathContext.of(relative);
-                            PathContext targetCTX = PathContext.of(targetPath);
-                            PathContext fileCTX = PathContext.of(file);
-                            for (ResolutionConditional resolution : Config.resolutions()) {
-                                if (resolution.matcher().test(relativeCTX)) {
-                                    resolution.resolution().run(targetCTX, fileCTX);
-                                    return FileVisitResult.CONTINUE;
-                                }
-                            }
-                            conflicts.add(file);
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            }
-        }
-        List<Pair<Path, List<Path>>> conflicts = new ArrayList<>();
-        for (Map.Entry<Path, List<Path>> entry : conflictChecker.entrySet()) {
-            if (entry.getValue().size() > 1) {
-                conflicts.add(Pair.of(entry.getKey(), entry.getValue()));
-            }
-        }
-        return conflicts;
     }
 }

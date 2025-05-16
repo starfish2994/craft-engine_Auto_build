@@ -14,6 +14,8 @@ public interface PackManager extends Manageable {
 
     void loadResources(boolean recipe);
 
+    void initCachedAssets();
+
     @NotNull
     Collection<Pack> loadedPacks();
 
