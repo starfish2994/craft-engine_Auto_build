@@ -1188,7 +1188,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateFonts(Path generatedPackPath) {
         // generate image font json
-        for (Font font : plugin.fontManager().fonts()) {
+        for (Font font : this.plugin.fontManager().fonts()) {
             Key namespacedKey = font.key();
             Path fontPath = generatedPackPath.resolve("assets")
                     .resolve(namespacedKey.namespace())
@@ -1202,14 +1202,14 @@ public abstract class AbstractPackManager implements PackManager {
                     fontJson = JsonParser.parseString(content).getAsJsonObject();
                 } catch (IOException e) {
                     fontJson = new JsonObject();
-                    plugin.logger().warn(fontPath + " is not a valid font json file");
+                    this.plugin.logger().warn(fontPath + " is not a valid font json file");
                 }
             } else {
                 fontJson = new JsonObject();
                 try {
                     Files.createDirectories(fontPath.getParent());
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    this.plugin.logger().severe("Error creating " + fontPath.toAbsolutePath(), e);
                 }
             }
 
@@ -1225,10 +1225,10 @@ public abstract class AbstractPackManager implements PackManager {
                 providers.add(image.get());
             }
 
-            try (BufferedWriter writer = Files.newBufferedWriter(fontPath)) {
-                GsonHelper.get().toJson(fontJson, writer);
+            try {
+                Files.writeString(fontPath, fontJson.toString().replace("\\\\u", "\\u"));
             } catch (IOException e) {
-                this.plugin.logger().warn("Failed to save font for " + namespacedKey, e);
+                this.plugin.logger().severe("Error writing font to " + fontPath.toAbsolutePath(), e);
             }
         }
 
