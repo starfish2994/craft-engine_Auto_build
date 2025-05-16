@@ -646,17 +646,18 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
             Path zipFile = fs.getPath("resource_pack.zip");
-
+            Path finalPath = resourcePackPath();
             try {
                 this.zipGenerator.accept(generatedPackPath, zipFile);
             } catch (Exception e) {
                 this.plugin.logger().severe("Error zipping resource pack", e);
             }
 
-            Files.write(resourcePackPath(), Files.readAllBytes(zipFile));
+            Files.createDirectories(finalPath.getParent());
+            Files.write(finalPath, Files.readAllBytes(zipFile));
             long end = System.currentTimeMillis();
             this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-            this.eventDispatcher.accept(generatedPackPath, resourcePackPath());
+            this.eventDispatcher.accept(generatedPackPath, finalPath);
         }
     }
 
