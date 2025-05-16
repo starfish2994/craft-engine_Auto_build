@@ -96,6 +96,7 @@ tasks {
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")
         relocate("com.ezylang.evalex", "net.momirealms.craftengine.libraries.evalex")
         relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
+        relocate("org.apache.commons.imaging", "net.momirealms.craftengine.libraries.imaging")
     }
 }
 

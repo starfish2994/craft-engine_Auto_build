@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -32,7 +33,7 @@ public interface PackManager extends Manageable {
         }
     }
 
-    void generateResourcePack();
+    void generateResourcePack() throws IOException;
 
     Path resourcePackPath();
 

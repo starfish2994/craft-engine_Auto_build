@@ -79,5 +79,6 @@ tasks {
         relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk")
         relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream")
         relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
+        relocate("org.apache.commons.imaging", "net.momirealms.craftengine.libraries.imaging")
     }
 }

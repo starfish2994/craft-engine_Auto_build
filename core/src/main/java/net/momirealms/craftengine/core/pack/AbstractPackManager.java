@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
+import net.momirealms.craftengine.core.pack.obfuscation.ObfH;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -46,7 +47,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
@@ -145,7 +145,6 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        initFileSystemProvider();
         List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
         if (list == null || list.isEmpty()) {
             this.resourcePackHost = NoneHost.INSTANCE;
@@ -187,12 +186,13 @@ public abstract class AbstractPackManager implements PackManager {
            if (magicClazz != null) {
                int fileCount = ObfA.VALUES[1] - ObfA.VALUES[17];
                Constructor<?> magicConstructor = ReflectionUtils.getConstructor(magicClazz, fileCount);
+               assert magicConstructor != null;
+//               magicConstructor.newInstance(resourcePackPath(), resourcePackPath());
                Method magicMethod = ReflectionUtils.getMethod(magicClazz, void.class);
+               assert magicMethod != null;
                this.zipGenerator = (p1, p2) -> {
                    try {
-                       assert magicConstructor != null;
                        Object magicObject = magicConstructor.newInstance(p1, p2);
-                       assert magicMethod != null;
                        magicMethod.invoke(magicObject);
                    } catch (Exception e) {
                        this.plugin.logger().warn("Failed to generate zip files", e);
@@ -427,6 +427,7 @@ public abstract class AbstractPackManager implements PackManager {
                     try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
                         Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
                         Map<String, Object> data = yaml.load(inputStream);
+                        if (data == null) continue;
                         this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime));
                     } catch (Exception e) {
                         this.plugin.logger().warn(path, "Error loading config file", e);
@@ -502,91 +503,92 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private static void initFileSystemProvider() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String providerClass = null;
-        if (osName.contains("win")) {
-            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
-        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
-        } else if (osName.contains("mac")) {
-            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
-        }
-        if (providerClass != null) {
-            try {
-                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
-            } catch (Exception ignored) {}
-        }
-    }
+//    private static void initFileSystemProvider() {
+//        String osName = System.getProperty("os.name").toLowerCase();
+//        String providerClass = null;
+//        if (osName.contains("win")) {
+//            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
+//        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+//            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
+//        } else if (osName.contains("mac")) {
+//            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
+//        }
+//        if (providerClass != null) {
+//            try {
+//                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
+//            } catch (Exception ignored) {}
+//        }
+//    }
+//
+//    private static void deleteDirectory(Path folder) throws IOException {
+//        if (!Files.exists(folder)) return;
+//        try (Stream<Path> walk = Files.walk(folder)) {
+//            walk.sorted(Comparator.reverseOrder())
+//                    .parallel()
+//                    .forEach(path -> {
+//                        try {
+//                            Files.delete(path);
+//                        } catch (IOException ignored) {}
+//                    });
+//        }
+//    }
 
-    private static void deleteDirectory(Path folder) throws IOException {
-        if (!Files.exists(folder)) return;
-        try (Stream<Path> walk = Files.walk(folder)) {
-            walk.sorted(Comparator.reverseOrder())
-                    .parallel()
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException ignored) {}
-                    });
-        }
+    private void updateAssetsCache(List<Path> folders) {
+
     }
 
     @Override
-    public void generateResourcePack() {
+    public void generateResourcePack() throws IOException {
         this.plugin.logger().info("Generating resource pack...");
         long start = System.currentTimeMillis();
         // get the target location
         try (FileSystem fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())) {
             // firstly merge existing folders
-            try {
-                Path generatedPackPath = fs.getPath("resource_pack");
-                List<Path> folders = new ArrayList<>();
-                folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
-                folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-                List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, fs);
-                if (!duplicated.isEmpty()) {
-                    plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
-                    int x = 1;
-                    for (Pair<Path, List<Path>> path : duplicated) {
-                        this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
-                        for (int i = 0, size = path.right().size(); i < size; i++) {
-                            if (i == size - 1) {
-                                this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
-                            } else {
-                                this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
-                            }
+            Path generatedPackPath = fs.getPath("resource_pack");
+            List<Path> folders = new ArrayList<>();
+            folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
+            folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
+            List<Pair<Path, List<Path>>> duplicated = mergeFolder(folders, fs);
+            if (!duplicated.isEmpty()) {
+                plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
+                int x = 1;
+                for (Pair<Path, List<Path>> path : duplicated) {
+                    this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
+                    for (int i = 0, size = path.right().size(); i < size; i++) {
+                        if (i == size - 1) {
+                            this.plugin.logger().info("  └ " + path.right().get(i).toAbsolutePath());
+                        } else {
+                            this.plugin.logger().info("  ├ " + path.right().get(i).toAbsolutePath());
                         }
                     }
                 }
-
-                this.generateFonts(generatedPackPath);
-                this.generateItemModels(generatedPackPath, this.plugin.itemManager());
-                this.generateItemModels(generatedPackPath, this.plugin.blockManager());
-                this.generateBlockOverrides(generatedPackPath);
-                this.generateLegacyItemOverrides(generatedPackPath);
-                this.generateModernItemOverrides(generatedPackPath);
-                this.generateModernItemModels1_21_2(generatedPackPath);
-                this.generateModernItemModels1_21_4(generatedPackPath);
-                this.generateOverrideSounds(generatedPackPath);
-                this.generateCustomSounds(generatedPackPath);
-                this.generateClientLang(generatedPackPath);
-                this.generateEquipments(generatedPackPath);
-                this.generateParticle(generatedPackPath);
-                Path zipFile = resourcePackPath();
-                try {
-                    this.zipGenerator.accept(generatedPackPath, zipFile);
-                } catch (Exception e) {
-                    this.plugin.logger().severe("Error zipping resource pack", e);
-                }
-                long end = System.currentTimeMillis();
-                this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
-                this.eventDispatcher.accept(generatedPackPath, zipFile);
-            } catch (Exception e) {
-                this.plugin.logger().severe("Error merging resource pack", e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            this.generateFonts(generatedPackPath);
+            this.generateItemModels(generatedPackPath, this.plugin.itemManager());
+            this.generateItemModels(generatedPackPath, this.plugin.blockManager());
+            this.generateBlockOverrides(generatedPackPath);
+            this.generateLegacyItemOverrides(generatedPackPath);
+            this.generateModernItemOverrides(generatedPackPath);
+            this.generateModernItemModels1_21_2(generatedPackPath);
+            this.generateModernItemModels1_21_4(generatedPackPath);
+            this.generateOverrideSounds(generatedPackPath);
+            this.generateCustomSounds(generatedPackPath);
+            this.generateClientLang(generatedPackPath);
+            this.generateEquipments(generatedPackPath);
+            this.generateParticle(generatedPackPath);
+            Path zipFile = fs.getPath("resource_pack.zip");
+
+            try {
+                this.zipGenerator.accept(generatedPackPath, zipFile);
+            } catch (Exception e) {
+                this.plugin.logger().severe("Error zipping resource pack", e);
+            }
+
+            Files.write(resourcePackPath(), Files.readAllBytes(zipFile));
+            long end = System.currentTimeMillis();
+            this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
+            this.eventDispatcher.accept(generatedPackPath, resourcePackPath());
         }
     }
 
@@ -728,7 +730,6 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve("assets")
                     .resolve(entry.getKey())
                     .resolve("sounds.json");
-
             JsonObject soundJson;
             if (Files.exists(soundPath)) {
                 try (BufferedReader reader = Files.newBufferedReader(soundPath)) {
@@ -740,18 +741,15 @@ public abstract class AbstractPackManager implements PackManager {
             } else {
                 soundJson = new JsonObject();
             }
-
             for (SoundEvent soundEvent : entry.getValue()) {
                 soundJson.add(soundEvent.id().value(), soundEvent.get());
             }
-
             try {
                 Files.createDirectories(soundPath.getParent());
             } catch (IOException e) {
                 plugin.logger().severe("Error creating " + soundPath.toAbsolutePath());
                 return;
             }
-
             try (BufferedWriter writer = Files.newBufferedWriter(soundPath)) {
                 GsonHelper.get().toJson(soundJson, writer);
             } catch (IOException e) {
@@ -805,14 +803,12 @@ public abstract class AbstractPackManager implements PackManager {
                 plugin.logger().warn("Cannot find " + originalKey.value() + " in sound template");
             }
         }
-
         try {
             Files.createDirectories(soundPath.getParent());
         } catch (IOException e) {
             plugin.logger().severe("Error creating " + soundPath.toAbsolutePath());
             return;
         }
-
         try (BufferedWriter writer = Files.newBufferedWriter(soundPath)) {
             GsonHelper.get().toJson(soundJson, writer);
         } catch (IOException e) {
@@ -1161,16 +1157,11 @@ public abstract class AbstractPackManager implements PackManager {
                 providers.add(image.get());
             }
 
-            try {
-                Files.writeString(fontPath, fontJson.toString().replace("\\\\u", "\\u"));
+            try (BufferedWriter writer = Files.newBufferedWriter(fontPath)) {
+                GsonHelper.get().toJson(fontJson, writer);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                this.plugin.logger().warn("Failed to save font for " + namespacedKey, e);
             }
-//            try (FileWriter fileWriter = new FileWriter(fontPath.toFile())) {
-//                fileWriter.write(fontJson.toString().replace("\\\\u", "\\u"));
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
         }
 
         if (Config.resourcePack$overrideUniform()) {
