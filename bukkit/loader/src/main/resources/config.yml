@@ -85,8 +85,8 @@ resource-pack:
         deny-non-minecraft-request: true
         one-time-token: true
         rate-limit:
-          max-requests: 3
-          reset-interval: 20
+          max-requests: 10
+          reset-interval: 30
     # Upload the resource pack automatically on generation
     # When disabled, you must manually trigger uploads using the /ce upload command
     auto-upload: true

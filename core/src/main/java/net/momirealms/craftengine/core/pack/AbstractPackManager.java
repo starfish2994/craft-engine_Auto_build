@@ -5,6 +5,7 @@ import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
@@ -421,31 +422,35 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void updateCachedConfigFiles() {
         Map<Path, CachedConfigFile> previousFiles = this.cachedConfigFiles;
-        this.cachedConfigFiles = new HashMap<>();
+        this.cachedConfigFiles = new Object2ObjectOpenHashMap<>(32);
+        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
-            List<Path> files = FileUtils.getYmlConfigsDeeply(pack.configurationFolder());
-            for (Path path : files) {
-                CachedConfigFile cachedFile = previousFiles.get(path);
-                try {
-                    long lastModifiedTime = Files.getLastModifiedTime(path).toMillis();
-                    long size = Files.size(path);
-                    if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime && cachedFile.size() == size) {
-                        this.cachedConfigFiles.put(path, cachedFile);
-                        continue;
+            try {
+                Files.walkFileTree(pack.configurationFolder(), new SimpleFileVisitor<>() {
+                    @Override
+                    public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
+                        if (Files.isRegularFile(path) && path.getFileName().toString().endsWith(".yml")) {
+                            CachedConfigFile cachedFile = previousFiles.get(path);
+                            long lastModifiedTime = attrs.lastModifiedTime().toMillis();
+                            long size = attrs.size();
+                            if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime && cachedFile.size() == size) {
+                                AbstractPackManager.this.cachedConfigFiles.put(path, cachedFile);
+                                return FileVisitResult.CONTINUE;
+                            }
+                            try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+                                Map<String, Object> data = yaml.load(inputStream);
+                                if (data == null)  return FileVisitResult.CONTINUE;
+                                AbstractPackManager.this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime, size));
+                            } catch (IOException e) {
+                                AbstractPackManager.this.plugin.logger().severe("Error while reading config file: " + path, e);
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
                     }
-                    try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
-                        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
-                        Map<String, Object> data = yaml.load(inputStream);
-                        if (data == null) continue;
-
-                        this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime, size));
-                    } catch (Exception e) {
-                        this.plugin.logger().warn(path, "Error loading config file", e);
-                    }
-                } catch (IOException e) {
-                    this.plugin.logger().warn(path, "Error reading last modified time", e);
-                }
+                });
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error while reading config file", e);
             }
         }
     }
@@ -546,9 +551,9 @@ public abstract class AbstractPackManager implements PackManager {
 
     private List<Pair<Path, List<Path>>> updateCachedAssets(@Nullable FileSystem fs) throws IOException {
         List<Path> folders = new ArrayList<>();
-        Map<Path, List<Path>> conflictChecker = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+        Map<Path, List<Path>> conflictChecker = new Object2ObjectOpenHashMap<>(Math.max(128, this.cachedAssetFiles.size()));
         Map<Path, CachedAssetFile> previousFiles = this.cachedAssetFiles;
-        this.cachedAssetFiles = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+        this.cachedAssetFiles = new Object2ObjectOpenHashMap<>(Math.max(128, this.cachedAssetFiles.size()));
         folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
         folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
         for (Path sourceFolder : folders) {
@@ -557,8 +562,8 @@ public abstract class AbstractPackManager implements PackManager {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         CachedAssetFile cachedAsset = previousFiles.get(file);
-                        long lastModified = Files.getLastModifiedTime(file).toMillis();
-                        long size = Files.size(file);
+                        long lastModified = attrs.lastModifiedTime().toMillis();
+                        long size = attrs.size();
                         if (cachedAsset != null && cachedAsset.lastModified() == lastModified && cachedAsset.size() == size) {
                             AbstractPackManager.this.cachedAssetFiles.put(file, cachedAsset);
                         } else {
@@ -567,7 +572,7 @@ public abstract class AbstractPackManager implements PackManager {
                         }
                         if (fs == null) return FileVisitResult.CONTINUE;
                         Path relative = sourceFolder.relativize(file);
-                        Path targetPath = fs.getPath("resource_pack/" + relative.toString().replace("\\", "/"));
+                        Path targetPath = fs.getPath("resource_pack/" + CharacterUtils.replaceBackslashWithSlash(relative.toString()));
                         List<Path> conflicts = conflictChecker.get(relative);
                         if (conflicts == null) {
                             Files.createDirectories(targetPath.getParent());
@@ -1224,7 +1229,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             try {
-                Files.writeString(fontPath, fontJson.toString().replace("\\\\u", "\\u"));
+                Files.writeString(fontPath, CharacterUtils.replaceDoubleBackslashU(fontJson.toString()));
             } catch (IOException e) {
                 this.plugin.logger().severe("Error writing font to " + fontPath.toAbsolutePath(), e);
             }

@@ -37,6 +37,7 @@ import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImp
 import net.momirealms.craftengine.core.plugin.logger.JavaPluginLogger;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bstats.bukkit.Metrics;
@@ -205,7 +206,7 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public InputStream resourceStream(String filePath) {
-        return bootstrap.getResource(filePath.replace("\\", "/"));
+        return bootstrap.getResource(CharacterUtils.replaceBackslashWithSlash(filePath));
     }
 
     @Override
