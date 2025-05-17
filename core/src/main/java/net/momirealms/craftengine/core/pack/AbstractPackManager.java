@@ -43,6 +43,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.FileSystem;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -918,9 +919,9 @@ public abstract class AbstractPackManager implements PackManager {
         if (Config.packMinVersion() > 21.39f) return;
 
         // 此段代码生成1.21.2专用的item model文件，情况非常复杂！
-        for (Map.Entry<Key, List<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
+        for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
             Key itemModelPath = entry.getKey();
-            List<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
+            TreeSet<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
 
             // 检测item model合法性
             if (PRESET_MODERN_MODELS_ITEM.containsKey(itemModelPath) || PRESET_LEGACY_MODELS_ITEM.containsKey(itemModelPath)) {
