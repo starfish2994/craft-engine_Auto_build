@@ -334,7 +334,7 @@ public class BukkitCraftEngine extends CraftEngine {
         if (this.antiGrief == null) {
             this.antiGrief = AntiGriefLib.builder(this.bootstrap)
                     .ignoreOP(true)
-                    .silentLogs(true)
+                    .silentLogs(false)
                     .build();
         }
         return this.antiGrief;
