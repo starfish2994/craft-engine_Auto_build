@@ -1598,8 +1598,28 @@ public class PacketConsumers {
                 // Furniture
                 LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
-                    user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
-                    user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
+                    Player player = (Player) user.platformPlayer();
+                    List<Integer> fakeEntityIds = furniture.fakeEntityIds();
+                    user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(fakeEntityIds));
+                    if (user.visualFurnitureView().getTotalMembers() <= 100) {
+                        user.sendPacket(furniture.spawnPacket(player), false);
+                    }
+                    int[] entityIdsArray = new int[fakeEntityIds.size() + 1];
+                    entityIdsArray[0] = entityId;
+                    for (int i = 0; i < fakeEntityIds.size(); i++) {
+                        entityIdsArray[i + 1] = fakeEntityIds.get(i);
+                    }
+                    double distance = player.getLocation().distance(furniture.location());
+                    Object removePacket = Reflections.constructor$ClientboundRemoveEntitiesPacket.newInstance(entityIdsArray);
+                    DynamicPriorityTracker.UpdateResult result = user.visualFurnitureView().addOrUpdateElement(new DynamicPriorityTracker.Element(entityId, distance, removePacket));
+                    for (DynamicPriorityTracker.Element element : result.getEntered()) {
+                        LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+                        if (updateFurniture == null || !updateFurniture.isValid()) continue;
+                        user.sendPacket(updateFurniture.spawnPacket(player), false);
+                    }
+                    for (DynamicPriorityTracker.Element element : result.getExited()) {
+                        user.sendPacket(element.removePacket(), false);
+                    }
                     if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
                     }
@@ -1645,6 +1665,7 @@ public class PacketConsumers {
                 int entityId = intList.getInt(i);
                 EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
                 if (handler != null && handler.handleEntitiesRemove(intList)) {
+                    // user.visualFurnitureView().removeByEntityId(entityId);
                     isChange = true;
                 }
             }
@@ -1726,7 +1747,7 @@ public class PacketConsumers {
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
                             .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
                     );
-                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);;
+                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
 
                     if (player.isSneaking()) {
                         // try placing another furniture above it

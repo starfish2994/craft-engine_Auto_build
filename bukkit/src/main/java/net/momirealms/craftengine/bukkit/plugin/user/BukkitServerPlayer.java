@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -23,6 +25,7 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.DynamicPriorityTracker;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -97,6 +100,7 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
+    private final DynamicPriorityTracker visualFurnitureView = new DynamicPriorityTracker(100);
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -344,6 +348,7 @@ public class BukkitServerPlayer extends Player {
         }
         if (this.gameTicks % 30 == 0) {
             this.updateGUI();
+            this.updateVisualFurnitureView();
         }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
@@ -365,6 +370,25 @@ public class BukkitServerPlayer extends Player {
         org.bukkit.inventory.Inventory top = !VersionHelper.isOrAbove1_21() ? LegacyInventoryUtils.getTopInventory(platformPlayer()) : platformPlayer().getOpenInventory().getTopInventory();
         if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
             holder.gui().onTimer();
+        }
+    }
+
+    private void updateVisualFurnitureView() {
+        if (visualFurnitureView().getTotalMembers() <= 100) return;
+        for (DynamicPriorityTracker.Element element : visualFurnitureView().getAllElements()) {
+            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+            if (furniture == null || !furniture.isValid()) continue;
+            double distance = platformPlayer().getLocation().distance(furniture.location());
+            DynamicPriorityTracker.Element newElement = new DynamicPriorityTracker.Element(element.entityId(), distance, element.removePacket());
+            DynamicPriorityTracker.UpdateResult result = visualFurnitureView().addOrUpdateElement(newElement);
+            for (DynamicPriorityTracker.Element resultElement : result.getEntered()) {
+                LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(resultElement.entityId());
+                if (updateFurniture == null || !updateFurniture.isValid()) continue;
+                sendPacket(updateFurniture.spawnPacket(platformPlayer()), false);
+            }
+            for (DynamicPriorityTracker.Element resultElement : result.getExited()) {
+                sendPacket(resultElement.removePacket(), false);
+            }
         }
     }
 
@@ -736,6 +760,11 @@ public class BukkitServerPlayer extends Player {
     @Override
     public Map<Integer, EntityPacketHandler> entityPacketHandlers() {
         return this.entityTypeView;
+    }
+
+    @Override
+    public DynamicPriorityTracker visualFurnitureView() {
+        return this.visualFurnitureView;
     }
 
     public void setResendSound() {
