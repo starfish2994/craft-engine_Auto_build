@@ -477,6 +477,10 @@ public class Config {
         return instance.resource_pack$merge_external_folders;
     }
 
+    public static List<String> zipsToMerge() {
+        return instance.resource_pack$merge_external_zips;
+    }
+
     public static boolean kickOnDeclined() {
         return instance.resource_pack$delivery$kick_if_declined;
     }
