@@ -183,6 +183,10 @@ furniture:
   # interaction (best performance)
   # boat (better compatibility with some anti-cheat plugin)
   collision-entity-type: interaction
+  # Limit the maximum amount of furniture that players can see by default
+  max-visible-furniture:
+    enable: false
+    amount: 100
 
 emoji:
   chat: true

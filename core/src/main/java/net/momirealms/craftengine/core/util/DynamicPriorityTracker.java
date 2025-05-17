@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.util;
 
+import net.momirealms.craftengine.core.plugin.config.Config;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -50,14 +52,12 @@ public class DynamicPriorityTracker {
         }
     }
 
-    private final int capacity;
     private final PriorityQueue<Element> maxHeap;
     private final Map<Integer, Element> elementMap = new ConcurrentHashMap<>();
     private final Set<Integer> inHeapSet = ConcurrentHashMap.newKeySet();
     private final ReentrantLock heapLock = new ReentrantLock();
 
-    public DynamicPriorityTracker(int capacity) {
-        this.capacity = capacity;
+    public DynamicPriorityTracker() {
         this.maxHeap = new PriorityQueue<>((a, b) -> Double.compare(b.distance, a.distance));
     }
 
@@ -80,7 +80,7 @@ public class DynamicPriorityTracker {
     private UpdateResult handleNewElement(Element newElement, UpdateResult result) {
         elementMap.put(newElement.entityId, newElement);
 
-        if (maxHeap.size() < capacity) {
+        if (maxHeap.size() < Config.maxVisibleFurniture()) {
             maxHeap.offer(newElement);
             inHeapSet.add(newElement.entityId);
             result.addEntered(newElement);
@@ -106,7 +106,7 @@ public class DynamicPriorityTracker {
             maxHeap.remove(existing);
             maxHeap.offer(existing);
         } else if (nowInHeap) {
-            if (maxHeap.size() < capacity) {
+            if (maxHeap.size() < Config.maxVisibleFurniture()) {
                 maxHeap.offer(existing);
                 inHeapSet.add(existing.entityId);
                 result.addEntered(existing);
@@ -124,7 +124,7 @@ public class DynamicPriorityTracker {
     }
 
     private boolean checkIfShouldBeInHeap(double distance) {
-        if (maxHeap.size() < capacity) return true;
+        if (maxHeap.size() < Config.maxVisibleFurniture()) return true;
         return maxHeap.peek() != null && distance < maxHeap.peek().distance;
     }
 

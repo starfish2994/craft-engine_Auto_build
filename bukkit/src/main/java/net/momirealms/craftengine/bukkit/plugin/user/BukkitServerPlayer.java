@@ -100,7 +100,7 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
-    private final DynamicPriorityTracker visualFurnitureView = new DynamicPriorityTracker(100);
+    private final DynamicPriorityTracker visualFurnitureView = new DynamicPriorityTracker();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
@@ -374,7 +374,8 @@ public class BukkitServerPlayer extends Player {
     }
 
     private void updateVisualFurnitureView() {
-        if (visualFurnitureView().getTotalMembers() <= 100) return;
+        if (!Config.enableMaxVisibleFurniture()) return;
+        if (visualFurnitureView().getTotalMembers() <= Config.maxVisibleFurniture()) return;
         for (DynamicPriorityTracker.Element element : visualFurnitureView().getAllElements()) {
             LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
             if (furniture == null || !furniture.isValid()) continue;

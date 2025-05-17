@@ -1601,24 +1601,28 @@ public class PacketConsumers {
                     Player player = (Player) user.platformPlayer();
                     List<Integer> fakeEntityIds = furniture.fakeEntityIds();
                     user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(fakeEntityIds));
-                    if (user.visualFurnitureView().getTotalMembers() <= 100) {
+                    if (Config.enableMaxVisibleFurniture()) {
+                        if (user.visualFurnitureView().getTotalMembers() <= Config.maxVisibleFurniture()) {
+                            user.sendPacket(furniture.spawnPacket(player), false);
+                        }
+                        int[] entityIdsArray = new int[fakeEntityIds.size() + 1];
+                        entityIdsArray[0] = entityId;
+                        for (int i = 0; i < fakeEntityIds.size(); i++) {
+                            entityIdsArray[i + 1] = fakeEntityIds.get(i);
+                        }
+                        double distance = player.getLocation().distance(furniture.location());
+                        Object removePacket = Reflections.constructor$ClientboundRemoveEntitiesPacket.newInstance(entityIdsArray);
+                        DynamicPriorityTracker.UpdateResult result = user.visualFurnitureView().addOrUpdateElement(new DynamicPriorityTracker.Element(entityId, distance, removePacket));
+                        for (DynamicPriorityTracker.Element element : result.getEntered()) {
+                            LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+                            if (updateFurniture == null || !updateFurniture.isValid()) continue;
+                            user.sendPacket(updateFurniture.spawnPacket(player), false);
+                        }
+                        for (DynamicPriorityTracker.Element element : result.getExited()) {
+                            user.sendPacket(element.removePacket(), false);
+                        }
+                    } else {
                         user.sendPacket(furniture.spawnPacket(player), false);
-                    }
-                    int[] entityIdsArray = new int[fakeEntityIds.size() + 1];
-                    entityIdsArray[0] = entityId;
-                    for (int i = 0; i < fakeEntityIds.size(); i++) {
-                        entityIdsArray[i + 1] = fakeEntityIds.get(i);
-                    }
-                    double distance = player.getLocation().distance(furniture.location());
-                    Object removePacket = Reflections.constructor$ClientboundRemoveEntitiesPacket.newInstance(entityIdsArray);
-                    DynamicPriorityTracker.UpdateResult result = user.visualFurnitureView().addOrUpdateElement(new DynamicPriorityTracker.Element(entityId, distance, removePacket));
-                    for (DynamicPriorityTracker.Element element : result.getEntered()) {
-                        LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
-                        if (updateFurniture == null || !updateFurniture.isValid()) continue;
-                        user.sendPacket(updateFurniture.spawnPacket(player), false);
-                    }
-                    for (DynamicPriorityTracker.Element element : result.getExited()) {
-                        user.sendPacket(element.removePacket(), false);
                     }
                     if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                         event.setCancelled(true);
