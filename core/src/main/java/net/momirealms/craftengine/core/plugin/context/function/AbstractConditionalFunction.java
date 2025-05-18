@@ -51,7 +51,7 @@ public abstract class AbstractConditionalFunction<CTX extends Context> implement
             } else if (predicates instanceof Map<?,?> map) {
                 return List.of(factory.apply(MiscUtils.castToMap(map, false)));
             }
-            throw new IllegalArgumentException("Unsupported condition type: " + predicates.getClass().getSimpleName());
+            throw new UnsupportedOperationException("Unsupported conditions argument class type: " + predicates.getClass().getSimpleName());
         }
     }
 }
