@@ -7,6 +7,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
@@ -55,11 +59,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private final BlockParser blockParser;
 
     // A temporary map used to detect whether the same block state corresponds to multiple models.
-    private final Map<Integer, Key> tempRegistryIdConflictMap = new HashMap<>();
+    private final Map<Integer, Key> tempRegistryIdConflictMap = new Int2ObjectOpenHashMap<>();
     // A temporary map that converts the custom block registered on the server to the vanilla block ID.
-    private final Map<Integer, Integer> tempBlockAppearanceConvertor = new HashMap<>();
+    private final Map<Integer, Integer> tempBlockAppearanceConvertor = new Int2IntOpenHashMap();
     // A temporary map that stores the model path of a certain vanilla block state
-    private final Map<Integer, JsonElement> tempVanillaBlockStateModels = new HashMap<>();
+    private final Map<Integer, JsonElement> tempVanillaBlockStateModels = new Int2ObjectOpenHashMap<>();
 
     // The total amount of blocks registered
     private int customBlockCount;
@@ -79,10 +83,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private ImmutableSet<Object> affectedSoundBlocks;
     private ImmutableMap<Key, Key> soundMapper;
     // A list to record the order of registration
-    private List<Key> blockRegisterOrder = new ArrayList<>();
+    private List<Key> blockRegisterOrder = new ObjectArrayList<>();
 
     // a reverted mapper
-    private final Map<Integer, List<Integer>> appearanceToRealState = new HashMap<>();
+    private final Map<Integer, List<Integer>> appearanceToRealState = new Int2ObjectOpenHashMap<>();
     // Used to store override information of json files
     private final Map<Key, Map<String, JsonElement>> blockStateOverrides = new HashMap<>();
     // for mod, real block id -> state models
@@ -232,11 +236,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public ImmutableMap<Key, List<Integer>> blockAppearanceArranger() {
-        return blockAppearanceArranger;
+        return this.blockAppearanceArranger;
     }
 
     public ImmutableMap<Key, List<Integer>> realBlockArranger() {
-        return realBlockArranger;
+        return this.realBlockArranger;
     }
 
     @Nullable
@@ -275,7 +279,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             try {
                 Class<?> modClass = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
                 Field amountField = ReflectionUtils.getDeclaredField(modClass, "vanillaRegistrySize");
-                vanillaStateCount = (int) amountField.get(null);
+                vanillaStateCount = amountField.getInt(null);
             } catch (Exception e) {
                 vanillaStateCount = RegistryUtils.currentBlockRegistrySize();
                 plugin.logger().severe("Fatal error", e);
@@ -481,7 +485,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
                 stateId2ImmutableBlockStates[state.customBlockState().registryId() - BlockStateUtils.vanillaStateSize()] = state;
                 tempBlockAppearanceConvertor.put(state.customBlockState().registryId(), state.vanillaBlockState().registryId());
-                appearanceToRealState.computeIfAbsent(state.vanillaBlockState().registryId(), k -> new ArrayList<>()).add(state.customBlockState().registryId());
+                appearanceToRealState.computeIfAbsent(state.vanillaBlockState().registryId(), k -> new IntArrayList()).add(state.customBlockState().registryId());
             }
 
             BukkitBlockManager.this.byId.put(id, block);
@@ -649,9 +653,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
         YamlDocument mappings = Config.instance().loadOrCreateYamlData("mappings.yml");
         Map<String, String> blockStateMappings = loadBlockStateMappings(mappings);
         this.validateBlockStateMappings(mappingFile, blockStateMappings);
-        Map<Integer, String> stateMap = new HashMap<>();
+        Map<Integer, String> stateMap = new Int2ObjectOpenHashMap<>();
         Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
-        Map<Integer, Integer> appearanceMapper = new HashMap<>();
+        Map<Integer, Integer> appearanceMapper = new Int2IntOpenHashMap();
         Map<Key, List<Integer>> appearanceArranger = new HashMap<>();
         for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
             this.processBlockStateMapping(mappingFile, entry, stateMap, blockTypeCounter, appearanceMapper, appearanceArranger);
@@ -727,7 +731,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             counter.compute(key, (k, count) -> count == null ? 1 : count + 1);
             stateMap.put(beforeId, entry.getKey());
             stateMap.put(afterId, entry.getValue());
-            arranger.computeIfAbsent(key, (k) -> new ArrayList<>()).add(beforeId);
+            arranger.computeIfAbsent(key, (k) -> new IntArrayList()).add(beforeId);
         } else {
             String previousState = stateMap.get(previous);
             plugin.logger().warn(mappingFile, "Duplicate entry: '" + previousState + "' equals '" + entry.getKey() + "'");
@@ -776,7 +780,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         Object clientSideBlock = getBlockFromRegistry(createResourceLocation(clientSideBlockType));
         int amount = blockWithCount.getValue();
 
-        List<Integer> stateIds = new ArrayList<>();
+        List<Integer> stateIds = new IntArrayList();
 
         for (int i = 0; i < amount; i++) {
             Key realBlockKey = createRealBlockKey(clientSideBlockType, i);

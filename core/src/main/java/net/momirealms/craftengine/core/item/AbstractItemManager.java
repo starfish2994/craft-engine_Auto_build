@@ -258,6 +258,16 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
+        private static final float VERSION_1_21_2 = 21.2f;
+        private static final float VERSION_1_21_4 = 21.4f;
+
+        private boolean isModernFormatRequired() {
+            return Config.packMaxVersion() >= VERSION_1_21_4;
+        }
+
+        private boolean needsLegacyCompatibility() {
+            return Config.packMinVersion() < VERSION_1_21_4;
+        }
 
         @Override
         public String[] sectionId() {
@@ -338,7 +348,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             // add it to category
             if (section.containsKey("category")) {
-                plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
+                AbstractItemManager.this.plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
             }
 
             // model part, can be null
@@ -353,7 +363,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 throw new LocalizedResourceConfigException("warning.config.item.missing_model_id");
             }
             // 1.21.4+必须要配置model区域
-            if (Config.packMaxVersion() >= 21.4f && modelSection == null) {
+            if (isModernFormatRequired() && modelSection == null) {
                 throw new LocalizedResourceConfigException("warning.config.item.missing_model");
             }
 
@@ -362,47 +372,22 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // 旧版格式
             TreeSet<LegacyOverridesModel> legacyOverridesModels = null;
 
-            if (Config.packMaxVersion() >= 21.4f) {
+            if (isModernFormatRequired() || (needsLegacyCompatibility() && legacyModelSection == null)) {
                 modernModel = ItemModels.fromMap(modelSection);
                 for (ModelGeneration generation : modernModel.modelsToGenerate()) {
                     prepareModelGeneration(generation);
                 }
-                // 如果最低支持版本低于1.21.4，则需要准备旧版overrides模型
-                if (Config.packMinVersion() < 21.4f) {
-                    // 如果有旧版格式，就用旧版
-                    if (legacyModelSection != null) {
-                        LegacyItemModel legacyItemModel = LegacyItemModel.fromMap(legacyModelSection);
-                        for (ModelGeneration generation : legacyItemModel.modelsToGenerate()) {
-                            prepareModelGeneration(generation);
-                        }
-                        legacyOverridesModels = new TreeSet<>(legacyItemModel.overrides());
-                    } else {
-                        // 否则把新版格式并转换为旧版
-                        legacyOverridesModels = new TreeSet<>();
-                        processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, material, customModelData);
-                        if (legacyOverridesModels.isEmpty()) {
-                            TranslationManager.instance().log("warning.config.item.legacy_model.cannot_convert", path.toString(), id.asString());
-                        }
-                    }
-                }
             }
-            // 最高支持版本不超过1.21.4，所以新版model格式为非必需
-            else {
-                // 如果有旧版格式，就用旧版
+            if (needsLegacyCompatibility()) {
                 if (legacyModelSection != null) {
-                    LegacyItemModel legacyItemModel = LegacyItemModel.fromMap(legacyModelSection);
+                    LegacyItemModel legacyItemModel = LegacyItemModel.fromMap(legacyModelSection, customModelData);
                     for (ModelGeneration generation : legacyItemModel.modelsToGenerate()) {
                         prepareModelGeneration(generation);
                     }
                     legacyOverridesModels = new TreeSet<>(legacyItemModel.overrides());
                 } else {
-                    // 否则读新版格式并转换为旧版
-                    ItemModel model = ItemModels.fromMap(modelSection);
-                    for (ModelGeneration generation : model.modelsToGenerate()) {
-                        prepareModelGeneration(generation);
-                    }
                     legacyOverridesModels = new TreeSet<>();
-                    processModelRecursively(model, new LinkedHashMap<>(), legacyOverridesModels, material, customModelData);
+                    processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, material, customModelData);
                     if (legacyOverridesModels.isEmpty()) {
                         TranslationManager.instance().log("warning.config.item.legacy_model.cannot_convert", path.toString(), id.asString());
                     }
@@ -413,29 +398,30 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             if (customModelData != 0) {
                 // use custom model data
                 // check conflict
-                Map<Integer, Key> conflict = cmdConflictChecker.computeIfAbsent(material, k -> new HashMap<>());
+                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(material, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
                     throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
                 conflict.put(customModelData, id);
                 // Parse models
-                if (Config.packMaxVersion() >= 21.4f && modernModel != null) {
-                    TreeMap<Integer, ItemModel> map = modernOverrides.computeIfAbsent(material, k -> new TreeMap<>());
+                if (isModernFormatRequired() && modernModel != null) {
+                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(material, k -> new TreeMap<>());
                     map.put(customModelData, modernModel);
                 }
-                if (Config.packMinVersion() < 21.4f && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
-                    TreeSet<LegacyOverridesModel> lom = legacyOverrides.computeIfAbsent(material, k -> new TreeSet<>());
+                if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
+                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(material, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
             }
 
             // use item model
             if (itemModelKey != null) {
-                if (Config.packMaxVersion() >= 21.4f && modernModel != null) {
-                    modernItemModels1_21_4.put(itemModelKey, modernModel);
+                if (isModernFormatRequired() && modernModel != null) {
+                    AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, modernModel);
                 }
-                if (Config.packMaxVersion() >= 21.2f && Config.packMinVersion() < 21.4f && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
-                    modernItemModels1_21_2.put(itemModelKey, legacyOverridesModels);
+                if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
+                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.modernItemModels1_21_2.computeIfAbsent(itemModelKey, k -> new TreeSet<>());
+                    lom.addAll(legacyOverridesModels);
                 }
             }
         }
