@@ -56,7 +56,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final DebugStickListener debugStickListener;
     private final ArmorEventListener armorEventListener;
 
-
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
         instance = this;
@@ -131,7 +130,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Optional<BuildableItem<ItemStack>> getVanillaItem(Key key) {
-        Material material = Registry.MATERIAL.get(Objects.requireNonNull(NamespacedKey.fromString(key.toString())));
+        Material material = Registry.MATERIAL.get(KeyUtils.toNamespacedKey(key));
         if (material == null) {
             return Optional.empty();
         }
