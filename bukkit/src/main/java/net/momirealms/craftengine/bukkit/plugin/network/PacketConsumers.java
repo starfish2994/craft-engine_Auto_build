@@ -1667,22 +1667,23 @@ public class PacketConsumers {
             boolean isChange = false;
             IntList intList = buf.readIntIdList();
             int first = intList.getFirst();
-            for (int i = 0, size = intList.size(); i < size; i++) {
-                int entityId = intList.getInt(i);
-                if (first != -114514) {
+            if (first != -114514) {
+                for (int i = 0, size = intList.size(); i < size; i++) {
+                    int entityId = intList.getInt(i);
                     EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
                     if (handler != null && handler.handleEntitiesRemove(intList)) {
                         user.visualFurnitureView().removeByEntityId(entityId);
                         isChange = true;
                     }
-                } else {
-                    if (entityId == first) {
-                        intList.removeFirst();
-                        isChange = true;
-                    }
+                }
+            } else {
+                intList.removeFirst();
+                isChange = true;
+                for (int i = 0, size = intList.size(); i < size; i++) {
+                    int entityId = intList.getInt(i);
                     EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
-                    if (handler != null && handler.handleEntitiesRemove(intList)) {
-                        isChange = true;
+                    if (handler != null) {
+                        handler.handleEntitiesRemove(intList);
                     }
                 }
             }
