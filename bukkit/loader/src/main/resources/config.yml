@@ -63,7 +63,6 @@ resource-pack:
   merge-external-folders:
     - ModelEngine/resource pack
     - BetterModel/build
-    - BetterHud/build
   merge-external-zip-files:
     - CustomNameplates/resourcepack.zip
   delivery:

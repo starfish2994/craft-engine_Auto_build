@@ -428,8 +428,10 @@ public abstract class AbstractPackManager implements PackManager {
         Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
+            Path configurationFolderPath = pack.configurationFolder();
+            if (!Files.isDirectory(configurationFolderPath)) continue;
             try {
-                Files.walkFileTree(pack.configurationFolder(), new SimpleFileVisitor<>() {
+                Files.walkFileTree(configurationFolderPath, new SimpleFileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
                         if (Files.isRegularFile(path) && path.getFileName().toString().endsWith(".yml")) {

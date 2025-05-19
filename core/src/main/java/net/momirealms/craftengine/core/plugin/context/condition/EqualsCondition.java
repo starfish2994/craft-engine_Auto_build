@@ -33,7 +33,7 @@ public class EqualsCondition<CTX extends Context> implements Condition<CTX> {
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
             String value1 = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("value1"), "warning.config.condition.equals.missing_value1");
-            String value2 = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("value1"), "warning.config.condition.equals.missing_value2");
+            String value2 = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("value2"), "warning.config.condition.equals.missing_value2");
             return new EqualsCondition<>(TextProviders.fromString(value1), TextProviders.fromString(value2));
         }
     }

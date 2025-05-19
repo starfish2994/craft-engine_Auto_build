@@ -24,7 +24,9 @@ public class EventFunctions {
         register(CommonFunctions.MESSAGE, new MessageFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.ACTIONBAR, new ActionBarFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.TITLE, new TitleFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.OPEN_WINDOW, new OpenWindowFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.CANCEL_EVENT, new CancelEventFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.RUN, new RunFunction.FactoryImpl<>(EventFunctions::fromMap, EventConditions::fromMap));
     }
 
     public static void register(Key key, FunctionFactory<PlayerOptionalContext> factory) {

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.util;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,7 @@ public class IntIdentityList implements IndexedIterable<Integer> {
 
     public IntIdentityList(int size) {
         this.size = size;
-        list = new ArrayList<>(size);
+        list = new IntArrayList(size);
         for (int i = 0; i < size; i++) {
             list.add(i);
         }
