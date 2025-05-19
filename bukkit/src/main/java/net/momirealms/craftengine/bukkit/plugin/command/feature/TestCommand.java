@@ -52,15 +52,16 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                 .handler(context -> {
                     Player player = context.sender();
                     BukkitServerPlayer cePlayer = plugin().adapt(player);
-                    player.sendMessage("visualFurnitureView1: " + cePlayer.visualFurnitureView().getTotalMembers());
-                    cePlayer.visualFurnitureView().getAllElements().forEach(element -> {
-                        LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
-                        if (furniture == null || !player.canSee(furniture.baseEntity())) {
-                            cePlayer.visualFurnitureView().removeByEntityId(element.entityId());
-                            player.sendMessage("remove: " + element.entityId());
-                        }
-                    });
-                    player.sendMessage("visualFurnitureView2: " + cePlayer.visualFurnitureView().getTotalMembers());
+                    player.sendMessage("visualFurnitureView: " + cePlayer.visualFurnitureView().getTotalMembers());
+                    player.sendMessage(cePlayer.visualFurnitureView() + "\n===============================");
+                    // cePlayer.visualFurnitureView().getAllElements().forEach(element -> {
+                    //     LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+                    //     if (furniture == null || !player.canSee(furniture.baseEntity())) {
+                    //         cePlayer.visualFurnitureView().removeByEntityId(element.entityId());
+                    //         player.sendMessage("remove: " + element.entityId());
+                    //     }
+                    // });
+                    // player.sendMessage("visualFurnitureView2: " + cePlayer.visualFurnitureView().getTotalMembers());
                 });
     }
 

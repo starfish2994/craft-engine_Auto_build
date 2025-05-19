@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin;
 import net.momirealms.craftengine.core.advancement.AdvancementManager;
 import net.momirealms.craftengine.core.block.BlockManager;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
@@ -131,6 +132,9 @@ public abstract class CraftEngine implements Plugin {
                 long time1 = System.currentTimeMillis();
                 // firstly reload main config
                 this.config.load();
+                for (Player player : this.networkManager().onlineUsers()) {
+                    player.setMaxVisibleFurniture(Config.maxVisibleFurniture(), false);
+                }
                 // reset debugger
                 this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
                 // now we reload the translations

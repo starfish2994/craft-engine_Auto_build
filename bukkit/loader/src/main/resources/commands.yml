@@ -111,6 +111,13 @@ list_resource:
     - /craftengine resource list
     - /ce resource list
 
+set_max_visible_furniture:
+  enable: true
+  permission: ce.command.player.set_max_visible_furniture
+  usage:
+    - /craftengine feature set-max-visible-furniture
+    - /ce feature set-max-visible-furniture
+
 # Debug commands
 debug_set_block:
   enable: true

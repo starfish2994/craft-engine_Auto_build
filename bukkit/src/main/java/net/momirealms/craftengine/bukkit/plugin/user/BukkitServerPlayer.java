@@ -31,16 +31,14 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.SoundCategory;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,6 +48,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitServerPlayer extends Player {
+    public static final NamespacedKey MAX_VISIBLE_FURNITURE_KEY = Objects.requireNonNull(NamespacedKey.fromString("craftengine:max_visible_furniture"));
     private final BukkitCraftEngine plugin;
     // handshake
     private ProtocolVersion protocolVersion = ProtocolVersion.UNKNOWN;
@@ -98,6 +97,7 @@ public class BukkitServerPlayer extends Player {
     // cache interaction range here
     private int lastUpdateInteractionRangeTick;
     private double cachedInteractionRange;
+    private Integer maxVisibleFurniture = -1;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
     private final DynamicPriorityTracker visualFurnitureView = new DynamicPriorityTracker();
@@ -112,6 +112,9 @@ public class BukkitServerPlayer extends Player {
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
         this.uuid = player.getUniqueId();
         this.name = player.getName();
+        this.maxVisibleFurniture = player.getPersistentDataContainer()
+                .getOrDefault(MAX_VISIBLE_FURNITURE_KEY, PersistentDataType.INTEGER, -1);
+        this.visualFurnitureView.setMaxVisibleFurniture(this.maxVisibleFurniture);
     }
 
     @Override
@@ -348,11 +351,11 @@ public class BukkitServerPlayer extends Player {
         }
         if (this.gameTicks % 30 == 0) {
             this.updateGUI();
-            this.updateVisualFurnitureView();
         }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }
+        this.updateVisualFurnitureView();
         if (Config.predictBreaking() && !this.isDestroyingCustomBlock) {
             // if it's not destroying blocks, we do predict
             if ((gameTicks() + entityID()) % Config.predictBreakingInterval() == 0) {
@@ -379,7 +382,7 @@ public class BukkitServerPlayer extends Player {
         for (DynamicPriorityTracker.Element element : visualFurnitureView().getAllElements()) {
             LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
             if (furniture == null || !furniture.isValid()) continue;
-            double distance = platformPlayer().getLocation().distance(furniture.location());
+            double distance = furniture.location().distanceSquared(platformPlayer().getLocation());
             DynamicPriorityTracker.Element newElement = new DynamicPriorityTracker.Element(element.entityId(), distance, element.removePacket());
             DynamicPriorityTracker.UpdateResult result = visualFurnitureView().addOrUpdateElement(newElement);
             for (DynamicPriorityTracker.Element resultElement : result.getEntered()) {
@@ -766,6 +769,18 @@ public class BukkitServerPlayer extends Player {
     @Override
     public DynamicPriorityTracker visualFurnitureView() {
         return this.visualFurnitureView;
+    }
+
+    @Override
+    public void setMaxVisibleFurniture(int maxVisibleFurniture, boolean fromCommand) {
+        if (fromCommand) {
+            platformPlayer().getPersistentDataContainer()
+                    .set(MAX_VISIBLE_FURNITURE_KEY, PersistentDataType.INTEGER, maxVisibleFurniture);
+            this.maxVisibleFurniture = maxVisibleFurniture;
+        }
+        this.visualFurnitureView.setMaxVisibleFurniture(
+                this.maxVisibleFurniture == -1 ? maxVisibleFurniture : this.maxVisibleFurniture
+        );
     }
 
     public void setResendSound() {

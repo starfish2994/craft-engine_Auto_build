@@ -46,6 +46,8 @@ public interface NetWorkUser {
 
     DynamicPriorityTracker visualFurnitureView();
 
+    void setMaxVisibleFurniture(int maxVisibleFurniture, boolean fromCommand);
+
     boolean clientModEnabled();
 
     void setClientModState(boolean enable);

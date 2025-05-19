@@ -1605,12 +1605,13 @@ public class PacketConsumers {
                         if (user.visualFurnitureView().getTotalMembers() <= Config.maxVisibleFurniture()) {
                             user.sendPacket(furniture.spawnPacket(player), false);
                         }
-                        int[] entityIdsArray = new int[fakeEntityIds.size() + 1];
-                        entityIdsArray[0] = entityId;
+                        int[] entityIdsArray = new int[fakeEntityIds.size() + 2];
+                        entityIdsArray[0] = -114514;
+                        entityIdsArray[1] = entityId;
                         for (int i = 0; i < fakeEntityIds.size(); i++) {
-                            entityIdsArray[i + 1] = fakeEntityIds.get(i);
+                            entityIdsArray[i + 2] = fakeEntityIds.get(i);
                         }
-                        double distance = player.getLocation().distance(furniture.location());
+                        double distance = furniture.location().distanceSquared(player.getLocation());
                         Object removePacket = Reflections.constructor$ClientboundRemoveEntitiesPacket.newInstance(entityIdsArray);
                         DynamicPriorityTracker.UpdateResult result = user.visualFurnitureView().addOrUpdateElement(new DynamicPriorityTracker.Element(entityId, distance, removePacket));
                         for (DynamicPriorityTracker.Element element : result.getEntered()) {
@@ -1665,12 +1666,24 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             boolean isChange = false;
             IntList intList = buf.readIntIdList();
+            int first = intList.getFirst();
             for (int i = 0, size = intList.size(); i < size; i++) {
                 int entityId = intList.getInt(i);
-                EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
-                if (handler != null && handler.handleEntitiesRemove(intList)) {
-                    // user.visualFurnitureView().removeByEntityId(entityId);
-                    isChange = true;
+                if (first != -114514) {
+                    EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
+                    if (handler != null && handler.handleEntitiesRemove(intList)) {
+                        user.visualFurnitureView().removeByEntityId(entityId);
+                        isChange = true;
+                    }
+                } else {
+                    if (entityId == first) {
+                        intList.removeFirst();
+                        isChange = true;
+                    }
+                    EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
+                    if (handler != null && handler.handleEntitiesRemove(intList)) {
+                        isChange = true;
+                    }
                 }
             }
             if (isChange) {

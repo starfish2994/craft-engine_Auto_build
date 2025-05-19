@@ -31,6 +31,15 @@ public class DynamicPriorityTracker {
         public Object removePacket() {
             return removePacket;
         }
+
+        @Override
+        public String toString() {
+            return "Element{" +
+                    "entityId=" + entityId +
+                    ", distance=" + distance +
+                    ", removePacket=" + removePacket +
+                    '}';
+        }
     }
 
     public static class UpdateResult {
@@ -50,15 +59,29 @@ public class DynamicPriorityTracker {
         void addExited(Element e) {
             exited.add(e);
         }
+
+        @Override
+        public String toString() {
+            return "UpdateResult{" +
+                    "entered=" + entered +
+                    ", exited=" + exited +
+                    '}';
+        }
     }
 
+    private Integer maxVisibleFurniture;
     private final PriorityQueue<Element> maxHeap;
     private final Map<Integer, Element> elementMap = new ConcurrentHashMap<>();
     private final Set<Integer> inHeapSet = ConcurrentHashMap.newKeySet();
     private final ReentrantLock heapLock = new ReentrantLock();
 
     public DynamicPriorityTracker() {
+        this.maxVisibleFurniture = Config.maxVisibleFurniture();
         this.maxHeap = new PriorityQueue<>((a, b) -> Double.compare(b.distance, a.distance));
+    }
+
+    public void setMaxVisibleFurniture(int maxVisibleFurniture) {
+        this.maxVisibleFurniture = maxVisibleFurniture;
     }
 
     public UpdateResult addOrUpdateElement(Element newElement) {
@@ -80,7 +103,7 @@ public class DynamicPriorityTracker {
     private UpdateResult handleNewElement(Element newElement, UpdateResult result) {
         elementMap.put(newElement.entityId, newElement);
 
-        if (maxHeap.size() < Config.maxVisibleFurniture()) {
+        if (maxHeap.size() < maxVisibleFurniture) {
             maxHeap.offer(newElement);
             inHeapSet.add(newElement.entityId);
             result.addEntered(newElement);
@@ -106,7 +129,7 @@ public class DynamicPriorityTracker {
             maxHeap.remove(existing);
             maxHeap.offer(existing);
         } else if (nowInHeap) {
-            if (maxHeap.size() < Config.maxVisibleFurniture()) {
+            if (maxHeap.size() < maxVisibleFurniture) {
                 maxHeap.offer(existing);
                 inHeapSet.add(existing.entityId);
                 result.addEntered(existing);
@@ -124,7 +147,7 @@ public class DynamicPriorityTracker {
     }
 
     private boolean checkIfShouldBeInHeap(double distance) {
-        if (maxHeap.size() < Config.maxVisibleFurniture()) return true;
+        if (maxHeap.size() < maxVisibleFurniture) return true;
         return maxHeap.peek() != null && distance < maxHeap.peek().distance;
     }
 
@@ -146,16 +169,26 @@ public class DynamicPriorityTracker {
         }
     }
 
-    public Element removeByEntityId(int entityId) {
+    public void removeByEntityId(int entityId) {
         heapLock.lock();
         try {
             Element removed = elementMap.remove(entityId);
             if (removed != null) {
                 maxHeap.remove(removed);
+                inHeapSet.remove(entityId);
             }
-            return removed;
         } finally {
             heapLock.unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DynamicPriorityTracker{" +
+                "maxHeap=" + maxHeap +
+                ", elementMap=" + elementMap +
+                ", inHeapSet=" + inHeapSet +
+                ", heapLock=" + heapLock +
+                '}';
     }
 }
