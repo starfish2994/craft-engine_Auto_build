@@ -101,10 +101,10 @@ public class BlockStateUtils {
     }
 
     public static Key getBlockOwnerId(Block block) {
-        return getBlockOwnerId(block.getBlockData());
+        return getBlockOwnerIdFromData(block.getBlockData());
     }
 
-    public static Key getBlockOwnerId(BlockData block) {
+    public static Key getBlockOwnerIdFromData(BlockData block) {
         Object blockState = blockDataToBlockState(block);
         return getBlockOwnerIdFromState(blockState);
     }
