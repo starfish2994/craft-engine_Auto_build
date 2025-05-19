@@ -57,5 +57,6 @@ public final class DirectContextParameters {
     public static final ContextKey<Boolean> IS_FLYING = ContextKey.direct("is_flying");
     public static final ContextKey<Boolean> IS_SNEAKING = ContextKey.direct("is_sneaking");
     public static final ContextKey<Boolean> IS_CUSTOM = ContextKey.direct("is_custom");
+    public static final ContextKey<Boolean> IS_BLOCK_ITEM = ContextKey.direct("is_block_item");
     public static final ContextKey<GameMode> GAMEMODE = ContextKey.direct("gamemode");
 }

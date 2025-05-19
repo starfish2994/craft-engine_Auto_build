@@ -193,7 +193,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Item<ItemStack> createWrappedItem(Key id, @Nullable Player player) {
-        return Optional.ofNullable(customItems.get(id)).map(it -> it.buildItem(player)).orElseGet(() -> {
+        return Optional.ofNullable(this.customItems.get(id)).map(it -> it.buildItem(player)).orElseGet(() -> {
             ItemStack itemStack = createVanillaItemStack(id);
             return wrap(itemStack);
         });
@@ -219,9 +219,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Key materialId) {
+    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId) {
         Material material = ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(materialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString()));
-        return BukkitCustomItem.builder(material);
+        return BukkitCustomItem.builder(material).material(materialId).id(id);
     }
 
     @SuppressWarnings("unchecked")

@@ -254,7 +254,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         return VANILLA_ITEMS.contains(item);
     }
 
-    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Key material);
+    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material);
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
@@ -302,7 +302,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             Key itemModelKey = null;
 
-            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(material).id(holder);
+            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(holder, material);
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
