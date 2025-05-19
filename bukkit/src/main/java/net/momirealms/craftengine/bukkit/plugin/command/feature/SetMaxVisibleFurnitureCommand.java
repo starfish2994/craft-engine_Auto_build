@@ -22,7 +22,7 @@ public class SetMaxVisibleFurnitureCommand extends BukkitCommandFeature<CommandS
                 .senderType(Player.class)
                 .required("max", IntegerParser.integerParser(1))
                 .handler(context -> {
-                    // 需要找一个更好的存储方案
+                    // 需要找一个更好的存储方案去兼容跨服和在初始化的时候加载
                     BukkitServerPlayer cePlayer = plugin().adapt(context.sender());
                     Integer max = context.get("max");
                     cePlayer.setMaxVisibleFurniture(max, true);

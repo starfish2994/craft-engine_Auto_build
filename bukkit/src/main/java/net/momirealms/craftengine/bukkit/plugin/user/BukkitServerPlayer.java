@@ -351,11 +351,11 @@ public class BukkitServerPlayer extends Player {
         }
         if (this.gameTicks % 30 == 0) {
             this.updateGUI();
+            this.updateVisualFurnitureView();
         }
         if (this.isDestroyingBlock)  {
             this.tickBlockDestroy();
         }
-        this.updateVisualFurnitureView();
         if (Config.predictBreaking() && !this.isDestroyingCustomBlock) {
             // if it's not destroying blocks, we do predict
             if ((gameTicks() + entityID()) % Config.predictBreakingInterval() == 0) {
