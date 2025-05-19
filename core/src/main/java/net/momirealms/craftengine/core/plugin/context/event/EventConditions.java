@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.plugin.event;
+package net.momirealms.craftengine.core.plugin.context.event;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;

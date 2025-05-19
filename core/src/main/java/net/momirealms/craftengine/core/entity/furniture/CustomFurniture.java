@@ -3,30 +3,27 @@ package net.momirealms.craftengine.core.entity.furniture;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CustomFurniture {
     private final Key id;
     private final FurnitureSettings settings;
     private final EnumMap<AnchorType, Placement> placements;
     private final AnchorType anyType;
-    private final EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events;
+    private final Map<EventTrigger, List<Function<PlayerOptionalContext>>> events;
     @Nullable
     private final LootTable<?> lootTable;
 
     public CustomFurniture(@NotNull Key id,
                            @NotNull FurnitureSettings settings,
                            @NotNull EnumMap<AnchorType, Placement> placements,
-                           @NotNull EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events,
+                           @NotNull Map<EventTrigger, List<Function<PlayerOptionalContext>>> events,
                            @Nullable LootTable<?> lootTable) {
         this.id = id;
         this.settings = settings;

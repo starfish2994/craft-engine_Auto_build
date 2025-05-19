@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +40,7 @@ public interface CustomBlock {
 
     interface Builder {
 
-        Builder events(EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events);
+        Builder events(Map<EventTrigger, List<Function<PlayerOptionalContext>>> events);
 
         Builder appearances(Map<String, Integer> appearances);
 

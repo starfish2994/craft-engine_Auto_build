@@ -11,7 +11,7 @@ import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -31,13 +31,13 @@ import java.util.*;
 public class BukkitCustomBlock extends AbstractCustomBlock {
 
     protected BukkitCustomBlock(
-            Key id,
-            Holder.Reference<CustomBlock> holder,
-            Map<String, Property<?>> properties,
-            Map<String, Integer> appearances,
-            Map<String, VariantState> variantMapper,
-            BlockSettings settings,
-            @NotNull EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events,
+            @NotNull Key id,
+            @NotNull Holder.Reference<CustomBlock> holder,
+            @NotNull Map<String, Property<?>> properties,
+            @NotNull Map<String, Integer> appearances,
+            @NotNull Map<String, VariantState> variantMapper,
+            @NotNull BlockSettings settings,
+            @NotNull Map<EventTrigger, List<Function<PlayerOptionalContext>>> events,
             @Nullable Map<String, Object> behavior,
             @Nullable LootTable<?> lootTable
     ) {
@@ -158,14 +158,14 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         protected BlockSettings settings;
         protected Map<String, Object> behavior;
         protected LootTable<?> lootTable;
-        protected EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events;
+        protected Map<EventTrigger, List<Function<PlayerOptionalContext>>> events;
 
         public BuilderImpl(Key id) {
             this.id = id;
         }
 
         @Override
-        public Builder events(EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
+        public Builder events(Map<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
             this.events = events;
             return this;
         }

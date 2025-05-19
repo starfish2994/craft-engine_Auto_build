@@ -5,7 +5,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +70,7 @@ public interface CustomItem<I> extends BuildableItem<I> {
 
         Builder<I> settings(ItemSettings settings);
 
-        Builder<I> events(EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events);
+        Builder<I> events(Map<EventTrigger, List<Function<PlayerOptionalContext>>> events);
 
         CustomItem<I> build();
     }

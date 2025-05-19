@@ -18,8 +18,8 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventFunctions;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
+import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
@@ -217,7 +217,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
 
             // get loot table
             LootTable<ItemStack> lootTable = lootMap == null ? null : LootTable.fromMap(lootMap);
-            EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event"));
+            Map<EventTrigger, List<Function<PlayerOptionalContext>>> events = EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event"));
             CustomFurniture furniture = new CustomFurniture(id, settings, placements, events, lootTable);
             byId.put(id, furniture);
         }

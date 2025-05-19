@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.plugin.event;
+package net.momirealms.craftengine.core.plugin.context.event;
 
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.function.*;
@@ -12,10 +12,7 @@ import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EventFunctions {
 
@@ -45,31 +42,15 @@ public class EventFunctions {
         return factory.create(map);
     }
 
-    public static EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> parseEvents(Object eventsObj) {
+    public static Map<EventTrigger, List<Function<PlayerOptionalContext>>> parseEvents(Object eventsObj) {
+        if (eventsObj == null) return Map.of();
         EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events = new EnumMap<>(EventTrigger.class);
         if (eventsObj instanceof Map<?, ?> eventsSection) {
             Map<String, Object> eventsSectionMap = MiscUtils.castToMap(eventsSection, false);
             for (Map.Entry<String, Object> eventEntry : eventsSectionMap.entrySet()) {
                 try {
                     EventTrigger eventTrigger = EventTrigger.byName(eventEntry.getKey());
-                    if (eventEntry.getValue() instanceof List<?> list) {
-                        if (list.size() == 1) {
-                            events.put(eventTrigger, List.of(EventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false))));
-                        } else if (list.size() == 2) {
-                            events.put(eventTrigger, List.of(
-                                    EventFunctions.fromMap(MiscUtils.castToMap(list.get(0), false)),
-                                    EventFunctions.fromMap(MiscUtils.castToMap(list.get(1), false))
-                            ));
-                        } else {
-                            List<Function<PlayerOptionalContext>> eventsList = new ArrayList<>();
-                            for (Object event : list) {
-                                eventsList.add(EventFunctions.fromMap(MiscUtils.castToMap(event, false)));
-                            }
-                            events.put(eventTrigger, eventsList);
-                        }
-                    } else if (eventEntry.getValue() instanceof Map<?, ?> eventSection) {
-                        events.put(eventTrigger, List.of(EventFunctions.fromMap(MiscUtils.castToMap(eventSection, false))));
-                    }
+                    events.put(eventTrigger, ResourceConfigUtils.parseConfigAsList(eventEntry.getValue(), EventFunctions::fromMap));
                 } catch (IllegalArgumentException e) {
                     throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", eventEntry.getKey());
                 }
@@ -78,24 +59,17 @@ public class EventFunctions {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> eventsList = (List<Map<String, Object>>) list;
             for (Map<String, Object> eventSection : eventsList) {
-                Object onObj = eventSection.get("on");
-                if (onObj == null) {
-                    throw new LocalizedResourceConfigException("warning.config.event.missing_trigger");
-                }
+                String on = ResourceConfigUtils.requireNonEmptyStringOrThrow(eventSection.get("on"), "warning.config.event.missing_trigger");
                 try {
-                    EventTrigger eventTrigger = EventTrigger.byName(onObj.toString());
+                    EventTrigger eventTrigger = EventTrigger.byName(on);
                     if (eventSection.containsKey("type")) {
                         Function<PlayerOptionalContext> function = EventFunctions.fromMap(eventSection);
                         events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(function);
                     } else if (eventSection.containsKey("functions")) {
-                        @SuppressWarnings("unchecked")
-                        List<Map<String, Object>> functionList = (List<Map<String, Object>>) eventSection.get("functions");
-                        for (Map<String, Object> function : functionList) {
-                            events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(EventFunctions.fromMap(function));
-                        }
+                        events.computeIfAbsent(eventTrigger, k -> new ArrayList<>(4)).add(Objects.requireNonNull(BuiltInRegistries.EVENT_FUNCTION_FACTORY.getValue(CommonFunctions.RUN)).create(eventSection));
                     }
                 } catch (IllegalArgumentException e) {
-                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", onObj.toString());
+                    throw new LocalizedResourceConfigException("warning.config.event.invalid_trigger", on);
                 }
             }
         }
