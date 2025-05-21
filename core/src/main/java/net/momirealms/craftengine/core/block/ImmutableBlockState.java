@@ -14,14 +14,14 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.NBT;
 import net.momirealms.sparrow.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class ImmutableBlockState extends BlockStateHolder {
     private CompoundTag tag;
-    private PackedBlockState customBlockState;
-    private PackedBlockState vanillaBlockState;
+    private BlockStateWrapper customBlockState;
+    private BlockStateWrapper vanillaBlockState;
 
     private BlockBehavior behavior;
     private Integer hashCode;
@@ -81,19 +81,19 @@ public class ImmutableBlockState extends BlockStateHolder {
         return settings.pushReaction;
     }
 
-    public PackedBlockState customBlockState() {
+    public BlockStateWrapper customBlockState() {
         return this.customBlockState;
     }
 
-    public PackedBlockState vanillaBlockState() {
+    public BlockStateWrapper vanillaBlockState() {
         return this.vanillaBlockState;
     }
 
-    public void setCustomBlockState(@NotNull PackedBlockState customBlockState) {
+    public void setCustomBlockState(@NotNull BlockStateWrapper customBlockState) {
         this.customBlockState = customBlockState;
     }
 
-    public void setVanillaBlockState(@NotNull PackedBlockState vanillaBlockState) {
+    public void setVanillaBlockState(@NotNull BlockStateWrapper vanillaBlockState) {
         this.vanillaBlockState = vanillaBlockState;
     }
 

@@ -24,6 +24,8 @@ public class EventFunctions {
         register(CommonFunctions.OPEN_WINDOW, new OpenWindowFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.CANCEL_EVENT, new CancelEventFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.RUN, new RunFunction.FactoryImpl<>(EventFunctions::fromMap, EventConditions::fromMap));
+        register(CommonFunctions.PLACE_BLOCK, new PlaceBlockFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.BREAK_BLOCK, new BreakBlockFunction.FactoryImpl<>(EventConditions::fromMap));
     }
 
     public static void register(Key key, FunctionFactory<PlayerOptionalContext> factory) {

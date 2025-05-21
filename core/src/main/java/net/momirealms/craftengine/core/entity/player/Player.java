@@ -36,6 +36,8 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
 
     public abstract void abortMiningBlock();
 
+    public abstract void breakBlock(int x, int y, int z);
+
     public abstract double getCachedInteractionRange();
 
     public abstract void onSwingHand();

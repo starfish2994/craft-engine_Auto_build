@@ -33,6 +33,12 @@ public class BlockStateUtils {
         hasInit = true;
     }
 
+    public static BlockStateWrapper toPackedBlockState(BlockData blockData) {
+        Object state = blockDataToBlockState(blockData);
+        int id = blockStateToId(state);
+        return BlockStateWrapper.create(state, id, isVanillaBlock(id));
+    }
+
     public static boolean isCorrectTool(@NotNull ImmutableBlockState state, @Nullable Item<ItemStack> itemInHand) {
         BlockSettings settings = state.settings();
         if (settings.requireCorrectTool()) {

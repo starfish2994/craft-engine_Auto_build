@@ -20,4 +20,5 @@ public final class CommonConditions {
     public static final Key PERMISSION = Key.from("craftengine:permission");
     public static final Key EQUALS = Key.from("craftengine:equals");
     public static final Key EXPRESSION = Key.from("craftengine:expression");
+    public static final Key IS_NULL = Key.from("craftengine:is_null");
 }

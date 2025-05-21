@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.world;
 
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
@@ -20,6 +21,8 @@ public interface World {
     default BlockInWorld getBlockAt(final BlockPos pos) {
         return getBlockAt(pos.x(), pos.y(), pos.z());
     }
+
+    void setBlockAt(int x, int y, int z, BlockStateWrapper blockState, int flags);
 
     String name();
 

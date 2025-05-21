@@ -2,8 +2,8 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 
 import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptPlaceEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
-import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;

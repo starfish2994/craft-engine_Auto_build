@@ -31,6 +31,7 @@ public class EventConditions {
         register(CommonConditions.PERMISSION, new PermissionCondition.FactoryImpl<>());
         register(CommonConditions.EQUALS, new EqualsCondition.FactoryImpl<>());
         register(CommonConditions.EXPRESSION, new ExpressionCondition.FactoryImpl<>());
+        register(CommonConditions.IS_NULL, new IsNullCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, ConditionFactory<PlayerOptionalContext> factory) {

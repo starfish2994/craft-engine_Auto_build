@@ -40,8 +40,8 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -165,6 +165,21 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Nullable
+    @Override
+    public BlockStateWrapper createPackedBlockState(String blockState) {
+        ImmutableBlockState state = BlockStateParser.deserialize(blockState);
+        if (state != null) {
+            return state.customBlockState();
+        }
+        try {
+            BlockData blockData = Bukkit.createBlockData(blockState);
+            return BlockStateUtils.toPackedBlockState(blockData);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    @Nullable
     public Object getMinecraftBlockHolder(int stateId) {
         return stateId2BlockHolder.get(stateId);
     }
@@ -205,7 +220,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @Override
-    public Key getBlockOwnerId(PackedBlockState state) {
+    public Key getBlockOwnerId(BlockStateWrapper state) {
         return BlockStateUtils.getBlockOwnerIdFromState(state.handle());
     }
 
@@ -226,11 +241,11 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     private void initMirrorRegistry() {
         int size = RegistryUtils.currentBlockRegistrySize();
-        PackedBlockState[] states = new PackedBlockState[size];
+        BlockStateWrapper[] states = new BlockStateWrapper[size];
         for (int i = 0; i < size; i++) {
-            states[i] = new PackedBlockState(BlockStateUtils.idToBlockState(i), i);
+            states[i] = BlockStateWrapper.create(BlockStateUtils.idToBlockState(i), i, BlockStateUtils.isVanillaBlock(i));
         }
-        BlockRegistryMirror.init(states, new PackedBlockState(Reflections.instance$Blocks$STONE$defaultState, BlockStateUtils.blockStateToId(Reflections.instance$Blocks$STONE$defaultState)));
+        BlockRegistryMirror.init(states, BlockStateWrapper.vanilla(Reflections.instance$Blocks$STONE$defaultState, BlockStateUtils.blockStateToId(Reflections.instance$Blocks$STONE$defaultState)));
     }
 
     private void registerEmptyBlock() {
@@ -363,7 +378,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             if (singleState) {
                 properties = Map.of();
                 int internalId = ResourceConfigUtils.getAsInt(ResourceConfigUtils.requireNonNullOrThrow(stateSection.get("id"), "warning.config.block.state.missing_real_id"), "id");
-                VanillaBlock vanillaBlock = getVanillaBlock(id, stateSection);
+                VanillaBlockState vanillaBlock = getVanillaBlock(id, stateSection);
                 appearances = Map.of("", vanillaBlock.registryId());
                 Key internalBlockId = Key.of(Key.DEFAULT_NAMESPACE, vanillaBlock.type().value() + "_" + internalId);
                 int internalBlockRegistryId = Optional.ofNullable(internalId2StateId.get(internalBlockId)).orElse(-1);
@@ -379,7 +394,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 Map<String, Key> appearance2BlockType = new HashMap<>();
                 for (Map.Entry<String, Object> appearanceEntry : MiscUtils.castToMap(ResourceConfigUtils.requireNonNullOrThrow(stateSection.get("appearances"), "warning.config.block.state.missing_appearances"), false).entrySet()) {
                     if (appearanceEntry.getValue() instanceof Map<?, ?>) {
-                        VanillaBlock vanillaBlock = getVanillaBlock(id, MiscUtils.castToMap(appearanceEntry.getValue(), false));
+                        VanillaBlockState vanillaBlock = getVanillaBlock(id, MiscUtils.castToMap(appearanceEntry.getValue(), false));
                         appearances.put(appearanceEntry.getKey(), vanillaBlock.registryId());
                         appearance2BlockType.put(appearanceEntry.getKey(), vanillaBlock.type());
                     }
@@ -449,7 +464,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @NotNull
-    private VanillaBlock getVanillaBlock(Key id, Map<String, Object> section) {
+    private VanillaBlockState getVanillaBlock(Key id, Map<String, Object> section) {
         // require state non null
         String vanillaBlockStateTag = ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("state"), "warning.config.block.state.missing_state");
         // get its registry id
@@ -476,7 +491,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         JsonElement combinedVariant = GsonHelper.combine(variants);
         this.blockStateOverrides.computeIfAbsent(blockId, k -> new HashMap<>()).put(propertyNBT, combinedVariant);
         this.tempVanillaBlockStateModels.put(vanillaBlockStateRegistryId, combinedVariant);
-        return new VanillaBlock(blockId, propertyNBT, vanillaBlockStateRegistryId);
+        return new VanillaBlockState(blockId, propertyNBT, vanillaBlockStateRegistryId);
     }
 
     private JsonObject getVariantModel(Map<String, Object> singleModelMap) {

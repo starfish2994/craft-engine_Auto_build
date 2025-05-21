@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.world;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -94,5 +95,12 @@ public class BukkitWorld implements World {
     @Override
     public long time() {
         return platformWorld().getTime();
+    }
+
+    @Override
+    public void setBlockAt(int x, int y, int z, BlockStateWrapper blockState, int flags) {
+        Object worldServer = serverWorld();
+        Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, blockState.handle(), flags);
     }
 }

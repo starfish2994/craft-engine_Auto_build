@@ -16,9 +16,11 @@ public final class CommonFunctions {
     public static final Key POTION_EFFECT = Key.of("craftengine:potion_effect");
     public static final Key BREAK_BLOCK = Key.of("craftengine:break_block");
     public static final Key CANCEL_EVENT = Key.of("craftengine:cancel_event");
+    public static final Key PLACE_BLOCK = Key.of("craftengine:place_block");
     public static final Key FOOD = Key.of("craftengine:food");
     public static final Key SATURATION = Key.of("craftengine:saturation");
     public static final Key MONEY = Key.of("craftengine:money");
     public static final Key OXYGEN = Key.of("craftengine:oxygen");
     public static final Key MINE_RADIUS = Key.of("craftengine:mine_radius");
+    public static final Key DROP_LOOT = Key.of("craftengine:drop_loot");
 }

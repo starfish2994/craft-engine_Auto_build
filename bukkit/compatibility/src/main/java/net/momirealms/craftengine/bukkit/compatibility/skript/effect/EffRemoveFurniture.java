@@ -6,7 +6,6 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;

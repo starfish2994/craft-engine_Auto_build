@@ -6,8 +6,8 @@ import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import org.incendo.cloud.suggestion.Suggestion;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
