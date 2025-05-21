@@ -1,9 +1,13 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.momirealms.craftengine.bukkit.entity.BukkitEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.entity.furniture.*;
@@ -29,7 +33,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-public class LoadedFurniture implements Furniture {
+public class BukkitFurniture implements Furniture {
     private final Key id;
     private final CustomFurniture furniture;
     private final AnchorType anchorType;
@@ -44,8 +48,8 @@ public class LoadedFurniture implements Furniture {
     // cache
     private final List<Integer> fakeEntityIds;
     private final List<Integer> entityIds;
-    private final Map<Integer, HitBox> hitBoxes  = new HashMap<>();
-    private final Map<Integer, AABB> aabb = new HashMap<>();
+    private final Map<Integer, HitBox> hitBoxes  = new Int2ObjectArrayMap<>();
+    private final Map<Integer, AABB> aabb = new Int2ObjectArrayMap<>();
     private final boolean minimized;
     private final boolean hasExternalModel;
     // seats
@@ -55,7 +59,7 @@ public class LoadedFurniture implements Furniture {
     private Object cachedSpawnPacket;
     private Object cachedMinimizedSpawnPacket;
 
-    public LoadedFurniture(Entity baseEntity,
+    public BukkitFurniture(Entity baseEntity,
                            CustomFurniture furniture,
                            FurnitureExtraData extraData) {
         this.id = furniture.id();
@@ -66,8 +70,8 @@ public class LoadedFurniture implements Furniture {
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
         this.minimized = furniture.settings().minimized();
-        List<Integer> fakeEntityIds = new ArrayList<>();
-        List<Integer> mainEntityIds = new ArrayList<>();
+        List<Integer> fakeEntityIds = new IntArrayList();
+        List<Integer> mainEntityIds = new IntArrayList();
         mainEntityIds.add(this.baseEntityId);
 
         CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
@@ -84,19 +88,11 @@ public class LoadedFurniture implements Furniture {
             this.hasExternalModel = false;
         }
 
-        float yaw = this.location.getYaw();
-        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - yaw), 0).conjugate();
-
-        double x = location.getX();
-        double y = location.getY();
-        double z = location.getZ();
-
+        Quaternionf conjugated = QuaternionUtils.toQuaternionf(0, Math.toRadians(180 - this.location.getYaw()), 0).conjugate();
         List<Object> packets = new ArrayList<>();
         List<Object> minimizedPackets = new ArrayList<>();
         List<Collider> colliders = new ArrayList<>();
-
-        World world = world();
-        WorldPosition position = new WorldPosition(world, x, y, z, yaw, 0);
+        WorldPosition position = position();
         Integer dyedColor = this.extraData.dyedColor().orElse(null);
         for (FurnitureElement element : placement.elements()) {
             int entityId = Reflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
@@ -154,13 +150,8 @@ public class LoadedFurniture implements Furniture {
     }
 
     @Override
-    public Vec3d position() {
-        return new Vec3d(location.getX(), location.getY(), location.getZ());
-    }
-
-    @Override
-    public World world() {
-        return new BukkitWorld(this.location.getWorld());
+    public WorldPosition position() {
+        return LocationUtils.toWorldPosition(this.location);
     }
 
     @NotNull
@@ -170,7 +161,7 @@ public class LoadedFurniture implements Furniture {
 
     @NotNull
     public Entity baseEntity() {
-        Entity entity = baseEntity.get();
+        Entity entity = this.baseEntity.get();
         if (entity == null) {
             throw new RuntimeException("Base entity not found. It might be unloaded.");
         }

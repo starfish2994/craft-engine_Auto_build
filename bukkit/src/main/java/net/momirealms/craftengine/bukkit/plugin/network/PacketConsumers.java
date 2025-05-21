@@ -11,7 +11,7 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
-import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -1489,7 +1489,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -1518,7 +1518,7 @@ public class PacketConsumers {
         }
     };
 
-    private static void handlePickItemFromEntityOnMainThread(Player player, LoadedFurniture furniture) throws Exception {
+    private static void handlePickItemFromEntityOnMainThread(Player player, BukkitFurniture furniture) throws Exception {
         Key itemId = furniture.config().settings().itemId();
         if (itemId == null) return;
         pickItem(player, itemId, null, FastNMS.INSTANCE.method$CraftEntity$getHandle(furniture.baseEntity()));
@@ -1596,7 +1596,7 @@ public class PacketConsumers {
             int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
             if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
+                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
@@ -1606,7 +1606,7 @@ public class PacketConsumers {
                 }
             } else if (entityType == BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE) {
                 // Cancel collider entity packet
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
+                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                     user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
@@ -1670,7 +1670,7 @@ public class PacketConsumers {
             } else {
                 entityId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
             }
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
@@ -1694,7 +1694,7 @@ public class PacketConsumers {
                         // execute functions
                         PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                                 .withParameter(DirectContextParameters.FURNITURE, furniture)
-                                .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                                .withParameter(DirectContextParameters.POSITION, furniture.position())
                         );
                         furniture.config().execute(context, EventTrigger.LEFT_CLICK);
                         furniture.config().execute(context, EventTrigger.BREAK);
@@ -1724,7 +1724,7 @@ public class PacketConsumers {
                     // execute functions
                     PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
-                            .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                            .withParameter(DirectContextParameters.POSITION, furniture.position())
                     );
                     furniture.config().execute(context, EventTrigger.RIGHT_CLICK);;
 

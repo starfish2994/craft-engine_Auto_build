@@ -121,7 +121,14 @@ public class ItemEventListener implements Listener {
 
         // interact block with items
         if (hasItem && action == Action.RIGHT_CLICK_BLOCK) {
-            Location interactionPoint = Objects.requireNonNull(event.getInteractionPoint(), "interaction point should not be null");
+            Location interactionPoint = event.getInteractionPoint();
+            // some plugins would trigger this event without interaction point
+            if (interactionPoint == null) {
+                if (hasCustomItem) {
+                    event.setCancelled(true);
+                }
+                return;
+            }
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
             BlockPos pos = LocationUtils.toBlockPos(block.getLocation());
             Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
