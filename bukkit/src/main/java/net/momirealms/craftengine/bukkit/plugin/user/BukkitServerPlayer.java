@@ -675,12 +675,12 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public float getYRot() {
+    public float yRot() {
         return platformPlayer().getPitch();
     }
 
     @Override
-    public float getXRot() {
+    public float xRot() {
         return platformPlayer().getYaw();
     }
 
@@ -837,5 +837,25 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isFlying() {
         return platformPlayer().isFlying();
+    }
+
+    @Override
+    public int foodLevel() {
+        return platformPlayer().getFoodLevel();
+    }
+
+    @Override
+    public void setFoodLevel(int foodLevel) {
+        this.platformPlayer().setFoodLevel(Math.min(Math.max(0, foodLevel), 20));
+    }
+
+    @Override
+    public float saturation() {
+        return platformPlayer().getSaturation();
+    }
+
+    @Override
+    public void setSaturation(float saturation) {
+        this.platformPlayer().setSaturation(saturation);
     }
 }

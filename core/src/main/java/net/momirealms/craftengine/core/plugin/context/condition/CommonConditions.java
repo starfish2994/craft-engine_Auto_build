@@ -21,4 +21,5 @@ public final class CommonConditions {
     public static final Key EQUALS = Key.from("craftengine:equals");
     public static final Key EXPRESSION = Key.from("craftengine:expression");
     public static final Key IS_NULL = Key.from("craftengine:is_null");
+    public static final Key HAND = Key.from("craftengine:hand");
 }

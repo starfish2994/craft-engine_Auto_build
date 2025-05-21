@@ -26,6 +26,13 @@ public class EventFunctions {
         register(CommonFunctions.RUN, new RunFunction.FactoryImpl<>(EventFunctions::fromMap, EventConditions::fromMap));
         register(CommonFunctions.PLACE_BLOCK, new PlaceBlockFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.BREAK_BLOCK, new BreakBlockFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.UPDATE_INTERACTION_TICK, new UpdateInteractionFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.SET_COUNT, new SetCountFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.DROP_LOOT, new DropLootFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.SWING_HAND, new SwingHandFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.SET_FOOD, new SetFoodFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.SET_SATURATION, new SetSaturationFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.PLAY_SOUND, new PlaySoundFunction.FactoryImpl<>(EventConditions::fromMap));
     }
 
     public static void register(Key key, FunctionFactory<PlayerOptionalContext> factory) {

@@ -77,9 +77,9 @@ public class PlaceBlockFunction<CTX extends Context> extends AbstractConditional
         public Function<CTX> create(Map<String, Object> arguments) {
             String state = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("block-state"), "warning.config.function.place_block.missing_block_state");
             DelayedInitBlockState delayedInitBlockState = new DelayedInitBlockState(state);
-            NumberProvider x = NumberProviders.fromObject(arguments.getOrDefault("x", "<arg:block.block_x>"));
-            NumberProvider y = NumberProviders.fromObject(arguments.getOrDefault("y", "<arg:block.block_y>"));
-            NumberProvider z = NumberProviders.fromObject(arguments.getOrDefault("z", "<arg:block.block_z>"));
+            NumberProvider x = NumberProviders.fromObject(arguments.getOrDefault("x", "<arg:position.x>"));
+            NumberProvider y = NumberProviders.fromObject(arguments.getOrDefault("y", "<arg:position.y>"));
+            NumberProvider z = NumberProviders.fromObject(arguments.getOrDefault("z", "<arg:position.z>"));
             NumberProvider flags = Optional.ofNullable(arguments.get("update-flags")).map(NumberProviders::fromObject).orElse(NumberProviders.direct(UpdateOption.UPDATE_ALL.flags()));
             return new PlaceBlockFunction<>(delayedInitBlockState, x, y, z, flags, getPredicates(arguments));
         }

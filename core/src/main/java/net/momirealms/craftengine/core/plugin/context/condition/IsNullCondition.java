@@ -24,7 +24,7 @@ public class IsNullCondition<CTX extends Context> implements Condition<CTX> {
     @Override
     public boolean test(CTX ctx) {
         Optional<?> optional = ctx.getOptionalParameter(this.key);
-        return optional.isPresent();
+        return optional.isEmpty();
     }
 
     public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {

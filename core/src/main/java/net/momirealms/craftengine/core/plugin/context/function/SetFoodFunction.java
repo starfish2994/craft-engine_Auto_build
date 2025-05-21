@@ -7,33 +7,31 @@ import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviders;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MCUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class BreakBlockFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
-    private final NumberProvider x;
-    private final NumberProvider y;
-    private final NumberProvider z;
+public class SetFoodFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
+    private final NumberProvider count;
+    private final boolean add;
 
-    public BreakBlockFunction(NumberProvider x, NumberProvider y, NumberProvider z, List<Condition<CTX>> predicates) {
+    public SetFoodFunction(NumberProvider count, boolean add, List<Condition<CTX>> predicates) {
         super(predicates);
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.count = count;
+        this.add = add;
     }
 
     @Override
     public void runInternal(CTX ctx) {
         Optional<Player> optionalPlayer = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
-        optionalPlayer.ifPresent(player -> player.breakBlock(MCUtils.fastFloor(x.getDouble(ctx)), MCUtils.fastFloor(y.getDouble(ctx)), MCUtils.fastFloor(z.getDouble(ctx))));
+        optionalPlayer.ifPresent(player -> player.setFoodLevel(this.add ? player.foodLevel() + this.count.getInt(ctx) : this.count.getInt(ctx)));
     }
 
     @Override
     public Key type() {
-        return CommonFunctions.BREAK_BLOCK;
+        return CommonFunctions.SET_FOOD;
     }
 
     public static class FactoryImpl<CTX extends Context> extends AbstractFactory<CTX> {
@@ -44,10 +42,9 @@ public class BreakBlockFunction<CTX extends Context> extends AbstractConditional
 
         @Override
         public Function<CTX> create(Map<String, Object> arguments) {
-            NumberProvider x = NumberProviders.fromObject(arguments.getOrDefault("x", "<arg:position.x>"));
-            NumberProvider y = NumberProviders.fromObject(arguments.getOrDefault("y", "<arg:position.y>"));
-            NumberProvider z = NumberProviders.fromObject(arguments.getOrDefault("z", "<arg:position.z>"));
-            return new BreakBlockFunction<>(x, y, z, getPredicates(arguments));
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("food"), "warning.config.function.set_food.missing_food");
+            boolean add = (boolean) arguments.getOrDefault("add", false);
+            return new SetFoodFunction<>(NumberProviders.fromObject(value), add, getPredicates(arguments));
         }
     }
 }
