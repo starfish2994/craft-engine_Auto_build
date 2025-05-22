@@ -46,7 +46,6 @@ dependencies {
     compileOnly("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     // Adventure
     compileOnly("net.kyori:adventure-api:${rootProject.properties["adventure_bundle_version"]}")
-    compileOnly("net.kyori:adventure-platform-bukkit:${rootProject.properties["adventure_platform_version"]}")
     compileOnly("net.kyori:adventure-text-minimessage:${rootProject.properties["adventure_bundle_version"]}")
     compileOnly("net.kyori:adventure-text-serializer-gson:${rootProject.properties["adventure_bundle_version"]}") {
         exclude("com.google.code.gson", "gson")
