@@ -1617,7 +1617,7 @@ public class PacketConsumers {
                         Object removePacket = Reflections.constructor$ClientboundRemoveEntitiesPacket.newInstance(entityIdsArray);
                         DynamicPriorityTracker.UpdateResult result = user.visualFurnitureView().addOrUpdateElement(new DynamicPriorityTracker.Element(entityId, distance, removePacket));
                         for (DynamicPriorityTracker.Element element : result.getEntered()) {
-                            LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+                            BukkitFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
                             if (updateFurniture == null || !updateFurniture.isValid()) continue;
                             user.sendPacket(updateFurniture.spawnPacket(player), false);
                         }

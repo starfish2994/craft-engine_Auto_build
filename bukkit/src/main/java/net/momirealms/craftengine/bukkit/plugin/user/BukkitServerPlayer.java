@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
-import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -382,13 +382,13 @@ public class BukkitServerPlayer extends Player {
         if (!Config.enableMaxVisibleFurniture()) return;
         if (visualFurnitureView().getTotalMembers() <= Config.maxVisibleFurniture()) return;
         for (DynamicPriorityTracker.Element element : visualFurnitureView().getAllElements()) {
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
             if (furniture == null || !furniture.isValid()) continue;
             double distance = furniture.location().distanceSquared(platformPlayer().getLocation());
             DynamicPriorityTracker.Element newElement = new DynamicPriorityTracker.Element(element.entityId(), distance, element.removePacket());
             DynamicPriorityTracker.UpdateResult result = visualFurnitureView().addOrUpdateElement(newElement);
             for (DynamicPriorityTracker.Element resultElement : result.getEntered()) {
-                LoadedFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(resultElement.entityId());
+                BukkitFurniture updateFurniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(resultElement.entityId());
                 if (updateFurniture == null || !updateFurniture.isValid()) continue;
                 sendPacket(updateFurniture.spawnPacket(platformPlayer()), false);
             }

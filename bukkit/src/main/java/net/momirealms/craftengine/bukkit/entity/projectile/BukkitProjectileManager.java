@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.entity.projectile;
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
@@ -21,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
@@ -57,18 +59,15 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         return Optional.ofNullable(this.projectiles.get(entityId));
     }
 
-    @EventHandler(ignoreCancelled = true,  priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
-        Projectile projectile = event.getEntity();
-        handleProjectileLoad(projectile);
+        handleProjectileLoad(event.getEntity());
     }
 
-    @EventHandler(ignoreCancelled = true,  priority = EventPriority.HIGHEST)
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (entity instanceof Projectile projectile) {
-                handleProjectileLoad(projectile);
-            }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onEntityAdd(EntityAddToWorldEvent event) {
+        if (event.getEntity() instanceof Projectile projectile) {
+            handleProjectileLoad(projectile);
         }
     }
 
@@ -99,10 +98,9 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
 
     @EventHandler
     public void onPlayerInteract(PlayerItemConsumeEvent event) {
-        ItemStack item = event.getItem();
-        String type = getType(item);
+        String type = getType(event.getItem());
         if (type == null) return;
-        if (type.equals("bow") || type.equals("spear")) {
+        if (type.equals("bow") || type.equals("trident")) {
             event.setCancelled(true);
         }
     }
@@ -114,17 +112,14 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         if (type == null) return;
         int ticksHeldFor = event.getTicksHeldFor();
         Player player = event.getPlayer();
-        if (type.equals("bow")) {
-            if (ticksHeldFor < 3) return;
-            // player.sendMessage("可以投出自定义弓: " + item.getType() + " 持续 " + ticksHeldFor + " 刻");
-        } else if (type.equals("trident")) {
+        if (type.equals("trident")) {
             if (ticksHeldFor < 10) return;
-            // player.sendMessage("可以投出自定义三叉戟: " + item.getType() + " 持续 " + ticksHeldFor + " 刻");
             Object nmsItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(item);
             Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
             Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
-            boolean success = TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-            // player.sendMessage("释放成功: " + success);
+            TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
+        } else if (type.equals("bow")) {
+            if (ticksHeldFor < 3) return;
         }
     }
 
