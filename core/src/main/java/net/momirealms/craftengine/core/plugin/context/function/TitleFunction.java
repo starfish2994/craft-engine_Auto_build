@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class TitleFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
     private final PlayerSelector<CTX> selector;
@@ -38,9 +37,8 @@ public class TitleFunction<CTX extends Context> extends AbstractConditionalFunct
 
     @Override
     public void runInternal(CTX ctx) {
-        Optional<Player> owner = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
         if (this.selector == null) {
-            owner.ifPresent(it -> it.sendTitle(
+            ctx.getOptionalParameter(DirectContextParameters.PLAYER).ifPresent(it -> it.sendTitle(
                     AdventureHelper.miniMessage().deserialize(this.main.get(ctx), ctx.tagResolvers()),
                     AdventureHelper.miniMessage().deserialize(this.sub.get(ctx), ctx.tagResolvers()),
                     this.fadeIn.getInt(ctx), this.stay.getInt(ctx), this.fadeOut.getInt(ctx)

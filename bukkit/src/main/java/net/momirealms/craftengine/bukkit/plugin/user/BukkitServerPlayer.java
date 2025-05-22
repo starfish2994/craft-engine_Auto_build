@@ -38,6 +38,8 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.Nullable;
@@ -902,5 +904,19 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void setSaturation(float saturation) {
         this.platformPlayer().setSaturation(saturation);
+    }
+
+    @Override
+    public void addPotionEffect(Key potionEffectType, int duration, int amplifier, boolean ambient, boolean particles) {
+        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(KeyUtils.toNamespacedKey(potionEffectType));
+        if (type == null) return;
+        this.platformPlayer().addPotionEffect(new PotionEffect(type, duration, amplifier, ambient, particles));
+    }
+
+    @Override
+    public void removePotionEffect(Key potionEffectType) {
+        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(KeyUtils.toNamespacedKey(potionEffectType));
+        if (type == null) return;
+        this.platformPlayer().removePotionEffect(type);
     }
 }

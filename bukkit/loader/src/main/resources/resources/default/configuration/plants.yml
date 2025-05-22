@@ -203,6 +203,51 @@ blocks:
         crop_item: minecraft:ender_pearl
         crop_seed: default:ender_pearl_flower_seeds
         ripe_age: 2
+    events:
+      - on: break
+        conditions:
+          - type: match_block_property
+            properties:
+              age: 2
+        functions:
+          - type: particle
+            x: "<arg:block.block_x> + 0.5"
+            y: "<arg:block.block_y> + 0.5"
+            z: "<arg:block.block_z> + 0.5"
+            particle: "minecraft:end_rod"
+            count: 15
+            offset-x: 0.05
+            offset-y: 0.05
+            offset-z: 0.05
+            speed: 0.1
+          - type: play_sound
+            sound: minecraft:entity.enderman.teleport
+            x: "<arg:block.block_x> + 0.5"
+            y: "<arg:block.block_y> + 0.5"
+            z: "<arg:block.block_z> + 0.5"
+      - on: right_click
+        conditions:
+          - type: match_block_property
+            properties:
+              age: 2
+          - type: "!is_null"
+            argument: "item_in_hand"
+          - type: "equals"
+            value1: "<arg:item_in_hand.id>"
+            value2: "default:ender_pearl_flower_seeds"
+        functions:
+          - type: break_block
+            x: "<arg:block.block_x>"
+            y: "<arg:block.block_y>"
+            z: "<arg:block.block_z>"
+          - type: place_block
+            x: "<arg:block.block_x>"
+            y: "<arg:block.block_y>"
+            z: "<arg:block.block_z>"
+            block-state: default:ender_pearl_flower[age=0]
+          - type: set_count
+            add: true
+            count: -1
     states:
       properties:
         age:
