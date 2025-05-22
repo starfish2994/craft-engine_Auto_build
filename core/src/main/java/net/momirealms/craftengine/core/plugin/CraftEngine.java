@@ -132,9 +132,6 @@ public abstract class CraftEngine implements Plugin {
                 long time1 = System.currentTimeMillis();
                 // firstly reload main config
                 this.config.load();
-                for (Player player : this.networkManager().onlineUsers()) {
-                    player.setMaxVisibleFurniture(Config.maxVisibleFurniture(), false);
-                }
                 // reset debugger
                 this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
                 // now we reload the translations

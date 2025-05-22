@@ -110,8 +110,6 @@ public class Config {
     protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
     protected boolean furniture$hide_base_entity;
     protected ColliderType furniture$collision_entity_type;
-    protected boolean furniture$max_visible_furniture_enable;
-    protected int furniture$max_visible_furniture_amount;
 
     protected boolean block$sound_system$enable;
     protected boolean block$simplify_adventure_break_check;
@@ -302,8 +300,6 @@ public class Config {
         furniture$handle_invalid_furniture_on_chunk_load$mapping = builder.build();
         furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
         furniture$collision_entity_type = ColliderType.valueOf(config.getString("furniture.collision-entity-type", "interaction").toUpperCase(Locale.ENGLISH));
-        furniture$max_visible_furniture_enable = config.getBoolean("furniture.max-visible-furniture.enable", false);
-        furniture$max_visible_furniture_amount = config.getInt("furniture.max-visible-furniture.amount", 100);
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -419,14 +415,6 @@ public class Config {
 
     public static float packMinVersion() {
         return instance.resource_pack$supported_version$min;
-    }
-
-    public static boolean enableMaxVisibleFurniture() {
-        return instance.furniture$max_visible_furniture_enable;
-    }
-
-    public static int maxVisibleFurniture() {
-        return instance.furniture$max_visible_furniture_amount;
     }
 
     public static float packMaxVersion() {

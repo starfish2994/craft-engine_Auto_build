@@ -1,8 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
-import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
-import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import org.bukkit.Material;
@@ -40,27 +38,19 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
     public Command.Builder<? extends CommandSender> assembleCommand(org.incendo.cloud.CommandManager<CommandSender> manager, Command.Builder<CommandSender> builder) {
         return builder
                 .senderType(Player.class)
-                // .required("reset", BooleanParser.booleanParser())
-                // .required("setTag", NamespacedKeyParser.namespacedKeyParser())
-                // .required("targetBlock", StringParser.stringComponent(StringParser.StringMode.GREEDY_FLAG_YIELDING).suggestionProvider(new SuggestionProvider<>() {
-                //     @Override
-                //     public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
-                //         return CompletableFuture.completedFuture(TARGET_BLOCK_SUGGESTIONS);
-                //     }
-                // }))
+                .required("reset", BooleanParser.booleanParser())
+                .required("setTag", NamespacedKeyParser.namespacedKeyParser())
+                .required("targetBlock", StringParser.stringComponent(StringParser.StringMode.GREEDY_FLAG_YIELDING).suggestionProvider(new SuggestionProvider<>() {
+                    @Override
+                    public @NonNull CompletableFuture<? extends @NonNull Iterable<? extends @NonNull Suggestion>> suggestionsFuture(@NonNull CommandContext<Object> context, @NonNull CommandInput input) {
+                        return CompletableFuture.completedFuture(TARGET_BLOCK_SUGGESTIONS);
+                    }
+                }))
                 .handler(context -> {
                     Player player = context.sender();
-                    BukkitServerPlayer cePlayer = plugin().adapt(player);
-                    player.sendMessage("visualFurnitureView: " + cePlayer.visualFurnitureView().getTotalMembers());
-                    player.sendMessage(cePlayer.visualFurnitureView() + "\n===============================");
-                    // cePlayer.visualFurnitureView().getAllElements().forEach(element -> {
-                    //     LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(element.entityId());
-                    //     if (furniture == null || !player.canSee(furniture.baseEntity())) {
-                    //         cePlayer.visualFurnitureView().removeByEntityId(element.entityId());
-                    //         player.sendMessage("remove: " + element.entityId());
-                    //     }
-                    // });
-                    // player.sendMessage("visualFurnitureView2: " + cePlayer.visualFurnitureView().getTotalMembers());
+                    player.sendMessage("开始测试");
+                    NamespacedKey key = context.get("setTag");
+                    player.sendMessage("结束测试");
                 });
     }
 
