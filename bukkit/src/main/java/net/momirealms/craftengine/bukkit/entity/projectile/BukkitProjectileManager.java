@@ -64,6 +64,11 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         handleProjectileLoad(event.getEntity());
     }
 
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onEntityPortal(EntityPortalEvent event) {
+        this.projectiles.remove(event.getEntity().getEntityId());
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onEntityAdd(EntityAddToWorldEvent event) {
         if (event.getEntity() instanceof Projectile projectile) {
