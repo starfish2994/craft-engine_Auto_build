@@ -34,6 +34,7 @@ public class EventFunctions {
         register(CommonFunctions.SET_SATURATION, new SetSaturationFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.PLAY_SOUND, new PlaySoundFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.PARTICLE, new ParticleFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.POTION_EFFECT, new PotionEffectFunction.FactoryImpl<>(EventConditions::fromMap));
     }
 
     public static void register(Key key, FunctionFactory<PlayerOptionalContext> factory) {

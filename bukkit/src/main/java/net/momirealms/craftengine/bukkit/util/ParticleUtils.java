@@ -3,7 +3,10 @@ package net.momirealms.craftengine.bukkit.util;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.particle.*;
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Vibration;
+import org.bukkit.World;
 
 public final class ParticleUtils {
     private ParticleUtils() {}

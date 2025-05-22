@@ -1,9 +1,7 @@
 package net.momirealms.craftengine.core.plugin.context.function;
 
-import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.DelayedInitBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;

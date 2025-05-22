@@ -35,9 +35,8 @@ public class OpenWindowFunction<CTX extends Context> extends AbstractConditional
 
     @Override
     public void runInternal(CTX ctx) {
-        Optional<Player> owner = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
         if (this.selector == null) {
-            owner.ifPresent(it -> {
+            ctx.getOptionalParameter(DirectContextParameters.PLAYER).ifPresent(it -> {
                 CraftEngine.instance().guiManager().openInventory(it, this.guiType);
                 if (this.optionalTitle != null) {
                     CraftEngine.instance().guiManager().updateInventoryTitle(it, AdventureHelper.miniMessage().deserialize(this.optionalTitle.get(ctx), ctx.tagResolvers()));

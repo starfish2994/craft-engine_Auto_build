@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.api.event;
 
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
-import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

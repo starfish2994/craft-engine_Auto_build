@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class CommandFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
     private final List<TextProvider> command;
@@ -33,9 +32,8 @@ public class CommandFunction<CTX extends Context> extends AbstractConditionalFun
     @Override
     public void runInternal(CTX ctx) {
         if (this.asPlayer) {
-            Optional<Player> owner = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
             if (this.selector == null) {
-                owner.ifPresent(it -> {
+                ctx.getOptionalParameter(DirectContextParameters.PLAYER).ifPresent(it -> {
                     for (TextProvider c : this.command) {
                         it.performCommand(c.get(ctx));
                     }

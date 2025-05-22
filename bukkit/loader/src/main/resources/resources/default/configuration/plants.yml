@@ -216,9 +216,10 @@ blocks:
             z: "<arg:block.block_z> + 0.5"
             particle: "minecraft:end_rod"
             count: 15
-            offset-x: 0.4
-            offset-y: 0.4
-            offset-z: 0.4
+            offset-x: 0.05
+            offset-y: 0.05
+            offset-z: 0.05
+            speed: 0.1
           - type: play_sound
             sound: minecraft:entity.enderman.teleport
             x: "<arg:block.block_x> + 0.5"
