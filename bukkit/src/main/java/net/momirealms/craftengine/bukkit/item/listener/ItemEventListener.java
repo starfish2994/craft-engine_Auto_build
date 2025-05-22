@@ -293,7 +293,7 @@ public class ItemEventListener implements Listener {
         Cancellable dummy = Cancellable.dummy();
         CustomItem<ItemStack> customItem = optionalCustomItem.get();
         PlayerOptionalContext context = PlayerOptionalContext.of(this.plugin.adapt(event.getPlayer()), ContextHolder.builder()
-                .withParameter(DirectContextParameters.CONSUMED_ITEM, wrapped)
+                .withParameter(DirectContextParameters.ITEM_IN_HAND, wrapped)
                 .withParameter(DirectContextParameters.EVENT, dummy)
                 .withParameter(DirectContextParameters.HAND, event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
         );

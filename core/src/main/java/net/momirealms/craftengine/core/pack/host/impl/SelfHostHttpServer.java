@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.pack.host.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -30,10 +31,12 @@ public class SelfHostHttpServer {
     private static SelfHostHttpServer instance;
     private final Cache<String, Boolean> oneTimePackUrls = Caffeine.newBuilder()
             .maximumSize(256)
+            .scheduler(Scheduler.systemScheduler())
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build();
     private final Cache<String, IpAccessRecord> ipAccessCache = Caffeine.newBuilder()
             .maximumSize(256)
+            .scheduler(Scheduler.systemScheduler())
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build();
 

@@ -26,7 +26,6 @@ public final class DirectContextParameters {
     public static final ContextKey<Double> LAST_RANDOM = ContextKey.direct("last_random");
     public static final ContextKey<World> WORLD = ContextKey.direct("world");
     public static final ContextKey<Item<?>> FURNITURE_ITEM = ContextKey.direct("furniture_item");
-    public static final ContextKey<Item<?>> CONSUMED_ITEM = ContextKey.direct("consumed_item");
     public static final ContextKey<Item<?>> ITEM_IN_HAND = ContextKey.direct("item_in_hand");
     public static final ContextKey<Boolean> FALLING_BLOCK = ContextKey.direct("falling_block");
     public static final ContextKey<Float> EXPLOSION_RADIUS = ContextKey.direct("explosion_radius");
