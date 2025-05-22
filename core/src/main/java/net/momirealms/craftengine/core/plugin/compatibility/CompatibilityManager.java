@@ -1,6 +1,7 @@
-package net.momirealms.craftengine.core.plugin;
+package net.momirealms.craftengine.core.plugin.compatibility;
 
 import net.momirealms.craftengine.core.entity.furniture.AbstractExternalModel;
+import net.momirealms.craftengine.core.entity.furniture.ExternalModel;
 import net.momirealms.craftengine.core.entity.player.Player;
 
 import java.util.UUID;
@@ -13,9 +14,13 @@ public interface CompatibilityManager {
 
     void onDelayedEnable();
 
-    AbstractExternalModel createModelEngineModel(String id);
+    void registerLevelerProvider(String plugin, LevelerProvider provider);
 
-    AbstractExternalModel createBetterModelModel(String id);
+    void addLevelerExp(Player player, String plugin, String target, double value);
+
+    int getLevel(Player player, String plugin, String target);
+
+    ExternalModel createModel(String plugin, String id);
 
     int interactionToBaseEntity(int id);
 

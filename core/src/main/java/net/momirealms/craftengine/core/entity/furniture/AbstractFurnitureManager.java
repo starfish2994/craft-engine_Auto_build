@@ -116,9 +116,9 @@ public abstract class AbstractFurnitureManager implements FurnitureManager {
                 // external model providers
                 Optional<ExternalModel> externalModel;
                 if (placementArguments.containsKey("model-engine")) {
-                    externalModel = Optional.of(plugin.compatibilityManager().createModelEngineModel(placementArguments.get("model-engine").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createModel("ModelEngine", placementArguments.get("model-engine").toString()));
                 } else if (placementArguments.containsKey("better-model")) {
-                    externalModel = Optional.of(plugin.compatibilityManager().createBetterModelModel(placementArguments.get("better-model").toString()));
+                    externalModel = Optional.of(plugin.compatibilityManager().createModel("BetterModel", placementArguments.get("better-model").toString()));
                 } else {
                     externalModel = Optional.empty();
                 }
