@@ -17,6 +17,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,6 +30,7 @@ import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +49,14 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     @Override
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this, this.plugin.bootstrap());
+        for (World world : Bukkit.getWorlds()) {
+            List<Entity> entities = world.getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof Projectile projectile) {
+                    handleProjectileLoad(projectile);
+                }
+            }
+        }
     }
 
     @Override
