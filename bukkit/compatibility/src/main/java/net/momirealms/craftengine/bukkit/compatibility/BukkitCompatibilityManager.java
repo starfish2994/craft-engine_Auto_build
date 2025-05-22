@@ -67,11 +67,6 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
 //                }
 //            }
         }
-    }
-
-    @Override
-    public void onDelayedEnable() {
-        this.initItemHooks();
         // WorldEdit
         if (this.isPluginEnabled("FastAsyncWorldEdit")) {
             this.initFastAsyncWorldEditHook();
@@ -80,6 +75,12 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             this.initWorldEditHook();
             logHook("WorldEdit");
         }
+    }
+
+    @Override
+    public void onDelayedEnable() {
+        this.initItemHooks();
+
         if (this.isPluginEnabled("LuckPerms")) {
             this.initLuckPermsHook();
             logHook("LuckPerms");

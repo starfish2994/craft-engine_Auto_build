@@ -197,6 +197,20 @@ public class Dependencies {
                     Relocation.of("adventure", "net{}kyori{}adventure"))
     );
 
+    public static final Dependency ADVENTURE_NBT = new Dependency(
+            "adventure-nbt",
+            "net{}kyori",
+            "adventure-nbt",
+            List.of(Relocation.of("option", "net{}kyori{}option"),
+                    Relocation.of("examination", "net{}kyori{}examination"),
+                    Relocation.of("adventure", "net{}kyori{}adventure"))
+    ) {
+        @Override
+        public String getVersion() {
+            return ADVENTURE_API.getVersion();
+        }
+    };
+
     public static final Dependency ADVENTURE_KEY = new Dependency(
             "adventure-key",
             "net{}kyori",
