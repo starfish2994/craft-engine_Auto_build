@@ -36,6 +36,8 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
 
     public abstract void abortMiningBlock();
 
+    public abstract void breakBlock(int x, int y, int z);
+
     public abstract double getCachedInteractionRange();
 
     public abstract void onSwingHand();
@@ -114,4 +116,12 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
     public boolean isAdventureMode() {
         return gameMode() == GameMode.ADVENTURE;
     }
+
+    public abstract int foodLevel();
+
+    public abstract void setFoodLevel(int foodLevel);
+
+    public abstract float saturation();
+
+    public abstract void setSaturation(float saturation);
 }

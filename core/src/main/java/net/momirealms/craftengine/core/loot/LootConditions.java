@@ -33,6 +33,8 @@ public class LootConditions {
         register(CommonConditions.PERMISSION, new PermissionCondition.FactoryImpl<>());
         register(CommonConditions.EQUALS, new EqualsCondition.FactoryImpl<>());
         register(CommonConditions.EXPRESSION, new ExpressionCondition.FactoryImpl<>());
+        register(CommonConditions.IS_NULL, new IsNullCondition.FactoryImpl<>());
+        register(CommonConditions.HAND, new HandCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, ConditionFactory<LootContext> factory) {

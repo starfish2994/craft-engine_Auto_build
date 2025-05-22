@@ -60,7 +60,7 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     @Override
     public ItemStack load() {
         ItemStack itemStack = this.rtagItem.load();
-        itemStack.setAmount(this.count);
+        itemStack.setAmount(Math.max(this.count, 0));
         return itemStack;
     }
 

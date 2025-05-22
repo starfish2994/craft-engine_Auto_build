@@ -3,7 +3,10 @@ package net.momirealms.craftengine.bukkit.world;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.bukkit.util.SoundUtils;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockInWorld;
@@ -87,6 +90,11 @@ public class BukkitWorld implements World {
     }
 
     @Override
+    public void playSound(Position location, Key sound, float volume, float pitch, SoundSource source) {
+        platformWorld().playSound(new Location(null, location.x(), location.y(), location.z()), sound.toString(), SoundUtils.toBukkit(source), volume, pitch);
+    }
+
+    @Override
     public void playBlockSound(Position location, Key sound, float volume, float pitch) {
         platformWorld().playSound(new Location(null, location.x(), location.y(), location.z()), sound.toString(), SoundCategory.BLOCKS, volume, pitch);
     }
@@ -94,5 +102,12 @@ public class BukkitWorld implements World {
     @Override
     public long time() {
         return platformWorld().getTime();
+    }
+
+    @Override
+    public void setBlockAt(int x, int y, int z, BlockStateWrapper blockState, int flags) {
+        Object worldServer = serverWorld();
+        Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, blockState.handle(), flags);
     }
 }

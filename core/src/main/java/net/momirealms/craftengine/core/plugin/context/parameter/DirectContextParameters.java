@@ -39,9 +39,13 @@ public final class DirectContextParameters {
     public static final ContextKey<Double> X = ContextKey.direct("x");
     public static final ContextKey<Double> Y = ContextKey.direct("y");
     public static final ContextKey<Double> Z = ContextKey.direct("z");
+    public static final ContextKey<Float> YAW = ContextKey.direct("yaw");
+    public static final ContextKey<Float> PITCH = ContextKey.direct("pitch");
     public static final ContextKey<Integer> BLOCK_X = ContextKey.direct("block_x");
     public static final ContextKey<Integer> BLOCK_Y = ContextKey.direct("block_y");
     public static final ContextKey<Integer> BLOCK_Z = ContextKey.direct("block_z");
+    public static final ContextKey<Integer> FOOD = ContextKey.direct("food");
+    public static final ContextKey<Float> SATURATION = ContextKey.direct("saturation");
     public static final ContextKey<UUID> UUID = ContextKey.direct("uuid");
     public static final ContextKey<Item<?>> MAIN_HAND_ITEM = ContextKey.direct("main_hand_item");
     public static final ContextKey<Item<?>> OFF_HAND_ITEM = ContextKey.direct("off_hand_item");

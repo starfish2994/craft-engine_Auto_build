@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.plugin.event;
+package net.momirealms.craftengine.core.plugin.context.event;
 
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
@@ -31,6 +31,8 @@ public class EventConditions {
         register(CommonConditions.PERMISSION, new PermissionCondition.FactoryImpl<>());
         register(CommonConditions.EQUALS, new EqualsCondition.FactoryImpl<>());
         register(CommonConditions.EXPRESSION, new ExpressionCondition.FactoryImpl<>());
+        register(CommonConditions.IS_NULL, new IsNullCondition.FactoryImpl<>());
+        register(CommonConditions.HAND, new HandCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, ConditionFactory<PlayerOptionalContext> factory) {

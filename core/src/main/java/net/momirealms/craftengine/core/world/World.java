@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.world;
 
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.sound.SoundData;
+import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.nio.file.Path;
@@ -21,6 +23,8 @@ public interface World {
         return getBlockAt(pos.x(), pos.y(), pos.z());
     }
 
+    void setBlockAt(int x, int y, int z, BlockStateWrapper blockState, int flags);
+
     String name();
 
     Path directory();
@@ -30,6 +34,8 @@ public interface World {
     void dropItemNaturally(Position location, Item<?> item);
 
     void dropExp(Position location, int amount);
+
+    void playSound(Position location, Key sound, float volume, float pitch, SoundSource source);
 
     void playBlockSound(Position location, Key sound, float volume, float pitch);
 

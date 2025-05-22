@@ -13,8 +13,8 @@ import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.PackedBlockState;
 import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -433,7 +433,7 @@ public class BukkitServerPlayer extends Player {
         // instant break
         boolean custom = immutableBlockState != null;
         if (custom && getDestroyProgress(state, pos) >= 1f) {
-            PackedBlockState vanillaBlockState = immutableBlockState.vanillaBlockState();
+            BlockStateWrapper vanillaBlockState = immutableBlockState.vanillaBlockState();
             // if it's not an instant break on client side, we should resend level event
             if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
                 Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
@@ -641,6 +641,11 @@ public class BukkitServerPlayer extends Player {
         }
     }
 
+    @Override
+    public void breakBlock(int x, int y, int z) {
+        platformPlayer().breakBlock(new Location(platformPlayer().getWorld(), x, y, z).getBlock());
+    }
+
     private void broadcastDestroyProgress(org.bukkit.entity.Player player, BlockPos hitPos, Object blockPos, int stage) {
         Object packet = FastNMS.INSTANCE.constructor$ClientboundBlockDestructionPacket(Integer.MAX_VALUE - entityID(), blockPos, stage);
         for (org.bukkit.entity.Player other : player.getWorld().getPlayers()) {
@@ -698,12 +703,12 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public float getYRot() {
+    public float yRot() {
         return platformPlayer().getPitch();
     }
 
     @Override
-    public float getXRot() {
+    public float xRot() {
         return platformPlayer().getYaw();
     }
 
@@ -877,5 +882,25 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isFlying() {
         return platformPlayer().isFlying();
+    }
+
+    @Override
+    public int foodLevel() {
+        return platformPlayer().getFoodLevel();
+    }
+
+    @Override
+    public void setFoodLevel(int foodLevel) {
+        this.platformPlayer().setFoodLevel(Math.min(Math.max(0, foodLevel), 20));
+    }
+
+    @Override
+    public float saturation() {
+        return platformPlayer().getSaturation();
+    }
+
+    @Override
+    public void setSaturation(float saturation) {
+        this.platformPlayer().setSaturation(saturation);
     }
 }

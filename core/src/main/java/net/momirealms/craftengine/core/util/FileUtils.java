@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,6 +18,20 @@ public class FileUtils {
 
     public static void createDirectoriesSafe(Path path) throws IOException {
         Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);
+    }
+
+    public static void deleteDirectory(Path folder) throws IOException {
+        if (!Files.exists(folder)) return;
+        try (Stream<Path> walk = Files.walk(folder)) {
+            walk.sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException ioException) {
+                            throw new RuntimeException(ioException);
+                        }
+                    });
+        }
     }
 
     public static List<Path> getYmlConfigsDeeply(Path configFolder) {

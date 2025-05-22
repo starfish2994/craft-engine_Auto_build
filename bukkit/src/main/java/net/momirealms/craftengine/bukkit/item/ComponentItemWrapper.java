@@ -98,6 +98,6 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
 
     @Override
     public void count(int amount) {
-        this.item.setAmount(amount);
+        this.item.setAmount(Math.max(amount, 0));
     }
 }

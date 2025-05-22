@@ -64,14 +64,12 @@ items#misc:
         events:
           - on: right_click
             functions:
-              - type: run
-                functions:
-                  - type: open_window
-                    gui-type: anvil
-                  - type: cancel_event
-                conditions:
-                  - type: expression
-                    expression: "!<arg:player.is_sneaking>"
+              - type: open_window
+                gui-type: anvil
+              - type: cancel_event
+            conditions:
+              - type: expression
+                expression: "!<arg:player.is_sneaking>"
         settings:
           template:
             - default:pickaxe_power/level_4

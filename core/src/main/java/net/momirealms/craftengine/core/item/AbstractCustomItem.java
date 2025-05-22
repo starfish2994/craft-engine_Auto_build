@@ -5,8 +5,8 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
     protected final NetworkItemDataProcessor<I>[] networkItemDataProcessors;
     protected final List<ItemBehavior> behaviors;
     protected final ItemSettings settings;
-    protected final EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events;
+    protected final Map<EventTrigger, List<Function<PlayerOptionalContext>>> events;
     protected final Item<I> base;
 
     @SuppressWarnings("unchecked")
@@ -32,7 +32,7 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
                               List<ItemDataModifier<I>> modifiers,
                               List<ItemDataModifier<I>> clientBoundModifiers,
                               ItemSettings settings,
-                              EnumMap<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
+                              Map<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
         this.id = id;
         this.material = material;
         this.events = events;

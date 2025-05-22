@@ -16,8 +16,8 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.world.BlockHitResult;
@@ -121,7 +121,14 @@ public class ItemEventListener implements Listener {
 
         // interact block with items
         if (hasItem && action == Action.RIGHT_CLICK_BLOCK) {
-            Location interactionPoint = Objects.requireNonNull(event.getInteractionPoint(), "interaction point should not be null");
+            Location interactionPoint = event.getInteractionPoint();
+            // some plugins would trigger this event without interaction point
+            if (interactionPoint == null) {
+                if (hasCustomItem) {
+                    event.setCancelled(true);
+                }
+                return;
+            }
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
             BlockPos pos = LocationUtils.toBlockPos(block.getLocation());
             Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
