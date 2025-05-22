@@ -49,7 +49,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @Nullable
-    public static Furniture place(Location location, Key furnitureId) {
+    public static BukkitFurniture place(Location location, Key furnitureId) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
         return place(location, furnitureId, furniture.getAnyPlacement());
@@ -64,7 +64,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @Nullable
-    public static Furniture place(Location location, Key furnitureId, AnchorType anchorType) {
+    public static BukkitFurniture place(Location location, Key furnitureId, AnchorType anchorType) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
         return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), true);
@@ -79,7 +79,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @NotNull
-    public static Furniture place(Location location, CustomFurniture furniture, AnchorType anchorType) {
+    public static BukkitFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType) {
         return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), true);
     }
 
@@ -93,7 +93,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @Nullable
-    public static Furniture place(Location location, Key furnitureId, AnchorType anchorType, boolean playSound) {
+    public static BukkitFurniture place(Location location, Key furnitureId, AnchorType anchorType, boolean playSound) {
         CustomFurniture furniture = byId(furnitureId);
         if (furniture == null) return null;
         return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), playSound);
@@ -109,7 +109,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @NotNull
-    public static Furniture place(Location location, CustomFurniture furniture, AnchorType anchorType, boolean playSound) {
+    public static BukkitFurniture place(Location location, CustomFurniture furniture, AnchorType anchorType, boolean playSound) {
         return BukkitFurnitureManager.instance().place(location, furniture, FurnitureExtraData.builder().anchorType(anchorType).build(), playSound);
     }
 
@@ -153,7 +153,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @Nullable
-    public static Furniture getLoadedFurnitureByBaseEntity(@NotNull Entity baseEntity) {
+    public static BukkitFurniture getLoadedFurnitureByBaseEntity(@NotNull Entity baseEntity) {
         return BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(baseEntity.getEntityId());
     }
 
@@ -164,7 +164,7 @@ public final class CraftEngineFurniture {
      * @return the loaded furniture
      */
     @Nullable
-    public static Furniture getLoadedFurnitureBySeat(@NotNull Entity seat) {
+    public static BukkitFurniture getLoadedFurnitureBySeat(@NotNull Entity seat) {
         Integer baseEntityId = seat.getPersistentDataContainer().get(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER);
         if (baseEntityId == null) return null;
         return BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(baseEntityId);

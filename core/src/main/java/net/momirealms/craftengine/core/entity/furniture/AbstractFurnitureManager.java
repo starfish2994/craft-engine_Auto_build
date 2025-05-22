@@ -126,7 +126,7 @@ public abstract class AbstractFurnitureManager implements FurnitureManager {
                 // add hitboxes
                 List<HitBox> hitboxes = ResourceConfigUtils.parseConfigAsList(placementArguments.get("hitboxes"), HitBoxTypes::fromMap);
                 if (hitboxes.isEmpty() && externalModel.isEmpty()) {
-                    hitboxes.add(defaultHitBox());
+                    hitboxes = List.of(defaultHitBox());
                 }
 
                 // rules

@@ -43,7 +43,7 @@ public class FurnitureInteractEvent extends PlayerEvent implements Cancellable {
     }
 
     @NotNull
-    public Furniture furniture() {
+    public BukkitFurniture furniture() {
         return this.furniture;
     }
 
