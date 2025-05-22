@@ -88,7 +88,6 @@ public class Reflections {
             )
     );
 
-
     public static final Class<?> clazz$ClientboundSetActionBarTextPacket = requireNonNull(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetActionBarTextPacket")

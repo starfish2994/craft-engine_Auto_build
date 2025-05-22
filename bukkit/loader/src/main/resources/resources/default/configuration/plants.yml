@@ -248,6 +248,7 @@ blocks:
           - type: set_count
             add: true
             count: -1
+          - type: swing_hand
     states:
       properties:
         age:
