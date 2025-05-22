@@ -52,13 +52,12 @@ dependencies {
     compileOnly("com.mojang:datafixerupper:${rootProject.properties["datafixerupper_version"]}")
     // Aho-Corasick java implementation
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
-    // Amazon S3
-    compileOnly("software.amazon.awssdk:s3:${rootProject.properties["amazon_awssdk_version"]}")
-    compileOnly("software.amazon.awssdk:netty-nio-client:${rootProject.properties["amazon_awssdk_version"]}")
     // EvalEx
     compileOnly("com.ezylang:EvalEx:${rootProject.properties["evalex_version"]}")
     // Jimfs
     compileOnly("com.google.jimfs:jimfs:${rootProject.properties["jimfs_version"]}")
+    // S3
+    implementation("net.momirealms:craft-engine-s3:0.1")
 }
 
 java {
