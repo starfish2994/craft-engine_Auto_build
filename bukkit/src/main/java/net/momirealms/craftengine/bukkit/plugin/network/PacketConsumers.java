@@ -1728,7 +1728,7 @@ public class PacketConsumers {
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
                             .withParameter(DirectContextParameters.POSITION, furniture.position())
                     );
-                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);;
+                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
 
                     if (player.isSneaking()) {
                         // try placing another furniture above it

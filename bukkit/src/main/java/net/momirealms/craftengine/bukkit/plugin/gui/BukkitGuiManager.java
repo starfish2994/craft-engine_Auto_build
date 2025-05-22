@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.gui.*;
+import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,9 +17,11 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.MenuType;
 
 public class BukkitGuiManager implements GuiManager, Listener {
+    private static final boolean useNewOpenInventory = ReflectionUtils.getDeclaredMethod(InventoryView.class, void.class, new String[]{"open"}) != null;
     private final BukkitCraftEngine plugin;
 
     public BukkitGuiManager(BukkitCraftEngine plugin) {
@@ -39,7 +42,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
     @Override
     public void openInventory(net.momirealms.craftengine.core.entity.player.Player player, GuiType guiType) {
         Player bukkitPlayer = (Player) player.platformPlayer();
-        if (VersionHelper.isOrAbove1_21_4()) {
+        if (useNewOpenInventory) {
             switch (guiType) {
                 case ANVIL -> MenuType.ANVIL.create(bukkitPlayer).open();
                 case LOOM -> MenuType.LOOM.create(bukkitPlayer).open();
