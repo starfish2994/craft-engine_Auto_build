@@ -477,29 +477,27 @@ public abstract class AbstractPackManager implements PackManager {
             for (CachedConfigSection cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
+                    Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                     try {
-                        Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        try {
-                            if (parser.supportsParsingObject()) {
-                                parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                            } else if (predicate.test(parser)) {
-                                if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                                    Map<String, Object> configSection1 = castToMap(configSection0, false);
-                                    if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                        parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
-                                    }
-                                } else {
-                                    TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
+                        if (parser.supportsParsingObject()) {
+                            parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                        } else if (predicate.test(parser)) {
+                            if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
+                                Map<String, Object> configSection1 = castToMap(configSection0, false);
+                                if ((boolean) configSection1.getOrDefault("enable", true)) {
+                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
                                 }
+                            } else {
+                                TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
                             }
-                        } catch (LocalizedException e) {
-                            if (e instanceof LocalizedResourceConfigException exception) {
-                                exception.setPath(cached.filePath());
-                                exception.setId(cached.prefix() + "." + key);
-                            }
-                            TranslationManager.instance().log(e.node(), e.arguments());
-                            this.plugin.debug(e::node);
                         }
+                    } catch (LocalizedException e) {
+                        if (e instanceof LocalizedResourceConfigException exception) {
+                            exception.setPath(cached.filePath());
+                            exception.setId(cached.prefix() + "." + key);
+                        }
+                        TranslationManager.instance().log(e.node(), e.arguments());
+                        this.plugin.debug(e::node);
                     } catch (Exception e) {
                         this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
                     }
@@ -521,36 +519,6 @@ public abstract class AbstractPackManager implements PackManager {
                     });
         }
     }
-
-//    private static void initFileSystemProvider() {
-//        String osName = System.getProperty("os.name").toLowerCase();
-//        String providerClass = null;
-//        if (osName.contains("win")) {
-//            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
-//        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-//            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
-//        } else if (osName.contains("mac")) {
-//            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
-//        }
-//        if (providerClass != null) {
-//            try {
-//                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
-//            } catch (Exception ignored) {}
-//        }
-//    }
-//
-//    private static void deleteDirectory(Path folder) throws IOException {
-//        if (!Files.exists(folder)) return;
-//        try (Stream<Path> walk = Files.walk(folder)) {
-//            walk.sorted(Comparator.reverseOrder())
-//                    .parallel()
-//                    .forEach(path -> {
-//                        try {
-//                            Files.delete(path);
-//                        } catch (IOException ignored) {}
-//                    });
-//        }
-//    }
 
     @Override
     public void generateResourcePack() throws IOException {

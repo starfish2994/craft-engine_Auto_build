@@ -144,6 +144,6 @@ public class ImmutableBlockState extends BlockStateHolder {
         if (block == null) return List.of();
         LootTable<Object> lootTable = (LootTable<Object>) block.lootTable();
         if (lootTable == null) return List.of();
-        return lootTable.getRandomItems(builder.withParameter(DirectContextParameters.BLOCK_STATE, this).build(), world, player);
+        return lootTable.getRandomItems(builder.withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, this).build(), world, player);
     }
 }

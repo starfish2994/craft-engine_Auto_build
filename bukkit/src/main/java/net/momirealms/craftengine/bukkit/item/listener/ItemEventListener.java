@@ -101,7 +101,7 @@ public class ItemEventListener implements Listener {
             CustomBlock customBlock = immutableBlockState.owner().value();
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                    .withParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                    .withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
                     .withParameter(DirectContextParameters.HAND, hand)
                     .withParameter(DirectContextParameters.EVENT, dummy)
                     .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
@@ -175,7 +175,7 @@ public class ItemEventListener implements Listener {
                 Cancellable dummy = Cancellable.dummy();
                 PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                        .withOptionalParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                        .withOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
                         .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
                         .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
                         .withParameter(DirectContextParameters.HAND, hand)
@@ -219,7 +219,7 @@ public class ItemEventListener implements Listener {
             Cancellable dummy = Cancellable.dummy();
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                    .withOptionalParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                    .withOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
                     .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
                     .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
                     .withParameter(DirectContextParameters.HAND, hand)

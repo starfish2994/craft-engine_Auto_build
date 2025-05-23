@@ -149,7 +149,7 @@ public class CropBlockBehavior extends BushBlockBehavior {
         int i = this.getAge(immutableBlockState) + this.boneMealBonus.getInt(
                 SimpleContext.of(
                         ContextHolder.builder()
-                            .withParameter(DirectContextParameters.BLOCK_STATE, immutableBlockState)
+                            .withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
                             .withParameter(DirectContextParameters.POSITION, new WorldPosition(new BukkitWorld(world), Vec3d.atCenterOf(new Vec3i(x, y, z))))
                             .build()
                 )

@@ -31,7 +31,7 @@ public final class DirectContextParameters {
     public static final ContextKey<Float> EXPLOSION_RADIUS = ContextKey.direct("explosion_radius");
     public static final ContextKey<Player> PLAYER = ContextKey.direct("player");
     public static final ContextKey<Entity> ENTITY = ContextKey.direct("entity");
-    public static final ContextKey<ImmutableBlockState> BLOCK_STATE = ContextKey.direct("custom_block_state");
+    public static final ContextKey<ImmutableBlockState> CUSTOM_BLOCK_STATE = ContextKey.direct("custom_block_state");
     public static final ContextKey<Position> COORDINATE = ContextKey.direct("coordinate");
     public static final ContextKey<WorldPosition> POSITION = ContextKey.direct("position");
     public static final ContextKey<String> NAME = ContextKey.direct("name");
