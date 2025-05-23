@@ -36,6 +36,7 @@ public class EventConditions {
         register(CommonConditions.EXPRESSION, new ExpressionCondition.FactoryImpl<>());
         register(CommonConditions.IS_NULL, new IsNullCondition.FactoryImpl<>());
         register(CommonConditions.HAND, new HandCondition.FactoryImpl<>());
+        register(CommonConditions.COOLDOWN, new CooldownCondition.FactoryImpl<>());
     }
 
     public static void register(Key key, ConditionFactory<PlayerOptionalContext> factory) {

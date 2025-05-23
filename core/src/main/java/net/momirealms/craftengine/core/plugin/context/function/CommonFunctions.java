@@ -21,6 +21,8 @@ public final class CommonFunctions {
     public static final Key SET_COUNT = Key.of("craftengine:set_count");
     public static final Key PLACE_BLOCK = Key.of("craftengine:place_block");
     public static final Key SET_FOOD = Key.of("craftengine:food");
+    public static final Key SET_COOLDOWN = Key.of("craftengine:set_cooldown");
+    public static final Key REMOVE_COOLDOWN = Key.of("craftengine:remove_cooldown");
     public static final Key SET_SATURATION = Key.of("craftengine:saturation");
     public static final Key DROP_LOOT = Key.of("craftengine:drop_loot");
     public static final Key SWING_HAND = Key.of("craftengine:swing_hand");

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.entity.player;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.entity.AbstractEntity;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -128,4 +129,8 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
     public abstract void addPotionEffect(Key potionEffectType, int duration, int amplifier, boolean ambient, boolean particles);
 
     public abstract void removePotionEffect(Key potionEffectType);
+
+    public abstract void clearPotionEffects();
+
+    public abstract CooldownData cooldown();
 }

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.plugin.context.function;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
+import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelector;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectors;
@@ -11,37 +12,41 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class RemovePotionEffectFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
+public class RemoveCooldownFunction<CTX extends Context> extends AbstractConditionalFunction<CTX> {
     private final PlayerSelector<CTX> selector;
-    private final Key potionEffectType;
+    private final String id;
     private final boolean all;
 
-    public RemovePotionEffectFunction(Key potionEffectType, boolean all, PlayerSelector<CTX> selector, List<Condition<CTX>> predicates) {
+    public RemoveCooldownFunction(String id, boolean all, PlayerSelector<CTX> selector, List<Condition<CTX>> predicates) {
         super(predicates);
-        this.potionEffectType = potionEffectType;
         this.selector = selector;
+        this.id = id;
         this.all = all;
     }
 
     @Override
     public void runInternal(CTX ctx) {
         if (this.selector == null) {
-            ctx.getOptionalParameter(DirectContextParameters.PLAYER).ifPresent(it -> {
-                if (this.all) it.clearPotionEffects();
-                else it.removePotionEffect(this.potionEffectType);
+            Optional<Player> optionalPlayer = ctx.getOptionalParameter(DirectContextParameters.PLAYER);
+            optionalPlayer.ifPresent(player -> {
+                CooldownData data = player.cooldown();
+                if (this.all) data.clearCooldowns();
+                else data.removeCooldown(this.id);
             });
         } else {
             for (Player target : this.selector.get(ctx)) {
-                if (this.all) target.clearPotionEffects();
-                else target.removePotionEffect(this.potionEffectType);
+                CooldownData data = target.cooldown();
+                if (this.all) data.clearCooldowns();
+                else data.removeCooldown(this.id);
             }
         }
     }
 
     @Override
     public Key type() {
-        return CommonFunctions.REMOVE_POTION_EFFECT;
+        return CommonFunctions.REMOVE_COOLDOWN;
     }
 
     public static class FactoryImpl<CTX extends Context> extends AbstractFactory<CTX> {
@@ -54,10 +59,10 @@ public class RemovePotionEffectFunction<CTX extends Context> extends AbstractCon
         public Function<CTX> create(Map<String, Object> arguments) {
             boolean all = (boolean) arguments.getOrDefault("all", false);
             if (all) {
-                return new RemovePotionEffectFunction<>(null, true, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
+                return new RemoveCooldownFunction<>(null, true, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
             } else {
-                Key effectType = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("potion-effect"), "warning.config.function.remove_potion_effect.missing_potion_effect"));
-                return new RemovePotionEffectFunction<>(effectType, false, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
+                String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("id"), "warning.config.function.remove_cooldown.missing_id");
+                return new RemoveCooldownFunction<>(id, false, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
             }
         }
     }
