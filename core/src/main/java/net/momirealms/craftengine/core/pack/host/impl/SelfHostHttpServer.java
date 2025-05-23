@@ -32,12 +32,12 @@ public class SelfHostHttpServer {
     private final Cache<String, Boolean> oneTimePackUrls = Caffeine.newBuilder()
             .maximumSize(256)
             .scheduler(Scheduler.systemScheduler())
-            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
     private final Cache<String, IpAccessRecord> ipAccessCache = Caffeine.newBuilder()
             .maximumSize(256)
             .scheduler(Scheduler.systemScheduler())
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
 
     private ExecutorService threadPool;
@@ -84,7 +84,7 @@ public class SelfHostHttpServer {
             this.threadPool = Executors.newFixedThreadPool(1);
             this.server = HttpServer.create(new InetSocketAddress("::", port), 0);
             this.server.createContext("/download", new ResourcePackHandler());
-            this.server.createContext("/metrics", this::handleMetrics);
+//            this.server.createContext("/metrics", this::handleMetrics);
             this.server.setExecutor(this.threadPool);
             this.server.start();
             CraftEngine.instance().logger().info("HTTP server started on port: " + port);
@@ -180,29 +180,34 @@ public class SelfHostHttpServer {
     private class ResourcePackHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            totalRequests.incrementAndGet();
+            try {
+                totalRequests.incrementAndGet();
 
-            String clientIp = getClientIp(exchange);
-            if (checkRateLimit(clientIp)) {
-                handleBlockedRequest(exchange, 429, "Rate limit exceeded");
-                return;
-            }
-            if (useToken) {
-                String token = parseToken(exchange);
-                if (!validateToken(token)) {
-                    handleBlockedRequest(exchange, 403, "Invalid token");
+                String clientIp = getClientIp(exchange);
+                if (checkRateLimit(clientIp)) {
+                    handleBlockedRequest(exchange, 429, "Rate limit exceeded");
                     return;
                 }
+                if (useToken) {
+                    String token = parseToken(exchange);
+                    if (!validateToken(token)) {
+                        handleBlockedRequest(exchange, 403, "Invalid token");
+                        return;
+                    }
+                }
+                if (!validateClient(exchange)) {
+                    handleBlockedRequest(exchange, 403, "Invalid client");
+                    return;
+                }
+                if (resourcePackBytes == null) {
+                    handleBlockedRequest(exchange, 404, "Resource pack missing");
+                    return;
+                }
+                sendResourcePack(exchange);
+            } catch (Exception e) {
+                handleBlockedRequest(exchange, 500, "Internal error");
+                CraftEngine.instance().logger().warn("Request handling failed", e);
             }
-            if (!validateClient(exchange)) {
-                handleBlockedRequest(exchange, 403, "Invalid client");
-                return;
-            }
-            if (resourcePackBytes == null) {
-                handleBlockedRequest(exchange, 404, "Resource pack missing");
-                return;
-            }
-            sendResourcePack(exchange);
         }
 
         private String getClientIp(HttpExchange exchange) {
