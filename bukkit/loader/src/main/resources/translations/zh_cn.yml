@@ -333,6 +333,8 @@ warning.config.function.particle.missing_block_state: "<yellow>在文件 <arg:0>
 warning.config.function.leveler_exp.missing_count: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 缺少 'leveler_exp' 函数必需的 'count' 参数</yellow>"
 warning.config.function.leveler_exp.missing_leveler: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 缺少 'leveler_exp' 函数必需的 'leveler' 参数</yellow>"
 warning.config.function.leveler_exp.missing_plugin: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 缺少 'leveler_exp' 函数必需的 'plugin' 参数</yellow>"
+warning.config.function.remove_potion_effect.missing_potion_effect: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'potion-effect' argument for 'remove_potion_effect' function.</yellow>"
+warning.config.function.potion_effect.missing_potion_effect: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'potion-effect' argument for 'potion_effect' function.</yellow>"
 warning.config.selector.missing_type: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 缺少选择器必需的 'type' 参数</yellow>"
 warning.config.selector.invalid_type: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 使用了无效的选择器类型 '<arg:2>'</yellow>"
 warning.config.selector.invalid_target: "<yellow>在文件 <arg:0> 中发现问题 - 配置项 '<arg:1>' 使用了无效的选择器目标 '<arg:2>'</yellow>"

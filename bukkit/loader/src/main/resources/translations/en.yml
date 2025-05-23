@@ -333,6 +333,8 @@ warning.config.function.particle.missing_block_state: "<yellow>Issue found in fi
 warning.config.function.leveler_exp.missing_count: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'count' argument for 'leveler_exp' function.</yellow>"
 warning.config.function.leveler_exp.missing_leveler: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'leveler' argument for 'leveler_exp' function.</yellow>"
 warning.config.function.leveler_exp.missing_plugin: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'plugin' argument for 'leveler_exp' function.</yellow>"
+warning.config.function.remove_potion_effect.missing_potion_effect: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'potion-effect' argument for 'remove_potion_effect' function.</yellow>"
+warning.config.function.potion_effect.missing_potion_effect: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'potion-effect' argument for 'potion_effect' function.</yellow>"
 warning.config.selector.missing_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'type' argument for selector.</yellow>"
 warning.config.selector.invalid_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector type '<arg:2>'.</yellow>"
 warning.config.selector.invalid_target: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector target '<arg:2>'.</yellow>"

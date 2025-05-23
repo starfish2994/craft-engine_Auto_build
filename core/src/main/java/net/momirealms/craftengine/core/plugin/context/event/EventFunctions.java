@@ -35,6 +35,7 @@ public class EventFunctions {
         register(CommonFunctions.PLAY_SOUND, new PlaySoundFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.PARTICLE, new ParticleFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.POTION_EFFECT, new PotionEffectFunction.FactoryImpl<>(EventConditions::fromMap));
+        register(CommonFunctions.REMOVE_POTION_EFFECT, new RemovePotionEffectFunction.FactoryImpl<>(EventConditions::fromMap));
         register(CommonFunctions.LEVELER_EXP, new LevelerExpFunction.FactoryImpl<>(EventConditions::fromMap));
     }
 

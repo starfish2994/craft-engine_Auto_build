@@ -14,6 +14,7 @@ public final class CommonFunctions {
     public static final Key PARTICLE = Key.of("craftengine:particle");
     public static final Key PLAY_SOUND = Key.of("craftengine:play_sound");
     public static final Key POTION_EFFECT = Key.of("craftengine:potion_effect");
+    public static final Key REMOVE_POTION_EFFECT = Key.of("craftengine:remove_potion_effect");
     public static final Key BREAK_BLOCK = Key.of("craftengine:break_block");
     public static final Key CANCEL_EVENT = Key.of("craftengine:cancel_event");
     public static final Key UPDATE_INTERACTION_TICK = Key.of("craftengine:update_interaction_tick");

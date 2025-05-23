@@ -59,8 +59,8 @@ public class PotionEffectFunction<CTX extends Context> extends AbstractCondition
         @Override
         public Function<CTX> create(Map<String, Object> arguments) {
             Key effectType = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("potion-effect"), "warning.config.function.potion_effect.missing_potion_effect"));
-            NumberProvider duration = NumberProviders.fromObject(arguments.get("duration"));
-            NumberProvider amplifier = NumberProviders.fromObject(arguments.get("amplifier"));
+            NumberProvider duration = NumberProviders.fromObject(arguments.getOrDefault("duration", 20));
+            NumberProvider amplifier = NumberProviders.fromObject(arguments.getOrDefault("amplifier", 0));
             boolean ambient = (boolean) arguments.getOrDefault("ambient", false);
             boolean particles = (boolean) arguments.getOrDefault("particles", true);
             return new PotionEffectFunction<>(effectType, duration, amplifier, ambient, particles, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
