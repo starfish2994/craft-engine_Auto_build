@@ -29,14 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class SelfHostHttpServer {
     private static SelfHostHttpServer instance;
-
-    // Caffeine缓存和统计计数器
     private final Cache<String, Boolean> oneTimePackUrls = Caffeine.newBuilder()
             .maximumSize(256)
             .scheduler(Scheduler.systemScheduler())
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
-
     private final Cache<String, IpAccessRecord> ipAccessCache = Caffeine.newBuilder()
             .maximumSize(256)
             .scheduler(Scheduler.systemScheduler())
@@ -144,7 +141,7 @@ public class SelfHostHttpServer {
                     blockedRequests.incrementAndGet();
                     return;
                 }
-                
+
                 QueryStringDecoder queryDecoder = new QueryStringDecoder(request.uri());
                 String path = queryDecoder.path();
 

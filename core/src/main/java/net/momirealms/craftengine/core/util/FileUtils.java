@@ -11,6 +11,16 @@ public class FileUtils {
 
     private FileUtils() {}
 
+    public static String getExtension(Path path) {
+        final String name = path.getFileName().toString();
+        int index = name.lastIndexOf('.');
+        if (index == -1) {
+            return "";
+        } else {
+            return name.substring(index + 1);
+        }
+    }
+
     public static String pathWithoutExtension(String path) {
         int i = path.lastIndexOf('.');
         return i == -1 ? path : path.substring(0, i);

@@ -1173,7 +1173,7 @@ public abstract class AbstractPackManager implements PackManager {
                 .map(Pack::resourcePackFolder)
                 .toList());
         folders.addAll(Config.foldersToMerge().stream()
-                .map(it -> plugin.dataFolderPath().getParent().resolve(it))
+                .map(it -> this.plugin.dataFolderPath().getParent().resolve(it))
                 .filter(Files::exists)
                 .toList());
         for (Path sourceFolder : folders) {
@@ -1188,7 +1188,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
         List<Path> externalZips = Config.zipsToMerge().stream()
-                .map(it -> plugin.dataFolderPath().getParent().resolve(it))
+                .map(it -> this.plugin.dataFolderPath().getParent().resolve(it))
                 .filter(Files::exists)
                 .filter(Files::isRegularFile)
                 .filter(file -> file.getFileName().toString().endsWith(".zip"))
@@ -1208,14 +1208,17 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void processRegularFile(Path file, BasicFileAttributes attrs, Path sourceFolder, @Nullable FileSystem fs,
                                     Map<String, List<Path>> conflictChecker, Map<Path, CachedAssetFile> previousFiles) throws IOException {
+        if (!ALLOWED_FILE_EXTENSIONS.contains(FileUtils.getExtension(file))) {
+            return;
+        }
         CachedAssetFile cachedAsset = previousFiles.get(file);
         long lastModified = attrs.lastModifiedTime().toMillis();
         long size = attrs.size();
         if (cachedAsset != null && cachedAsset.lastModified() == lastModified && cachedAsset.size() == size) {
-            cachedAssetFiles.put(file, cachedAsset);
+            this.cachedAssetFiles.put(file, cachedAsset);
         } else {
             cachedAsset = new CachedAssetFile(Files.readAllBytes(file), lastModified, size);
-            cachedAssetFiles.put(file, cachedAsset);
+            this.cachedAssetFiles.put(file, cachedAsset);
         }
         if (fs == null) return;
         Path relative = sourceFolder.relativize(file);
@@ -1232,6 +1235,9 @@ public abstract class AbstractPackManager implements PackManager {
                 @Override
                 public @NotNull FileVisitResult visitFile(@NotNull Path entry, @NotNull BasicFileAttributes entryAttrs) throws IOException {
                     if (entryAttrs.isDirectory()) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    if (!ALLOWED_FILE_EXTENSIONS.contains(FileUtils.getExtension(entry))) {
                         return FileVisitResult.CONTINUE;
                     }
                     Path entryPathInZip = zipRoot.relativize(entry);

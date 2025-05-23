@@ -9,8 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public interface PackManager extends Manageable {
+    Set<String> ALLOWED_FILE_EXTENSIONS = new HashSet<>(List.of("png", "txt", "json", "fsh", "vsh", "mcmeta", "zip", "ogg"));
 
     void loadResources(boolean recipe);
 
