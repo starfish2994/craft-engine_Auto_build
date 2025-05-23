@@ -222,7 +222,6 @@ public abstract class CraftEngine implements Plugin {
             this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
             this.advancementManager.delayedInit();
-            this.projectileManager.delayedInit();
             // reload the plugin
             try {
                 this.reloadPlugin(Runnable::run, Runnable::run, true);
@@ -230,6 +229,7 @@ public abstract class CraftEngine implements Plugin {
                 this.logger.warn("Failed to reload plugin on enable stage", e);
             }
             // must be after reloading because this process loads furniture
+            this.projectileManager.delayedInit();
             this.worldManager.delayedInit();
             this.furnitureManager.delayedInit();
             // set up some platform extra tasks
