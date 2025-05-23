@@ -41,6 +41,7 @@ dependencies {
     compileOnly("org.apache.logging.log4j:log4j-core:${rootProject.properties["log4j_version"]}")
     // Netty
     compileOnly("io.netty:netty-all:${rootProject.properties["netty_version"]}")
+    compileOnly("io.netty:netty-codec-http:${rootProject.properties["netty_version"]}")
     // Cache
     compileOnly("com.github.ben-manes.caffeine:caffeine:${rootProject.properties["caffeine_version"]}")
     // Compression

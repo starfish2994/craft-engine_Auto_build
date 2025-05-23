@@ -315,6 +315,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.AHO_CORASICK,
                 Dependencies.LZ4,
                 Dependencies.EVALEX,
+                Dependencies.NETTY_HTTP,
                 Dependencies.JIMFS,
                 Dependencies.COMMONS_IMAGING
         );
