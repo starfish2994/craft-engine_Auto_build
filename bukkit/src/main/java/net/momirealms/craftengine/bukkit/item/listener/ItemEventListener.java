@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.CustomItem;
@@ -75,6 +76,17 @@ public class ItemEventListener implements Listener {
         ImmutableBlockState immutableBlockState = null;
         int stateId = BlockStateUtils.blockStateToId(blockState);
         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
+        Location interactionPoint = event.getInteractionPoint();
+
+
+
+        BlockHitResult hitResult = null;
+        if (action == Action.RIGHT_CLICK_BLOCK && interactionPoint != null) {
+            Direction direction = DirectionUtils.toDirection(event.getBlockFace());
+            BlockPos pos = LocationUtils.toBlockPos(block.getLocation());
+            Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
+            hitResult = new BlockHitResult(vec3d, direction, pos, false);
+        }
 
         // 处理自定义方块
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
@@ -83,7 +95,7 @@ public class ItemEventListener implements Listener {
             CustomBlockInteractEvent interactEvent = new CustomBlockInteractEvent(
                     player,
                     block.getLocation(),
-                    event.getInteractionPoint(),
+                    interactionPoint,
                     immutableBlockState,
                     block,
                     event.getBlockFace(),
@@ -113,6 +125,20 @@ public class ItemEventListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
+
+            if (hitResult != null) {
+                UseOnContext useOnContext = new UseOnContext(serverPlayer, hand, itemInHand, hitResult);
+                if (immutableBlockState.behavior() instanceof AbstractBlockBehavior behavior) {
+                    InteractionResult result = behavior.useOnBlock(useOnContext, immutableBlockState);
+                    if (result == InteractionResult.SUCCESS_AND_CANCEL) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                    if (result != InteractionResult.PASS) {
+                        return;
+                    }
+                }
+            }
         }
 
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand == null ? Optional.empty() : itemInHand.getCustomItem();
@@ -121,7 +147,6 @@ public class ItemEventListener implements Listener {
 
         // interact block with items
         if (hasItem && action == Action.RIGHT_CLICK_BLOCK) {
-            Location interactionPoint = event.getInteractionPoint();
             // some plugins would trigger this event without interaction point
             if (interactionPoint == null) {
                 if (hasCustomItem) {
@@ -129,10 +154,6 @@ public class ItemEventListener implements Listener {
                 }
                 return;
             }
-            Direction direction = DirectionUtils.toDirection(event.getBlockFace());
-            BlockPos pos = LocationUtils.toBlockPos(block.getLocation());
-            Vec3d vec3d = new Vec3d(interactionPoint.getX(), interactionPoint.getY(), interactionPoint.getZ());
-            BlockHitResult hitResult = new BlockHitResult(vec3d, direction, pos, false);
 
             // handle block item
             if (itemInHand.isBlockItem()) {
@@ -200,9 +221,10 @@ public class ItemEventListener implements Listener {
                 if (!serverPlayer.isSecondaryUseActive() && interactable) {
                     return;
                 }
+                UseOnContext useOnContext = new UseOnContext(serverPlayer, hand, itemInHand, hitResult);
                 // 依次执行物品行为
                 for (ItemBehavior itemBehavior : optionalItemBehaviors.get()) {
-                    InteractionResult result = itemBehavior.useOnBlock(new UseOnContext(serverPlayer, hand, hitResult));
+                    InteractionResult result = itemBehavior.useOnBlock(useOnContext);
                     if (result == InteractionResult.SUCCESS_AND_CANCEL) {
                         event.setCancelled(true);
                         return;

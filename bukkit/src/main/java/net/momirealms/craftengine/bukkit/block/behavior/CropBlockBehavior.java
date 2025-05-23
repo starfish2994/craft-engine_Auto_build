@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.ParticleUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
@@ -12,6 +13,11 @@ import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.IntegerProperty;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemKeys;
+import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.SimpleContext;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
@@ -123,6 +129,35 @@ public class CropBlockBehavior extends BushBlockBehavior {
     @Override
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
         this.performBoneMeal(args[0], args[2], args[3]);
+    }
+
+    @Override
+    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        Item<?> item = context.getItem();
+        if (item == null || !item.vanillaId().equals(ItemKeys.BONE_MEAL) || context.getPlayer().isAdventureMode())
+            return InteractionResult.PASS;
+        if (isMaxAge(state))
+            return InteractionResult.PASS;
+        boolean sendSwing = false;
+        try {
+            Object visualState = state.vanillaBlockState().handle();
+            Object visualStateBlock = Reflections.method$BlockStateBase$getBlock.invoke(visualState);
+            if (Reflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
+                boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), visualState);
+                if (!is) {
+                    sendSwing = true;
+                }
+            } else {
+                sendSwing = true;
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to check visual state bone meal state", e);
+            return InteractionResult.FAIL;
+        }
+        if (sendSwing) {
+            context.getPlayer().swingHand(context.getHand());
+        }
+        return InteractionResult.SUCCESS;
     }
 
     private void performBoneMeal(Object level, Object pos, Object state) throws InvocationTargetException, IllegalAccessException {

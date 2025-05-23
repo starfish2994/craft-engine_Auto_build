@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.plugin.compatibility;
 
-import net.momirealms.craftengine.core.entity.furniture.AbstractExternalModel;
 import net.momirealms.craftengine.core.entity.furniture.ExternalModel;
 import net.momirealms.craftengine.core.entity.player.Player;
 

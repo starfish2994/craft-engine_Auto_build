@@ -137,7 +137,9 @@ public class BushBlockBehavior extends BukkitBlockBehavior {
     }
 
     protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
-        if (this.any) return true;
+        if (this.any) {
+            return belowState != Reflections.instance$Blocks$AIR$defaultState;
+        }
         for (Object tag : this.tagsCanSurviveOn) {
             if ((boolean) Reflections.method$BlockStateBase$hasTag.invoke(belowState, tag)) {
                 return true;
