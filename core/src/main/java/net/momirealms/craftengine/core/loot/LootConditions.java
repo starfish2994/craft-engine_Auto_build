@@ -31,7 +31,10 @@ public class LootConditions {
         register(CommonConditions.RANDOM, new RandomCondition.FactoryImpl<>());
         register(CommonConditions.DISTANCE, new DistanceCondition.FactoryImpl<>());
         register(CommonConditions.PERMISSION, new PermissionCondition.FactoryImpl<>());
-        register(CommonConditions.EQUALS, new EqualsCondition.FactoryImpl<>());
+        register(CommonConditions.EQUALS, new StringEqualsCondition.FactoryImpl<>());
+        register(CommonConditions.STRING_REGEX, new StringRegexCondition.FactoryImpl<>());
+        register(CommonConditions.STRING_EQUALS, new StringEqualsCondition.FactoryImpl<>());
+        register(CommonConditions.STRING_CONTAINS, new StringContainsCondition.FactoryImpl<>());
         register(CommonConditions.EXPRESSION, new ExpressionCondition.FactoryImpl<>());
         register(CommonConditions.IS_NULL, new IsNullCondition.FactoryImpl<>());
         register(CommonConditions.HAND, new HandCondition.FactoryImpl<>());

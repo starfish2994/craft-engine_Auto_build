@@ -19,6 +19,9 @@ public final class CommonConditions {
     public static final Key DISTANCE = Key.from("craftengine:distance");
     public static final Key PERMISSION = Key.from("craftengine:permission");
     public static final Key EQUALS = Key.from("craftengine:equals");
+    public static final Key STRING_EQUALS = Key.from("craftengine:string_equals");
+    public static final Key STRING_CONTAINS = Key.from("craftengine:string_contains");
+    public static final Key STRING_REGEX = Key.from("craftengine:regex");
     public static final Key EXPRESSION = Key.from("craftengine:expression");
     public static final Key IS_NULL = Key.from("craftengine:is_null");
     public static final Key HAND = Key.from("craftengine:hand");
