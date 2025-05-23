@@ -39,6 +39,7 @@ public class BukkitCommandManager extends AbstractCommandManager<CommandSender> 
                 new SearchUsageAdminCommand(this, plugin),
                 new TestCommand(this, plugin),
                 new DebugGetBlockStateRegistryIdCommand(this, plugin),
+                new DebugHostStatusCommand(this, plugin),
                 new DebugGetBlockInternalIdCommand(this, plugin),
                 new DebugAppearanceStateUsageCommand(this, plugin),
                 new DebugRealStateUsageCommand(this, plugin),

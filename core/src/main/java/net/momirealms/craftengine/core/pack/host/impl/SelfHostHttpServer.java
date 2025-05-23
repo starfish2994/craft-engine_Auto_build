@@ -55,7 +55,7 @@ public class SelfHostHttpServer {
     private boolean denyNonMinecraft = true;
     private boolean useToken;
 
-    private volatile byte[] resourcePackBytes;
+    private byte[] resourcePackBytes;
     private String packHash;
     private UUID packUUID;
 
@@ -91,6 +91,14 @@ public class SelfHostHttpServer {
         } catch (IOException e) {
             CraftEngine.instance().logger().warn("Failed to start HTTP server", e);
         }
+    }
+
+    public boolean isAlive() {
+        return this.server != null;
+    }
+
+    public byte[] resourcePackBytes() {
+        return resourcePackBytes;
     }
 
     public static SelfHostHttpServer instance() {
@@ -173,6 +181,7 @@ public class SelfHostHttpServer {
             this.server = null;
             if (this.threadPool != null) {
                 this.threadPool.shutdownNow();
+                this.threadPool = null;
             }
         }
     }
@@ -262,8 +271,11 @@ public class SelfHostHttpServer {
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(resourcePackBytes);
             } catch (IOException e) {
-                CraftEngine.instance().logger().warn("Failed to send resource pack", e);
-                throw e;
+                if (!e.getMessage().contains("abort") && !e.getMessage().contains("reset")) {
+                    CraftEngine.instance().logger().warn("Failed to send resource pack", e);
+                    throw e;
+                }
+                CraftEngine.instance().debug(() -> "Client aborted resource pack download: " + e.getMessage());
             }
         }
 
