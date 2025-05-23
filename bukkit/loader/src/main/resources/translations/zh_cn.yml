@@ -102,7 +102,7 @@ warning.config.condition.is_null.missing_argument: "<yellow>在文件 <arg:0> �
 warning.config.structure.not_section: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 应为配置段落 但实际类型为 '<arg:2>'</yellow>"
 warning.config.condition.hand.missing_hand: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'hand' 条件必需的 'hand' 参数</yellow>"
 warning.config.condition.hand.invalid_hand: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 使用了无效的 'hand' 参数 '<arg:2>'（'hand' 条件）。允许的手部类型: [<arg:3>]</yellow>"
-warning.config.condition.cooldown.missing_id: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'cooldown' 条件必需的 'id' 参数</yellow>"
+warning.config.condition.on_cooldown.missing_id: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'on_cooldown' 条件必需的 'id' 参数</yellow>"
 warning.config.image.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重复的图片配置 '<arg:1>' 请检查其他文件中是否存在相同配置</yellow>"
 warning.config.image.missing_height: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 缺少必需的 'height' 参数</yellow>"
 warning.config.image.height_ascent_conflict: "<yellow>在文件 <arg:0> 发现问题 - 图片 '<arg:1>' 违反位图规则: 'height' 参数 '<arg:2>' 必须不小于 'ascent' 参数 '<arg:3>'</yellow>"

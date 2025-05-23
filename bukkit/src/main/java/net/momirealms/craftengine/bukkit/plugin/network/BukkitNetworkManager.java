@@ -198,26 +198,21 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        Channel channel = getChannel(player);
-        NetWorkUser user = removeUser(channel);
-        if (user == null) return;
-        saveCooldown(player, user);
-        handleDisconnection(channel);
-        this.onlineUsers.remove(player.getUniqueId());
-        this.resetUserArray();
+        BukkitServerPlayer serverPlayer = this.onlineUsers.remove(player.getUniqueId());
+        if (serverPlayer != null) {
+            this.resetUserArray();
+            this.saveCooldown(player, serverPlayer.cooldown());
+        }
     }
 
-    private void saveCooldown(Player player, NetWorkUser user) {
-        if (user instanceof BukkitServerPlayer serverPlayer) {
-            CooldownData cd = serverPlayer.cooldown();
-            if (cd != null) {
-                try {
-                    byte[] data = CooldownData.toBytes(cd);
-                    player.getPersistentDataContainer().set(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY), PersistentDataType.BYTE_ARRAY, data);
-                } catch (IOException e) {
-                    player.getPersistentDataContainer().remove(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY));
-                    this.plugin.logger().warn("Failed to save cooldown for player " + player.getName(), e);
-                }
+    private void saveCooldown(Player player, CooldownData cd) {
+        if (cd != null && player != null) {
+            try {
+                byte[] data = CooldownData.toBytes(cd);
+                player.getPersistentDataContainer().set(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY), PersistentDataType.BYTE_ARRAY, data);
+            } catch (IOException e) {
+                player.getPersistentDataContainer().remove(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY));
+                this.plugin.logger().warn("Failed to save cooldown for player " + player.getName(), e);
             }
         }
     }
@@ -465,7 +460,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         String encoderName = pipeline.names().contains("outbound_config") ? "outbound_config" : "encoder";
         pipeline.addBefore(encoderName, PACKET_ENCODER, new PluginChannelEncoder(user));
 
-        channel.closeFuture().addListener((ChannelFutureListener) future -> handleDisconnection(user.nettyChannel()));
+        channel.closeFuture().addListener((ChannelFutureListener) future -> {
+            handleDisconnection(user.nettyChannel());
+        });
         setUser(channel, user);
     }
 

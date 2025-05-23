@@ -10,16 +10,16 @@ import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import java.util.Map;
 import java.util.Optional;
 
-public class CooldownCondition<CTX extends Context> implements Condition<CTX> {
+public class OnCooldownCondition<CTX extends Context> implements Condition<CTX> {
     private final String key;
 
-    public CooldownCondition(String key) {
+    public OnCooldownCondition(String key) {
         this.key = key;
     }
 
     @Override
     public Key type() {
-        return CommonConditions.COOLDOWN;
+        return CommonConditions.ON_COOLDOWN;
     }
 
     @Override
@@ -36,8 +36,8 @@ public class CooldownCondition<CTX extends Context> implements Condition<CTX> {
 
         @Override
         public Condition<CTX> create(Map<String, Object> arguments) {
-            String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("id"), "warning.config.condition.cooldown.missing_id");
-            return new CooldownCondition<>(id);
+            String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("id"), "warning.config.condition.on_cooldown.missing_id");
+            return new OnCooldownCondition<>(id);
         }
     }
 }

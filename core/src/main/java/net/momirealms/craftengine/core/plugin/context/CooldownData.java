@@ -65,11 +65,18 @@ public class CooldownData {
                 if (entry.getValue() instanceof LongTag longTag) {
                     long expire = longTag.getAsLong();
                     if (currentTime < expire) {
-                        cd.setCooldown(entry.getKey(), expire);
+                        cd.cooldownMap.put(entry.getKey(), expire);
                     }
                 }
             }
         }
         return cd;
+    }
+
+    @Override
+    public String toString() {
+        return "CooldownData{" +
+                "cooldownMap=" + cooldownMap +
+                '}';
     }
 }
