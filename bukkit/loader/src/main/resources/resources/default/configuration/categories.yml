@@ -66,3 +66,5 @@ categories:
       - default:ender_pearl_flower_seeds
       - default:gui_head_size_1
       - default:gui_head_size_4
+      - minecraft:air
+      - default:copper_coil

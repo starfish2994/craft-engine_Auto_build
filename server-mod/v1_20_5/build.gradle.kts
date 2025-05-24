@@ -44,7 +44,7 @@ artifacts {
 tasks {
     shadowJar {
         archiveClassifier = ""
-        archiveFileName = "${rootProject.name}-ignite-mod-${rootProject.properties["project_version"]}+mc1.20.5-1.21.4-mojmap.jar"
+        archiveFileName = "${rootProject.name}-ignite-mod-${rootProject.properties["project_version"]}+mc1.21.2-1.21.4-mojmap.jar"
         destinationDirectory.set(file("$rootDir/target"))
     }
 }

@@ -239,6 +239,7 @@ warning.config.block.behavior.crop.missing_age: "<yellow>在文件 <arg:0> 发�
 warning.config.block.behavior.sugar_cane.missing_age: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'sugar_cane_block' 行为缺少必需的 'age' 属性</yellow>"
 warning.config.block.behavior.leaves.missing_persistent: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'leaves_block' 行为缺少必需的 'persistent' 属性</yellow>"
 warning.config.block.behavior.leaves.missing_distance: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'leaves_block' 行为缺少必需的 'distance' 属性</yellow>"
+warning.config.block.behavior.lamp.missing_lit: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'lamp_block' 行为缺少必需的 'lit' 属性</yellow>"
 warning.config.block.behavior.sapling.missing_stage: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'sapling_block' 行为缺少必需的 'stage' 属性</yellow>"
 warning.config.block.behavior.sapling.missing_feature: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'sapling_block' 行为缺少必需的 'feature' 参数</yellow>"
 warning.config.block.behavior.strippable.missing_stripped: "<yellow>在文件 <arg:0> 发现问题 - 方块 '<arg:1>' 的 'strippable_block' 行为缺少必需的 'stripped' 参数</yellow>"

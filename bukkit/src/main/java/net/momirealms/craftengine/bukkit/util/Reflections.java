@@ -6791,4 +6791,16 @@ public class Reflections {
         }
     }
 
+    public static final Class<?> clazz$Orientation =
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.redstone.Orientation",
+                    "world.level.redstone.Orientation"
+            );
+
+    public static final Method method$BlockBehaviour$neighborChanged = requireNonNull(
+            VersionHelper.isOrAbove1_21_2() ?
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$Orientation, boolean.class) :
+            Optional.ofNullable(ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
+                    .orElse(ReflectionUtils.getMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
+    );
 }

@@ -225,4 +225,16 @@ public class CraftEngineBlock extends Block
             LOGGER.error(e);
         }
     }
+
+    @Override
+    public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block sourceBlock, @NotNull BlockPos sourcePos, boolean notify) {
+        try {
+            this.behaviorHolder.value().neighborChanged(this, new Object[]{state, world, pos, sourceBlock, sourcePos, notify}, () -> {
+                super.neighborChanged(state, world, pos, sourceBlock, sourcePos, notify);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
 }
