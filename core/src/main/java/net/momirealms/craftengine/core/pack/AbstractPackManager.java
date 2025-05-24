@@ -1208,7 +1208,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void processRegularFile(Path file, BasicFileAttributes attrs, Path sourceFolder, @Nullable FileSystem fs,
                                     Map<String, List<Path>> conflictChecker, Map<Path, CachedAssetFile> previousFiles) throws IOException {
-        if (Config.excludeFileSuffixes().contains(FileUtils.getExtension(file))) {
+        if (Config.excludeFileExtensions().contains(FileUtils.getExtension(file))) {
             return;
         }
         CachedAssetFile cachedAsset = previousFiles.get(file);
@@ -1237,7 +1237,7 @@ public abstract class AbstractPackManager implements PackManager {
                     if (entryAttrs.isDirectory()) {
                         return FileVisitResult.CONTINUE;
                     }
-                    if (Config.excludeFileSuffixes().contains(FileUtils.getExtension(entry))) {
+                    if (Config.excludeFileExtensions().contains(FileUtils.getExtension(entry))) {
                         return FileVisitResult.CONTINUE;
                     }
                     Path entryPathInZip = zipRoot.relativize(entry);

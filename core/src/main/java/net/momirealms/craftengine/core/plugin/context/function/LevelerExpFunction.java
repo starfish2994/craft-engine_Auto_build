@@ -56,8 +56,8 @@ public class LevelerExpFunction<CTX extends Context> extends AbstractConditional
         @Override
         public Function<CTX> create(Map<String, Object> arguments) {
             Object count = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("count"), "warning.config.function.leveler_exp.missing_count");
-            String leveler = ResourceConfigUtils.requireNonEmptyStringOrThrow("leveler", "warning.config.function.leveler_exp.missing_leveler");
-            String plugin = ResourceConfigUtils.requireNonEmptyStringOrThrow("plugin", "warning.config.function.leveler_exp.missing_plugin");
+            String leveler = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("leveler"), "warning.config.function.leveler_exp.missing_leveler");
+            String plugin = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("plugin"), "warning.config.function.leveler_exp.missing_plugin");
             return new LevelerExpFunction<>(NumberProviders.fromObject(count), leveler, plugin, PlayerSelectors.fromObject(arguments.get("target"), conditionFactory()), getPredicates(arguments));
         }
     }

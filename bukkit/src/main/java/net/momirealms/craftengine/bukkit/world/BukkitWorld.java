@@ -105,7 +105,7 @@ public class BukkitWorld implements World {
 
     @Override
     public void spawnParticle(Position location, Key particle, int count, double xOffset, double yOffset, double zOffset, double speed, @Nullable ParticleData extraData, @NotNull Context context) {
-        Particle particleType = Registry.PARTICLE_TYPE.get(KeyUtils.toNamespacedKey(particle));
+        Particle particleType = ParticleUtils.getParticle(particle);
         if (particleType == null) return;
         org.bukkit.World platformWorld = platformWorld();
         platformWorld.spawnParticle(particleType, location.x(), location.y(), location.z(), count, xOffset, yOffset, zOffset, speed, extraData == null ? null : ParticleUtils.toBukkitParticleData(extraData, context, platformWorld, location.x(), location.y(), location.z()));

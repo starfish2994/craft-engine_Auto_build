@@ -56,7 +56,7 @@ public class Config {
     protected List<ResolutionConditional> resource_pack$duplicated_files_handler;
     protected List<String> resource_pack$merge_external_folders;
     protected List<String> resource_pack$merge_external_zips;
-    protected Set<String> resource_pack$exclude_file_suffixes;
+    protected Set<String> resource_pack$exclude_file_extensions;
 
     protected boolean resource_pack$protection$crash_tools$method_1;
     protected boolean resource_pack$protection$crash_tools$method_2;
@@ -218,7 +218,7 @@ public class Config {
         resource_pack$supported_version$max = getVersion(config.get("resource-pack.supported-version.max", "LATEST").toString());
         resource_pack$merge_external_folders = config.getStringList("resource-pack.merge-external-folders");
         resource_pack$merge_external_zips = config.getStringList("resource-pack.merge-external-zip-files");
-        resource_pack$exclude_file_suffixes = new HashSet<>(config.getStringList("resource-pack.exclude-file-suffixes", List.of("md", "psd", "bbmodel", "db")));
+        resource_pack$exclude_file_extensions = new HashSet<>(config.getStringList("resource-pack.exclude-file-extensions"));
         resource_pack$delivery$send_on_join = config.getBoolean("resource-pack.delivery.send-on-join", true);
         resource_pack$delivery$resend_on_upload = config.getBoolean("resource-pack.delivery.resend-on-upload", true);
         resource_pack$delivery$kick_if_declined = config.getBoolean("resource-pack.delivery.kick-if-declined", true);
@@ -468,8 +468,8 @@ public class Config {
         return instance.resource_pack$merge_external_zips;
     }
 
-    public static Set<String> excludeFileSuffixes() {
-        return instance.resource_pack$exclude_file_suffixes;
+    public static Set<String> excludeFileExtensions() {
+        return instance.resource_pack$exclude_file_extensions;
     }
 
     public static boolean kickOnDeclined() {

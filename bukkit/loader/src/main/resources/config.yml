@@ -65,11 +65,7 @@ resource-pack:
     - BetterModel/build
   merge-external-zip-files:
     - CustomNameplates/resourcepack.zip
-  exclude-file-suffixes:
-    - "md"
-    - "psd"
-    - "bbmodel"
-    - "db"
+  exclude-file-extensions: ["md", "psd", "bbmodel", "db", "ini"]
   delivery:
     # Send the resource pack on joining the server
     send-on-join: true

@@ -1,14 +1,23 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.Context;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.particle.*;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Vibration;
 import org.bukkit.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class ParticleUtils {
+    private static final Map<Key, Particle> CACHE = new HashMap<>();
+
     private ParticleUtils() {}
 
     public static Particle getParticle(String particle) {
@@ -22,6 +31,20 @@ public final class ParticleUtils {
                 default -> Particle.valueOf(particle);
             };
         }
+    }
+
+    @Nullable
+    public static Particle getParticle(Key particle) {
+        return CACHE.computeIfAbsent(particle, k -> {
+            try {
+                Object nmsParticle = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$PARTICLE_TYPE, KeyUtils.toResourceLocation(particle));
+                if (nmsParticle == null) return null;
+                return FastNMS.INSTANCE.method$CraftParticle$toBukkit(nmsParticle);
+            } catch (ReflectiveOperationException e) {
+                CraftEngine.instance().logger().warn("Failed to get particle: " + particle, e);
+                return null;
+            }
+        });
     }
 
     public static final Particle HAPPY_VILLAGER = getParticle("HAPPY_VILLAGER");
