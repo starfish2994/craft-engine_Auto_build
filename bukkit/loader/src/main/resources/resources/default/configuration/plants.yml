@@ -102,6 +102,8 @@ blocks:
     behavior:
       type: on_liquid_block
       liquid-type: water
+      positions:
+        - 0,-1,0
     loot:
       template: "default:loot_table/basic"
       arguments:
@@ -121,19 +123,29 @@ blocks:
         push-reaction: DESTROY
         map-color: 15
         is-randomly-ticking: true
-    behavior:
-      type: sugar_cane_block
-      max-height: 4
-      required-adjacent-liquids: lava
-      grow-speed: 0.333
-      bottom-blocks:
-        - minecraft:netherrack
-        - minecraft:soul_sand
-        - minecraft:soul_soil
-        - minecraft:magma_block
-        - minecraft:warped_nylium
-        - minecraft:crimson_nylium
-        - minecraft:basalt
+    behaviors:
+      - type: vertical_crop_block
+        max-height: 4
+        grow-speed: 0.333
+        direction: up
+      - type: bush_block
+        stackable: true
+        bottom-blocks:
+          - minecraft:netherrack
+          - minecraft:soul_sand
+          - minecraft:soul_soil
+          - minecraft:magma_block
+          - minecraft:warped_nylium
+          - minecraft:crimson_nylium
+          - minecraft:basalt
+      - type: near_liquid_block
+        liquid-type: lava
+        stackable: true
+        positions:
+          - -1,-1,0
+          - 1,-1,0
+          - 0,-1,-1
+          - 0,-1,1
     loot:
       template: "default:loot_table/basic"
       arguments:
@@ -189,14 +201,15 @@ blocks:
         push-reaction: DESTROY
         map-color: 24
         is-randomly-ticking: true
-    behavior:
-      type: crop_block
-      grow-speed: 0.25
-      light-requirement: 9
-      is-bone-meal-target: true
-      bone-meal-age-bonus: 1
-      bottom-blocks:
-        - minecraft:end_stone
+    behaviors:
+      - type: bush_block
+        bottom-blocks:
+          - minecraft:end_stone
+      - type: crop_block
+        grow-speed: 0.25
+        light-requirement: 9
+        is-bone-meal-target: true
+        bone-meal-age-bonus: 1
     loot:
       template: default:loot_table/seed_crop
       arguments:

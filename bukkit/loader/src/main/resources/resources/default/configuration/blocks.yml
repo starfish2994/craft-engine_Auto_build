@@ -134,9 +134,10 @@ items#misc:
     behavior:
       type: block_item
       block:
-        behavior:
-          type: concrete_powder_block
-          solid-block: default:solid_gunpowder_block
+        behaviors:
+          - type: concrete_powder_block
+            solid-block: default:solid_gunpowder_block
+          - type: falling_block
         loot:
           template: "default:loot_table/basic"
           arguments:
@@ -231,8 +232,8 @@ items#misc:
             instrument: BASEDRUM
             map-color: 45
             item: default:copper_coil
-        behavior:
-          type: lamp_block
+        behaviors:
+          - type: lamp_block
         states:
           properties:
             lit:
