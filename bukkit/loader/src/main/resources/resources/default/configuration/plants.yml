@@ -130,6 +130,7 @@ blocks:
         direction: up
       - type: bush_block
         stackable: true
+        delay: 1
         bottom-blocks:
           - minecraft:netherrack
           - minecraft:soul_sand
@@ -140,6 +141,7 @@ blocks:
           - minecraft:basalt
       - type: near_liquid_block
         liquid-type: lava
+        delay: 1
         stackable: true
         positions:
           - -1,-1,0

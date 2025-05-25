@@ -44,46 +44,6 @@ public class VerticalCropBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object blockState = args[0];
-        Object level = args[1];
-        Object blockPos = args[2];
-        if (!canSurvive(thisBlock, args, () -> true)) {
-            int stateId = BlockStateUtils.blockStateToId(blockState);
-            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-            if (currentState != null && !currentState.isEmpty()) {
-                // break the crop
-                FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
-                net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
-                WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos)));
-                ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position);
-                for (Item<Object> item : currentState.getDrops(builder, world, null)) {
-                    world.dropItemNaturally(position, item);
-                }
-                world.playBlockSound(position, currentState.sounds().breakSound());
-                FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
-            }
-        }
-    }
-
-    @Override
-    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object world;
-        Object blockPos;
-        if (VersionHelper.isOrAbove1_21_2()) {
-            world = args[1];
-            blockPos = args[3];
-        } else {
-            world = args[3];
-            blockPos = args[4];
-        }
-        Reflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 1);
-        // return state, do not call super.
-        return args[0];
-    }
-
-    @Override
     public void randomTick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockState = args[0];
         Object level = args[1];

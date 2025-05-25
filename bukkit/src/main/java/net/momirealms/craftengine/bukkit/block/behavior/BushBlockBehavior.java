@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.Tuple;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.Bukkit;
@@ -27,8 +28,8 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
     protected final boolean any;
     protected final boolean stackable;
 
-    public BushBlockBehavior(CustomBlock block, boolean stackable, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
-        super(block);
+    public BushBlockBehavior(CustomBlock block, int delay, boolean stackable, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
+        super(block, delay);
         this.stackable = stackable;
         this.tagsCanSurviveOn = tagsCanSurviveOn;
         this.blocksCansSurviveOn = blocksCansSurviveOn;
@@ -42,7 +43,8 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
-            return new BushBlockBehavior(block, stackable, tuple.left(), tuple.mid(), tuple.right());
+            int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
+            return new BushBlockBehavior(block, delay, stackable, tuple.left(), tuple.mid(), tuple.right());
         }
     }
 

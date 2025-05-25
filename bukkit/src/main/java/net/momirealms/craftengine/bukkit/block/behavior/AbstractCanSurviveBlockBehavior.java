@@ -20,9 +20,36 @@ import net.momirealms.craftengine.core.world.WorldPosition;
 import java.util.concurrent.Callable;
 
 public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavior {
+    protected final int delay;
 
-    protected AbstractCanSurviveBlockBehavior(CustomBlock customBlock) {
+    protected AbstractCanSurviveBlockBehavior(CustomBlock customBlock, int delay) {
         super(customBlock);
+        this.delay = delay;
+    }
+
+    @Override
+    public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        if (this.delay == 0) return;
+        Object blockState = args[0];
+        Object level = args[1];
+        Object blockPos = args[2];
+        if (!canSurvive(thisBlock, args, () -> true)) {
+            int stateId = BlockStateUtils.blockStateToId(blockState);
+            ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+            if (currentState != null && !currentState.isEmpty() && currentState.owner().value() == this.customBlock) {
+                // break the crop
+                FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
+                net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
+                WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos)));
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(DirectContextParameters.POSITION, position);
+                for (Item<Object> item : currentState.getDrops(builder, world, null)) {
+                    world.dropItemNaturally(position, item);
+                }
+                world.playBlockSound(position, currentState.sounds().breakSound());
+                FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
+            }
+        }
     }
 
     @Override
@@ -55,6 +82,10 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
         int stateId = BlockStateUtils.blockStateToId(state);
         ImmutableBlockState previousState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (previousState == null || previousState.isEmpty()) {
+            return state;
+        }
+        if (this.delay != 0) {
+            Reflections.method$LevelAccessor$scheduleTick.invoke(level, blockPos, thisBlock, this.delay);
             return state;
         }
         if (!canSurvive(thisBlock, new Object[] {state, level, blockPos}, () -> true)) {

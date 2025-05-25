@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
 import java.util.List;
@@ -20,8 +21,8 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
     private final boolean onLava;
     private final boolean stackable;
 
-    public OnLiquidBlockBehavior(CustomBlock block, boolean stackable, boolean onWater, boolean onLava) {
-        super(block);
+    public OnLiquidBlockBehavior(CustomBlock block, int delay, boolean stackable, boolean onWater, boolean onLava) {
+        super(block, delay);
         this.onWater = onWater;
         this.onLava = onLava;
         this.stackable = stackable;
@@ -40,7 +41,8 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             List<String> liquidTypes = MiscUtils.getAsStringList(arguments.getOrDefault("liquid-type", List.of("water")));
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
-            return new OnLiquidBlockBehavior(block, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+            int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
+            return new OnLiquidBlockBehavior(block, delay, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
         }
     }
 

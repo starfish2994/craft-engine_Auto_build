@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
@@ -24,8 +25,8 @@ public class NearLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
     private final boolean stackable;
     private final BlockPos[] positions;
 
-    public NearLiquidBlockBehavior(CustomBlock block, BlockPos[] positions, boolean stackable, boolean onWater, boolean onLava) {
-        super(block);
+    public NearLiquidBlockBehavior(CustomBlock block, int delay, BlockPos[] positions, boolean stackable, boolean onWater, boolean onLava) {
+        super(block, delay);
         this.onWater = onWater;
         this.onLava = onLava;
         this.stackable = stackable;
@@ -45,16 +46,17 @@ public class NearLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             List<String> liquidTypes = MiscUtils.getAsStringList(arguments.getOrDefault("liquid-type", List.of("water")));
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
+            int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
             List<String> positionsToCheck = MiscUtils.getAsStringList(arguments.getOrDefault("positions", List.of()));
             if (positionsToCheck.isEmpty()) {
-                return new NearLiquidBlockBehavior(block, new BlockPos[]{new BlockPos(0,-1,0)}, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+                return new NearLiquidBlockBehavior(block, delay, new BlockPos[]{new BlockPos(0,-1,0)}, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
             } else {
                 BlockPos[] pos = new BlockPos[positionsToCheck.size()];
                 for (int i = 0; i < pos.length; i++) {
                     String[] split = positionsToCheck.get(i).split(",");
                     pos[i] = new BlockPos(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
                 }
-                return new NearLiquidBlockBehavior(block, pos, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+                return new NearLiquidBlockBehavior(block, delay, pos, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
             }
         }
     }
