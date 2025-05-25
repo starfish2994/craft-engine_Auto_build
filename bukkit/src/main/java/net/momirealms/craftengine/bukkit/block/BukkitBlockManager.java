@@ -428,7 +428,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                     .properties(properties)
                     .settings(settings)
                     .lootTable(LootTable.fromMap(MiscUtils.castToMap(section.get("loot"), true)))
-                    .behavior(MiscUtils.castToMap(section.get("behavior"), true))
+                    .behavior(MiscUtils.getAsMapList(ResourceConfigUtils.get(section, "behavior", "behaviors")))
                     .events(EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event")))
                     .build();
 

@@ -17,26 +17,23 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.Tuple;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class SaplingBlockBehavior extends BushBlockBehavior {
+public class SaplingBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Key feature;
     private final Property<Integer> stageProperty;
     private final double boneMealSuccessChance;
     private final float growSpeed;
 
-    public SaplingBlockBehavior(CustomBlock block, Key feature, Property<Integer> stageProperty, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, double boneMealSuccessChance, float growSpeed) {
-        super(block, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
+    public SaplingBlockBehavior(CustomBlock block, Key feature, Property<Integer> stageProperty, double boneMealSuccessChance, float growSpeed) {
+        super(block);
         this.feature = feature;
         this.stageProperty = stageProperty;
         this.boneMealSuccessChance = boneMealSuccessChance;
@@ -53,7 +50,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
         Object blockPos = args[2];
         Object blockState = args[0];
         Object aboveBlockPos = LocationUtils.above(blockPos);
-        if ((int) Reflections.method$LevelReader$getMaxLocalRawBrightness.invoke(world, aboveBlockPos) >= 9 && (float) RandomUtils.generateRandomFloat(0, 1) < growSpeed) {
+        if ((int) Reflections.method$LevelReader$getMaxLocalRawBrightness.invoke(world, aboveBlockPos) >= 9 && RandomUtils.generateRandomFloat(0, 1) < growSpeed) {
             increaseStage(world, blockPos, blockState, args[3]);
         }
     }
@@ -175,8 +172,7 @@ public class SaplingBlockBehavior extends BushBlockBehavior {
             String feature = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("feature"), "warning.config.block.behavior.sapling.missing_feature");
             Property<Integer> stageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("stage"), "warning.config.block.behavior.sapling.missing_stage");
             double boneMealSuccessChance = ResourceConfigUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45), "bone-meal-success-chance");
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
-            return new SaplingBlockBehavior(block, Key.of(feature), stageProperty, tuple.left(), tuple.mid(), tuple.right(), boneMealSuccessChance,
+            return new SaplingBlockBehavior(block, Key.of(feature), stageProperty, boneMealSuccessChance,
                     ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1.0 / 7.0), "grow-speed"));
         }
     }

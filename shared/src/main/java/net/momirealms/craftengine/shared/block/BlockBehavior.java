@@ -22,7 +22,7 @@ public abstract class BlockBehavior {
     }
 
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        return superMethod.call();
+        return args[0];
     }
 
     public void neighborChanged(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {

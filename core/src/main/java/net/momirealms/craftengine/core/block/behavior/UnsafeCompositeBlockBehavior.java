@@ -51,10 +51,14 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
 
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object previous = args[0];
         for (AbstractBlockBehavior behavior : this.behaviors) {
-            args[0] = behavior.updateShape(thisBlock, args, superMethod);
+            Object processed = behavior.updateShape(thisBlock, args, superMethod);
+            if (processed != previous) {
+                return processed;
+            }
         }
-        return args[0];
+        return previous;
     }
 
     @Override
@@ -73,18 +77,26 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
 
     @Override
     public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object previous = args[0];
         for (AbstractBlockBehavior behavior : this.behaviors) {
-            args[0] = behavior.rotate(thisBlock, args, superMethod);
+            Object processed = behavior.rotate(thisBlock, args, superMethod);
+            if (processed != previous) {
+                return processed;
+            }
         }
-        return args[0];
+        return previous;
     }
 
     @Override
     public Object mirror(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object previous = args[0];
         for (AbstractBlockBehavior behavior : this.behaviors) {
-            args[0] = behavior.mirror(thisBlock, args, superMethod);
+            Object processed = behavior.mirror(thisBlock, args, superMethod);
+            if (processed != previous) {
+                return processed;
+            }
         }
-        return args[0];
+        return previous;
     }
 
     @Override

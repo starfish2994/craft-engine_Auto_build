@@ -346,6 +346,10 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/netherite_anvil_top.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/solid_gunpowder_block.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/gunpowder_block.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_side.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_on.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_on_side.png");
         // items
         plugin.saveResource("resources/default/configuration/items.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_rod.png");

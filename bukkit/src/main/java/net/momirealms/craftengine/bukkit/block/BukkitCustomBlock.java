@@ -41,7 +41,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
             @NotNull Map<String, VariantState> variantMapper,
             @NotNull BlockSettings settings,
             @NotNull Map<EventTrigger, List<Function<PlayerOptionalContext>>> events,
-            @Nullable Map<String, Object> behavior,
+            @Nullable List<Map<String, Object>> behavior,
             @Nullable LootTable<?> lootTable
     ) {
         super(id, holder, properties, appearances, variantMapper, settings, events, behavior, lootTable);
@@ -159,7 +159,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         protected Map<String, Integer> appearances;
         protected Map<String, VariantState> variantMapper;
         protected BlockSettings settings;
-        protected Map<String, Object> behavior;
+        protected List<Map<String, Object>> behavior;
         protected LootTable<?> lootTable;
         protected Map<EventTrigger, List<Function<PlayerOptionalContext>>> events;
 
@@ -180,7 +180,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         }
 
         @Override
-        public Builder behavior(Map<String, Object> behavior) {
+        public Builder behavior(List<Map<String, Object>> behavior) {
             this.behavior = behavior;
             return this;
         }

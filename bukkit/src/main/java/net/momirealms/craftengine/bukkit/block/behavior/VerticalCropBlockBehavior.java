@@ -15,37 +15,32 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
-import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.util.RandomUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class SugarCaneBlockBehavior extends BushBlockBehavior {
+public class VerticalCropBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
-    private static final List<Object> WATER = List.of(Reflections.instance$Fluids$WATER, Reflections.instance$Fluids$FLOWING_WATER);
-    private static final List<Object> LAVA = List.of(Reflections.instance$Fluids$LAVA, Reflections.instance$Fluids$FLOWING_LAVA);
-    private static final List<Object> HORIZON_DIRECTIONS = List.of(Reflections.instance$Direction$NORTH, Reflections.instance$Direction$EAST, Reflections.instance$Direction$SOUTH, Reflections.instance$Direction$WEST);
     private final int maxHeight;
-    private final boolean nearWater;
-    private final boolean nearLava;
     private final IntegerProperty ageProperty;
     private final float growSpeed;
+    private final boolean direction;
 
-    public SugarCaneBlockBehavior(CustomBlock customBlock, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn, Property<Integer> ageProperty,
-                                  int maxHeight, boolean nearWater, boolean nearLava, float growSpeed) {
-        super(customBlock, tagsCanSurviveOn, blocksCansSurviveOn, customBlocksCansSurviveOn);
-        this.nearWater = nearWater;
-        this.nearLava = nearLava;
+    public VerticalCropBlockBehavior(CustomBlock customBlock, Property<Integer> ageProperty,
+                                     int maxHeight, float growSpeed, boolean direction) {
+        super(customBlock);
         this.maxHeight = maxHeight;
         this.ageProperty = (IntegerProperty) ageProperty;
         this.growSpeed = growSpeed;
+        this.direction = direction;
     }
 
     @Override
@@ -53,11 +48,11 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         Object blockState = args[0];
         Object level = args[1];
         Object blockPos = args[2];
-        if (!canSurvive(thisBlock, blockState, level, blockPos)) {
+        if (!canSurvive(thisBlock, args, () -> true)) {
             int stateId = BlockStateUtils.blockStateToId(blockState);
             ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (currentState != null && !currentState.isEmpty()) {
-                // break the sugar cane
+                // break the crop
                 FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
                 net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos)));
@@ -85,7 +80,7 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         }
         Reflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 1);
         // return state, do not call super.
-        return superMethod.call();
+        return args[0];
     }
 
     @Override
@@ -94,15 +89,15 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         Object level = args[1];
         Object blockPos = args[2];
         // above block is empty
-        if (FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.above(blockPos)) == Reflections.instance$Blocks$AIR$defaultState) {
+        if (FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, (this.direction ? LocationUtils.above(blockPos) : LocationUtils.below(blockPos))) == Reflections.instance$Blocks$AIR$defaultState) {
             int currentHeight = 1;
             BlockPos currentPos = LocationUtils.fromBlockPos(blockPos);
             ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
             if (currentState != null && !currentState.isEmpty()) {
                 while (true) {
-                    Object belowPos = LocationUtils.toBlockPos(currentPos.x(), currentPos.y() - currentHeight, currentPos.z());
-                    Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, belowPos);
-                    ImmutableBlockState belowImmutableState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(belowState));
+                    Object nextPos = LocationUtils.toBlockPos(currentPos.x(), this.direction ? currentPos.y() - currentHeight : currentPos.y() + currentHeight, currentPos.z());
+                    Object nextState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, nextPos);
+                    ImmutableBlockState belowImmutableState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(nextState));
                     if (belowImmutableState != null && !belowImmutableState.isEmpty() && belowImmutableState.owner() == currentState.owner()) {
                         currentHeight++;
                     } else {
@@ -116,11 +111,11 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
             if (currentHeight < this.maxHeight) {
                 int age = currentState.get(ageProperty);
                 if (age >= this.ageProperty.max || RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
-                    Object abovePos = LocationUtils.above(blockPos);
+                    Object nextPos = this.direction ? LocationUtils.above(blockPos) : LocationUtils.below(blockPos);
                     if (VersionHelper.isOrAbove1_21_5()) {
-                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, nextPos, super.customBlock.defaultState().customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
                     } else {
-                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, abovePos, super.customBlock.defaultState().customBlockState().handle());
+                        Reflections.method$CraftEventFactory$handleBlockGrowEvent.invoke(null, level, nextPos, super.customBlock.defaultState().customBlockState().handle());
                     }
                     FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, currentState.with(this.ageProperty, this.ageProperty.min).customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
                 } else if (RandomUtils.generateRandomFloat(0, 1) < this.growSpeed) {
@@ -130,81 +125,16 @@ public class SugarCaneBlockBehavior extends BushBlockBehavior {
         }
     }
 
-    @Override
-    protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws ReflectiveOperationException {
-        int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
-        int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
-        int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
-        Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y - 1, z);
-        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
-        int id = BlockStateUtils.blockStateToId(belowState);
-        // 如果下方是同种方块
-        if (!BlockStateUtils.isVanillaBlock(id)) {
-            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(id);
-            if (immutableBlockState.owner().value() == super.customBlock) {
-                return true;
-            }
-        }
-        if (!super.mayPlaceOn(belowState, world, belowPos)) {
-            return false;
-        }
-        // 如果不需要依靠流体
-        if (!this.nearWater && !this.nearLava) {
-            return true;
-        }
-        // 需要流体
-        if (this.nearWater) {
-            if (hasNearbyLiquid(world, belowPos, true)) {
-                return true;
-            }
-        }
-        if (this.nearLava) {
-            if (hasNearbyLiquid(world, belowPos, false)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasNearbyLiquid(Object world, Object blockPos, boolean waterOrLava) throws ReflectiveOperationException {
-        for (Object direction : HORIZON_DIRECTIONS) {
-            Object relativePos = Reflections.method$BlockPos$relative.invoke(blockPos, direction);
-            if (waterOrLava) {
-                // water
-                Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, relativePos);
-                if (Reflections.method$BlockStateBase$getBlock.invoke(blockState) == Reflections.instance$Blocks$ICE) {
-                    return true;
-                }
-                Object fluidState = Reflections.method$Level$getFluidState.invoke(world, relativePos);
-                Object fluidType = Reflections.method$FluidState$getType.invoke(fluidState);
-                if (WATER.contains(fluidType)) {
-                    return true;
-                }
-            } else {
-                // lava
-                Object fluidState = Reflections.method$Level$getFluidState.invoke(world, relativePos);
-                Object fluidType = Reflections.method$FluidState$getType.invoke(fluidState);
-                if (LAVA.contains(fluidType)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public static class Factory implements BlockBehaviorFactory {
 
         @SuppressWarnings("unchecked")
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             Property<Integer> ageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("age"), "warning.config.block.behavior.sugar_cane.missing_age");
             int maxHeight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("max-height", 3), "max-height");
-            List<String> nearbyLiquids = MiscUtils.getAsStringList(arguments.getOrDefault("required-adjacent-liquids", List.of()));
-            boolean nearWater = nearbyLiquids.contains("water");
-            boolean nearLava = nearbyLiquids.contains("lava");
-            return new SugarCaneBlockBehavior(block, tuple.left(), tuple.mid(), tuple.right(), ageProperty, maxHeight, nearWater, nearLava,
-                    ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1), "grow-speed"));
+            boolean direction = arguments.getOrDefault("direction", "up").toString().equalsIgnoreCase("up");
+            return new VerticalCropBlockBehavior(block, ageProperty, maxHeight,
+                    ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 1), "grow-speed"), direction);
         }
     }
 }

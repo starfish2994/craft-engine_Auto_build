@@ -9,22 +9,27 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
 
 import java.util.List;
 import java.util.Map;
 
-public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
+public class NearLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
+    private static final List<Object> WATER = List.of(Reflections.instance$Fluids$WATER, Reflections.instance$Fluids$FLOWING_WATER);
+    private static final List<Object> LAVA = List.of(Reflections.instance$Fluids$LAVA, Reflections.instance$Fluids$FLOWING_LAVA);
     public static final Factory FACTORY = new Factory();
     private final boolean onWater;
     private final boolean onLava;
     private final boolean stackable;
+    private final BlockPos[] positions;
 
-    public OnLiquidBlockBehavior(CustomBlock block, boolean stackable, boolean onWater, boolean onLava) {
+    public NearLiquidBlockBehavior(CustomBlock block, BlockPos[] positions, boolean stackable, boolean onWater, boolean onLava) {
         super(block);
         this.onWater = onWater;
         this.onLava = onLava;
         this.stackable = stackable;
+        this.positions = positions;
     }
 
     public boolean onWater() {
@@ -40,7 +45,17 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             List<String> liquidTypes = MiscUtils.getAsStringList(arguments.getOrDefault("liquid-type", List.of("water")));
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
-            return new OnLiquidBlockBehavior(block, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+            List<String> positionsToCheck = MiscUtils.getAsStringList(arguments.getOrDefault("positions", List.of()));
+            if (positionsToCheck.isEmpty()) {
+                return new NearLiquidBlockBehavior(block, new BlockPos[]{new BlockPos(0,-1,0)}, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+            } else {
+                BlockPos[] pos = new BlockPos[positionsToCheck.size()];
+                for (int i = 0; i < pos.length; i++) {
+                    String[] split = positionsToCheck.get(i).split(",");
+                    pos[i] = new BlockPos(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+                }
+                return new NearLiquidBlockBehavior(block, pos, stackable, liquidTypes.contains("water"), liquidTypes.contains("lava"));
+            }
         }
     }
 
@@ -49,13 +64,9 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
         int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
         int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
-        Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y - 1, z);
-        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
-        return mayPlaceOn(belowState, world, belowPos);
-    }
-
-    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
         if (this.stackable) {
+            Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y - 1, z);
+            Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
             int id = BlockStateUtils.blockStateToId(belowState);
             if (!BlockStateUtils.isVanillaBlock(id)) {
                 ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(id);
@@ -64,15 +75,26 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
                 }
             }
         }
+        for (BlockPos pos : positions) {
+            Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x + pos.x(), y + pos.y(), z + pos.z());
+            Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
+            if (mayPlaceOn(belowState, world, belowPos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
         Object fluidState = Reflections.method$Level$getFluidState.invoke(world, belowPos);
         Object fluidStateAbove = Reflections.method$Level$getFluidState.invoke(world, LocationUtils.above(belowPos));
         if (Reflections.method$FluidState$getType.invoke(fluidStateAbove) != Reflections.instance$Fluids$EMPTY) {
             return false;
         }
-        if (this.onWater && (Reflections.method$FluidState$getType.invoke(fluidState) == Reflections.instance$Fluids$WATER || Reflections.field$StateHolder$owner.get(belowState) == Reflections.instance$Blocks$ICE)) {
+        if (this.onWater && (WATER.contains(Reflections.method$FluidState$getType.invoke(fluidState)) || Reflections.field$StateHolder$owner.get(belowState) == Reflections.instance$Blocks$ICE)) {
             return true;
         }
-        if (this.onLava && Reflections.method$FluidState$getType.invoke(fluidState) == Reflections.instance$Fluids$LAVA) {
+        if (this.onLava && LAVA.contains(Reflections.method$FluidState$getType.invoke(fluidState))) {
             return true;
         }
         return false;
