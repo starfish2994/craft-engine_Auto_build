@@ -17,4 +17,9 @@ public class StoneBlockShape implements BlockShape {
     public Object getShape(Object thisObj, Object[] args) {
         return rawBlockState.getShape((BlockGetter) args[1], (BlockPos) args[2], (CollisionContext) args[3]);
     }
+
+    @Override
+    public Object getCollisionShape(Object thisObj, Object[] args) {
+        return rawBlockState.getCollisionShape((BlockGetter) args[1], (BlockPos) args[2], (CollisionContext) args[3]);
+    }
 }

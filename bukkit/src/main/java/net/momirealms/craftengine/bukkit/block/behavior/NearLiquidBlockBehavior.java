@@ -93,7 +93,7 @@ public class NearLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         if (Reflections.method$FluidState$getType.invoke(fluidStateAbove) != Reflections.instance$Fluids$EMPTY) {
             return false;
         }
-        if (this.onWater && (WATER.contains(Reflections.method$FluidState$getType.invoke(fluidState)) || Reflections.field$StateHolder$owner.get(belowState) == Reflections.instance$Blocks$ICE)) {
+        if (this.onWater && (WATER.contains(Reflections.method$FluidState$getType.invoke(fluidState)) || FastNMS.INSTANCE.method$BlockState$getBlock(belowState) == Reflections.instance$Blocks$ICE)) {
             return true;
         }
         if (this.onLava && LAVA.contains(Reflections.method$FluidState$getType.invoke(fluidState))) {

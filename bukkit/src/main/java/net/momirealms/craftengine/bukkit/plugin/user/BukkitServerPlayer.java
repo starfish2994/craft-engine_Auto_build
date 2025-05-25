@@ -531,7 +531,7 @@ public class BukkitServerPlayer extends Player {
 
             // send hit sound if the sound is removed
             if (currentTick - this.lastHitBlockTime > 3) {
-                Object blockOwner = Reflections.field$StateHolder$owner.get(this.destroyedState);
+                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(this.destroyedState);
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(blockOwner);
                 Object soundEvent = Reflections.field$SoundType$hitSound.get(soundType);
                 Object soundId = FastNMS.INSTANCE.field$SoundEvent$location(soundEvent);

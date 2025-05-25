@@ -140,11 +140,7 @@ public class BlockStateUtils {
     }
 
     public static Object getBlockOwner(Object blockState) {
-        try {
-            return Reflections.field$StateHolder$owner.get(blockState);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
+        return FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
     }
 
     public static int physicsEventToId(BlockPhysicsEvent event) throws ReflectiveOperationException {

@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.bukkit.block;
 
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.shared.block.BlockShape;
 
 public class BukkitBlockShape implements BlockShape {
@@ -11,7 +11,12 @@ public class BukkitBlockShape implements BlockShape {
     }
 
     @Override
-    public Object getShape(Object thisObj, Object[] args) throws Exception {
-        return Reflections.method$BlockBehaviour$getShape.invoke(Reflections.field$StateHolder$owner.get(this.rawBlockState), this.rawBlockState, args[1], args[2], args[3]);
+    public Object getShape(Object thisObj, Object[] args) {
+        return FastNMS.INSTANCE.method$BlockState$getShape(this.rawBlockState, args[1], args[2], args[3]);
+    }
+
+    @Override
+    public Object getCollisionShape(Object thisObj, Object[] args) {
+        return FastNMS.INSTANCE.method$BlockState$getCollisionShape(this.rawBlockState, args[1], args[2], args[3]);
     }
 }

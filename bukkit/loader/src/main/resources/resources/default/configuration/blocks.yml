@@ -315,3 +315,14 @@ recipes#misc:
     result:
       id: default:gunpowder_block
       count: 1
+  default:copper_coil:
+    type: shaped
+    pattern:
+      - "AAA"
+      - "A A"
+      - "AAA"
+    ingredients:
+      A: "minecraft:copper_ingot"
+    result:
+      id: default:copper_coil
+      count: 1

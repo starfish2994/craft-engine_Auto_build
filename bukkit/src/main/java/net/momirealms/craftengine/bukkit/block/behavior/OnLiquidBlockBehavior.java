@@ -71,7 +71,7 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         if (Reflections.method$FluidState$getType.invoke(fluidStateAbove) != Reflections.instance$Fluids$EMPTY) {
             return false;
         }
-        if (this.onWater && (Reflections.method$FluidState$getType.invoke(fluidState) == Reflections.instance$Fluids$WATER || Reflections.field$StateHolder$owner.get(belowState) == Reflections.instance$Blocks$ICE)) {
+        if (this.onWater && (Reflections.method$FluidState$getType.invoke(fluidState) == Reflections.instance$Fluids$WATER || FastNMS.INSTANCE.method$BlockState$getBlock(belowState) == Reflections.instance$Blocks$ICE)) {
             return true;
         }
         if (this.onLava && Reflections.method$FluidState$getType.invoke(fluidState) == Reflections.instance$Fluids$LAVA) {

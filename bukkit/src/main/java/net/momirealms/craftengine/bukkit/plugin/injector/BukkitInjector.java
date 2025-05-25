@@ -248,6 +248,9 @@ public class BukkitInjector {
                     // getShape
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getShape))
                     .intercept(MethodDelegation.to(GetShapeInterceptor.INSTANCE))
+                    // getCollisionShape
+                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getCollisionShape))
+                    .intercept(MethodDelegation.to(GetCollisionShapeInterceptor.INSTANCE))
                     // mirror
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$mirror))
                     .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
@@ -918,6 +921,21 @@ public class BukkitInjector {
                 return holder.value().getShape(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run getShape", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class GetCollisionShapeInterceptor {
+        public static final GetCollisionShapeInterceptor INSTANCE = new GetCollisionShapeInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
+            try {
+                return holder.value().getCollisionShape(thisObj, args);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run getCollisionShape", e);
                 return superMethod.call();
             }
         }

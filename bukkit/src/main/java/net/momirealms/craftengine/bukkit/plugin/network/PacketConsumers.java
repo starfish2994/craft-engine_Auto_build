@@ -1209,7 +1209,7 @@ public class PacketConsumers {
             // not a custom block
             if (BlockStateUtils.isVanillaBlock(stateId)) {
                 if (Config.enableSoundSystem()) {
-                    Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
+                    Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
                         player.startMiningBlock(pos, blockState, null);
                         return;

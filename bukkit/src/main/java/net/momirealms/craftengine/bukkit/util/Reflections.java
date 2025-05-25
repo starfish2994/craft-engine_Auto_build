@@ -2523,11 +2523,11 @@ public class Reflections {
             )
     );
 
-    public static final Field field$StateHolder$owner = requireNonNull(
-            ReflectionUtils.getDeclaredField(
-                    clazz$StateHolder, Object.class, 0
-            )
-    );
+//    public static final Field field$StateHolder$owner = requireNonNull(
+//            ReflectionUtils.getDeclaredField(
+//                    clazz$StateHolder, Object.class, 0
+//            )
+//    );
 
     public static final Class<?> clazz$CollisionContext = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -2539,6 +2539,12 @@ public class Reflections {
     public static final Method method$BlockBehaviour$getShape = requireNonNull(
             ReflectionUtils.getDeclaredMethod(
                     clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext
+            )
+    );
+
+    public static final Method method$BlockBehaviour$getCollisionShape = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getCollisionShape", "c"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext
             )
     );
 
@@ -6803,4 +6809,10 @@ public class Reflections {
             Optional.ofNullable(ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
                     .orElse(ReflectionUtils.getMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
     );
+
+//    public static final Method method$BlockBehaviour$getEntityInsideCollisionShape = requireNonNull(
+//            ReflectionUtils.getDeclaredMethod(
+//                    clazz$BlockBehaviour, clazz$VoxelShape, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$Entity
+//            )
+//    );
 }
