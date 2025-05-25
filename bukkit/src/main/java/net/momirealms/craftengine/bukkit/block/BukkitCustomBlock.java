@@ -21,15 +21,13 @@ import net.momirealms.craftengine.core.util.Tristate;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.shared.ObjectHolder;
 import net.momirealms.craftengine.shared.block.BlockBehavior;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class BukkitCustomBlock extends AbstractCustomBlock {
 
@@ -103,7 +101,16 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 Field shapeField = mcBlock.getClass().getField("shapeHolder");
                 @SuppressWarnings("unchecked")
                 ObjectHolder<BukkitBlockShape> shapeHolder = (ObjectHolder<BukkitBlockShape>) shapeField.get(mcBlock);
-                shapeHolder.bindValue(new BukkitBlockShape(state.vanillaBlockState().handle()));
+                shapeHolder.bindValue(new BukkitBlockShape(state.vanillaBlockState().handle(), Optional.ofNullable(state.settings().supportShapeBlockState()).map(it -> {
+                    try {
+                        Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(it));
+                        if (!BlockStateUtils.isVanillaBlock(blockState)) return null;
+                        return blockState;
+                    } catch (IllegalArgumentException e) {
+                        CraftEngine.instance().logger().warn("Illegal shape block state: " + it, e);
+                        return null;
+                    }
+                }).orElse(null)));
                 // bind behavior
                 Field behaviorField = mcBlock.getClass().getField("behaviorHolder");
                 @SuppressWarnings("unchecked")

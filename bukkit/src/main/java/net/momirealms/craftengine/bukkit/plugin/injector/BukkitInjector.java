@@ -73,7 +73,7 @@ import java.util.function.Consumer;
 
 public class BukkitInjector {
     private static final ByteBuddy byteBuddy = new ByteBuddy(ClassFileVersion.JAVA_V17);
-    private static final BukkitBlockShape STONE_SHAPE = new BukkitBlockShape(Reflections.instance$Blocks$STONE$defaultState);
+    private static final BukkitBlockShape STONE_SHAPE = new BukkitBlockShape(Reflections.instance$Blocks$STONE$defaultState, Reflections.instance$Blocks$STONE$defaultState);
 
     private static Class<?> clazz$InjectedPalettedContainer;
     private static Class<?> clazz$InjectedLevelChunkSection;
@@ -251,6 +251,9 @@ public class BukkitInjector {
                     // getCollisionShape
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getCollisionShape))
                     .intercept(MethodDelegation.to(GetCollisionShapeInterceptor.INSTANCE))
+                    // getSupportShape
+                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getBlockSupportShape))
+                    .intercept(MethodDelegation.to(GetSupportShapeInterceptor.INSTANCE))
                     // mirror
                     .method(ElementMatchers.is(Reflections.method$BlockBehaviour$mirror))
                     .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
@@ -936,6 +939,21 @@ public class BukkitInjector {
                 return holder.value().getCollisionShape(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run getCollisionShape", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class GetSupportShapeInterceptor {
+        public static final GetSupportShapeInterceptor INSTANCE = new GetSupportShapeInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
+            try {
+                return holder.value().getSupportShape(thisObj, args);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run getSupportShape", e);
                 return superMethod.call();
             }
         }

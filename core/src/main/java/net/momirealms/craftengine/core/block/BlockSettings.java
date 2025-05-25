@@ -34,6 +34,7 @@ public class BlockSettings {
     float incorrectToolSpeed = 0.3f;
     Set<Key> correctTools = Set.of();
     String name;
+    String supportShapeBlockState;
 
     private BlockSettings() {}
 
@@ -89,6 +90,7 @@ public class BlockSettings {
         newSettings.blockLight = settings.blockLight;
         newSettings.name = settings.name;
         newSettings.incorrectToolSpeed = settings.incorrectToolSpeed;
+        newSettings.supportShapeBlockState = settings.supportShapeBlockState;
         return newSettings;
     }
 
@@ -190,6 +192,10 @@ public class BlockSettings {
 
     public boolean respectToolComponent() {
         return respectToolComponent;
+    }
+
+    public String supportShapeBlockState() {
+        return supportShapeBlockState;
     }
 
     public BlockSettings correctTools(Set<Key> correctTools) {
@@ -317,6 +323,11 @@ public class BlockSettings {
         return this;
     }
 
+    public BlockSettings supportShapeBlockState(String supportShapeBlockState) {
+        this.supportShapeBlockState = supportShapeBlockState;
+        return this;
+    }
+
     public interface Modifier {
 
         void apply(BlockSettings settings);
@@ -430,6 +441,10 @@ public class BlockSettings {
             registerFactory("name", (value -> {
                 String name = value.toString();
                 return settings -> settings.name(name);
+            }));
+            registerFactory("support-shape", (value -> {
+                String shape = value.toString();
+                return settings -> settings.supportShapeBlockState(shape);
             }));
         }
 

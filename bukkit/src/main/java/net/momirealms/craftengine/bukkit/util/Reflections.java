@@ -2548,6 +2548,12 @@ public class Reflections {
             )
     );
 
+    public static final Method method$BlockBehaviour$getBlockSupportShape = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getBlockSupportShape", "b_"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos
+            )
+    );
+
     public static final Method method$BlockBehaviour$tick = requireNonNull(
             ReflectionUtils.getDeclaredMethod(
                     clazz$BlockBehaviour, void.class, new String[]{"tick", "a"}, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$RandomSource
