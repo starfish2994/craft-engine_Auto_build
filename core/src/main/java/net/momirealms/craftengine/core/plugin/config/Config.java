@@ -404,9 +404,9 @@ public class Config {
         return instance.furniture$handle_invalid_furniture_on_chunk_load$mapping;
     }
 
-    public static boolean forceUpdateLight() {
-        return instance.light_system$force_update_light;
-    }
+//    public static boolean forceUpdateLight() {
+//        return instance.light_system$force_update_light;
+//    }
 
     public static boolean enableLightSystem() {
         return instance.light_system$enable;

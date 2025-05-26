@@ -1,9 +1,10 @@
 package net.momirealms.craftengine.bukkit.item.listener;
 
+import com.saicone.rtag.RtagItem;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -13,7 +14,6 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.properties.Property;
-import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.MCUtils;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.bukkit.Material;
@@ -73,8 +73,8 @@ public class DebugStickListener implements Listener {
                             ComponentUtils.adventureToMinecraft(Component.translatable("item.minecraft.debug_stick.empty").arguments(Component.text(blockId))), true);
                     player.sendPacket(systemChatPacket, false);
                 } else {
-                    Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemInHand);
-                    Object storedData = wrapped.getTag("craftengine:debug_stick_state");
+                    LegacyItemWrapper wrapped = new LegacyItemWrapper(new RtagItem(itemInHand), itemInHand.getAmount());
+                    Object storedData = wrapped.get("craftengine:debug_stick_state");
                     if (storedData == null) storedData = new HashMap<>();
                     if (storedData instanceof Map<?,?> map) {
                         Map<String, Object> data = MiscUtils.castToMap(map, false);
@@ -96,7 +96,7 @@ public class DebugStickListener implements Listener {
                         } else {
                             currentProperty = getRelative(properties, currentProperty, player.isSecondaryUseActive());
                             data.put(blockId, currentProperty.name());
-                            wrapped.setTag(data, "craftengine:debug_stick_state");
+                            wrapped.set(data, "craftengine:debug_stick_state");
                             wrapped.load();
                             Object systemChatPacket = Reflections.constructor$ClientboundSystemChatPacket.newInstance(
                                     ComponentUtils.adventureToMinecraft(Component.translatable("item.minecraft.debug_stick.select")

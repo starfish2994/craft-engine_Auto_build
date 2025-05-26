@@ -189,6 +189,10 @@ public class BlockStateUtils {
         Reflections.field$BlockStateBase$isRandomlyTicking.set(state, randomlyTicking);
     }
 
+    public static void setPropagatesSkylightDown(Object state, boolean propagatesSkylightDown) throws ReflectiveOperationException {
+        Reflections.field$BlockStateBase$propagatesSkylightDown.set(state, propagatesSkylightDown);
+    }
+
     public static void setReplaceable(Object state, boolean replaceable) throws ReflectiveOperationException {
         Reflections.field$BlockStateBase$replaceable.set(state, replaceable);
     }
@@ -205,7 +209,7 @@ public class BlockStateUtils {
         Reflections.field$BlockStateBase$canOcclude.set(state, canOcclude);
     }
 
-    public static boolean isOcclude(Object state) throws ReflectiveOperationException {
+    public static boolean isOcclude(Object state) {
         return FastNMS.INSTANCE.method$BlockStateBase$canOcclude(state);
     }
 

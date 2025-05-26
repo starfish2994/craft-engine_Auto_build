@@ -583,10 +583,13 @@ templates#settings#break_level:
 templates#settings#blocks:
   default:settings/solid_1x1x1:
     is-suffocating: true
+    replaceable: false
     is-view-blocking: true
+    is-redstone-conductor: true
     can-occlude: true
   default:settings/transparent_1x1x1:
     is-suffocating: false
+    replaceable: false
     is-view-blocking: false
     can-occlude: false
   # sapling

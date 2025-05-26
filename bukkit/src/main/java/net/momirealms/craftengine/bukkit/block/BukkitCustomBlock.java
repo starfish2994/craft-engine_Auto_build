@@ -73,7 +73,13 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 BlockStateUtils.setHardness(mcBlockState, settings.hardness());
                 BlockStateUtils.setPushReaction(mcBlockState, settings.pushReaction());
                 BlockStateUtils.setReplaceable(mcBlockState, settings.replaceable());
-                BlockStateUtils.setCanOcclude(mcBlockState, settings.canOcclude());
+                if (settings.canOcclude() == Tristate.TRUE) {
+                    BlockStateUtils.setCanOcclude(mcBlockState, true);
+                } else if (settings.canOcclude() == Tristate.FALSE) {
+                    BlockStateUtils.setCanOcclude(mcBlockState, false);
+                } else {
+                    BlockStateUtils.setCanOcclude(mcBlockState, BlockStateUtils.isOcclude(state.vanillaBlockState().handle()));
+                }
                 if (settings.isRedstoneConductor() == Tristate.TRUE) {
                     BlockStateUtils.setIsRedstoneConductor(mcBlockState, StatePredicate.alwaysTrue());
                 } else if (settings.isRedstoneConductor() == Tristate.FALSE) {
@@ -138,6 +144,8 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 }
                 // set random tick later
                 BlockStateUtils.setIsRandomlyTicking(mcBlockState, settings.isRandomlyTicking());
+                // set propagates skylight
+                BlockStateUtils.setPropagatesSkylightDown(mcBlockState, settings.propagatesSkylightDown());
                 // bind tags
                 Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(state.customBlockState().registryId());
                 Set<Object> tags = new HashSet<>();

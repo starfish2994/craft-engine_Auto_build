@@ -342,8 +342,6 @@ performance:
 light-system:
   # Required for custom light-emitting blocks
   enable: true
-  # Turning this option on will reduce lighting system issues to some extent, but will increase server bandwidth consumption.
-  force-update-light: false
 
 chunk-system:
   # With cache system, those frequently load/unload chunks would consume fewer resources on serialization

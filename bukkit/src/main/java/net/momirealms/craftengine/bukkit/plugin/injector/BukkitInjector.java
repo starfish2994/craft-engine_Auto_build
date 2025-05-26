@@ -29,6 +29,7 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.BlockKeys;
@@ -56,7 +57,6 @@ import net.momirealms.craftengine.core.world.chunk.InjectedHolder;
 import net.momirealms.craftengine.shared.ObjectHolder;
 import net.momirealms.craftengine.shared.block.*;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -809,19 +809,18 @@ public class BukkitInjector {
                 // 如果先前不是空气则标记
                 if (!previous.isEmpty()) {
                     holder.ceChunk().setDirty(true);
-                }
-                if (Config.enableLightSystem() && Config.forceUpdateLight()) {
-                    updateLightIfChanged(holder, previousState, newState, null, y, z, x);
+                    if (Config.enableLightSystem()) {
+                        updateLightIfChanged(holder, previous.vanillaBlockState().handle(), newState, y, z, x);
+                    }
                 }
             } else {
                 ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                 ImmutableBlockState previousImmutableBlockState = section.setBlockState(x, y, z, immutableBlockState);
-                // 如果之前的自定义块(空气)和当前自定义块不同
-                if (previousImmutableBlockState != immutableBlockState) {
-                    holder.ceChunk().setDirty(true);
-                    if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
-                        updateLightIfChanged(holder, previousState, newState, immutableBlockState.vanillaBlockState().handle(), y, z, x);
-                    }
+                if (previousImmutableBlockState == immutableBlockState) return;
+                holder.ceChunk().setDirty(true);
+                // 如果新方块的光照属性和客户端认为的不同
+                if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
+                    updateLightIfChanged(holder, immutableBlockState.vanillaBlockState().handle(), newState, y, z, x);
                 }
             }
         } catch (Exception e) {
@@ -829,13 +828,11 @@ public class BukkitInjector {
         }
     }
 
-    protected static void updateLightIfChanged(@This InjectedHolder thisObj, Object previousBlockState, Object newState, @Nullable Object clientSideNewState, int y, int z, int x) throws ReflectiveOperationException {
-        int previousLight = BlockStateUtils.getLightEmission(previousBlockState);
-        int newLight = BlockStateUtils.getLightEmission(newState);
-        if (previousLight != newLight || (clientSideNewState != null && (BlockStateUtils.isOcclude(newState) != BlockStateUtils.isOcclude(clientSideNewState)))) {
-            CEWorld world = thisObj.ceChunk().world();
+    protected static void updateLightIfChanged(@This InjectedHolder thisObj, Object oldState, Object newState, int y, int z, int x) {
+        CEWorld world = thisObj.ceChunk().world();
+        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(oldState, newState, world.world().serverWorld(), LocationUtils.toBlockPos(x, y, z))) {
             SectionPos sectionPos = thisObj.cePos();
-            List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, Math.max(newLight, previousLight));
+            List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
             world.sectionLightUpdated(pos);
         }
     }

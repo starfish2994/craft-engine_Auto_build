@@ -21,11 +21,9 @@ items#misc:
             - default:hardness/wool
             - default:burn_data/planks
             - default:sound/wood
+            - default:settings/solid_1x1x1
           overrides:
             push-reaction: NORMAL
-            replaceable: false
-            is-redstone-conductor: true
-            is-suffocating: false
             instrument: HARP
             luminance: 15
             map-color: 36
@@ -145,12 +143,10 @@ items#misc:
         settings:
           template:
             - default:sound/sand
+            - default:settings/solid_1x1x1
           overrides:
             hardness: 0.5
             resistance: 0.5
-            replaceable: false
-            is-redstone-conductor: true
-            is-suffocating: true
             instrument: SNARE
             map-color: 45
             item: default:gunpowder_block
@@ -184,12 +180,10 @@ items#misc:
           template:
             - default:sound/sand
             - default:pickaxe_power/level_1
+            - default:settings/solid_1x1x1
           overrides:
             hardness: 1.8
             resistance: 1.8
-            replaceable: false
-            is-redstone-conductor: true
-            is-suffocating: true
             instrument: BASEDRUM
             map-color: 45
             item: default:solid_gunpowder_block
@@ -232,8 +226,8 @@ items#misc:
             instrument: BASEDRUM
             map-color: 15
             item: default:copper_coil
-        behaviors:
-          - type: lamp_block
+        behavior:
+          type: lamp_block
         states:
           properties:
             lit:

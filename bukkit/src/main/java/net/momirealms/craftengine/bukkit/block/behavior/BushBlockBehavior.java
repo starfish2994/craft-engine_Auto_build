@@ -23,18 +23,18 @@ import java.util.*;
 public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
     public static final Factory FACTORY = new Factory();
     protected final List<Object> tagsCanSurviveOn;
-    protected final Set<Object> blocksCansSurviveOn;
+    protected final Set<Object> blockStatesCanSurviveOn;
     protected final Set<String> customBlocksCansSurviveOn;
-    protected final boolean any;
+    protected final boolean blacklistMode;
     protected final boolean stackable;
 
-    public BushBlockBehavior(CustomBlock block, int delay, boolean stackable, List<Object> tagsCanSurviveOn, Set<Object> blocksCansSurviveOn, Set<String> customBlocksCansSurviveOn) {
+    public BushBlockBehavior(CustomBlock block, int delay, boolean blacklist, boolean stackable, List<Object> tagsCanSurviveOn, Set<Object> blockStatesCanSurviveOn, Set<String> customBlocksCansSurviveOn) {
         super(block, delay);
+        this.blacklistMode = blacklist;
         this.stackable = stackable;
         this.tagsCanSurviveOn = tagsCanSurviveOn;
-        this.blocksCansSurviveOn = blocksCansSurviveOn;
+        this.blockStatesCanSurviveOn = blockStatesCanSurviveOn;
         this.customBlocksCansSurviveOn = customBlocksCansSurviveOn;
-        this.any = this.tagsCanSurviveOn.isEmpty() && this.blocksCansSurviveOn.isEmpty() && this.customBlocksCansSurviveOn.isEmpty();
     }
 
     public static class Factory implements BlockBehaviorFactory {
@@ -44,7 +44,8 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
             Tuple<List<Object>, Set<Object>, Set<String>> tuple = readTagsAndState(arguments, false);
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
             int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
-            return new BushBlockBehavior(block, delay, stackable, tuple.left(), tuple.mid(), tuple.right());
+            boolean blacklistMode = (boolean) arguments.getOrDefault("blacklist", false);
+            return new BushBlockBehavior(block, delay, blacklistMode, stackable, tuple.left(), tuple.mid(), tuple.right());
         }
     }
 
@@ -85,35 +86,30 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
     }
 
     protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
-        if (this.any) {
-            return belowState != Reflections.instance$Blocks$AIR$defaultState;
-        }
         for (Object tag : this.tagsCanSurviveOn) {
             if ((boolean) Reflections.method$BlockStateBase$hasTag.invoke(belowState, tag)) {
-                return true;
+                return !this.blacklistMode;
             }
         }
         int id = BlockStateUtils.blockStateToId(belowState);
         if (BlockStateUtils.isVanillaBlock(id)) {
-            if (!this.blocksCansSurviveOn.isEmpty() && this.blocksCansSurviveOn.contains(belowState)) {
-                return true;
+            if (!this.blockStatesCanSurviveOn.isEmpty() && this.blockStatesCanSurviveOn.contains(belowState)) {
+                return !this.blacklistMode;
             }
         } else {
             ImmutableBlockState belowCustomState = BukkitBlockManager.instance().getImmutableBlockState(id);
             if (belowCustomState != null && !belowCustomState.isEmpty()) {
-                if (stackable) {
-                    if (belowCustomState.owner().value() == super.customBlock) {
-                        return true;
-                    }
+                if (belowCustomState.owner().value() == super.customBlock) {
+                    return this.stackable;
                 }
                 if (this.customBlocksCansSurviveOn.contains(belowCustomState.owner().value().id().toString())) {
-                    return true;
+                    return !this.blacklistMode;
                 }
                 if (this.customBlocksCansSurviveOn.contains(belowCustomState.toString())) {
-                    return true;
+                    return !this.blacklistMode;
                 }
             }
         }
-        return false;
+        return this.blacklistMode;
     }
 }

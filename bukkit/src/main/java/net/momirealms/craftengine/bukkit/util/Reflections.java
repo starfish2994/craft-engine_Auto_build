@@ -2423,6 +2423,12 @@ public class Reflections {
             )
     );
 
+    public static final Field field$BlockStateBase$propagatesSkylightDown = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BlockStateBase, boolean.class, 11
+            )
+    );
+
     public static final Field field$BlockStateBase$requiresCorrectToolForDrops = requireNonNull(
             ReflectionUtils.getDeclaredField(
                     clazz$BlockStateBase, boolean.class, 5

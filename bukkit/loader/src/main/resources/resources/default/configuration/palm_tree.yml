@@ -229,7 +229,7 @@ items:
           template: "default:settings/sapling"
           overrides:
             item: default:palm_sapling
-        behavior:
+        behaviors:
           - type: bush_block
             bottom-block-tags:
               - minecraft:dirt
