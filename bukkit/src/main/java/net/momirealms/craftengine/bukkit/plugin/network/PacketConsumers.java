@@ -21,6 +21,7 @@ import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.handler.*;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.NetWorkDataTypes;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.Payload;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -1970,8 +1971,9 @@ public class PacketConsumers {
         try {
             if (!VersionHelper.isOrAbove1_20_5()) return;
             Object payload = Reflections.field$ServerboundCustomPayloadPacket$payload.get(packet);
-            if (payload.getClass().equals(Reflections.clazz$DiscardedPayload)) {
-                DiscardedPayload discardedPayload = DiscardedPayload.decode(payload);
+            if (Reflections.clazz$DiscardedPayload.isInstance(payload)) {
+                Payload discardedPayload = DiscardedPayload.from(payload);
+                if (discardedPayload == null || !discardedPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY)) return;
                 FriendlyByteBuf buf = discardedPayload.toBuffer();
                 NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
                 if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
