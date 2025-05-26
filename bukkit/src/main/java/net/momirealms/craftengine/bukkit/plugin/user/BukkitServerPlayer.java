@@ -288,6 +288,30 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void sendCustomPayload(Key channel, byte[] data) {
+        try {
+            Object channelKey = KeyUtils.toResourceLocation(channel);
+            Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+            Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
+            this.nettyChannel().writeAndFlush(responsePacket);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to send custom payload to " + name(), e);
+        }
+    }
+
+    @Override
+    public void kick(Component message) {
+        try {
+            Object reason = ComponentUtils.adventureToMinecraft(message);
+            Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(reason);
+            this.nettyChannel().writeAndFlush(kickPacket);
+            this.nettyChannel().disconnect();
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to kick " + name(), e);
+        }
+    }
+
+    @Override
     public void sendPackets(List<Object> packet, boolean immediately) {
         this.plugin.networkManager().sendPackets(this, packet, immediately);
     }
