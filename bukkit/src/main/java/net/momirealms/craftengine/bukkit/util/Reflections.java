@@ -6822,9 +6822,10 @@ public class Reflections {
                     .orElse(ReflectionUtils.getMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
     );
 
-//    public static final Method method$BlockBehaviour$getEntityInsideCollisionShape = requireNonNull(
-//            ReflectionUtils.getDeclaredMethod(
-//                    clazz$BlockBehaviour, clazz$VoxelShape, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$Entity
-//            )
-//    );
+    public static final Class<?> clazz$ClientboundContainerSetContentPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutWindowItems",
+                    "network.protocol.game.ClientboundContainerSetContentPacket"
+            )
+    );
 }

@@ -104,4 +104,9 @@ public class PacketIds1_20 implements PacketIds {
     public int clientboundSetScorePacket() {
         return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundSetScorePacket);
     }
+
+    @Override
+    public int clientboundContainerSetContentPacket() {
+        return PacketIdFinder.clientboundByClazz(Reflections.clazz$ClientboundContainerSetContentPacket);
+    }
 }

@@ -103,4 +103,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundSetScorePacket() {
         return PacketIdFinder.clientboundByName("minecraft:set_score");
     }
+
+    @Override
+    public int clientboundContainerSetContentPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:container_set_content");
+    }
 }

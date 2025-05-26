@@ -60,56 +60,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.debugStickListener = new DebugStickListener(plugin);
         this.armorEventListener = new ArmorEventListener();
         this.registerAllVanillaItems();
-        if (plugin.hasMod()) {
-            Class<?> clazz$CustomStreamCodec = ReflectionUtils.getClazz("net.momirealms.craftengine.mod.item.CustomStreamCodec");
-            if (clazz$CustomStreamCodec != null) {
-                Field s2cProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 0);
-                Field c2sProcessor = ReflectionUtils.getDeclaredField(clazz$CustomStreamCodec, Function.class, 1);
-                Function<Object, Object> s2c = (raw) -> {
-                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
-                    Item<ItemStack> wrapped = this.wrap(itemStack.clone());
-                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
-                    if (customItem.isEmpty()) {
-                        return raw;
-                    }
-                    CustomItem<ItemStack> custom = customItem.get();
-                    if (!custom.hasClientBoundDataModifier()) {
-                        return raw;
-                    }
-                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
-                        processor.toClient(wrapped, ItemBuildContext.EMPTY);
-                    }
-                    wrapped.load();
-                    return wrapped.getLiteralObject();
-                };
-
-                Function<Object, Object> c2s = (raw) -> {
-                    ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(raw);
-                    Item<ItemStack> wrapped = this.wrap(itemStack);
-                    Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
-                    if (customItem.isEmpty()) {
-                        return raw;
-                    }
-                    CustomItem<ItemStack> custom = customItem.get();
-                    if (!custom.hasClientBoundDataModifier()) {
-                        return raw;
-                    }
-                    for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
-                        processor.toServer(wrapped, ItemBuildContext.EMPTY);
-                    }
-                    wrapped.load();
-                    return wrapped.getLiteralObject();
-                };
-                try {
-                    assert s2cProcessor != null;
-                    s2cProcessor.set(null, s2c);
-                    assert c2sProcessor != null;
-                    c2sProcessor.set(null, c2s);
-                } catch (ReflectiveOperationException e) {
-                    plugin.logger().warn("Failed to load custom stream codec", e);
-                }
-            }
-        }
     }
 
     @Override
@@ -121,6 +71,34 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     public static BukkitItemManager instance() {
         return instance;
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    public Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context) {
+        Item<ItemStack> wrapped = this.wrap(itemStack.clone());
+        if (wrapped == null) return Optional.empty();
+        Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+        if (customItem.isEmpty()) return Optional.empty();
+        CustomItem<ItemStack> custom = customItem.get();
+        if (!custom.hasClientBoundDataModifier()) return Optional.empty();
+        for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+            processor.toClient(wrapped, context);
+        }
+        return Optional.of(wrapped.load());
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    public Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context) {
+        Item<ItemStack> wrapped = this.wrap(itemStack);
+        if (wrapped == null) return Optional.empty();
+        Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
+        if (customItem.isEmpty()) return Optional.empty();
+        CustomItem<ItemStack> custom = customItem.get();
+        if (!custom.hasClientBoundDataModifier()) return Optional.empty();
+        for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
+            processor.toServer(wrapped, context);
+        }
+        return Optional.of(wrapped.load());
     }
 
     @Override

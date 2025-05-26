@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
@@ -27,6 +28,7 @@ import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
@@ -2144,6 +2146,50 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetScorePacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_CONTENT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            int listSize = buf.readVarInt();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            List<ItemStack> items = new ArrayList<>(listSize);
+            boolean changed = false;
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            for (int i = 0; i < listSize; i++) {
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                if (optional.isPresent()) {
+                    items.add(optional.get());
+                    changed = true;
+                } else {
+                    items.add(itemStack);
+                }
+            }
+            ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            ItemStack newCarriedItem = carriedItem;
+            Optional<ItemStack> optional = BukkitItemManager.instance().s2c(carriedItem, context);
+            if (optional.isPresent()) {
+                changed = true;
+                newCarriedItem = optional.get();
+            }
+            if (!changed) return;
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeContainerId(containerId);
+            buf.writeVarInt(stateId);
+            buf.writeVarInt(listSize);
+            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            for (ItemStack itemStack : items) {
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, itemStack);
+            }
+            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newCarriedItem);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundContainerSetContentPacket", e);
         }
     };
 

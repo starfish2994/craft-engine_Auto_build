@@ -41,4 +41,6 @@ public interface PacketIds {
     int clientboundPlayerInfoUpdatePacket();
 
     int clientboundSetScorePacket();
+
+    int clientboundContainerSetContentPacket();
 }
