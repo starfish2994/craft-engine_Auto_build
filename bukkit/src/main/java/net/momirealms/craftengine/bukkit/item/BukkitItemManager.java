@@ -59,7 +59,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.armorEventListener = new ArmorEventListener();
-        this.networkItemHandler = VersionHelper.isOrAbove1_20_5() ? new ModernNetworkItemHandler(this) : new LegacyNetworkItemHandler(this);
+        this.networkItemHandler = VersionHelper.isOrAbove1_20_5() ? new ModernNetworkItemHandler() : new LegacyNetworkItemHandler(this);
         this.registerAllVanillaItems();
     }
 
