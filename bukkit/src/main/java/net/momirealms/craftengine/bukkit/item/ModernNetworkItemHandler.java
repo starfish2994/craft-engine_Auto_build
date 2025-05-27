@@ -74,10 +74,13 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
         public Optional<ItemStack> process() {
             if (VersionHelper.isOrAbove1_21_5()) {
                 processModernLore();
+                processModernCustomName();
+                processModernItemName();
             } else {
                 processLore();
+                processCustomName();
+                processItemName();
             }
-
             if (this.globalChanged) {
                 CompoundTag customData = Optional.ofNullable(this.item.getNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
                 customData.put(NETWORK_ITEM_TAG, getOrCreateTag());
@@ -112,6 +115,56 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
                     }
                     getOrCreateTag().put(ComponentKeys.LORE.asString(), NetworkItemHandler.pack(Operation.ADD, listTag));
                 }
+            }
+        }
+
+        private void processItemName() {
+            Optional<String> optionalItemName = this.item.itemNameJson();
+            if (optionalItemName.isPresent()) {
+                String line = optionalItemName.get();
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(line);
+                if (!tokens.isEmpty()) {
+                    this.item.itemNameJson(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(line), tokens)));
+                    this.globalChanged = true;
+                    getOrCreateTag().put(ComponentKeys.ITEM_NAME.asString(), NetworkItemHandler.pack(Operation.ADD, new StringTag(line)));
+                }
+            }
+        }
+
+        private void processModernItemName() {
+            Tag nameTag = this.item.getNBTComponent(ComponentTypes.ITEM_NAME);
+            if (nameTag == null) return;
+            String tagStr = nameTag.getAsString();
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(tagStr);
+            if (!tokens.isEmpty()) {
+                this.item.setNBTComponent(ComponentKeys.ITEM_NAME, AdventureHelper.componentToNbt(AdventureHelper.replaceText(AdventureHelper.nbtToComponent(nameTag), tokens)));
+                this.globalChanged = true;
+                getOrCreateTag().put(ComponentKeys.ITEM_NAME.asString(), NetworkItemHandler.pack(Operation.ADD, nameTag));
+            }
+        }
+
+        private void processCustomName() {
+            Optional<String> optionalCustomName = this.item.customNameJson();
+            if (optionalCustomName.isPresent()) {
+                String line = optionalCustomName.get();
+                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(line);
+                if (!tokens.isEmpty()) {
+                    this.item.customNameJson(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(line), tokens)));
+                    this.globalChanged = true;
+                    getOrCreateTag().put(ComponentKeys.CUSTOM_NAME.asString(), NetworkItemHandler.pack(Operation.ADD, new StringTag(line)));
+                }
+            }
+        }
+
+        private void processModernCustomName() {
+            Tag nameTag = this.item.getNBTComponent(ComponentTypes.CUSTOM_NAME);
+            if (nameTag == null) return;
+            String tagStr = nameTag.getAsString();
+            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(tagStr);
+            if (!tokens.isEmpty()) {
+                this.item.setNBTComponent(ComponentKeys.CUSTOM_NAME, AdventureHelper.componentToNbt(AdventureHelper.replaceText(AdventureHelper.nbtToComponent(nameTag), tokens)));
+                this.globalChanged = true;
+                getOrCreateTag().put(ComponentKeys.CUSTOM_NAME.asString(), NetworkItemHandler.pack(Operation.ADD, nameTag));
             }
         }
 

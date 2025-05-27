@@ -40,6 +40,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
     // only for game stage for the moment
+    // todo 优化成 数组
     private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> S2C_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
     private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> C2S_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
 
