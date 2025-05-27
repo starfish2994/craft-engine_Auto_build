@@ -22,9 +22,4 @@ public class TrimModifier<I> implements ItemDataModifier<I> {
     public void apply(Item<I> item, ItemBuildContext context) {
         item.trim(new Trim(this.material, this.pattern));
     }
-
-    @Override
-    public void remove(Item<I> item) {
-        item.trim(null);
-    }
 }

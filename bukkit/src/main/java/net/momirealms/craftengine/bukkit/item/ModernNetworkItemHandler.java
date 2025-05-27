@@ -1,10 +1,8 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.core.item.ComponentKeys;
-import net.momirealms.craftengine.core.item.CustomItem;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
+import net.momirealms.craftengine.core.item.*;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -20,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class ModernNetworkItemHandler implements NetworkItemHandler {
+public class ModernNetworkItemHandler implements NetworkItemHandler<ItemStack> {
     private final BukkitItemManager itemManager;
 
     public ModernNetworkItemHandler(BukkitItemManager itemManager) {
@@ -28,9 +26,7 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
     }
 
     @Override
-    public Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context) {
-        Item<ItemStack> wrapped = this.itemManager.wrap(itemStack);
-        if (wrapped == null) return Optional.empty();
+    public Optional<Item<ItemStack>> c2s(Item<ItemStack> wrapped, ItemBuildContext context) {
         Tag customData = wrapped.getNBTComponent(ComponentTypes.CUSTOM_DATA);
         if (!(customData instanceof CompoundTag compoundTag)) return Optional.empty();
         CompoundTag networkData = compoundTag.getCompound(NETWORK_ITEM_TAG);
@@ -41,24 +37,31 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
                 NetworkItemHandler.apply(entry.getKey(), tag, wrapped);
             }
         }
-        if (compoundTag.isEmpty()) {
-            wrapped.resetComponent(ComponentTypes.CUSTOM_DATA);
-        } else {
-            wrapped.setNBTComponent(ComponentTypes.CUSTOM_DATA, compoundTag);
-        }
-        return Optional.of(wrapped.load());
+        // todo 可能会是 !custom_data吗，不可能，绝对不可能！
+        if (compoundTag.isEmpty()) wrapped.resetComponent(ComponentTypes.CUSTOM_DATA);
+        else wrapped.setNBTComponent(ComponentTypes.CUSTOM_DATA, compoundTag);
+        return Optional.of(wrapped);
     }
 
     @Override
-    public Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context) {
-        Item<ItemStack> wrapped = this.itemManager.wrap(itemStack);
-        if (wrapped == null) return Optional.empty();
+    public Optional<Item<ItemStack>> s2c(Item<ItemStack> wrapped, ItemBuildContext context) {
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) {
             if (!Config.interceptItem()) return Optional.empty();
             return new OtherItem(wrapped).process();
         } else {
-            return Optional.empty();
+            CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            if (!customItem.hasClientBoundDataModifier()) return Optional.empty();
+            CompoundTag customData = Optional.ofNullable(wrapped.getNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
+            CompoundTag tag = new CompoundTag();
+            for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
+                modifier.prepareNetworkItem(wrapped, context, tag);
+                modifier.apply(wrapped, context);
+            }
+            if (tag.isEmpty()) return Optional.empty();
+            customData.put(NETWORK_ITEM_TAG, tag);
+            wrapped.setNBTComponent(ComponentTypes.CUSTOM_DATA, customData);
+            return Optional.of(wrapped);
         }
     }
 
@@ -71,7 +74,7 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
             this.item = item;
         }
 
-        public Optional<ItemStack> process() {
+        public Optional<Item<ItemStack>> process() {
             if (VersionHelper.isOrAbove1_21_5()) {
                 processModernLore();
                 processModernCustomName();
@@ -85,7 +88,7 @@ public class ModernNetworkItemHandler implements NetworkItemHandler {
                 CompoundTag customData = Optional.ofNullable(this.item.getNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
                 customData.put(NETWORK_ITEM_TAG, getOrCreateTag());
                 this.item.setNBTComponent(ComponentKeys.CUSTOM_DATA, customData);
-                return Optional.of(this.item.load());
+                return Optional.of(this.item);
             } else {
                 return Optional.empty();
             }

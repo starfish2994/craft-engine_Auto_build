@@ -1,31 +1,37 @@
-package net.momirealms.craftengine.bukkit.item;
+package net.momirealms.craftengine.core.item;
 
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.util.TriConsumer;
 import net.momirealms.sparrow.nbt.ByteTag;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
-import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
 
-public interface NetworkItemHandler {
+public interface NetworkItemHandler<T> {
     Operation[] BY_INDEX = new Operation[] {Operation.ADD, Operation.REMOVE, Operation.RESET};
     String NETWORK_ITEM_TAG = "craftengine:network";
     String NETWORK_OPERATION = "type";
     String NETWORK_VALUE = "value";
 
-    Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context);
+    Optional<Item<T>> s2c(Item<T> itemStack, ItemBuildContext context);
 
-    Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context);
+    Optional<Item<T>> c2s(Item<T> itemStack, ItemBuildContext context);
 
-    static CompoundTag pack(Operation operation, Tag value) {
-        return new CompoundTag(Map.of(NETWORK_OPERATION, operation.tag(), NETWORK_VALUE, value));
+    static CompoundTag pack(Operation operation, @Nullable Tag value) {
+        if (value == null) {
+            return new CompoundTag(Map.of(NETWORK_OPERATION, operation.tag()));
+        } else {
+            return new CompoundTag(Map.of(NETWORK_OPERATION, operation.tag(), NETWORK_VALUE, value));
+        }
     }
 
-    static void apply(String componentType, CompoundTag networkData, Item<ItemStack> item) {
+    static CompoundTag pack(Operation operation) {
+        return new CompoundTag(Map.of(NETWORK_OPERATION, operation.tag()));
+    }
+
+    static <T> void apply(String componentType, CompoundTag networkData, Item<T> item) {
         byte index = networkData.getByte(NETWORK_OPERATION);
         Operation operation = BY_INDEX[index];
         operation.consumer.accept(item, componentType, operation == Operation.ADD ? networkData.get(NETWORK_VALUE) : null);
@@ -38,9 +44,9 @@ public interface NetworkItemHandler {
 
         private final int id;
         private final ByteTag tag;
-        private final TriConsumer<Item<ItemStack>, String, Tag> consumer;
+        private final TriConsumer<Item<?>, String, Tag> consumer;
 
-        Operation(int id, TriConsumer<Item<ItemStack>, String, Tag> consumer) {
+        Operation(int id, TriConsumer<Item<?>, String, Tag> consumer) {
             this.id = id;
             this.tag = new ByteTag((byte) id);
             this.consumer = consumer;

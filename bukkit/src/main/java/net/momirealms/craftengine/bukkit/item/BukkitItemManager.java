@@ -24,6 +24,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -48,7 +49,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final ItemEventListener itemEventListener;
     private final DebugStickListener debugStickListener;
     private final ArmorEventListener armorEventListener;
-    private final NetworkItemHandler networkItemHandler;
+    private final NetworkItemHandler<ItemStack> networkItemHandler;
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -58,7 +59,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.armorEventListener = new ArmorEventListener();
-        this.networkItemHandler = new ModernNetworkItemHandler(this);
+        this.networkItemHandler = VersionHelper.isOrAbove1_20_5() ? new ModernNetworkItemHandler(this) : new LegacyNetworkItemHandler(this);
         this.registerAllVanillaItems();
     }
 
@@ -75,7 +76,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     public Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context) {
         try {
-            return this.networkItemHandler.s2c(itemStack, context);
+            Item<ItemStack> wrapped = wrap(itemStack);
+            if (wrapped == null) return Optional.empty();
+            return this.networkItemHandler.s2c(wrapped, context).map(Item::load);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle s2c items.", e);
@@ -86,7 +89,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     public Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context) {
         try {
-            return this.networkItemHandler.c2s(itemStack, context);
+            Item<ItemStack> wrapped = wrap(itemStack);
+            if (wrapped == null) return Optional.empty();
+            return this.networkItemHandler.c2s(wrapped, context).map(Item::load);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle c2s items.", e);

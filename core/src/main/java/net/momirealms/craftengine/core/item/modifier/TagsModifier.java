@@ -33,13 +33,6 @@ public class TagsModifier<I> implements ItemDataModifier<I> {
         }
     }
 
-    @Override
-    public void remove(Item<I> item) {
-        for (Map.Entry<String, Object> entry : arguments.entrySet()) {
-            item.removeTag(entry.getKey());
-        }
-    }
-
     private static Map<String, Object> mapToMap(final Map<String, Object> source) {
         Map<String, Object> resultMap = new LinkedHashMap<>();
         recursiveMapProcessing(source, resultMap);
