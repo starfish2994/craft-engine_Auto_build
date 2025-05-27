@@ -3111,6 +3111,7 @@ public class Reflections {
             )
     );
 
+    public static final Object[] instance$EquipmentSlot$values;
     public static final Object instance$EquipmentSlot$MAINHAND;
     public static final Object instance$EquipmentSlot$OFFHAND;
     public static final Object instance$EquipmentSlot$FEET;
@@ -3121,14 +3122,14 @@ public class Reflections {
 
     static {
         try {
-            Object[] values = (Object[]) method$EquipmentSlot$values.invoke(null);
-            instance$EquipmentSlot$MAINHAND = values[0];
-            instance$EquipmentSlot$OFFHAND = values[1];
-            instance$EquipmentSlot$FEET = values[2];
-            instance$EquipmentSlot$LEGS = values[3];
-            instance$EquipmentSlot$CHEST = values[4];
-            instance$EquipmentSlot$HEAD = values[5];
-//            instance$EquipmentSlot$BODY = values[6];
+            instance$EquipmentSlot$values = (Object[]) method$EquipmentSlot$values.invoke(null);
+            instance$EquipmentSlot$MAINHAND = instance$EquipmentSlot$values[0];
+            instance$EquipmentSlot$OFFHAND = instance$EquipmentSlot$values[1];
+            instance$EquipmentSlot$FEET = instance$EquipmentSlot$values[2];
+            instance$EquipmentSlot$LEGS = instance$EquipmentSlot$values[3];
+            instance$EquipmentSlot$CHEST = instance$EquipmentSlot$values[4];
+            instance$EquipmentSlot$HEAD = instance$EquipmentSlot$values[5];
+//            instance$EquipmentSlot$BODY = instance$EquipmentSlot$values[6];
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6826,6 +6827,32 @@ public class Reflections {
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayOutWindowItems",
                     "network.protocol.game.ClientboundContainerSetContentPacket"
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundContainerSetSlotPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutSetSlot",
+                    "network.protocol.game.ClientboundContainerSetSlotPacket"
+            )
+    );
+
+    // 1.21.2+
+    public static final Class<?> clazz$ClientboundSetCursorItemPacket =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetCursorItemPacket")
+            );
+
+    // 1.21.2+
+    public static final Class<?> clazz$ClientboundSetPlayerInventoryPacket =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetPlayerInventoryPacket")
+            );
+
+    public static final Class<?> clazz$ServerboundContainerClickPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayInWindowClick",
+                    "network.protocol.game.ServerboundContainerClickPacket"
             )
     );
 }

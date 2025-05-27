@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.network.id;
 
 import net.momirealms.craftengine.bukkit.plugin.network.PacketIds;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 
 public class PacketIds1_20_5 implements PacketIds {
 
@@ -107,5 +108,35 @@ public class PacketIds1_20_5 implements PacketIds {
     @Override
     public int clientboundContainerSetContentPacket() {
         return PacketIdFinder.clientboundByName("minecraft:container_set_content");
+    }
+
+    @Override
+    public int clientboundContainerSetSlotPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:container_set_slot");
+    }
+
+    @Override
+    public int clientboundSetCursorItemPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_cursor_item");
+    }
+
+    @Override
+    public int clientboundSetEquipmentPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_equipment");
+    }
+
+    @Override
+    public int clientboundSetPlayerInventoryPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:set_player_inventory");
+    }
+
+    @Override
+    public int serverboundContainerClickPacket() {
+        return PacketIdFinder.serverboundByName("minecraft:container_click");
+    }
+
+    @Override
+    public int serverboundSetCreativeModeSlotPacket() {
+        return PacketIdFinder.serverboundByName("minecraft:set_creative_mode_slot");
     }
 }

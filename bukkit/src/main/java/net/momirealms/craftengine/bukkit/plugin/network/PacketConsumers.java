@@ -1,8 +1,12 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
@@ -1205,7 +1209,7 @@ public class PacketConsumers {
         }
     };
 
-    private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
+    private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) {
         Object action = FastNMS.INSTANCE.field$ServerboundPlayerActionPacket$action(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
@@ -2174,6 +2178,189 @@ public class PacketConsumers {
             FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newCarriedItem);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundContainerSetContentPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_SLOT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            int slot = buf.readShort();
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeContainerId(containerId);
+                buf.writeVarInt(stateId);
+                buf.writeShort(slot);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundContainerSetSlotPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CURSOR_ITEM = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetCursorItemPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_EQUIPMENT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean changed = false;
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            int entity = buf.readVarInt();
+            List<com.mojang.datafixers.util.Pair<Object, ItemStack>> slots = Lists.newArrayList();
+            int _byte;
+            do {
+                _byte = buf.readByte();
+                Object equipmentSlot = Reflections.instance$EquipmentSlot$values[_byte & 127];
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                if (optional.isPresent()) {
+                    changed = true;
+                    itemStack = optional.get();
+                }
+                slots.add(com.mojang.datafixers.util.Pair.of(equipmentSlot, itemStack));
+            } while ((_byte & -128) != 0);
+            if (changed) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(entity);
+                int i = slots.size();
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                for(int j = 0; j < i; ++j) {
+                    com.mojang.datafixers.util.Pair<Object, ItemStack> pair = slots.get(j);
+                    Enum<?> equipmentSlot = (Enum<?>) pair.getFirst();
+                    boolean bl = j != i - 1;
+                    int k = equipmentSlot.ordinal();
+                    buf.writeByte(bl ? k | -128 : k);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, pair.getSecond());
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_PLAYER_INVENTORY = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            int slot = buf.readVarInt();
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(slot);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetPlayerInventoryPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CREATIVE_MODE_SLOT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            short slotNum = buf.readShort();
+            ItemStack itemStack;
+            if (VersionHelper.isOrAbove1_20_5()) {
+                itemStack = FastNMS.INSTANCE.method$ServerboundSetCreativeModeSlotPacket$readItem(friendlyBuf);
+            } else {
+                itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            }
+            BukkitItemManager.instance().c2s(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeShort(slotNum);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                if (VersionHelper.isOrAbove1_20_5()) {
+                    FastNMS.INSTANCE.method$ServerboundSetCreativeModeSlotPacket$writeItem(newFriendlyBuf, newItemStack);
+                } else {
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+                }
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK = (user, event) -> {
+        try {
+            if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean changed = false;
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            short slotNum = buf.readShort();
+            byte buttonNum = buf.readByte();
+            int clickType = buf.readVarInt();
+            int i = buf.readVarInt();
+            Int2ObjectMap<ItemStack> changedSlots = new Int2ObjectOpenHashMap<>(i);
+            for(int j = 0; j < i; ++j) {
+                int k = buf.readShort();
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().c2s(itemStack, context);
+                if (optional.isPresent()) {
+                    changed = true;
+                    itemStack = optional.get();
+                }
+                changedSlots.put(k, itemStack);
+            }
+            ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            Optional<ItemStack> optional = BukkitItemManager.instance().c2s(carriedItem, context);
+            if (optional.isPresent()) {
+                changed = true;
+                carriedItem = optional.get();
+            }
+            if (changed) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeContainerId(containerId);
+                buf.writeVarInt(stateId);
+                buf.writeShort(slotNum);
+                buf.writeByte(buttonNum);
+                buf.writeVarInt(clickType);
+                buf.writeVarInt(changedSlots.size());
+                changedSlots.forEach((k, v) -> {
+                    buf.writeShort(k);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, v);
+                });
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, carriedItem);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundContainerClickPacket", e);
         }
     };
 
