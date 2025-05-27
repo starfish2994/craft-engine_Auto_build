@@ -131,6 +131,11 @@ public class PacketIds1_20_5 implements PacketIds {
     }
 
     @Override
+    public int serverboundContainerClickPacket() {
+        return PacketIdFinder.serverboundByName("minecraft:container_click");
+    }
+
+    @Override
     public int serverboundSetCreativeModeSlotPacket() {
         return PacketIdFinder.serverboundByName("minecraft:set_creative_mode_slot");
     }

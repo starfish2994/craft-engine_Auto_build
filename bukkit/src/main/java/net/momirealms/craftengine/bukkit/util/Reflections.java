@@ -6848,4 +6848,11 @@ public class Reflections {
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.game.ClientboundSetPlayerInventoryPacket")
             );
+
+    public static final Class<?> clazz$ServerboundContainerClickPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayInWindowClick",
+                    "network.protocol.game.ServerboundContainerClickPacket"
+            )
+    );
 }

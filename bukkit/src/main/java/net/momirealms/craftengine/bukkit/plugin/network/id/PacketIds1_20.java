@@ -131,6 +131,11 @@ public class PacketIds1_20 implements PacketIds {
     }
 
     @Override
+    public int serverboundContainerClickPacket() {
+        return PacketIdFinder.serverboundByClazz(Reflections.clazz$ServerboundContainerClickPacket);
+    }
+
+    @Override
     public int serverboundSetCreativeModeSlotPacket() {
         return PacketIdFinder.serverboundByClazz(Reflections.clazz$ServerboundSetCreativeModeSlotPacket);
     }

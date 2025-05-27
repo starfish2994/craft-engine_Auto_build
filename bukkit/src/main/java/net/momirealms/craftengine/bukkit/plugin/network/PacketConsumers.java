@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
@@ -2307,6 +2310,57 @@ public class PacketConsumers {
             });
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK = (user, event) -> {
+        try {
+            if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean changed = false;
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            short slotNum = buf.readShort();
+            byte buttonNum = buf.readByte();
+            int clickType = buf.readVarInt();
+            int i = buf.readVarInt();
+            Int2ObjectMap<ItemStack> changedSlots = new Int2ObjectOpenHashMap<>(i);
+            for(int j = 0; j < i; ++j) {
+                int k = buf.readShort();
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().c2s(itemStack, context);
+                if (optional.isPresent()) {
+                    changed = true;
+                    itemStack = optional.get();
+                }
+                changedSlots.put(k, itemStack);
+            }
+            ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            Optional<ItemStack> optional = BukkitItemManager.instance().c2s(carriedItem, context);
+            if (optional.isPresent()) {
+                changed = true;
+                carriedItem = optional.get();
+            }
+            if (changed) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeContainerId(containerId);
+                buf.writeVarInt(stateId);
+                buf.writeShort(slotNum);
+                buf.writeByte(buttonNum);
+                buf.writeVarInt(clickType);
+                buf.writeVarInt(changedSlots.size());
+                changedSlots.forEach((k, v) -> {
+                    buf.writeShort(k);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, v);
+                });
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, carriedItem);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundContainerClickPacket", e);
         }
     };
 

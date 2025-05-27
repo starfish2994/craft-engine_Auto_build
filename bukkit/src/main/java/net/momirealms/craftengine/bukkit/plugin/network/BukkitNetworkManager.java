@@ -180,6 +180,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerByteBufPacketConsumer(PacketConsumers.SET_EQUIPMENT, this.packetIds.clientboundSetEquipmentPacket());
         registerByteBufPacketConsumer(PacketConsumers.SET_PLAYER_INVENTORY, this.packetIds.clientboundSetPlayerInventoryPacket());
         registerByteBufPacketConsumer(PacketConsumers.SET_CREATIVE_MODE_SLOT, this.packetIds.serverboundSetCreativeModeSlotPacket());
+        registerByteBufPacketConsumer(PacketConsumers.CONTAINER_CLICK, this.packetIds.serverboundContainerClickPacket());
+
     }
 
     public static BukkitNetworkManager instance() {
