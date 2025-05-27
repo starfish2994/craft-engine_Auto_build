@@ -261,7 +261,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             finalMapping.put(custom, stoneId);
         }
         finalMapping.putAll(this.tempBlockAppearanceConvertor);
-        PacketConsumers.init(finalMapping, RegistryUtils.currentBlockRegistrySize());
+        PacketConsumers.initBlocks(finalMapping, RegistryUtils.currentBlockRegistrySize());
     }
 
     private void initVanillaRegistry() {

@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.item.factory;
 
 import com.google.gson.JsonElement;
 import com.saicone.rtag.item.ItemTagStream;
-import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.EquipmentData;

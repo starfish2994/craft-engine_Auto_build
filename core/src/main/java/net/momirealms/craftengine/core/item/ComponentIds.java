@@ -1,0 +1,9 @@
+package net.momirealms.craftengine.core.item;
+
+public final class ComponentIds {
+    private ComponentIds() {}
+
+    public static final String ITEM_NAME = "minecraft:item_name";
+    public static final String CUSTOM_NAME = "minecraft:custom_name";
+    public static final String LORE = "minecraft:lore";
+}
