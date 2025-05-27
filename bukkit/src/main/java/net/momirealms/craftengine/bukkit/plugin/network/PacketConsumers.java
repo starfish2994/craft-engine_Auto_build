@@ -73,12 +73,57 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
+    private static AddEntityHandler[] ADD_ENTITY_HANDLERS;
     private static int[] mappings;
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
 
-    public static void init(Map<Integer, Integer> map, int registrySize) {
+    public static void initEntities(int registrySize) {
+        ADD_ENTITY_HANDLERS = new AddEntityHandler[registrySize];
+        Arrays.fill(ADD_ENTITY_HANDLERS, AddEntityHandler.DO_NOTHING);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FALLING_BLOCK$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            UUID uuid = buf.readUUID();
+            int type = buf.readVarInt();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            byte xRot = buf.readByte();
+            byte yRot = buf.readByte();
+            byte yHeadRot = buf.readByte();
+            int data = buf.readVarInt();
+            // Falling blocks
+            int remapped = remap(data);
+            if (remapped != data) {
+                int xa = buf.readShort();
+                int ya = buf.readShort();
+                int za = buf.readShort();
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(id);
+                buf.writeUUID(uuid);
+                buf.writeVarInt(type);
+                buf.writeDouble(x);
+                buf.writeDouble(y);
+                buf.writeDouble(z);
+                buf.writeByte(xRot);
+                buf.writeByte(yRot);
+                buf.writeByte(yHeadRot);
+                buf.writeVarInt(remapped);
+                buf.writeShort(xa);
+                buf.writeShort(ya);
+                buf.writeShort(za);
+            }
+        };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
+    }
+
+    public static void initBlocks(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
         for (int i = 0; i < registrySize; i++) {
             mappings[i] = i;
@@ -1345,47 +1390,10 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            int id = buf.readVarInt();
-            UUID uuid = buf.readUUID();
+            buf.readVarInt();
+            buf.readUUID();
             int type = buf.readVarInt();
-            double x = buf.readDouble();
-            double y = buf.readDouble();
-            double z = buf.readDouble();
-            byte xRot = buf.readByte();
-            byte yRot = buf.readByte();
-            byte yHeadRot = buf.readByte();
-            int data = buf.readVarInt();
-            int xa = buf.readShort();
-            int ya = buf.readShort();
-            int za = buf.readShort();
-            // Falling blocks
-            if (type == Reflections.instance$EntityType$FALLING_BLOCK$registryId) {
-                int remapped = remap(data);
-                if (remapped != data) {
-                    event.setChanged(true);
-                    buf.clear();
-                    buf.writeVarInt(event.packetID());
-                    buf.writeVarInt(id);
-                    buf.writeUUID(uuid);
-                    buf.writeVarInt(type);
-                    buf.writeDouble(x);
-                    buf.writeDouble(y);
-                    buf.writeDouble(z);
-                    buf.writeByte(xRot);
-                    buf.writeByte(yRot);
-                    buf.writeByte(yHeadRot);
-                    buf.writeVarInt(remapped);
-                    buf.writeShort(xa);
-                    buf.writeShort(ya);
-                    buf.writeShort(za);
-                }
-            } else if (type == Reflections.instance$EntityType$BLOCK_DISPLAY$registryId) {
-                user.entityPacketHandlers().put(id, BlockDisplayPacketHandler.INSTANCE);
-            } else if (type == Reflections.instance$EntityType$TEXT_DISPLAY$registryId) {
-                user.entityPacketHandlers().put(id, TextDisplayPacketHandler.INSTANCE);
-            } else if (type == Reflections.instance$EntityType$ARMOR_STAND$registryId) {
-                user.entityPacketHandlers().put(id, ArmorStandPacketHandler.INSTANCE);
-            }
+            ADD_ENTITY_HANDLERS[type].accept(user, event);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
         }
@@ -2261,4 +2269,21 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
     };
+
+    @FunctionalInterface
+    public interface AddEntityHandler extends BiConsumer<NetWorkUser, ByteBufPacketEvent> {
+        AddEntityHandler DO_NOTHING = doNothing();
+
+        static AddEntityHandler doNothing() {
+            return (user, byteBufPacketEvent) -> {
+            };
+        }
+    }
+
+    private static AddEntityHandler simpleAddEntityHandler(EntityPacketHandler handler) {
+        return (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            user.entityPacketHandlers().put(buf.readVarInt(), handler);
+        };
+    }
 }
