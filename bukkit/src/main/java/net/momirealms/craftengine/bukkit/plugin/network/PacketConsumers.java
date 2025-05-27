@@ -2140,11 +2140,12 @@ public class PacketConsumers {
                 buf.writeByte(buttonNum);
                 buf.writeVarInt(clickType);
                 buf.writeVarInt(changedSlots.size());
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
                 changedSlots.forEach((k, v) -> {
                     buf.writeShort(k);
-                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, v);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, v);
                 });
-                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(buf, carriedItem);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carriedItem);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundContainerClickPacket", e);

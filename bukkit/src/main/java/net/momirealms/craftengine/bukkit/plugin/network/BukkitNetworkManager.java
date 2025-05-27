@@ -9,6 +9,7 @@ import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIdFinder;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20_5;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -40,9 +41,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
     // only for game stage for the moment
-    // todo 优化成 数组
-    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> S2C_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
-    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> C2S_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
+    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] S2C_BYTE_BUFFER_PACKET_HANDLERS;
+    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] C2S_BYTE_BUFFER_PACKET_HANDLERS;
 
     private static void registerNMSPacketConsumer(final TriConsumer<NetWorkUser, NMSPacketEvent, Object> function, @Nullable Class<?> packet) {
         if (packet == null) return;
@@ -51,12 +51,18 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     private static void registerS2CByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
         if (id == -1) return;
-        S2C_BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
+        if (id < 0 || id >= S2C_BYTE_BUFFER_PACKET_HANDLERS.length) {
+            throw new IllegalArgumentException("Invalid packet id: " + id);
+        }
+        S2C_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
     private static void registerC2SByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
         if (id == -1) return;
-        C2S_BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
+        if (id < 0 || id >= C2S_BYTE_BUFFER_PACKET_HANDLERS.length) {
+            throw new IllegalArgumentException("Invalid packet id: " + id);
+        }
+        C2S_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
     private final BiConsumer<Object, List<Object>> packetsConsumer;
@@ -81,8 +87,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static boolean hasModelEngine;
     private static boolean hasViaVersion;
 
+    @SuppressWarnings("unchecked")
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         instance = this;
+        S2C_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxS2CPacketId() + 1];
+        C2S_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxC2SPacketId() + 1];
+        Arrays.fill(S2C_BYTE_BUFFER_PACKET_HANDLERS, (BiConsumer<NetWorkUser, ByteBufPacketEvent>) (user, event) -> {});
+        Arrays.fill(C2S_BYTE_BUFFER_PACKET_HANDLERS, (BiConsumer<NetWorkUser, ByteBufPacketEvent>) (user, event) -> {});
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         hasViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
         this.plugin = plugin;
@@ -647,13 +658,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     protected void handleS2CByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(S2C_BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
+        Optional.ofNullable(S2C_BYTE_BUFFER_PACKET_HANDLERS[packetID])
                 .ifPresent(function -> function.accept(user, event));
     }
 
     protected void handleC2SByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(C2S_BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
+        Optional.ofNullable(C2S_BYTE_BUFFER_PACKET_HANDLERS[packetID])
                 .ifPresent(function -> function.accept(user, event));
     }
 
