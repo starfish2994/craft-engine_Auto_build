@@ -385,10 +385,7 @@ public class Dependencies {
             "commons-imaging",
             "org{}apache{}commons",
             "commons-imaging",
-            List.of(
-                    Relocation.of("imaging", "org{}apache{}commons{}imaging"),
-                    Relocation.of("commons.io", "org{}apache{}commons{}io")
-            )
+            List.of(Relocation.of("commons", "org{}apache{}commons"))
     );
 
     public static final Dependency AMAZON_AWSSDK_S3 = new Dependency(

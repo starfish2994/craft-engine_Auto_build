@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import com.google.gson.JsonElement;
+import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.tag.TagBase;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;

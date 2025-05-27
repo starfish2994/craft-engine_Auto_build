@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.font;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
@@ -516,7 +517,7 @@ public abstract class AbstractFontManager implements FontManager {
                     .resolve(namespacedPath.value());
 
             if (!doesImageFileExist(targetImagePath)) {
-                TranslationManager.instance().log("warning.config.image.file_not_found", path.toString(), id.toString(), targetImagePath.toString());
+//                TranslationManager.instance().log("warning.config.image.file_not_found", path.toString(), id.toString(), targetImagePath.toString());
                 // DO NOT RETURN, JUST GIVE WARNINGS
             } else if (heightObj == null) {
                 try (InputStream in = Files.newInputStream(targetImagePath)) {

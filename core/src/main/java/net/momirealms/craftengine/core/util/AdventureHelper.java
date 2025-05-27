@@ -15,6 +15,10 @@ import net.momirealms.sparrow.nbt.Tag;
 import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
 import net.momirealms.sparrow.nbt.serializer.NBTSerializerOptions;
 
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 /**
  * Helper class for handling Adventure components and related functionalities.
  */
@@ -298,5 +302,14 @@ public class AdventureHelper {
             }
         }
         return true;
+    }
+
+    public static Component replaceText(Component text, Map<String, Component> replacements) {
+        String patternString = replacements.keySet().stream()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
+        return text.replaceText(builder ->
+                builder.match(Pattern.compile(patternString))
+                .replacement((result, b) -> replacements.get(result.group())));
     }
 }

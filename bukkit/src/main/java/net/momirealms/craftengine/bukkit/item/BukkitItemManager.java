@@ -21,7 +21,6 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 import org.bukkit.Bukkit;
@@ -32,11 +31,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
@@ -50,6 +47,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final ItemEventListener itemEventListener;
     private final DebugStickListener debugStickListener;
     private final ArmorEventListener armorEventListener;
+    private final NetworkItemHandler networkItemHandler;
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -59,6 +57,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.armorEventListener = new ArmorEventListener();
+        this.networkItemHandler = new LegacyNetworkItemHandler(this);
         this.registerAllVanillaItems();
     }
 
@@ -73,32 +72,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return instance;
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context) {
-        Item<ItemStack> wrapped = this.wrap(itemStack.clone());
-        if (wrapped == null) return Optional.empty();
-        Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
-        if (customItem.isEmpty()) return Optional.empty();
-        CustomItem<ItemStack> custom = customItem.get();
-        if (!custom.hasClientBoundDataModifier()) return Optional.empty();
-        for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
-            processor.toClient(wrapped, context);
-        }
-        return Optional.of(wrapped.load());
+        return this.networkItemHandler.s2c(itemStack, context);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context) {
-        Item<ItemStack> wrapped = this.wrap(itemStack);
-        if (wrapped == null) return Optional.empty();
-        Optional<CustomItem<ItemStack>> customItem = wrapped.getCustomItem();
-        if (customItem.isEmpty()) return Optional.empty();
-        CustomItem<ItemStack> custom = customItem.get();
-        if (!custom.hasClientBoundDataModifier()) return Optional.empty();
-        for (NetworkItemDataProcessor<ItemStack> processor : custom.networkItemDataProcessors()) {
-            processor.toServer(wrapped, context);
-        }
-        return Optional.of(wrapped.load());
+        return this.networkItemHandler.c2s(itemStack, context);
     }
 
     @Override

@@ -214,6 +214,7 @@ image:
     entity-name: false
     armor-stand: true   # Legacy Holograms
     text-display: true  # Modern Holograms
+    item: true
   # Defines Unicode characters used for <shift:xxx> positioning
   # - Must match the font defined in resource packs
   # - Do NOT modify unless you understand text rendering mechanics

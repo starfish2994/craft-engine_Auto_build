@@ -140,6 +140,7 @@ public class Config {
     protected boolean image$intercept_packets$armor_stand;
     protected boolean image$intercept_packets$player_info;
     protected boolean image$intercept_packets$set_score;
+    protected boolean image$intercept_packets$item;
 
     protected boolean emoji$chat;
     protected boolean emoji$book;
@@ -332,6 +333,7 @@ public class Config {
         image$intercept_packets$armor_stand = config.getBoolean("image.intercept-packets.armor-stand", true);
         image$intercept_packets$player_info = config.getBoolean("image.intercept-packets.player-info", true);
         image$intercept_packets$set_score = config.getBoolean("image.intercept-packets.set-score", true);
+        image$intercept_packets$item = config.getBoolean("image.intercept-packets.item", true);
 
         // emoji
         emoji$chat = config.getBoolean("emoji.chat", true);
@@ -674,6 +676,10 @@ public class Config {
 
     public static boolean interceptSetScore() {
         return instance.image$intercept_packets$set_score;
+    }
+
+    public static boolean interceptItem() {
+        return instance.image$intercept_packets$item;
     }
 
     public static boolean predictBreaking() {
