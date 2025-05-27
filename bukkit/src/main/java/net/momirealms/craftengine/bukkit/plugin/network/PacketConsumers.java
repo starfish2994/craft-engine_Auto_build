@@ -73,15 +73,15 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
-    private static AddEntityHandler[] ADD_ENTITY_HANDLERS;
+    private static BukkitNetworkManager.Handlers[] ADD_ENTITY_HANDLERS;
     private static int[] mappings;
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
 
     public static void initEntities(int registrySize) {
-        ADD_ENTITY_HANDLERS = new AddEntityHandler[registrySize];
-        Arrays.fill(ADD_ENTITY_HANDLERS, AddEntityHandler.DO_NOTHING);
+        ADD_ENTITY_HANDLERS = new BukkitNetworkManager.Handlers[registrySize];
+        Arrays.fill(ADD_ENTITY_HANDLERS, BukkitNetworkManager.Handlers.DO_NOTHING);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FALLING_BLOCK$registryId] = (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
@@ -121,6 +121,21 @@ public class PacketConsumers {
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EYE_OF_ENDER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREWORK_ROCKET$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SMALL_FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EGG$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ENDER_PEARL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EXPERIENCE_BOTTLE$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SNOWBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$POTION$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        if (VersionHelper.isOrAbove1_20_5()) {
+            ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        }
     }
 
     public static void initBlocks(Map<Integer, Integer> map, int registrySize) {
@@ -2271,17 +2286,7 @@ public class PacketConsumers {
         }
     };
 
-    @FunctionalInterface
-    public interface AddEntityHandler extends BiConsumer<NetWorkUser, ByteBufPacketEvent> {
-        AddEntityHandler DO_NOTHING = doNothing();
-
-        static AddEntityHandler doNothing() {
-            return (user, byteBufPacketEvent) -> {
-            };
-        }
-    }
-
-    private static AddEntityHandler simpleAddEntityHandler(EntityPacketHandler handler) {
+    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
         return (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             user.entityPacketHandlers().put(buf.readVarInt(), handler);

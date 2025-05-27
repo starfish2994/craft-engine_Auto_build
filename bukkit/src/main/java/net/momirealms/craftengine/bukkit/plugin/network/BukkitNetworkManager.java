@@ -92,8 +92,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         instance = this;
         S2C_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxS2CPacketId() + 1];
         C2S_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxC2SPacketId() + 1];
-        Arrays.fill(S2C_BYTE_BUFFER_PACKET_HANDLERS, (BiConsumer<NetWorkUser, ByteBufPacketEvent>) (user, event) -> {});
-        Arrays.fill(C2S_BYTE_BUFFER_PACKET_HANDLERS, (BiConsumer<NetWorkUser, ByteBufPacketEvent>) (user, event) -> {});
+        Arrays.fill(S2C_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
+        Arrays.fill(C2S_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         hasViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
         this.plugin = plugin;
@@ -709,5 +709,15 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             CraftEngine.instance().logger().warn("Failed to call decode", e);
         }
         return output;
+    }
+
+    @FunctionalInterface
+    public interface Handlers extends BiConsumer<NetWorkUser, ByteBufPacketEvent> {
+        Handlers DO_NOTHING = doNothing();
+
+        static Handlers doNothing() {
+            return (user, byteBufPacketEvent) -> {
+            };
+        }
     }
 }
