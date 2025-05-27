@@ -43,4 +43,14 @@ public interface PacketIds {
     int clientboundSetScorePacket();
 
     int clientboundContainerSetContentPacket();
+
+    int clientboundContainerSetSlotPacket();
+
+    int clientboundSetCursorItemPacket();
+
+    int clientboundSetEquipmentPacket();
+
+    int clientboundSetPlayerInventoryPacket();
+
+    int serverboundSetCreativeModeSlotPacket();
 }

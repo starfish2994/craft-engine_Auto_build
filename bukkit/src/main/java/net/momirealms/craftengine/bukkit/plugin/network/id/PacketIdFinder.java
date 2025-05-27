@@ -43,4 +43,12 @@ public class PacketIdFinder {
     public static int clientboundByClazz(Class<?> clazz) {
         return gamePacketIdsByClazz.get("clientbound").getOrDefault(clazz, -1);
     }
+
+    public static int serverboundByName(String packetName) {
+        return gamePacketIdsByName.get("serverbound").getOrDefault(packetName, -1);
+    }
+
+    public static int serverboundByClazz(Class<?> clazz) {
+        return gamePacketIdsByClazz.get("serverbound").getOrDefault(clazz, -1);
+    }
 }
