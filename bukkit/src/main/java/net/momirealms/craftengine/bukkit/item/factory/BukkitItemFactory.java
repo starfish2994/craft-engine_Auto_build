@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
-import com.google.gson.JsonElement;
 import com.saicone.rtag.item.ItemTagStream;
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.Reflections;
@@ -11,7 +10,6 @@ import net.momirealms.craftengine.core.item.JukeboxPlayable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -90,16 +88,6 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     }
 
     @Override
-    protected JsonElement encodeJson(Object type, Object component) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
-    }
-
-    @Override
-    public Object encodeJava(Object componentType, @Nullable Object component) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
-    }
-
-    @Override
     protected void resetComponent(W item, Object type) {
         throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
@@ -110,7 +98,7 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     }
 
     @Override
-    protected Object getComponent(W item, Object type) {
+    protected Object getExactComponent(W item, Object type) {
         throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 

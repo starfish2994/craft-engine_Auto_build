@@ -21,12 +21,12 @@ public class LoreModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.lore(this.argument.stream().map(it -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(
-                it, context.tagResolvers()))).toList());
+        item.loreComponent(this.argument.stream().map(it -> AdventureHelper.miniMessage().deserialize(
+                it, context.tagResolvers())).toList());
     }
 
     @Override
     public void remove(Item<I> item) {
-        item.lore(null);
+        item.loreJson(null);
     }
 }

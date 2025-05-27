@@ -3,6 +3,8 @@ package net.momirealms.craftengine.bukkit.util;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -14,6 +16,8 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.sparrow.nbt.codec.NBTOps;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
@@ -6853,6 +6857,55 @@ public class Reflections {
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayInWindowClick",
                     "network.protocol.game.ServerboundContainerClickPacket"
+            )
+    );
+
+    public static final Class<?> clazz$RegistryOps = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "resources.RegistryOps",
+                    "resources.RegistryOps"
+            )
+    );
+
+    public static final Class<?> clazz$JavaOps = requireNonNull(
+            ReflectionUtils.getClazz("com.mojang.serialization.JavaOps")
+    );
+
+    public static final Class<?> clazz$NbtOps = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "nbt.DynamicOpsNBT",
+                    "nbt.NbtOps"
+            )
+    );
+
+    public static final Method method$RegistryOps$create = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$RegistryOps, clazz$RegistryOps, DynamicOps.class, clazz$HolderLookup$Provider
+            )
+    );
+
+    public static final DynamicOps<Object> instance$NBT_OPS;
+    public static final DynamicOps<Tag> instance$SPARROW_NBT_OPS;
+    public static final DynamicOps<Object> instance$JAVA_OPS;
+    public static final DynamicOps<JsonElement> instance$JSON_OPS;
+
+    static {
+        try {
+            Object nbtOps = ReflectionUtils.getDeclaredField(clazz$NbtOps, clazz$NbtOps, 0).get(null);
+            instance$NBT_OPS = (DynamicOps<Object>) method$RegistryOps$create.invoke(null, nbtOps, instance$MinecraftRegistry);
+            Object javaOps = ReflectionUtils.getDeclaredField(clazz$JavaOps, clazz$JavaOps, 0).get(null);
+            instance$JAVA_OPS = (DynamicOps<Object>) method$RegistryOps$create.invoke(null, javaOps, instance$MinecraftRegistry);
+            instance$JSON_OPS = (DynamicOps<JsonElement>) method$RegistryOps$create.invoke(null, JsonOps.INSTANCE, instance$MinecraftRegistry);
+            instance$SPARROW_NBT_OPS = (DynamicOps<Tag>) method$RegistryOps$create.invoke(null, NBTOps.INSTANCE, instance$MinecraftRegistry);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Class<?> clazz$Tag = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "nbt.NBTBase",
+                    "nbt.Tag"
             )
     );
 }

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import com.google.gson.JsonElement;
 import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
@@ -12,6 +13,7 @@ import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
+import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFlag;
@@ -29,6 +31,21 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     @Override
     protected LegacyItemWrapper wrapInternal(ItemStack item) {
         return new LegacyItemWrapper(new RtagItem(item), item.getAmount());
+    }
+
+    @Override
+    protected Object getJavaComponent(LegacyItemWrapper item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected JsonElement getJsonComponent(LegacyItemWrapper item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected Tag getNBTComponent(LegacyItemWrapper item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override
@@ -64,7 +81,7 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
-    protected void customName(LegacyItemWrapper item, String json) {
+    protected void customNameJson(LegacyItemWrapper item, String json) {
         if (json != null) {
             item.set(json, "display", "Name");
         } else {
@@ -73,19 +90,19 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
-    protected Optional<String> customName(LegacyItemWrapper item) {
+    protected Optional<String> customNameJson(LegacyItemWrapper item) {
         if (!item.hasTag("display", "Name")) return Optional.empty();
         return Optional.of(item.get("display", "Name"));
     }
 
     @Override
-    protected void itemName(LegacyItemWrapper item, String json) {
-        customName(item, json);
+    protected void itemNameJson(LegacyItemWrapper item, String json) {
+        customNameJson(item, json);
     }
 
     @Override
-    protected Optional<String> itemName(LegacyItemWrapper item) {
-        return customName(item);
+    protected Optional<String> itemNameJson(LegacyItemWrapper item) {
+        return customNameJson(item);
     }
 
     @Override
@@ -117,13 +134,13 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
-    protected Optional<List<String>> lore(LegacyItemWrapper item) {
+    protected Optional<List<String>> loreJson(LegacyItemWrapper item) {
         if (!item.hasTag("display", "Lore")) return Optional.empty();
         return Optional.of(item.get("display", "Lore"));
     }
 
     @Override
-    protected void lore(LegacyItemWrapper item, List<String> lore) {
+    protected void loreJson(LegacyItemWrapper item, List<String> lore) {
         if (lore == null || lore.isEmpty()) {
             item.remove("display", "Lore");
         } else {
@@ -168,8 +185,8 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
-    protected Optional<Integer> maxDamage(LegacyItemWrapper item) {
-        return Optional.of((int) item.getItem().getType().getMaxDurability());
+    protected int maxDamage(LegacyItemWrapper item) {
+        return item.getItem().getType().getMaxDurability();
     }
 
     @Override

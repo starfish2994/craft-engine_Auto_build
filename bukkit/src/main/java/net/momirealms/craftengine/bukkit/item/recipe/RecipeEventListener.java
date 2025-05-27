@@ -512,7 +512,7 @@ public class RecipeEventListener implements Listener {
 
         Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first.clone());
 
-        int maxDamage = wrappedFirst.maxDamage().orElse(0);
+        int maxDamage = wrappedFirst.maxDamage();
         int damage = wrappedFirst.damage().orElse(0);
         // not a repairable item
         if (damage == 0 || maxDamage == 0) return;
@@ -577,8 +577,8 @@ public class RecipeEventListener implements Listener {
 
         if (renameText != null && !renameText.isBlank()) {
             try {
-                if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
-                    wrappedFirst.customName(AdventureHelper.componentToJson(Component.text(renameText)));
+                if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverNameJson().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
+                    wrappedFirst.customNameJson(AdventureHelper.componentToJson(Component.text(renameText)));
                     repairCost += 1;
                 } else if (repairCost == 0) {
                     hasResult = false;
@@ -588,10 +588,10 @@ public class RecipeEventListener implements Listener {
             }
         } else if (VersionHelper.isOrAbove1_20_5() && wrappedFirst.hasComponent(ComponentTypes.CUSTOM_NAME)) {
             repairCost += 1;
-            wrappedFirst.customName(null);
+            wrappedFirst.customNameJson(null);
         } else if (!VersionHelper.isOrAbove1_20_5() && wrappedFirst.hasTag("display", "Name")) {
             repairCost += 1;
-            wrappedFirst.customName(null);
+            wrappedFirst.customNameJson(null);
         }
 
         int finalCost = repairCost + repairPenalty;
@@ -665,7 +665,7 @@ public class RecipeEventListener implements Listener {
                 }
                 if (renameText != null && !renameText.isBlank()) {
                     try {
-                        if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverName().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
+                        if (!renameText.equals(Reflections.method$Component$getString.invoke(ComponentUtils.jsonToMinecraft(wrappedFirst.hoverNameJson().orElse(AdventureHelper.EMPTY_COMPONENT))))) {
                             event.setResult(null);
                         }
                     } catch (Exception e) {
@@ -721,7 +721,7 @@ public class RecipeEventListener implements Listener {
                 }
 
                 int totalDamage = right.damage().orElse(0) + left.damage().orElse(0);
-                int totalMaxDamage = left.maxDamage().get() + right.maxDamage().get();
+                int totalMaxDamage = left.maxDamage() + right.maxDamage();
                 // should be impossible, but take care
                 if (totalDamage >= totalMaxDamage) {
                     inventory.setResult(null);
@@ -750,7 +750,7 @@ public class RecipeEventListener implements Listener {
 
                 Item<ItemStack> newItem = customItem.buildItem(ItemBuildContext.of(plugin.adapt(player)));
                 int remainingDurability = totalMaxDamage - totalDamage;
-                int newItemDamage = Math.max(0, newItem.maxDamage().get() - remainingDurability);
+                int newItemDamage = Math.max(0, newItem.maxDamage() - remainingDurability);
                 newItem.damage(newItemDamage);
                 inventory.setResult(newItem.load());
             } else if (Reflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {

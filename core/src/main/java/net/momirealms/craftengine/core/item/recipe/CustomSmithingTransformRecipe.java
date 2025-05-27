@@ -219,7 +219,7 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         @Override
         public void accept(Item<?> item1, Item<?> item2, Item<?> item3) {
             for (Key component : this.components) {
-                Object componentObj = item1.getComponent(component);
+                Object componentObj = item1.getExactComponent(component);
                 if (componentObj != null) {
                     item3.setComponent(component, componentObj);
                 }

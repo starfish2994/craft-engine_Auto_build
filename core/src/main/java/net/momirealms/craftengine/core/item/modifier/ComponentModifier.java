@@ -65,7 +65,7 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
             item.setComponent(entry.left(), entry.right());
         }
         if (this.customData != null) {
-            JsonObject tag = (JsonObject) item.getJsonTypeComponent(ComponentKeys.CUSTOM_DATA);
+            JsonObject tag = (JsonObject) item.getJsonComponent(ComponentKeys.CUSTOM_DATA);
             if (tag != null) {
                 item.setComponent(ComponentKeys.CUSTOM_DATA, GsonHelper.shallowMerge(this.customData, tag));
             } else {
@@ -80,7 +80,7 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
             item.resetComponent(entry.left());
         }
         if (this.customData != null) {
-            JsonObject tag = (JsonObject) item.getJsonTypeComponent(ComponentKeys.CUSTOM_DATA);
+            JsonObject tag = (JsonObject) item.getJavaComponent(ComponentKeys.CUSTOM_DATA);
             if (tag != null) {
                 // crude method
                 for (String key : this.customData.keySet()) {

@@ -19,11 +19,11 @@ public class ItemNameModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.itemName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(this.argument, context.tagResolvers())));
+        item.itemNameComponent(AdventureHelper.miniMessage().deserialize(this.argument, context.tagResolvers()));
     }
 
     @Override
     public void remove(Item<I> item) {
-        item.itemName(null);
+        item.itemNameJson(null);
     }
 }

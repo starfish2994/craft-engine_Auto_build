@@ -163,8 +163,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 this.plugin.logger().warn("Can't not find item " + it.icon() + " for category icon");
                 return null;
             }
-            item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
-            item.lore(it.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
+            item.customNameJson(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(it.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+            item.loreJson(it.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
             item.load();
             return new ItemWithAction(item, (element, click) -> {
                 click.cancel();
@@ -249,13 +249,13 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     if (!subCategory.icon().equals(ItemKeys.AIR)) {
                         this.plugin.logger().warn("Can't find item " + subCategory.icon() + " as icon for sub category " + subCategoryId);
                         item = this.plugin.itemManager().createWrappedItem(ItemKeys.BARRIER, player);
-                        item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
-                        item.lore(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
+                        item.customNameJson(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+                        item.loreJson(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
                         item.load();
                     }
                 } else {
-                    item.customName(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
-                    item.lore(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
+                    item.customNameJson(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
+                    item.loreJson(subCategory.displayLore().stream().map(lore -> AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(lore, ItemBuildContext.EMPTY.tagResolvers()))).toList());
                     item.load();
                 }
                 return new ItemWithAction(item, (element, click) -> {
@@ -271,7 +271,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     if (!itemId.equals(ItemKeys.AIR)) {
                         this.plugin.logger().warn("Can't find item " + itemId + " for category " + categoryId);
                         item = this.plugin.itemManager().createWrappedItem(ItemKeys.BARRIER, player);
-                        item.customName(AdventureHelper.componentToJson(Component.text(it).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).color(NamedTextColor.RED)));
+                        item.customNameJson(AdventureHelper.componentToJson(Component.text(it).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).color(NamedTextColor.RED)));
                     }
                     canGoFurther = false;
                 } else {

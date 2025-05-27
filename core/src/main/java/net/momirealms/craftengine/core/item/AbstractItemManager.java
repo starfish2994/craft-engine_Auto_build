@@ -437,7 +437,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         }, "external");
         registerDataFunction((obj) -> {
             String name = obj.toString();
-            return new DisplayNameModifier<>(name);
+            return new CustomNameModifier<>(name);
         }, "custom-name");
         registerDataFunction((obj) -> {
             String name = obj.toString();

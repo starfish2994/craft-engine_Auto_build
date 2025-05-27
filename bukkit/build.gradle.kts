@@ -5,8 +5,9 @@ plugins {
 
 repositories {
     maven("https://jitpack.io/")
-    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
+    maven("https://libraries.minecraft.net/")
+    maven("https://repo.papermc.io/repository/maven-public/")
     mavenCentral()
 }
 
