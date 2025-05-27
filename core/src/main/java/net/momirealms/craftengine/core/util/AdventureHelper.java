@@ -175,6 +175,14 @@ public class AdventureHelper {
         return getInstance().gsonComponentSerializer.deserializeFromTree(json);
     }
 
+    public static Component nbtToComponent(Tag tag) {
+        return getInstance().nbtComponentSerializer.deserialize(tag);
+    }
+
+    public static Tag componentToNbt(Component component) {
+        return getInstance().nbtComponentSerializer.serialize(component);
+    }
+
     /**
      * Converts a Component to a JSON string.
      *

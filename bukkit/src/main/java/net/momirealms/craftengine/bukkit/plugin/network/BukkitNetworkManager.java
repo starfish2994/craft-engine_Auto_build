@@ -40,16 +40,22 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
     // only for game stage for the moment
-    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
+    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> S2C_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
+    private static final Map<Integer, BiConsumer<NetWorkUser, ByteBufPacketEvent>> C2S_BYTE_BUFFER_PACKET_HANDLERS = new HashMap<>();
 
     private static void registerNMSPacketConsumer(final TriConsumer<NetWorkUser, NMSPacketEvent, Object> function, @Nullable Class<?> packet) {
         if (packet == null) return;
         NMS_PACKET_HANDLERS.put(packet, function);
     }
 
-    private static void registerByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
+    private static void registerS2CByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
         if (id == -1) return;
-        BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
+        S2C_BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
+    }
+
+    private static void registerC2SByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
+        if (id == -1) return;
+        C2S_BYTE_BUFFER_PACKET_HANDLERS.put(id, function);
     }
 
     private final BiConsumer<Object, List<Object>> packetsConsumer;
@@ -155,32 +161,32 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, Reflections.clazz$ServerboundResourcePackPacket);
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, Reflections.clazz$ClientboundEntityEventPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, Reflections.clazz$ClientboundMoveEntityPacket$PosRot);
-        registerByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
-        registerByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_21_4() ? PacketConsumers.LEVEL_PARTICLE_1_21_4 : (VersionHelper.isOrAbove1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
-        registerByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.OPEN_SCREEN_1_20_3 : PacketConsumers.OPEN_SCREEN_1_20, this.packetIds.clientboundOpenScreenPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_SUBTITLE_TEXT_1_20_3 : PacketConsumers.SET_SUBTITLE_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_ACTIONBAR_TEXT_1_20_3 : PacketConsumers.SET_ACTIONBAR_TEXT_1_20, this.packetIds.clientboundSetActionBarTextPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.BOSS_EVENT_1_20_3 : PacketConsumers.BOSS_EVENT_1_20, this.packetIds.clientboundBossEventPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SYSTEM_CHAT_1_20_3 : PacketConsumers.SYSTEM_CHAT_1_20, this.packetIds.clientboundSystemChatPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.TAB_LIST_1_20_3 : PacketConsumers.TAB_LIST_1_20, this.packetIds.clientboundTabListPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.TEAM_1_20_3 : PacketConsumers.TEAM_1_20, this.packetIds.clientboundSetPlayerTeamPacket());
-        registerByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_OBJECTIVE_1_20_3 : PacketConsumers.SET_OBJECTIVE_1_20, this.packetIds.clientboundSetObjectivePacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_SCORE_1_20_3, VersionHelper.isOrAbove1_20_3() ? this.packetIds.clientboundSetScorePacket() : -1);
-        registerByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
-        registerByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_ENTITY_DATA, this.packetIds.clientboundSetEntityDataPacket());
-        registerByteBufPacketConsumer(PacketConsumers.CONTAINER_SET_CONTENT, this.packetIds.clientboundContainerSetContentPacket());
-        registerByteBufPacketConsumer(PacketConsumers.CONTAINER_SET_SLOT, this.packetIds.clientboundContainerSetSlotPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_CURSOR_ITEM, this.packetIds.clientboundSetCursorItemPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_EQUIPMENT, this.packetIds.clientboundSetEquipmentPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_PLAYER_INVENTORY_1_21_2, this.packetIds.clientboundSetPlayerInventoryPacket());
-        registerByteBufPacketConsumer(PacketConsumers.SET_CREATIVE_MODE_SLOT, this.packetIds.serverboundSetCreativeModeSlotPacket());
-        registerByteBufPacketConsumer(PacketConsumers.CONTAINER_CLICK_1_20, this.packetIds.serverboundContainerClickPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_21_4() ? PacketConsumers.LEVEL_PARTICLE_1_21_4 : (VersionHelper.isOrAbove1_20_5() ? PacketConsumers.LEVEL_PARTICLE_1_20_5 : PacketConsumers.LEVEL_PARTICLE_1_20), this.packetIds.clientboundLevelParticlesPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_EVENT, this.packetIds.clientboundLevelEventPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.OPEN_SCREEN_1_20_3 : PacketConsumers.OPEN_SCREEN_1_20, this.packetIds.clientboundOpenScreenPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_TITLE_TEXT_1_20_3 : PacketConsumers.SET_TITLE_TEXT_1_20, this.packetIds.clientboundSetTitleTextPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_SUBTITLE_TEXT_1_20_3 : PacketConsumers.SET_SUBTITLE_TEXT_1_20, this.packetIds.clientboundSetSubtitleTextPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_ACTIONBAR_TEXT_1_20_3 : PacketConsumers.SET_ACTIONBAR_TEXT_1_20, this.packetIds.clientboundSetActionBarTextPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.BOSS_EVENT_1_20_3 : PacketConsumers.BOSS_EVENT_1_20, this.packetIds.clientboundBossEventPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SYSTEM_CHAT_1_20_3 : PacketConsumers.SYSTEM_CHAT_1_20, this.packetIds.clientboundSystemChatPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.TAB_LIST_1_20_3 : PacketConsumers.TAB_LIST_1_20, this.packetIds.clientboundTabListPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.TEAM_1_20_3 : PacketConsumers.TEAM_1_20, this.packetIds.clientboundSetPlayerTeamPacket());
+        registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_OBJECTIVE_1_20_3 : PacketConsumers.SET_OBJECTIVE_1_20, this.packetIds.clientboundSetObjectivePacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SET_SCORE_1_20_3, VersionHelper.isOrAbove1_20_3() ? this.packetIds.clientboundSetScorePacket() : -1);
+        registerS2CByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.ADD_ENTITY_BYTEBUFFER, this.packetIds.clientboundAddEntityPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SET_ENTITY_DATA, this.packetIds.clientboundSetEntityDataPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.CONTAINER_SET_CONTENT, this.packetIds.clientboundContainerSetContentPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.CONTAINER_SET_SLOT, this.packetIds.clientboundContainerSetSlotPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SET_CURSOR_ITEM, this.packetIds.clientboundSetCursorItemPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SET_EQUIPMENT, this.packetIds.clientboundSetEquipmentPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.SET_PLAYER_INVENTORY_1_21_2, this.packetIds.clientboundSetPlayerInventoryPacket());
+        registerC2SByteBufPacketConsumer(PacketConsumers.SET_CREATIVE_MODE_SLOT, this.packetIds.serverboundSetCreativeModeSlotPacket());
+        registerC2SByteBufPacketConsumer(PacketConsumers.CONTAINER_CLICK_1_20, this.packetIds.serverboundContainerClickPacket());
     }
 
     public static BukkitNetworkManager instance() {
@@ -573,7 +579,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 int packetId = buf.readVarInt();
                 int preIndex = buf.readerIndex();
                 ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
-                BukkitNetworkManager.this.handleByteBufPacket(this.player, event);
+                BukkitNetworkManager.this.handleS2CByteBufPacket(this.player, event);
                 if (event.isCancelled()) {
                     buf.clear();
                 } else if (!event.changed()) {
@@ -583,7 +589,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
     }
 
-    public static class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
+    public class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
         private final NetWorkUser player;
 
         public PluginChannelDecoder(NetWorkUser player) {
@@ -592,8 +598,28 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
         @Override
         protected void decode(ChannelHandlerContext context, ByteBuf byteBuf, List<Object> list) {
+            this.onByteBufReceive(byteBuf);
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
+            }
+        }
+
+        private void onByteBufReceive(ByteBuf buffer) {
+            // I don't care packets before PLAY for the moment
+            if (player.decoderState() != ConnectionState.PLAY) return;
+            int size = buffer.readableBytes();
+            if (size != 0) {
+                FriendlyByteBuf buf = new FriendlyByteBuf(buffer);
+                int preProcessIndex = buf.readerIndex();
+                int packetId = buf.readVarInt();
+                int preIndex = buf.readerIndex();
+                ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
+                BukkitNetworkManager.this.handleC2SByteBufPacket(this.player, event);
+                if (event.isCancelled()) {
+                    buf.clear();
+                } else if (!event.changed()) {
+                    buf.readerIndex(preProcessIndex);
+                }
             }
         }
     }
@@ -618,9 +644,15 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 .ifPresent(function -> function.accept(user, event, packet));
     }
 
-    protected void handleByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
+    protected void handleS2CByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
+        Optional.ofNullable(S2C_BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
+                .ifPresent(function -> function.accept(user, event));
+    }
+
+    protected void handleC2SByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
+        int packetID = event.packetID();
+        Optional.ofNullable(C2S_BYTE_BUFFER_PACKET_HANDLERS.get(packetID))
                 .ifPresent(function -> function.accept(user, event));
     }
 

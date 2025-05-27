@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import com.google.gson.JsonElement;
 import com.saicone.rtag.item.ItemTagStream;
+import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.EquipmentData;
@@ -9,6 +11,7 @@ import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.JukeboxPlayable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
@@ -85,6 +88,36 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
         } catch (ReflectiveOperationException e) {
             return false;
         }
+    }
+
+    @Override
+    protected void setJavaComponent(W item, Object type, Object value) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected void setJsonComponent(W item, Object type, JsonElement value) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected void setNBTComponent(W item, Object type, Tag value) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected Object getJavaComponent(W item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected JsonElement getJsonComponent(W item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
+    }
+
+    @Override
+    protected Tag getNBTComponent(W item, Object type) {
+        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override

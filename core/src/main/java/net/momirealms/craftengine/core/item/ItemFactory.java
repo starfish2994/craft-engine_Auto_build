@@ -185,4 +185,10 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract Optional<EquipmentData> equippable(W item);
 
     protected abstract byte[] toByteArray(W item);
+
+    protected abstract void setJavaComponent(W item, Object type, Object value);
+
+    protected abstract void setJsonComponent(W item, Object type, JsonElement value);
+
+    protected abstract void setNBTComponent(W item, Object type, Tag value);
 }

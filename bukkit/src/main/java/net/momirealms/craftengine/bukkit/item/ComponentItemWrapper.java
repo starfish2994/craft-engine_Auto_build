@@ -108,6 +108,7 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void setComponentInternal(Object type, DynamicOps ops, Object value) {
+        if (value == null) return;
         Object componentType = ensureDataComponentType(type);
         Codec codec = FastNMS.INSTANCE.method$DataComponentType$codec(componentType);
         try {

@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
-import com.google.gson.JsonElement;
 import com.saicone.rtag.RtagItem;
 import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
@@ -13,7 +12,6 @@ import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
-import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFlag;
@@ -31,21 +29,6 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     @Override
     protected LegacyItemWrapper wrapInternal(ItemStack item) {
         return new LegacyItemWrapper(new RtagItem(item), item.getAmount());
-    }
-
-    @Override
-    protected Object getJavaComponent(LegacyItemWrapper item, Object type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
-    }
-
-    @Override
-    protected JsonElement getJsonComponent(LegacyItemWrapper item, Object type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
-    }
-
-    @Override
-    protected Tag getNBTComponent(LegacyItemWrapper item, Object type) {
-        throw new UnsupportedOperationException("This feature is only available on 1.20.5+");
     }
 
     @Override

@@ -15,6 +15,7 @@ import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -57,7 +58,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.itemEventListener = new ItemEventListener(plugin);
         this.debugStickListener = new DebugStickListener(plugin);
         this.armorEventListener = new ArmorEventListener();
-        this.networkItemHandler = new LegacyNetworkItemHandler(this);
+        this.networkItemHandler = new ModernNetworkItemHandler(this);
         this.registerAllVanillaItems();
     }
 
@@ -73,11 +74,25 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     public Optional<ItemStack> s2c(ItemStack itemStack, ItemBuildContext context) {
-        return this.networkItemHandler.s2c(itemStack, context);
+        try {
+            return this.networkItemHandler.s2c(itemStack, context);
+        } catch (Throwable e) {
+            if (Config.debug()) {
+                this.plugin.logger().warn("Failed to handle s2c items.", e);
+            }
+            return Optional.empty();
+        }
     }
 
     public Optional<ItemStack> c2s(ItemStack itemStack, ItemBuildContext context) {
-        return this.networkItemHandler.c2s(itemStack, context);
+        try {
+            return this.networkItemHandler.c2s(itemStack, context);
+        } catch (Throwable e) {
+            if (Config.debug()) {
+                this.plugin.logger().warn("Failed to handle c2s items.", e);
+            }
+            return Optional.empty();
+        }
     }
 
     @Override

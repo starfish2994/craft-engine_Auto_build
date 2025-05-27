@@ -367,6 +367,21 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
+    public void setJavaComponent(Object type, Object value) {
+        this.factory.setJavaComponent(this.item, type, value);
+    }
+
+    @Override
+    public void setJsonComponent(Object type, JsonElement value) {
+        this.factory.setJsonComponent(this.item, type, value);
+    }
+
+    @Override
+    public void setNBTComponent(Object type, Tag value) {
+        this.factory.setNBTComponent(this.item, type, value);
+    }
+
+    @Override
     public void resetComponent(Object type) {
         this.factory.resetComponent(this.item, type);
     }

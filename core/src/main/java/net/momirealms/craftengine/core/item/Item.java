@@ -151,6 +151,12 @@ public interface Item<I> {
 
     void setComponent(Object type, Object value);
 
+    void setJavaComponent(Object type, Object value);
+
+    void setJsonComponent(Object type, JsonElement value);
+
+    void setNBTComponent(Object type, Tag value);
+
     void resetComponent(Object type);
 
     I getItem();

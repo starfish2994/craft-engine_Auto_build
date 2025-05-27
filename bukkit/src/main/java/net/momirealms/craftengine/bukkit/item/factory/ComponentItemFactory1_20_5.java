@@ -74,6 +74,21 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
+    protected void setJavaComponent(ComponentItemWrapper item, Object type, Object value) {
+        item.setJavaComponent(type, value);
+    }
+
+    @Override
+    protected void setJsonComponent(ComponentItemWrapper item, Object type, JsonElement value) {
+        item.setJsonComponent(type, value);
+    }
+
+    @Override
+    protected void setNBTComponent(ComponentItemWrapper item, Object type, Tag value) {
+        item.setSparrowNBTComponent(type, value);
+    }
+
+    @Override
     protected void resetComponent(ComponentItemWrapper item, Object type) {
         item.resetComponent(type);
     }
