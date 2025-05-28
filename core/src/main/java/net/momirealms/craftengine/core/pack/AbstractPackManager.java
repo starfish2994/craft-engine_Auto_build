@@ -197,7 +197,7 @@ public abstract class AbstractPackManager implements PackManager {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
                    } catch (Exception e) {
-                       this.plugin.logger().warn("Failed to generate zip files", e);
+                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", ""));
                    }
                };
            } else {
