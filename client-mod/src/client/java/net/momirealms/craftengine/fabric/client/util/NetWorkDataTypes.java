@@ -56,7 +56,7 @@ public class NetWorkDataTypes<T> {
         return id2NetWorkDataTypes.get(id);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "unused"})
     public <R> NetWorkDataTypes<R> as(Class<R> clazz) {
         return (NetWorkDataTypes<R>) this;
     }

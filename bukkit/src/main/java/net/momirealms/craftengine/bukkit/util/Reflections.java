@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public class Reflections {
 
     public static void init() {
@@ -3846,6 +3846,17 @@ public class Reflections {
     public static final Object instance$EntityType$OAK_BOAT;
     public static final Object instance$EntityType$TRIDENT;
     public static final Object instance$EntityType$SNOWBALL;
+    public static final Object instance$EntityType$FIREBALL;
+    public static final Object instance$EntityType$EYE_OF_ENDER;
+    public static final Object instance$EntityType$FIREWORK_ROCKET;
+    public static final Object instance$EntityType$ITEM;
+    public static final Object instance$EntityType$ITEM_FRAME;
+    public static final Object instance$EntityType$OMINOUS_ITEM_SPAWNER;
+    public static final Object instance$EntityType$SMALL_FIREBALL;
+    public static final Object instance$EntityType$EGG;
+    public static final Object instance$EntityType$ENDER_PEARL;
+    public static final Object instance$EntityType$EXPERIENCE_BOTTLE;
+    public static final Object instance$EntityType$POTION;
 
     static {
         try {
@@ -3869,6 +3880,32 @@ public class Reflections {
             instance$EntityType$TRIDENT = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, trident);
             Object snowball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "snowball");
             instance$EntityType$SNOWBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, snowball);
+            Object fireball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "fireball");
+            instance$EntityType$FIREBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fireball);
+            Object eyeOfEnder = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "eye_of_ender");
+            instance$EntityType$EYE_OF_ENDER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, eyeOfEnder);
+            Object fireworkRocket = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "firework_rocket");
+            instance$EntityType$FIREWORK_ROCKET = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, fireworkRocket);
+            Object item = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item");
+            instance$EntityType$ITEM = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, item);
+            Object itemFrame = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item_frame");
+            instance$EntityType$ITEM_FRAME = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, itemFrame);
+            Object smallFireball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "small_fireball");
+            instance$EntityType$SMALL_FIREBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, smallFireball);
+            Object egg = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "egg");
+            instance$EntityType$EGG = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, egg);
+            Object enderPearl = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "ender_pearl");
+            instance$EntityType$ENDER_PEARL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, enderPearl);
+            Object experienceBottle = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "experience_bottle");
+            instance$EntityType$EXPERIENCE_BOTTLE = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, experienceBottle);
+            Object potion = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "potion");
+            instance$EntityType$POTION = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, potion);
+            if (VersionHelper.isOrAbove1_20_5()) {
+                Object ominousItemSpawner = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "ominous_item_spawner");
+                instance$EntityType$OMINOUS_ITEM_SPAWNER = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, ominousItemSpawner);
+            } else {
+                instance$EntityType$OMINOUS_ITEM_SPAWNER = null;
+            }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -6451,6 +6488,18 @@ public class Reflections {
     public static final int instance$EntityType$FALLING_BLOCK$registryId;
     public static final int instance$EntityType$TRIDENT$registryId;
     public static final int instance$EntityType$ARMOR_STAND$registryId;
+    public static final int instance$EntityType$FIREBALL$registryId;
+    public static final int instance$EntityType$EYE_OF_ENDER$registryId;
+    public static final int instance$EntityType$FIREWORK_ROCKET$registryId;
+    public static final int instance$EntityType$ITEM$registryId;
+    public static final int instance$EntityType$ITEM_FRAME$registryId;
+    public static final int instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId;
+    public static final int instance$EntityType$SMALL_FIREBALL$registryId;
+    public static final int instance$EntityType$EGG$registryId;
+    public static final int instance$EntityType$ENDER_PEARL$registryId;
+    public static final int instance$EntityType$EXPERIENCE_BOTTLE$registryId;
+    public static final int instance$EntityType$SNOWBALL$registryId;
+    public static final int instance$EntityType$POTION$registryId;
 
     static {
         try {
@@ -6460,6 +6509,22 @@ public class Reflections {
             instance$EntityType$FALLING_BLOCK$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FALLING_BLOCK);
             instance$EntityType$TRIDENT$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TRIDENT);
             instance$EntityType$ARMOR_STAND$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ARMOR_STAND);
+            instance$EntityType$FIREBALL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FIREBALL);
+            instance$EntityType$EYE_OF_ENDER$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$EYE_OF_ENDER);
+            instance$EntityType$FIREWORK_ROCKET$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FIREWORK_ROCKET);
+            instance$EntityType$ITEM$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM);
+            instance$EntityType$ITEM_FRAME$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM_FRAME);
+            instance$EntityType$SMALL_FIREBALL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$SMALL_FIREBALL);
+            instance$EntityType$EGG$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$EGG);
+            instance$EntityType$ENDER_PEARL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ENDER_PEARL);
+            instance$EntityType$EXPERIENCE_BOTTLE$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$EXPERIENCE_BOTTLE);
+            instance$EntityType$SNOWBALL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$SNOWBALL);
+            instance$EntityType$POTION$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$POTION);
+            if (VersionHelper.isOrAbove1_20_5()) {
+                instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$OMINOUS_ITEM_SPAWNER);
+            } else {
+                instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId = -1;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
