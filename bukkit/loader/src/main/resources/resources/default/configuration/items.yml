@@ -101,26 +101,11 @@ items#topaz_gears:
     settings:
       tags:
         - "default:topaz_tools"
-    client-bound-data:
-      components:
-        can_break:
-          blocks: minecraft:note_block
-          state:
-            "instrument": "hat"
-            "note":
-              "min": "0"
-              "max": "2"
-            "powered": "false"
     data:
       item-name: "<!i><#FF8C00><i18n:item.topaz_axe>"
       tooltip-style: minecraft:topaz
       components:
         minecraft:max_damage: 64
-        can_break:
-          blocks:
-            - "craftengine:note_block_0"
-            - "craftengine:note_block_1"
-            - "craftengine:note_block_2"
     model:
       template: default:model/simplified_handheld
       arguments:

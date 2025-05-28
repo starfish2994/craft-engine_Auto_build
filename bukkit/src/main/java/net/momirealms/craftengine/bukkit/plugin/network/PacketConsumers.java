@@ -127,6 +127,7 @@ public class PacketConsumers {
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREWORK_ROCKET$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SMALL_FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EGG$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ENDER_PEARL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);

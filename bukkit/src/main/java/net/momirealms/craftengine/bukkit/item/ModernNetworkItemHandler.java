@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item;
 
-import com.mojang.datafixers.util.Either;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;

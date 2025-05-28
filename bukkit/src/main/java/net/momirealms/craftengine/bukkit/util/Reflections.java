@@ -3851,6 +3851,7 @@ public class Reflections {
     public static final Object instance$EntityType$FIREWORK_ROCKET;
     public static final Object instance$EntityType$ITEM;
     public static final Object instance$EntityType$ITEM_FRAME;
+    public static final Object instance$EntityType$GLOW_ITEM_FRAME;
     public static final Object instance$EntityType$OMINOUS_ITEM_SPAWNER;
     public static final Object instance$EntityType$SMALL_FIREBALL;
     public static final Object instance$EntityType$EGG;
@@ -3890,6 +3891,7 @@ public class Reflections {
             instance$EntityType$ITEM = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, item);
             Object itemFrame = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "item_frame");
             instance$EntityType$ITEM_FRAME = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, itemFrame);
+            instance$EntityType$GLOW_ITEM_FRAME = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "glow_item_frame"));
             Object smallFireball = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "small_fireball");
             instance$EntityType$SMALL_FIREBALL = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, smallFireball);
             Object egg = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", "egg");
@@ -6493,6 +6495,7 @@ public class Reflections {
     public static final int instance$EntityType$FIREWORK_ROCKET$registryId;
     public static final int instance$EntityType$ITEM$registryId;
     public static final int instance$EntityType$ITEM_FRAME$registryId;
+    public static final int instance$EntityType$GLOW_ITEM_FRAME$registryId;
     public static final int instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId;
     public static final int instance$EntityType$SMALL_FIREBALL$registryId;
     public static final int instance$EntityType$EGG$registryId;
@@ -6514,6 +6517,7 @@ public class Reflections {
             instance$EntityType$FIREWORK_ROCKET$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$FIREWORK_ROCKET);
             instance$EntityType$ITEM$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM);
             instance$EntityType$ITEM_FRAME$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM_FRAME);
+            instance$EntityType$GLOW_ITEM_FRAME$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$GLOW_ITEM_FRAME);
             instance$EntityType$SMALL_FIREBALL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$SMALL_FIREBALL);
             instance$EntityType$EGG$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$EGG);
             instance$EntityType$ENDER_PEARL$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ENDER_PEARL);
