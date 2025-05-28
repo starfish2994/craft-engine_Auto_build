@@ -25,7 +25,7 @@ templates#models#block:
   # arguments:
   #   model: model_path
   #   end_texture: end_texture_path
-  #   end_texture: side_texture_path
+  #   side_texture: side_texture_path
   default:model/cube_column:
     path: "{model}"
     generation:
