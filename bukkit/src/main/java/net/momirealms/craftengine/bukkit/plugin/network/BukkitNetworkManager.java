@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;
@@ -590,11 +591,16 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 int preProcessIndex = buf.readerIndex();
                 int packetId = buf.readVarInt();
                 int preIndex = buf.readerIndex();
-                ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
-                BukkitNetworkManager.this.handleS2CByteBufPacket(this.player, event);
-                if (event.isCancelled()) {
-                    buf.clear();
-                } else if (!event.changed()) {
+                try {
+                    ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
+                    BukkitNetworkManager.this.handleS2CByteBufPacket(this.player, event);
+                    if (event.isCancelled()) {
+                        buf.clear();
+                    } else if (!event.changed()) {
+                        buf.readerIndex(preProcessIndex);
+                    }
+                } catch (Throwable e) {
+                    CraftEngine.instance().logger().warn("An error occurred when writing packet " + packetId, e);
                     buf.readerIndex(preProcessIndex);
                 }
             }
@@ -603,17 +609,44 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
         private final NetWorkUser player;
+        private boolean handledCompression = false;
 
         public PluginChannelDecoder(NetWorkUser player) {
             this.player = player;
         }
 
+        public PluginChannelDecoder(PluginChannelDecoder decoder) {
+            this.player = decoder.player;
+            this.handledCompression = decoder.handledCompression;
+        }
+
         @Override
-        protected void decode(ChannelHandlerContext context, ByteBuf byteBuf, List<Object> list) {
+        protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
+            boolean needCompression = !handledCompression && handleCompression(channelHandlerContext, byteBuf);
             this.onByteBufReceive(byteBuf);
+            if (needCompression) {
+                compress(channelHandlerContext, byteBuf);
+            }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
             }
+        }
+
+        private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {
+            if (handledCompression) return false;
+            int compressIndex = ctx.pipeline().names().indexOf("compress");
+            if (compressIndex == -1) return false;
+            handledCompression = true;
+            int decoderIndex = ctx.pipeline().names().indexOf(PACKET_DECODER);
+            if (decoderIndex == -1) return false;
+            if (compressIndex > decoderIndex) {
+                decompress(ctx, buffer, buffer);
+                PluginChannelDecoder encoder = (PluginChannelDecoder) ctx.pipeline().remove(PACKET_DECODER);
+                String decoderName = ctx.pipeline().names().contains("inbound_config") ? "inbound_config" : "decoder";
+                ctx.pipeline().addBefore(decoderName, PACKET_DECODER, new PluginChannelDecoder(encoder));
+                return true;
+            }
+            return false;
         }
 
         private void onByteBufReceive(ByteBuf buffer) {
@@ -625,11 +658,16 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 int preProcessIndex = buf.readerIndex();
                 int packetId = buf.readVarInt();
                 int preIndex = buf.readerIndex();
-                ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
-                BukkitNetworkManager.this.handleC2SByteBufPacket(this.player, event);
-                if (event.isCancelled()) {
-                    buf.clear();
-                } else if (!event.changed()) {
+                try {
+                    ByteBufPacketEvent event = new ByteBufPacketEvent(packetId, buf, preIndex);
+                    BukkitNetworkManager.this.handleC2SByteBufPacket(this.player, event);
+                    if (event.isCancelled()) {
+                        buf.clear();
+                    } else if (!event.changed()) {
+                        buf.readerIndex(preProcessIndex);
+                    }
+                } catch (Throwable e) {
+                    CraftEngine.instance().logger().warn("An error occurred when reading packet " + packetId, e);
                     buf.readerIndex(preProcessIndex);
                 }
             }

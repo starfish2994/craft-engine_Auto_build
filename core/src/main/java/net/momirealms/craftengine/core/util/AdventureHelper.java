@@ -11,6 +11,10 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemBuildContext;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
 import net.momirealms.sparrow.nbt.serializer.NBTSerializerOptions;
@@ -48,6 +52,10 @@ public class AdventureHelper {
         }
         this.gsonComponentSerializer = builder.build();
         this.nbtComponentSerializer = NBTComponentSerializer.builder()
+                .editItem(item -> {
+                    if (VersionHelper.isOrAbove1_20_5()) {
+                    }
+                })
                 .editOptions((b) -> {
                     if (!VersionHelper.isOrAbove1_21_5()) {
                         b.value(NBTSerializerOptions.EMIT_CLICK_EVENT_TYPE, false);

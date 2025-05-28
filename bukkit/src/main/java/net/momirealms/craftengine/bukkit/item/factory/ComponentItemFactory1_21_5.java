@@ -30,7 +30,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (json == null) {
             item.resetComponent(ComponentTypes.CUSTOM_NAME);
         } else {
-            item.setSparrowNBTComponent(ComponentTypes.CUSTOM_NAME, NBTComponentSerializer.nbt().serialize(AdventureHelper.jsonToComponent(json)));
+            item.setSparrowNBTComponent(ComponentTypes.CUSTOM_NAME, AdventureHelper.componentToNbt(AdventureHelper.jsonToComponent(json)));
         }
     }
 
@@ -44,7 +44,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (component == null) {
             item.resetComponent(ComponentTypes.CUSTOM_NAME);
         } else {
-            item.setSparrowNBTComponent(ComponentTypes.CUSTOM_NAME, NBTComponentSerializer.nbt().serialize(component));
+            item.setSparrowNBTComponent(ComponentTypes.CUSTOM_NAME, AdventureHelper.componentToNbt(component));
         }
     }
 
@@ -58,7 +58,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (json == null) {
             item.resetComponent(ComponentTypes.ITEM_NAME);
         } else {
-            item.setSparrowNBTComponent(ComponentTypes.ITEM_NAME, NBTComponentSerializer.nbt().serialize(AdventureHelper.jsonToComponent(json)));
+            item.setSparrowNBTComponent(ComponentTypes.ITEM_NAME, AdventureHelper.componentToNbt(AdventureHelper.jsonToComponent(json)));
         }
     }
 
@@ -67,7 +67,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (component == null) {
             item.resetComponent(ComponentTypes.ITEM_NAME);
         } else {
-            item.setSparrowNBTComponent(ComponentTypes.ITEM_NAME, NBTComponentSerializer.nbt().serialize(component));
+            item.setSparrowNBTComponent(ComponentTypes.ITEM_NAME, AdventureHelper.componentToNbt(component));
         }
     }
 
@@ -95,7 +95,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         } else {
             List<Tag> loreTags = new ArrayList<>();
             for (Component component : lore) {
-                loreTags.add(NBTComponentSerializer.nbt().serialize(component));
+                loreTags.add(AdventureHelper.componentToTag(component));
             }
             item.setSparrowNBTComponent(ComponentTypes.LORE, new ListTag(loreTags));
         }
@@ -108,7 +108,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         } else {
             List<Tag> loreTags = new ArrayList<>();
             for (String json : lore) {
-                loreTags.add(NBTComponentSerializer.nbt().serialize(AdventureHelper.jsonToComponent(json)));
+                loreTags.add(AdventureHelper.componentToTag(AdventureHelper.jsonToComponent(json)));
             }
             item.setSparrowNBTComponent(ComponentTypes.LORE, new ListTag(loreTags));
         }

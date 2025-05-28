@@ -31,14 +31,18 @@ public class GlobalVariableTag implements TagResolver {
         if (value == null) {
             throw ctx.newException("Unknown variable: ", arguments);
         }
-        List<Component> args = new ArrayList<>();
-        while (arguments.hasNext()) {
-            args.add(AdventureHelper.miniMessage().deserialize(arguments.popOr("No index argument variable id provided").toString(), this.context.tagResolvers()));
+        if (!arguments.hasNext()) {
+            return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(value, this.context.tagResolvers()));
+        } else {
+            List<Component> args = new ArrayList<>();
+            while (arguments.hasNext()) {
+                args.add(AdventureHelper.miniMessage().deserialize(arguments.popOr("No index argument variable id provided").toString(), this.context.tagResolvers()));
+            }
+            return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(value, TagResolver.builder()
+                    .resolvers(this.context.tagResolvers())
+                    .resolver(new IndexedArgumentTag(args))
+                    .build()));
         }
-        return Tag.selfClosingInserting(AdventureHelper.miniMessage().deserialize(value, TagResolver.builder()
-                .resolvers(this.context.tagResolvers())
-                .resolver(new IndexedArgumentTag(args))
-                .build()));
     }
 
     @Override

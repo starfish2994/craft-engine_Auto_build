@@ -6936,9 +6936,8 @@ public class Reflections {
             )
     );
 
-    public static final Class<?> clazz$JavaOps = requireNonNull(
-            ReflectionUtils.getClazz("com.mojang.serialization.JavaOps")
-    );
+    // 1.20.5+
+    public static final Class<?> clazz$JavaOps = ReflectionUtils.getClazz("com.mojang.serialization.JavaOps");
 
     public static final Class<?> clazz$NbtOps = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -6962,8 +6961,13 @@ public class Reflections {
         try {
             Object nbtOps = ReflectionUtils.getDeclaredField(clazz$NbtOps, clazz$NbtOps, 0).get(null);
             instance$NBT_OPS = (DynamicOps<Object>) method$RegistryOps$create.invoke(null, nbtOps, instance$MinecraftRegistry);
-            Object javaOps = ReflectionUtils.getDeclaredField(clazz$JavaOps, clazz$JavaOps, 0).get(null);
-            instance$JAVA_OPS = (DynamicOps<Object>) method$RegistryOps$create.invoke(null, javaOps, instance$MinecraftRegistry);
+            if (clazz$JavaOps != null) {
+                Object javaOps = ReflectionUtils.getDeclaredField(clazz$JavaOps, clazz$JavaOps, 0).get(null);
+                instance$JAVA_OPS = (DynamicOps<Object>) method$RegistryOps$create.invoke(null, javaOps, instance$MinecraftRegistry);
+            } else {
+                // TODO Create a JavaOps
+                instance$JAVA_OPS = null;
+            }
             instance$JSON_OPS = (DynamicOps<JsonElement>) method$RegistryOps$create.invoke(null, JsonOps.INSTANCE, instance$MinecraftRegistry);
             instance$SPARROW_NBT_OPS = (DynamicOps<Tag>) method$RegistryOps$create.invoke(null, NBTOps.INSTANCE, instance$MinecraftRegistry);
         } catch (ReflectiveOperationException e) {

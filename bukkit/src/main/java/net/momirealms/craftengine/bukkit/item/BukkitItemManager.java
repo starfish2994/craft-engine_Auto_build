@@ -70,6 +70,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         Bukkit.getPluginManager().registerEvents(this.armorEventListener, this.plugin.bootstrap());
     }
 
+    @Override
+    public NetworkItemHandler<ItemStack> networkItemHandler() {
+        return this.networkItemHandler;
+    }
+
     public static BukkitItemManager instance() {
         return instance;
     }

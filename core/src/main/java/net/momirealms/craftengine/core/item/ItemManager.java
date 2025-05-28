@@ -59,6 +59,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     Optional<? extends BuildableItem<T>> getVanillaItem(Key key);
 
+    NetworkItemHandler<T> networkItemHandler();
+
     default Optional<? extends BuildableItem<T>> getBuildableItem(Key key) {
         Optional<CustomItem<T>> item = getCustomItem(key);
         if (item.isPresent()) {
