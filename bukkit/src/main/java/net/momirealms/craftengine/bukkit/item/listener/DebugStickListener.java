@@ -74,7 +74,7 @@ public class DebugStickListener implements Listener {
                     player.sendPacket(systemChatPacket, false);
                 } else {
                     LegacyItemWrapper wrapped = new LegacyItemWrapper(new RtagItem(itemInHand), itemInHand.getAmount());
-                    Object storedData = wrapped.get("craftengine:debug_stick_state");
+                    Object storedData = wrapped.getJavaTag("craftengine:debug_stick_state");
                     if (storedData == null) storedData = new HashMap<>();
                     if (storedData instanceof Map<?,?> map) {
                         Map<String, Object> data = MiscUtils.castToMap(map, false);
@@ -96,7 +96,7 @@ public class DebugStickListener implements Listener {
                         } else {
                             currentProperty = getRelative(properties, currentProperty, player.isSecondaryUseActive());
                             data.put(blockId, currentProperty.name());
-                            wrapped.set(data, "craftengine:debug_stick_state");
+                            wrapped.setTag(data, "craftengine:debug_stick_state");
                             wrapped.load();
                             Object systemChatPacket = Reflections.constructor$ClientboundSystemChatPacket.newInstance(
                                     ComponentUtils.adventureToMinecraft(Component.translatable("item.minecraft.debug_stick.select")

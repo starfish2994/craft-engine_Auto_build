@@ -39,7 +39,12 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
-    protected Object getTag(ComponentItemWrapper item, Object... path) {
+    protected Object getJavaTag(ComponentItemWrapper item, Object... path) {
+        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+    }
+
+    @Override
+    protected Tag getNBTTag(ComponentItemWrapper item, Object... path) {
         throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
     }
 

@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.plugin.network;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLogger;

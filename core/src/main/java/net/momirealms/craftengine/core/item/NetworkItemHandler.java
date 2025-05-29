@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.util.StringUtils;
 import net.momirealms.craftengine.core.util.TriConsumer;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.ByteTag;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
@@ -31,25 +33,25 @@ public interface NetworkItemHandler<T> {
         return new CompoundTag(Map.of(NETWORK_OPERATION, operation.tag()));
     }
 
-    static <T> void apply(String componentType, CompoundTag networkData, Item<T> item) {
+    static <T> void apply(String tagPath, CompoundTag networkData, Item<T> item) {
         byte index = networkData.getByte(NETWORK_OPERATION);
         Operation operation = BY_INDEX[index];
-        operation.consumer.accept(item, componentType, operation == Operation.ADD ? networkData.get(NETWORK_VALUE) : null);
+        operation.consumer.accept(item, tagPath, operation == Operation.ADD ? networkData.get(NETWORK_VALUE) : null);
     }
 
     enum Operation {
-        ADD(0, Item::setNBTComponent),
-        REMOVE(1, (i, s, t) -> i.removeComponent(s)),
-        RESET(2, (i, s, t) -> i.resetComponent(s));
+        ADD(0, Item::setNBTComponent, (i, s, t) -> i.setTag(t, (Object[]) StringUtils.splitByDot(s))),
+        REMOVE(1, (i, s, t) -> i.removeComponent(s), (i, s, t) -> i.removeTag((Object[]) StringUtils.splitByDot(s))),
+        RESET(2, (i, s, t) -> i.resetComponent(s), (i, s, t) -> i.removeTag((Object[]) StringUtils.splitByDot(s)));
 
         private final int id;
         private final ByteTag tag;
         private final TriConsumer<Item<?>, String, Tag> consumer;
 
-        Operation(int id, TriConsumer<Item<?>, String, Tag> consumer) {
+        Operation(int id, TriConsumer<Item<?>, String, Tag> componentConsumer, TriConsumer<Item<?>, String, Tag> nbtConsumer) {
             this.id = id;
             this.tag = new ByteTag((byte) id);
-            this.consumer = consumer;
+            this.consumer = VersionHelper.isOrAbove1_20_5() ? componentConsumer : nbtConsumer;
         }
 
         public int id() {

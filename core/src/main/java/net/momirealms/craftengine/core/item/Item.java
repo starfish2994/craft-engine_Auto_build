@@ -129,7 +129,9 @@ public interface Item<I> {
 
     Item<I> itemFlags(List<String> flags);
 
-    Object getTag(Object... path);
+    Object getJavaTag(Object... path);
+
+    Tag getNBTTag(Object... path);
 
     Item<I> setTag(Object value, Object... path);
 

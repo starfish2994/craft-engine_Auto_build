@@ -1,8 +1,18 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import com.saicone.rtag.RtagItem;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.item.ItemWrapper;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.sparrow.nbt.NBT;
+import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Arrays;
 
 public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     private final RtagItem rtagItem;
@@ -20,16 +30,48 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
         return itemStack;
     }
 
-    public boolean set(Object value, Object... path) {
-        return this.rtagItem.set(value, path);
+    public boolean setTag(Object value, Object... path) {
+        if (value instanceof Tag tag) {
+            try  {
+                Object nmsTag = FastNMS.INSTANCE.method$NbtIo$fromBytes(NBT.toBytes(tag, !VersionHelper.isOrAbove1_20_3()));
+                return this.rtagItem.set(nmsTag, path);
+            } catch (IOException e) {
+                CraftEngine.instance().logger().warn("Failed to set NBT tag " + Arrays.toString(path), e);
+                return false;
+            }
+        } else {
+            return this.rtagItem.set(value, path);
+        }
     }
 
     public boolean add(Object value, Object... path) {
-        return this.rtagItem.add(value, path);
+        if (value instanceof Tag tag) {
+            try  {
+                // Incompatible DFU version
+                // return this.rtagItem.add(Reflections.instance$SPARROW_NBT_OPS.convertTo(Reflections.instance$NBT_OPS, tag), path);
+                Object nmsTag = FastNMS.INSTANCE.method$NbtIo$fromBytes(NBT.toBytes(tag, !VersionHelper.isOrAbove1_20_3()));
+                return this.rtagItem.add(nmsTag, path);
+            } catch (IOException e) {
+                CraftEngine.instance().logger().warn("Failed to add NBT tag " + Arrays.toString(path), e);
+                return false;
+            }
+        } else {
+            return this.rtagItem.add(value, path);
+        }
     }
 
-    public <V> V get(Object... path) {
+    public <V> V getJavaTag(Object... path) {
         return this.rtagItem.get(path);
+    }
+
+    public Tag getNBTTag(Object... path) {
+        Object tag = getExactTag(path);
+        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(FastNMS.INSTANCE.method$NbtIo$toBytes(tag)))) {
+            return NBT.readUnnamedTag(dis, !VersionHelper.isOrAbove1_20_3());
+        } catch (IOException e) {
+            CraftEngine.instance().logger().warn("Failed to read NBT tag " + Arrays.toString(path), e);
+            return null;
+        }
     }
 
     public int count() {
@@ -41,8 +83,8 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
         this.count = amount;
     }
 
-    public <V> V getExact(Object... path) {
-        return this.rtagItem.get(path);
+    public Object getExactTag(Object... path) {
+        return this.rtagItem.getExact(path);
     }
 
     public boolean remove(Object... path) {

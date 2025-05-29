@@ -30,7 +30,9 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract W wrapInternal(I item);
 
-    protected abstract Object getTag(W item, Object... path);
+    protected abstract Object getJavaTag(W item, Object... path);
+
+    protected abstract Tag getNBTTag(W item, Object... path);
 
     protected abstract void setTag(W item, Object value, Object... path);
 

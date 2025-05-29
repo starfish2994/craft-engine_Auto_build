@@ -311,8 +311,13 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
-    public Object getTag(Object... path) {
-        return this.factory.getTag(this.item, path);
+    public Object getJavaTag(Object... path) {
+        return this.factory.getJavaTag(this.item, path);
+    }
+
+    @Override
+    public Tag getNBTTag(Object... path) {
+        return this.factory.getNBTTag(this.item, path);
     }
 
     @Override

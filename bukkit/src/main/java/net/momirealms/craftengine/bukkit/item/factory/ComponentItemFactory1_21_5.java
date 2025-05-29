@@ -12,7 +12,6 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.sparrow.nbt.ListTag;
 import net.momirealms.sparrow.nbt.Tag;
-import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
