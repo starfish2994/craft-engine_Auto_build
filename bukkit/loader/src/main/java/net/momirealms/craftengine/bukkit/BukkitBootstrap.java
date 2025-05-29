@@ -60,10 +60,11 @@ public class BukkitBootstrap extends JavaPlugin {
     }
 
     private boolean isOnlineMode() {
-        if (Bukkit.getServer().getOnlineMode()) {
-            return true;
-        }
-        return isVelocityOnlineMode();
+        return true;
+//        if (Bukkit.getServer().getOnlineMode()) {
+//            return true;
+//        }
+//        return isVelocityOnlineMode();
     }
 
     private boolean isVelocityOnlineMode() {
