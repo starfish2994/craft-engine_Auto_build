@@ -12,8 +12,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.json.legacyimpl.NBTLegacyHoverEventSerializer;
 import net.momirealms.sparrow.nbt.Tag;
-import net.momirealms.sparrow.nbt.serializer.NBTComponentSerializer;
-import net.momirealms.sparrow.nbt.serializer.NBTSerializerOptions;
+import net.momirealms.sparrow.nbt.adventure.NBTComponentSerializer;
+import net.momirealms.sparrow.nbt.adventure.NBTSerializerOptions;
 
 import java.util.Map;
 import java.util.regex.Pattern;

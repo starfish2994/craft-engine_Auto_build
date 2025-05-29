@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.item;
 
 import com.saicone.rtag.RtagItem;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -32,13 +33,7 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
 
     public boolean setTag(Object value, Object... path) {
         if (value instanceof Tag tag) {
-            try  {
-                Object nmsTag = FastNMS.INSTANCE.method$NbtIo$fromBytes(NBT.toBytes(tag, true));
-                return this.rtagItem.set(nmsTag, path);
-            } catch (IOException e) {
-                CraftEngine.instance().logger().warn("Failed to set NBT tag " + Arrays.toString(path), e);
-                return false;
-            }
+            return this.rtagItem.set(Reflections.instance$SPARROW_NBT_OPS.convertTo(Reflections.instance$NBT_OPS, tag), path);
         } else {
             return this.rtagItem.set(value, path);
         }
@@ -46,15 +41,7 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
 
     public boolean add(Object value, Object... path) {
         if (value instanceof Tag tag) {
-            try  {
-                // Incompatible DFU version
-                // return this.rtagItem.add(Reflections.instance$SPARROW_NBT_OPS.convertTo(Reflections.instance$NBT_OPS, tag), path);
-                Object nmsTag = FastNMS.INSTANCE.method$NbtIo$fromBytes(NBT.toBytes(tag, true));
-                return this.rtagItem.add(nmsTag, path);
-            } catch (IOException e) {
-                CraftEngine.instance().logger().warn("Failed to add NBT tag " + Arrays.toString(path), e);
-                return false;
-            }
+            return this.rtagItem.add(Reflections.instance$SPARROW_NBT_OPS.convertTo(Reflections.instance$NBT_OPS, tag), path);
         } else {
             return this.rtagItem.add(value, path);
         }
@@ -67,12 +54,7 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     public Tag getNBTTag(Object... path) {
         Object tag = getExactTag(path);
         if (tag == null) return null;
-        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(FastNMS.INSTANCE.method$NbtIo$toBytes(tag)))) {
-            return NBT.readUnnamedTag(dis, !VersionHelper.isOrAbove1_20_3());
-        } catch (IOException e) {
-            CraftEngine.instance().logger().warn("Failed to read NBT tag " + Arrays.toString(path), e);
-            return null;
-        }
+        return Reflections.instance$NBT_OPS.convertTo(Reflections.instance$SPARROW_NBT_OPS, tag);
     }
 
     public int count() {

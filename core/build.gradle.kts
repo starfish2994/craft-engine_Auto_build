@@ -18,6 +18,10 @@ dependencies {
     compileOnly("org.yaml:snakeyaml:${rootProject.properties["snake_yaml_version"]}")
     // NBT
     implementation("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
+    implementation("net.momirealms:sparrow-nbt-adventure:${rootProject.properties["sparrow_nbt_version"]}")
+    implementation("net.momirealms:sparrow-nbt-codec:${rootProject.properties["sparrow_nbt_version"]}")
+    implementation("net.momirealms:sparrow-nbt-legacy-codec:${rootProject.properties["sparrow_nbt_version"]}")
+    // Util
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     // Adventure
     // TODO Create an API module

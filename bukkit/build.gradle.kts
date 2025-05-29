@@ -19,6 +19,10 @@ dependencies {
     compileOnly("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
     // NBT
     compileOnly("net.momirealms:sparrow-nbt:${rootProject.properties["sparrow_nbt_version"]}")
+    compileOnly("net.momirealms:sparrow-nbt-adventure:${rootProject.properties["sparrow_nbt_version"]}")
+    compileOnly("net.momirealms:sparrow-nbt-codec:${rootProject.properties["sparrow_nbt_version"]}")
+    compileOnly("net.momirealms:sparrow-nbt-legacy-codec:${rootProject.properties["sparrow_nbt_version"]}")
+    // Util
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     // NMS
     compileOnly("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")

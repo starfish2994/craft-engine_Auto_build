@@ -17,6 +17,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.sparrow.nbt.codec.LegacyNBTOps;
 import net.momirealms.sparrow.nbt.codec.NBTOps;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
@@ -6969,7 +6970,7 @@ public class Reflections {
                 instance$JAVA_OPS = null;
             }
             instance$JSON_OPS = (DynamicOps<JsonElement>) method$RegistryOps$create.invoke(null, JsonOps.INSTANCE, instance$MinecraftRegistry);
-            instance$SPARROW_NBT_OPS = (DynamicOps<Tag>) method$RegistryOps$create.invoke(null, NBTOps.INSTANCE, instance$MinecraftRegistry);
+            instance$SPARROW_NBT_OPS = (DynamicOps<Tag>) method$RegistryOps$create.invoke(null, VersionHelper.isOrAbove1_20_5() ? NBTOps.INSTANCE : LegacyNBTOps.INSTANCE, instance$MinecraftRegistry);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

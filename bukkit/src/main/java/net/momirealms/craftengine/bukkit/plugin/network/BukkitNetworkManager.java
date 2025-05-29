@@ -565,17 +565,25 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         }
 
         private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {
-            if (handledCompression) return false;
+            if (this.handledCompression) return false;
             int compressIndex = ctx.pipeline().names().indexOf("compress");
             if (compressIndex == -1) return false;
-            handledCompression = true;
+            this.handledCompression = true;
             int encoderIndex = ctx.pipeline().names().indexOf(PACKET_ENCODER);
             if (encoderIndex == -1) return false;
             if (compressIndex > encoderIndex) {
                 decompress(ctx, buffer, buffer);
+                PluginChannelDecoder decoder = (PluginChannelDecoder) ctx.pipeline().get(PACKET_DECODER);
+                if (decoder != null) {
+                    if (decoder.relocated) return true;
+                    decoder.relocated = true;
+                }
                 PluginChannelEncoder encoder = (PluginChannelEncoder) ctx.pipeline().remove(PACKET_ENCODER);
                 String encoderName = ctx.pipeline().names().contains("outbound_config") ? "outbound_config" : "encoder";
                 ctx.pipeline().addBefore(encoderName, PACKET_ENCODER, new PluginChannelEncoder(encoder));
+                decoder = (PluginChannelDecoder) ctx.pipeline().remove(PACKET_DECODER);
+                String decoderName = ctx.pipeline().names().contains("inbound_config") ? "inbound_config" : "decoder";
+                ctx.pipeline().addBefore(decoderName, PACKET_DECODER, new PluginChannelDecoder(decoder));
                 return true;
             }
             return false;
@@ -608,7 +616,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public class PluginChannelDecoder extends MessageToMessageDecoder<ByteBuf> {
         private final NetWorkUser player;
-        private boolean handledCompression = false;
+        public boolean relocated = false;
 
         public PluginChannelDecoder(NetWorkUser player) {
             this.player = player;
@@ -616,36 +624,15 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
         public PluginChannelDecoder(PluginChannelDecoder decoder) {
             this.player = decoder.player;
-            this.handledCompression = decoder.handledCompression;
+            this.relocated = decoder.relocated;
         }
 
         @Override
         protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
-            boolean needCompression = !handledCompression && handleCompression(channelHandlerContext, byteBuf);
             this.onByteBufReceive(byteBuf);
-            if (needCompression) {
-                compress(channelHandlerContext, byteBuf);
-            }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
             }
-        }
-
-        private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {
-            if (handledCompression) return false;
-            int compressIndex = ctx.pipeline().names().indexOf("compress");
-            if (compressIndex == -1) return false;
-            handledCompression = true;
-            int decoderIndex = ctx.pipeline().names().indexOf(PACKET_DECODER);
-            if (decoderIndex == -1) return false;
-            if (compressIndex > decoderIndex) {
-                decompress(ctx, buffer, buffer);
-                PluginChannelDecoder encoder = (PluginChannelDecoder) ctx.pipeline().remove(PACKET_DECODER);
-                String decoderName = ctx.pipeline().names().contains("inbound_config") ? "inbound_config" : "decoder";
-                ctx.pipeline().addBefore(decoderName, PACKET_DECODER, new PluginChannelDecoder(encoder));
-                return true;
-            }
-            return false;
         }
 
         private void onByteBufReceive(ByteBuf buffer) {
