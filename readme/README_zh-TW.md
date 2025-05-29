@@ -129,8 +129,6 @@ CraftEngine 的實現依賴於以下基礎庫：
 ```kotlin
 repositories {
     maven("https://repo.momirealms.net/releases/")
-    // 如果你的網路環境受限可以嘗試下面的存儲庫位址
-    // maven("https://repo-momi.gtemc.cn/releases/")
 }
 ```
 ```kotlin

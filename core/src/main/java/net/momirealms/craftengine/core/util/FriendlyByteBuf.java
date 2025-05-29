@@ -48,6 +48,18 @@ public class FriendlyByteBuf extends ByteBuf {
         return BlockPos.of(buf.readLong());
     }
 
+    public int readContainerId() {
+        return VersionHelper.isOrAbove1_21_2() ? this.readVarInt() : this.readUnsignedByte();
+    }
+
+    public void writeContainerId(int id) {
+        if (VersionHelper.isOrAbove1_21_2()) {
+            this.writeVarInt(id);
+        } else {
+            this.writeByte(id);
+        }
+    }
+
     public List<String> readStringList() {
         int i = this.readVarInt();
         List<String> list = new ArrayList<>(i);

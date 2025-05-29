@@ -51,7 +51,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
             blockPos = args[4];
         }
         Reflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 2);
-        return super.updateShape(thisBlock, args, superMethod);
+        return args[0];
     }
 
     @Override
@@ -109,6 +109,8 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     @Override
     public void onLand(Object thisBlock, Object[] args) throws Exception {
         Object fallingBlock = args[4];
+        Object level = args[0];
+        Object pos = args[1];
         Object entityData = Reflections.field$Entity$entityData.get(fallingBlock);
         boolean isSilent = (boolean) Reflections.method$SynchedEntityData$get.invoke(entityData, Reflections.instance$Entity$DATA_SILENT);
         if (!isSilent) {
@@ -116,8 +118,6 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
             int stateId = BlockStateUtils.blockStateToId(blockState);
             ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
             if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
-            Object level = args[0];
-            Object pos = args[1];
             net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
             world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.sounds().landSound());
         }

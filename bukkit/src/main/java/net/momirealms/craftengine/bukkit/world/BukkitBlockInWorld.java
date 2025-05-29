@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
@@ -40,10 +41,12 @@ public class BukkitBlockInWorld implements BlockInWorld {
             Optional<CustomItem<ItemStack>> customItem = BukkitItemManager.instance().getCustomItem(item.id());
             if (customItem.isPresent()) {
                 CustomItem<ItemStack> custom = customItem.get();
-                if (custom.behaviors() instanceof BlockItemBehavior blockItemBehavior) {
-                    Key blockId = blockItemBehavior.blockId();
-                    if (blockId.equals(clickedBlockId)) {
-                        return false;
+                for (ItemBehavior behavior : custom.behaviors()) {
+                    if (behavior instanceof BlockItemBehavior blockItemBehavior) {
+                        Key blockId = blockItemBehavior.blockId();
+                        if (blockId.equals(clickedBlockId)) {
+                            return false;
+                        }
                     }
                 }
             }

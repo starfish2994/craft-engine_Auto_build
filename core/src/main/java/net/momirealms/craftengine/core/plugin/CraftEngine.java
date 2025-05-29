@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.pack.PackManager;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
+import net.momirealms.craftengine.core.plugin.compatibility.CompatibilityManager;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateManager;
 import net.momirealms.craftengine.core.plugin.config.template.TemplateManagerImpl;
@@ -221,7 +222,6 @@ public abstract class CraftEngine implements Plugin {
             this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
             this.advancementManager.delayedInit();
-            this.projectileManager.delayedInit();
             // reload the plugin
             try {
                 this.reloadPlugin(Runnable::run, Runnable::run, true);
@@ -229,6 +229,7 @@ public abstract class CraftEngine implements Plugin {
                 this.logger.warn("Failed to reload plugin on enable stage", e);
             }
             // must be after reloading because this process loads furniture
+            this.projectileManager.delayedInit();
             this.worldManager.delayedInit();
             this.furnitureManager.delayedInit();
             // set up some platform extra tasks
@@ -306,11 +307,15 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.BYTE_BUDDY,
                 Dependencies.SNAKE_YAML,
                 Dependencies.BOOSTED_YAML,
+                Dependencies.OPTION,
+                Dependencies.EXAMINATION_API, Dependencies.EXAMINATION_STRING,
+                Dependencies.ADVENTURE_KEY, Dependencies.ADVENTURE_API, Dependencies.ADVENTURE_NBT,
                 Dependencies.MINIMESSAGE,
-                Dependencies.TEXT_SERIALIZER_GSON, Dependencies.TEXT_SERIALIZER_GSON_LEGACY, Dependencies.TEXT_SERIALIZER_JSON,
+                Dependencies.TEXT_SERIALIZER_COMMONS, Dependencies.TEXT_SERIALIZER_LEGACY, Dependencies.TEXT_SERIALIZER_GSON, Dependencies.TEXT_SERIALIZER_GSON_LEGACY, Dependencies.TEXT_SERIALIZER_JSON,
                 Dependencies.AHO_CORASICK,
                 Dependencies.LZ4,
                 Dependencies.EVALEX,
+                Dependencies.NETTY_HTTP,
                 Dependencies.JIMFS,
                 Dependencies.COMMONS_IMAGING
         );

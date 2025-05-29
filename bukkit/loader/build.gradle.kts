@@ -21,7 +21,6 @@ dependencies {
     implementation(project(":bukkit:compatibility"))
     implementation(project(":bukkit:compatibility:legacy"))
 
-    implementation("net.kyori:adventure-platform-bukkit:${rootProject.properties["adventure_platform_version"]}")
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     implementation("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")

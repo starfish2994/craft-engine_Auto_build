@@ -12,6 +12,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.momirealms.craftengine.mod.CraftEnginePlugin;
@@ -21,6 +22,7 @@ import net.momirealms.craftengine.shared.block.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftEngineBlock extends Block
         implements BehaviorHolder, ShapeHolder, NoteBlockIndicator, Fallable, BonemealableBlock {
@@ -63,6 +65,26 @@ public class CraftEngineBlock extends Block
         } catch (Exception e) {
             LOGGER.error(e);
             return super.getShape(state, level, pos, context);
+        }
+    }
+
+    @Override
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        try {
+            return (VoxelShape) this.shapeHolder.value().getCollisionShape(this, new Object[]{state, level, pos, context});
+        } catch (Exception e) {
+            LOGGER.error(e);
+            return super.getCollisionShape(state, level, pos, context);
+        }
+    }
+
+    @Override
+    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+        try {
+            return (VoxelShape) this.shapeHolder.value().getSupportShape(this, new Object[]{state, level, pos});
+        } catch (Exception e) {
+            LOGGER.error(e);
+            return super.getBlockSupportShape(state, level, pos);
         }
     }
 
@@ -222,6 +244,18 @@ public class CraftEngineBlock extends Block
     public void onLand(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull BlockState replaceableState, @NotNull FallingBlockEntity fallingBlock) {
         try {
             this.behaviorHolder.value().onLand(this, new Object[]{level, pos, state, replaceableState, fallingBlock});
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
+
+    @Override
+    protected void neighborChanged(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+        try {
+            this.behaviorHolder.value().neighborChanged(this, new Object[]{state, level, pos, neighborBlock, orientation, movedByPiston}, () -> {
+                super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
+                return null;
+            });
         } catch (Exception e) {
             LOGGER.error(e);
         }

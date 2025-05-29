@@ -18,7 +18,7 @@ import java.nio.file.Path;
 public class ModConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("craft-engine-fabric-mod/config.yml");
     public static boolean enableNetwork = false;
-    public static boolean enableCancelBlockUpdate = false;
+    public static boolean enableCancelBlockUpdate = true;
 
     public static Screen getConfigScreen(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()

@@ -5,6 +5,7 @@ import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
 import net.momirealms.craftengine.core.item.EquipmentData;
@@ -42,6 +43,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.FileSystem;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -145,21 +147,26 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
-        if (list == null || list.isEmpty()) {
-            this.resourcePackHost = NoneHost.INSTANCE;
+        Object hostingObj = Config.instance().settings().get("resource-pack.delivery.hosting");
+        Map<String, Object> arguments;
+        if (hostingObj instanceof Map<?,?>) {
+            arguments = MiscUtils.castToMap(hostingObj, false);
+        } else if (hostingObj instanceof List<?> list && !list.isEmpty()) {
+            arguments = MiscUtils.castToMap(list.get(0), false);
         } else {
-            try {
-                // we might add multiple host methods in future versions
-                this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
-            } catch (LocalizedException e) {
-                if (e instanceof LocalizedResourceConfigException exception) {
-                    exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
-                    e.setArgument(1, "hosting");
-                }
-                TranslationManager.instance().log(e.node(), e.arguments());
-                this.resourcePackHost = NoneHost.INSTANCE;
+            this.resourcePackHost = NoneHost.INSTANCE;
+            return;
+        }
+        try {
+            // we might add multiple host methods in future versions
+            this.resourcePackHost = ResourcePackHosts.fromMap(arguments);
+        } catch (LocalizedException e) {
+            if (e instanceof LocalizedResourceConfigException exception) {
+                exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
+                e.setArgument(1, "hosting");
             }
+            TranslationManager.instance().log(e.node(), e.arguments());
+            this.resourcePackHost = NoneHost.INSTANCE;
         }
     }
 
@@ -195,7 +202,7 @@ public abstract class AbstractPackManager implements PackManager {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
                    } catch (Exception e) {
-                       this.plugin.logger().warn("Failed to generate zip files", e);
+                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", ""));
                    }
                };
            } else {
@@ -344,6 +351,10 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/netherite_anvil_top.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/solid_gunpowder_block.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/gunpowder_block.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_side.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_on.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_on_side.png");
         // items
         plugin.saveResource("resources/default/configuration/items.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_rod.png");
@@ -419,48 +430,54 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/gui/sprites/tooltip/topaz_frame.png.mcmeta");
     }
 
-    private void updateCachedConfigFiles() {
+    private TreeMap<ConfigParser, List<CachedConfigSection>> updateCachedConfigFiles() {
+        TreeMap<ConfigParser, List<CachedConfigSection>> cachedConfigs = new TreeMap<>();
         Map<Path, CachedConfigFile> previousFiles = this.cachedConfigFiles;
-        this.cachedConfigFiles = new HashMap<>();
+        this.cachedConfigFiles = new Object2ObjectOpenHashMap<>(32);
+        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
-            List<Path> files = FileUtils.getYmlConfigsDeeply(pack.configurationFolder());
-            for (Path path : files) {
-                CachedConfigFile cachedFile = previousFiles.get(path);
-                try {
-                    long lastModifiedTime = Files.getLastModifiedTime(path).toMillis();
-                    long size = Files.size(path);
-                    if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime && cachedFile.size() == size) {
-                        this.cachedConfigFiles.put(path, cachedFile);
-                        continue;
+            Path configurationFolderPath = pack.configurationFolder();
+            if (!Files.isDirectory(configurationFolderPath)) continue;
+            try {
+                Files.walkFileTree(configurationFolderPath, new SimpleFileVisitor<>() {
+                    @Override
+                    public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
+                        if (Files.isRegularFile(path) && path.getFileName().toString().endsWith(".yml")) {
+                            CachedConfigFile cachedFile = previousFiles.get(path);
+                            long lastModifiedTime = attrs.lastModifiedTime().toMillis();
+                            long size = attrs.size();
+                            if (cachedFile != null && cachedFile.lastModified() == lastModifiedTime && cachedFile.size() == size) {
+                                AbstractPackManager.this.cachedConfigFiles.put(path, cachedFile);
+                            } else {
+                                try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+                                    Map<String, Object> data = yaml.load(inputStream);
+                                    if (data == null)  return FileVisitResult.CONTINUE;
+                                    cachedFile = new CachedConfigFile(data, pack, lastModifiedTime, size);
+                                    AbstractPackManager.this.cachedConfigFiles.put(path, cachedFile);
+                                } catch (IOException e) {
+                                    AbstractPackManager.this.plugin.logger().severe("Error while reading config file: " + path, e);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            }
+                            for (Map.Entry<String, Object> entry : cachedFile.config().entrySet()) {
+                                processConfigEntry(entry, path, cachedFile.pack(), (p, c) ->
+                                        cachedConfigs.computeIfAbsent(p, k -> new ArrayList<>()).add(c));
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
                     }
-                    try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
-                        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
-                        Map<String, Object> data = yaml.load(inputStream);
-                        if (data == null) continue;
-
-                        this.cachedConfigFiles.put(path, new CachedConfigFile(data, pack, lastModifiedTime, size));
-                    } catch (Exception e) {
-                        this.plugin.logger().warn(path, "Error loading config file", e);
-                    }
-                } catch (IOException e) {
-                    this.plugin.logger().warn(path, "Error reading last modified time", e);
-                }
+                });
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error while reading config file", e);
             }
         }
+        return cachedConfigs;
     }
 
     private void loadResourceConfigs(Predicate<ConfigParser> predicate) {
-        TreeMap<ConfigParser, List<CachedConfigSection>> cachedConfigs = new TreeMap<>();
         long o1 = System.nanoTime();
-        this.updateCachedConfigFiles();
-        for (Map.Entry<Path, CachedConfigFile> fileEntry : this.cachedConfigFiles.entrySet()) {
-            CachedConfigFile cachedFile = fileEntry.getValue();
-            for (Map.Entry<String, Object> entry : cachedFile.config().entrySet()) {
-                processConfigEntry(entry, fileEntry.getKey(), cachedFile.pack(), (p, c) ->
-                        cachedConfigs.computeIfAbsent(p, k -> new ArrayList<>()).add(c));
-            }
-        }
+        TreeMap<ConfigParser, List<CachedConfigSection>> cachedConfigs = this.updateCachedConfigFiles();
         long o2 = System.nanoTime();
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
         for (Map.Entry<ConfigParser, List<CachedConfigSection>> entry : cachedConfigs.entrySet()) {
@@ -469,29 +486,27 @@ public abstract class AbstractPackManager implements PackManager {
             for (CachedConfigSection cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
+                    Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                     try {
-                        Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
-                        try {
-                            if (parser.supportsParsingObject()) {
-                                parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                            } else if (predicate.test(parser)) {
-                                if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                                    Map<String, Object> configSection1 = castToMap(configSection0, false);
-                                    if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                        parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
-                                    }
-                                } else {
-                                    TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
+                        if (parser.supportsParsingObject()) {
+                            parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
+                        } else if (predicate.test(parser)) {
+                            if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
+                                Map<String, Object> configSection1 = castToMap(configSection0, false);
+                                if ((boolean) configSection1.getOrDefault("enable", true)) {
+                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
                                 }
+                            } else {
+                                TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
                             }
-                        } catch (LocalizedException e) {
-                            if (e instanceof LocalizedResourceConfigException exception) {
-                                exception.setPath(cached.filePath());
-                                exception.setId(cached.prefix() + "." + key);
-                            }
-                            TranslationManager.instance().log(e.node(), e.arguments());
-                            this.plugin.debug(e::node);
                         }
+                    } catch (LocalizedException e) {
+                        if (e instanceof LocalizedResourceConfigException exception) {
+                            exception.setPath(cached.filePath());
+                            exception.setId(cached.prefix() + "." + key);
+                        }
+                        TranslationManager.instance().log(e.node(), e.arguments());
+                        this.plugin.debug(e::node);
                     } catch (Exception e) {
                         this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
                     }
@@ -514,99 +529,6 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-//    private static void initFileSystemProvider() {
-//        String osName = System.getProperty("os.name").toLowerCase();
-//        String providerClass = null;
-//        if (osName.contains("win")) {
-//            providerClass = "sun.nio.fs.WindowsFileSystemProvider";
-//        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
-//            providerClass = "sun.nio.fs.LinuxFileSystemProvider";
-//        } else if (osName.contains("mac")) {
-//            providerClass = "sun.nio.fs.MacOSXFileSystemProvider";
-//        }
-//        if (providerClass != null) {
-//            try {
-//                System.setProperty("java.nio.file.spi.DefaultFileSystemProvider", providerClass);
-//            } catch (Exception ignored) {}
-//        }
-//    }
-//
-//    private static void deleteDirectory(Path folder) throws IOException {
-//        if (!Files.exists(folder)) return;
-//        try (Stream<Path> walk = Files.walk(folder)) {
-//            walk.sorted(Comparator.reverseOrder())
-//                    .parallel()
-//                    .forEach(path -> {
-//                        try {
-//                            Files.delete(path);
-//                        } catch (IOException ignored) {}
-//                    });
-//        }
-//    }
-
-    private List<Pair<Path, List<Path>>> updateCachedAssets(@Nullable FileSystem fs) throws IOException {
-        List<Path> folders = new ArrayList<>();
-        Map<Path, List<Path>> conflictChecker = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
-        Map<Path, CachedAssetFile> previousFiles = this.cachedAssetFiles;
-        this.cachedAssetFiles = new HashMap<>(Math.max(128, this.cachedAssetFiles.size()));
-        folders.addAll(loadedPacks().stream().filter(Pack::enabled).map(Pack::resourcePackFolder).toList());
-        folders.addAll(Config.foldersToMerge().stream().map(it -> plugin.dataFolderPath().getParent().resolve(it)).filter(Files::exists).toList());
-        for (Path sourceFolder : folders) {
-            if (Files.exists(sourceFolder)) {
-                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
-                    @Override
-                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                        CachedAssetFile cachedAsset = previousFiles.get(file);
-                        long lastModified = Files.getLastModifiedTime(file).toMillis();
-                        long size = Files.size(file);
-                        if (cachedAsset != null && cachedAsset.lastModified() == lastModified && cachedAsset.size() == size) {
-                            AbstractPackManager.this.cachedAssetFiles.put(file, cachedAsset);
-                        } else {
-                            cachedAsset = new CachedAssetFile(Files.readAllBytes(file), lastModified, size);
-                            AbstractPackManager.this.cachedAssetFiles.put(file, cachedAsset);
-                        }
-                        if (fs == null) return FileVisitResult.CONTINUE;
-                        Path relative = sourceFolder.relativize(file);
-                        Path targetPath = fs.getPath("resource_pack/" + relative.toString().replace("\\", "/"));
-                        List<Path> conflicts = conflictChecker.get(relative);
-                        if (conflicts == null) {
-                            Files.createDirectories(targetPath.getParent());
-                            Files.write(targetPath, cachedAsset.data());
-                            conflictChecker.put(relative, List.of(file));
-                        } else {
-                            PathContext relativeCTX = PathContext.of(relative);
-                            PathContext targetCTX = PathContext.of(targetPath);
-                            PathContext fileCTX = PathContext.of(file);
-                            for (ResolutionConditional resolution : Config.resolutions()) {
-                                if (resolution.matcher().test(relativeCTX)) {
-                                    resolution.resolution().run(targetCTX, fileCTX);
-                                    return FileVisitResult.CONTINUE;
-                                }
-                            }
-                            switch (conflicts.size()) {
-                                case 1 -> conflictChecker.put(relative, List.of(conflicts.get(0), file));
-                                case 2 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), file));
-                                case 3 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), file));
-                                case 4 -> conflictChecker.put(relative, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), conflicts.get(3), file));
-                                default -> {
-                                    // just ignore it if it has many conflict files
-                                }
-                            }
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            }
-        }
-        List<Pair<Path, List<Path>>> conflicts = new ArrayList<>();
-        for (Map.Entry<Path, List<Path>> entry : conflictChecker.entrySet()) {
-            if (entry.getValue().size() > 1) {
-                conflicts.add(Pair.of(entry.getKey(), entry.getValue()));
-            }
-        }
-        return conflicts;
-    }
-
     @Override
     public void generateResourcePack() throws IOException {
         this.plugin.logger().info("Generating resource pack...");
@@ -616,11 +538,11 @@ public abstract class AbstractPackManager implements PackManager {
         try (FileSystem fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())) {
             // firstly merge existing folders
             Path generatedPackPath = fs.getPath("resource_pack");
-            List<Pair<Path, List<Path>>> duplicated = this.updateCachedAssets(fs);
+            List<Pair<String, List<Path>>> duplicated = this.updateCachedAssets(fs);
             if (!duplicated.isEmpty()) {
                 plugin.logger().severe(AdventureHelper.miniMessage().stripTags(TranslationManager.instance().miniMessageTranslation("warning.config.pack.duplicated_files")));
                 int x = 1;
-                for (Pair<Path, List<Path>> path : duplicated) {
+                for (Pair<String, List<Path>> path : duplicated) {
                     this.plugin.logger().warn("[ " + (x++) + " ] " + path.left());
                     for (int i = 0, size = path.right().size(); i < size; i++) {
                         if (i == size - 1) {
@@ -976,9 +898,9 @@ public abstract class AbstractPackManager implements PackManager {
         if (Config.packMinVersion() > 21.39f) return;
 
         // 此段代码生成1.21.2专用的item model文件，情况非常复杂！
-        for (Map.Entry<Key, List<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
+        for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
             Key itemModelPath = entry.getKey();
-            List<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
+            TreeSet<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
 
             // 检测item model合法性
             if (PRESET_MODERN_MODELS_ITEM.containsKey(itemModelPath) || PRESET_LEGACY_MODELS_ITEM.containsKey(itemModelPath)) {
@@ -1224,7 +1146,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             try {
-                Files.writeString(fontPath, fontJson.toString().replace("\\\\u", "\\u"));
+                Files.writeString(fontPath, CharacterUtils.replaceDoubleBackslashU(fontJson.toString()));
             } catch (IOException e) {
                 this.plugin.logger().severe("Error writing font to " + fontPath.toAbsolutePath(), e);
             }
@@ -1244,6 +1166,133 @@ public abstract class AbstractPackManager implements PackManager {
                     Files.copy(fontPath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private List<Pair<String, List<Path>>> updateCachedAssets(@Nullable FileSystem fs) throws IOException {
+        Map<String, List<Path>> conflictChecker = new Object2ObjectOpenHashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+        Map<Path, CachedAssetFile> previousFiles = this.cachedAssetFiles;
+        this.cachedAssetFiles = new Object2ObjectOpenHashMap<>(Math.max(128, this.cachedAssetFiles.size()));
+
+        List<Path> folders = new ArrayList<>();
+        folders.addAll(loadedPacks().stream()
+                .filter(Pack::enabled)
+                .map(Pack::resourcePackFolder)
+                .toList());
+        folders.addAll(Config.foldersToMerge().stream()
+                .map(it -> this.plugin.dataFolderPath().getParent().resolve(it))
+                .filter(Files::exists)
+                .toList());
+        for (Path sourceFolder : folders) {
+            if (Files.exists(sourceFolder)) {
+                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
+                    @Override
+                    public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                        processRegularFile(file, attrs, sourceFolder, fs, conflictChecker, previousFiles);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+        List<Path> externalZips = Config.zipsToMerge().stream()
+                .map(it -> this.plugin.dataFolderPath().getParent().resolve(it))
+                .filter(Files::exists)
+                .filter(Files::isRegularFile)
+                .filter(file -> file.getFileName().toString().endsWith(".zip"))
+                .toList();
+        for (Path zip : externalZips) {
+            processZipFile(zip, zip.getParent(), fs, conflictChecker, previousFiles);
+        }
+
+        List<Pair<String, List<Path>>> conflicts = new ArrayList<>();
+        for (Map.Entry<String, List<Path>> entry : conflictChecker.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                conflicts.add(Pair.of(entry.getKey(), entry.getValue()));
+            }
+        }
+        return conflicts;
+    }
+
+    private void processRegularFile(Path file, BasicFileAttributes attrs, Path sourceFolder, @Nullable FileSystem fs,
+                                    Map<String, List<Path>> conflictChecker, Map<Path, CachedAssetFile> previousFiles) throws IOException {
+        if (Config.excludeFileExtensions().contains(FileUtils.getExtension(file))) {
+            return;
+        }
+        CachedAssetFile cachedAsset = previousFiles.get(file);
+        long lastModified = attrs.lastModifiedTime().toMillis();
+        long size = attrs.size();
+        if (cachedAsset != null && cachedAsset.lastModified() == lastModified && cachedAsset.size() == size) {
+            this.cachedAssetFiles.put(file, cachedAsset);
+        } else {
+            cachedAsset = new CachedAssetFile(Files.readAllBytes(file), lastModified, size);
+            this.cachedAssetFiles.put(file, cachedAsset);
+        }
+        if (fs == null) return;
+        Path relative = sourceFolder.relativize(file);
+        updateConflictChecker(fs, conflictChecker, file, file, relative, cachedAsset.data());
+    }
+
+    private void processZipFile(Path zipFile, Path sourceFolder, @Nullable FileSystem fs,
+                                Map<String, List<Path>> conflictChecker, Map<Path, CachedAssetFile> previousFiles) throws IOException {
+        try (FileSystem zipFs = FileSystems.newFileSystem(zipFile)) {
+            long zipLastModified = Files.getLastModifiedTime(zipFile).toMillis();
+            long zipSize = Files.size(zipFile);
+            Path zipRoot = zipFs.getPath("/");
+            Files.walkFileTree(zipRoot, new SimpleFileVisitor<>() {
+                @Override
+                public @NotNull FileVisitResult visitFile(@NotNull Path entry, @NotNull BasicFileAttributes entryAttrs) throws IOException {
+                    if (entryAttrs.isDirectory()) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    if (Config.excludeFileExtensions().contains(FileUtils.getExtension(entry))) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    Path entryPathInZip = zipRoot.relativize(entry);
+                    Path sourcePath = Path.of(zipFile + "!" + entryPathInZip);
+                    CachedAssetFile cachedAsset = previousFiles.get(sourcePath);
+                    if (cachedAsset != null && cachedAsset.lastModified() == zipLastModified && cachedAsset.size() == zipSize) {
+                        cachedAssetFiles.put(sourcePath, cachedAsset);
+                    } else {
+                        byte[] data = Files.readAllBytes(entry);
+                        cachedAsset = new CachedAssetFile(data, zipLastModified, zipSize);
+                        cachedAssetFiles.put(sourcePath, cachedAsset);
+                    }
+                    if (fs != null) {
+                        updateConflictChecker(fs, conflictChecker, entry, sourcePath, entryPathInZip, cachedAsset.data());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
+    }
+
+    private void updateConflictChecker(FileSystem fs, Map<String, List<Path>> conflictChecker, Path sourcePath, Path namedSourcePath, Path relative, byte[] data) throws IOException {
+        String relativePath = CharacterUtils.replaceBackslashWithSlash(relative.toString());
+        Path targetPath = fs.getPath("resource_pack/" + relativePath);
+        List<Path> conflicts = conflictChecker.get(relativePath);
+        if (conflicts == null) {
+            Files.createDirectories(targetPath.getParent());
+            Files.write(targetPath, data);
+            conflictChecker.put(relativePath, List.of(namedSourcePath));
+        } else {
+            PathContext relativeCTX = PathContext.of(relative);
+            PathContext targetCTX = PathContext.of(targetPath);
+            PathContext sourceCTX = PathContext.of(sourcePath);
+            for (ResolutionConditional resolution : Config.resolutions()) {
+                if (resolution.matcher().test(relativeCTX)) {
+                    resolution.resolution().run(targetCTX, sourceCTX);
+                    return;
+                }
+            }
+            switch (conflicts.size()) {
+                case 1 -> conflictChecker.put(relativePath, List.of(conflicts.get(0), namedSourcePath));
+                case 2 -> conflictChecker.put(relativePath, List.of(conflicts.get(0), conflicts.get(1), namedSourcePath));
+                case 3 -> conflictChecker.put(relativePath, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), namedSourcePath));
+                case 4 -> conflictChecker.put(relativePath, List.of(conflicts.get(0), conflicts.get(1), conflicts.get(2), conflicts.get(3), namedSourcePath));
+                default -> {
+                    // just ignore it if it has many conflict files
                 }
             }
         }

@@ -274,7 +274,7 @@ public class InteractUtils {
     }
 
     public static boolean isInteractable(Player player, BlockData state, BlockHitResult hit, Item<ItemStack> item) {
-        Key blockType = BlockStateUtils.getBlockOwnerId(state);
+        Key blockType = BlockStateUtils.getBlockOwnerIdFromData(state);
         if (INTERACTIONS.containsKey(blockType)) {
             return INTERACTIONS.get(blockType).apply(player, item, state, hit);
         } else {

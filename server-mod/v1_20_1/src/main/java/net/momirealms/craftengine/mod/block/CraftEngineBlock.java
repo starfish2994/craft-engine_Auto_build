@@ -68,6 +68,26 @@ public class CraftEngineBlock extends Block
     }
 
     @Override
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        try {
+            return (VoxelShape) this.shapeHolder.value().getCollisionShape(this, new Object[]{state, level, pos, context});
+        } catch (Exception e) {
+            LOGGER.error(e);
+            return super.getCollisionShape(state, level, pos, context);
+        }
+    }
+
+    @Override
+    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+        try {
+            return (VoxelShape) this.shapeHolder.value().getSupportShape(this, new Object[]{state, level, pos});
+        } catch (Exception e) {
+            LOGGER.error(e);
+            return super.getBlockSupportShape(state, level, pos);
+        }
+    }
+
+    @Override
     public @NotNull BlockState rotate(@NotNull BlockState state, @NotNull Rotation rotation) {
         try {
             return (BlockState) this.behaviorHolder.value().rotate(this, new Object[]{state, rotation}, () -> super.rotate(state, rotation));
@@ -221,6 +241,18 @@ public class CraftEngineBlock extends Block
     public void onLand(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull BlockState replaceableState, @NotNull FallingBlockEntity fallingBlock) {
         try {
             this.behaviorHolder.value().onLand(this, new Object[]{level, pos, state, replaceableState, fallingBlock});
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
+
+    @Override
+    public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block sourceBlock, @NotNull BlockPos sourcePos, boolean notify) {
+        try {
+            this.behaviorHolder.value().neighborChanged(this, new Object[]{state, world, pos, sourceBlock, sourcePos, notify}, () -> {
+                super.neighborChanged(state, world, pos, sourceBlock, sourcePos, notify);
+                return null;
+            });
         } catch (Exception e) {
             LOGGER.error(e);
         }

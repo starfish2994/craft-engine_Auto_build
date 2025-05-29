@@ -11,14 +11,15 @@ import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.PackedBlockState;
 import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
@@ -28,19 +29,20 @@ import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.SoundCategory;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -95,6 +97,8 @@ public class BukkitServerPlayer extends Player {
     // cache interaction range here
     private int lastUpdateInteractionRangeTick;
     private double cachedInteractionRange;
+    // cooldown data
+    private CooldownData cooldownData;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
@@ -108,6 +112,13 @@ public class BukkitServerPlayer extends Player {
         this.serverPlayerRef = new WeakReference<>(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
         this.uuid = player.getUniqueId();
         this.name = player.getName();
+        byte[] bytes = player.getPersistentDataContainer().get(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY), PersistentDataType.BYTE_ARRAY);
+        try {
+            this.cooldownData = CooldownData.fromBytes(bytes);
+        } catch (IOException e) {
+            this.cooldownData = new CooldownData();
+            this.plugin.logger().warn("Failed to parse cooldown data", e);
+        }
     }
 
     @Override
@@ -277,6 +288,30 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void sendCustomPayload(Key channel, byte[] data) {
+        try {
+            Object channelKey = KeyUtils.toResourceLocation(channel);
+            Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+            Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
+            this.nettyChannel().writeAndFlush(responsePacket);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to send custom payload to " + name(), e);
+        }
+    }
+
+    @Override
+    public void kick(Component message) {
+        try {
+            Object reason = ComponentUtils.adventureToMinecraft(message);
+            Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(reason);
+            this.nettyChannel().writeAndFlush(kickPacket);
+            this.nettyChannel().disconnect();
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to kick " + name(), e);
+        }
+    }
+
+    @Override
     public void sendPackets(List<Object> packet, boolean immediately) {
         this.plugin.networkManager().sendPackets(this, packet, immediately);
     }
@@ -405,7 +440,7 @@ public class BukkitServerPlayer extends Player {
         // instant break
         boolean custom = immutableBlockState != null;
         if (custom && getDestroyProgress(state, pos) >= 1f) {
-            PackedBlockState vanillaBlockState = immutableBlockState.vanillaBlockState();
+            BlockStateWrapper vanillaBlockState = immutableBlockState.vanillaBlockState();
             // if it's not an instant break on client side, we should resend level event
             if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
                 Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
@@ -520,7 +555,7 @@ public class BukkitServerPlayer extends Player {
 
             // send hit sound if the sound is removed
             if (currentTick - this.lastHitBlockTime > 3) {
-                Object blockOwner = Reflections.field$StateHolder$owner.get(this.destroyedState);
+                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(this.destroyedState);
                 Object soundType = Reflections.field$BlockBehaviour$soundType.get(blockOwner);
                 Object soundEvent = Reflections.field$SoundType$hitSound.get(soundType);
                 Object soundId = FastNMS.INSTANCE.field$SoundEvent$location(soundEvent);
@@ -613,6 +648,11 @@ public class BukkitServerPlayer extends Player {
         }
     }
 
+    @Override
+    public void breakBlock(int x, int y, int z) {
+        platformPlayer().breakBlock(new Location(platformPlayer().getWorld(), x, y, z).getBlock());
+    }
+
     private void broadcastDestroyProgress(org.bukkit.entity.Player player, BlockPos hitPos, Object blockPos, int stage) {
         Object packet = FastNMS.INSTANCE.constructor$ClientboundBlockDestructionPacket(Integer.MAX_VALUE - entityID(), blockPos, stage);
         for (org.bukkit.entity.Player other : player.getWorld().getPlayers()) {
@@ -670,12 +710,12 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public float getYRot() {
+    public float yRot() {
         return platformPlayer().getPitch();
     }
 
     @Override
-    public float getXRot() {
+    public float xRot() {
         return platformPlayer().getYaw();
     }
 
@@ -832,5 +872,49 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isFlying() {
         return platformPlayer().isFlying();
+    }
+
+    @Override
+    public int foodLevel() {
+        return platformPlayer().getFoodLevel();
+    }
+
+    @Override
+    public void setFoodLevel(int foodLevel) {
+        this.platformPlayer().setFoodLevel(Math.min(Math.max(0, foodLevel), 20));
+    }
+
+    @Override
+    public float saturation() {
+        return platformPlayer().getSaturation();
+    }
+
+    @Override
+    public void setSaturation(float saturation) {
+        this.platformPlayer().setSaturation(saturation);
+    }
+
+    @Override
+    public void addPotionEffect(Key potionEffectType, int duration, int amplifier, boolean ambient, boolean particles) {
+        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(KeyUtils.toNamespacedKey(potionEffectType));
+        if (type == null) return;
+        this.platformPlayer().addPotionEffect(new PotionEffect(type, duration, amplifier, ambient, particles));
+    }
+
+    @Override
+    public void removePotionEffect(Key potionEffectType) {
+        PotionEffectType type = Registry.POTION_EFFECT_TYPE.get(KeyUtils.toNamespacedKey(potionEffectType));
+        if (type == null) return;
+        this.platformPlayer().removePotionEffect(type);
+    }
+
+    @Override
+    public void clearPotionEffects() {
+        this.platformPlayer().clearActivePotionEffects();
+    }
+
+    @Override
+    public CooldownData cooldown() {
+        return this.cooldownData;
     }
 }

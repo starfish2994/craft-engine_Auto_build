@@ -1,8 +1,11 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
@@ -10,15 +13,19 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
-import net.momirealms.craftengine.bukkit.entity.furniture.LoadedFurniture;
 import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
 import net.momirealms.craftengine.bukkit.plugin.network.handler.*;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.NetWorkDataTypes;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.Payload;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -27,6 +34,7 @@ import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
@@ -35,11 +43,14 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.BlockHitResult;
+import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.EntityHitResult;
+import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
@@ -47,7 +58,6 @@ import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -63,12 +73,73 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class PacketConsumers {
+    private static BukkitNetworkManager.Handlers[] ADD_ENTITY_HANDLERS;
     private static int[] mappings;
     private static int[] mappingsMOD;
     private static IntIdentityList BLOCK_LIST;
     private static IntIdentityList BIOME_LIST;
 
-    public static void init(Map<Integer, Integer> map, int registrySize) {
+    public static void initEntities(int registrySize) {
+        ADD_ENTITY_HANDLERS = new BukkitNetworkManager.Handlers[registrySize];
+        Arrays.fill(ADD_ENTITY_HANDLERS, BukkitNetworkManager.Handlers.DO_NOTHING);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FALLING_BLOCK$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            UUID uuid = buf.readUUID();
+            int type = buf.readVarInt();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            byte xRot = buf.readByte();
+            byte yRot = buf.readByte();
+            byte yHeadRot = buf.readByte();
+            int data = buf.readVarInt();
+            // Falling blocks
+            int remapped = remap(data);
+            if (remapped != data) {
+                int xa = buf.readShort();
+                int ya = buf.readShort();
+                int za = buf.readShort();
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(id);
+                buf.writeUUID(uuid);
+                buf.writeVarInt(type);
+                buf.writeDouble(x);
+                buf.writeDouble(y);
+                buf.writeDouble(z);
+                buf.writeByte(xRot);
+                buf.writeByte(yRot);
+                buf.writeByte(yHeadRot);
+                buf.writeVarInt(remapped);
+                buf.writeShort(xa);
+                buf.writeShort(ya);
+                buf.writeShort(za);
+            }
+        };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EYE_OF_ENDER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREWORK_ROCKET$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SMALL_FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EGG$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ENDER_PEARL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EXPERIENCE_BOTTLE$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SNOWBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$POTION$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        if (VersionHelper.isOrAbove1_20_5()) {
+            ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        }
+    }
+
+    public static void initBlocks(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
         for (int i = 0; i < registrySize; i++) {
             mappings[i] = i;
@@ -328,23 +399,12 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             String name = buf.readUtf();
             byte method = buf.readByte();
-            if (method != 2 && method != 0) {
-                return;
-            }
+            if (method != 2 && method != 0) return;
             Tag displayName = buf.readNbt(false);
             if (displayName == null) return;
             byte friendlyFlags = buf.readByte();
-
-            Either<String, Integer> eitherVisibility;
-            Either<String, Integer> eitherCollisionRule;
-
-            if (VersionHelper.isOrAbove1_21_5()) {
-                eitherVisibility = Either.right(buf.readVarInt());
-                eitherCollisionRule = Either.right(buf.readVarInt());
-            } else {
-                eitherVisibility = Either.left(buf.readUtf(40));
-                eitherCollisionRule = Either.left(buf.readUtf(40));
-            }
+            Either<String, Integer> eitherVisibility = VersionHelper.isOrAbove1_21_5() ? Either.right(buf.readVarInt()) : Either.left(buf.readUtf(40));
+            Either<String, Integer> eitherCollisionRule = VersionHelper.isOrAbove1_21_5() ? Either.right(buf.readVarInt()) : Either.left(buf.readUtf(40));
             int color = buf.readVarInt();
             Tag prefix = buf.readNbt(false);
             if (prefix == null) return;
@@ -355,55 +415,19 @@ public class PacketConsumers {
             Map<String, Component> tokens2 = CraftEngine.instance().fontManager().matchTags(prefix.getAsString());
             Map<String, Component> tokens3 = CraftEngine.instance().fontManager().matchTags(suffix.getAsString());
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
+            List<String> entities = method == 0 ? buf.readStringList() : null;
             event.setChanged(true);
-
-            List<String> entities;
-            if (method == 0) {
-                entities = buf.readStringList();
-            } else {
-                entities = null;
-            }
-
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeUtf(name);
             buf.writeByte(method);
-
-            if (!tokens1.isEmpty()) {
-                Component component = AdventureHelper.tagToComponent(displayName);
-                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
-            } else {
-                buf.writeNbt(displayName, false);
-            }
-
+            buf.writeNbt(tokens1.isEmpty() ? displayName : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(displayName), tokens1)), false);
             buf.writeByte(friendlyFlags);
             eitherVisibility.ifLeft(buf::writeUtf).ifRight(buf::writeVarInt);
             eitherCollisionRule.ifLeft(buf::writeUtf).ifRight(buf::writeVarInt);
             buf.writeVarInt(color);
-
-            if (!tokens2.isEmpty()) {
-                Component component = AdventureHelper.tagToComponent(prefix);
-                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
-            } else {
-                buf.writeNbt(prefix, false);
-            }
-
-            if (!tokens3.isEmpty()) {
-                Component component = AdventureHelper.tagToComponent(suffix);
-                for (Map.Entry<String, Component> token : tokens3.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
-            } else {
-                buf.writeNbt(suffix, false);
-            }
-
+            buf.writeNbt(tokens2.isEmpty() ? prefix : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(prefix), tokens2)), false);
+            buf.writeNbt(tokens3.isEmpty() ? suffix : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(suffix), tokens3)), false);
             if (entities != null) {
                 buf.writeStringList(entities);
             }
@@ -421,8 +445,7 @@ public class PacketConsumers {
                 return;
             }
             EnumSet<? extends Enum<?>> enums = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$actions(packet);
-            outer:
-            {
+            outer: {
                 for (Object entry : enums) {
                     if (entry == Reflections.instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME) {
                         break outer;
@@ -430,28 +453,23 @@ public class PacketConsumers {
                 }
                 return;
             }
-
             boolean isChanged = false;
             List<Object> newEntries = new MarkedArrayList<>();
             for (Object entry : entries) {
                 Object mcComponent = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$Entry$displayName(entry);
                 if (mcComponent == null) {
                     newEntries.add(entry);
-                    continue;
+                } else {
+                    String json = ComponentUtils.minecraftToJson(mcComponent);
+                    Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
+                    if (tokens.isEmpty()) {
+                        newEntries.add(entry);
+                    } else {
+                        Object newEntry = FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket$Entry(entry, ComponentUtils.adventureToMinecraft(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
+                        newEntries.add(newEntry);
+                        isChanged = true;
+                    }
                 }
-                String json = ComponentUtils.minecraftToJson(mcComponent);
-                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
-                if (tokens.isEmpty()) {
-                    newEntries.add(entry);
-                    continue;
-                }
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                Object newEntry = FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket$Entry(entry, ComponentUtils.adventureToMinecraft(component));
-                newEntries.add(newEntry);
-                isChanged = true;
             }
             if (isChanged) {
                 event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundPlayerInfoUpdatePacket(enums, newEntries));
@@ -467,9 +485,8 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             String name = buf.readUtf();
             byte method = buf.readByte();
-            if (method != 2 && method != 0) {
+            if (method != 2 && method != 0)
                 return;
-            }
             String displayName = buf.readUtf();
             byte friendlyFlags = buf.readByte();
             String nameTagVisibility = buf.readUtf(40);
@@ -484,53 +501,18 @@ public class PacketConsumers {
             if (tokens1.isEmpty() && tokens2.isEmpty() && tokens3.isEmpty()) return;
             event.setChanged(true);
 
-            List<String> entities;
-            if (method == 0) {
-                entities = buf.readStringList();
-            } else {
-                entities = null;
-            }
-
+            List<String> entities = method == 0 ? buf.readStringList() : null;
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeUtf(name);
             buf.writeByte(method);
-
-            if (!tokens1.isEmpty()) {
-                Component component = AdventureHelper.jsonToComponent(displayName);
-                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            } else {
-                buf.writeUtf(displayName);
-            }
-
+            buf.writeUtf(tokens1.isEmpty() ? displayName : AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(displayName), tokens1)));
             buf.writeByte(friendlyFlags);
             buf.writeUtf(nameTagVisibility);
             buf.writeUtf(collisionRule);
             buf.writeVarInt(color);
-
-            if (!tokens2.isEmpty()) {
-                Component component = AdventureHelper.jsonToComponent(prefix);
-                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            } else {
-                buf.writeUtf(prefix);
-            }
-
-            if (!tokens3.isEmpty()) {
-                Component component = AdventureHelper.jsonToComponent(suffix);
-                for (Map.Entry<String, Component> token : tokens3.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            } else {
-                buf.writeUtf(suffix);
-            }
-
+            buf.writeUtf(tokens2.isEmpty() ? prefix : AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(prefix), tokens2)));
+            buf.writeUtf(tokens3.isEmpty() ? suffix : AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(suffix), tokens3)));
             if (entities != null) {
                 buf.writeStringList(entities);
             }
@@ -549,10 +531,6 @@ public class PacketConsumers {
                 String json = buf.readUtf();
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) return;
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
                 float health = buf.readFloat();
                 int color = buf.readVarInt();
                 int division = buf.readVarInt();
@@ -562,7 +540,7 @@ public class PacketConsumers {
                 buf.writeVarInt(event.packetID());
                 buf.writeUUID(uuid);
                 buf.writeVarInt(actionType);
-                buf.writeUtf(AdventureHelper.componentToJson(component));
+                buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
                 buf.writeFloat(health);
                 buf.writeVarInt(color);
                 buf.writeVarInt(division);
@@ -572,15 +550,11 @@ public class PacketConsumers {
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
                 buf.writeUUID(uuid);
                 buf.writeVarInt(actionType);
-                buf.writeUtf(AdventureHelper.componentToJson(component));
+                buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundBossEventPacket", e);
@@ -598,10 +572,6 @@ public class PacketConsumers {
                 if (nbt == null) return;
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
-                Component component = AdventureHelper.tagToComponent(nbt);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
                 float health = buf.readFloat();
                 int color = buf.readVarInt();
                 int division = buf.readVarInt();
@@ -611,7 +581,7 @@ public class PacketConsumers {
                 buf.writeVarInt(event.packetID());
                 buf.writeUUID(uuid);
                 buf.writeVarInt(actionType);
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
                 buf.writeFloat(health);
                 buf.writeVarInt(color);
                 buf.writeVarInt(division);
@@ -622,15 +592,11 @@ public class PacketConsumers {
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
-                Component component = AdventureHelper.tagToComponent(nbt);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
                 buf.writeUUID(uuid);
                 buf.writeVarInt(actionType);
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundBossEventPacket", e);
@@ -649,15 +615,11 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(displayName);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeUtf(objective);
             buf.writeByte(mode);
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(displayName), tokens)));
             buf.writeVarInt(renderType);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetObjectivePacket", e);
@@ -681,15 +643,11 @@ public class PacketConsumers {
                     Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                     if (tokens.isEmpty()) return;
                     event.setChanged(true);
-                    Component component = AdventureHelper.tagToComponent(displayName);
-                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                    }
                     buf.clear();
                     buf.writeVarInt(event.packetID());
                     buf.writeUtf(objective);
                     buf.writeByte(mode);
-                    buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(displayName), tokens)), false);
                     buf.writeVarInt(renderType);
                     buf.writeBoolean(true);
                     buf.writeVarInt(0);
@@ -698,15 +656,11 @@ public class PacketConsumers {
                     if (tokens.isEmpty()) return;
                     Tag style = buf.readNbt(false);
                     event.setChanged(true);
-                    Component component = AdventureHelper.tagToComponent(displayName);
-                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                    }
                     buf.clear();
                     buf.writeVarInt(event.packetID());
                     buf.writeUtf(objective);
                     buf.writeByte(mode);
-                    buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                    buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(displayName), tokens)), false);
                     buf.writeVarInt(renderType);
                     buf.writeBoolean(true);
                     buf.writeVarInt(1);
@@ -722,41 +676,21 @@ public class PacketConsumers {
                     buf.writeVarInt(event.packetID());
                     buf.writeUtf(objective);
                     buf.writeByte(mode);
-                    if (!tokens1.isEmpty()) {
-                        Component component = AdventureHelper.tagToComponent(displayName);
-                        for (Map.Entry<String, Component> token : tokens1.entrySet()) {
-                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                        }
-                        buf.writeNbt(AdventureHelper.componentToTag(component), false);
-                    } else {
-                        buf.writeNbt(displayName, false);
-                    }
+                    buf.writeNbt(tokens1.isEmpty() ? displayName : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(displayName), tokens1)), false);
                     buf.writeVarInt(renderType);
                     buf.writeBoolean(true);
                     buf.writeVarInt(2);
-                    if (!tokens2.isEmpty()) {
-                        Component component = AdventureHelper.tagToComponent(fixed);
-                        for (Map.Entry<String, Component> token : tokens2.entrySet()) {
-                            component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                        }
-                        buf.writeNbt(AdventureHelper.componentToTag(component), false);
-                    } else {
-                        buf.writeNbt(fixed, false);
-                    }
+                    buf.writeNbt(tokens2.isEmpty() ? fixed : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(fixed), tokens2)), false);
                 }
             } else {
                 Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(displayName.getAsString());
                 if (tokens.isEmpty()) return;
                 event.setChanged(true);
-                Component component = AdventureHelper.tagToComponent(displayName);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
                 buf.clear();
                 buf.writeVarInt(event.packetID());
                 buf.writeUtf(objective);
                 buf.writeByte(mode);
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
+                buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(displayName), tokens)), false);
                 buf.writeVarInt(renderType);
                 buf.writeBoolean(false);
             }
@@ -774,13 +708,9 @@ public class PacketConsumers {
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(jsonOrPlainString);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(jsonOrPlainString), tokens)));
             buf.writeBoolean(overlay);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSystemChatPacket", e);
@@ -797,13 +727,9 @@ public class PacketConsumers {
             if (tokens.isEmpty()) return;
             boolean overlay = buf.readBoolean();
             event.setChanged(true);
-            Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeNbt(AdventureHelper.componentToTag(component), false);
+            buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
             buf.writeBoolean(overlay);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSystemChatPacket", e);
@@ -818,13 +744,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetSubtitleTextPacket", e);
         }
@@ -839,13 +761,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeNbt(AdventureHelper.componentToTag(component), false);
+            buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetSubtitleTextPacket", e);
         }
@@ -859,13 +777,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetTitleTextPacket", e);
         }
@@ -880,13 +794,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeNbt(AdventureHelper.componentToTag(component), false);
+            buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetTitleTextPacket", e);
         }
@@ -900,13 +810,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetActionBarTextPacket", e);
         }
@@ -921,13 +827,9 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
-            buf.writeNbt(AdventureHelper.componentToTag(component), false);
+            buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetActionBarTextPacket", e);
         }
@@ -945,26 +847,10 @@ public class PacketConsumers {
             event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
-            if (!tokens1.isEmpty()) {
-                Component component = AdventureHelper.jsonToComponent(json1);
-                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            } else {
-                buf.writeUtf(json1);
-            }
-            if (!tokens2.isEmpty()) {
-                Component component = AdventureHelper.jsonToComponent(json2);
-                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeUtf(AdventureHelper.componentToJson(component));
-            } else {
-                buf.writeUtf(json2);
-            }
+            buf.writeUtf(tokens1.isEmpty() ? json1 : AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json1), tokens1)));
+            buf.writeUtf(tokens2.isEmpty() ? json2 : AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json2), tokens2)));
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundTabListPacket", e);
         }
     };
 
@@ -982,26 +868,10 @@ public class PacketConsumers {
             event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
-            if (!tokens1.isEmpty()) {
-                Component component = AdventureHelper.tagToComponent(nbt1);
-                for (Map.Entry<String, Component> token : tokens1.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
-            } else {
-                buf.writeNbt(nbt1, false);
-            }
-            if (!tokens2.isEmpty()) {
-                Component component = AdventureHelper.tagToComponent(nbt2);
-                for (Map.Entry<String, Component> token : tokens2.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
-                buf.writeNbt(AdventureHelper.componentToTag(component), false);
-            } else {
-                buf.writeNbt(nbt2, false);
-            }
+            buf.writeNbt(tokens1.isEmpty() ? nbt1 : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt1), tokens1)), false);
+            buf.writeNbt(tokens2.isEmpty() ? nbt2 : AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt2), tokens2)), false);
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSet[(Sub)Title/ActionBar]TextPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundTabListPacket", e);
         }
     };
 
@@ -1015,15 +885,11 @@ public class PacketConsumers {
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
             if (tokens.isEmpty()) return;
             event.setChanged(true);
-            Component component = AdventureHelper.jsonToComponent(json);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeVarInt(containerId);
             buf.writeVarInt(type);
-            buf.writeUtf(AdventureHelper.componentToJson(component));
+            buf.writeUtf(AdventureHelper.componentToJson(AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
         }
@@ -1039,15 +905,11 @@ public class PacketConsumers {
             if (nbt == null) return;
             Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(nbt.getAsString());
             if (tokens.isEmpty()) return;
-            Component component = AdventureHelper.tagToComponent(nbt);
-            for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-            }
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeVarInt(containerId);
             buf.writeVarInt(type);
-            buf.writeNbt(AdventureHelper.componentToTag(component), false);
+            buf.writeNbt(AdventureHelper.componentToTag(AdventureHelper.replaceText(AdventureHelper.tagToComponent(nbt), tokens)), false);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundOpenScreenPacket", e);
         }
@@ -1198,7 +1060,7 @@ public class PacketConsumers {
         }
     };
 
-    private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) throws Exception {
+    private static void handlePlayerActionPacketOnMainThread(BukkitServerPlayer player, World world, BlockPos pos, Object packet) {
         Object action = FastNMS.INSTANCE.field$ServerboundPlayerActionPacket$action(packet);
         if (action == Reflections.instance$ServerboundPlayerActionPacket$Action$START_DESTROY_BLOCK) {
             Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
@@ -1207,7 +1069,7 @@ public class PacketConsumers {
             // not a custom block
             if (BlockStateUtils.isVanillaBlock(stateId)) {
                 if (Config.enableSoundSystem()) {
-                    Object blockOwner = Reflections.field$StateHolder$owner.get(blockState);
+                    Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
                     if (BukkitBlockManager.instance().isBlockSoundRemoved(blockOwner)) {
                         player.startMiningBlock(pos, blockState, null);
                         return;
@@ -1489,7 +1351,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
             int entityId = (int) Reflections.field$ServerboundPickItemFromEntityPacket$id.get(packet);
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
@@ -1518,7 +1380,7 @@ public class PacketConsumers {
         }
     };
 
-    private static void handlePickItemFromEntityOnMainThread(Player player, LoadedFurniture furniture) throws Exception {
+    private static void handlePickItemFromEntityOnMainThread(Player player, BukkitFurniture furniture) throws Exception {
         Key itemId = furniture.config().settings().itemId();
         if (itemId == null) return;
         pickItem(player, itemId, null, FastNMS.INSTANCE.method$CraftEntity$getHandle(furniture.baseEntity()));
@@ -1544,47 +1406,10 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            int id = buf.readVarInt();
-            UUID uuid = buf.readUUID();
+            buf.readVarInt();
+            buf.readUUID();
             int type = buf.readVarInt();
-            double x = buf.readDouble();
-            double y = buf.readDouble();
-            double z = buf.readDouble();
-            byte xRot = buf.readByte();
-            byte yRot = buf.readByte();
-            byte yHeadRot = buf.readByte();
-            int data = buf.readVarInt();
-            int xa = buf.readShort();
-            int ya = buf.readShort();
-            int za = buf.readShort();
-            // Falling blocks
-            if (type == Reflections.instance$EntityType$FALLING_BLOCK$registryId) {
-                int remapped = remap(data);
-                if (remapped != data) {
-                    event.setChanged(true);
-                    buf.clear();
-                    buf.writeVarInt(event.packetID());
-                    buf.writeVarInt(id);
-                    buf.writeUUID(uuid);
-                    buf.writeVarInt(type);
-                    buf.writeDouble(x);
-                    buf.writeDouble(y);
-                    buf.writeDouble(z);
-                    buf.writeByte(xRot);
-                    buf.writeByte(yRot);
-                    buf.writeByte(yHeadRot);
-                    buf.writeVarInt(remapped);
-                    buf.writeShort(xa);
-                    buf.writeShort(ya);
-                    buf.writeShort(za);
-                }
-            } else if (type == Reflections.instance$EntityType$BLOCK_DISPLAY$registryId) {
-                user.entityPacketHandlers().put(id, BlockDisplayPacketHandler.INSTANCE);
-            } else if (type == Reflections.instance$EntityType$TEXT_DISPLAY$registryId) {
-                user.entityPacketHandlers().put(id, TextDisplayPacketHandler.INSTANCE);
-            } else if (type == Reflections.instance$EntityType$ARMOR_STAND$registryId) {
-                user.entityPacketHandlers().put(id, ArmorStandPacketHandler.INSTANCE);
-            }
+            ADD_ENTITY_HANDLERS[type].accept(user, event);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
         }
@@ -1596,7 +1421,7 @@ public class PacketConsumers {
             int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
             if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
                 // Furniture
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
+                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
                     user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
@@ -1606,7 +1431,7 @@ public class PacketConsumers {
                 }
             } else if (entityType == BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE) {
                 // Cancel collider entity packet
-                LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
+                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
                 if (furniture != null) {
                     event.setCancelled(true);
                     user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
@@ -1670,7 +1495,7 @@ public class PacketConsumers {
             } else {
                 entityId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
             }
-            LoadedFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Object action = Reflections.field$ServerboundInteractPacket$action.get(packet);
             Object actionType = Reflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
@@ -1694,7 +1519,7 @@ public class PacketConsumers {
                         // execute functions
                         PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                                 .withParameter(DirectContextParameters.FURNITURE, furniture)
-                                .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                                .withParameter(DirectContextParameters.POSITION, furniture.position())
                         );
                         furniture.config().execute(context, EventTrigger.LEFT_CLICK);
                         furniture.config().execute(context, EventTrigger.BREAK);
@@ -1724,9 +1549,9 @@ public class PacketConsumers {
                     // execute functions
                     PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
-                            .withParameter(DirectContextParameters.POSITION, new WorldPosition(furniture.world(), furniture.position()))
+                            .withParameter(DirectContextParameters.POSITION, furniture.position())
                     );
-                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);;
+                    furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
 
                     if (player.isSneaking()) {
                         // try placing another furniture above it
@@ -1966,36 +1791,21 @@ public class PacketConsumers {
         try {
             if (!VersionHelper.isOrAbove1_20_5()) return;
             Object payload = Reflections.field$ServerboundCustomPayloadPacket$payload.get(packet);
-            if (payload.getClass().equals(Reflections.clazz$DiscardedPayload)) {
-                Object type = Reflections.method$CustomPacketPayload$type.invoke(payload);
-                Object id = Reflections.method$CustomPacketPayload$Type$id.invoke(type);
-                String channel = id.toString();
-                if (!channel.equals(NetworkManager.MOD_CHANNEL)) return;
-                byte[] data;
-                if (Reflections.method$DiscardedPayload$data != null) {
-                    ByteBuf buf = (ByteBuf) Reflections.method$DiscardedPayload$data.invoke(payload);
-                    data = new byte[buf.readableBytes()];
-                    buf.readBytes(data);
-                } else {
-                    data = (byte[]) Reflections.method$DiscardedPayload$dataByteArray.invoke(payload);
-                }
-                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+            if (Reflections.clazz$DiscardedPayload.isInstance(payload)) {
+                Payload discardedPayload = DiscardedPayload.from(payload);
+                if (discardedPayload == null || !discardedPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
+                    return;
+                FriendlyByteBuf buf = discardedPayload.toBuffer();
                 NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
                 if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
                     int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
                     int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
                     if (clientBlockRegistrySize != serverBlockRegistrySize) {
-                        Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
-                                ComponentUtils.adventureToMinecraft(
-                                        Component.translatable(
-                                                "disconnect.craftengine.block_registry_mismatch",
-                                                TranslationArgument.numeric(clientBlockRegistrySize),
-                                                TranslationArgument.numeric(serverBlockRegistrySize)
-                                        )
-                                )
-                        );
-                        user.nettyChannel().writeAndFlush(kickPacket);
-                        user.nettyChannel().disconnect();
+                        user.kick(Component.translatable(
+                                "disconnect.craftengine.block_registry_mismatch",
+                                TranslationArgument.numeric(clientBlockRegistrySize),
+                                TranslationArgument.numeric(serverBlockRegistrySize)
+                        ));
                         return;
                     }
                     user.setClientModState(true);
@@ -2005,10 +1815,7 @@ public class PacketConsumers {
                         FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
                         dataType.writeType(bufPayload);
                         dataType.as(Boolean.class).encode(bufPayload, true);
-                        Object channelKey = KeyUtils.toResourceLocation(Key.of(NetworkManager.MOD_CHANNEL));
-                        Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, bufPayload.array());
-                        Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
-                        user.nettyChannel().writeAndFlush(responsePacket);
+                        user.sendCustomPayload(NetworkManager.MOD_CHANNEL_KEY, bufPayload.array());
                     }
                 }
             }
@@ -2145,6 +1952,230 @@ public class PacketConsumers {
         }
     };
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_CONTENT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            int listSize = buf.readVarInt();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            List<ItemStack> items = new ArrayList<>(listSize);
+            boolean changed = false;
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            for (int i = 0; i < listSize; i++) {
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                if (optional.isPresent()) {
+                    items.add(optional.get());
+                    changed = true;
+                } else {
+                    items.add(itemStack);
+                }
+            }
+            ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            ItemStack newCarriedItem = carriedItem;
+            Optional<ItemStack> optional = BukkitItemManager.instance().s2c(carriedItem, context);
+            if (optional.isPresent()) {
+                changed = true;
+                newCarriedItem = optional.get();
+            }
+            if (!changed) return;
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeContainerId(containerId);
+            buf.writeVarInt(stateId);
+            buf.writeVarInt(listSize);
+            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            for (ItemStack itemStack : items) {
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, itemStack);
+            }
+            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newCarriedItem);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundContainerSetContentPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_SLOT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            int slot = buf.readShort();
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeContainerId(containerId);
+                buf.writeVarInt(stateId);
+                buf.writeShort(slot);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundContainerSetSlotPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CURSOR_ITEM = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetCursorItemPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_EQUIPMENT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean changed = false;
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            int entity = buf.readVarInt();
+            List<com.mojang.datafixers.util.Pair<Object, ItemStack>> slots = Lists.newArrayList();
+            int slotMask;
+            do {
+                slotMask = buf.readByte();
+                Object equipmentSlot = Reflections.instance$EquipmentSlot$values[slotMask & 127];
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                if (optional.isPresent()) {
+                    changed = true;
+                    itemStack = optional.get();
+                }
+                slots.add(com.mojang.datafixers.util.Pair.of(equipmentSlot, itemStack));
+            } while ((slotMask & -128) != 0);
+            if (changed) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(entity);
+                int i = slots.size();
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                for (int j = 0; j < i; ++j) {
+                    com.mojang.datafixers.util.Pair<Object, ItemStack> pair = slots.get(j);
+                    Enum<?> equipmentSlot = (Enum<?>) pair.getFirst();
+                    boolean bl = j != i - 1;
+                    int k = equipmentSlot.ordinal();
+                    buf.writeByte(bl ? k | -128 : k);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, pair.getSecond());
+                }
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_PLAYER_INVENTORY_1_21_2 = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            int slot = buf.readVarInt();
+            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeVarInt(slot);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetPlayerInventoryPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CREATIVE_MODE_SLOT = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            short slotNum = buf.readShort();
+            ItemStack itemStack = VersionHelper.isOrAbove1_20_5() ?
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$readUntrustedItem(friendlyBuf) : FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            BukkitItemManager.instance().c2s(itemStack, context).ifPresent((newItemStack) -> {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeShort(slotNum);
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                if (VersionHelper.isOrAbove1_20_5()) {
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeUntrustedItem(newFriendlyBuf, newItemStack);
+                } else {
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, newItemStack);
+                }
+            });
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK_1_20 = (user, event) -> {
+        try {
+            if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean changed = false;
+            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+            int containerId = buf.readContainerId();
+            int stateId = buf.readVarInt();
+            short slotNum = buf.readShort();
+            byte buttonNum = buf.readByte();
+            int clickType = buf.readVarInt();
+            int i = buf.readVarInt();
+            Int2ObjectMap<ItemStack> changedSlots = new Int2ObjectOpenHashMap<>(i);
+            for (int j = 0; j < i; ++j) {
+                int k = buf.readShort();
+                ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+                Optional<ItemStack> optional = BukkitItemManager.instance().c2s(itemStack, context);
+                if (optional.isPresent()) {
+                    changed = true;
+                    itemStack = optional.get();
+                }
+                changedSlots.put(k, itemStack);
+            }
+            ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            Optional<ItemStack> optional = BukkitItemManager.instance().c2s(carriedItem, context);
+            if (optional.isPresent()) {
+                changed = true;
+                carriedItem = optional.get();
+            }
+            if (changed) {
+                event.setChanged(true);
+                buf.clear();
+                buf.writeVarInt(event.packetID());
+                buf.writeContainerId(containerId);
+                buf.writeVarInt(stateId);
+                buf.writeShort(slotNum);
+                buf.writeByte(buttonNum);
+                buf.writeVarInt(clickType);
+                buf.writeVarInt(changedSlots.size());
+                Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                changedSlots.forEach((k, v) -> {
+                    buf.writeShort(k);
+                    FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, v);
+                });
+                FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carriedItem);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundContainerClickPacket", e);
+        }
+    };
+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_PUSH = (user, event, packet) -> {
         try {
             if (!VersionHelper.isOrAbove1_20_2()) return;
@@ -2255,4 +2286,11 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
     };
+
+    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
+        return (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            user.entityPacketHandlers().put(buf.readVarInt(), handler);
+        };
+    }
 }

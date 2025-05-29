@@ -17,8 +17,8 @@ import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
-import net.momirealms.craftengine.core.plugin.event.EventTrigger;
 import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -168,7 +168,7 @@ public class BlockEventListener implements Listener {
                 Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
                 PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                         .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                        .withParameter(DirectContextParameters.BLOCK_STATE, state)
+                        .withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, state)
                         .withParameter(DirectContextParameters.EVENT, cancellable)
                         .withParameter(DirectContextParameters.POSITION, position)
                         .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
@@ -304,7 +304,7 @@ public class BlockEventListener implements Listener {
                     .withParameter(DirectContextParameters.EVENT, cancellable)
                     .withParameter(DirectContextParameters.POSITION, new WorldPosition(new BukkitWorld(event.getWorld()), LocationUtils.toVec3d(location)))
                     .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                    .withParameter(DirectContextParameters.BLOCK_STATE, state)
+                    .withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, state)
             ), EventTrigger.STEP);
             if (cancellable.isCancelled()) {
                 event.setCancelled(true);
