@@ -91,8 +91,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @SuppressWarnings("unchecked")
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         instance = this;
-        S2C_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxS2CPacketId() + 1];
-        C2S_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxC2SPacketId() + 1];
+        S2C_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxS2CPacketId()];
+        C2S_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxC2SPacketId()];
         Arrays.fill(S2C_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
         Arrays.fill(C2S_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
