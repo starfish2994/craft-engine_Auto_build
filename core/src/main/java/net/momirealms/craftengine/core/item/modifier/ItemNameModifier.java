@@ -36,6 +36,13 @@ public class ItemNameModifier<I> implements ItemDataModifier<I> {
             } else {
                 networkData.put(ComponentKeys.ITEM_NAME.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
+        } else {
+            Tag previous = item.getNBTTag("display", "Name");
+            if (previous != null) {
+                networkData.put("display.Name", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+            } else {
+                networkData.put("display.Name", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+            }
         }
     }
 }

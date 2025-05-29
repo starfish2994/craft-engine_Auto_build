@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -42,8 +43,30 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
         if (optionalCustomItem.isEmpty()) {
             if (!Config.interceptItem()) return Optional.empty();
             return new OtherItem(wrapped).process();
+        } else {
+            CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            if (!customItem.hasClientBoundDataModifier()) {
+                if (!Config.interceptItem()) return Optional.empty();
+                return new OtherItem(wrapped).process();
+            } else {
+                CompoundTag tag = new CompoundTag();
+                for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
+                    modifier.prepareNetworkItem(wrapped, context, tag);
+                    modifier.apply(wrapped, context);
+                }
+                if (Config.interceptItem()) {
+                    if (!tag.containsKey("display.Name")) {
+                        processCustomName(wrapped, tag::put);
+                    }
+                    if (!tag.containsKey("display.Lore")) {
+                        processLore(wrapped, tag::put);
+                    }
+                }
+                if (tag.isEmpty()) return Optional.empty();
+                wrapped.setTag(tag, NETWORK_ITEM_TAG);
+                return Optional.of(wrapped);
+            }
         }
-        return Optional.empty();
     }
 
     public static boolean processCustomName(Item<ItemStack> item, BiConsumer<String, CompoundTag> callback) {

@@ -147,21 +147,26 @@ public abstract class AbstractPackManager implements PackManager {
 
     @Override
     public void load() {
-        List<Map<?, ?>> list = Config.instance().settings().getMapList("resource-pack.delivery.hosting");
-        if (list == null || list.isEmpty()) {
-            this.resourcePackHost = NoneHost.INSTANCE;
+        Object hostingObj = Config.instance().settings().get("resource-pack.delivery.hosting");
+        Map<String, Object> arguments;
+        if (hostingObj instanceof Map<?,?>) {
+            arguments = MiscUtils.castToMap(hostingObj, false);
+        } else if (hostingObj instanceof List<?> list && !list.isEmpty()) {
+            arguments = MiscUtils.castToMap(list.get(0), false);
         } else {
-            try {
-                // we might add multiple host methods in future versions
-                this.resourcePackHost = ResourcePackHosts.fromMap(MiscUtils.castToMap(list.get(0), false));
-            } catch (LocalizedException e) {
-                if (e instanceof LocalizedResourceConfigException exception) {
-                    exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
-                    e.setArgument(1, "hosting");
-                }
-                TranslationManager.instance().log(e.node(), e.arguments());
-                this.resourcePackHost = NoneHost.INSTANCE;
+            this.resourcePackHost = NoneHost.INSTANCE;
+            return;
+        }
+        try {
+            // we might add multiple host methods in future versions
+            this.resourcePackHost = ResourcePackHosts.fromMap(arguments);
+        } catch (LocalizedException e) {
+            if (e instanceof LocalizedResourceConfigException exception) {
+                exception.setPath(plugin.dataFolderPath().resolve("config.yml"));
+                e.setArgument(1, "hosting");
             }
+            TranslationManager.instance().log(e.node(), e.arguments());
+            this.resourcePackHost = NoneHost.INSTANCE;
         }
     }
 

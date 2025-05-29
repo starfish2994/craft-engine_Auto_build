@@ -34,6 +34,13 @@ public class CustomModelDataModifier<I> implements ItemDataModifier<I> {
             } else {
                 networkData.put(ComponentKeys.CUSTOM_MODEL_DATA.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
+        } else {
+            Tag previous = item.getNBTTag("CustomModelData");
+            if (previous != null) {
+                networkData.put("CustomModelData", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+            } else {
+                networkData.put("CustomModelData", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+            }
         }
     }
 }

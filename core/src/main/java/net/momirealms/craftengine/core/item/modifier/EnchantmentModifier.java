@@ -1,9 +1,9 @@
 package net.momirealms.craftengine.core.item.modifier;
 
-import net.momirealms.craftengine.core.item.Enchantment;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.ItemKeys;
+import net.momirealms.craftengine.core.item.*;
+import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.sparrow.nbt.CompoundTag;
+import net.momirealms.sparrow.nbt.Tag;
 
 import java.util.List;
 
@@ -25,6 +25,43 @@ public class EnchantmentModifier<I> implements ItemDataModifier<I> {
             item.setStoredEnchantments(this.enchantments);
         } else {
             item.setEnchantments(this.enchantments);
+        }
+    }
+
+    @Override
+    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+        if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
+            if (VersionHelper.isOrAbove1_20_5()) {
+                Tag previous = item.getNBTComponent(ComponentKeys.STORED_ENCHANTMENTS);
+                if (previous != null) {
+                    networkData.put(ComponentKeys.STORED_ENCHANTMENTS.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                } else {
+                    networkData.put(ComponentKeys.STORED_ENCHANTMENTS.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                }
+            } else {
+                Tag previous = item.getNBTTag("StoredEnchantments");
+                if (previous != null) {
+                    networkData.put("StoredEnchantments", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                } else {
+                    networkData.put("StoredEnchantments", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                }
+            }
+        } else {
+            if (VersionHelper.isOrAbove1_20_5()) {
+                Tag previous = item.getNBTComponent(ComponentKeys.ENCHANTMENTS);
+                if (previous != null) {
+                    networkData.put(ComponentKeys.ENCHANTMENTS.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                } else {
+                    networkData.put(ComponentKeys.ENCHANTMENTS.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                }
+            } else {
+                Tag previous = item.getNBTTag("Enchantments");
+                if (previous != null) {
+                    networkData.put("Enchantments", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                } else {
+                    networkData.put("Enchantments", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                }
+            }
         }
     }
 }

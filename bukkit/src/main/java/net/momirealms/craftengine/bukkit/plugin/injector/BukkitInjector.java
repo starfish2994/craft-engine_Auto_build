@@ -810,7 +810,7 @@ public class BukkitInjector {
                 if (!previous.isEmpty()) {
                     holder.ceChunk().setDirty(true);
                     if (Config.enableLightSystem()) {
-                        updateLightIfChanged(holder, previous.vanillaBlockState().handle(), newState, y, z, x);
+                        updateLightIfChanged(holder, previousState, newState, newState, x, y, z);
                     }
                 }
             } else {
@@ -820,7 +820,7 @@ public class BukkitInjector {
                 holder.ceChunk().setDirty(true);
                 // 如果新方块的光照属性和客户端认为的不同
                 if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
-                    updateLightIfChanged(holder, immutableBlockState.vanillaBlockState().handle(), newState, y, z, x);
+                    updateLightIfChanged(holder, previousState, immutableBlockState.vanillaBlockState().handle(), newState, x, y, z);
                 }
             }
         } catch (Exception e) {
@@ -828,9 +828,17 @@ public class BukkitInjector {
         }
     }
 
-    protected static void updateLightIfChanged(@This InjectedHolder thisObj, Object oldState, Object newState, int y, int z, int x) {
+    protected static void updateLightIfChanged(@This InjectedHolder thisObj, Object oldServerSideState, Object clientSideState, Object serverSideState, int x, int y, int z) {
         CEWorld world = thisObj.ceChunk().world();
-        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(oldState, newState, world.world().serverWorld(), LocationUtils.toBlockPos(x, y, z))) {
+        Object blockPos = LocationUtils.toBlockPos(x, y, z);
+        Object serverWorld = world.world().serverWorld();
+        if (clientSideState != serverSideState && FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(clientSideState, serverSideState, serverWorld, blockPos)) {
+            SectionPos sectionPos = thisObj.cePos();
+            List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
+            world.sectionLightUpdated(pos);
+            return;
+        }
+        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(oldServerSideState, serverSideState, serverWorld, blockPos)) {
             SectionPos sectionPos = thisObj.cePos();
             List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
             world.sectionLightUpdated(pos);

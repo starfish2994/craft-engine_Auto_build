@@ -2554,7 +2554,7 @@ public class Reflections {
 
     public static final Method method$BlockBehaviour$getCollisionShape = requireNonNull(
             ReflectionUtils.getDeclaredMethod(
-                    clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getCollisionShape", "c"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext
+                    clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getCollisionShape", VersionHelper.isOrAbove1_20_3() ? "b" : "c"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext
             )
     );
 

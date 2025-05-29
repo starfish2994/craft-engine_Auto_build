@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface NetworkItemHandler<T> {
     Operation[] BY_INDEX = new Operation[] {Operation.ADD, Operation.REMOVE, Operation.RESET};
-    String NETWORK_ITEM_TAG = "craftengine:network";
+    String NETWORK_ITEM_TAG = "craftengine:network_modifiers";
     String NETWORK_OPERATION = "type";
     String NETWORK_VALUE = "value";
 
