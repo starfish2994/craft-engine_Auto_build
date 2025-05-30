@@ -2083,9 +2083,9 @@ public class PacketConsumers {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
+            int slot = buf.readVarInt();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            int slot = buf.readVarInt();
             BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
@@ -2290,7 +2290,7 @@ public class PacketConsumers {
     private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
         return (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
-            user.entityPacketHandlers().put(buf.readVarInt(), handler);
+            user.entityPacketHandlers().putIfAbsent(buf.readVarInt(), handler);
         };
     }
 }
