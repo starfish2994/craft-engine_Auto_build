@@ -78,8 +78,6 @@ public class ItemEventListener implements Listener {
         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
         Location interactionPoint = event.getInteractionPoint();
 
-
-
         BlockHitResult hitResult = null;
         if (action == Action.RIGHT_CLICK_BLOCK && interactionPoint != null) {
             Direction direction = DirectionUtils.toDirection(event.getBlockFace());
@@ -106,6 +104,13 @@ public class ItemEventListener implements Listener {
             if (EventUtils.fireAndCheckCancel(interactEvent)) {
                 event.setCancelled(true);
                 return;
+            }
+
+            // fix client side issues
+            if (action.isRightClick() && hitResult != null &&
+                    InteractUtils.willConsume(player, BlockStateUtils.fromBlockData(immutableBlockState.vanillaBlockState().handle()), hitResult, itemInHand)) {
+                player.updateInventory();
+                //PlayerUtils.resendItemInHand(player);
             }
 
             Cancellable dummy = Cancellable.dummy();

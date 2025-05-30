@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,8 @@ public final class PlayerUtils {
             int containerId = Reflections.field$AbstractContainerMenu$containerId.getInt(inventoryMenu);
             int heldItemSlot = player.getInventory().getHeldItemSlot();
             int stateId = (int) Reflections.method$AbstractContainerMenu$incrementStateId.invoke(inventoryMenu);
-
+            Object packet = Reflections.constructor$ClientboundContainerSetSlotPacket.newInstance(containerId, stateId, heldItemSlot + 36, FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemInHand));
+            BukkitCraftEngine.instance().networkManager().sendPacket(player, packet);
         } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().warn("Failed to resend item in hand", e);
         }

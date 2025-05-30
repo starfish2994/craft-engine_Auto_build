@@ -6911,6 +6911,12 @@ public class Reflections {
             )
     );
 
+    public static final Constructor<?> constructor$ClientboundContainerSetSlotPacket = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    clazz$ClientboundContainerSetSlotPacket, int.class, int.class, int.class, clazz$ItemStack
+            )
+    );
+
     // 1.21.2+
     public static final Class<?> clazz$ClientboundSetCursorItemPacket =
             ReflectionUtils.getClazz(
