@@ -22,13 +22,9 @@ items:
           type: strippable_block
           stripped: default:stripped_palm_log
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:palm_log
+          template: "default:loot_table/self"
         settings:
           template: "default:settings/wood"
-          overrides:
-            item: default:palm_log
         states:
           template: "default:block_state/pillar"
           arguments:
@@ -65,13 +61,9 @@ items:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:stripped_palm_log
+          template: "default:loot_table/self"
         settings:
           template: "default:settings/wood"
-          overrides:
-            item: default:stripped_palm_log
         states:
           template: "default:block_state/pillar"
           arguments:
@@ -111,13 +103,9 @@ items:
           type: strippable_block
           stripped: default:stripped_palm_wood
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:palm_wood
+          template: "default:loot_table/self"
         settings:
           template: "default:settings/wood"
-          overrides:
-            item: default:palm_wood
         states:
           template: "default:block_state/pillar"
           arguments:
@@ -154,13 +142,9 @@ items:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:stripped_palm_wood
+          template: "default:loot_table/self"
         settings:
           template: "default:settings/wood"
-          overrides:
-            item: default:stripped_palm_wood
         states:
           template: "default:block_state/pillar"
           arguments:
@@ -197,12 +181,8 @@ items:
       block:
         settings:
           template: "default:settings/planks"
-          overrides:
-            item: default:palm_planks
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:palm_planks
+          template: "default:loot_table/self"
         state:
           model:
             template: "default:model/simplified_cube_all"
@@ -227,8 +207,6 @@ items:
       block:
         settings:
           template: "default:settings/sapling"
-          overrides:
-            item: default:palm_sapling
         behaviors:
           - type: bush_block
             bottom-block-tags:
@@ -241,9 +219,7 @@ items:
             feature: minecraft:fancy_oak
             bone-meal-success-chance: 0.45
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:palm_sapling
+          template: "default:loot_table/self"
         states:
           properties:
             stage:
@@ -297,8 +273,6 @@ items:
             sapling: default:palm_sapling
         settings:
           template: "default:settings/leaves"
-          overrides:
-            item: default:palm_leaves
         states:
           template: "default:block_state/leaves"
           arguments:

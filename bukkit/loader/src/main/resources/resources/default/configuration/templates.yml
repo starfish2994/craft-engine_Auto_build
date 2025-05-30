@@ -14,7 +14,7 @@ templates#models#block:
         "all": "{texture}"
   # template: default:model/simplified_cube_all
   # arguments:
-  #   path: model/texture_path
+  #   path: [model/texture]_path
   default:model/simplified_cube_all:
     path: "{path}"
     generation:
@@ -71,7 +71,7 @@ templates#models#2d:
         "layer0": "{texture}"
   # template: default:model/simplified_generated
   # arguments:
-  #   path: model_path/texture_path
+  #   path: [model/texture]_path
   default:model/simplified_generated:
     type: "minecraft:model"
     path: "{path}"
@@ -105,7 +105,7 @@ templates#models#2d:
         "layer0": "{texture}"
   # template: default:model/simplified_handheld
   # arguments:
-  #   path: model_path/texture_path
+  #   path: [model/texture]_path
   default:model/simplified_handheld:
     type: "minecraft:model"
     path: "{path}"
@@ -113,6 +113,36 @@ templates#models#2d:
       parent: "minecraft:item/handheld"
       textures:
         "layer0": "{path}"
+  # template: default:model/elytra
+  # arguments:
+  #   model: model_path
+  #   broken_model: broken_model_path
+  #   texture: texture_path
+  #   broken_texture: broken_texture_path
+  default:model/elytra:
+    type: "minecraft:condition"
+    property: minecraft:broken
+    on-false:
+      template: default:model/generated
+      arguments:
+        model: "{model}"
+        texture: "{texture}"
+    on-true:
+      template: default:model/generated
+      arguments:
+        model: "{broken_model}"
+        texture: "{broken_texture}"
+  # template: default:model/simplified_elytra
+  # arguments:
+  #   path: [model/texture]_path
+  #   broken_path: broken_[model/texture]_path
+  default:model/simplified_elytra:
+    template: default:model/elytra
+    arguments:
+      model: "{path}"
+      broken_model: "{broken_path}"
+      texture: "{path}"
+      broken_texture: "{broken_path}"
 
 # shield
 templates#models#shield:
@@ -170,8 +200,8 @@ templates#models#fishing_rod:
           "layer0": "{cast_texture}"
   # template: default:model/simplified_fishing_rod_2d
   # arguments:
-  #   path: rod_model/texture_path
-  #   cast_path: rod_cast_model/texture_path
+  #   path: rod_[model/texture]_path
+  #   cast_path: rod_cast_[model/texture]_path
   default:model/simplified_fishing_rod_2d:
     template: default:model/fishing_rod_2d
     arguments:
@@ -260,10 +290,10 @@ templates#models#bow:
             "layer0": "{pulling_0_texture}"
   # template: default:model/simplified_bow_2d
   # arguments:
-  #   path: bow_model/texture_path
-  #   pulling_0_path: bow_pulling_0_model/texture_path
-  #   pulling_1_path: bow_pulling_1_model/texture_path
-  #   pulling_2_path: bow_pulling_2_model/texture_path
+  #   path: bow_[model/texture]_path
+  #   pulling_0_path: bow_pulling_0_[model/texture]_path
+  #   pulling_1_path: bow_pulling_1_[model/texture]_path
+  #   pulling_2_path: bow_pulling_2_[model/texture]_path
   default:model/simplified_bow_2d:
     template: default:model/bow_2d
     arguments:
@@ -392,12 +422,12 @@ templates#models#crossbow:
             "layer0": "{pulling_0_texture}"
   # template: default:model/simplified_crossbow_2d
   # arguments:
-  #   path: crossbow_model/texture_path
-  #   arrow_path: crossbow_arrow_model/texture_path
-  #   firework_path: crossbow_firework_model/texture_path
-  #   pulling_0_path: crossbow_pulling_0_model/texture_path
-  #   pulling_1_path: crossbow_pulling_1_model/texture_path
-  #   pulling_2_path: crossbow_pulling_2_model/texture_path
+  #   path: crossbow_[model/texture]_path
+  #   arrow_path: crossbow_arrow_[model/texture]_path
+  #   firework_path: crossbow_firework_[model/texture]_path
+  #   pulling_0_path: crossbow_pulling_0_[model/texture]_path
+  #   pulling_1_path: crossbow_pulling_1_[model/texture]_path
+  #   pulling_2_path: crossbow_pulling_2_[model/texture]_path
   default:model/simplified_crossbow_2d:
     template: default:model/crossbow_2d
     arguments:
@@ -581,6 +611,8 @@ templates#settings#break_level:
 
 # block settings
 templates#settings#blocks:
+  default:settings/middle_click_pick_itself:
+    item: "{__NAMESPACE__}:{__ID__}"
   default:settings/solid_1x1x1:
     is-suffocating: true
     replaceable: false
@@ -956,6 +988,18 @@ templates#recipes:
 
 # loot tables
 templates#loot_tables:
+
+  # drop itself
+
+  # template: default:loot_table/self
+  default:loot_table/self:
+    pools:
+      - rolls: 1
+        conditions:
+          - type: survives_explosion
+        entries:
+          - type: item
+            item: "{__NAMESPACE__}:{__ID__}"
 
   # drop one item
 

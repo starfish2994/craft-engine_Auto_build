@@ -211,6 +211,22 @@ items#topaz_gears:
         on-false:
           type: minecraft:model
           path: minecraft:item/custom/topaz_trident_in_hand
+  default:flame_elytra:
+    material: elytra
+    custom-model-data: 1000
+    settings:
+      equippable:
+        slot: chest
+        asset-id: flame
+        wings: flame_elytra
+    data:
+      item-name: "<!i><#FF8C00><i18n:item.flame_elytra>"
+    model:
+      template: default:model/simplified_elytra
+      arguments:
+        path: "minecraft:item/custom/flame_elytra"
+        broken_path: "minecraft:item/custom/broken_flame_elytra"
+
 templates:
   default:armor/topaz:
     material: "chainmail_{part}"

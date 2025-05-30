@@ -51,8 +51,6 @@ blocks:
         max_exp: 7
     settings:
       template: "default:settings/ore"
-      overrides:
-        item: default:topaz_ore
       arguments:
         break_power: 2
     state:
@@ -72,8 +70,6 @@ blocks:
         max_exp: 7
     settings:
       template: "default:settings/deepslate_ore"
-      overrides:
-        item: default:deepslate_topaz_ore
       arguments:
         break_power: 2
     state:

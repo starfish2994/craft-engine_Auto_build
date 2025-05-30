@@ -63,9 +63,7 @@ blocks:
         - minecraft:dirt
         - minecraft:farmland
     loot:
-      template: "default:loot_table/basic"
-      arguments:
-        item: default:fairy_flower
+      template: "default:loot_table/self"
     state:
       id: 0
       state: sugar_cane:0
@@ -96,7 +94,6 @@ blocks:
         - default:hardness/none
         - default:sound/grass
       overrides:
-        item: default:reed
         push-reaction: DESTROY
         map-color: 60
     behavior:
@@ -105,9 +102,7 @@ blocks:
       positions:
         - 0,-1,0
     loot:
-      template: "default:loot_table/basic"
-      arguments:
-        item: default:reed
+      template: "default:loot_table/self"
     state:
       id: 1
       state: sugar_cane:1
@@ -119,7 +114,6 @@ blocks:
         - default:hardness/none
         - default:sound/grass
       overrides:
-        item: default:flame_cane
         push-reaction: DESTROY
         map-color: 15
         is-randomly-ticking: true
@@ -149,9 +143,7 @@ blocks:
           - 0,-1,-1
           - 0,-1,1
     loot:
-      template: "default:loot_table/basic"
-      arguments:
-        item: default:flame_cane
+      template: "default:loot_table/self"
     states:
       properties:
         age:

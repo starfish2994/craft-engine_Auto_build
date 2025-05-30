@@ -34,7 +34,6 @@ import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
@@ -1954,17 +1953,17 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_CONTENT = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             int containerId = buf.readContainerId();
             int stateId = buf.readVarInt();
             int listSize = buf.readVarInt();
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             List<ItemStack> items = new ArrayList<>(listSize);
             boolean changed = false;
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             for (int i = 0; i < listSize; i++) {
                 ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, serverPlayer);
                 if (optional.isPresent()) {
                     items.add(optional.get());
                     changed = true;
@@ -1974,7 +1973,7 @@ public class PacketConsumers {
             }
             ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
             ItemStack newCarriedItem = carriedItem;
-            Optional<ItemStack> optional = BukkitItemManager.instance().s2c(carriedItem, context);
+            Optional<ItemStack> optional = BukkitItemManager.instance().s2c(carriedItem, serverPlayer);
             if (optional.isPresent()) {
                 changed = true;
                 newCarriedItem = optional.get();
@@ -1998,14 +1997,14 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_SET_SLOT = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             int containerId = buf.readContainerId();
             int stateId = buf.readVarInt();
             int slot = buf.readShort();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+            BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -2022,11 +2021,11 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CURSOR_ITEM = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+            BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -2040,9 +2039,9 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_EQUIPMENT = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             boolean changed = false;
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             int entity = buf.readVarInt();
             List<com.mojang.datafixers.util.Pair<Object, ItemStack>> slots = Lists.newArrayList();
@@ -2051,7 +2050,7 @@ public class PacketConsumers {
                 slotMask = buf.readByte();
                 Object equipmentSlot = Reflections.instance$EquipmentSlot$values[slotMask & 127];
                 ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, context);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(itemStack, serverPlayer);
                 if (optional.isPresent()) {
                     changed = true;
                     itemStack = optional.get();
@@ -2081,12 +2080,12 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_PLAYER_INVENTORY_1_21_2 = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             int slot = buf.readVarInt();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            BukkitItemManager.instance().s2c(itemStack, context).ifPresent((newItemStack) -> {
+            BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -2101,13 +2100,13 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CREATIVE_MODE_SLOT = (user, event) -> {
         try {
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             short slotNum = buf.readShort();
             ItemStack itemStack = VersionHelper.isOrAbove1_20_5() ?
                     FastNMS.INSTANCE.method$FriendlyByteBuf$readUntrustedItem(friendlyBuf) : FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
-            BukkitItemManager.instance().c2s(itemStack, context).ifPresent((newItemStack) -> {
+            BukkitItemManager.instance().c2s(itemStack).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
                 buf.writeVarInt(event.packetID());
@@ -2127,9 +2126,9 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK_1_20 = (user, event) -> {
         try {
             if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
+            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             boolean changed = false;
-            ItemBuildContext context = ItemBuildContext.of((BukkitServerPlayer) user);
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             int containerId = buf.readContainerId();
             int stateId = buf.readVarInt();
@@ -2141,7 +2140,7 @@ public class PacketConsumers {
             for (int j = 0; j < i; ++j) {
                 int k = buf.readShort();
                 ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-                Optional<ItemStack> optional = BukkitItemManager.instance().c2s(itemStack, context);
+                Optional<ItemStack> optional = BukkitItemManager.instance().c2s(itemStack);
                 if (optional.isPresent()) {
                     changed = true;
                     itemStack = optional.get();
@@ -2149,7 +2148,7 @@ public class PacketConsumers {
                 changedSlots.put(k, itemStack);
             }
             ItemStack carriedItem = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            Optional<ItemStack> optional = BukkitItemManager.instance().c2s(carriedItem, context);
+            Optional<ItemStack> optional = BukkitItemManager.instance().c2s(carriedItem);
             if (optional.isPresent()) {
                 changed = true;
                 carriedItem = optional.get();

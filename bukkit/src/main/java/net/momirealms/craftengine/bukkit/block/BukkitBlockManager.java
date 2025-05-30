@@ -366,7 +366,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
         private void parseCustomBlock(Pack pack, Path path, Key id, Map<String, Object> section) {
             // read block settings
-            BlockSettings settings = BlockSettings.fromMap(MiscUtils.castToMap(section.get("settings"), true));
+            BlockSettings settings = BlockSettings.fromMap(id, MiscUtils.castToMap(section.get("settings"), true));
             // read states
             Map<String, Property<?>> properties;
             Map<String, Integer> appearances;

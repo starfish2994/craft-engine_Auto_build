@@ -13,9 +13,7 @@ items#misc:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:chinese_lantern
+          template: "default:loot_table/self"
         settings:
           template:
             - default:hardness/wool
@@ -27,7 +25,6 @@ items#misc:
             instrument: HARP
             luminance: 15
             map-color: 36
-            item: default:chinese_lantern
         state:
           id: 15
           state: note_block:15
@@ -52,9 +49,7 @@ items#misc:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:netherite_anvil
+          template: "default:loot_table/self"
         behavior:
           type: falling_block
           hurt-amount: 4
@@ -80,7 +75,6 @@ items#misc:
               fall: minecraft:block.anvil.fall
               land: minecraft:block.anvil.land
               destroy: minecraft:block.anvil.destroy
-            item: default:netherite_anvil
             map-color: 29
             hardness: 10.0
             resistance: 1200
@@ -137,9 +131,7 @@ items#misc:
             solid-block: default:solid_gunpowder_block
           - type: falling_block
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:gunpowder_block
+          template: "default:loot_table/self"
         settings:
           template:
             - default:sound/sand
@@ -149,7 +141,6 @@ items#misc:
             resistance: 0.5
             instrument: SNARE
             map-color: 45
-            item: default:gunpowder_block
         state:
           id: 16
           state: note_block:16
@@ -173,9 +164,7 @@ items#misc:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:solid_gunpowder_block
+          template: "default:loot_table/self"
         settings:
           template:
             - default:sound/sand
@@ -186,7 +175,6 @@ items#misc:
             resistance: 1.8
             instrument: BASEDRUM
             map-color: 45
-            item: default:solid_gunpowder_block
         state:
           id: 17
           state: note_block:17
@@ -210,9 +198,7 @@ items#misc:
       type: block_item
       block:
         loot:
-          template: "default:loot_table/basic"
-          arguments:
-            item: default:copper_coil
+          template: "default:loot_table/self"
         settings:
           template:
             - default:sound/metal
@@ -225,7 +211,6 @@ items#misc:
             is-suffocating: true
             instrument: BASEDRUM
             map-color: 15
-            item: default:copper_coil
         behavior:
           type: lamp_block
         states:
