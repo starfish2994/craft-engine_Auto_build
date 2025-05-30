@@ -280,6 +280,7 @@ public class ItemEventListener implements Listener {
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
                     .withParameter(DirectContextParameters.HAND, hand)
                     .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                    .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(player.getLocation()))
             );
             CustomItem<ItemStack> customItem = optionalCustomItem.get();
             if (action.isRightClick()) customItem.execute(context, EventTrigger.RIGHT_CLICK);
