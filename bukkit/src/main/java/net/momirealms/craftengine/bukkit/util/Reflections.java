@@ -3604,7 +3604,7 @@ public class Reflections {
 
     public static final Field field$FallingBlockEntity$blockState = requireNonNull(
             ReflectionUtils.getDeclaredField(
-                    clazz$FallingBlockEntity, clazz$BlockState, 0
+                    clazz$FallingBlockEntity, clazz$BlockState, VersionHelper.isOrAbove1_21_5() ? 1 : 0
             )
     );
 
