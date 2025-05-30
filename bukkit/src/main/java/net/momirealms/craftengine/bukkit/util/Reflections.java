@@ -6982,4 +6982,21 @@ public class Reflections {
                     "nbt.Tag"
             )
     );
+
+    public static final Class<?> clazz$InventoryMenu = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.inventory.ContainerPlayer",
+                    "world.inventory.InventoryMenu"
+            )
+    );
+
+    public static final Field field$Player$inventoryMenu = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$Player, clazz$InventoryMenu, 0)
+    );
+
+    public static final Method method$AbstractContainerMenu$incrementStateId = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$AbstractContainerMenu, int.class, new String[]{"incrementStateId", "k"}
+            )
+    );
 }
