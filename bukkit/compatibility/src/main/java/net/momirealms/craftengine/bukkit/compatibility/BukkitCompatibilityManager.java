@@ -82,8 +82,12 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
         // WorldEdit
         if (this.isPluginEnabled("FastAsyncWorldEdit")) {
-            this.initFastAsyncWorldEditHook();
-            logHook("FastAsyncWorldEdit");
+            try {
+                this.initFastAsyncWorldEditHook();
+                logHook("FastAsyncWorldEdit");
+            } catch (Exception e) {
+                this.plugin.logger().warn("[Compatibility] Failed to initialize FastAsyncWorldEdit hook", e);
+            }
         } else if (this.isPluginEnabled("WorldEdit")) {
             this.initWorldEditHook();
             logHook("WorldEdit");
@@ -172,8 +176,26 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
     }
 
+    @SuppressWarnings("all")
     private void initFastAsyncWorldEditHook() {
+        Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
+        String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();
+        if (!this.fastAsyncWorldEditVersionCheck(new int[]{2, 13, 0}, version)) {
+            this.plugin.logger().warn("[Compatibility] FastAsyncWorldEdit version is too old, please update to 2.13.0 or newer");
+        }
         new WorldEditBlockRegister(BukkitBlockManager.instance(), true);
+    }
+
+    private boolean fastAsyncWorldEditVersionCheck(int[] target, String version) {
+        String cleanVersion = version.split("-")[0];
+        String[] parts = cleanVersion.split("\\.");
+        for (int i = 0; i < target.length; i++) {
+            if (i >= parts.length) return false;
+            int currentPart = Integer.parseInt(parts[i]);
+            if (currentPart > target[i]) return true;
+            if (currentPart < target[i]) return false;
+        }
+        return true;
     }
 
     private void initWorldEditHook() {
