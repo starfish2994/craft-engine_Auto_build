@@ -302,7 +302,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.GEANTY_REF,
                 Dependencies.CLOUD_CORE, Dependencies.CLOUD_SERVICES,
                 Dependencies.GSON,
-                Dependencies.COMMONS_IO,
+                Dependencies.COMMONS_IO, Dependencies.COMMONS_LANG3, Dependencies.COMMONS_IMAGING,
                 Dependencies.ZSTD,
                 Dependencies.BYTE_BUDDY,
                 Dependencies.SNAKE_YAML,
@@ -316,8 +316,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.LZ4,
                 Dependencies.EVALEX,
                 Dependencies.NETTY_HTTP,
-                Dependencies.JIMFS,
-                Dependencies.COMMONS_IMAGING
+                Dependencies.JIMFS
         );
     }
 

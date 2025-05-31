@@ -158,10 +158,24 @@ public class Dependencies {
         }
     };
 
+    public static final Dependency COMMONS_LANG3 = new Dependency(
+            "commons-lang3",
+            "org{}apache{}commons",
+            "commons-lang3",
+            List.of(Relocation.of("commons", "org{}apache{}commons"))
+    );
+
     public static final Dependency COMMONS_IO = new Dependency(
             "commons-io",
             "commons-io",
             "commons-io",
+            List.of(Relocation.of("commons", "org{}apache{}commons"))
+    );
+
+    public static final Dependency COMMONS_IMAGING = new Dependency(
+            "commons-imaging",
+            "org{}apache{}commons",
+            "commons-imaging",
             List.of(Relocation.of("commons", "org{}apache{}commons"))
     );
 
@@ -381,12 +395,6 @@ public class Dependencies {
             List.of(Relocation.of("jimfs", "com{}google{}common{}jimfs"))
     );
 
-    public static final Dependency COMMONS_IMAGING = new Dependency(
-            "commons-imaging",
-            "org{}apache{}commons",
-            "commons-imaging",
-            List.of(Relocation.of("commons", "org{}apache{}commons"))
-    );
 
     public static final Dependency AMAZON_AWSSDK_S3 = new Dependency(
             "amazon-sdk-s3",
