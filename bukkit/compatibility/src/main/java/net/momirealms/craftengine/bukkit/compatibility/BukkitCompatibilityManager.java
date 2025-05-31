@@ -176,7 +176,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
     }
 
-    @SuppressWarnings("all")
+    @SuppressWarnings({"deprecation", "all"})
     private void initFastAsyncWorldEditHook() {
         Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
         String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();

@@ -138,6 +138,13 @@ public class PacketConsumers {
         }
     }
 
+    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
+        return (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            user.entityPacketHandlers().putIfAbsent(buf.readVarInt(), handler);
+        };
+    }
+
     public static void initBlocks(Map<Integer, Integer> map, int registrySize) {
         mappings = new int[registrySize];
         for (int i = 0; i < registrySize; i++) {
@@ -349,7 +356,7 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BLOCK_UPDATE = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            BlockPos pos = buf.readBlockPos(buf);
+            BlockPos pos = buf.readBlockPos();
             int before = buf.readVarInt();
             if (user.clientModEnabled() && !BlockStateUtils.isVanillaBlock(before)) {
                 return;
@@ -373,7 +380,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             int eventId = buf.readInt();
             if (eventId != WorldEvents.BLOCK_BREAK_EFFECT) return;
-            BlockPos blockPos = buf.readBlockPos(buf);
+            BlockPos blockPos = buf.readBlockPos();
             int state = buf.readInt();
             boolean global = buf.readBoolean();
             int newState = remap(state);
@@ -2286,10 +2293,4 @@ public class PacketConsumers {
         }
     };
 
-    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
-        return (user, event) -> {
-            FriendlyByteBuf buf = event.getBuffer();
-            user.entityPacketHandlers().putIfAbsent(buf.readVarInt(), handler);
-        };
-    }
 }
