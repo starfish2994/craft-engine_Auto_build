@@ -152,7 +152,7 @@ public class PacketConsumers {
             }
         };
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$INTERACTION$registryId] = (user, event) -> {
-            if (BukkitFurnitureManager.COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$INTERACTION) return;
+            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$INTERACTION) return;
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             // Cancel collider entity packet
@@ -163,7 +163,7 @@ public class PacketConsumers {
             }
         };
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OAK_BOAT$registryId] = (user, event) -> {
-            if (BukkitFurnitureManager.COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$OAK_BOAT) return;
+            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$OAK_BOAT) return;
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             // Cancel collider entity packet
