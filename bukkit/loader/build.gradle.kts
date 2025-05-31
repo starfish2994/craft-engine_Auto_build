@@ -67,7 +67,6 @@ tasks {
         relocate("com.saicone.rtag", "net.momirealms.craftengine.libraries.tag")
         relocate("org.incendo", "net.momirealms.craftengine.libraries")
         relocate("dev.dejvokep", "net.momirealms.craftengine.libraries")
-        relocate("org.apache.commons.io", "net.momirealms.craftengine.libraries.commons.io")
         relocate("org.bstats", "net.momirealms.craftengine.libraries.bstats")
         relocate("com.github.benmanes.caffeine", "net.momirealms.craftengine.libraries.caffeine")
         relocate("com.ezylang.evalex", "net.momirealms.craftengine.libraries.evalex")
@@ -78,6 +77,7 @@ tasks {
         relocate("software.amazon.awssdk", "net.momirealms.craftengine.libraries.awssdk")
         relocate("software.amazon.eventstream", "net.momirealms.craftengine.libraries.eventstream")
         relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
-        relocate("org.apache.commons.imaging", "net.momirealms.craftengine.libraries.imaging")
+        relocate("org.apache.commons.imaging", "net.momirealms.craftengine.libraries.commons.imaging")
+        relocate("org.apache.commons.io", "net.momirealms.craftengine.libraries.commons.io")
     }
 }
