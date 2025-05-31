@@ -103,20 +103,20 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         this.registerPacketHandlers();
         // set up packet senders
         this.packetConsumer = FastNMS.INSTANCE::sendPacket;
-        this.packetsConsumer = ((serverPlayer, packets) -> {
+        this.packetsConsumer = ((connection, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            this.packetConsumer.accept(serverPlayer, bundle);
+            this.packetConsumer.accept(connection, bundle);
         });
-        this.immediatePacketConsumer = (serverPlayer, packet) -> {
+        this.immediatePacketConsumer = (connection, packet) -> {
             try {
-                Reflections.method$Connection$sendPacketImmediate.invoke(FastNMS.INSTANCE.field$Player$connection$connection(serverPlayer), packet, null, true);
+                Reflections.method$Connection$sendPacketImmediate.invoke(connection, packet, null, true);
             } catch (ReflectiveOperationException e) {
                 plugin.logger().warn("Failed to invoke send packet", e);
             }
         };
-        this.immediatePacketsConsumer = (serverPlayer, packets) -> {
+        this.immediatePacketsConsumer = (connection, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            this.immediatePacketConsumer.accept(serverPlayer, bundle);
+            this.immediatePacketConsumer.accept(connection, bundle);
         };
         // set up mod channel
         this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
@@ -316,8 +316,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public void sendPacket(@NotNull Player player, @NotNull Object packet) {
         try {
-            Object serverPlayer = FastNMS.INSTANCE.method$CraftPlayer$getHandle(player);
-            this.immediatePacketConsumer.accept(serverPlayer, packet);
+            this.immediatePacketConsumer.accept(getUser(player).connection(), packet);
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to send packet", e);
         }
@@ -326,18 +325,18 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @Override
     public void sendPacket(@NotNull NetWorkUser player, Object packet, boolean immediately) {
         if (immediately) {
-            this.immediatePacketConsumer.accept(player.serverPlayer(), packet);
+            this.immediatePacketConsumer.accept(player.connection(), packet);
         } else {
-            this.packetConsumer.accept(player.serverPlayer(), packet);
+            this.packetConsumer.accept(player.connection(), packet);
         }
     }
 
     @Override
     public void sendPackets(@NotNull NetWorkUser player, List<Object> packet, boolean immediately) {
         if (immediately) {
-            this.immediatePacketsConsumer.accept(player.serverPlayer(), packet);
+            this.immediatePacketsConsumer.accept(player.connection(), packet);
         } else {
-            this.packetsConsumer.accept(player.serverPlayer(), packet);
+            this.packetsConsumer.accept(player.connection(), packet);
         }
     }
 
