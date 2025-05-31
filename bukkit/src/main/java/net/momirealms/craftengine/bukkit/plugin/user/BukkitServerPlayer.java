@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.user;
 
 import com.google.common.collect.Lists;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
@@ -8,6 +9,7 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
@@ -283,6 +285,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public void sendPacket(Object packet) {
+        this.nettyChannel().writeAndFlush(packet);
+    }
+
+    @Override
     public void sendPacket(Object packet, boolean immediately) {
         this.plugin.networkManager().sendPacket(this, packet, immediately);
     }
@@ -291,9 +298,14 @@ public class BukkitServerPlayer extends Player {
     public void sendCustomPayload(Key channel, byte[] data) {
         try {
             Object channelKey = KeyUtils.toResourceLocation(channel);
-            Object dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+            Object dataPayload;
+            if (DiscardedPayload.useNewMethod) {
+                dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+            } else {
+                dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+            }
             Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
-            this.nettyChannel().writeAndFlush(responsePacket);
+            this.sendPacket(responsePacket);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to send custom payload to " + name(), e);
         }
@@ -304,7 +316,7 @@ public class BukkitServerPlayer extends Player {
         try {
             Object reason = ComponentUtils.adventureToMinecraft(message);
             Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(reason);
-            this.nettyChannel().writeAndFlush(kickPacket);
+            this.sendPacket(kickPacket);
             this.nettyChannel().disconnect();
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to kick " + name(), e);

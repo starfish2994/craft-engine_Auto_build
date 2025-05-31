@@ -117,6 +117,15 @@ public class PacketConsumers {
                 buf.writeShort(za);
             }
         };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TRIDENT$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            BukkitProjectileManager.instance().projectileByEntityId(id).ifPresent(customProjectile -> {
+                ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, id);
+                handler.convertAddCustomProjectilePacket(buf, event);
+                user.entityPacketHandlers().put(id, handler);
+            });
+        };
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
@@ -136,6 +145,13 @@ public class PacketConsumers {
         if (VersionHelper.isOrAbove1_20_5()) {
             ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         }
+    }
+
+    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
+        return (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            user.entityPacketHandlers().put(buf.readVarInt(), handler);
+        };
     }
 
     public static void initBlocks(Map<Integer, Integer> map, int registrySize) {
@@ -349,7 +365,7 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> BLOCK_UPDATE = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
-            BlockPos pos = buf.readBlockPos(buf);
+            BlockPos pos = buf.readBlockPos();
             int before = buf.readVarInt();
             if (user.clientModEnabled() && !BlockStateUtils.isVanillaBlock(before)) {
                 return;
@@ -373,7 +389,7 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             int eventId = buf.readInt();
             if (eventId != WorldEvents.BLOCK_BREAK_EFFECT) return;
-            BlockPos blockPos = buf.readBlockPos(buf);
+            BlockPos blockPos = buf.readBlockPos();
             int state = buf.readInt();
             boolean global = buf.readBoolean();
             int newState = remap(state);
@@ -1435,12 +1451,6 @@ public class PacketConsumers {
                     event.setCancelled(true);
                     user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
                 }
-            } else {
-                BukkitProjectileManager.instance().projectileByEntityId(entityId).ifPresent(customProjectile -> {
-                    ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, entityId);
-                    event.replacePacket(handler.convertAddCustomProjectilePacket(packet));
-                    user.entityPacketHandlers().put(entityId, handler);
-                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
@@ -2286,10 +2296,4 @@ public class PacketConsumers {
         }
     };
 
-    private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
-        return (user, event) -> {
-            FriendlyByteBuf buf = event.getBuffer();
-            user.entityPacketHandlers().putIfAbsent(buf.readVarInt(), handler);
-        };
-    }
 }

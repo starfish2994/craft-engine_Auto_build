@@ -24,6 +24,8 @@ public interface NetWorkUser {
 
     void setUUID(UUID uuid);
 
+    void sendPacket(Object packet);
+
     void sendPacket(Object packet, boolean immediately);
 
     void sendCustomPayload(Key channel, byte[] data);

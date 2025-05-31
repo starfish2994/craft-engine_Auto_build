@@ -7005,4 +7005,15 @@ public class Reflections {
                     clazz$AbstractContainerMenu, int.class, new String[]{"incrementStateId", "k"}
             )
     );
+
+    public static final Class<?> clazz$ClientboundTickingStatePacket =
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass(
+                            "network.protocol.game.ClientboundTickingStatePacket"
+                    )
+            );
+
+    public static final Constructor<?> constructor$ClientboundTickingStatePacket = Optional.ofNullable(clazz$ClientboundTickingStatePacket)
+            .map(it -> ReflectionUtils.getConstructor(it, float.class, boolean.class))
+            .orElse(null);
 }
