@@ -2214,7 +2214,7 @@ public class PacketConsumers {
                 }
                 for (ResourcePackDownloadData data : dataList) {
                     Object newPacket = ResourcePackUtils.createPacket(data.uuid(), data.url(), data.sha1());
-                    user.nettyChannel().writeAndFlush(newPacket);
+                    user.sendPacket(newPacket, true);
                     user.addResourcePackUUID(data.uuid());
                 }
             }).exceptionally(throwable -> {
@@ -2256,7 +2256,7 @@ public class PacketConsumers {
                     || action == Reflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
                 Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(
                         ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
-                user.nettyChannel().writeAndFlush(kickPacket);
+                user.sendPacket(kickPacket, true);
                 user.nettyChannel().disconnect();
                 return;
             }

@@ -46,6 +46,8 @@ public interface NetWorkUser {
 
     Object platformPlayer();
 
+    Object connection();
+
     Map<Integer, EntityPacketHandler> entityPacketHandlers();
 
     boolean clientModEnabled();
