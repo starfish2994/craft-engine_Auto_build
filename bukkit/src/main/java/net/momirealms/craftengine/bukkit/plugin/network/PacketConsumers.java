@@ -117,6 +117,15 @@ public class PacketConsumers {
                 buf.writeShort(za);
             }
         };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TRIDENT$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            BukkitProjectileManager.instance().projectileByEntityId(id).ifPresent(customProjectile -> {
+                ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, id);
+                handler.convertAddCustomProjectilePacket(buf, event);
+                user.entityPacketHandlers().put(id, handler);
+            });
+        };
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
@@ -1442,12 +1451,6 @@ public class PacketConsumers {
                     event.setCancelled(true);
                     user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
                 }
-            } else {
-                BukkitProjectileManager.instance().projectileByEntityId(entityId).ifPresent(customProjectile -> {
-                    ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, entityId);
-                    event.replacePacket(handler.convertAddCustomProjectilePacket(packet));
-                    user.entityPacketHandlers().put(entityId, handler);
-                });
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
