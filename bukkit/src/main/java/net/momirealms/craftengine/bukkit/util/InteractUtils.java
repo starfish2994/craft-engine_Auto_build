@@ -297,6 +297,7 @@ public class InteractUtils {
     }
 
     public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, Item<ItemStack> item) {
+        if (item == null) return false;
         Key blockType = BlockStateUtils.getBlockOwnerIdFromData(state);
         if (WILL_CONSUME.containsKey(blockType)) {
             return WILL_CONSUME.get(blockType).apply(player, item, state, hit);
