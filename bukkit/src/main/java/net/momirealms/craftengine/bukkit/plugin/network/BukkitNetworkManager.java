@@ -156,7 +156,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.USE_ITEM_ON, Reflections.clazz$ServerboundUseItemOnPacket);
         registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_BLOCK, Reflections.clazz$ServerboundPickItemFromBlockPacket);
         registerNMSPacketConsumer(PacketConsumers.SET_CREATIVE_SLOT, Reflections.clazz$ServerboundSetCreativeModeSlotPacket);
-        registerNMSPacketConsumer(PacketConsumers.ADD_ENTITY, Reflections.clazz$ClientboundAddEntityPacket);
         registerNMSPacketConsumer(PacketConsumers.LOGIN, Reflections.clazz$ClientboundLoginPacket);
         registerNMSPacketConsumer(PacketConsumers.RESPAWN, Reflections.clazz$ClientboundRespawnPacket);
         registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, Reflections.clazz$ServerboundInteractPacket);
@@ -560,7 +559,18 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
+            } else {
+                throw CancelPacketException.INSTANCE;
             }
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            if (ExceptionUtils.hasException(cause, CancelPacketException.INSTANCE)) {
+                return;
+            }
+            super.exceptionCaught(ctx, cause);
         }
 
         private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {

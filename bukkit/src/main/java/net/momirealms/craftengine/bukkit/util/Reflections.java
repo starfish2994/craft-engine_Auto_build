@@ -6485,6 +6485,8 @@ public class Reflections {
             ReflectionUtils.getMethod(clazz$Registry, int.class, Object.class)
     );
 
+    public static final int instance$EntityType$OAK_BOAT$registryId;
+    public static final int instance$EntityType$INTERACTION$registryId;
     public static final int instance$EntityType$BLOCK_DISPLAY$registryId;
     public static final int instance$EntityType$ITEM_DISPLAY$registryId;
     public static final int instance$EntityType$TEXT_DISPLAY$registryId;
@@ -6507,6 +6509,8 @@ public class Reflections {
 
     static {
         try {
+            instance$EntityType$OAK_BOAT$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$OAK_BOAT);
+            instance$EntityType$INTERACTION$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$INTERACTION);
             instance$EntityType$BLOCK_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$BLOCK_DISPLAY);
             instance$EntityType$ITEM_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$ITEM_DISPLAY);
             instance$EntityType$TEXT_DISPLAY$registryId = (int) Reflections.method$Registry$getId.invoke(Reflections.instance$BuiltInRegistries$ENTITY_TYPE, instance$EntityType$TEXT_DISPLAY);
