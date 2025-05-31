@@ -93,8 +93,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         COLLISION_ENTITY_CLASS = Config.colliderType() == ColliderType.INTERACTION ? Interaction.class : Boat.class;
         NMS_COLLISION_ENTITY_TYPE = Config.colliderType() == ColliderType.INTERACTION ? Reflections.instance$EntityType$INTERACTION : Reflections.instance$EntityType$OAK_BOAT;
         COLLISION_ENTITY_TYPE = Config.colliderType();
-        Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.bootstrap());
-        Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.javaPlugin());
+        Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.javaPlugin());
         for (World world : Bukkit.getWorlds()) {
             List<Entity> entities = world.getEntities();
             for (Entity entity : entities) {

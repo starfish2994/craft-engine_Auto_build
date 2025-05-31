@@ -1,6 +1,8 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+
 plugins {
     id("com.gradleup.shadow") version "9.0.0-beta13"
-    id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
+    id("de.eldoria.plugin-yml.paper") version "0.7.1"
 }
 
 repositories {
@@ -25,7 +27,7 @@ dependencies {
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     implementation("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
-    implementation("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
+    implementation("net.momirealms:craft-engine-nms-helper-mojmap:${rootProject.properties["nms_helper_version"]}")
 }
 
 java {
@@ -42,16 +44,56 @@ tasks.withType<JavaCompile> {
     dependsOn(tasks.clean)
 }
 
-bukkit {
+paper {
     load = net.minecrell.pluginyml.bukkit.BukkitPluginDescription.PluginLoadOrder.POSTWORLD
-    main = "net.momirealms.craftengine.bukkit.BukkitCraftEnginePlugin"
+    main = "net.momirealms.craftengine.bukkit.PaperCraftEnginePlugin"
+    bootstrapper = "net.momirealms.craftengine.bukkit.PaperCraftEngineBootstrap"
     version = rootProject.properties["project_version"] as String
     name = "CraftEngine"
     apiVersion = "1.20"
     authors = listOf("XiaoMoMi")
     contributors = listOf("jhqwqmc", "iqtesterrr")
-    softDepend = listOf("PlaceholderAPI", "WorldEdit", "FastAsyncWorldEdit", "Skript")
     foliaSupported = true
+    serverDependencies {
+        register("PlaceholderAPI") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("WorldEdit") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("FastAsyncWorldEdit") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = false
+        }
+        register("Skript") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+        register("NeigeItems") {
+            required = false
+        }
+        register("MMOItems") {
+            required = false
+        }
+        register("ModelEngine") {
+            required = false
+        }
+        register("BetterModel") {
+            required = false
+        }
+        register("AuraSkills") {
+            required = false
+        }
+        register("LuckPerms") {
+            required = false
+        }
+        register("ViaVersion") {
+            required = false
+        }
+    }
 }
 
 artifacts {
@@ -60,7 +102,10 @@ artifacts {
 
 tasks {
     shadowJar {
-        archiveFileName = "${rootProject.name}-bukkit-plugin-${rootProject.properties["project_version"]}.jar"
+        manifest {
+            attributes["paperweight-mappings-namespace"] = "mojang"
+        }
+        archiveFileName = "${rootProject.name}-paper-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("net.momirealms.sparrow.nbt", "net.momirealms.craftengine.libraries.nbt")

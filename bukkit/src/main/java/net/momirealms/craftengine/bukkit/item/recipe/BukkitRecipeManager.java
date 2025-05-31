@@ -277,9 +277,9 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this.recipeEventListener, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this.recipeEventListener, this.plugin.javaPlugin());
         if (this.crafterEventListener != null) {
-            Bukkit.getPluginManager().registerEvents(this.crafterEventListener, this.plugin.bootstrap());
+            Bukkit.getPluginManager().registerEvents(this.crafterEventListener, this.plugin.javaPlugin());
         }
     }
 

@@ -92,7 +92,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
 
     public void delayedInit() {
         // events and tasks
-        Bukkit.getPluginManager().registerEvents(this, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this, this.plugin.javaPlugin());
         this.tickTask = this.plugin.scheduler().asyncRepeating(() -> {
             try {
                 if (this.isTicking) {

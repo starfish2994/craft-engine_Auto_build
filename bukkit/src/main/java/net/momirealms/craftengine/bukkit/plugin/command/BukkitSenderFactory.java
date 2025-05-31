@@ -71,7 +71,7 @@ public class BukkitSenderFactory extends SenderFactory<BukkitCraftEngine, Comman
 
     @Override
     protected void performCommand(CommandSender sender, String command) {
-        plugin().bootstrap().getServer().dispatchCommand(sender, command);
+        plugin().javaPlugin().getServer().dispatchCommand(sender, command);
     }
 
     @Override

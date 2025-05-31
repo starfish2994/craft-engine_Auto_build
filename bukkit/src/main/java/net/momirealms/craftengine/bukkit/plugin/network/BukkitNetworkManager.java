@@ -119,10 +119,10 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             this.immediatePacketConsumer.accept(connection, bundle);
         };
         // set up mod channel
-        this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL, this);
-        this.plugin.bootstrap().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.bootstrap(), MOD_CHANNEL);
+        this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL, this);
+        this.plugin.javaPlugin().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL);
         // 配置via频道
-        this.plugin.bootstrap().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.bootstrap(), VIA_CHANNEL, this);
+        this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), VIA_CHANNEL, this);
         // Inject server channel
         try {
             Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
@@ -213,7 +213,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             this.onlineUsers.put(player.getUniqueId(), user);
             this.resetUserArray();
             if (VersionHelper.isFolia()) {
-                player.getScheduler().runAtFixedRate(plugin.bootstrap(), (t) -> user.tick(),
+                player.getScheduler().runAtFixedRate(plugin.javaPlugin(), (t) -> user.tick(),
                         () -> plugin.debug(() -> "Player " + player.getName() + "'s entity scheduler is retired"), 1, 1);
             }
         }
@@ -264,7 +264,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     @Override
     public void init() {
-        Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
     }
 
     @Override

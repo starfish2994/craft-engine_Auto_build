@@ -29,6 +29,7 @@ import net.momirealms.craftengine.bukkit.util.RegistryUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.classpath.ReflectionClassPathAppender;
 import net.momirealms.craftengine.core.plugin.command.sender.SenderFactory;
 import net.momirealms.craftengine.core.plugin.compatibility.CompatibilityManager;
@@ -37,6 +38,7 @@ import net.momirealms.craftengine.core.plugin.dependency.Dependencies;
 import net.momirealms.craftengine.core.plugin.dependency.Dependency;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImpl;
 import net.momirealms.craftengine.core.plugin.logger.JavaPluginLogger;
+import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.CharacterUtils;
@@ -48,9 +50,12 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -60,24 +65,28 @@ import java.util.Optional;
 public class BukkitCraftEngine extends CraftEngine {
     private static final String COMPATIBILITY_CLASS = "net.momirealms.craftengine.bukkit.compatibility.BukkitCompatibilityManager";
     private static BukkitCraftEngine instance;
-    private final JavaPlugin bootstrap;
     private SchedulerTask tickTask;
     private boolean successfullyLoaded = false;
     private boolean successfullyEnabled = false;
     private boolean requiresRestart = false;
     private boolean hasMod = false;
     private AntiGriefLib antiGrief;
+    private JavaPlugin javaPlugin;
+    private final Path dataFolderPath;
 
-    public BukkitCraftEngine(JavaPlugin bootstrap) {
+    public BukkitCraftEngine(JavaPlugin plugin) {
+        this(new JavaPluginLogger(plugin.getLogger()), plugin.getDataFolder().toPath().toAbsolutePath(), new ReflectionClassPathAppender(plugin.getClass().getClassLoader()));
+    }
+
+    public BukkitCraftEngine(PluginLogger logger, Path dataFolderPath, ClassPathAppender classPathAppender) {
         super((p) -> {
             CraftEngineReloadEvent event = new CraftEngineReloadEvent((BukkitCraftEngine) p);
             EventUtils.fireAndForget(event);
         });
         instance = this;
-        this.bootstrap = bootstrap;
-        super.classPathAppender = new ReflectionClassPathAppender(this);
-        super.scheduler = new BukkitSchedulerAdapter(this);
-        super.logger = new JavaPluginLogger(bootstrap.getLogger());
+        this.dataFolderPath = dataFolderPath;
+        super.classPathAppender = classPathAppender;
+        super.logger = logger;
         super.platform = new BukkitPlatform();
         // find mod class if present
         Class<?> modClass = ReflectionUtils.getClazz(MOD_CLASS);
@@ -95,6 +104,11 @@ public class BukkitCraftEngine extends CraftEngine {
         } catch (ReflectiveOperationException e) {
             logger().warn("Compatibility class could not be instantiated: " + compatibilityClass.getName());
         }
+    }
+
+    public void setJavaPlugin(JavaPlugin javaPlugin) {
+        this.javaPlugin = javaPlugin;
+        super.scheduler = new BukkitSchedulerAdapter(this);
     }
 
     @Override
@@ -127,7 +141,7 @@ public class BukkitCraftEngine extends CraftEngine {
             logger().severe(" ");
             logger().severe(" ");
             logger().severe(" ");
-            Bukkit.getPluginManager().disablePlugin(this.bootstrap);
+            Bukkit.getPluginManager().disablePlugin(this.javaPlugin);
             return;
         }
         this.successfullyEnabled = true;
@@ -194,7 +208,7 @@ public class BukkitCraftEngine extends CraftEngine {
     @Override
     public void platformDelayedEnable() {
         if (Config.metrics()) {
-            new Metrics(this.bootstrap(), 24333);
+            new Metrics(this.javaPlugin(), 24333);
         }
         // tick task
         if (!VersionHelper.isFolia()) {
@@ -209,23 +223,40 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public InputStream resourceStream(String filePath) {
-        return bootstrap.getResource(CharacterUtils.replaceBackslashWithSlash(filePath));
+        return getResource(CharacterUtils.replaceBackslashWithSlash(filePath));
+    }
+
+    private @Nullable InputStream getResource(String filename) {
+        if (filename == null) {
+            throw new IllegalArgumentException("filename cannot be null");
+        }
+        try {
+            URL url = this.getClass().getClassLoader().getResource(filename);
+            if (url == null) {
+                return null;
+            }
+            URLConnection connection = url.openConnection();
+            connection.setUseCaches(false);
+            return connection.getInputStream();
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     @Override
     public File dataFolderFile() {
-        return bootstrap().getDataFolder();
+        return this.dataFolderPath.toFile();
     }
 
     @Override
     public Path dataFolderPath() {
-        return bootstrap().getDataFolder().toPath().toAbsolutePath();
+        return this.dataFolderPath;
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public String pluginVersion() {
-        return bootstrap().getDescription().getVersion();
+        return javaPlugin().getDescription().getVersion();
     }
 
     @Override
@@ -263,8 +294,8 @@ public class BukkitCraftEngine extends CraftEngine {
         return (SenderFactory<CraftEngine, CommandSender>) senderFactory;
     }
 
-    public JavaPlugin bootstrap() {
-        return bootstrap;
+    public JavaPlugin javaPlugin() {
+        return this.javaPlugin;
     }
 
     public static BukkitCraftEngine instance() {
@@ -336,7 +367,7 @@ public class BukkitCraftEngine extends CraftEngine {
 
     public AntiGriefLib antiGrief() {
         if (this.antiGrief == null) {
-            this.antiGrief = AntiGriefLib.builder(this.bootstrap)
+            this.antiGrief = AntiGriefLib.builder(this.javaPlugin)
                     .ignoreOP(true)
                     .silentLogs(false)
                     .build();

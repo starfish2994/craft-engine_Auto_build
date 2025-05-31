@@ -60,6 +60,8 @@ public class VersionHelper {
         }
     }
 
+    public static void init() {}
+
     public static float version() {
         return version;
     }

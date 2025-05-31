@@ -3,10 +3,10 @@ package net.momirealms.craftengine.bukkit;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BukkitBootstrap extends JavaPlugin {
+public class BukkitCraftEnginePlugin extends JavaPlugin {
     private final BukkitCraftEngine plugin;
 
-    public BukkitBootstrap() {
+    public BukkitCraftEnginePlugin() {
         this.plugin = new BukkitCraftEngine(this);
     }
 

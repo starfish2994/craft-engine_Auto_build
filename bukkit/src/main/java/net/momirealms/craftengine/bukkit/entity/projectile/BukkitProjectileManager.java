@@ -48,7 +48,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this, this.plugin.javaPlugin());
         for (World world : Bukkit.getWorlds()) {
             List<Entity> entities = world.getEntities();
             for (Entity entity : entities) {
@@ -166,7 +166,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         public ProjectileInjectTask(Projectile projectile) {
             this.projectile = projectile;
             if (VersionHelper.isFolia()) {
-                this.task = new FoliaTask(projectile.getScheduler().runAtFixedRate(plugin.bootstrap(), (t) -> this.run(), () -> {}, 1, 1));
+                this.task = new FoliaTask(projectile.getScheduler().runAtFixedRate(plugin.javaPlugin(), (t) -> this.run(), () -> {}, 1, 1));
             } else {
                 this.task = plugin.scheduler().sync().runRepeating(this, 1, 1);
             }

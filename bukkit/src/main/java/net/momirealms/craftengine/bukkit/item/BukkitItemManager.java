@@ -65,9 +65,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this.itemEventListener, this.plugin.bootstrap());
-        Bukkit.getPluginManager().registerEvents(this.debugStickListener, this.plugin.bootstrap());
-        Bukkit.getPluginManager().registerEvents(this.armorEventListener, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this.itemEventListener, this.plugin.javaPlugin());
+        Bukkit.getPluginManager().registerEvents(this.debugStickListener, this.plugin.javaPlugin());
+        Bukkit.getPluginManager().registerEvents(this.armorEventListener, this.plugin.javaPlugin());
     }
 
     @Override

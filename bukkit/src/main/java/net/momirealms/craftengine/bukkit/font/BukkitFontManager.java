@@ -42,7 +42,7 @@ public class BukkitFontManager extends AbstractFontManager implements Listener {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
     }
 
     @Override

@@ -46,7 +46,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this, plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
     }
 
     @Override

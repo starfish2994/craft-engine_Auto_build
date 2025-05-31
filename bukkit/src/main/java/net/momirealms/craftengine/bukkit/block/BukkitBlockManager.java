@@ -113,9 +113,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     @Override
     public void delayedInit() {
-        Bukkit.getPluginManager().registerEvents(this.blockEventListener, this.plugin.bootstrap());
+        Bukkit.getPluginManager().registerEvents(this.blockEventListener, this.plugin.javaPlugin());
         if (this.fallingBlockRemoveListener != null) {
-            Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, this.plugin.bootstrap());
+            Bukkit.getPluginManager().registerEvents(this.fallingBlockRemoveListener, this.plugin.javaPlugin());
         }
     }
 

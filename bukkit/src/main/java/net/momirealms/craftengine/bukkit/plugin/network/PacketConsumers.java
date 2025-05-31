@@ -1275,7 +1275,7 @@ public class PacketConsumers {
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (VersionHelper.isFolia()) {
-                player.platformPlayer().getScheduler().run(BukkitCraftEngine.instance().bootstrap(), (t) -> {
+                player.platformPlayer().getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), (t) -> {
                     try {
                         handleSetCreativeSlotPacketOnMainThread(player, packet);
                     } catch (Exception e) {
@@ -1413,7 +1413,7 @@ public class PacketConsumers {
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
             if (VersionHelper.isFolia()) {
-                player.getScheduler().run(BukkitCraftEngine.instance().bootstrap(), (t) -> {
+                player.getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), (t) -> {
                     try {
                         handlePickItemFromEntityOnMainThread(player, furniture);
                     } catch (Exception e) {
