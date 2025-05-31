@@ -88,6 +88,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.classPathAppender = classPathAppender;
         super.logger = logger;
         super.platform = new BukkitPlatform();
+        super.scheduler = new BukkitSchedulerAdapter(this);
         // find mod class if present
         Class<?> modClass = ReflectionUtils.getClazz(MOD_CLASS);
         if (modClass != null) {
@@ -108,7 +109,6 @@ public class BukkitCraftEngine extends CraftEngine {
 
     public void setJavaPlugin(JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
-        super.scheduler = new BukkitSchedulerAdapter(this);
     }
 
     @Override
