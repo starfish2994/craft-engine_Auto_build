@@ -24,8 +24,6 @@ public interface NetWorkUser {
 
     void setUUID(UUID uuid);
 
-    void sendPacket(Object packet);
-
     void sendPacket(Object packet, boolean immediately);
 
     void sendCustomPayload(Key channel, byte[] data);
@@ -47,6 +45,8 @@ public interface NetWorkUser {
     Object serverPlayer();
 
     Object platformPlayer();
+
+    Object connection();
 
     Map<Integer, EntityPacketHandler> entityPacketHandlers();
 

@@ -56,6 +56,7 @@ public class BukkitServerPlayer extends Player {
     private ProtocolVersion protocolVersion = ProtocolVersion.UNKNOWN;
     // connection state
     private final Channel channel;
+    private final Object connection;
     private String name;
     private UUID uuid;
     private ConnectionState decoderState;
@@ -107,6 +108,7 @@ public class BukkitServerPlayer extends Player {
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
         this.plugin = plugin;
+        this.connection = channel.pipeline().get("packet_handler");
     }
 
     public void setPlayer(org.bukkit.entity.Player player) {
@@ -285,11 +287,6 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void sendPacket(Object packet) {
-        this.nettyChannel().writeAndFlush(packet);
-    }
-
-    @Override
     public void sendPacket(Object packet, boolean immediately) {
         this.plugin.networkManager().sendPacket(this, packet, immediately);
     }
@@ -305,7 +302,7 @@ public class BukkitServerPlayer extends Player {
                 dataPayload = Reflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
             }
             Object responsePacket = Reflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
-            this.sendPacket(responsePacket);
+            this.sendPacket(responsePacket, true);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to send custom payload to " + name(), e);
         }
@@ -316,7 +313,7 @@ public class BukkitServerPlayer extends Player {
         try {
             Object reason = ComponentUtils.adventureToMinecraft(message);
             Object kickPacket = Reflections.constructor$ClientboundDisconnectPacket.newInstance(reason);
-            this.sendPacket(kickPacket);
+            this.sendPacket(kickPacket, true);
             this.nettyChannel().disconnect();
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to kick " + name(), e);
@@ -778,6 +775,11 @@ public class BukkitServerPlayer extends Player {
     public org.bukkit.entity.Player platformPlayer() {
         if (playerRef == null) return null;
         return playerRef.get();
+    }
+
+    @Override
+    public Object connection() {
+        return this.connection;
     }
 
     @Override
