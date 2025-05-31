@@ -117,40 +117,82 @@ public class PacketConsumers {
                 buf.writeShort(za);
             }
         };
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TRIDENT$registryId] = (user, event) -> {
-            FriendlyByteBuf buf = event.getBuffer();
-            int id = buf.readVarInt();
-            BukkitProjectileManager.instance().projectileByEntityId(id).ifPresent(customProjectile -> {
-                ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, id);
-                handler.convertAddCustomProjectilePacket(buf, event);
-                user.entityPacketHandlers().put(id, handler);
-            });
-        };
+
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EYE_OF_ENDER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREWORK_ROCKET$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SMALL_FIREBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EGG$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ENDER_PEARL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EXPERIENCE_BOTTLE$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SNOWBALL$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$POTION$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SMALL_FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EGG$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ENDER_PEARL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$EXPERIENCE_BOTTLE$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$SNOWBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$POTION$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$TRIDENT$registryId] = createOptionalCustomProjectileEntityHandler();
         if (VersionHelper.isOrAbove1_20_5()) {
             ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         }
+
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$ITEM_DISPLAY$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
+            if (furniture != null) {
+                user.entityPacketHandlers().put(id, new FurniturePacketHandler(furniture.fakeEntityIds()));
+                user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
+                if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
+                    event.setCancelled(true);
+                }
+            }
+        };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$INTERACTION$registryId] = (user, event) -> {
+            if (BukkitFurnitureManager.COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$INTERACTION) return;
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            // Cancel collider entity packet
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
+            if (furniture != null) {
+                event.setCancelled(true);
+                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
+            }
+        };
+        ADD_ENTITY_HANDLERS[Reflections.instance$EntityType$OAK_BOAT$registryId] = (user, event) -> {
+            if (BukkitFurnitureManager.COLLISION_ENTITY_TYPE != Reflections.instance$EntityType$OAK_BOAT) return;
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            // Cancel collider entity packet
+            BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
+            if (furniture != null) {
+                event.setCancelled(true);
+                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
+            }
+        };
     }
 
     private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
         return (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             user.entityPacketHandlers().put(buf.readVarInt(), handler);
+        };
+    }
+
+    private static BukkitNetworkManager.Handlers createOptionalCustomProjectileEntityHandler() {
+        return (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            int id = buf.readVarInt();
+            BukkitProjectileManager.instance().projectileByEntityId(id).ifPresentOrElse(customProjectile -> {
+                ProjectilePacketHandler handler = new ProjectilePacketHandler(customProjectile, id);
+                handler.convertAddCustomProjectilePacket(buf, event);
+                user.entityPacketHandlers().put(id, handler);
+            }, () -> {
+                user.entityPacketHandlers().put(id, CommonItemPacketHandler.INSTANCE);
+            });
         };
     }
 
@@ -1430,33 +1472,6 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ADD_ENTITY = (user, event, packet) -> {
-        try {
-            Object entityType = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$type(packet);
-            int entityId = FastNMS.INSTANCE.field$ClientboundAddEntityPacket$entityId(packet);
-            if (entityType == Reflections.instance$EntityType$ITEM_DISPLAY) {
-                // Furniture
-                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
-                if (furniture != null) {
-                    user.entityPacketHandlers().computeIfAbsent(entityId, k -> new FurniturePacketHandler(furniture.fakeEntityIds()));
-                    user.sendPacket(furniture.spawnPacket((Player) user.platformPlayer()), false);
-                    if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
-                        event.setCancelled(true);
-                    }
-                }
-            } else if (entityType == BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE) {
-                // Cancel collider entity packet
-                BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(entityId);
-                if (furniture != null) {
-                    event.setCancelled(true);
-                    user.entityPacketHandlers().put(entityId, FurnitureCollisionPacketHandler.INSTANCE);
-                }
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundAddEntityPacket", e);
-        }
-    };
-
     // 1.21.2+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SYNC_ENTITY_POSITION = (user, event, packet) -> {
         try {
@@ -2110,7 +2125,6 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_CREATIVE_MODE_SLOT = (user, event) -> {
         try {
-            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             short slotNum = buf.readShort();
@@ -2136,7 +2150,6 @@ public class PacketConsumers {
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK_1_20 = (user, event) -> {
         try {
             if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
-            if (!(user instanceof BukkitServerPlayer serverPlayer)) return;
             FriendlyByteBuf buf = event.getBuffer();
             boolean changed = false;
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
