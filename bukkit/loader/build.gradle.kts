@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":bukkit:legacy"))
     implementation(project(":bukkit:compatibility"))
     implementation(project(":bukkit:compatibility:legacy"))
+    implementation(project(":common-files"))
 
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")

@@ -126,7 +126,7 @@ CraftEngine 的实现依赖于以下基础库：
 
 ### 🌍 翻译
 1. 克隆此仓库。
-2. 在 `/bukkit/loader/src/main/resources/translations` 中创建一个新的语言文件。
+2. 在 `/common-files/src/main/resources/translations` 中创建一个新的语言文件。
 3. 完成后，提交 **pull request** 以供审核。我们感谢您的贡献！
 
 ## Differences Between Versions

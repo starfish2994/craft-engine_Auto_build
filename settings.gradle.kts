@@ -10,6 +10,7 @@ include(":server-mod:v1_20_1")
 include(":server-mod:v1_20_5")
 include(":server-mod:v1_21_5")
 include(":client-mod")
+include(":common-files")
 pluginManagement {
     plugins {
         kotlin("jvm") version "2.1.20"
