@@ -150,7 +150,7 @@ public class PacketConsumers {
     private static BukkitNetworkManager.Handlers simpleAddEntityHandler(EntityPacketHandler handler) {
         return (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
-            user.entityPacketHandlers().putIfAbsent(buf.readVarInt(), handler);
+            user.entityPacketHandlers().put(buf.readVarInt(), handler);
         };
     }
 
