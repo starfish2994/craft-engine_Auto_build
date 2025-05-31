@@ -24,7 +24,7 @@ dependencies {
     implementation("com.saicone.rtag:rtag-item:${rootProject.properties["rtag_version"]}")
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     implementation("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
-    implementation("net.momirealms:craft-engine-nms-helper:${rootProject.properties["nms_helper_version"]}")
+    implementation("net.momirealms:craft-engine-nms-helper-mojmap:${rootProject.properties["nms_helper_version"]}")
 }
 
 java {
@@ -59,6 +59,9 @@ artifacts {
 
 tasks {
     shadowJar {
+        manifest {
+            attributes["paperweight-mappings-namespace"] = "mojang"
+        }
         archiveFileName = "${rootProject.name}-bukkit-plugin-${rootProject.properties["project_version"]}.jar"
         destinationDirectory.set(file("$rootDir/target"))
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
