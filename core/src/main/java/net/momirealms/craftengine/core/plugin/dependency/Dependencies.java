@@ -1,9 +1,19 @@
 package net.momirealms.craftengine.core.plugin.dependency;
 
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.dependency.relocation.Relocation;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 public class Dependencies {
 
@@ -176,7 +186,16 @@ public class Dependencies {
             "commons-imaging",
             "org{}apache{}commons",
             "commons-imaging",
-            List.of(Relocation.of("commons", "org{}apache{}commons"))
+            List.of(Relocation.of("commons", "org{}apache{}commons")),
+            (p) -> {
+                try (JarFile jarFile = new JarFile(p.toFile())) {
+                    ZipEntry entry = jarFile.getEntry("net/momirealms/craftengine/libraries/commons/imaging/Imaging.class");
+                    return entry != null;
+                } catch (IOException e) {
+                    CraftEngine.instance().logger().warn("Error reading jar file", e);
+                    return false;
+                }
+            }
     );
 
     public static final Dependency BYTE_BUDDY = new Dependency(
