@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.user;
 import com.google.common.collect.Lists;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
@@ -56,7 +57,7 @@ public class BukkitServerPlayer extends Player {
     private ProtocolVersion protocolVersion = ProtocolVersion.UNKNOWN;
     // connection state
     private final Channel channel;
-    private final Object connection;
+    private ChannelHandler connection;
     private String name;
     private UUID uuid;
     private ConnectionState decoderState;
@@ -108,7 +109,13 @@ public class BukkitServerPlayer extends Player {
     public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
         this.channel = channel;
         this.plugin = plugin;
-        this.connection = channel.pipeline().get("packet_handler");
+        for (String name : channel.pipeline().names()) {
+            ChannelHandler handler = channel.pipeline().get(name);
+            if (Reflections.clazz$Connection.isInstance(handler)) {
+                this.connection = handler;
+                break;
+            }
+        }
     }
 
     public void setPlayer(org.bukkit.entity.Player player) {
@@ -778,7 +785,15 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public Object connection() {
+    public ChannelHandler connection() {
+        if (this.connection == null) {
+            Object serverPlayer = serverPlayer();
+            if (serverPlayer != null) {
+                this.connection = (ChannelHandler) FastNMS.INSTANCE.field$Player$connection$connection(serverPlayer);
+            } else {
+                throw new IllegalStateException("Cannot init or find connection instance for player " + name());
+            }
+        }
         return this.connection;
     }
 

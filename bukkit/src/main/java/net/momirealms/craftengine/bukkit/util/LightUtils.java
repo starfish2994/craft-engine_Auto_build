@@ -26,11 +26,11 @@ public class LightUtils {
                 Object chunkPos = FastNMS.INSTANCE.constructor$ChunkPos((int) chunkKey, (int) (chunkKey >> 32));
                 Object lightPacket = FastNMS.INSTANCE.constructor$ClientboundLightUpdatePacket(chunkPos, lightEngine, entry.getValue(), entry.getValue());
                 for (Object player : players) {
-                    FastNMS.INSTANCE.sendPacket(player, lightPacket);
+                    FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(player), lightPacket);
                 }
             }
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Could not update light for world " + world.getName());
+            CraftEngine.instance().logger().warn("Could not update light for world " + world.getName(), e);
         }
     }
 }
