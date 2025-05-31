@@ -560,7 +560,18 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }
             if (byteBuf.isReadable()) {
                 list.add(byteBuf.retain());
+            } else {
+                throw CancelPacketException.INSTANCE;
             }
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            if (ExceptionUtils.hasException(cause, CancelPacketException.INSTANCE)) {
+                return;
+            }
+            super.exceptionCaught(ctx, cause);
         }
 
         private boolean handleCompression(ChannelHandlerContext ctx, ByteBuf buffer) {

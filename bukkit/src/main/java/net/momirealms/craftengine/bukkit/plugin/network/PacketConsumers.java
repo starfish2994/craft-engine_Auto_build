@@ -1275,13 +1275,13 @@ public class PacketConsumers {
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (VersionHelper.isFolia()) {
-                BukkitCraftEngine.instance().scheduler().sync().run(() -> {
+                player.platformPlayer().getScheduler().run(BukkitCraftEngine.instance().bootstrap(), (t) -> {
                     try {
                         handleSetCreativeSlotPacketOnMainThread(player, packet);
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
                     }
-                }, (World) player.world().platformWorld(), (MCUtils.fastFloor(player.x())) >> 4, (MCUtils.fastFloor(player.z())) >> 4);
+                }, () -> {});
             } else {
                 handleSetCreativeSlotPacketOnMainThread(player, packet);
             }
@@ -1413,16 +1413,13 @@ public class PacketConsumers {
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
             if (VersionHelper.isFolia()) {
-                Location location = player.getLocation();
-                int x = location.getBlockX();
-                int z = location.getBlockZ();
-                BukkitCraftEngine.instance().scheduler().sync().run(() -> {
+                player.getScheduler().run(BukkitCraftEngine.instance().bootstrap(), (t) -> {
                     try {
                         handlePickItemFromEntityOnMainThread(player, furniture);
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundPickItemFromEntityPacket", e);
                     }
-                }, player.getWorld(), x >> 4, z >> 4);
+                }, () -> {});
             } else {
                 BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                     try {
