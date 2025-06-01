@@ -91,8 +91,10 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockParser = new BlockParser();
         this.initVanillaRegistry();
         this.loadMappingsAndAdditionalBlocks();
-        this.registerBlocks();
-        this.registerEmptyBlock();
+        if (!plugin.requiresRestart()) {
+            this.registerBlocks();
+            this.registerEmptyBlock();
+        }
     }
 
     @Override
@@ -718,7 +720,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Object blockHolder;
             Object resourceLocation = createResourceLocation(realBlockKey);
 
-            if (plugin.hasMod()) {
+            if (this.plugin.hasMod()) {
                 newRealBlock = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
                 newBlockState = getOnlyBlockState(newRealBlock);
 
@@ -729,7 +731,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 try {
                     newRealBlock = BlockGenerator.generateBlock(clientSideBlockType, clientSideBlock, blockProperties);
                 } catch (Throwable throwable) {
-                    plugin.logger().warn("Failed to generate dynamic block class", throwable);
+                    this.plugin.logger().warn("Failed to generate dynamic block class", throwable);
                     continue;
                 }
 

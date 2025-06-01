@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.plugin.classpath.PaperClassPathAppender
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.plugin.logger.Slf4jPluginLogger;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,13 +45,15 @@ public class PaperCraftEngineBootstrap implements PluginBootstrap {
         );
         this.plugin.applyDependencies();
         this.plugin.setUpConfig();
-        context.getLifecycleManager().registerEventHandler(LifecycleEvents.DATAPACK_DISCOVERY, (e) -> {
-            try {
-                this.plugin.injectRegistries();
-            } catch (Throwable ex) {
-                logger.warn("Failed to inject registries", ex);
-            }
-        });
+        if (VersionHelper.isOrAbove1_21_4()) {
+            context.getLifecycleManager().registerEventHandler(LifecycleEvents.DATAPACK_DISCOVERY, (e) -> {
+                try {
+                    this.plugin.injectRegistries();
+                } catch (Throwable ex) {
+                    logger.warn("Failed to inject registries", ex);
+                }
+            });
+        }
     }
 
     @Override

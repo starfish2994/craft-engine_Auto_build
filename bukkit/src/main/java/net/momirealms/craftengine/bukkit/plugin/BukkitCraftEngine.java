@@ -74,12 +74,12 @@ public class BukkitCraftEngine extends CraftEngine {
     private JavaPlugin javaPlugin;
     private final Path dataFolderPath;
 
-    public BukkitCraftEngine(JavaPlugin plugin) {
+    protected BukkitCraftEngine(JavaPlugin plugin) {
         this(new JavaPluginLogger(plugin.getLogger()), plugin.getDataFolder().toPath().toAbsolutePath(), new ReflectionClassPathAppender(plugin.getClass().getClassLoader()));
         this.setJavaPlugin(plugin);
     }
 
-    public BukkitCraftEngine(PluginLogger logger, Path dataFolderPath, ClassPathAppender classPathAppender) {
+    protected BukkitCraftEngine(PluginLogger logger, Path dataFolderPath, ClassPathAppender classPathAppender) {
         super((p) -> {
             CraftEngineReloadEvent event = new CraftEngineReloadEvent((BukkitCraftEngine) p);
             EventUtils.fireAndForget(event);
@@ -128,6 +128,10 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void onPluginLoad() {
+        if (super.blockManager == null) {
+            injectRegistries();
+        }
+        if (this.requiresRestart) return;
         try {
             WorldStorageInjector.init();
         } catch (Exception e) {
@@ -172,7 +176,7 @@ public class BukkitCraftEngine extends CraftEngine {
             return;
         }
         this.successfullyEnabled = true;
-        if (this.hasMod && this.requiresRestart) {
+        if (this.requiresRestart) {
             logger().warn(" ");
             logger().warn(" ");
             logger().warn(" ");
