@@ -45,8 +45,8 @@ tasks.withType<JavaCompile> {
 
 paper {
     load = net.minecrell.pluginyml.bukkit.BukkitPluginDescription.PluginLoadOrder.POSTWORLD
-    main = "net.momirealms.craftengine.bukkit.PaperCraftEnginePlugin"
-    bootstrapper = "net.momirealms.craftengine.bukkit.PaperCraftEngineBootstrap"
+    main = "net.momirealms.craftengine.bukkit.plugin.PaperCraftEnginePlugin"
+    bootstrapper = "net.momirealms.craftengine.bukkit.plugin.PaperCraftEngineBootstrap"
     version = rootProject.properties["project_version"] as String
     name = "CraftEngine"
     apiVersion = "1.20"

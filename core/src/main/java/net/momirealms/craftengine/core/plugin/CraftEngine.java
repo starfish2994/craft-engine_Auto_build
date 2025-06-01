@@ -96,7 +96,7 @@ public abstract class CraftEngine implements Plugin {
         return instance;
     }
 
-    public void onPluginLoad() {
+    protected void onPluginLoad() {
         ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
         ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
     }
@@ -194,7 +194,7 @@ public abstract class CraftEngine implements Plugin {
         return future;
     }
 
-    public void onPluginEnable() {
+    protected void onPluginEnable() {
         this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
@@ -232,7 +232,7 @@ public abstract class CraftEngine implements Plugin {
         });
     }
 
-    public void onPluginDisable() {
+    protected void onPluginDisable() {
         if (this.networkManager != null) this.networkManager.disable();
         if (this.fontManager != null) this.fontManager.disable();
         if (this.advancementManager != null) this.advancementManager.disable();

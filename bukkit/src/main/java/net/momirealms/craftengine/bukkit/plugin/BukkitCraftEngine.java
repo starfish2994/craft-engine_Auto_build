@@ -110,16 +110,16 @@ public class BukkitCraftEngine extends CraftEngine {
         }
     }
 
-    public void setJavaPlugin(JavaPlugin javaPlugin) {
+    protected void setJavaPlugin(JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
     }
 
-    public void setUpConfig() {
+    protected void setUpConfig() {
         this.translationManager = new TranslationManagerImpl(this);
         this.config = new Config(this);
     }
 
-    public void injectRegistries() {
+    protected void injectRegistries() {
         try {
             BlockGenerator.init();
             super.blockManager = new BukkitBlockManager(this);

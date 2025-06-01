@@ -43,7 +43,7 @@ tasks.withType<JavaCompile> {
 
 bukkit {
     load = net.minecrell.pluginyml.bukkit.BukkitPluginDescription.PluginLoadOrder.POSTWORLD
-    main = "net.momirealms.craftengine.bukkit.BukkitCraftEnginePlugin"
+    main = "net.momirealms.craftengine.bukkit.plugin.BukkitCraftEnginePlugin"
     version = rootProject.properties["project_version"] as String
     name = "CraftEngine"
     apiVersion = "1.20"

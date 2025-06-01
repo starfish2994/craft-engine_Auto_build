@@ -6,7 +6,6 @@ include(":bukkit:compatibility")
 include(":bukkit:compatibility:legacy")
 include(":bukkit:loader")
 include(":bukkit:paper-loader")
-include(":client-mod")
 include(":common-files")
 pluginManagement {
     plugins {

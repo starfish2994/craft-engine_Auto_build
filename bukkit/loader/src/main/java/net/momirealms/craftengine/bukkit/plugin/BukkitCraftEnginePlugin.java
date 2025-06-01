@@ -1,6 +1,5 @@
-package net.momirealms.craftengine.bukkit;
+package net.momirealms.craftengine.bukkit.plugin;
 
-import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BukkitCraftEnginePlugin extends JavaPlugin {

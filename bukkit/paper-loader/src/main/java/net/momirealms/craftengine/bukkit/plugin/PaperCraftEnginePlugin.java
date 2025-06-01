@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit;
+package net.momirealms.craftengine.bukkit.plugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
