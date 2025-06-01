@@ -17,7 +17,7 @@ import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.shared.block.BlockBehavior;
+import net.momirealms.craftengine.core.block.BlockBehavior;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 

@@ -19,7 +19,7 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.shared.block.BlockBehavior;
+import net.momirealms.craftengine.core.block.BlockBehavior;
 import org.bukkit.Location;
 import org.bukkit.World;
 

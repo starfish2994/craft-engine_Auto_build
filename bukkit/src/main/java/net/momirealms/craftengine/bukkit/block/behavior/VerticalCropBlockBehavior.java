@@ -16,7 +16,7 @@ import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.shared.block.BlockBehavior;
+import net.momirealms.craftengine.core.block.BlockBehavior;
 
 import java.util.Map;
 import java.util.concurrent.Callable;

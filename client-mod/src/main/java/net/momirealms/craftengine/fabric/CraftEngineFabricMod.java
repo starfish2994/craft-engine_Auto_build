@@ -11,6 +11,8 @@ import net.momirealms.craftengine.fabric.util.BlockUtils;
 import net.momirealms.craftengine.fabric.util.LoggerFilter;
 import net.momirealms.craftengine.fabric.util.RegisterBlocks;
 import net.momirealms.craftengine.fabric.util.YamlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -23,14 +25,14 @@ import java.util.Map;
 public class CraftEngineFabricMod implements ModInitializer {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("craft-engine-fabric-mod/config.yml");
     public static final String MOD_ID = "craftengine";
+    public static final Logger LOGGER = LoggerFactory.getLogger("craftengine");
 
     @Override
     public void onInitialize() {
         loadConfig();
         LoggerFilter.filter();
         try {
-            YamlUtils.saveDefaultResource("additional-real-blocks.yml");
-            YamlUtils.saveDefaultResource("mappings.yml");
+            YamlUtils.saveDefaultResource();
             Map<Identifier, Integer> map = YamlUtils.loadMappingsAndAdditionalBlocks();
             for (Map.Entry<Identifier, Integer> entry : map.entrySet()) {
                 Identifier replacedBlockId = entry.getKey();
@@ -46,7 +48,7 @@ public class CraftEngineFabricMod implements ModInitializer {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -68,7 +70,7 @@ public class CraftEngineFabricMod implements ModInitializer {
             ModConfig.enableNetwork = (Boolean) config.getOrDefault("enable-network", false);
             ModConfig.enableCancelBlockUpdate = (Boolean) config.getOrDefault("enable-cancel-block-update", false);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 }

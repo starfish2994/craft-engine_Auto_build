@@ -43,13 +43,11 @@ public class BlockUtils {
         try {
             if (state == null) return false;
             AbstractBlock.Settings settings = state.getBlock().getSettings();
-            boolean collidable = COLLIDABLE_FIELD.getBoolean(settings);
-            return !collidable;
+            return !COLLIDABLE_FIELD.getBoolean(settings);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access 'collidable' field", e);
         }
     }
-
 
     public static VoxelShape getShape(BlockState state) {
         if (state == null) return VoxelShapes.fullCube();

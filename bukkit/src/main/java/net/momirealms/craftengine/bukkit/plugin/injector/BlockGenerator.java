@@ -17,12 +17,11 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
-import net.momirealms.craftengine.core.block.BlockKeys;
+import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.shared.ObjectHolder;
-import net.momirealms.craftengine.shared.block.*;
+import net.momirealms.craftengine.core.util.ObjectHolder;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

@@ -1,4 +1,8 @@
-package net.momirealms.craftengine.shared.block;
+package net.momirealms.craftengine.core.block;
+
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
+import net.momirealms.craftengine.core.item.context.UseOnContext;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -60,5 +64,13 @@ public abstract class BlockBehavior {
     }
 
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
+    }
+
+    public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
+        return state;
+    }
+
+    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        return InteractionResult.PASS;
     }
 }

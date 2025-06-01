@@ -36,25 +36,18 @@ public class YamlUtils {
         }
     }
 
-    public static void saveDefaultResource(String fileName) throws IOException {
+    public static void saveDefaultResource() throws IOException {
         if (!Files.exists(CONFIG_DIR)) {
             Files.createDirectories(CONFIG_DIR);
-        }
-
-        Path targetPath = CONFIG_DIR.resolve(fileName);
-        if (Files.exists(targetPath)) return;
-        String resourcePath = "assets/craft-engine-fabric-mod/config/" + fileName;
-        try (InputStream inputStream = YamlUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                throw new IOException("Default config file not found: " + resourcePath);
-            }
-            Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            Path readme = CONFIG_DIR.resolve("README.text");
+            Files.writeString(readme, "Please copy 'mappings.yml' & 'additional-real-blocks.yml' to this folder to apply the configs.");
         }
     }
 
     public static Map<Identifier, Integer> loadMappingsAndAdditionalBlocks() throws IOException {
         Path mappingPath = CONFIG_DIR.resolve("mappings.yml");
         Path additionalYamlPath = CONFIG_DIR.resolve("additional-real-blocks.yml");
+        if (!Files.exists(additionalYamlPath) || !Files.exists(mappingPath)) return Map.of();
         Map<String, String> blockStateMappings = loadConfig(mappingPath);
         validateBlockStateMappings(blockStateMappings);
         Map<Identifier, Integer> blockTypeCounter = new LinkedHashMap<>();

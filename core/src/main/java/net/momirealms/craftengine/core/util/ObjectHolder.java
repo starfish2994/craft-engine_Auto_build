@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.shared;
+package net.momirealms.craftengine.core.util;
 
 public class ObjectHolder<T> {
     private T value;

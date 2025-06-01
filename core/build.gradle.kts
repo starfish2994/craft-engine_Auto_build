@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":shared"))
     // JOML
     compileOnly("org.joml:joml:1.10.8")
     // YAML

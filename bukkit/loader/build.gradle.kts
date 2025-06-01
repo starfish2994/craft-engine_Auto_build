@@ -14,7 +14,6 @@ dependencies {
     // Platform
     compileOnly("io.papermc.paper:paper-api:${rootProject.properties["paper_version"]}-R0.1-SNAPSHOT")
 
-    implementation(project(":shared"))
     implementation(project(":core"))
     implementation(project(":bukkit"))
     implementation(project(":bukkit:legacy"))

@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.momirealms.craftengine.fabric.client.CraftEngineFabricModClient;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -25,10 +26,8 @@ public class ModConfig {
                 .setParentScreen(parent)
                 .setSavingRunnable(ModConfig::saveConfig)
                 .setTitle(Text.translatable("title.craftengine.config"));
-
         ConfigCategory general = builder.getOrCreateCategory(Text.translatable("category.craftengine.general"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-
         general.addEntry(entryBuilder.startBooleanToggle(
                 Text.translatable("option.craftengine.enable_network")
                         .formatted(Formatting.WHITE),
@@ -51,7 +50,6 @@ public class ModConfig {
                 )
                 .build()
         );
-
         return builder.build();
     }
 

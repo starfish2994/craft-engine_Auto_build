@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.shared.block;
+package net.momirealms.craftengine.core.block;
 
 public interface NoteBlockIndicator {
 
