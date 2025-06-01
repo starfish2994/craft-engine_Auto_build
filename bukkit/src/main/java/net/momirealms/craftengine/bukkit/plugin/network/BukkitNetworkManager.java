@@ -67,8 +67,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         C2S_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
-    private final BiConsumer<Object, Object> packetConsumer;
-    private final BiConsumer<Object, List<Object>> packetsConsumer;
+    private final BiConsumer<ChannelHandler, Object> packetConsumer;
+    private final BiConsumer<ChannelHandler, List<Object>> packetsConsumer;
     private final BiConsumer<Channel, Object> immediatePacketConsumer;
     private final BiConsumer<Channel, List<Object>> immediatePacketsConsumer;
     private final BukkitCraftEngine plugin;
@@ -100,7 +100,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         hasViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
         this.plugin = plugin;
         // set up packet id
-        this.packetIds = setupPacketIds();
+        this.packetIds = VersionHelper.isOrAbove1_20_5() ? new PacketIds1_20_5() : new PacketIds1_20();
         // register packet handlers
         this.registerPacketHandlers();
         // set up packet senders
@@ -114,6 +114,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             this.immediatePacketConsumer.accept(channel, bundle);
         };
+        // todo 可以删除吗
         // set up mod channel
         this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL, this);
         this.plugin.javaPlugin().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL);
@@ -132,15 +133,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             }, (object) -> {});
             CoreReflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
         } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to init server connection", e);
-        }
-    }
-
-    private PacketIds setupPacketIds() {
-        if (VersionHelper.isOrAbove1_20_5()) {
-            return new PacketIds1_20_5();
-        } else {
-            return new PacketIds1_20();
+            throw new RuntimeException("Failed to init server connection", e);
         }
     }
 
@@ -249,7 +242,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
         if (channel.equals(VIA_CHANNEL)) {
-            BukkitServerPlayer user = plugin.adapt(player);
+            BukkitServerPlayer user = this.plugin.adapt(player);
             if (user != null) {
                 JsonObject payload = GsonHelper.get().fromJson(new String(message), JsonObject.class);
                 int version = payload.get("version").getAsInt();
@@ -260,37 +253,37 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     @Override
     public void init() {
-        Bukkit.getPluginManager().registerEvents(this, plugin.javaPlugin());
+        Bukkit.getPluginManager().registerEvents(this, this.plugin.javaPlugin());
     }
 
     @Override
     public void disable() {
         HandlerList.unregisterAll(this);
-        for (Channel channel : injectedChannels) {
+        for (Channel channel : this.injectedChannels) {
             uninjectServerChannel(channel);
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
             handleDisconnection(getChannel(player));
         }
-        injectedChannels.clear();
+        this.injectedChannels.clear();
     }
 
     @Override
     public void setUser(Channel channel, NetWorkUser user) {
         ChannelPipeline pipeline = channel.pipeline();
-        users.put(pipeline, (BukkitServerPlayer) user);
+        this.users.put(pipeline, (BukkitServerPlayer) user);
     }
 
     @Override
     public NetWorkUser getUser(Channel channel) {
         ChannelPipeline pipeline = channel.pipeline();
-        return users.get(pipeline);
+        return this.users.get(pipeline);
     }
 
     @Override
     public NetWorkUser removeUser(Channel channel) {
         ChannelPipeline pipeline = channel.pipeline();
-        return users.remove(pipeline);
+        return this.users.remove(pipeline);
     }
 
     @Override
@@ -303,19 +296,11 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     public NetWorkUser getOnlineUser(Player player) {
-        return onlineUsers.get(player.getUniqueId());
+        return this.onlineUsers.get(player.getUniqueId());
     }
 
     public Channel getChannel(Player player) {
         return (Channel) FastNMS.INSTANCE.field$Player$connection$connection$channel(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
-    }
-
-    public void sendPacket(@NotNull Player player, @NotNull Object packet) {
-        try {
-            this.immediatePacketConsumer.accept(getUser(player).nettyChannel(), packet);
-        } catch (Exception e) {
-            this.plugin.logger().warn("Failed to send packet", e);
-        }
     }
 
     @Override

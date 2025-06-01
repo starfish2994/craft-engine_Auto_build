@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.injector;
 
-public interface InternalFieldAccessor {
+public interface FieldAccessor {
 
     int field$ClientboundMoveEntityPacket$entityId(Object packet);
 }

@@ -160,7 +160,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
         Object packet = TagUtils.createUpdateTagsPacket(Map.of(MRegistries.instance$Registries$BLOCK, list));
         for (Player player : Bukkit.getOnlinePlayers()) {
-            this.plugin.networkManager().sendPacket(player, packet);
+            this.plugin.networkManager().sendPacket(this.plugin.adapt(player), packet);
         }
         // 如果空，那么新来的玩家就没必要收到更新包了
         if (list.isEmpty()) {

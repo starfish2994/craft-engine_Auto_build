@@ -62,7 +62,7 @@ public class BlockEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Object packet = this.manager.cachedUpdateTagsPacket;
         if (packet != null) {
-            this.plugin.networkManager().sendPacket(event.getPlayer(), packet);
+            this.plugin.adapt(event.getPlayer()).sendPacket(packet, false);
         }
     }
 

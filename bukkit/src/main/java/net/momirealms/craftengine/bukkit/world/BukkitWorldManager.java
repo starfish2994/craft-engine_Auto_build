@@ -2,7 +2,8 @@ package net.momirealms.craftengine.bukkit.world;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.RecipeInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.WorldStorageInjector;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -291,7 +292,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
             for (int i = 0; i < ceSections.length; i++) {
                 CESection ceSection = ceSections[i];
                 Object section = sections[i];
-                BukkitInjector.uninjectLevelChunkSection(section);
+                WorldStorageInjector.uninjectLevelChunkSection(section);
                 if (Config.restoreVanillaBlocks()) {
                     if (!ceSection.statesContainer().isEmpty()) {
                         for (int x = 0; x < 16; x++) {
@@ -394,14 +395,14 @@ public class BukkitWorldManager implements WorldManager, Listener {
                         }
                     }
                     int finalI = i;
-                    BukkitInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
+                    WorldStorageInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
                             (injected) -> sections[finalI] = injected);
                 }
                 if (Config.enableRecipeSystem()) {
                     @SuppressWarnings("unchecked")
                     Map<Object, Object> blockEntities = (Map<Object, Object>) FastNMS.INSTANCE.field$ChunkAccess$blockEntities(levelChunk);
                     for (Object blockEntity : blockEntities.values()) {
-                        BukkitInjector.injectCookingBlockEntity(blockEntity);
+                        RecipeInjector.injectCookingBlockEntity(blockEntity);
                     }
                 }
             } catch (ReflectiveOperationException e) {

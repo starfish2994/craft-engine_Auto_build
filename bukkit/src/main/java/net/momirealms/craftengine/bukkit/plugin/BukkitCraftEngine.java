@@ -17,9 +17,7 @@ import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
-import net.momirealms.craftengine.bukkit.plugin.injector.BlockGenerator;
-import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
-import net.momirealms.craftengine.bukkit.plugin.injector.InjectionException;
+import net.momirealms.craftengine.bukkit.plugin.injector.*;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.BukkitSchedulerAdapter;
@@ -130,7 +128,21 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public void onPluginLoad() {
-        BukkitInjector.init();
+        try {
+            WorldStorageInjector.init();
+        } catch (Exception e) {
+            throw new InjectionException("Error injecting world storage", e);
+        }
+        try {
+            RecipeInjector.init();
+        } catch (Exception e) {
+            throw new InjectionException("Error injecting recipes", e);
+        }
+        try {
+            ProtectedFieldVisitor.init();
+        } catch (Exception e) {
+            throw new InjectionException("Error initializing ProtectedFieldVisitor", e);
+        }
         super.onPluginLoad();
         super.blockManager.init();
         super.networkManager = new BukkitNetworkManager(this);

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import com.mojang.datafixers.util.Pair;
+import net.momirealms.craftengine.bukkit.api.BukkitAdaptors;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
@@ -25,22 +26,6 @@ import static java.util.Objects.requireNonNull;
 
 public final class PlayerUtils {
     private PlayerUtils() {
-    }
-
-    public static void resendItemInHand(@NotNull final Player player) {
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        if (ItemUtils.isEmpty(itemInHand)) return;
-        Object serverPlayer = FastNMS.INSTANCE.method$CraftPlayer$getHandle(player);
-        try {
-            Object inventoryMenu = CoreReflections.field$Player$inventoryMenu.get(serverPlayer);
-            int containerId = CoreReflections.field$AbstractContainerMenu$containerId.getInt(inventoryMenu);
-            int heldItemSlot = player.getInventory().getHeldItemSlot();
-            int stateId = (int) CoreReflections.method$AbstractContainerMenu$incrementStateId.invoke(inventoryMenu);
-            Object packet = NetworkReflections.constructor$ClientboundContainerSetSlotPacket.newInstance(containerId, stateId, heldItemSlot + 36, FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemInHand));
-            BukkitCraftEngine.instance().networkManager().sendPacket(player, packet);
-        } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to resend item in hand", e);
-        }
     }
 
     public static void dropItem(@NotNull Player player, @NotNull ItemStack itemStack, boolean retainOwnership, boolean noPickUpDelay, boolean throwRandomly) {
@@ -185,7 +170,7 @@ public final class PlayerUtils {
             packets.add(packet3);
 
             Object bundlePacket = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            BukkitNetworkManager.instance().sendPacket(player, bundlePacket);
+            BukkitNetworkManager.instance().sendPacket(BukkitAdaptors.adapt(player), bundlePacket);
         } catch (ReflectiveOperationException e) {
             BukkitCraftEngine.instance().logger().warn("Failed to send totem animation");
         }

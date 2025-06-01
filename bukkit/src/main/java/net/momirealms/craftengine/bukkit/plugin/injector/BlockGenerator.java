@@ -32,7 +32,6 @@ import java.util.concurrent.Callable;
 public final class BlockGenerator {
     private static final BukkitBlockShape STONE_SHAPE =
             new BukkitBlockShape(MBlocks.STONE$defaultState, MBlocks.STONE$defaultState);
-    private static Class<?> clazz$CraftEngineBlock;
     private static MethodHandle constructor$CraftEngineBlock;
     private static Field field$CraftEngineBlock$behavior;
     private static Field field$CraftEngineBlock$shape;
@@ -136,7 +135,7 @@ public final class BlockGenerator {
                 // neighborChanged
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$neighborChanged))
                 .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE));
-        clazz$CraftEngineBlock = builder.make().load(BlockGenerator.class.getClassLoader()).getLoaded();
+        Class<?> clazz$CraftEngineBlock = builder.make().load(BlockGenerator.class.getClassLoader()).getLoaded();
         constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
                 .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$BlockBehaviour$Properties))
                 .asType(MethodType.methodType(CoreReflections.clazz$Block, CoreReflections.clazz$BlockBehaviour$Properties));
@@ -158,7 +157,6 @@ public final class BlockGenerator {
         field$CraftEngineBlock$isNoteBlock.set(newBlockInstance, replacedBlock.equals(BlockKeys.NOTE_BLOCK));
         return newBlockInstance;
     }
-
 
     public static class UpdateShapeInterceptor {
         public static final UpdateShapeInterceptor INSTANCE = new UpdateShapeInterceptor();

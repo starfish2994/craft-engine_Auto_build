@@ -3,7 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.network.handler;
 import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.ProtectedFieldVisitor;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
 import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
@@ -56,7 +56,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
 
     @Override
     public void handleMoveAndRotate(NetWorkUser user, NMSPacketEvent event, Object packet) {
-        int entityId = BukkitInjector.internalFieldAccessor().field$ClientboundMoveEntityPacket$entityId(packet);
+        int entityId = ProtectedFieldVisitor.get().field$ClientboundMoveEntityPacket$entityId(packet);
         event.replacePacket(FastNMS.INSTANCE.constructor$ClientboundBundlePacket(List.of(
                 this.cachedPacket,
                 convertCustomProjectileMovePacket(packet, entityId)

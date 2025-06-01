@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.block;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
@@ -28,6 +29,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class BukkitCustomBlock extends AbstractCustomBlock {
+    private static final Object ALWAYS_FALSE = FastNMS.INSTANCE.method$StatePredicate$always(false);
+    private static final Object ALWAYS_TRUE = FastNMS.INSTANCE.method$StatePredicate$always(true);
 
     protected BukkitCustomBlock(
             @NotNull Key id,
@@ -79,24 +82,24 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                     BlockStateUtils.setCanOcclude(mcBlockState, BlockStateUtils.isOcclude(state.vanillaBlockState().handle()));
                 }
                 if (settings.isRedstoneConductor() == Tristate.TRUE) {
-                    BlockStateUtils.setIsRedstoneConductor(mcBlockState, StatePredicate.alwaysTrue());
+                    BlockStateUtils.setIsRedstoneConductor(mcBlockState, ALWAYS_TRUE);
                 } else if (settings.isRedstoneConductor() == Tristate.FALSE) {
-                    BlockStateUtils.setIsRedstoneConductor(mcBlockState, StatePredicate.alwaysFalse());
+                    BlockStateUtils.setIsRedstoneConductor(mcBlockState, ALWAYS_FALSE);
                 }
                 if (settings.isSuffocating() == Tristate.TRUE) {
-                    BlockStateUtils.setIsSuffocating(mcBlockState, StatePredicate.alwaysTrue());
+                    BlockStateUtils.setIsSuffocating(mcBlockState, ALWAYS_TRUE);
                 } else if (settings.isSuffocating() == Tristate.FALSE) {
-                    BlockStateUtils.setIsSuffocating(mcBlockState, StatePredicate.alwaysFalse());
+                    BlockStateUtils.setIsSuffocating(mcBlockState, ALWAYS_FALSE);
                 }
                 if (settings.isViewBlocking() == Tristate.TRUE) {
-                    BlockStateUtils.setIsViewBlocking(mcBlockState, StatePredicate.alwaysTrue());
+                    BlockStateUtils.setIsViewBlocking(mcBlockState, ALWAYS_TRUE);
                 } else if (settings.isViewBlocking() == Tristate.FALSE) {
-                    BlockStateUtils.setIsViewBlocking(mcBlockState, StatePredicate.alwaysFalse());
+                    BlockStateUtils.setIsViewBlocking(mcBlockState, ALWAYS_FALSE);
                 } else {
                     if (settings.isSuffocating() == Tristate.TRUE) {
-                        BlockStateUtils.setIsViewBlocking(mcBlockState, StatePredicate.alwaysTrue());
+                        BlockStateUtils.setIsViewBlocking(mcBlockState, ALWAYS_TRUE);
                     } else if (settings.isSuffocating() == Tristate.FALSE) {
-                        BlockStateUtils.setIsViewBlocking(mcBlockState, StatePredicate.alwaysFalse());
+                        BlockStateUtils.setIsViewBlocking(mcBlockState, ALWAYS_FALSE);
                     }
                 }
                 // set parent block properties

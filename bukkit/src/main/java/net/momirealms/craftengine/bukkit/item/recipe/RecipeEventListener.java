@@ -6,7 +6,7 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.RecipeInjector;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRecipeTypes;
@@ -271,7 +271,7 @@ public class RecipeEventListener implements Listener {
         Furnace furnace = furnaceInventory.getHolder();
         try {
             Object blockEntity = CraftBukkitReflections.field$CraftBlockEntityState$tileEntity.get(furnace);
-            BukkitInjector.injectCookingBlockEntity(blockEntity);
+            RecipeInjector.injectCookingBlockEntity(blockEntity);
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to inject cooking block entity", e);
         }
@@ -288,7 +288,7 @@ public class RecipeEventListener implements Listener {
             if (block.getState() instanceof Campfire campfire) {
                 try {
                     Object blockEntity = CraftBukkitReflections.field$CraftBlockEntityState$tileEntity.get(campfire);
-                    BukkitInjector.injectCookingBlockEntity(blockEntity);
+                    RecipeInjector.injectCookingBlockEntity(blockEntity);
                 } catch (Exception e) {
                     this.plugin.logger().warn("Failed to inject cooking block entity", e);
                 }
@@ -305,7 +305,7 @@ public class RecipeEventListener implements Listener {
             if (block.getState() instanceof Furnace furnace) {
                 try {
                     Object blockEntity = CraftBukkitReflections.field$CraftBlockEntityState$tileEntity.get(furnace);
-                    BukkitInjector.injectCookingBlockEntity(blockEntity);
+                    RecipeInjector.injectCookingBlockEntity(blockEntity);
                 } catch (Exception e) {
                     plugin.logger().warn("Failed to inject cooking block entity", e);
                 }
@@ -314,7 +314,7 @@ public class RecipeEventListener implements Listener {
             if (block.getState() instanceof Campfire campfire) {
                 try {
                     Object blockEntity = CraftBukkitReflections.field$CraftBlockEntityState$tileEntity.get(campfire);
-                    BukkitInjector.injectCookingBlockEntity(blockEntity);
+                    RecipeInjector.injectCookingBlockEntity(blockEntity);
                 } catch (Exception e) {
                     this.plugin.logger().warn("Failed to inject cooking block entity", e);
                 }
@@ -335,7 +335,7 @@ public class RecipeEventListener implements Listener {
         if (clicked.getState() instanceof Campfire campfire) {
             try {
                 Object blockEntity = CraftBukkitReflections.field$CraftBlockEntityState$tileEntity.get(campfire);
-                BukkitInjector.injectCookingBlockEntity(blockEntity);
+                RecipeInjector.injectCookingBlockEntity(blockEntity);
             } catch (Exception e) {
                 this.plugin.logger().warn("Failed to inject cooking block entity", e);
             }
