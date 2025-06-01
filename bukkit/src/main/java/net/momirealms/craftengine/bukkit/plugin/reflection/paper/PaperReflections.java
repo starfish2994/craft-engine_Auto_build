@@ -97,8 +97,4 @@ public final class PaperReflections {
     public static final Method method$BookMeta$page = requireNonNull(
             ReflectionUtils.getMethod(CraftBukkitReflections.clazz$BookMeta, void.class, int.class, clazz$AdventureComponent)
     );
-
-
-
-
 }

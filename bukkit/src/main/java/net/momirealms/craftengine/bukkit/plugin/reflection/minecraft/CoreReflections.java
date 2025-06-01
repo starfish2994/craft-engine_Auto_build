@@ -5,8 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
-import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -173,7 +172,7 @@ public final class CoreReflections {
             instance$SoundSource$AMBIENT = values[8];
             instance$SoundSource$VOICE = values[9];
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw new ReflectionInitException("Failed to init SoundSource", e);
         }
     }
 
@@ -221,7 +220,7 @@ public final class CoreReflections {
         try {
             instance$Component$empty = method$Component$empty.invoke(null);
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw new ReflectionInitException("Failed to get empty component", e);
         }
     }
 
@@ -377,7 +376,6 @@ public final class CoreReflections {
         method$Registry$getHolder1 = theMethod1;
     }
 
-
     public static final Class<?> clazz$BlockPos = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "core.BlockPosition",
@@ -471,7 +469,7 @@ public final class CoreReflections {
             instance$Direction$WEST = instance$Directions[4];
             instance$Direction$EAST = instance$Directions[5];
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new ReflectionInitException("Failed to init Direction", e);
         }
     }
 
@@ -688,7 +686,6 @@ public final class CoreReflections {
     public static final Method method$FriendlyByteBuf$writeLongArray = requireNonNull(
             ReflectionUtils.getMethod(clazz$FriendlyByteBuf, clazz$FriendlyByteBuf, long[].class)
     );
-
 
     public static final Class<?> clazz$LevelWriter = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -1101,7 +1098,6 @@ public final class CoreReflections {
             )
     );
 
-
     public static final Class<?> clazz$RecipeType = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.item.crafting.Recipes",
@@ -1128,7 +1124,6 @@ public final class CoreReflections {
                     "world.level.block.grower.WorldGenTreeProvider",
                     "world.level.block.grower.AbstractTreeGrower"
             );
-
 
     public static final Class<?> clazz$ConfiguredFeature = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -1212,7 +1207,6 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, clazz$BlockStateBase$Cache, 0)
     );
 
-
     // 1.20-1.21.1
     public static final Field field$BlockStateBase$Cache$lightBlock =
             ReflectionUtils.getInstanceDeclaredField(clazz$BlockStateBase$Cache, int.class, 0);
@@ -1286,7 +1280,6 @@ public final class CoreReflections {
     // 1.21.2+
     public static final Field field$BlockStateBase$lightBlock =
             ReflectionUtils.getInstanceDeclaredField(clazz$BlockStateBase, int.class, 1);
-
 
     public static final Class<?> clazz$AABB = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -1443,7 +1436,6 @@ public final class CoreReflections {
             )
     );
 
-
     public static final Class<?> clazz$Entity = requireNonNull(
             ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("world.entity.Entity"))
     );
@@ -1530,7 +1522,7 @@ public final class CoreReflections {
             instance$EquipmentSlot$HEAD = instance$EquipmentSlot$values[5];
 //            instance$EquipmentSlot$BODY = instance$EquipmentSlot$values[6];
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new ReflectionInitException("Failed to init EquipmentSlot", e);
         }
     }
 
@@ -1843,7 +1835,6 @@ public final class CoreReflections {
             )
     );
 
-
     // 1.20.1-1.21.1
     public static final Field field$Ingredient$itemStacks1_20_1 =
             ReflectionUtils.getDeclaredField(clazz$Ingredient, clazz$ItemStack.arrayType(), 0);
@@ -1935,7 +1926,6 @@ public final class CoreReflections {
     public static final Field field$ShapelessRecipe$ingredients =
             Optional.ofNullable(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, List.class, 0))
                     .orElse(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, CoreReflections.clazz$NonNullList, 0));
-
 
     // require ResourceLocation for 1.20.1-1.21.1
     // require ResourceKey for 1.21.2+
@@ -3275,6 +3265,4 @@ public final class CoreReflections {
     public static final Method method$Registry$asLookup = ReflectionUtils.getMethod(
             clazz$Registry, clazz$HolderLookup$RegistryLookup, new String[]{"asLookup", "p"}
     );
-
-
 }

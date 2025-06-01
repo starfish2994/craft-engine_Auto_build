@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import io.netty.buffer.ByteBuf;
-import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;

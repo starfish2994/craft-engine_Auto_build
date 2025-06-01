@@ -34,5 +34,4 @@ public final class MAttributeHolders {
             throw new RuntimeException(e);
         }
     }
-
 }
