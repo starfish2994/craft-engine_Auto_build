@@ -12,8 +12,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.BlockGenerator;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
+import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.*;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.properties.Properties;
@@ -53,7 +55,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private final BlockParser blockParser;
     // The total amount of blocks registered
     private int customBlockCount;
-    protected final ImmutableBlockState[] stateId2ImmutableBlockStates;
+    private ImmutableBlockState[] stateId2ImmutableBlockStates;
     // Minecraft objects
     // Cached new blocks $ holders
     private Map<Key, Integer> internalId2StateId;
@@ -71,8 +73,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // A list to record the order of registration
     private List<Key> blockRegisterOrder = new ObjectArrayList<>();
     // Event listeners
-    private final BlockEventListener blockEventListener;
-    private final FallingBlockRemoveListener fallingBlockRemoveListener;
+    private BlockEventListener blockEventListener;
+    private FallingBlockRemoveListener fallingBlockRemoveListener;
     // cached tag packet
     protected Object cachedUpdateTagsPacket;
 
@@ -83,14 +85,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockParser = new BlockParser();
         this.initVanillaRegistry();
         this.loadMappingsAndAdditionalBlocks();
-        if (plugin.hasMod() && plugin.requiresRestart()) {
-            blockEventListener = null;
-            fallingBlockRemoveListener = null;
-            stateId2ImmutableBlockStates = new ImmutableBlockState[]{};
-            return;
-        }
         this.registerBlocks();
         this.registerEmptyBlock();
+    }
+
+    @Override
+    public void init() {
         this.initMirrorRegistry();
         boolean enableNoteBlocks = this.blockAppearanceArranger.containsKey(BlockKeys.NOTE_BLOCK);
         this.blockEventListener = new BlockEventListener(plugin, this, enableNoteBlocks);
@@ -152,7 +152,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (Map.Entry<Integer, List<String>> entry : this.clientBoundTags.entrySet()) {
             list.add(new TagUtils.TagEntry(entry.getKey(), entry.getValue()));
         }
-        Object packet = TagUtils.createUpdateTagsPacket(Map.of(Reflections.instance$Registries$BLOCK, list));
+        Object packet = TagUtils.createUpdateTagsPacket(Map.of(MRegistries.instance$Registries$BLOCK, list));
         for (Player player : Bukkit.getOnlinePlayers()) {
             this.plugin.networkManager().sendPacket(player, packet);
         }
@@ -245,7 +245,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (int i = 0; i < size; i++) {
             states[i] = BlockStateWrapper.create(BlockStateUtils.idToBlockState(i), i, BlockStateUtils.isVanillaBlock(i));
         }
-        BlockRegistryMirror.init(states, BlockStateWrapper.vanilla(Reflections.instance$Blocks$STONE$defaultState, BlockStateUtils.blockStateToId(Reflections.instance$Blocks$STONE$defaultState)));
+        BlockRegistryMirror.init(states, BlockStateWrapper.vanilla(MBlocks.STONE$defaultState, BlockStateUtils.blockStateToId(MBlocks.STONE$defaultState)));
     }
 
     private void registerEmptyBlock() {
@@ -256,7 +256,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     private void resetPacketConsumers() {
         Map<Integer, Integer> finalMapping = new HashMap<>(this.blockAppearanceMapper);
-        int stoneId = BlockStateUtils.blockStateToId(Reflections.instance$Blocks$STONE$defaultState);
+        int stoneId = BlockStateUtils.blockStateToId(MBlocks.STONE$defaultState);
         for (int custom : this.internalId2StateId.values()) {
             finalMapping.put(custom, stoneId);
         }
@@ -308,8 +308,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
             this.realBlockArranger = builder3.build();
             this.blockRegisterOrder = ImmutableList.copyOf(order);
 
-            for (Object block : (Iterable<Object>) Reflections.instance$BuiltInRegistries$BLOCK) {
-                Object soundType = Reflections.field$BlockBehaviour$soundType.get(block);
+            for (Object block : (Iterable<Object>) MBuiltInRegistries.BLOCK) {
+                Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(block);
                 if (affectedSounds.contains(soundType)) {
                     Object state = getOnlyBlockState(block);
                     if (BlockStateUtils.isVanillaBlock(state)) {
@@ -318,14 +318,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
-            affectedBlocks.remove(Reflections.instance$Blocks$FIRE);
-            affectedBlocks.remove(Reflections.instance$Blocks$SOUL_FIRE);
+            affectedBlocks.remove(MBlocks.FIRE);
+            affectedBlocks.remove(MBlocks.SOUL_FIRE);
 
             this.affectedSoundBlocks = ImmutableSet.copyOf(affectedBlocks);
 
             ImmutableMap.Builder<Key, Key> soundMapperBuilder = ImmutableMap.builder();
             for (Object soundType : affectedSounds) {
-                for (Field field : List.of(Reflections.field$SoundType$placeSound, Reflections.field$SoundType$fallSound, Reflections.field$SoundType$hitSound, Reflections.field$SoundType$stepSound, Reflections.field$SoundType$breakSound)) {
+                for (Field field : List.of(CoreReflections.field$SoundType$placeSound, CoreReflections.field$SoundType$fallSound, CoreReflections.field$SoundType$hitSound, CoreReflections.field$SoundType$stepSound, CoreReflections.field$SoundType$breakSound)) {
                     Object soundEvent = field.get(soundType);
                     Key previousId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
                     soundMapperBuilder.put(previousId, Key.of(previousId.namespace(), "replaced." + previousId.value()));
@@ -442,8 +442,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 if (clientBoundTags instanceof List<?> list) {
                     List<String> clientSideTags = MiscUtils.getAsStringList(list).stream().filter(ResourceLocation::isValid).toList();
                     try {
-                        Object nmsBlock = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, KeyUtils.toResourceLocation(id));
-                        FastNMS.INSTANCE.method$IdMap$getId(Reflections.instance$BuiltInRegistries$BLOCK, nmsBlock).ifPresent(i ->
+                        Object nmsBlock = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(id));
+                        FastNMS.INSTANCE.method$IdMap$getId(MBuiltInRegistries.BLOCK, nmsBlock).ifPresent(i ->
                                 BukkitBlockManager.this.clientBoundTags.put(i, clientSideTags));
                     } catch (ReflectiveOperationException e) {
                         BukkitBlockManager.this.plugin.logger().warn("Unable to get block " + id, e);
@@ -578,10 +578,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private void recordVanillaNoteBlocks() {
         try {
             Object resourceLocation = KeyUtils.toResourceLocation(BlockKeys.NOTE_BLOCK);
-            Object block = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
-            Object stateDefinition = Reflections.field$Block$StateDefinition.get(block);
-            @SuppressWarnings("unchecked")
-            ImmutableList<Object> states = (ImmutableList<Object>) Reflections.field$StateDefinition$states.get(stateDefinition);
+            Object block = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
+            Object stateDefinition = CoreReflections.field$Block$StateDefinition.get(block);
+            ImmutableList<Object> states = (ImmutableList<Object>) CoreReflections.field$StateDefinition$states.get(stateDefinition);
             for (Object state : states) {
                 BlockStateUtils.CLIENT_SIDE_NOTE_BLOCKS.put(state, new Object());
             }
@@ -626,16 +625,16 @@ public class BukkitBlockManager extends AbstractBlockManager {
                                           Map<Key, Integer> counter,
                                           Map<Integer, Integer> mapper,
                                           Map<Key, List<Integer>> arranger) {
-        BlockData before = createBlockData(mappingFile, entry.getKey());
-        BlockData after = createBlockData(mappingFile, entry.getValue());
+        Object before = createBlockState(mappingFile, entry.getKey());
+        Object after = createBlockState(mappingFile, entry.getValue());
         if (before == null || after == null) return;
 
-        int beforeId = BlockStateUtils.blockDataToId(before);
-        int afterId = BlockStateUtils.blockDataToId(after);
+        int beforeId = BlockStateUtils.blockStateToId(before);
+        int afterId = BlockStateUtils.blockStateToId(after);
 
         Integer previous = mapper.put(beforeId, afterId);
         if (previous == null) {
-            Key key = KeyUtils.namespacedKey2Key(before.getMaterial().getKey());
+            Key key = blockOwnerFromString(entry.getKey());
             counter.compute(key, (k, count) -> count == null ? 1 : count + 1);
             stateMap.put(beforeId, entry.getKey());
             stateMap.put(afterId, entry.getValue());
@@ -646,11 +645,25 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private BlockData createBlockData(File mappingFile, String blockState) {
+    private Key blockOwnerFromString(String stateString) {
+        int index = stateString.indexOf('[');
+        if (index == -1) {
+            return Key.of(stateString);
+        } else {
+            return Key.of(stateString.substring(0, index));
+        }
+    }
+
+    private Object createBlockState(File mappingFile, String state) {
         try {
-            return Bukkit.createBlockData(blockState);
-        } catch (IllegalArgumentException e) {
-            plugin.logger().warn(mappingFile, "'" + blockState + "' is not a valid block state.");
+            Object registryOrLookUp = MBuiltInRegistries.BLOCK;
+            if (CoreReflections.method$Registry$asLookup != null) {
+                registryOrLookUp = CoreReflections.method$Registry$asLookup.invoke(registryOrLookUp);
+            }
+            Object result = CoreReflections.method$BlockStateParser$parseForBlock.invoke(null, registryOrLookUp, state, false);
+            return CoreReflections.method$BlockStateParser$BlockResult$blockState.invoke(result);
+        } catch (Exception e) {
+            this.plugin.logger().warn(mappingFile, "'" + state + "' is not a valid block state.");
             return null;
         }
     }
@@ -668,12 +681,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     private void unfreezeRegistry() throws IllegalAccessException {
-        Reflections.field$MappedRegistry$frozen.set(Reflections.instance$BuiltInRegistries$BLOCK, false);
-        Reflections.field$MappedRegistry$unregisteredIntrusiveHolders.set(Reflections.instance$BuiltInRegistries$BLOCK, new IdentityHashMap<>());
+        CoreReflections.field$MappedRegistry$frozen.set(MBuiltInRegistries.BLOCK, false);
+        CoreReflections.field$MappedRegistry$unregisteredIntrusiveHolders.set(MBuiltInRegistries.BLOCK, new IdentityHashMap<>());
     }
 
     private void freezeRegistry() throws IllegalAccessException {
-        Reflections.field$MappedRegistry$frozen.set(Reflections.instance$BuiltInRegistries$BLOCK, true);
+        CoreReflections.field$MappedRegistry$frozen.set(MBuiltInRegistries.BLOCK, true);
     }
 
     private int registerBlockVariants(Map.Entry<Key, Integer> blockWithCount,
@@ -700,26 +713,26 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Object resourceLocation = createResourceLocation(realBlockKey);
 
             if (plugin.hasMod()) {
-                newRealBlock = Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
+                newRealBlock = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
                 newBlockState = getOnlyBlockState(newRealBlock);
 
                 @SuppressWarnings("unchecked")
-                Optional<Object> optionalHolder = (Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$BLOCK, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$BLOCK, resourceLocation));
+                Optional<Object> optionalHolder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.BLOCK, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, resourceLocation));
                 blockHolder = optionalHolder.get();
             } else {
                 try {
-                    newRealBlock = BukkitInjector.generateBlock(clientSideBlockType, clientSideBlock, blockProperties);
+                    newRealBlock = BlockGenerator.generateBlock(clientSideBlockType, clientSideBlock, blockProperties);
                 } catch (Throwable throwable) {
                     plugin.logger().warn("Failed to generate dynamic block class", throwable);
                     continue;
                 }
 
-                blockHolder = Reflections.method$Registry$registerForHolder.invoke(null, Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation, newRealBlock);
-                Reflections.method$Holder$Reference$bindValue.invoke(blockHolder, newRealBlock);
-                Reflections.field$Holder$Reference$tags.set(blockHolder, Set.of());
+                blockHolder = CoreReflections.method$Registry$registerForHolder.invoke(null, MBuiltInRegistries.BLOCK, resourceLocation, newRealBlock);
+                CoreReflections.method$Holder$Reference$bindValue.invoke(blockHolder, newRealBlock);
+                CoreReflections.field$Holder$Reference$tags.set(blockHolder, Set.of());
 
                 newBlockState = getOnlyBlockState(newRealBlock);
-                Reflections.method$IdMapper$add.invoke(Reflections.instance$BLOCK_STATE_REGISTRY, newBlockState);
+                CoreReflections.method$IdMapper$add.invoke(CoreReflections.instance$Block$BLOCK_STATE_REGISTRY, newBlockState);
             }
 
             if (isNoteBlock) {
@@ -738,7 +751,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
 
         builder3.put(clientSideBlockType, stateIds);
-        Object soundType = Reflections.field$BlockBehaviour$soundType.get(clientSideBlock);
+        Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(clientSideBlock);
         affectSoundTypes.add(soundType);
         return counter;
     }
@@ -748,7 +761,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     private Object getBlockFromRegistry(Object resourceLocation) throws Exception {
-        return Reflections.method$Registry$get.invoke(Reflections.instance$BuiltInRegistries$BLOCK, resourceLocation);
+        return CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
     }
 
     private Key createRealBlockKey(Key replacedBlock, int index) {
@@ -756,31 +769,31 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     private Object createBlockProperties(Key realBlockKey) throws Exception {
-        Object blockProperties = Reflections.method$BlockBehaviour$Properties$of.invoke(null);
+        Object blockProperties = CoreReflections.method$BlockBehaviour$Properties$of.invoke(null);
         Object realBlockResourceLocation = createResourceLocation(realBlockKey);
-        Object realBlockResourceKey = Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$BLOCK, realBlockResourceLocation);
-        if (Reflections.field$BlockBehaviour$Properties$id != null) {
-            Reflections.field$BlockBehaviour$Properties$id.set(blockProperties, realBlockResourceKey);
+        Object realBlockResourceKey = CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, realBlockResourceLocation);
+        if (CoreReflections.field$BlockBehaviour$Properties$id != null) {
+            CoreReflections.field$BlockBehaviour$Properties$id.set(blockProperties, realBlockResourceKey);
         }
         return blockProperties;
     }
 
     private Object getOnlyBlockState(Object newBlock) throws IllegalAccessException {
-        Object stateDefinition = Reflections.field$Block$StateDefinition.get(newBlock);
+        Object stateDefinition = CoreReflections.field$Block$StateDefinition.get(newBlock);
         @SuppressWarnings("unchecked")
-        ImmutableList<Object> states = (ImmutableList<Object>) Reflections.field$StateDefinition$states.get(stateDefinition);
+        ImmutableList<Object> states = (ImmutableList<Object>) CoreReflections.field$StateDefinition$states.get(stateDefinition);
         return states.get(0);
     }
 
     @SuppressWarnings("unchecked")
     private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock) throws IllegalAccessException {
-        Map<Object, Material> magicMap = (Map<Object, Material>) Reflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
-        Map<Material, Object> factories = (Map<Material, Object>) Reflections.field$CraftBlockStates$FACTORIES.get(null);
+        Map<Object, Material> magicMap = (Map<Object, Material>) CraftBukkitReflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
+        Map<Material, Object> factories = (Map<Material, Object>) CraftBukkitReflections.field$CraftBlockStates$FACTORIES.get(null);
         if (isNoteBlock) {
             magicMap.put(newBlock, Material.STONE);
         } else {
             Material material = org.bukkit.Registry.MATERIAL.get(new NamespacedKey(replacedBlock.namespace(), replacedBlock.value()));
-            if (Reflections.clazz$CraftBlockStates$BlockEntityStateFactory.isInstance(factories.get(material))) {
+            if (CraftBukkitReflections.clazz$CraftBlockStates$BlockEntityStateFactory.isInstance(factories.get(material))) {
                 magicMap.put(newBlock, Material.STONE);
             } else {
                 magicMap.put(newBlock, material);

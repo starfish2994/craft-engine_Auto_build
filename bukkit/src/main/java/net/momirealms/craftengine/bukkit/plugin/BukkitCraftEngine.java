@@ -17,14 +17,15 @@ import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
+import net.momirealms.craftengine.bukkit.plugin.injector.BlockGenerator;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
+import net.momirealms.craftengine.bukkit.plugin.injector.InjectionException;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.BukkitSchedulerAdapter;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.sound.BukkitSoundManager;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.util.RegistryUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.item.ItemManager;
@@ -37,6 +38,7 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.dependency.Dependencies;
 import net.momirealms.craftengine.core.plugin.dependency.Dependency;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImpl;
+import net.momirealms.craftengine.core.plugin.locale.TranslationManagerImpl;
 import net.momirealms.craftengine.core.plugin.logger.JavaPluginLogger;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerAdapter;
@@ -76,6 +78,7 @@ public class BukkitCraftEngine extends CraftEngine {
 
     public BukkitCraftEngine(JavaPlugin plugin) {
         this(new JavaPluginLogger(plugin.getLogger()), plugin.getDataFolder().toPath().toAbsolutePath(), new ReflectionClassPathAppender(plugin.getClass().getClassLoader()));
+        this.setJavaPlugin(plugin);
     }
 
     public BukkitCraftEngine(PluginLogger logger, Path dataFolderPath, ClassPathAppender classPathAppender) {
@@ -111,14 +114,26 @@ public class BukkitCraftEngine extends CraftEngine {
         this.javaPlugin = javaPlugin;
     }
 
+    public void setUpConfig() {
+        this.translationManager = new TranslationManagerImpl(this);
+        this.config = new Config(this);
+    }
+
+    public void injectRegistries() {
+        try {
+            BlockGenerator.init();
+            super.blockManager = new BukkitBlockManager(this);
+        } catch (Exception e) {
+            throw new InjectionException("Error injecting blocks", e);
+        }
+    }
+
     @Override
     public void onPluginLoad() {
-        super.onPluginLoad();
-        Reflections.init();
         BukkitInjector.init();
+        super.onPluginLoad();
+        super.blockManager.init();
         super.networkManager = new BukkitNetworkManager(this);
-        super.blockManager = new BukkitBlockManager(this);
-        super.furnitureManager = new BukkitFurnitureManager(this);
         this.successfullyLoaded = true;
         super.compatibilityManager().onLoad();
     }
@@ -185,6 +200,7 @@ public class BukkitCraftEngine extends CraftEngine {
         super.fontManager = new BukkitFontManager(this);
         super.advancementManager = new BukkitAdvancementManager(this);
         super.projectileManager = new BukkitProjectileManager(this);
+        super.furnitureManager = new BukkitFurnitureManager(this);
         super.onPluginEnable();
         super.compatibilityManager().onEnable();
     }

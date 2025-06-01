@@ -12,9 +12,11 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIdFinder;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20_5;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.LibraryReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.*;
@@ -65,10 +67,10 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         C2S_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
-    private final BiConsumer<Object, List<Object>> packetsConsumer;
-    private final BiConsumer<Object, List<Object>> immediatePacketsConsumer;
     private final BiConsumer<Object, Object> packetConsumer;
-    private final BiConsumer<Object, Object> immediatePacketConsumer;
+    private final BiConsumer<Object, List<Object>> packetsConsumer;
+    private final BiConsumer<Channel, Object> immediatePacketConsumer;
+    private final BiConsumer<Channel, List<Object>> immediatePacketsConsumer;
     private final BukkitCraftEngine plugin;
 
     private final Map<ChannelPipeline, BukkitServerPlayer> users = new ConcurrentHashMap<>();
@@ -107,16 +109,10 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             this.packetConsumer.accept(connection, bundle);
         });
-        this.immediatePacketConsumer = (connection, packet) -> {
-            try {
-                Reflections.method$Connection$sendPacketImmediate.invoke(connection, packet, null, true);
-            } catch (ReflectiveOperationException e) {
-                plugin.logger().warn("Failed to invoke send packet", e);
-            }
-        };
-        this.immediatePacketsConsumer = (connection, packets) -> {
+        this.immediatePacketConsumer = ChannelOutboundInvoker::writeAndFlush;
+        this.immediatePacketsConsumer = (channel, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
-            this.immediatePacketConsumer.accept(connection, bundle);
+            this.immediatePacketConsumer.accept(channel, bundle);
         };
         // set up mod channel
         this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL, this);
@@ -125,16 +121,16 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), VIA_CHANNEL, this);
         // Inject server channel
         try {
-            Object server = Reflections.method$MinecraftServer$getServer.invoke(null);
-            Object serverConnection = Reflections.field$MinecraftServer$connection.get(server);
+            Object server = CoreReflections.method$MinecraftServer$getServer.invoke(null);
+            Object serverConnection = CoreReflections.field$MinecraftServer$connection.get(server);
             @SuppressWarnings("unchecked")
-            List<ChannelFuture> channels = (List<ChannelFuture>) Reflections.field$ServerConnectionListener$channels.get(serverConnection);
+            List<ChannelFuture> channels = (List<ChannelFuture>) CoreReflections.field$ServerConnectionListener$channels.get(serverConnection);
             ListMonitor<ChannelFuture> monitor = new ListMonitor<>(channels, (future) -> {
                 Channel channel = future.channel();
                 injectServerChannel(channel);
                 this.injectedChannels.add(channel);
             }, (object) -> {});
-            Reflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
+            CoreReflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
         } catch (ReflectiveOperationException e) {
             this.plugin.logger().warn("Failed to init server connection", e);
         }
@@ -149,29 +145,29 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private void registerPacketHandlers() {
-        registerNMSPacketConsumer(PacketConsumers.PLAYER_INFO_UPDATE, Reflections.clazz$ClientboundPlayerInfoUpdatePacket);
-        registerNMSPacketConsumer(PacketConsumers.PLAYER_ACTION, Reflections.clazz$ServerboundPlayerActionPacket);
-        registerNMSPacketConsumer(PacketConsumers.SWING_HAND, Reflections.clazz$ServerboundSwingPacket);
-        registerNMSPacketConsumer(PacketConsumers.HELLO_C2S, Reflections.clazz$ServerboundHelloPacket);
-        registerNMSPacketConsumer(PacketConsumers.USE_ITEM_ON, Reflections.clazz$ServerboundUseItemOnPacket);
-        registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_BLOCK, Reflections.clazz$ServerboundPickItemFromBlockPacket);
-        registerNMSPacketConsumer(PacketConsumers.SET_CREATIVE_SLOT, Reflections.clazz$ServerboundSetCreativeModeSlotPacket);
-        registerNMSPacketConsumer(PacketConsumers.LOGIN, Reflections.clazz$ClientboundLoginPacket);
-        registerNMSPacketConsumer(PacketConsumers.RESPAWN, Reflections.clazz$ClientboundRespawnPacket);
-        registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, Reflections.clazz$ServerboundInteractPacket);
-        registerNMSPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, Reflections.clazz$ClientboundEntityPositionSyncPacket);
-        registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, Reflections.clazz$ClientboundMoveEntityPacket$Pos);
-        registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_ENTITY, Reflections.clazz$ServerboundPickItemFromEntityPacket);
-        registerNMSPacketConsumer(PacketConsumers.RENAME_ITEM, Reflections.clazz$ServerboundRenameItemPacket);
-        registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, Reflections.clazz$ServerboundSignUpdatePacket);
-        registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, Reflections.clazz$ServerboundEditBookPacket);
-        registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, Reflections.clazz$ServerboundCustomPayloadPacket);
-        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, Reflections.clazz$ClientboundResourcePackPushPacket);
-        registerNMSPacketConsumer(PacketConsumers.HANDSHAKE_C2S, Reflections.clazz$ClientIntentionPacket);
-        registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, Reflections.clazz$ServerboundLoginAcknowledgedPacket);
-        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, Reflections.clazz$ServerboundResourcePackPacket);
-        registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, Reflections.clazz$ClientboundEntityEventPacket);
-        registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, Reflections.clazz$ClientboundMoveEntityPacket$PosRot);
+        registerNMSPacketConsumer(PacketConsumers.PLAYER_INFO_UPDATE, NetworkReflections.clazz$ClientboundPlayerInfoUpdatePacket);
+        registerNMSPacketConsumer(PacketConsumers.PLAYER_ACTION, NetworkReflections.clazz$ServerboundPlayerActionPacket);
+        registerNMSPacketConsumer(PacketConsumers.SWING_HAND, NetworkReflections.clazz$ServerboundSwingPacket);
+        registerNMSPacketConsumer(PacketConsumers.HELLO_C2S, NetworkReflections.clazz$ServerboundHelloPacket);
+        registerNMSPacketConsumer(PacketConsumers.USE_ITEM_ON, NetworkReflections.clazz$ServerboundUseItemOnPacket);
+        registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_BLOCK, NetworkReflections.clazz$ServerboundPickItemFromBlockPacket);
+        registerNMSPacketConsumer(PacketConsumers.SET_CREATIVE_SLOT, NetworkReflections.clazz$ServerboundSetCreativeModeSlotPacket);
+        registerNMSPacketConsumer(PacketConsumers.LOGIN, NetworkReflections.clazz$ClientboundLoginPacket);
+        registerNMSPacketConsumer(PacketConsumers.RESPAWN, NetworkReflections.clazz$ClientboundRespawnPacket);
+        registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, NetworkReflections.clazz$ServerboundInteractPacket);
+        registerNMSPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, NetworkReflections.clazz$ClientboundEntityPositionSyncPacket);
+        registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
+        registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_ENTITY, NetworkReflections.clazz$ServerboundPickItemFromEntityPacket);
+        registerNMSPacketConsumer(PacketConsumers.RENAME_ITEM, NetworkReflections.clazz$ServerboundRenameItemPacket);
+        registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, NetworkReflections.clazz$ServerboundSignUpdatePacket);
+        registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, NetworkReflections.clazz$ServerboundEditBookPacket);
+        registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, NetworkReflections.clazz$ServerboundCustomPayloadPacket);
+        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, NetworkReflections.clazz$ClientboundResourcePackPushPacket);
+        registerNMSPacketConsumer(PacketConsumers.HANDSHAKE_C2S, NetworkReflections.clazz$ClientIntentionPacket);
+        registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, NetworkReflections.clazz$ServerboundLoginAcknowledgedPacket);
+        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, NetworkReflections.clazz$ServerboundResourcePackPacket);
+        registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, NetworkReflections.clazz$ClientboundEntityEventPacket);
+        registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$PosRot);
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
@@ -316,7 +312,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     public void sendPacket(@NotNull Player player, @NotNull Object packet) {
         try {
-            this.immediatePacketConsumer.accept(getUser(player).connection(), packet);
+            this.immediatePacketConsumer.accept(getUser(player).nettyChannel(), packet);
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to send packet", e);
         }
@@ -325,7 +321,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @Override
     public void sendPacket(@NotNull NetWorkUser player, Object packet, boolean immediately) {
         if (immediately) {
-            this.immediatePacketConsumer.accept(player.connection(), packet);
+            this.immediatePacketConsumer.accept(player.nettyChannel(), packet);
         } else {
             this.packetConsumer.accept(player.connection(), packet);
         }
@@ -334,7 +330,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @Override
     public void sendPackets(@NotNull NetWorkUser player, List<Object> packet, boolean immediately) {
         if (immediately) {
-            this.immediatePacketsConsumer.accept(player.connection(), packet);
+            this.immediatePacketsConsumer.accept(player.nettyChannel(), packet);
         } else {
             this.packetsConsumer.accept(player.connection(), packet);
         }
@@ -472,7 +468,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             pipeline.remove(PACKET_DECODER);
         }
         for (Map.Entry<String, ChannelHandler> entry : pipeline.toMap().entrySet()) {
-            if (Reflections.clazz$Connection.isAssignableFrom(entry.getValue().getClass())) {
+            if (NetworkReflections.clazz$Connection.isAssignableFrom(entry.getValue().getClass())) {
                 pipeline.addBefore(entry.getKey(), PLAYER_CHANNEL_HANDLER_NAME, new PluginChannelHandler(user));
                 break;
             }
@@ -674,7 +670,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private void onNMSPacketSend(NetWorkUser player, NMSPacketEvent event, Object packet) {
-        if (Reflections.clazz$ClientboundBundlePacket.isInstance(packet)) {
+        if (NetworkReflections.clazz$ClientboundBundlePacket.isInstance(packet)) {
             Iterable<Object> packets = FastNMS.INSTANCE.method$ClientboundBundlePacket$subPackets(packet);
             for (Object p : packets) {
                 onNMSPacketSend(player, event, p);
@@ -728,7 +724,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     private static void callEncode(Object encoder, ChannelHandlerContext ctx, ByteBuf msg, ByteBuf output) {
         try {
-            Reflections.method$messageToByteEncoder$encode.invoke(encoder, ctx, msg, output);
+            LibraryReflections.method$messageToByteEncoder$encode.invoke(encoder, ctx, msg, output);
         } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().warn("Failed to call encode", e);
         }
@@ -737,7 +733,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     public static List<Object> callDecode(Object decoder, Object ctx, Object input) {
         List<Object> output = new ArrayList<>();
         try {
-            Reflections.method$byteToMessageDecoder$decode.invoke(decoder, ctx, input, output);
+            LibraryReflections.method$byteToMessageDecoder$decode.invoke(decoder, ctx, input, output);
         } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().warn("Failed to call decode", e);
         }

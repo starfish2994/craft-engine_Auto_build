@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
@@ -113,9 +114,9 @@ public class StrippableBlockBehavior extends BukkitBlockBehavior {
         if (VersionHelper.isOrAbove1_20_5()) {
             Object itemStack = item.getLiteralObject();
             Object serverPlayer = player.serverPlayer();
-            Object equipmentSlot = context.getHand() == InteractionHand.MAIN_HAND ? Reflections.instance$EquipmentSlot$MAINHAND : Reflections.instance$EquipmentSlot$OFFHAND;
+            Object equipmentSlot = context.getHand() == InteractionHand.MAIN_HAND ? CoreReflections.instance$EquipmentSlot$MAINHAND : CoreReflections.instance$EquipmentSlot$OFFHAND;
             try {
-                Reflections.method$ItemStack$hurtAndBreak.invoke(itemStack, 1, serverPlayer, equipmentSlot);
+                CoreReflections.method$ItemStack$hurtAndBreak.invoke(itemStack, 1, serverPlayer, equipmentSlot);
             } catch (ReflectiveOperationException e) {
                 CraftEngine.instance().logger().warn("Failed to hurt itemStack", e);
             }

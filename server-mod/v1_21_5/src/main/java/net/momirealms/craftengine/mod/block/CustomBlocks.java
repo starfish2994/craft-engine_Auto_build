@@ -22,6 +22,7 @@ import java.util.Map;
 public class CustomBlocks {
 
     public static void register() {
+        System.out.println(1);
         CraftEnginePlugin.setVanillaRegistrySize(Block.BLOCK_STATE_REGISTRY.size());
         ResourceLocation noteBlock = ResourceLocation.fromNamespaceAndPath("minecraft", "note_block");
         Map<ResourceLocation, Integer> map = loadMappingsAndAdditionalBlocks();

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import org.bukkit.World;
 
@@ -22,7 +23,7 @@ public class LightUtils {
                 if (chunkHolder == null) continue;
                 List<Object> players = FastNMS.INSTANCE.method$ChunkHolder$getPlayers(chunkHolder);
                 if (players.isEmpty()) continue;
-                Object lightEngine = Reflections.field$ChunkHolder$lightEngine.get(chunkHolder);
+                Object lightEngine = CoreReflections.field$ChunkHolder$lightEngine.get(chunkHolder);
                 Object chunkPos = FastNMS.INSTANCE.constructor$ChunkPos((int) chunkKey, (int) (chunkKey >> 32));
                 Object lightPacket = FastNMS.INSTANCE.constructor$ClientboundLightUpdatePacket(chunkPos, lightEngine, entry.getValue(), entry.getValue());
                 for (Object player : players) {

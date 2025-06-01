@@ -2,9 +2,9 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.BlockTags;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
@@ -87,7 +87,7 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
 
     protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
         for (Object tag : this.tagsCanSurviveOn) {
-            if ((boolean) Reflections.method$BlockStateBase$hasTag.invoke(belowState, tag)) {
+            if ((boolean) CoreReflections.method$BlockStateBase$hasTag.invoke(belowState, tag)) {
                 return !this.blacklistMode;
             }
         }

@@ -4,7 +4,7 @@ import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.injector.BukkitInjector;
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
 import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.item.CustomItem;
@@ -81,7 +81,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         buf.writeVarInt(event.packetID());
         buf.writeVarInt(this.entityId);
         buf.writeUUID(uuid);
-        buf.writeVarInt(Reflections.instance$EntityType$ITEM_DISPLAY$registryId);
+        buf.writeVarInt(MEntityTypes.instance$EntityType$ITEM_DISPLAY$registryId);
         buf.writeDouble(x);
         buf.writeDouble(y);
         buf.writeDouble(z);

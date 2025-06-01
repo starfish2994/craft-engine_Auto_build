@@ -6,9 +6,9 @@ import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.impl.FoliaTask;
 import net.momirealms.craftengine.bukkit.util.ParticleUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
@@ -189,7 +189,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                     return;
                 }
                 try {
-                    Reflections.field$ServerEntity$updateInterval.set(serverEntity, 1);
+                    CoreReflections.field$ServerEntity$updateInterval.set(serverEntity, 1);
                     this.injected = true;
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to update server entity tracking interval", e);
@@ -202,7 +202,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
 
         private static boolean canSpawnParticle(Object nmsEntity) {
             if (!FastNMS.INSTANCE.field$Entity$wasTouchingWater(nmsEntity)) return false;
-            if (Reflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
+            if (CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
                 return !FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
             }
             return true;

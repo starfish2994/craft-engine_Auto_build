@@ -1,8 +1,12 @@
 package net.momirealms.craftengine.bukkit;
 
+import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext;
+import io.papermc.paper.plugin.lifecycle.event.handler.LifecycleEventHandler;
+import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.classpath.PaperClassPathAppender;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
@@ -42,6 +46,15 @@ public class PaperCraftEngineBootstrap implements PluginBootstrap {
                 context.getDataDirectory(),
                 new PaperClassPathAppender(this.getClass().getClassLoader())
         );
+        this.plugin.applyDependencies();
+        this.plugin.setUpConfig();
+        context.getLifecycleManager().registerEventHandler(LifecycleEvents.DATAPACK_DISCOVERY, (e) -> {
+            try {
+                this.plugin.injectRegistries();
+            } catch (Throwable ex) {
+                logger.warn("Failed to inject registries", ex);
+            }
+        });
     }
 
     @Override

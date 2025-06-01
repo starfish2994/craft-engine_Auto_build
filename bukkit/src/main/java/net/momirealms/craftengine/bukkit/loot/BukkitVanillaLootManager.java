@@ -1,10 +1,10 @@
 package net.momirealms.craftengine.bukkit.loot;
 
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.AbstractVanillaLootManager;
@@ -119,14 +119,14 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
                     for (String target : targets) {
                         if (target.endsWith("]") && target.contains("[")) {
                             java.lang.Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(target));
-                            if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
+                            if (blockState == MBlocks.AIR$defaultState) {
                                 throw new LocalizedResourceConfigException("warning.config.vanilla_loot.block.invalid_target", target);
                             }
                             VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));
                             vanillaLoot.addLootTable(lootTable);
                         } else {
                             for (Object blockState : BlockStateUtils.getAllVanillaBlockStates(Key.of(target))) {
-                                if (blockState == Reflections.instance$Blocks$AIR$defaultState) {
+                                if (blockState == MBlocks.AIR$defaultState) {
                                     throw new LocalizedResourceConfigException("warning.config.vanilla_loot.block.invalid_target", target);
                                 }
                                 VanillaLoot vanillaLoot = blockLoots.computeIfAbsent(BlockStateUtils.blockStateToId(blockState), k -> new VanillaLoot(VanillaLoot.Type.BLOCK));

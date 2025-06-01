@@ -99,13 +99,6 @@ public abstract class CraftEngine implements Plugin {
     public void onPluginLoad() {
         ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
         ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
-        this.dependencyManager = new DependencyManagerImpl(this);
-        ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
-        dependenciesToLoad.addAll(commonDependencies());
-        dependenciesToLoad.addAll(platformDependencies());
-        this.dependencyManager.loadDependencies(dependenciesToLoad);
-        this.translationManager = new TranslationManagerImpl(this);
-        this.config = new Config(this);
     }
 
     public record ReloadResult(boolean success, long asyncTime, long syncTime) {
@@ -289,6 +282,14 @@ public abstract class CraftEngine implements Plugin {
         this.packManager.registerConfigSectionParser(this.vanillaLootManager.parser());
         // register advancement parser
         this.packManager.registerConfigSectionParser(this.advancementManager.parser());
+    }
+
+    public void applyDependencies() {
+        this.dependencyManager = new DependencyManagerImpl(this);
+        ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
+        dependenciesToLoad.addAll(commonDependencies());
+        dependenciesToLoad.addAll(platformDependencies());
+        this.dependencyManager.loadDependencies(dependenciesToLoad);
     }
 
     protected abstract void platformDelayedEnable();

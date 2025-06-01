@@ -4,7 +4,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class PaperCraftEnginePlugin extends JavaPlugin {
     private final PaperCraftEngineBootstrap bootstrap;
-    private boolean hasLoaded = false;
 
     public PaperCraftEnginePlugin(PaperCraftEngineBootstrap bootstrap) {
         this.bootstrap = bootstrap;
@@ -13,10 +12,7 @@ public class PaperCraftEnginePlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        if (!this.hasLoaded) {
-            this.hasLoaded = true;
-            this.bootstrap.plugin.onPluginLoad();
-        }
+        this.bootstrap.plugin.onPluginLoad();
     }
 
     @Override

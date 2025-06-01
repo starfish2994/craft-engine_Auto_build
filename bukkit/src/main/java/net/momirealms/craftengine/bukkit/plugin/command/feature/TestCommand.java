@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
-import net.momirealms.craftengine.bukkit.util.Reflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import org.bukkit.command.CommandSender;
@@ -29,7 +29,7 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
                     float tickRate = context.get("tickRate");
                     boolean isFrozen = context.get("isFrozen");
                     try {
-                        plugin().adapt(player).sendPacket(Reflections.constructor$ClientboundTickingStatePacket.newInstance(tickRate, isFrozen), true);
+                        plugin().adapt(player).sendPacket(NetworkReflections.constructor$ClientboundTickingStatePacket.newInstance(tickRate, isFrozen), true);
                     } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
                         player.sendMessage("发送失败");
                     }

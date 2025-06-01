@@ -9,9 +9,11 @@ import net.momirealms.craftengine.bukkit.item.listener.DebugStickListener;
 import net.momirealms.craftengine.bukkit.item.listener.ItemEventListener;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
@@ -212,10 +214,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                             .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                                     .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
                     Object resourceLocation = KeyUtils.toResourceLocation(id.namespace(), id.value());
-                    Object mcHolder = ((Optional<Object>) Reflections.method$Registry$getHolder1.invoke(Reflections.instance$BuiltInRegistries$ITEM, Reflections.method$ResourceKey$create.invoke(null, Reflections.instance$Registries$ITEM, resourceLocation))).get();
-                    Set<Object> tags = (Set<Object>) Reflections.field$Holder$Reference$tags.get(mcHolder);
+                    Object mcHolder = ((Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.ITEM, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$ITEM, resourceLocation))).get();
+                    Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
                     for (Object tag : tags) {
-                        Key tagId = Key.of(Reflections.field$TagKey$location.get(tag).toString());
+                        Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());
                         VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(holder);
                     }
                 }

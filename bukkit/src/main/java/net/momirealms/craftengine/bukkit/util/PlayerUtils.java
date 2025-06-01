@@ -4,6 +4,8 @@ import com.mojang.datafixers.util.Pair;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import org.bukkit.Location;
@@ -30,11 +32,11 @@ public final class PlayerUtils {
         if (ItemUtils.isEmpty(itemInHand)) return;
         Object serverPlayer = FastNMS.INSTANCE.method$CraftPlayer$getHandle(player);
         try {
-            Object inventoryMenu = Reflections.field$Player$inventoryMenu.get(serverPlayer);
-            int containerId = Reflections.field$AbstractContainerMenu$containerId.getInt(inventoryMenu);
+            Object inventoryMenu = CoreReflections.field$Player$inventoryMenu.get(serverPlayer);
+            int containerId = CoreReflections.field$AbstractContainerMenu$containerId.getInt(inventoryMenu);
             int heldItemSlot = player.getInventory().getHeldItemSlot();
-            int stateId = (int) Reflections.method$AbstractContainerMenu$incrementStateId.invoke(inventoryMenu);
-            Object packet = Reflections.constructor$ClientboundContainerSetSlotPacket.newInstance(containerId, stateId, heldItemSlot + 36, FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemInHand));
+            int stateId = (int) CoreReflections.method$AbstractContainerMenu$incrementStateId.invoke(inventoryMenu);
+            Object packet = NetworkReflections.constructor$ClientboundContainerSetSlotPacket.newInstance(containerId, stateId, heldItemSlot + 36, FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemInHand));
             BukkitCraftEngine.instance().networkManager().sendPacket(player, packet);
         } catch (ReflectiveOperationException e) {
             CraftEngine.instance().logger().warn("Failed to resend item in hand", e);
@@ -172,12 +174,12 @@ public final class PlayerUtils {
             Object previousItem = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(offhandItem);
             Object totemItem = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(totem);
 
-            Object packet1 = Reflections.constructor$ClientboundSetEquipmentPacket
-                    .newInstance(player.getEntityId(), List.of(Pair.of(Reflections.instance$EquipmentSlot$OFFHAND, totemItem)));
-            Object packet2 = Reflections.constructor$ClientboundEntityEventPacket
+            Object packet1 = NetworkReflections.constructor$ClientboundSetEquipmentPacket
+                    .newInstance(player.getEntityId(), List.of(Pair.of(CoreReflections.instance$EquipmentSlot$OFFHAND, totemItem)));
+            Object packet2 = NetworkReflections.constructor$ClientboundEntityEventPacket
                     .newInstance(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player), (byte) 35);
-            Object packet3 = Reflections.constructor$ClientboundSetEquipmentPacket
-                    .newInstance(player.getEntityId(), List.of(Pair.of(Reflections.instance$EquipmentSlot$OFFHAND, previousItem)));
+            Object packet3 = NetworkReflections.constructor$ClientboundSetEquipmentPacket
+                    .newInstance(player.getEntityId(), List.of(Pair.of(CoreReflections.instance$EquipmentSlot$OFFHAND, previousItem)));
             packets.add(packet1);
             packets.add(packet2);
             packets.add(packet3);

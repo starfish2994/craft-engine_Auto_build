@@ -28,10 +28,13 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockShape;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRecipeTypes;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.block.BlockKeys;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -72,49 +75,38 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class BukkitInjector {
-    private static final ByteBuddy byteBuddy = new ByteBuddy(ClassFileVersion.JAVA_V17);
-    private static final BukkitBlockShape STONE_SHAPE = new BukkitBlockShape(Reflections.instance$Blocks$STONE$defaultState, Reflections.instance$Blocks$STONE$defaultState);
 
     private static Class<?> clazz$InjectedPalettedContainer;
     private static Class<?> clazz$InjectedLevelChunkSection;
     private static MethodHandle constructor$InjectedLevelChunkSection;
-
     private static VarHandle varHandle$InjectedPalettedContainer$target;
-
     private static Class<?> clazz$OptimizedItemDisplay;
     private static Constructor<?> constructor$OptimizedItemDisplay;
-
     private static Class<?> clazz$OptimizedItemDisplayFatory;
     private static Object instance$OptimizedItemDisplayFactory;
-
-    private static Class<?> clazz$CraftEngineBlock;
-    private static MethodHandle constructor$CraftEngineBlock;
-    private static Field field$CraftEngineBlock$behavior;
-    private static Field field$CraftEngineBlock$shape;
-    private static Field field$CraftEngineBlock$isNoteBlock;
-
     private static Class<?> clazz$InjectedCacheChecker;
 
     private static InternalFieldAccessor internalFieldAccessor;
 
     public static void init() {
         try {
+            ByteBuddy byteBuddy = new ByteBuddy(ClassFileVersion.JAVA_V17);
             // Paletted Container
             clazz$InjectedPalettedContainer = byteBuddy
-                    .subclass(Reflections.clazz$PalettedContainer)
+                    .subclass(CoreReflections.clazz$PalettedContainer)
                     .name("net.minecraft.world.level.chunk.InjectedPalettedContainer")
                     .implement(InjectedHolder.Palette.class)
-                    .defineField("target", Reflections.clazz$PalettedContainer, Visibility.PUBLIC)
+                    .defineField("target", CoreReflections.clazz$PalettedContainer, Visibility.PUBLIC)
                     .defineField("active", boolean.class, Visibility.PUBLIC)
                     .defineField("cesection", CESection.class, Visibility.PRIVATE)
                     .defineField("cechunk", CEChunk.class, Visibility.PRIVATE)
                     .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
                     .method(ElementMatchers.any()
-                            .and(ElementMatchers.not(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet)))
+                            .and(ElementMatchers.not(ElementMatchers.is(CoreReflections.method$PalettedContainer$getAndSet)))
                             .and(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
                     )
                     .intercept(MethodDelegation.toField("target"))
-                    .method(ElementMatchers.is(Reflections.method$PalettedContainer$getAndSet))
+                    .method(ElementMatchers.is(CoreReflections.method$PalettedContainer$getAndSet))
                     .intercept(MethodDelegation.to(GetAndSetInterceptor.INSTANCE))
                     .method(ElementMatchers.named("target"))
                     .intercept(FieldAccessor.ofField("target"))
@@ -131,18 +123,18 @@ public class BukkitInjector {
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
-            //varHandle$InjectedPalettedContainer$target = Objects.requireNonNull(ReflectionUtils.findVarHandle(clazz$InjectedPalettedContainer, "target", Reflections.clazz$PalettedContainer));
+            //varHandle$InjectedPalettedContainer$target = Objects.requireNonNull(ReflectionUtils.findVarHandle(clazz$InjectedPalettedContainer, "target", CoreReflections.clazz$PalettedContainer));
 
             // Level Chunk Section
             clazz$InjectedLevelChunkSection = byteBuddy
-                    .subclass(Reflections.clazz$LevelChunkSection, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
+                    .subclass(CoreReflections.clazz$LevelChunkSection, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .name("net.minecraft.world.level.chunk.InjectedLevelChunkSection")
                     .implement(InjectedHolder.Section.class)
                     .defineField("active", boolean.class, Visibility.PUBLIC)
                     .defineField("cesection", CESection.class, Visibility.PRIVATE)
                     .defineField("cechunk", CEChunk.class, Visibility.PRIVATE)
                     .defineField("cepos", SectionPos.class, Visibility.PRIVATE)
-                    .method(ElementMatchers.is(Reflections.method$LevelChunkSection$setBlockState))
+                    .method(ElementMatchers.is(CoreReflections.method$LevelChunkSection$setBlockState))
                         .intercept(MethodDelegation.to(SetBlockStateInterceptor.INSTANCE))
                     .method(ElementMatchers.named("ceSection"))
                     .intercept(FieldAccessor.ofField("cesection"))
@@ -157,18 +149,18 @@ public class BukkitInjector {
                     .getLoaded();
 
             constructor$InjectedLevelChunkSection = MethodHandles.publicLookup().in(clazz$InjectedLevelChunkSection)
-                    .findConstructor(clazz$InjectedLevelChunkSection, MethodType.methodType(void.class, Reflections.clazz$PalettedContainer, Reflections.clazz$PalettedContainer))
-                    .asType(MethodType.methodType(Reflections.clazz$LevelChunkSection, Reflections.clazz$PalettedContainer, Reflections.clazz$PalettedContainer));
+                    .findConstructor(clazz$InjectedLevelChunkSection, MethodType.methodType(void.class, CoreReflections.clazz$PalettedContainer, CoreReflections.clazz$PalettedContainer))
+                    .asType(MethodType.methodType(CoreReflections.clazz$LevelChunkSection, CoreReflections.clazz$PalettedContainer, CoreReflections.clazz$PalettedContainer));
 
             // State Predicate
             DynamicType.Unloaded<?> alwaysTrue = byteBuddy
-                    .subclass(Reflections.clazz$StatePredicate)
+                    .subclass(CoreReflections.clazz$StatePredicate)
                     .method(ElementMatchers.named("test"))
                     .intercept(FixedValue.value(true))
                     .make();
             Class<?> alwaysTrueClass = alwaysTrue.load(BukkitInjector.class.getClassLoader()).getLoaded();
             DynamicType.Unloaded<?> alwaysFalse = byteBuddy
-                    .subclass(Reflections.clazz$StatePredicate)
+                    .subclass(CoreReflections.clazz$StatePredicate)
                     .method(ElementMatchers.named("test"))
                     .intercept(FixedValue.value(false))
                     .make();
@@ -176,16 +168,16 @@ public class BukkitInjector {
             StatePredicate.init(alwaysTrueClass.getDeclaredConstructor().newInstance(), alwaysFalseClass.getDeclaredConstructor().newInstance());
             // Optimized Item Display
             clazz$OptimizedItemDisplay = byteBuddy
-                    .subclass(Reflections.clazz$Display$ItemDisplay, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
+                    .subclass(CoreReflections.clazz$Display$ItemDisplay, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .name("net.minecraft.world.entity.OptimizedItemDisplay")
                     .make()
                     .load(BukkitInjector.class.getClassLoader())
                     .getLoaded();
-            constructor$OptimizedItemDisplay = ReflectionUtils.getConstructor(clazz$OptimizedItemDisplay, Reflections.clazz$EntityType, Reflections.clazz$Level);
+            constructor$OptimizedItemDisplay = ReflectionUtils.getConstructor(clazz$OptimizedItemDisplay, CoreReflections.clazz$EntityType, CoreReflections.clazz$Level);
             clazz$OptimizedItemDisplayFatory = byteBuddy
                     .subclass(Object.class, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .name("net.momirealms.craftengine.bukkit.entity.OptimizedItemDisplayFactory")
-                    .implement(Reflections.clazz$EntityType$EntityFactory)
+                    .implement(CoreReflections.clazz$EntityType$EntityFactory)
                     .method(ElementMatchers.named("create"))
                     .intercept(MethodDelegation.to(OptimizedItemDisplayMethodInterceptor.INSTANCE))
                     .make()
@@ -201,11 +193,11 @@ public class BukkitInjector {
                     .withParameter(Object.class, "packet")
                     .withoutCode()
                     .make()
-                    .load(Reflections.clazz$ClientboundMoveEntityPacket.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+                    .load(NetworkReflections.clazz$ClientboundMoveEntityPacket.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                     .getLoaded();
 
             // Internal field accessor
-            FieldDescription moveEntityIdFieldDesc = new FieldDescription.ForLoadedField(Reflections.field$ClientboundMoveEntityPacket$entityId);
+            FieldDescription moveEntityIdFieldDesc = new FieldDescription.ForLoadedField(NetworkReflections.field$ClientboundMoveEntityPacket$entityId);
             Class<?> clazz$InternalFieldAccessor = byteBuddy
                     .subclass(Object.class)
                     .name("net.minecraft.network.protocol.game.CraftEngineInternalFieldAccessor")
@@ -213,139 +205,21 @@ public class BukkitInjector {
                     .method(ElementMatchers.named("field$ClientboundMoveEntityPacket$entityId"))
                     .intercept(new Implementation.Simple(
                             MethodVariableAccess.REFERENCE.loadFrom(1),
-                            TypeCasting.to(TypeDescription.ForLoadedType.of(Reflections.clazz$ClientboundMoveEntityPacket)),
+                            TypeCasting.to(TypeDescription.ForLoadedType.of(NetworkReflections.clazz$ClientboundMoveEntityPacket)),
                             FieldAccess.forField(moveEntityIdFieldDesc).read(),
                             MethodReturn.INTEGER
                     ))
                     .make()
-                    .load(Reflections.clazz$ClientboundMoveEntityPacket.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+                    .load(NetworkReflections.clazz$ClientboundMoveEntityPacket.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                     .getLoaded();
             internalFieldAccessor = (InternalFieldAccessor) clazz$InternalFieldAccessor.getConstructor().newInstance();
 
-            // CraftEngine Blocks
-            String packageWithName = BukkitInjector.class.getName();
-            String generatedClassName = packageWithName.substring(0, packageWithName.lastIndexOf('.')) + ".CraftEngineBlock";
-            DynamicType.Builder<?> builder = byteBuddy
-                    .subclass(Reflections.clazz$Block, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
-                    .name(generatedClassName)
-                    .defineField("behaviorHolder", ObjectHolder.class, Visibility.PUBLIC)
-                    .defineField("shapeHolder", ObjectHolder.class, Visibility.PUBLIC)
-                    .defineField("isClientSideNoteBlock", boolean.class, Visibility.PUBLIC)
-                    // should always implement this interface
-                    .implement(Reflections.clazz$Fallable)
-                    .implement(Reflections.clazz$BonemealableBlock)
-                    // TODO .implement(Reflections.clazz$SimpleWaterloggedBlock)
-                    // internal interfaces
-                    .implement(BehaviorHolder.class)
-                    .implement(ShapeHolder.class)
-                    .implement(NoteBlockIndicator.class)
-                    .method(ElementMatchers.named("getBehaviorHolder"))
-                    .intercept(FieldAccessor.ofField("behaviorHolder"))
-                    .method(ElementMatchers.named("getShapeHolder"))
-                    .intercept(FieldAccessor.ofField("shapeHolder"))
-                    .method(ElementMatchers.named("isNoteBlock"))
-                    .intercept(FieldAccessor.ofField("isClientSideNoteBlock"))
-                    // getShape
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getShape))
-                    .intercept(MethodDelegation.to(GetShapeInterceptor.INSTANCE))
-                    // getCollisionShape
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getCollisionShape))
-                    .intercept(MethodDelegation.to(GetCollisionShapeInterceptor.INSTANCE))
-                    // getSupportShape
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$getBlockSupportShape))
-                    .intercept(MethodDelegation.to(GetSupportShapeInterceptor.INSTANCE))
-                    // mirror
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$mirror))
-                    .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
-                    // rotate
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$rotate))
-                    .intercept(MethodDelegation.to(RotateInterceptor.INSTANCE))
-                    // tick
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$tick))
-                    .intercept(MethodDelegation.to(TickInterceptor.INSTANCE))
-                    // isValidBoneMealTarget
-                    .method(ElementMatchers.is(Reflections.method$BonemealableBlock$isValidBonemealTarget))
-                    .intercept(MethodDelegation.to(IsValidBoneMealTargetInterceptor.INSTANCE))
-                    // isBoneMealSuccess
-                    .method(ElementMatchers.is(Reflections.method$BonemealableBlock$isBonemealSuccess))
-                    .intercept(MethodDelegation.to(IsBoneMealSuccessInterceptor.INSTANCE))
-                    // performBoneMeal
-                    .method(ElementMatchers.is(Reflections.method$BonemealableBlock$performBonemeal))
-                    .intercept(MethodDelegation.to(PerformBoneMealInterceptor.INSTANCE))
-//                    // pickupBlock
-//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$pickupBlock))
-//                    .intercept(MethodDelegation.to(PickUpBlockInterceptor.INSTANCE))
-//                    // placeLiquid
-//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$placeLiquid))
-//                    .intercept(MethodDelegation.to(PlaceLiquidInterceptor.INSTANCE))
-//                    // canPlaceLiquid
-//                    .method(ElementMatchers.is(Reflections.method$SimpleWaterloggedBlock$canPlaceLiquid))
-//                    .intercept(MethodDelegation.to(CanPlaceLiquidInterceptor.INSTANCE))
-                    // random tick
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$randomTick))
-                    .intercept(MethodDelegation.to(RandomTickInterceptor.INSTANCE))
-                    // onPlace
-                    .method(ElementMatchers.takesArguments(5)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState))
-                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$Level))
-                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$BlockPos))
-                            .and(ElementMatchers.takesArgument(3, Reflections.clazz$BlockState))
-                            .and(ElementMatchers.takesArgument(4, boolean.class))
-                            .and(ElementMatchers.named("onPlace").or(ElementMatchers.named("a")))
-                    )
-                    .intercept(MethodDelegation.to(OnPlaceInterceptor.INSTANCE))
-                    // onBrokenAfterFall
-                    .method(ElementMatchers.takesArguments(3)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$Level))
-                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$BlockPos))
-                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$FallingBlockEntity))
-                    )
-                    .intercept(MethodDelegation.to(OnBrokenAfterFallInterceptor.INSTANCE))
-                    // onLand
-                    .method(ElementMatchers.takesArguments(5)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$Level))
-                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$BlockPos))
-                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$BlockState))
-                            .and(ElementMatchers.takesArgument(3, Reflections.clazz$BlockState))
-                            .and(ElementMatchers.takesArgument(4, Reflections.clazz$FallingBlockEntity))
-                    )
-                    .intercept(MethodDelegation.to(OnLandInterceptor.INSTANCE))
-                    // canSurvive
-                    .method(ElementMatchers.takesArguments(3)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState))
-                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$LevelReader))
-                            .and(ElementMatchers.takesArgument(2, Reflections.clazz$BlockPos))
-                    )
-                    .intercept(MethodDelegation.to(CanSurviveInterceptor.INSTANCE))
-                    // updateShape
-                    .method(ElementMatchers.returns(Reflections.clazz$BlockState)
-                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState))
-                            // LevelReader 1.21.3+                                                     // 1.20-1.12.2
-                            .and(ElementMatchers.takesArgument(1, Reflections.clazz$LevelReader).or(ElementMatchers.takesArgument(1, Reflections.clazz$Direction)))
-                            .and(ElementMatchers.named("updateShape").or(ElementMatchers.named("a"))))
-                    .intercept(MethodDelegation.to(UpdateShapeInterceptor.INSTANCE))
-                    // neighborChanged
-                    .method(ElementMatchers.is(Reflections.method$BlockBehaviour$neighborChanged))
-                    .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE))
-//                    // getFluidState
-//                    .method(ElementMatchers.returns(Reflections.clazz$FluidState)
-//                            .and(ElementMatchers.takesArgument(0, Reflections.clazz$BlockState)))
-//                    .intercept(MethodDelegation.to(FluidStateInterceptor.INSTANCE))
-                    ;
-            clazz$CraftEngineBlock = builder.make().load(BukkitInjector.class.getClassLoader()).getLoaded();
 
-            constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
-                    .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, Reflections.clazz$BlockBehaviour$Properties))
-                    .asType(MethodType.methodType(Reflections.clazz$Block, Reflections.clazz$BlockBehaviour$Properties));
-
-            field$CraftEngineBlock$behavior = clazz$CraftEngineBlock.getField("behaviorHolder");
-            field$CraftEngineBlock$shape = clazz$CraftEngineBlock.getField("shapeHolder");
-            field$CraftEngineBlock$isNoteBlock = clazz$CraftEngineBlock.getField("isClientSideNoteBlock");
 
             clazz$InjectedCacheChecker = byteBuddy
                     .subclass(Object.class, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                     .name("net.momirealms.craftengine.bukkit.entity.InjectedCacheChecker")
-                    .implement(Reflections.clazz$RecipeManager$CachedCheck)
+                    .implement(CoreReflections.clazz$RecipeManager$CachedCheck)
                     .implement(InjectedCacheCheck.class)
                     .defineField("recipeType", Object.class, Visibility.PUBLIC)
                     .method(ElementMatchers.named("recipeType"))
@@ -381,19 +255,19 @@ public class BukkitInjector {
     }
 
     public static void injectCookingBlockEntity(Object entity) throws ReflectiveOperationException {
-        if (Reflections.clazz$AbstractFurnaceBlockEntity.isInstance(entity)) {
-            Object quickCheck = Reflections.field$AbstractFurnaceBlockEntity$quickCheck.get(entity);
+        if (CoreReflections.clazz$AbstractFurnaceBlockEntity.isInstance(entity)) {
+            Object quickCheck = CoreReflections.field$AbstractFurnaceBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             Object recipeType = FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$recipeType(entity);
-            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
+            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
             injectedChecker.recipeType(recipeType);
-            Reflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
-        } else if (!VersionHelper.isOrAbove1_21_2() && Reflections.clazz$CampfireBlockEntity.isInstance(entity)) {
-            Object quickCheck = Reflections.field$CampfireBlockEntity$quickCheck.get(entity);
+            CoreReflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
+        } else if (!VersionHelper.isOrAbove1_21_2() && CoreReflections.clazz$CampfireBlockEntity.isInstance(entity)) {
+            Object quickCheck = CoreReflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
-            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) Reflections.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
-            injectedChecker.recipeType(Reflections.instance$RecipeType$CAMPFIRE_COOKING);
-            Reflections.field$CampfireBlockEntity$quickCheck.set(entity, injectedChecker);
+            InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
+            injectedChecker.recipeType(MRecipeTypes.CAMPFIRE_COOKING);
+            CoreReflections.field$CampfireBlockEntity$quickCheck.set(entity, injectedChecker);
         }
     }
 
@@ -418,8 +292,8 @@ public class BukkitInjector {
 //                injectedObject.ceSection(ceSection);
 //                injectedObject.ceWorld(ceWorld);
 //                injectedObject.cePos(pos);
-//                Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
-//                Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
+//                CoreReflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, CoreReflections.varHandle$PalettedContainer$data.get(container));
+//                CoreReflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
 //            }
 //        } catch (Exception e) {
 //            CraftEngine.instance().logger().severe("Failed to inject chunk section", e);
@@ -435,7 +309,7 @@ public class BukkitInjector {
                     if (Config.fastInjection()) {
                         injectedObject = FastNMS.INSTANCE.createInjectedPalettedContainerHolder(container);
                     } else {
-                        injectedObject = (InjectedHolder.Palette) Reflections.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
+                        injectedObject = (InjectedHolder.Palette) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedPalettedContainer);
                         injectedObject.setTarget(container);
                         //varHandle$InjectedPalettedContainer$target.set(injectedObject, container);
                     }
@@ -443,8 +317,8 @@ public class BukkitInjector {
                     injectedObject.ceSection(ceSection);
                     injectedObject.cePos(pos);
                     injectedObject.setActive(true);
-                    Reflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, Reflections.varHandle$PalettedContainer$data.get(container));
-                    Reflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
+                    CoreReflections.varHandle$PalettedContainer$data.setVolatile(injectedObject, CoreReflections.varHandle$PalettedContainer$data.get(container));
+                    CoreReflections.field$LevelChunkSection$states.set(targetSection, injectedObject);
                 } else {
                     holder.ceChunk(chunk);
                     holder.ceSection(ceSection);
@@ -492,7 +366,7 @@ public class BukkitInjector {
             if (states instanceof InjectedHolder.Palette holder) {
                 holder.setActive(false);
 //                try {
-//                    Reflections.field$LevelChunkSection$states.set(section, holder.target());
+//                    CoreReflections.field$LevelChunkSection$states.set(section, holder.target());
 //                } catch (ReflectiveOperationException e) {
 //                    CraftEngine.instance().logger().severe("Failed to uninject palette", e);
 //                }
@@ -525,10 +399,10 @@ public class BukkitInjector {
 
                 ItemStack itemStack;
                 List<Object> items;
-                if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
-                    items = (List<Object>) Reflections.field$SimpleContainer$items.get(args[0]);
+                if (type == MRecipeTypes.CAMPFIRE_COOKING) {
+                    items = (List<Object>) CoreReflections.field$SimpleContainer$items.get(args[0]);
                 } else {
-                    items = (List<Object>) Reflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
+                    items = (List<Object>) CoreReflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
                 }
                 itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
 
@@ -548,13 +422,13 @@ public class BukkitInjector {
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == Reflections.instance$RecipeType$SMELTING) {
+                if (type == MRecipeTypes.SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$BLASTING) {
+                } else if (type == MRecipeTypes.BLASTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$SMOKING) {
+                } else if (type == MRecipeTypes.SMOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
+                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
@@ -593,10 +467,10 @@ public class BukkitInjector {
 
                 ItemStack itemStack;
                 List<Object> items;
-                if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
-                    items = (List<Object>) Reflections.field$SimpleContainer$items.get(args[0]);
+                if (type == MRecipeTypes.CAMPFIRE_COOKING) {
+                    items = (List<Object>) CoreReflections.field$SimpleContainer$items.get(args[0]);
                 } else {
-                    items = (List<Object>) Reflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
+                    items = (List<Object>) CoreReflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
                 }
                 itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
 
@@ -616,13 +490,13 @@ public class BukkitInjector {
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == Reflections.instance$RecipeType$SMELTING) {
+                if (type == MRecipeTypes.SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$BLASTING) {
+                } else if (type == MRecipeTypes.BLASTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$SMOKING) {
+                } else if (type == MRecipeTypes.SMOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
+                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
@@ -658,7 +532,7 @@ public class BukkitInjector {
                 Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
                 Key recipeId = Key.of(id.toString());
                 BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$SingleRecipeInput$item.get(args[0]));
+                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.field$SingleRecipeInput$item.get(args[0]));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
@@ -676,13 +550,13 @@ public class BukkitInjector {
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == Reflections.instance$RecipeType$SMELTING) {
+                if (type == MRecipeTypes.SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$BLASTING) {
+                } else if (type == MRecipeTypes.BLASTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$SMOKING) {
+                } else if (type == MRecipeTypes.SMOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$CAMPFIRE_COOKING) {
+                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
                 } else  {
                     return Optional.empty();
@@ -719,7 +593,7 @@ public class BukkitInjector {
                 Object resourceLocation = FastNMS.INSTANCE.field$ResourceKey$location(id);
                 Key recipeId = Key.of(resourceLocation.toString());
                 BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(Reflections.field$SingleRecipeInput$item.get(args[0]));
+                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.field$SingleRecipeInput$item.get(args[0]));
 
                 // it's a recipe from other plugins
                 boolean isCustom = recipeManager.isCustomRecipe(recipeId);
@@ -737,11 +611,11 @@ public class BukkitInjector {
                 SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
                 CustomCookingRecipe<ItemStack> ceRecipe;
                 Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == Reflections.instance$RecipeType$SMELTING) {
+                if (type == MRecipeTypes.SMELTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$BLASTING) {
+                } else if (type == MRecipeTypes.BLASTING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == Reflections.instance$RecipeType$SMOKING) {
+                } else if (type == MRecipeTypes.SMOKING) {
                     ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
                 } else {
                     return Optional.empty();
@@ -844,338 +718,4 @@ public class BukkitInjector {
             world.sectionLightUpdated(pos);
         }
     }
-
-    public static Object generateBlock(Key replacedBlock, Object ownerBlock, Object properties) throws Throwable {
-        Object ownerProperties = Reflections.field$BlockBehaviour$properties.get(ownerBlock);
-        Reflections.field$BlockBehaviour$Properties$hasCollision.set(properties, Reflections.field$BlockBehaviour$Properties$hasCollision.get(ownerProperties));
-
-        ObjectHolder<BlockBehavior> behaviorHolder = new ObjectHolder<>(EmptyBlockBehavior.INSTANCE);
-        ObjectHolder<BlockShape> shapeHolder = new ObjectHolder<>(STONE_SHAPE);
-
-        Object newBlockInstance = constructor$CraftEngineBlock.invoke(properties);
-        field$CraftEngineBlock$behavior.set(newBlockInstance, behaviorHolder);
-        field$CraftEngineBlock$shape.set(newBlockInstance, shapeHolder);
-        field$CraftEngineBlock$isNoteBlock.set(newBlockInstance, replacedBlock.equals(BlockKeys.NOTE_BLOCK));
-        return newBlockInstance;
-    }
-
-//
-//    public static class FluidStateInterceptor {
-//        public static final FluidStateInterceptor INSTANCE = new FluidStateInterceptor();
-//
-//        @RuntimeType
-//        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-//            try {
-//                return holder.value().getFluidState(thisObj, args, superMethod);
-//            } catch (Exception e) {
-//                CraftEngine.instance().logger().severe("Failed to run getFluidState", e);
-//                return args[0];
-//            }
-//        }
-//    }
-
-    public static class UpdateShapeInterceptor {
-        public static final UpdateShapeInterceptor INSTANCE = new UpdateShapeInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            if (((NoteBlockIndicator) thisObj).isNoteBlock()) {
-                startNoteBlockChain(args);
-            }
-            try {
-                return holder.value().updateShape(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run updateShape", e);
-                return args[0];
-            }
-        }
-    }
-
-    private static void startNoteBlockChain(Object[] args) throws ReflectiveOperationException {
-        Object direction;
-        Object serverLevel;
-        Object blockPos;
-        if (VersionHelper.isOrAbove1_21_2()) {
-            direction = args[4];
-            serverLevel = args[1];
-            blockPos = args[3];
-        } else {
-            direction = args[1];
-            serverLevel = args[3];
-            blockPos = args[4];
-        }
-        int id = (int) Reflections.field$Direction$data3d.get(direction);
-        // Y axis
-        if (id == 0 || id == 1) {
-            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
-            FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
-            if (id == 1) {
-                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$DOWN, blockPos, 0);
-            } else {
-                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, Reflections.instance$Direction$UP, blockPos, 0);
-            }
-        }
-    }
-
-    public static class GetShapeInterceptor {
-        public static final GetShapeInterceptor INSTANCE = new GetShapeInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
-            try {
-                return holder.value().getShape(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run getShape", e);
-                return superMethod.call();
-            }
-        }
-    }
-
-    public static class GetCollisionShapeInterceptor {
-        public static final GetCollisionShapeInterceptor INSTANCE = new GetCollisionShapeInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
-            try {
-                return holder.value().getCollisionShape(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run getCollisionShape", e);
-                return superMethod.call();
-            }
-        }
-    }
-
-    public static class GetSupportShapeInterceptor {
-        public static final GetSupportShapeInterceptor INSTANCE = new GetSupportShapeInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
-            try {
-                return holder.value().getSupportShape(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run getSupportShape", e);
-                return superMethod.call();
-            }
-        }
-    }
-
-    public static class MirrorInterceptor {
-        public static final MirrorInterceptor INSTANCE = new MirrorInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().mirror(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run mirror", e);
-                return superMethod.call();
-            }
-        }
-    }
-
-    public static class RotateInterceptor {
-        public static final RotateInterceptor INSTANCE = new RotateInterceptor();
-
-        @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().rotate(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run rotate", e);
-                return superMethod.call();
-            }
-        }
-    }
-
-    public static class RandomTickInterceptor {
-        public static final RandomTickInterceptor INSTANCE = new RandomTickInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().randomTick(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run randomTick", e);
-            }
-        }
-    }
-
-    public static class TickInterceptor {
-        public static final TickInterceptor INSTANCE = new TickInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().tick(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run tick", e);
-            }
-        }
-    }
-
-    public static class OnPlaceInterceptor {
-        public static final OnPlaceInterceptor INSTANCE = new OnPlaceInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().onPlace(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run onPlace", e);
-            }
-        }
-    }
-
-    public static class OnLandInterceptor {
-        public static final OnLandInterceptor INSTANCE = new OnLandInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().onLand(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run onLand", e);
-            }
-        }
-    }
-
-    public static class OnBrokenAfterFallInterceptor {
-        public static final OnBrokenAfterFallInterceptor INSTANCE = new OnBrokenAfterFallInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().onBrokenAfterFall(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run onBrokenAfterFall", e);
-            }
-        }
-    }
-
-    public static class CanSurviveInterceptor {
-        public static final CanSurviveInterceptor INSTANCE = new CanSurviveInterceptor();
-
-        @RuntimeType
-        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().canSurvive(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run canSurvive", e);
-                return true;
-            }
-        }
-    }
-
-    public static class IsBoneMealSuccessInterceptor {
-        public static final IsBoneMealSuccessInterceptor INSTANCE = new IsBoneMealSuccessInterceptor();
-
-        @RuntimeType
-        public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().isBoneMealSuccess(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run isBoneMealSuccess", e);
-                return true;
-            }
-        }
-    }
-
-    public static class IsValidBoneMealTargetInterceptor {
-        public static final IsValidBoneMealTargetInterceptor INSTANCE = new IsValidBoneMealTargetInterceptor();
-
-        @RuntimeType
-        public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                return holder.value().isValidBoneMealTarget(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run isValidBoneMealTarget", e);
-                return true;
-            }
-        }
-    }
-
-    public static class PerformBoneMealInterceptor {
-        public static final PerformBoneMealInterceptor INSTANCE = new PerformBoneMealInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().performBoneMeal(thisObj, args);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run performBoneMeal", e);
-            }
-        }
-    }
-
-    public static class NeighborChangedInterceptor {
-        public static final NeighborChangedInterceptor INSTANCE = new NeighborChangedInterceptor();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            try {
-                holder.value().neighborChanged(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run neighborChanged", e);
-            }
-        }
-    }
-//
-//    public static class PickUpBlockInterceptor {
-//        public static final PickUpBlockInterceptor INSTANCE = new PickUpBlockInterceptor();
-//
-//        @RuntimeType
-//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-//            try {
-//                holder.value().pickupBlock(thisObj, args, superMethod);
-//            } catch (Exception e) {
-//                CraftEngine.instance().logger().severe("Failed to run pickupBlock", e);
-//            }
-//        }
-//    }
-//
-//    public static class PlaceLiquidInterceptor {
-//        public static final PlaceLiquidInterceptor INSTANCE = new PlaceLiquidInterceptor();
-//
-//        @RuntimeType
-//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-//            try {
-//                holder.value().placeLiquid(thisObj, args, superMethod);
-//            } catch (Exception e) {
-//                CraftEngine.instance().logger().severe("Failed to run placeLiquid", e);
-//            }
-//        }
-//    }
-//
-//    public static class CanPlaceLiquidInterceptor {
-//        public static final CanPlaceLiquidInterceptor INSTANCE = new CanPlaceLiquidInterceptor();
-//
-//        @RuntimeType
-//        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-//            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-//            try {
-//                holder.value().canPlaceLiquid(thisObj, args, superMethod);
-//            } catch (Exception e) {
-//                CraftEngine.instance().logger().severe("Failed to run canPlaceLiquid", e);
-//            }
-//        }
-//    }
 }
