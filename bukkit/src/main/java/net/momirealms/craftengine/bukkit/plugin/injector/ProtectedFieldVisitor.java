@@ -23,7 +23,7 @@ public class ProtectedFieldVisitor {
         // InternalFieldAccessor Interface
         Class<?> internalFieldAccessorInterface = byteBuddy
                 .makeInterface()
-                .name("net.momirealms.craftengine.bukkit.plugin.injector.InternalFieldAccessor")
+                .name("net.momirealms.craftengine.bukkit.plugin.injector.FieldAccessor")
                 .defineMethod("field$ClientboundMoveEntityPacket$entityId", int.class, Modifier.PUBLIC)
                 .withParameter(Object.class, "packet")
                 .withoutCode()

@@ -7,7 +7,6 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Item;
