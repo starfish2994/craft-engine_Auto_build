@@ -22,7 +22,6 @@ public class PaperCraftEnginePlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.bootstrap.plugin.onPluginEnable();
         this.bootstrap.plugin.scheduler().asyncRepeating(() -> {
             Collection<? extends Player> players = Bukkit.getOnlinePlayers();
             if (players.size() > 20) {
