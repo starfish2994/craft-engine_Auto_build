@@ -23,7 +23,7 @@ public class CraftEngineItemDrop extends ItemDrop implements IItemDrop {
     public CraftEngineItemDrop(String line, MythicLineConfig config, CustomItem<ItemStack> customItem) {
         super(line, config);
         this.customItem = customItem;
-        CraftEngine.instance().debug(() -> "[MM调试] " + customItem.id() + "注册成功");
+        CraftEngine.instance().debug(() -> "[MM调试] " + customItem.id() + " 注册成功");
     }
 
     @Override
