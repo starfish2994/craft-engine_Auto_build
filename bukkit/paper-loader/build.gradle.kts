@@ -92,6 +92,9 @@ paper {
         register("ViaVersion") {
             required = false
         }
+        register("MythicMobs") {
+            required = false
+        }
     }
 }
 

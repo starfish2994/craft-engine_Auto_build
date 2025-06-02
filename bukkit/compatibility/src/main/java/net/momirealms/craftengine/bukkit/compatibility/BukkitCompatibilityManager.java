@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacyS
 import net.momirealms.craftengine.bukkit.compatibility.leveler.AuraSkillsLevelerProvider;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
+import net.momirealms.craftengine.bukkit.compatibility.mythicmobs.MythicMobsListener;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.compatibility.permission.LuckPermsEventListeners;
 import net.momirealms.craftengine.bukkit.compatibility.skript.SkriptHook;
@@ -104,6 +105,10 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
         if (this.isPluginEnabled("AuraSkills")) {
             this.registerLevelerProvider("AuraSkills", new AuraSkillsLevelerProvider());
+        }
+        if (this.isPluginEnabled("MythicMobs")) {
+            new MythicMobsListener(this.plugin);
+            logHook("MythicMobs");
         }
     }
 
