@@ -304,7 +304,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.GSON,
                 Dependencies.COMMONS_IO, Dependencies.COMMONS_LANG3, Dependencies.COMMONS_IMAGING,
                 Dependencies.ZSTD,
-                Dependencies.BYTE_BUDDY,
+                Dependencies.BYTE_BUDDY, Dependencies.BYTE_BUDDY_AGENT,
                 Dependencies.SNAKE_YAML,
                 Dependencies.BOOSTED_YAML,
                 Dependencies.OPTION,

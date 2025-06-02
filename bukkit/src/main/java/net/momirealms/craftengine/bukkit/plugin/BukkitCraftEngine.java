@@ -117,7 +117,8 @@ public class BukkitCraftEngine extends CraftEngine {
         this.config = new Config(this);
     }
 
-    protected void injectRegistries() {
+    public void injectRegistries() {
+        if (super.blockManager != null) return;
         try {
             BlockGenerator.init();
             super.blockManager = new BukkitBlockManager(this);
