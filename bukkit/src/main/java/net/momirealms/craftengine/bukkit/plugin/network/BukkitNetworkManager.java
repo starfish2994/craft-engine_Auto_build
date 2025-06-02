@@ -17,7 +17,6 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.LibraryRefl
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.bukkit.util.Reflections;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.*;
@@ -165,6 +164,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_MOTION, NetworkReflections.clazz$ClientboundSetEntityMotionPacket);
 		registerNMSPacketConsumer(PacketConsumers.SET_EQUIPMENT_NMS, Reflections.clazz$ClientboundSetEquipmentPacket);
 		registerNMSPacketConsumer(PacketConsumers.SET_CONTAINER_SLOT, Reflections.clazz$ClientboundContainerSetSlotPacket);
+		registerNMSPacketConsumer(PacketConsumers.SET_EQUIPMENT_NMS, NetworkReflections.clazz$ClientboundSetEquipmentPacket);
+		registerNMSPacketConsumer(PacketConsumers.SET_CONTAINER_SLOT, NetworkReflections.clazz$ClientboundContainerSetSlotPacket);
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
