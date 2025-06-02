@@ -46,15 +46,15 @@ public class PaperCraftEngineBootstrap implements PluginBootstrap {
         );
         this.plugin.applyDependencies();
         this.plugin.setUpConfig();
-//        if (VersionHelper.isOrAbove1_21_4()) {
-//            new ModernEventHandler(context, this.plugin).register();
-//        } else {
+        if (VersionHelper.isOrAbove1_21_4()) {
+            new ModernEventHandler(context, this.plugin).register();
+        } else {
             try {
                 RuntimePatcher.patch(this.plugin);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to patch server", e);
             }
-//        }
+        }
     }
 
     @Override
