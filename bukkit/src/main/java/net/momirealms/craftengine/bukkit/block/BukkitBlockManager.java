@@ -31,7 +31,6 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
@@ -93,10 +92,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockParser = new BlockParser();
         this.initVanillaRegistry();
         this.loadMappingsAndAdditionalBlocks();
-        if (!plugin.requiresRestart()) {
-            this.registerBlocks();
-            this.registerEmptyBlock();
-        }
+        this.registerBlocks();
+        this.registerEmptyBlock();
     }
 
     @Override
@@ -276,19 +273,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     private void initVanillaRegistry() {
-        int vanillaStateCount;
-        if (this.plugin.hasMod()) {
-            try {
-                Class<?> modClass = ReflectionUtils.getClazz(CraftEngine.MOD_CLASS);
-                Field amountField = ReflectionUtils.getDeclaredField(modClass, "vanillaRegistrySize");
-                vanillaStateCount = amountField.getInt(null);
-            } catch (Exception e) {
-                vanillaStateCount = RegistryUtils.currentBlockRegistrySize();
-                this.plugin.logger().severe("Fatal error", e);
-            }
-        } else {
-            vanillaStateCount = RegistryUtils.currentBlockRegistrySize();
-        }
+        int vanillaStateCount = RegistryUtils.currentBlockRegistrySize();
         this.plugin.logger().info("Vanilla block count: " + vanillaStateCount);
         BlockStateUtils.init(vanillaStateCount);
     }
@@ -350,7 +335,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     public class BlockParser implements ConfigParser {
-        public static final String[] CONFIG_SECTION_NAME = new String[] {"blocks", "block"};
+        public static final String[] CONFIG_SECTION_NAME = new String[]{"blocks", "block"};
 
         @Override
         public String[] sectionId() {
@@ -512,10 +497,13 @@ public class BukkitBlockManager extends AbstractBlockManager {
             throw new LocalizedResourceConfigException("warning.config.block.state.model.invalid_path", modelPath);
         }
         json.addProperty("model", modelPath);
-        if (singleModelMap.containsKey("x")) json.addProperty("x", ResourceConfigUtils.getAsInt(singleModelMap.get("x"), "x"));
-        if (singleModelMap.containsKey("y")) json.addProperty("y", ResourceConfigUtils.getAsInt(singleModelMap.get("y"), "y"));
+        if (singleModelMap.containsKey("x"))
+            json.addProperty("x", ResourceConfigUtils.getAsInt(singleModelMap.get("x"), "x"));
+        if (singleModelMap.containsKey("y"))
+            json.addProperty("y", ResourceConfigUtils.getAsInt(singleModelMap.get("y"), "y"));
         if (singleModelMap.containsKey("uvlock")) json.addProperty("uvlock", (boolean) singleModelMap.get("uvlock"));
-        if (singleModelMap.containsKey("weight")) json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
+        if (singleModelMap.containsKey("weight"))
+            json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);
         if (generationMap != null) {
             prepareModelGeneration(ModelGeneration.of(Key.of(modelPath), generationMap));
@@ -724,28 +712,19 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Object blockHolder;
             Object resourceLocation = createResourceLocation(realBlockKey);
 
-            if (this.plugin.hasMod()) {
-                newRealBlock = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
-                newBlockState = getOnlyBlockState(newRealBlock);
-
-                @SuppressWarnings("unchecked")
-                Optional<Object> optionalHolder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.BLOCK, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, resourceLocation));
-                blockHolder = optionalHolder.get();
-            } else {
-                try {
-                    newRealBlock = BlockGenerator.generateBlock(clientSideBlockType, clientSideBlock, blockProperties);
-                } catch (Throwable throwable) {
-                    this.plugin.logger().warn("Failed to generate dynamic block class", throwable);
-                    continue;
-                }
-
-                blockHolder = CoreReflections.method$Registry$registerForHolder.invoke(null, MBuiltInRegistries.BLOCK, resourceLocation, newRealBlock);
-                CoreReflections.method$Holder$Reference$bindValue.invoke(blockHolder, newRealBlock);
-                CoreReflections.field$Holder$Reference$tags.set(blockHolder, Set.of());
-
-                newBlockState = getOnlyBlockState(newRealBlock);
-                CoreReflections.method$IdMapper$add.invoke(CoreReflections.instance$Block$BLOCK_STATE_REGISTRY, newBlockState);
+            try {
+                newRealBlock = BlockGenerator.generateBlock(clientSideBlockType, clientSideBlock, blockProperties);
+            } catch (Throwable throwable) {
+                this.plugin.logger().warn("Failed to generate dynamic block class", throwable);
+                continue;
             }
+
+            blockHolder = CoreReflections.method$Registry$registerForHolder.invoke(null, MBuiltInRegistries.BLOCK, resourceLocation, newRealBlock);
+            CoreReflections.method$Holder$Reference$bindValue.invoke(blockHolder, newRealBlock);
+            CoreReflections.field$Holder$Reference$tags.set(blockHolder, Set.of());
+
+            newBlockState = getOnlyBlockState(newRealBlock);
+            CoreReflections.method$IdMapper$add.invoke(CoreReflections.instance$Block$BLOCK_STATE_REGISTRY, newBlockState);
 
             if (isNoteBlock) {
                 BlockStateUtils.CLIENT_SIDE_NOTE_BLOCKS.put(newBlockState, new Object());
