@@ -141,7 +141,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
     }
 
     private void initLuckPermsHook() {
-        new LuckPermsEventListeners(plugin.bootstrap(), (uuid) -> {
+        new LuckPermsEventListeners(plugin.javaPlugin(), (uuid) -> {
             BukkitFontManager fontManager = (BukkitFontManager) plugin.fontManager();
             fontManager.refreshEmojiSuggestions(uuid);
         });
@@ -154,7 +154,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
                 Class.forName("com.infernalsuite.asp.api.AdvancedSlimePaperAPI");
                 SlimeFormatStorageAdaptor adaptor = new SlimeFormatStorageAdaptor(worldManager);
                 worldManager.setStorageAdaptor(adaptor);
-                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+                Bukkit.getPluginManager().registerEvents(adaptor, plugin.javaPlugin());
                 logHook("AdvancedSlimePaper");
             } catch (ClassNotFoundException ignored) {
             }
@@ -163,39 +163,35 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
                 Class.forName("com.infernalsuite.aswm.api.SlimePlugin");
                 LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(worldManager, 1);
                 worldManager.setStorageAdaptor(adaptor);
-                Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+                Bukkit.getPluginManager().registerEvents(adaptor, plugin.javaPlugin());
                 logHook("AdvancedSlimePaper");
             } catch (ClassNotFoundException ignored) {
                 if (Bukkit.getPluginManager().isPluginEnabled("SlimeWorldPlugin")) {
                     LegacySlimeFormatStorageAdaptor adaptor = new LegacySlimeFormatStorageAdaptor(worldManager, 2);
                     worldManager.setStorageAdaptor(adaptor);
-                    Bukkit.getPluginManager().registerEvents(adaptor, plugin.bootstrap());
+                    Bukkit.getPluginManager().registerEvents(adaptor, plugin.javaPlugin());
                     logHook("AdvancedSlimePaper");
                 }
             }
         }
     }
 
-    @SuppressWarnings("all")
+    @SuppressWarnings({"deprecation", "all"})
     private void initFastAsyncWorldEditHook() {
         Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
         String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();
-        if (!this.fastAsyncWorldEditVersionCheck(new int[]{2, 13, 0}, version)) {
-            this.plugin.logger().warn("[Compatibility] FastAsyncWorldEdit version is too old, please update to 2.13.0 or newer");
+        if (!this.fastAsyncWorldEditVersionCheck(version)) {
+            this.plugin.logger().warn("[Compatibility] Please update FastAsyncWorldEdit to 2.13.0 or newer for better compatibility");
         }
         new WorldEditBlockRegister(BukkitBlockManager.instance(), true);
     }
 
-    private boolean fastAsyncWorldEditVersionCheck(int[] target, String version) {
+    private boolean fastAsyncWorldEditVersionCheck(String version) {
         String cleanVersion = version.split("-")[0];
         String[] parts = cleanVersion.split("\\.");
-        for (int i = 0; i < target.length; i++) {
-            if (i >= parts.length) return false;
-            int currentPart = Integer.parseInt(parts[i]);
-            if (currentPart > target[i]) return true;
-            if (currentPart < target[i]) return false;
-        }
-        return true;
+        int first = Integer.parseInt(parts[0]);
+        int second = Integer.parseInt(parts[1]);
+        return first >= 2 && second >= 13;
     }
 
     private void initWorldEditHook() {

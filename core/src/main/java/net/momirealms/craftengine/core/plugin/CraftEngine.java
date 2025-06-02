@@ -25,7 +25,6 @@ import net.momirealms.craftengine.core.plugin.gui.GuiManager;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManager;
 import net.momirealms.craftengine.core.plugin.gui.category.ItemBrowserManagerImpl;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManagerImpl;
 import net.momirealms.craftengine.core.plugin.logger.PluginLogger;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.plugin.logger.filter.LogFilter;
@@ -96,16 +95,9 @@ public abstract class CraftEngine implements Plugin {
         return instance;
     }
 
-    public void onPluginLoad() {
+    protected void onPluginLoad() {
         ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
         ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
-        this.dependencyManager = new DependencyManagerImpl(this);
-        ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
-        dependenciesToLoad.addAll(commonDependencies());
-        dependenciesToLoad.addAll(platformDependencies());
-        this.dependencyManager.loadDependencies(dependenciesToLoad);
-        this.translationManager = new TranslationManagerImpl(this);
-        this.config = new Config(this);
     }
 
     public record ReloadResult(boolean success, long asyncTime, long syncTime) {
@@ -201,7 +193,7 @@ public abstract class CraftEngine implements Plugin {
         return future;
     }
 
-    public void onPluginEnable() {
+    protected void onPluginEnable() {
         this.isInitializing = true;
         this.networkManager.init();
         this.templateManager = new TemplateManagerImpl();
@@ -239,7 +231,7 @@ public abstract class CraftEngine implements Plugin {
         });
     }
 
-    public void onPluginDisable() {
+    protected void onPluginDisable() {
         if (this.networkManager != null) this.networkManager.disable();
         if (this.fontManager != null) this.fontManager.disable();
         if (this.advancementManager != null) this.advancementManager.disable();
@@ -291,6 +283,14 @@ public abstract class CraftEngine implements Plugin {
         this.packManager.registerConfigSectionParser(this.advancementManager.parser());
     }
 
+    public void applyDependencies() {
+        this.dependencyManager = new DependencyManagerImpl(this);
+        ArrayList<Dependency> dependenciesToLoad = new ArrayList<>();
+        dependenciesToLoad.addAll(commonDependencies());
+        dependenciesToLoad.addAll(platformDependencies());
+        this.dependencyManager.loadDependencies(dependenciesToLoad);
+    }
+
     protected abstract void platformDelayedEnable();
 
     protected abstract List<Dependency> platformDependencies();
@@ -302,9 +302,9 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.GEANTY_REF,
                 Dependencies.CLOUD_CORE, Dependencies.CLOUD_SERVICES,
                 Dependencies.GSON,
-                Dependencies.COMMONS_IO,
+                Dependencies.COMMONS_IO, Dependencies.COMMONS_LANG3, Dependencies.COMMONS_IMAGING,
                 Dependencies.ZSTD,
-                Dependencies.BYTE_BUDDY,
+                Dependencies.BYTE_BUDDY, Dependencies.BYTE_BUDDY_AGENT,
                 Dependencies.SNAKE_YAML,
                 Dependencies.BOOSTED_YAML,
                 Dependencies.OPTION,
@@ -316,8 +316,7 @@ public abstract class CraftEngine implements Plugin {
                 Dependencies.LZ4,
                 Dependencies.EVALEX,
                 Dependencies.NETTY_HTTP,
-                Dependencies.JIMFS,
-                Dependencies.COMMONS_IMAGING
+                Dependencies.JIMFS
         );
     }
 

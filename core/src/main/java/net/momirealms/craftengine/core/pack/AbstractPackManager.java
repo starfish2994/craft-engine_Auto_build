@@ -377,6 +377,11 @@ public abstract class AbstractPackManager implements PackManager {
             plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_" + item + ".png");
             plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_" + item + ".png.mcmeta");
         }
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/flame_elytra.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/broken_flame_elytra.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/entity/equipment/wings/flame_elytra.png");
+//        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/cap.png");
+//        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/item/custom/cap.json");
 
         // ores
         plugin.saveResource("resources/default/configuration/ores.yml");
@@ -494,7 +499,7 @@ public abstract class AbstractPackManager implements PackManager {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> configSection1 = castToMap(configSection0, false);
                                 if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(configSection1));
+                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(id, configSection1));
                                 }
                             } else {
                                 TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
