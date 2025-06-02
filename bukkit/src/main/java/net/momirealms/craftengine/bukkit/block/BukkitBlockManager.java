@@ -84,6 +84,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // cached tag packet
     protected Object cachedUpdateTagsPacket;
 
+    private final List<Tuple<Object, Key, Boolean>> blocksToDeceive = new ArrayList<>();
+
     public BukkitBlockManager(BukkitCraftEngine plugin) {
         super(plugin);
         instance = this;
@@ -100,6 +102,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     @Override
     public void init() {
         this.initMirrorRegistry();
+        this.deceiveBukkit();
         boolean enableNoteBlocks = this.blockAppearanceArranger.containsKey(BlockKeys.NOTE_BLOCK);
         this.blockEventListener = new BlockEventListener(plugin, this, enableNoteBlocks);
         if (enableNoteBlocks) {
@@ -754,7 +757,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             builder2.put(stateId, blockHolder);
             stateIds.add(stateId);
 
-            deceiveBukkit(newRealBlock, clientSideBlockType, isNoteBlock);
+            this.blocksToDeceive.add(Tuple.of(newRealBlock, clientSideBlockType, isNoteBlock));
             order.add(realBlockKey);
             counter++;
         }
@@ -795,9 +798,20 @@ public class BukkitBlockManager extends AbstractBlockManager {
     }
 
     @SuppressWarnings("unchecked")
-    private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock) throws IllegalAccessException {
-        Map<Object, Material> magicMap = (Map<Object, Material>) CraftBukkitReflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
-        Map<Material, Object> factories = (Map<Material, Object>) CraftBukkitReflections.field$CraftBlockStates$FACTORIES.get(null);
+    private void deceiveBukkit() {
+        try {
+            Map<Object, Material> magicMap = (Map<Object, Material>) CraftBukkitReflections.field$CraftMagicNumbers$BLOCK_MATERIAL.get(null);
+            Map<Material, Object> factories = (Map<Material, Object>) CraftBukkitReflections.field$CraftBlockStates$FACTORIES.get(null);
+            for (Tuple<Object, Key, Boolean> tuple : this.blocksToDeceive) {
+                deceiveBukkit(tuple.left(), tuple.mid(), tuple.right(), magicMap, factories);
+            }
+            this.blocksToDeceive.clear();
+        } catch (ReflectiveOperationException e) {
+            this.plugin.logger().warn("Failed to deceive bukkit", e);
+        }
+    }
+
+    private void deceiveBukkit(Object newBlock, Key replacedBlock, boolean isNoteBlock, Map<Object, Material> magicMap, Map<Material, Object> factories) {
         if (isNoteBlock) {
             magicMap.put(newBlock, Material.STONE);
         } else {
