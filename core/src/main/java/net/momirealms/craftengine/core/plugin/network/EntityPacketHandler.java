@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 
 public interface EntityPacketHandler {
 
-    default boolean handleEntitiesRemove(IntList entityIds) {
+    default boolean handleEntitiesRemove(NetWorkUser user, IntList entityIds) {
         return false;
     }
 
@@ -18,5 +18,11 @@ public interface EntityPacketHandler {
     }
 
     default void handleMove(NetWorkUser user, NMSPacketEvent event, Object packet) {
+    }
+
+    default void handleSetEquipment(NetWorkUser user, NMSPacketEvent event, Object packet) {
+    }
+
+    default void handleContainerSetSlot(NetWorkUser user, NMSPacketEvent event, Object packet) {
     }
 }
