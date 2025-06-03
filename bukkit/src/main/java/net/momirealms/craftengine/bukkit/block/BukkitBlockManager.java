@@ -579,6 +579,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             Object resourceLocation = KeyUtils.toResourceLocation(BlockKeys.NOTE_BLOCK);
             Object block = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
             Object stateDefinition = CoreReflections.field$Block$StateDefinition.get(block);
+            @SuppressWarnings("unchecked")
             ImmutableList<Object> states = (ImmutableList<Object>) CoreReflections.field$StateDefinition$states.get(stateDefinition);
             for (Object state : states) {
                 BlockStateUtils.CLIENT_SIDE_NOTE_BLOCKS.put(state, new Object());
