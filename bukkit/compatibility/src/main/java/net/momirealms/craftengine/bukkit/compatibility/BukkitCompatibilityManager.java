@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.compatibility;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
 import net.momirealms.craftengine.bukkit.compatibility.item.MMOItemsProvider;
+import net.momirealms.craftengine.bukkit.compatibility.item.MythicMobsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.leveler.AuraSkillsLevelerProvider;
@@ -107,6 +108,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             this.registerLevelerProvider("AuraSkills", new AuraSkillsLevelerProvider());
         }
         if (this.isPluginEnabled("MythicMobs")) {
+            BukkitItemManager.instance().registerExternalItemProvider(new MythicMobsProvider());
             new MythicMobsListener(this.plugin);
             logHook("MythicMobs");
         }
