@@ -50,6 +50,7 @@ public class PaperCraftEngineBootstrap implements PluginBootstrap {
             new ModernEventHandler(context, this.plugin).register();
         } else {
             try {
+                logger.info("Patching the server...");
                 RuntimePatcher.patch(this.plugin);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to patch server", e);

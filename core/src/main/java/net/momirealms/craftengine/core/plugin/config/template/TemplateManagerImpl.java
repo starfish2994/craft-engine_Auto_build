@@ -242,6 +242,8 @@ public class TemplateManagerImpl implements TemplateManager {
                 result.put(placeholder, NullTemplateArgument.INSTANCE);
             } else if (rawArgument instanceof Number number) {
                 result.put(placeholder, new ObjectTemplateArgument(number));
+            } else if (rawArgument instanceof Boolean booleanValue) {
+                result.put(placeholder, new ObjectTemplateArgument(booleanValue));
             } else {
                 // 将参数字符串化后，应用参数再放入
                 Object applied = applyArgument(rawArgument.toString(), parentArguments);

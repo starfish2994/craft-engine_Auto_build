@@ -106,6 +106,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
         if (this.isPluginEnabled("AuraSkills")) {
             this.registerLevelerProvider("AuraSkills", new AuraSkillsLevelerProvider());
+            logHook("AuraSkills");
         }
         if (this.isPluginEnabled("MythicMobs")) {
             BukkitItemManager.instance().registerExternalItemProvider(new MythicMobsProvider());

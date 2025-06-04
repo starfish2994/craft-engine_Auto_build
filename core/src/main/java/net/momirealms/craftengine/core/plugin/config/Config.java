@@ -188,6 +188,7 @@ public class Config {
                 UpdaterSettings
                         .builder()
                         .setVersioning(new BasicVersioning("config-version"))
+                        .addIgnoredRoute(PluginProperties.getValue("config"), "resource-pack.delivery.hosting", '.')
                         .build()
         );
         try {
