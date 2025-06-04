@@ -163,7 +163,6 @@ public class PacketConsumers {
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
             if (furniture != null) {
                 event.setCancelled(true);
-                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
         ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$OAK_BOAT$registryId] = (user, event) -> {
@@ -174,7 +173,6 @@ public class PacketConsumers {
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
             if (furniture != null) {
                 event.setCancelled(true);
-                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
     }
@@ -2284,17 +2282,6 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityEventPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_ENTITY = (user, event, packet) -> {
-        try {
-            int entityId = ProtectedFieldVisitor.get().field$ClientboundMoveEntityPacket$entityId(packet);
-            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
-                event.setCancelled(true);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket", e);
         }
     };
 

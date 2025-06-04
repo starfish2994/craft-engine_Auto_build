@@ -3265,4 +3265,10 @@ public final class CoreReflections {
     public static final Method method$Registry$asLookup = ReflectionUtils.getMethod(
             clazz$Registry, clazz$HolderLookup$RegistryLookup, new String[]{"asLookup", "p"}
     );
+
+    public static final Field field$ServerEntity$broadcast = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerEntity, Consumer.class, 0
+            )
+    );
 }

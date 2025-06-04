@@ -149,7 +149,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.RESPAWN, NetworkReflections.clazz$ClientboundRespawnPacket);
         registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, NetworkReflections.clazz$ServerboundInteractPacket);
         registerNMSPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, NetworkReflections.clazz$ClientboundEntityPositionSyncPacket);
-        registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
         registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_ENTITY, NetworkReflections.clazz$ServerboundPickItemFromEntityPacket);
         registerNMSPacketConsumer(PacketConsumers.RENAME_ITEM, NetworkReflections.clazz$ServerboundRenameItemPacket);
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, NetworkReflections.clazz$ServerboundSignUpdatePacket);
