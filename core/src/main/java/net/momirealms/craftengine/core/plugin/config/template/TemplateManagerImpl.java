@@ -17,6 +17,9 @@ import java.util.regex.Matcher;
 
 @SuppressWarnings("DuplicatedCode")
 public class TemplateManagerImpl implements TemplateManager {
+    /*
+     * 此类仍需要一次重构，对模板预解析，避免每次调用时候重新判断值是否含有参数
+     */
     private final Map<Key, Object> templates = new HashMap<>();
     private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES, MERGES));
     private final TemplateParser templateParser;
@@ -67,8 +70,8 @@ public class TemplateManagerImpl implements TemplateManager {
         Objects.requireNonNull(input, "Input must not be null");
         Map<String, Object> result = new LinkedHashMap<>();
         processMap(input,
-                Map.of("{__ID__}", PlainStringTemplateArgument.plain(id.value()),
-                "{__NAMESPACE__}", PlainStringTemplateArgument.plain(id.namespace())),
+                Map.of("__ID__", PlainStringTemplateArgument.plain(id.value()),
+                "__NAMESPACE__", PlainStringTemplateArgument.plain(id.namespace())),
                 (obj) -> {
                     // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
                     // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
@@ -378,8 +381,10 @@ public class TemplateManagerImpl implements TemplateManager {
 
     // 将某个输入变成最终的结果，可以是string->string，也可以是string->map/list
     private Object applyArgument(String input, Map<String, TemplateArgument> arguments) {
+        // 如果字符串长度连3都没有，那么肯定没有{}啊
+        if (input.length() < 3) return input;
         if (input.charAt(0) == '{' && input.charAt(input.length() - 1) == '}') {
-            String key = input.substring(1, input.length() - 2);
+            String key = input.substring(1, input.length() - 1);
             if (arguments.containsKey(key)) {
                 return arguments.get(key).get();
             }
@@ -417,16 +422,15 @@ public class TemplateManagerImpl implements TemplateManager {
             }
         }
     }
+
     public static String replacePlaceholders(String input, Map<String, TemplateArgument> replacements) {
         if (input == null || input.isEmpty()) {
             return input;
         }
-
         StringBuilder finalResult = new StringBuilder();
         int n = input.length();
         int lastAppendPosition = 0; // 追踪上一次追加操作结束的位置
         int i = 0;
-
         while (i < n) {
             // 检查当前字符是否为未转义的 '{'
             int backslashes = 0;
@@ -435,20 +439,16 @@ public class TemplateManagerImpl implements TemplateManager {
                 backslashes++;
                 temp_i--;
             }
-
             if (input.charAt(i) == '{' && backslashes % 2 == 0) {
                 // 发现占位符起点
                 int placeholderStartIndex = i;
-
                 // 追加从上一个位置到当前占位符之前的文本
                 finalResult.append(input, lastAppendPosition, placeholderStartIndex);
-
                 // --- 开始解析占位符内部 ---
                 StringBuilder keyBuilder = new StringBuilder();
                 int depth = 1;
                 int j = i + 1;
                 boolean foundMatch = false;
-
                 while (j < n) {
                     char c = input.charAt(j);
                     if (c == '\\') { // 处理转义
@@ -468,7 +468,6 @@ public class TemplateManagerImpl implements TemplateManager {
                         if (depth == 0) { // 找到匹配的结束括号
                             String key = keyBuilder.toString();
                             TemplateArgument value = replacements.get(key);
-
                             if (value != null) {
                                 // 如果在 Map 中找到值，则进行替换
                                 finalResult.append(value.get());
@@ -476,7 +475,6 @@ public class TemplateManagerImpl implements TemplateManager {
                                 // 否则，保留原始占位符（包括 '{}'）
                                 finalResult.append(input, placeholderStartIndex, j + 1);
                             }
-
                             // 更新位置指针
                             i = j + 1;
                             lastAppendPosition = i;
@@ -491,23 +489,19 @@ public class TemplateManagerImpl implements TemplateManager {
                     }
                 }
                 // --- 占位符解析结束 ---
-
                 if (!foundMatch) {
                     // 如果内层循环结束仍未找到匹配的 '}'，则不进行任何特殊处理
                     // 外层循环的 i 会自然递增
                     i++;
                 }
-
             } else {
                 i++;
             }
         }
-
         // 追加最后一个占位符之后的所有剩余文本
         if (lastAppendPosition < n) {
             finalResult.append(input, lastAppendPosition, n);
         }
-
         return finalResult.toString();
     }
 }
