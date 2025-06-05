@@ -299,6 +299,10 @@ public class TemplateManagerImpl implements TemplateManager {
                     Map<String, Object> existingMap = (Map<String, Object>) existingValue;
                     Map<String, Object> newMap = (Map<String, Object>) value;
                     deepMergeMaps(existingMap, newMap);
+                } else if (existingValue instanceof List && value instanceof List) {
+                    List<Object> existingList = (List<Object>) existingValue;
+                    List<Object> newList = (List<Object>) value;
+                    existingList.addAll(newList);
                 } else {
                     baseMap.put(key, value);
                 }
