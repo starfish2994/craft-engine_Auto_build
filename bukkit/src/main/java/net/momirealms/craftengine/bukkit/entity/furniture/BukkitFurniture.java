@@ -366,8 +366,8 @@ public class BukkitFurniture implements Furniture {
         try {
             Object trackedEntity = FastNMS.INSTANCE.field$Entity$trackedEntity(nmsEntity);
             Object serverEntity = FastNMS.INSTANCE.filed$ChunkMap$TrackedEntity$serverEntity(trackedEntity);
-            CoreReflections.handle$ServerEntity$broadcastSetter.invoke(serverEntity, Handlers.DO_NOTHING);
-            CoreReflections.handle$ServerEntity$updateIntervalSetter.invoke(serverEntity, Integer.MAX_VALUE);
+            CoreReflections.handle$ServerEntity$broadcastSetter.invokeExact(serverEntity, Handlers.DO_NOTHING);
+            CoreReflections.handle$ServerEntity$updateIntervalSetter.invokeExact(serverEntity, Integer.MAX_VALUE);
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to inject collider", e);
         }
@@ -375,7 +375,7 @@ public class BukkitFurniture implements Furniture {
 
     @FunctionalInterface
     public interface Handlers extends Consumer<Object> {
-        Handlers DO_NOTHING = doNothing();
+        Consumer<Object> DO_NOTHING = doNothing();
 
         static Handlers doNothing() {
             return (packet) -> {};
