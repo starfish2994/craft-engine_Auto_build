@@ -150,7 +150,8 @@ public class TemplateManagerImpl implements TemplateManager {
             // 依次处理map下的每个参数
             Map<String, Object> result = new LinkedHashMap<>();
             for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
-                processUnknownTypeMember(inputEntry.getValue(), parentArguments, (processed) -> result.put(inputEntry.getKey(), processed));
+                String key = applyArgument(inputEntry.getKey(), parentArguments).toString();
+                processUnknownTypeMember(inputEntry.getValue(), parentArguments, (processed) -> result.put(key, processed));
             }
             processCallBack.accept(result);
         }
@@ -404,7 +405,7 @@ public class TemplateManagerImpl implements TemplateManager {
         //   argument_1: "{parent_argument}"
         for (Map.Entry<String, Object> argumentEntry : rawChildArguments.entrySet()) {
             // 获取最终的string形式参数
-            String placeholder = argumentEntry.getKey();
+            String placeholder = applyArgument(argumentEntry.getKey(), parentArguments).toString();
             // 父亲参数最大
             if (result.containsKey(placeholder)) continue;
             Object rawArgument = argumentEntry.getValue();
@@ -449,9 +450,9 @@ public class TemplateManagerImpl implements TemplateManager {
         if (input.length() < 3) return input;
         if (input.charAt(0) == '{' && input.charAt(input.length() - 1) == '}') {
             String key = input.substring(1, input.length() - 1);
-            if (arguments.containsKey(key)) {
-                return arguments.get(key).get();
-            }
+            return Optional.ofNullable(arguments.get(key))
+                    .map(TemplateArgument::get)
+                    .orElse(replacePlaceholders(input, arguments));
         }
         return replacePlaceholders(input, arguments);
     }
