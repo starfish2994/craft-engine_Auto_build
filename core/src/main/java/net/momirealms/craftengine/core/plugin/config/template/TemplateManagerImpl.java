@@ -107,12 +107,14 @@ public class TemplateManagerImpl implements TemplateManager {
                 Map<String, Object> results = new LinkedHashMap<>();
                 for (Object processedTemplate : processedTemplates) {
                     if (processedTemplate instanceof Map<?, ?> anotherMap) {
-                        Map<String, Object> castedMap = MiscUtils.castToMap(anotherMap, false);
-                        deepMergeMaps(results, castedMap);
+                        deepMergeMaps(results, MiscUtils.castToMap(anotherMap, false));
                     }
                 }
                 if (processingResult.overrides() instanceof Map<?, ?> overrides) {
                     results.putAll(MiscUtils.castToMap(overrides, false));
+                }
+                if (processingResult.merges() instanceof Map<?, ?> merges) {
+                    deepMergeMaps(results, MiscUtils.castToMap(merges, false));
                 }
                 processCallBack.accept(results);
             } else if (firstTemplate instanceof List<?>) {
@@ -124,10 +126,13 @@ public class TemplateManagerImpl implements TemplateManager {
                     }
                 }
                 if (processingResult.overrides() instanceof List<?> overrides) {
-                    processCallBack.accept(overrides);
-                } else {
-                    processCallBack.accept(results);
+                    results.clear();
+                    results.addAll(overrides);
                 }
+                if (processingResult.merges() instanceof List<?> merges) {
+                    results.addAll(merges);
+                }
+                processCallBack.accept(results);
             } else {
                 Object overrides = processingResult.overrides();
                 if (overrides != null) {
