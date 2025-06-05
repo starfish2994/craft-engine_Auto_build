@@ -3293,7 +3293,7 @@ public final class CoreReflections {
                             .asType(MethodType.methodType(Object.class, Object.class))
             );
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new ReflectionInitException("Failed to initialize reflection", e);
         }
     }
 }

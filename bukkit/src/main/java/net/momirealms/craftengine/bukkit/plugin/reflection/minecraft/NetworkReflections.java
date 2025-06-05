@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import io.netty.buffer.ByteBuf;
+import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -1313,6 +1314,14 @@ public final class NetworkReflections {
     public static final MethodHandle handle$ClientboundEntityEventPacket$entityIdGetter;
     public static final MethodHandle handle$ClientboundEntityEventPacket$eventIdGetter;
     public static final MethodHandle handle$ClientIntentionPacket$protocolVersionGetter;
+    public static final MethodHandle handle$ClientboundRespawnPacket$dimensionGetter;
+    public static final MethodHandle handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter;
+    public static final MethodHandle handle$CommonPlayerSpawnInfo$dimensionGetter;
+    public static final MethodHandle handle$ClientboundLoginPacket$dimensionGetter;
+    public static final MethodHandle handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter;
+    public static final MethodHandle handle$ServerboundPickItemFromBlockPacket$posGetter;
+    public static final MethodHandle handle$ServerboundPickItemFromEntityPacket$idGetter;
+    public static final MethodHandle handle$ServerboundCustomPayloadPacket$payloadGetter;
 
     static {
         try {
@@ -1384,89 +1393,73 @@ public final class NetworkReflections {
                     ReflectionUtils.unreflectGetter(field$ClientIntentionPacket$protocolVersion)
                             .asType(MethodType.methodType(int.class, Object.class))
             );
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            if (field$ServerboundCustomPayloadPacket$payload != null) {
+                handle$ServerboundCustomPayloadPacket$payloadGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ServerboundCustomPayloadPacket$payload)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ServerboundCustomPayloadPacket$payloadGetter = null;
+            }
+            if (field$ServerboundPickItemFromEntityPacket$id != null) {
+                handle$ServerboundPickItemFromEntityPacket$idGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ServerboundPickItemFromEntityPacket$id)
+                                .asType(MethodType.methodType(int.class, Object.class))
+                );
+            } else {
+                handle$ServerboundPickItemFromEntityPacket$idGetter = null;
+            }
+            if (field$ServerboundPickItemFromBlockPacket$pos != null) {
+                handle$ServerboundPickItemFromBlockPacket$posGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ServerboundPickItemFromBlockPacket$pos)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ServerboundPickItemFromBlockPacket$posGetter = null;
+            }
+            if (field$ClientboundLoginPacket$commonPlayerSpawnInfo != null) {
+                handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ClientboundLoginPacket$commonPlayerSpawnInfo)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter = null;
+            }
+            if (field$ClientboundLoginPacket$dimension != null) {
+                handle$ClientboundLoginPacket$dimensionGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ClientboundLoginPacket$dimension)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ClientboundLoginPacket$dimensionGetter = null;
+            }
+            if (field$CommonPlayerSpawnInfo$dimension != null) {
+                handle$CommonPlayerSpawnInfo$dimensionGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$CommonPlayerSpawnInfo$dimension)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$CommonPlayerSpawnInfo$dimensionGetter = null;
+            }
+            if (field$ClientboundRespawnPacket$commonPlayerSpawnInfo != null) {
+                handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ClientboundRespawnPacket$commonPlayerSpawnInfo)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter = null;
+            }
+            if (field$ClientboundRespawnPacket$dimension != null) {
+                handle$ClientboundRespawnPacket$dimensionGetter = requireNonNull(
+                        ReflectionUtils.unreflectGetter(field$ClientboundRespawnPacket$dimension)
+                                .asType(MethodType.methodType(Object.class, Object.class))
+                );
+            } else {
+                handle$ClientboundRespawnPacket$dimensionGetter = null;
+            }
+        } catch (Throwable e) {
+            throw new ReflectionInitException("Failed to initialize reflection", e);
         }
     }
-
-    public static final MethodHandle handle$ClientboundRespawnPacket$dimensionGetter = Optional.ofNullable(field$ClientboundRespawnPacket$dimension)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundRespawnPacket$commonPlayerSpawnInfo)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$CommonPlayerSpawnInfo$dimensionGetter = Optional.ofNullable(field$CommonPlayerSpawnInfo$dimension)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ClientboundLoginPacket$dimensionGetter = Optional.ofNullable(field$ClientboundLoginPacket$dimension)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundLoginPacket$commonPlayerSpawnInfo)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ServerboundPickItemFromBlockPacket$posGetter = Optional.ofNullable(field$ServerboundPickItemFromBlockPacket$pos)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ServerboundPickItemFromEntityPacket$idGetter = Optional.ofNullable(field$ServerboundPickItemFromEntityPacket$id)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(int.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
-
-    public static final MethodHandle handle$ServerboundCustomPayloadPacket$payloadGetter = Optional.ofNullable(field$ServerboundCustomPayloadPacket$payload)
-            .map(it -> {
-                try {
-                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .orElse(null);
 
 }
