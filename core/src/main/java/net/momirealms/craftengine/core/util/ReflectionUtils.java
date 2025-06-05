@@ -493,7 +493,7 @@ public class ReflectionUtils {
             try {
                 return LOOKUP.unreflectGetter(field);
             } catch (IllegalAccessException ex) {
-                return null;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -533,7 +533,7 @@ public class ReflectionUtils {
             try {
                 return LOOKUP.unreflectSetter(field);
             } catch (IllegalAccessException ex) {
-                return null;
+                throw new RuntimeException(ex);
             }
         }
     }
