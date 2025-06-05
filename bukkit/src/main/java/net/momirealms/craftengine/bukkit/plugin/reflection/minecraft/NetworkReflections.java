@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -1293,4 +1294,105 @@ public final class NetworkReflections {
     public static final Constructor<?> constructor$ClientboundTickingStatePacket = Optional.ofNullable(clazz$ClientboundTickingStatePacket)
             .map(it -> ReflectionUtils.getConstructor(it, float.class, boolean.class))
             .orElse(null);
+
+    public static final MethodHandle handle$ServerboundRenameItemPacket$nameGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundRenameItemPacket$name)
+    );
+
+    public static final MethodHandle handle$ServerboundRenameItemPacket$nameSetter = requireNonNull(
+            ReflectionUtils.unreflectSetter(field$ServerboundRenameItemPacket$name)
+    );
+
+    public static final MethodHandle handle$ServerboundHelloPacket$nameGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$name)
+    );
+
+    public static final MethodHandle handle$ServerboundHelloPacket$uuidGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$uuid)
+    );
+
+    public static final MethodHandle handle$ClientboundRespawnPacket$dimensionGetter = Optional.ofNullable(field$ClientboundRespawnPacket$dimension)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundRespawnPacket$commonPlayerSpawnInfo)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$CommonPlayerSpawnInfo$dimensionGetter = Optional.ofNullable(field$CommonPlayerSpawnInfo$dimension)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ClientboundLoginPacket$dimensionGetter = Optional.ofNullable(field$ClientboundLoginPacket$dimension)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundLoginPacket$commonPlayerSpawnInfo)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$itemStackGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$itemStack)
+    );
+
+    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$slotNum)
+    );
+
+    public static final MethodHandle handle$ServerboundPickItemFromBlockPacket$posGetter = Optional.ofNullable(field$ServerboundPickItemFromBlockPacket$pos)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ServerboundPickItemFromEntityPacket$idGetter = Optional.ofNullable(field$ServerboundPickItemFromEntityPacket$id)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ServerboundInteractPacket$actionGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$action)
+    );
+
+    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$handGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$hand)
+    );
+
+    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$locationGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$location)
+    );
+
+    public static final MethodHandle handle$ServerboundSignUpdatePacket$linesGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundSignUpdatePacket$lines)
+    );
+
+    public static final MethodHandle handleServerboundEditBookPacket$pagesGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$pages)
+    );
+
+    public static final MethodHandle handle$ServerboundEditBookPacket$titleGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$title)
+    );
+
+    public static final MethodHandle handle$ServerboundEditBookPacket$slotGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$slot)
+    );
+
+    public static final MethodHandle handle$ServerboundCustomPayloadPacket$payloadGetter = Optional.ofNullable(field$ServerboundCustomPayloadPacket$payload)
+            .map(ReflectionUtils::unreflectGetter)
+            .orElse(null);
+
+    public static final MethodHandle handle$ServerboundResourcePackPacket$actionGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerboundResourcePackPacket$action)
+    );
+
+    public static final MethodHandle handle$ClientboundEntityEventPacket$entityIdGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$entityId)
+    );
+
+    public static final MethodHandle handle$ClientboundEntityEventPacket$eventIdGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$eventId)
+    );
+
+    public static final MethodHandle handle$ClientIntentionPacket$protocolVersionGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ClientIntentionPacket$protocolVersion)
+    );
+
 }

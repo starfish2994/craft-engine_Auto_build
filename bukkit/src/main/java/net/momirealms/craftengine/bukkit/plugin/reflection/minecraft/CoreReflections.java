@@ -11,6 +11,7 @@ import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
 import java.io.BufferedReader;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.util.*;
@@ -3270,5 +3271,17 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(
                     clazz$ServerEntity, Consumer.class, 0
             )
+    );
+
+    public static final MethodHandle handle$ServerEntity$broadcastSetter = requireNonNull(
+            ReflectionUtils.unreflectSetter(field$ServerEntity$broadcast)
+    );
+
+    public static final MethodHandle handle$ServerEntity$updateIntervalSetter = requireNonNull(
+            ReflectionUtils.unreflectSetter(field$ServerEntity$updateInterval)
+    );
+
+    public static final MethodHandle handle$ServerPlayer$connectionGetter = requireNonNull(
+            ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
     );
 }

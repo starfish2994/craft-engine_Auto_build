@@ -485,12 +485,16 @@ public class ReflectionUtils {
         return constructors[0];
     }
 
-    public static MethodHandle unreflectGetter(Field field) throws IllegalAccessException {
+    public static MethodHandle unreflectGetter(Field field) {
         try {
             return LOOKUP.unreflectGetter(field);
         } catch (IllegalAccessException e) {
             field.setAccessible(true);
-            return LOOKUP.unreflectGetter(field);
+            try {
+                return LOOKUP.unreflectGetter(field);
+            } catch (IllegalAccessException ex) {
+                return null;
+            }
         }
     }
 
@@ -518,6 +522,19 @@ public class ReflectionUtils {
                     .findVarHandle(field.getDeclaringClass(), field.getName(), field.getType());
         } catch (IllegalAccessException | NoSuchFieldException e) {
             return null;
+        }
+    }
+
+    public static MethodHandle unreflectSetter(Field field) {
+        try {
+            return LOOKUP.unreflectSetter(field);
+        } catch (IllegalAccessException e) {
+            field.setAccessible(true);
+            try {
+                return LOOKUP.unreflectSetter(field);
+            } catch (IllegalAccessException ex) {
+                return null;
+            }
         }
     }
 }
