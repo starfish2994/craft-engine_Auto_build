@@ -14,6 +14,7 @@ public interface TemplateManager extends Manageable {
     String TEMPLATE = "template";
     String OVERRIDES = "overrides";
     String ARGUMENTS = "arguments";
+    String MERGES = "merges";
 
     ConfigParser parser();
 
