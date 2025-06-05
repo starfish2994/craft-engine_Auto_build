@@ -15,9 +15,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 
+@SuppressWarnings("DuplicatedCode")
 public class TemplateManagerImpl implements TemplateManager {
     private final Map<Key, Object> templates = new HashMap<>();
-    private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES));
+    private final static Set<String> NON_TEMPLATE_KEY = new HashSet<>(Set.of(TEMPLATE, ARGUMENTS, OVERRIDES, MERGES));
     private final TemplateParser templateParser;
 
     public TemplateManagerImpl() {
@@ -65,17 +66,19 @@ public class TemplateManagerImpl implements TemplateManager {
     public Map<String, Object> applyTemplates(Key id, Map<String, Object> input) {
         Objects.requireNonNull(input, "Input must not be null");
         Map<String, Object> result = new LinkedHashMap<>();
-        processMap(input, Map.of("{__ID__}", PlainStringTemplateArgument.plain(id.value()),
-                "{__NAMESPACE__}", PlainStringTemplateArgument.plain(id.namespace())), (obj) -> {
-            // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
-            // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
-            // items:
-            //   test:invalid: 111
-            if (obj instanceof Map<?,?> mapResult) {
-                result.putAll(MiscUtils.castToMap(mapResult, false));
-            } else {
-                throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
-            }
+        processMap(input,
+                Map.of("{__ID__}", PlainStringTemplateArgument.plain(id.value()),
+                "{__NAMESPACE__}", PlainStringTemplateArgument.plain(id.namespace())),
+                (obj) -> {
+                    // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
+                    // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
+                    // items:
+                    //   test:invalid: 111
+                    if (obj instanceof Map<?,?> mapResult) {
+                        result.putAll(MiscUtils.castToMap(mapResult, false));
+                    } else {
+                        throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                    }
         });
         return result;
     }
@@ -99,16 +102,20 @@ public class TemplateManagerImpl implements TemplateManager {
                 return;
             }
             Object firstTemplate = processedTemplates.get(0);
-            // 对于map和list，应当对多模板合并
+            // 如果是map，应当深度合并
             if (firstTemplate instanceof Map<?,?>) {
                 Map<String, Object> results = new LinkedHashMap<>();
-                // 仅仅合并list
                 for (Object processedTemplate : processedTemplates) {
                     if (processedTemplate instanceof Map<?, ?> anotherMap) {
-                        results.putAll(MiscUtils.castToMap(anotherMap, false));
+                        deepMergeMaps(results, MiscUtils.castToMap(anotherMap, false));
                     }
                 }
-                results.putAll(processingResult.overrides());
+                if (processingResult.overrides() instanceof Map<?, ?> overrides) {
+                    results.putAll(MiscUtils.castToMap(overrides, false));
+                }
+                if (processingResult.merges() instanceof Map<?, ?> merges) {
+                    deepMergeMaps(results, MiscUtils.castToMap(merges, false));
+                }
                 processCallBack.accept(results);
             } else if (firstTemplate instanceof List<?>) {
                 List<Object> results = new ArrayList<>();
@@ -118,10 +125,22 @@ public class TemplateManagerImpl implements TemplateManager {
                         results.addAll(anotherList);
                     }
                 }
+                if (processingResult.overrides() instanceof List<?> overrides) {
+                    results.clear();
+                    results.addAll(overrides);
+                }
+                if (processingResult.merges() instanceof List<?> merges) {
+                    results.addAll(merges);
+                }
                 processCallBack.accept(results);
             } else {
-                // 其他情况下应当忽略其他的template
-                processCallBack.accept(firstTemplate);
+                Object overrides = processingResult.overrides();
+                if (overrides != null) {
+                    processCallBack.accept(overrides);
+                } else {
+                    // 其他情况下应当忽略其他的template
+                    processCallBack.accept(firstTemplate);
+                }
             }
         } else {
             // 如果不是模板，则返回值一定是map
@@ -169,7 +188,7 @@ public class TemplateManagerImpl implements TemplateManager {
         List<Object> templateList = new ArrayList<>();
         for (String templateId : templateIds) {
             // 如果模板id被用了参数，则应先应用参数后再查询模板
-            Object actualTemplate = templateId.contains(LEFT_BRACKET) && templateId.contains(RIGHT_BRACKET) ? applyArgument(templateId, parentArguments) : templateId;
+            Object actualTemplate = applyArgument(templateId, parentArguments);
             if (actualTemplate == null) continue; // 忽略被null掉的模板
             Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
                     .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
@@ -180,29 +199,133 @@ public class TemplateManagerImpl implements TemplateManager {
                 MiscUtils.castToMap(input.getOrDefault(ARGUMENTS, Collections.emptyMap()), false),
                 parentArguments
         );
-        // 对overrides参数应用 本节点 + 父节点 参数
-        Map<String, Object> overrides = new LinkedHashMap<>();
-        processMap(MiscUtils.castToMap(input.getOrDefault(OVERRIDES, Map.of()), false), arguments, (obj) -> {
-            // 如果overrides的下一级就是一个模板，则模板必须为map类型
-            if (obj instanceof Map<?,?> mapResult) {
-                overrides.putAll(MiscUtils.castToMap(mapResult, false));
+
+        Object override = input.get(OVERRIDES);
+        if (override instanceof Map<?, ?> rawOverrides) {
+            // 对overrides参数应用 本节点 + 父节点 参数
+            Map<String, Object> overrides = new LinkedHashMap<>();
+            processMap(MiscUtils.castToMap(rawOverrides, false), arguments, (obj) -> {
+                // 如果overrides的下一级就是一个模板，则模板必须为map类型
+                if (obj instanceof Map<?,?> mapResult) {
+                    overrides.putAll(MiscUtils.castToMap(mapResult, false));
+                } else {
+                    throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                }
+            });
+            if (input.get(MERGES) instanceof Map<?, ?> rawMerges) {
+                Map<String, Object> merges = new LinkedHashMap<>();
+                processMap(MiscUtils.castToMap(rawMerges, false), arguments, (obj) -> {
+                    // 如果merges的下一级就是一个模板，则模板必须为map类型
+                    if (obj instanceof Map<?,?> mapResult) {
+                        merges.putAll(MiscUtils.castToMap(mapResult, false));
+                    } else {
+                        throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                    }
+                });
+                // 返回处理结果
+                return new TemplateProcessingResult(
+                        templateList,
+                        overrides,
+                        merges,
+                        arguments
+                );
             } else {
-                throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                return new TemplateProcessingResult(
+                        templateList,
+                        overrides,
+                        null,
+                        arguments
+                );
             }
-        });
-        // 会不会有一种可能，有笨比用户不会使用overrides，把模板和普通配置混合在了一起？再次遍历input后处理
-        for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
-            String inputKey = inputEntry.getKey();
-            if (NON_TEMPLATE_KEY.contains(inputKey)) continue;
-            // 处理那些overrides
-            processUnknownTypeMember(inputEntry.getValue(), arguments, (processed) -> overrides.put(inputKey, processed));
+        } else if (override instanceof List<?> overrides) {
+            // overrides不为空，且不是map
+            List<Object> processedOverrides = new ArrayList<>(overrides.size());
+            for (Object item : overrides) {
+                processUnknownTypeMember(item, arguments, processedOverrides::add);
+            }
+            if (input.get(MERGES) instanceof List<?> rawMerges) {
+                List<Object> merges = new ArrayList<>(rawMerges.size());
+                for (Object item : rawMerges) {
+                    processUnknownTypeMember(item, arguments, merges::add);
+                }
+                return new TemplateProcessingResult(
+                        templateList,
+                        processedOverrides,
+                        merges,
+                        arguments
+                );
+            } else {
+                // overrides不为空，且不是map
+                return new TemplateProcessingResult(
+                        templateList,
+                        processedOverrides,
+                        null,
+                        arguments
+                );
+            }
+        } else if (override != null) {
+            // overrides不为空，且不是map。此情况不用再考虑merge了
+            return new TemplateProcessingResult(
+                    templateList,
+                    override,
+                    null,
+                    arguments
+            );
+        } else {
+            // 获取merges
+            Object merge = input.get(MERGES);
+            if (merge instanceof Map<?, ?> rawMerges) {
+                Map<String, Object> merges = new LinkedHashMap<>();
+                processMap(MiscUtils.castToMap(rawMerges, false), arguments, (obj) -> {
+                    // 如果merges的下一级就是一个模板，则模板必须为map类型
+                    if (obj instanceof Map<?,?> mapResult) {
+                        merges.putAll(MiscUtils.castToMap(mapResult, false));
+                    } else {
+                        throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                    }
+                });
+                Map<String, Object> overrides = new LinkedHashMap<>();
+                // 会不会有一种可能，有笨比用户不会使用overrides，把模板和普通配置混合在了一起？再次遍历input后处理
+                for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
+                    String inputKey = inputEntry.getKey();
+                    if (NON_TEMPLATE_KEY.contains(inputKey)) continue;
+                    // 处理那些overrides
+                    processUnknownTypeMember(inputEntry.getValue(), arguments, (processed) -> overrides.put(inputKey, processed));
+                }
+                return new TemplateProcessingResult(
+                        templateList,
+                        overrides.isEmpty() ? null : overrides,
+                        merges,
+                        arguments
+                );
+            } else if (merge instanceof List<?> rawMerges) {
+                List<Object> merges = new ArrayList<>(rawMerges.size());
+                for (Object item : rawMerges) {
+                    processUnknownTypeMember(item, arguments, merges::add);
+                }
+                return new TemplateProcessingResult(
+                        templateList,
+                        null,
+                        merges,
+                        arguments
+                );
+            } else {
+                Map<String, Object> overrides = new LinkedHashMap<>();
+                // 会不会有一种可能，有笨比用户不会使用overrides，把模板和普通配置混合在了一起？再次遍历input后处理
+                for (Map.Entry<String, Object> inputEntry : input.entrySet()) {
+                    String inputKey = inputEntry.getKey();
+                    if (NON_TEMPLATE_KEY.contains(inputKey)) continue;
+                    // 处理那些overrides
+                    processUnknownTypeMember(inputEntry.getValue(), arguments, (processed) -> overrides.put(inputKey, processed));
+                }
+                return new TemplateProcessingResult(
+                        templateList,
+                        overrides.isEmpty() ? null : overrides,
+                        merge,
+                        arguments
+                );
+            }
         }
-        // 返回处理结果
-        return new TemplateProcessingResult(
-                templateList,
-                overrides,
-                arguments
-        );
     }
 
     // 合并参数
@@ -214,7 +337,7 @@ public class TemplateManagerImpl implements TemplateManager {
         //   argument_1: "{parent_argument}"
         for (Map.Entry<String, Object> argumentEntry : rawChildArguments.entrySet()) {
             // 获取最终的string形式参数
-            String placeholder = LEFT_BRACKET + argumentEntry.getKey() + RIGHT_BRACKET;
+            String placeholder = argumentEntry.getKey();
             // 父亲参数最大
             if (result.containsKey(placeholder)) continue;
             Object rawArgument = argumentEntry.getValue();
@@ -255,34 +378,136 @@ public class TemplateManagerImpl implements TemplateManager {
 
     // 将某个输入变成最终的结果，可以是string->string，也可以是string->map/list
     private Object applyArgument(String input, Map<String, TemplateArgument> arguments) {
-        StringBuilder result = new StringBuilder();
-        Matcher matcher = ARGUMENT_PATTERN.matcher(input);
-        boolean first = true;
-        while (matcher.find()) {
-            String placeholder = matcher.group();
-            Supplier<Object> replacer = arguments.get(placeholder);
-            if (replacer == null) {
-                matcher.appendReplacement(result, placeholder);
-                continue;
-            }
-            if (first) {
-                first = false;
-                if (input.length() == placeholder.length()) {
-                    return replacer.get();
-                } else {
-                    matcher.appendReplacement(result, replacer.get().toString());
-                }
-            } else {
-                matcher.appendReplacement(result, replacer.get().toString());
+        if (input.charAt(0) == '{' && input.charAt(input.length() - 1) == '}') {
+            String key = input.substring(1, input.length() - 2);
+            if (arguments.containsKey(key)) {
+                return arguments.get(key).get();
             }
         }
-        matcher.appendTail(result);
-        return result.toString();
+        return replacePlaceholders(input, arguments);
     }
 
     private record TemplateProcessingResult(
             List<Object> templates,
-            Map<String, Object> overrides,
+            Object overrides,
+            Object merges,
             Map<String, TemplateArgument> arguments
     ) {}
+
+    @SuppressWarnings("unchecked")
+    private void deepMergeMaps(Map<String, Object> baseMap, Map<String, Object> mapToMerge) {
+        for (Map.Entry<String, Object> entry : mapToMerge.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (baseMap.containsKey(key)) {
+                Object existingValue = baseMap.get(key);
+                if (existingValue instanceof Map && value instanceof Map) {
+                    Map<String, Object> existingMap = (Map<String, Object>) existingValue;
+                    Map<String, Object> newMap = (Map<String, Object>) value;
+                    deepMergeMaps(existingMap, newMap);
+                } else if (existingValue instanceof List && value instanceof List) {
+                    List<Object> existingList = (List<Object>) existingValue;
+                    List<Object> newList = (List<Object>) value;
+                    existingList.addAll(newList);
+                } else {
+                    baseMap.put(key, value);
+                }
+            } else {
+                baseMap.put(key, value);
+            }
+        }
+    }
+    public static String replacePlaceholders(String input, Map<String, TemplateArgument> replacements) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        StringBuilder finalResult = new StringBuilder();
+        int n = input.length();
+        int lastAppendPosition = 0; // 追踪上一次追加操作结束的位置
+        int i = 0;
+
+        while (i < n) {
+            // 检查当前字符是否为未转义的 '{'
+            int backslashes = 0;
+            int temp_i = i - 1;
+            while (temp_i >= 0 && input.charAt(temp_i) == '\\') {
+                backslashes++;
+                temp_i--;
+            }
+
+            if (input.charAt(i) == '{' && backslashes % 2 == 0) {
+                // 发现占位符起点
+                int placeholderStartIndex = i;
+
+                // 追加从上一个位置到当前占位符之前的文本
+                finalResult.append(input, lastAppendPosition, placeholderStartIndex);
+
+                // --- 开始解析占位符内部 ---
+                StringBuilder keyBuilder = new StringBuilder();
+                int depth = 1;
+                int j = i + 1;
+                boolean foundMatch = false;
+
+                while (j < n) {
+                    char c = input.charAt(j);
+                    if (c == '\\') { // 处理转义
+                        if (j + 1 < n) {
+                            keyBuilder.append(input.charAt(j + 1));
+                            j += 2;
+                        } else {
+                            keyBuilder.append(c);
+                            j++;
+                        }
+                    } else if (c == '{') {
+                        depth++;
+                        keyBuilder.append(c);
+                        j++;
+                    } else if (c == '}') {
+                        depth--;
+                        if (depth == 0) { // 找到匹配的结束括号
+                            String key = keyBuilder.toString();
+                            TemplateArgument value = replacements.get(key);
+
+                            if (value != null) {
+                                // 如果在 Map 中找到值，则进行替换
+                                finalResult.append(value.get());
+                            } else {
+                                // 否则，保留原始占位符（包括 '{}'）
+                                finalResult.append(input, placeholderStartIndex, j + 1);
+                            }
+
+                            // 更新位置指针
+                            i = j + 1;
+                            lastAppendPosition = i;
+                            foundMatch = true;
+                            break;
+                        }
+                        keyBuilder.append(c); // 嵌套的 '}'
+                        j++;
+                    } else {
+                        keyBuilder.append(c);
+                        j++;
+                    }
+                }
+                // --- 占位符解析结束 ---
+
+                if (!foundMatch) {
+                    // 如果内层循环结束仍未找到匹配的 '}'，则不进行任何特殊处理
+                    // 外层循环的 i 会自然递增
+                    i++;
+                }
+
+            } else {
+                i++;
+            }
+        }
+
+        // 追加最后一个占位符之后的所有剩余文本
+        if (lastAppendPosition < n) {
+            finalResult.append(input, lastAppendPosition, n);
+        }
+
+        return finalResult.toString();
+    }
 }
