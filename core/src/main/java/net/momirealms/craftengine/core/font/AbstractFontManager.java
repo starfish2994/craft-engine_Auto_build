@@ -269,21 +269,25 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     private void buildImageTagTrie() {
-        this.tagMapper = new HashMap<>();
+        this.tagMapper = new HashMap<>(1024);
         for (BitmapImage image : this.images.values()) {
             String id = image.id().toString();
-            this.tagMapper.put(imageTag(id), AdventureHelper.miniMessage().deserialize(image.miniMessage(0, 0)));
-            this.tagMapper.put("\\" + imageTag(id), Component.text(imageTag(id)));
+            String simpleImageTag = imageTag(id);
+            this.tagMapper.put(simpleImageTag, image.componentAt(0, 0));
+            this.tagMapper.put("\\" + simpleImageTag, Component.text(simpleImageTag));
             for (int i = 0; i < image.rows(); i++) {
                 for (int j = 0; j < image.columns(); j++) {
-                    this.tagMapper.put(imageTag(id + ":" + i + ":" + j), AdventureHelper.miniMessage().deserialize(image.miniMessage(i, j)));
-                    this.tagMapper.put(imageTag("\\" + id + ":" + i + ":" + j), Component.text(imageTag(id + ":" + i + ":" + j)));
+                    String imageArgs = id + ":" + i + ":" + j;
+                    String imageTag = imageTag(imageArgs);
+                    this.tagMapper.put(imageTag, image.componentAt(i, j));
+                    this.tagMapper.put("\\" + imageTag, Component.text(imageTag));
                 }
             }
         }
         for (int i = -256; i <= 256; i++) {
-            this.tagMapper.put("<shift:" + i + ">", AdventureHelper.miniMessage().deserialize(this.offsetFont.createOffset(i, FormatUtils::miniMessageFont)));
-            this.tagMapper.put("\\<shift:" + i + ">", Component.text("<shift:" + i + ">"));
+            String shiftTag = "<shift:" + i + ">";
+            this.tagMapper.put(shiftTag, AdventureHelper.miniMessage().deserialize(this.offsetFont.createOffset(i, FormatUtils::miniMessageFont)));
+            this.tagMapper.put("\\" + shiftTag, Component.text(shiftTag));
         }
         this.imageTagTrie = Trie.builder()
                 .ignoreOverlaps()
@@ -377,7 +381,7 @@ public abstract class AbstractFontManager implements FontManager {
                     Key imageId = new Key(split[0], split[1]);
                     Optional<BitmapImage> bitmapImage = bitmapImageByImageId(imageId);
                     if (bitmapImage.isPresent()) {
-                        image = bitmapImage.get().miniMessage(0, 0);
+                        image = bitmapImage.get().miniMessageAt(0, 0);
                     } else {
                         throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                     }
@@ -386,7 +390,7 @@ public abstract class AbstractFontManager implements FontManager {
                     Optional<BitmapImage> bitmapImage = bitmapImageByImageId(imageId);
                     if (bitmapImage.isPresent()) {
                         try {
-                            image = bitmapImage.get().miniMessage(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
+                            image = bitmapImage.get().miniMessageAt(Integer.parseInt(split[2]), Integer.parseInt(split[3]));
                         } catch (ArrayIndexOutOfBoundsException e) {
                             throw new LocalizedResourceConfigException("warning.config.emoji.invalid_image", path, id, rawImage);
                         }
