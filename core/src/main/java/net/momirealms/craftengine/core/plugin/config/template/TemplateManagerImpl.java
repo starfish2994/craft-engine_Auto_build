@@ -188,7 +188,7 @@ public class TemplateManagerImpl implements TemplateManager {
         List<Object> templateList = new ArrayList<>();
         for (String templateId : templateIds) {
             // 如果模板id被用了参数，则应先应用参数后再查询模板
-            Object actualTemplate = templateId.contains(LEFT_BRACKET) && templateId.contains(RIGHT_BRACKET) ? applyArgument(templateId, parentArguments) : templateId;
+            Object actualTemplate = applyArgument(templateId, parentArguments);
             if (actualTemplate == null) continue; // 忽略被null掉的模板
             Object template = Optional.ofNullable(templates.get(Key.of(actualTemplate.toString())))
                     .orElseThrow(() -> new IllegalArgumentException("Template not found: " + actualTemplate));
@@ -337,7 +337,7 @@ public class TemplateManagerImpl implements TemplateManager {
         //   argument_1: "{parent_argument}"
         for (Map.Entry<String, Object> argumentEntry : rawChildArguments.entrySet()) {
             // 获取最终的string形式参数
-            String placeholder = LEFT_BRACKET + argumentEntry.getKey() + RIGHT_BRACKET;
+            String placeholder = argumentEntry.getKey();
             // 父亲参数最大
             if (result.containsKey(placeholder)) continue;
             Object rawArgument = argumentEntry.getValue();
@@ -378,29 +378,13 @@ public class TemplateManagerImpl implements TemplateManager {
 
     // 将某个输入变成最终的结果，可以是string->string，也可以是string->map/list
     private Object applyArgument(String input, Map<String, TemplateArgument> arguments) {
-        StringBuilder result = new StringBuilder();
-        Matcher matcher = ARGUMENT_PATTERN.matcher(input);
-        boolean first = true;
-        while (matcher.find()) {
-            String placeholder = matcher.group();
-            Supplier<Object> replacer = arguments.get(placeholder);
-            if (replacer == null) {
-                matcher.appendReplacement(result, placeholder);
-                continue;
-            }
-            if (first) {
-                first = false;
-                if (input.length() == placeholder.length()) {
-                    return replacer.get();
-                } else {
-                    matcher.appendReplacement(result, replacer.get().toString());
-                }
-            } else {
-                matcher.appendReplacement(result, replacer.get().toString());
+        if (input.charAt(0) == '{' && input.charAt(input.length() - 1) == '}') {
+            String key = input.substring(1, input.length() - 2);
+            if (arguments.containsKey(key)) {
+                return arguments.get(key).get();
             }
         }
-        matcher.appendTail(result);
-        return result.toString();
+        return replacePlaceholders(input, arguments);
     }
 
     private record TemplateProcessingResult(
@@ -432,5 +416,98 @@ public class TemplateManagerImpl implements TemplateManager {
                 baseMap.put(key, value);
             }
         }
+    }
+    public static String replacePlaceholders(String input, Map<String, TemplateArgument> replacements) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        StringBuilder finalResult = new StringBuilder();
+        int n = input.length();
+        int lastAppendPosition = 0; // 追踪上一次追加操作结束的位置
+        int i = 0;
+
+        while (i < n) {
+            // 检查当前字符是否为未转义的 '{'
+            int backslashes = 0;
+            int temp_i = i - 1;
+            while (temp_i >= 0 && input.charAt(temp_i) == '\\') {
+                backslashes++;
+                temp_i--;
+            }
+
+            if (input.charAt(i) == '{' && backslashes % 2 == 0) {
+                // 发现占位符起点
+                int placeholderStartIndex = i;
+
+                // 追加从上一个位置到当前占位符之前的文本
+                finalResult.append(input, lastAppendPosition, placeholderStartIndex);
+
+                // --- 开始解析占位符内部 ---
+                StringBuilder keyBuilder = new StringBuilder();
+                int depth = 1;
+                int j = i + 1;
+                boolean foundMatch = false;
+
+                while (j < n) {
+                    char c = input.charAt(j);
+                    if (c == '\\') { // 处理转义
+                        if (j + 1 < n) {
+                            keyBuilder.append(input.charAt(j + 1));
+                            j += 2;
+                        } else {
+                            keyBuilder.append(c);
+                            j++;
+                        }
+                    } else if (c == '{') {
+                        depth++;
+                        keyBuilder.append(c);
+                        j++;
+                    } else if (c == '}') {
+                        depth--;
+                        if (depth == 0) { // 找到匹配的结束括号
+                            String key = keyBuilder.toString();
+                            TemplateArgument value = replacements.get(key);
+
+                            if (value != null) {
+                                // 如果在 Map 中找到值，则进行替换
+                                finalResult.append(value.get());
+                            } else {
+                                // 否则，保留原始占位符（包括 '{}'）
+                                finalResult.append(input, placeholderStartIndex, j + 1);
+                            }
+
+                            // 更新位置指针
+                            i = j + 1;
+                            lastAppendPosition = i;
+                            foundMatch = true;
+                            break;
+                        }
+                        keyBuilder.append(c); // 嵌套的 '}'
+                        j++;
+                    } else {
+                        keyBuilder.append(c);
+                        j++;
+                    }
+                }
+                // --- 占位符解析结束 ---
+
+                if (!foundMatch) {
+                    // 如果内层循环结束仍未找到匹配的 '}'，则不进行任何特殊处理
+                    // 外层循环的 i 会自然递增
+                    i++;
+                }
+
+            } else {
+                i++;
+            }
+        }
+
+        // 追加最后一个占位符之后的所有剩余文本
+        if (lastAppendPosition < n) {
+            finalResult.append(input, lastAppendPosition, n);
+        }
+
+        return finalResult.toString();
     }
 }
