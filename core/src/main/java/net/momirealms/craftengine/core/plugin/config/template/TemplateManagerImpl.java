@@ -65,17 +65,19 @@ public class TemplateManagerImpl implements TemplateManager {
     public Map<String, Object> applyTemplates(Key id, Map<String, Object> input) {
         Objects.requireNonNull(input, "Input must not be null");
         Map<String, Object> result = new LinkedHashMap<>();
-        processMap(input, Map.of("{__ID__}", PlainStringTemplateArgument.plain(id.value()),
-                "{__NAMESPACE__}", PlainStringTemplateArgument.plain(id.namespace())), (obj) -> {
-            // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
-            // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
-            // items:
-            //   test:invalid: 111
-            if (obj instanceof Map<?,?> mapResult) {
-                result.putAll(MiscUtils.castToMap(mapResult, false));
-            } else {
-                throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
-            }
+        processMap(input,
+                Map.of("{__ID__}", PlainStringTemplateArgument.plain(id.value()),
+                "{__NAMESPACE__}", PlainStringTemplateArgument.plain(id.namespace())),
+                (obj) -> {
+                    // 当前位于根节点下，如果下一级就是模板，则应把模板结果与当前map合并
+                    // 如果模板结果不是map，则为非法值，因为不可能出现类似于下方的配置
+                    // items:
+                    //   test:invalid: 111
+                    if (obj instanceof Map<?,?> mapResult) {
+                        result.putAll(MiscUtils.castToMap(mapResult, false));
+                    } else {
+                        throw new IllegalArgumentException("Invalid template used. Input: " + GsonHelper.get().toJson(input) + ". Template: " + GsonHelper.get().toJson(obj));
+                    }
         });
         return result;
     }
@@ -99,13 +101,13 @@ public class TemplateManagerImpl implements TemplateManager {
                 return;
             }
             Object firstTemplate = processedTemplates.get(0);
-            // 对于map和list，应当对多模板合并
+            // 如果是map，应当深度合并
             if (firstTemplate instanceof Map<?,?>) {
                 Map<String, Object> results = new LinkedHashMap<>();
-                // 仅仅合并list
                 for (Object processedTemplate : processedTemplates) {
                     if (processedTemplate instanceof Map<?, ?> anotherMap) {
-                        results.putAll(MiscUtils.castToMap(anotherMap, false));
+                        Map<String, Object> castedMap = MiscUtils.castToMap(anotherMap, false);
+                        deepMergeMaps(results, castedMap);
                     }
                 }
                 results.putAll(processingResult.overrides());
@@ -285,4 +287,24 @@ public class TemplateManagerImpl implements TemplateManager {
             Map<String, Object> overrides,
             Map<String, TemplateArgument> arguments
     ) {}
+
+    @SuppressWarnings("unchecked")
+    private void deepMergeMaps(Map<String, Object> baseMap, Map<String, Object> mapToMerge) {
+        for (Map.Entry<String, Object> entry : mapToMerge.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (baseMap.containsKey(key)) {
+                Object existingValue = baseMap.get(key);
+                if (existingValue instanceof Map && value instanceof Map) {
+                    Map<String, Object> existingMap = (Map<String, Object>) existingValue;
+                    Map<String, Object> newMap = (Map<String, Object>) value;
+                    deepMergeMaps(existingMap, newMap);
+                } else {
+                    baseMap.put(key, value);
+                }
+            } else {
+                baseMap.put(key, value);
+            }
+        }
+    }
 }
