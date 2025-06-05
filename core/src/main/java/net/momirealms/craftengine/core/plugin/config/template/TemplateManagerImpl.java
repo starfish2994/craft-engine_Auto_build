@@ -452,7 +452,7 @@ public class TemplateManagerImpl implements TemplateManager {
             String key = input.substring(1, input.length() - 1);
             return Optional.ofNullable(arguments.get(key))
                     .map(TemplateArgument::get)
-                    .orElse(replacePlaceholders(input, arguments));
+                    .orElseGet(() -> replacePlaceholders(input, arguments));
         }
         return replacePlaceholders(input, arguments);
     }
