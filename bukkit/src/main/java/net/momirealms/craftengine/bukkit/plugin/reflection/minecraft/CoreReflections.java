@@ -3274,18 +3274,26 @@ public final class CoreReflections {
             )
     );
 
-    public static final MethodHandle handle$ServerEntity$broadcastSetter = requireNonNull(
-            ReflectionUtils.unreflectSetter(field$ServerEntity$broadcast)
-                    .asType(MethodType.methodType(void.class, Object.class, Consumer.class))
-    );
+    public static final MethodHandle handle$ServerEntity$broadcastSetter;
+    public static final MethodHandle handle$ServerEntity$updateIntervalSetter;
+    public static final MethodHandle handle$ServerPlayer$connectionGetter;
 
-    public static final MethodHandle handle$ServerEntity$updateIntervalSetter = requireNonNull(
-            ReflectionUtils.unreflectSetter(field$ServerEntity$updateInterval)
-                    .asType(MethodType.methodType(void.class, Object.class, int.class))
-    );
-
-    public static final MethodHandle handle$ServerPlayer$connectionGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
+    static {
+        try {
+            handle$ServerEntity$broadcastSetter = requireNonNull(
+                    ReflectionUtils.unreflectSetter(field$ServerEntity$broadcast)
+                            .asType(MethodType.methodType(void.class, Object.class, Consumer.class))
+            );
+            handle$ServerEntity$updateIntervalSetter = requireNonNull(
+                    ReflectionUtils.unreflectSetter(field$ServerEntity$updateInterval)
+                            .asType(MethodType.methodType(void.class, Object.class, int.class))
+            );
+            handle$ServerPlayer$connectionGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

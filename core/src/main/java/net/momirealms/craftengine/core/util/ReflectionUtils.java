@@ -485,16 +485,21 @@ public class ReflectionUtils {
         return constructors[0];
     }
 
-    public static MethodHandle unreflectGetter(Field field) {
+    public static MethodHandle unreflectGetter(Field field) throws IllegalAccessException {
         try {
             return LOOKUP.unreflectGetter(field);
         } catch (IllegalAccessException e) {
             field.setAccessible(true);
-            try {
-                return LOOKUP.unreflectGetter(field);
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            return LOOKUP.unreflectGetter(field);
+        }
+    }
+
+    public static MethodHandle unreflectSetter(Field field) throws IllegalAccessException {
+        try {
+            return LOOKUP.unreflectSetter(field);
+        } catch (IllegalAccessException e) {
+            field.setAccessible(true);
+            return LOOKUP.unreflectSetter(field);
         }
     }
 
@@ -522,19 +527,6 @@ public class ReflectionUtils {
                     .findVarHandle(field.getDeclaringClass(), field.getName(), field.getType());
         } catch (IllegalAccessException | NoSuchFieldException e) {
             return null;
-        }
-    }
-
-    public static MethodHandle unreflectSetter(Field field) {
-        try {
-            return LOOKUP.unreflectSetter(field);
-        } catch (IllegalAccessException e) {
-            field.setAccessible(true);
-            try {
-                return LOOKUP.unreflectSetter(field);
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
         }
     }
 }

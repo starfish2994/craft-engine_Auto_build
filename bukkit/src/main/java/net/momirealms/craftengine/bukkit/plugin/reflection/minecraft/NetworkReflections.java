@@ -1296,121 +1296,177 @@ public final class NetworkReflections {
             .map(it -> ReflectionUtils.getConstructor(it, float.class, boolean.class))
             .orElse(null);
 
-    public static final MethodHandle handle$ServerboundRenameItemPacket$nameGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundRenameItemPacket$name)
-                    .asType(MethodType.methodType(String.class, Object.class))
-    );
+    public static final MethodHandle handle$ServerboundRenameItemPacket$nameGetter;
+    public static final MethodHandle handle$ServerboundRenameItemPacket$nameSetter;
+    public static final MethodHandle handle$ServerboundHelloPacket$nameGetter;
+    public static final MethodHandle handle$ServerboundHelloPacket$uuidGetter;
+    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$itemStackGetter;
+    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter;
+    public static final MethodHandle handle$ServerboundInteractPacket$actionGetter;
+    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$handGetter;
+    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$locationGetter;
+    public static final MethodHandle handle$ServerboundSignUpdatePacket$linesGetter;
+    public static final MethodHandle handleServerboundEditBookPacket$pagesGetter;
+    public static final MethodHandle handle$ServerboundEditBookPacket$titleGetter;
+    public static final MethodHandle handle$ServerboundEditBookPacket$slotGetter;
+    public static final MethodHandle handle$ServerboundResourcePackPacket$actionGetter;
+    public static final MethodHandle handle$ClientboundEntityEventPacket$entityIdGetter;
+    public static final MethodHandle handle$ClientboundEntityEventPacket$eventIdGetter;
+    public static final MethodHandle handle$ClientIntentionPacket$protocolVersionGetter;
 
-    public static final MethodHandle handle$ServerboundRenameItemPacket$nameSetter = requireNonNull(
-            ReflectionUtils.unreflectSetter(field$ServerboundRenameItemPacket$name)
-                    .asType(MethodType.methodType(void.class, Object.class, String.class))
-    );
-
-    public static final MethodHandle handle$ServerboundHelloPacket$nameGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$name)
-                    .asType(MethodType.methodType(String.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundHelloPacket$uuidGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$uuid)
-                    .asType(MethodType.methodType(VersionHelper.isOrAbove1_20_2() ? UUID.class : Optional.class, Object.class))
-    );
+    static {
+        try {
+            handle$ServerboundRenameItemPacket$nameGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundRenameItemPacket$name)
+                            .asType(MethodType.methodType(String.class, Object.class))
+            );
+            handle$ServerboundRenameItemPacket$nameSetter = requireNonNull(
+                    ReflectionUtils.unreflectSetter(field$ServerboundRenameItemPacket$name)
+                            .asType(MethodType.methodType(void.class, Object.class, String.class))
+            );
+            handle$ServerboundHelloPacket$nameGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$name)
+                            .asType(MethodType.methodType(String.class, Object.class))
+            );
+            handle$ServerboundHelloPacket$uuidGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundHelloPacket$uuid)
+                            .asType(MethodType.methodType(VersionHelper.isOrAbove1_20_2() ? UUID.class : Optional.class, Object.class))
+            );
+            handle$ServerboundSetCreativeModeSlotPacket$itemStackGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$itemStack)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$slotNum)
+                            .asType(MethodType.methodType(VersionHelper.isOrAbove1_20_5() ? short.class : int.class, Object.class))
+            );
+            handle$ServerboundInteractPacket$actionGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$action)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            handle$ServerboundInteractPacket$InteractionAtLocationAction$handGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$hand)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            handle$ServerboundInteractPacket$InteractionAtLocationAction$locationGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$location)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            handle$ServerboundSignUpdatePacket$linesGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundSignUpdatePacket$lines)
+                            .asType(MethodType.methodType(String[].class, Object.class))
+            );
+            handleServerboundEditBookPacket$pagesGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$pages)
+                            .asType(MethodType.methodType(List.class, Object.class))
+            );
+            handle$ServerboundEditBookPacket$titleGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$title)
+                            .asType(MethodType.methodType(Optional.class, Object.class))
+            );
+            handle$ServerboundEditBookPacket$slotGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$slot)
+                            .asType(MethodType.methodType(int.class, Object.class))
+            );
+            handle$ServerboundResourcePackPacket$actionGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerboundResourcePackPacket$action)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            handle$ClientboundEntityEventPacket$entityIdGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$entityId)
+                            .asType(MethodType.methodType(int.class, Object.class))
+            );
+            handle$ClientboundEntityEventPacket$eventIdGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$eventId)
+                            .asType(MethodType.methodType(byte.class, Object.class))
+            );
+            handle$ClientIntentionPacket$protocolVersionGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ClientIntentionPacket$protocolVersion)
+                            .asType(MethodType.methodType(int.class, Object.class))
+            );
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static final MethodHandle handle$ClientboundRespawnPacket$dimensionGetter = Optional.ofNullable(field$ClientboundRespawnPacket$dimension)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
     public static final MethodHandle handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundRespawnPacket$commonPlayerSpawnInfo)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
     public static final MethodHandle handle$CommonPlayerSpawnInfo$dimensionGetter = Optional.ofNullable(field$CommonPlayerSpawnInfo$dimension)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
     public static final MethodHandle handle$ClientboundLoginPacket$dimensionGetter = Optional.ofNullable(field$ClientboundLoginPacket$dimension)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
     public static final MethodHandle handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter = Optional.ofNullable(field$ClientboundLoginPacket$commonPlayerSpawnInfo)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
-    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$itemStackGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$itemStack)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundSetCreativeModeSlotPacket$slotNum)
-                    .asType(MethodType.methodType(VersionHelper.isOrAbove1_20_5() ? short.class : int.class, Object.class))
-    );
-
     public static final MethodHandle handle$ServerboundPickItemFromBlockPacket$posGetter = Optional.ofNullable(field$ServerboundPickItemFromBlockPacket$pos)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
 
     public static final MethodHandle handle$ServerboundPickItemFromEntityPacket$idGetter = Optional.ofNullable(field$ServerboundPickItemFromEntityPacket$id)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(int.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(int.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
-
-    public static final MethodHandle handle$ServerboundInteractPacket$actionGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$action)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$handGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$hand)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundInteractPacket$InteractionAtLocationAction$locationGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundInteractPacket$InteractionAtLocationAction$location)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundSignUpdatePacket$linesGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundSignUpdatePacket$lines)
-                    .asType(MethodType.methodType(String[].class, Object.class))
-    );
-
-    public static final MethodHandle handleServerboundEditBookPacket$pagesGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$pages)
-                    .asType(MethodType.methodType(List.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundEditBookPacket$titleGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$title)
-                    .asType(MethodType.methodType(Optional.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ServerboundEditBookPacket$slotGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$slot)
-                    .asType(MethodType.methodType(int.class, Object.class))
-    );
 
     public static final MethodHandle handle$ServerboundCustomPayloadPacket$payloadGetter = Optional.ofNullable(field$ServerboundCustomPayloadPacket$payload)
-            .map(it -> ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class)))
+            .map(it -> {
+                try {
+                    return ReflectionUtils.unreflectGetter(it).asType(MethodType.methodType(Object.class, Object.class));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
             .orElse(null);
-
-    public static final MethodHandle handle$ServerboundResourcePackPacket$actionGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ServerboundResourcePackPacket$action)
-                    .asType(MethodType.methodType(Object.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ClientboundEntityEventPacket$entityIdGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$entityId)
-                    .asType(MethodType.methodType(int.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ClientboundEntityEventPacket$eventIdGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$eventId)
-                    .asType(MethodType.methodType(byte.class, Object.class))
-    );
-
-    public static final MethodHandle handle$ClientIntentionPacket$protocolVersionGetter = requireNonNull(
-            ReflectionUtils.unreflectGetter(field$ClientIntentionPacket$protocolVersion)
-                    .asType(MethodType.methodType(int.class, Object.class))
-    );
 
 }
