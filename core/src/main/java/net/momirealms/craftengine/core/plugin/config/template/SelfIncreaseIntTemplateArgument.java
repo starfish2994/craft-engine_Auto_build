@@ -22,9 +22,6 @@ public class SelfIncreaseIntTemplateArgument implements TemplateArgument {
     public String get() {
         String value = String.valueOf(this.current);
         if (this.current < this.max) this.current += 1;
-        else {
-            throw new IllegalStateException("SelfIncreaseInt " + this.current + " is already >= " + this.max);
-        }
         return value;
     }
 

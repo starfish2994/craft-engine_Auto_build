@@ -450,9 +450,10 @@ public class TemplateManagerImpl implements TemplateManager {
         if (input.length() < 3) return input;
         if (input.charAt(0) == '{' && input.charAt(input.length() - 1) == '}') {
             String key = input.substring(1, input.length() - 1);
-            return Optional.ofNullable(arguments.get(key))
-                    .map(TemplateArgument::get)
-                    .orElseGet(() -> replacePlaceholders(input, arguments));
+            TemplateArgument argument = arguments.get(key);
+            if (argument != null) {
+                return argument.get();
+            }
         }
         return replacePlaceholders(input, arguments);
     }
