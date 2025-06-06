@@ -50,6 +50,22 @@ public class MiscUtils {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> getAsList(Object o, Class<T> clazz) {
+        if (o instanceof List<?> list) {
+            if (list.isEmpty()) {
+                return List.of();
+            }
+            if (clazz.isInstance(list.getFirst())) {
+                return (List<T>) list;
+            }
+        }
+        if (clazz.isInstance(o)) {
+            return List.of((T) o);
+        }
+        return List.of();
+    }
+
     public static Vector3f getAsVector3f(Object o, String option) {
         if (o == null) return new Vector3f();
         if (o instanceof List<?> list && list.size() == 3) {

@@ -467,7 +467,8 @@ public abstract class AbstractPackManager implements PackManager {
                             }
                             for (Map.Entry<String, Object> entry : cachedFile.config().entrySet()) {
                                 processConfigEntry(entry, path, cachedFile.pack(), (p, c) ->
-                                        cachedConfigs.computeIfAbsent(p, k -> new ArrayList<>()).add(c));
+                                        cachedConfigs.computeIfAbsent(p, k -> new ArrayList<>()).add(c)
+                                );
                             }
                         }
                         return FileVisitResult.CONTINUE;
@@ -494,12 +495,13 @@ public abstract class AbstractPackManager implements PackManager {
                     Key id = Key.withDefaultNamespace(key, cached.pack().namespace());
                     try {
                         if (parser.supportsParsingObject()) {
+                            // do not apply templates
                             parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
                         } else if (predicate.test(parser)) {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
-                                Map<String, Object> configSection1 = castToMap(configSection0, false);
-                                if ((boolean) configSection1.getOrDefault("enable", true)) {
-                                    parser.parseSection(cached.pack(), cached.filePath(), id, plugin.templateManager().applyTemplates(id, configSection1));
+                                Map<String, Object> config = castToMap(configSection0, false);
+                                if ((boolean) config.getOrDefault("enable", true)) {
+                                    parser.parseSection(cached.pack(), cached.filePath(), id, MiscUtils.castToMap(this.plugin.templateManager().applyTemplates(id, config), false));
                                 }
                             } else {
                                 TranslationManager.instance().log("warning.config.structure.not_section", cached.filePath().toString(), cached.prefix() + "." + key, configEntry.getValue().getClass().getSimpleName());
