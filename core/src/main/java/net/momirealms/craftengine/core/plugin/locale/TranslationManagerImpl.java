@@ -139,8 +139,6 @@ public class TranslationManagerImpl implements TranslationManager {
     }
 
     private void loadFromCache() {
-        Map<Locale, Map<String, String>> loaded = new HashMap<>();
-
         for (Map.Entry<String, CachedTranslation> entry : this.cachedTranslations.entrySet()) {
             Locale locale = TranslationManager.parseLocale(entry.getKey());
             if (locale == null) {
@@ -150,26 +148,20 @@ public class TranslationManagerImpl implements TranslationManager {
             Map<String, String> translations = entry.getValue().translations();
             this.registry.registerAll(locale, translations);
             this.installed.add(locale);
-            loaded.put(locale, translations);
-        }
-
-        // try registering the locale without a country code - if we don't already have a registration for that
-        loaded.forEach((locale, bundle) -> {
             Locale localeWithoutCountry = Locale.of(locale.getLanguage());
             if (!locale.equals(localeWithoutCountry) && !localeWithoutCountry.equals(DEFAULT_LOCALE) && this.installed.add(localeWithoutCountry)) {
                 try {
-                    this.registry.registerAll(localeWithoutCountry, bundle);
+                    this.registry.registerAll(localeWithoutCountry, translations);
                 } catch (IllegalArgumentException e) {
                     // ignore
                 }
             }
-        });
+        }
     }
 
     public void loadFromFileSystem(Path directory) {
         Map<String, CachedTranslation> previousTranslations = this.cachedTranslations;
         this.cachedTranslations = new HashMap<>();
-        Yaml yaml = new Yaml(new TranslationConfigConstructor(new LoaderOptions()));
         try {
             Files.walkFileTree(directory, new SimpleFileVisitor<>() {
                 @Override
@@ -184,6 +176,7 @@ public class TranslationManagerImpl implements TranslationManager {
                             TranslationManagerImpl.this.cachedTranslations.put(localeName, cachedFile);
                         } else {
                             try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+                                Yaml yaml = new Yaml(new TranslationConfigConstructor(new LoaderOptions()));
                                 Map<String, String> data = yaml.load(inputStream);
                                 if (data == null) return FileVisitResult.CONTINUE;
                                 String langVersion = data.getOrDefault("lang-version", "");
@@ -317,27 +310,6 @@ public class TranslationManagerImpl implements TranslationManager {
         }
     }
 
-    private static class CachedTranslation {
-        private final Map<String, String> translations;
-        private final long lastModified;
-        private final long size;
-
-        public CachedTranslation(Map<String, String> translations, long lastModified, long size) {
-            this.lastModified = lastModified;
-            this.translations = translations;
-            this.size = size;
-        }
-
-        public long lastModified() {
-            return lastModified;
-        }
-
-        public long size() {
-            return size;
-        }
-
-        public Map<String, String> translations() {
-            return translations;
-        }
+    private record CachedTranslation(Map<String, String> translations, long lastModified, long size) {
     }
 }

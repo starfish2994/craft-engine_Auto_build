@@ -266,7 +266,7 @@ public abstract class AbstractPackManager implements PackManager {
                     String author = null;
                     boolean enable = true;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
-                        YamlDocument metaYML = Config.instance().loadYamlData(metaFile.toFile());
+                        YamlDocument metaYML = Config.instance().loadYamlData(metaFile);
                         enable = metaYML.getBoolean("enable", true);
                         namespace = metaYML.getString("namespace", namespace);
                         description = metaYML.getString("description");
@@ -837,8 +837,8 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateBlockOverrides(Path generatedPackPath) {
-        File blockStatesFile = new File(plugin.dataFolderFile(), "blockstates.yml");
-        if (!blockStatesFile.exists()) plugin.saveResource("blockstates.yml");
+        Path blockStatesFile = this.plugin.dataFolderPath().resolve("blockstates.yml");
+        if (!Files.exists(blockStatesFile)) this.plugin.saveResource("blockstates.yml");
         YamlDocument preset = Config.instance().loadYamlData(blockStatesFile);
         for (Map.Entry<Key, Map<String, JsonElement>> entry : plugin.blockManager().blockOverrides().entrySet()) {
             Key key = entry.getKey();
