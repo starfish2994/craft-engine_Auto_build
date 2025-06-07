@@ -150,7 +150,7 @@ public class RecipeInjector {
             if (!ceRecipe.id().equals(rawRecipeKey)) {
                 injectedCacheCheck.lastRecipe(KeyUtils.toResourceLocation(ceRecipe.id()));
             }
-            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(resourceLocationAndRecipe.getSecond());
+            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe));
         }
     }
 
