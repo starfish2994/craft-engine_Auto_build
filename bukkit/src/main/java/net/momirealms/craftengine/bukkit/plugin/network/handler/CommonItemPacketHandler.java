@@ -27,9 +27,9 @@ public class CommonItemPacketHandler implements EntityPacketHandler {
         for (int i = 0; i < packedItems.size(); i++) {
             Object packedItem = packedItems.get(i);
             int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-            // TODO 检查为什么会导致问题，难道是其他插件乱发entity id？
-            if (entityDataId == EntityDataUtils.ITEM_DATA_ID && CoreReflections.clazz$ItemStack.isInstance(packedItem)) {
+            if (entityDataId == EntityDataUtils.ITEM_DATA_ID) {
                 Object nmsItemStack = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                // TODO 检查为什么会导致问题，难道是其他插件乱发entity id？
                 if (!CoreReflections.clazz$ItemStack.isInstance(nmsItemStack)) {
                     CraftEngine.instance().logger().warn("Invalid item data for entity " + id);
                     continue;
