@@ -160,7 +160,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         for (Map.Entry<Integer, List<String>> entry : this.clientBoundTags.entrySet()) {
             list.add(new TagUtils.TagEntry(entry.getKey(), entry.getValue()));
         }
-        Object packet = TagUtils.createUpdateTagsPacket(Map.of(MRegistries.instance$Registries$BLOCK, list));
+        Object packet = TagUtils.createUpdateTagsPacket(Map.of(MRegistries.BLOCK, list));
         for (Player player : Bukkit.getOnlinePlayers()) {
             this.plugin.networkManager().sendPacket(this.plugin.adapt(player), packet);
         }
@@ -762,7 +762,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private Object createBlockProperties(Key realBlockKey) throws Exception {
         Object blockProperties = CoreReflections.method$BlockBehaviour$Properties$of.invoke(null);
         Object realBlockResourceLocation = createResourceLocation(realBlockKey);
-        Object realBlockResourceKey = CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, realBlockResourceLocation);
+        Object realBlockResourceKey = CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.BLOCK, realBlockResourceLocation);
         if (CoreReflections.field$BlockBehaviour$Properties$id != null) {
             CoreReflections.field$BlockBehaviour$Properties$id.set(blockProperties, realBlockResourceKey);
         }

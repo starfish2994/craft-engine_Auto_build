@@ -99,4 +99,28 @@ public class MiscUtils {
             }
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public static void deepMergeMaps(Map<String, Object> baseMap, Map<String, Object> mapToMerge) {
+        for (Map.Entry<String, Object> entry : mapToMerge.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (baseMap.containsKey(key)) {
+                Object existingValue = baseMap.get(key);
+                if (existingValue instanceof Map && value instanceof Map) {
+                    Map<String, Object> existingMap = (Map<String, Object>) existingValue;
+                    Map<String, Object> newMap = (Map<String, Object>) value;
+                    deepMergeMaps(existingMap, newMap);
+                } else if (existingValue instanceof List && value instanceof List) {
+                    List<Object> existingList = (List<Object>) existingValue;
+                    List<Object> newList = (List<Object>) value;
+                    existingList.addAll(newList);
+                } else {
+                    baseMap.put(key, value);
+                }
+            } else {
+                baseMap.put(key, value);
+            }
+        }
+    }
 }

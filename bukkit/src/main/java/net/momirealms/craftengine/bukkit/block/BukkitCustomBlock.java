@@ -151,7 +151,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(state.customBlockState().registryId());
                 Set<Object> tags = new HashSet<>();
                 for (Key tag : settings.tags()) {
-                    tags.add(CoreReflections.method$TagKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, KeyUtils.toResourceLocation(tag)));
+                    tags.add(CoreReflections.method$TagKey$create.invoke(null, MRegistries.BLOCK, KeyUtils.toResourceLocation(tag)));
                 }
                 CoreReflections.field$Holder$Reference$tags.set(holder, tags);
                 // set burning properties

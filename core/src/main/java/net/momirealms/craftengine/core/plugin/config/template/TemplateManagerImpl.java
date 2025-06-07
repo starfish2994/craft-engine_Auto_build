@@ -114,14 +114,14 @@ public class TemplateManagerImpl implements TemplateManager {
                     Map<String, Object> results = new LinkedHashMap<>();
                     for (Object processedTemplate : processedTemplates) {
                         if (processedTemplate instanceof Map<?, ?> map) {
-                            deepMergeMaps(results, MiscUtils.castToMap(map, false));
+                            MiscUtils.deepMergeMaps(results, MiscUtils.castToMap(map, false));
                         }
                     }
                     if (processingResult.overrides() instanceof Map<?, ?> overrides) {
                         results.putAll(MiscUtils.castToMap(overrides, false));
                     }
                     if (processingResult.merges() instanceof Map<?, ?> merges) {
-                        deepMergeMaps(results, MiscUtils.castToMap(merges, false));
+                        MiscUtils.deepMergeMaps(results, MiscUtils.castToMap(merges, false));
                     }
                     return results;
                 } else if (firstTemplate instanceof List<?>) {
@@ -155,7 +155,7 @@ public class TemplateManagerImpl implements TemplateManager {
                 if (processingResult.overrides() instanceof Map<?,?> overrides) {
                     Map<String, Object> output = new LinkedHashMap<>(MiscUtils.castToMap(overrides, false));
                     if (processingResult.merges() instanceof Map<?,?> merges) {
-                        deepMergeMaps(output, MiscUtils.castToMap(merges, false));
+                        MiscUtils.deepMergeMaps(output, MiscUtils.castToMap(merges, false));
                     }
                     return output;
                 } else if (processingResult.overrides() instanceof List<?> overrides) {
@@ -329,28 +329,4 @@ public class TemplateManagerImpl implements TemplateManager {
             Object merges,
             Map<String, TemplateArgument> arguments
     ) {}
-
-    @SuppressWarnings("unchecked")
-    private void deepMergeMaps(Map<String, Object> baseMap, Map<String, Object> mapToMerge) {
-        for (Map.Entry<String, Object> entry : mapToMerge.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (baseMap.containsKey(key)) {
-                Object existingValue = baseMap.get(key);
-                if (existingValue instanceof Map && value instanceof Map) {
-                    Map<String, Object> existingMap = (Map<String, Object>) existingValue;
-                    Map<String, Object> newMap = (Map<String, Object>) value;
-                    deepMergeMaps(existingMap, newMap);
-                } else if (existingValue instanceof List && value instanceof List) {
-                    List<Object> existingList = (List<Object>) existingValue;
-                    List<Object> newList = (List<Object>) value;
-                    existingList.addAll(newList);
-                } else {
-                    baseMap.put(key, value);
-                }
-            } else {
-                baseMap.put(key, value);
-            }
-        }
-    }
 }

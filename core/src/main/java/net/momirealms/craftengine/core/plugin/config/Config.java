@@ -160,7 +160,7 @@ public class Config {
             BasicFileAttributes attributes = Files.readAttributes(this.configFilePath, BasicFileAttributes.class);
             long lastModified = attributes.lastModifiedTime().toMillis();
             long size = attributes.size();
-            if (lastModified != this.lastModified || size != this.size) {
+            if (lastModified != this.lastModified || size != this.size || this.config == null) {
                 byte[] configFileBytes = Files.readAllBytes(this.configFilePath);
                 try (InputStream inputStream = new ByteArrayInputStream(configFileBytes)) {
                     this.config = YamlDocument.create(inputStream);
