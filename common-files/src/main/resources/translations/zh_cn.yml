@@ -133,6 +133,7 @@ warning.config.recipe.smithing_transform.post_processor.keep_component.missing_t
 warning.config.i18n.unknown_locale: "<yellow>在文件 <arg:0> 发现问题 - 未知的语言环境 '<arg:1>'</yellow>"
 warning.config.template.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重复的模板 '<arg:1>' 请检查其他文件中是否存在相同配置</yellow>"
 warning.config.template.argument.self_increase_int.invalid_range: "<yellow>在文件 <arg:0> 发现问题 - 模板 '<arg:1>' 在 'self_increase_int' 参数中使用了一个起始值 '<arg:2>' 大于终止值 '<arg:3>'</yellow>"
+warning.config.template.invalid: "<yellow>在文件 <arg:0> 发现问题 - 配置 '<arg:1>' 使用了无效的模板 '<arg:2>'.</yellow>"
 warning.config.template.argument.list.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - 模板 '<arg:1>' 的 'list' 参数需要列表类型 但输入参数类型为 '<arg:2>'</yellow>"
 warning.config.vanilla_loot.missing_type: "<yellow>在文件 <arg:0> 发现问题 - 原版战利品 '<arg:1>' 缺少必需的 'type' 参数</yellow>"
 warning.config.vanilla_loot.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - 原版战利品 '<arg:1>' 使用了无效类型 '<arg:2>' 允许的类型: [<arg:3>]</yellow>"

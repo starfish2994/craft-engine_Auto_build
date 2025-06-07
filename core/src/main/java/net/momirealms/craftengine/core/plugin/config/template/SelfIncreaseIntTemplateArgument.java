@@ -19,7 +19,7 @@ public class SelfIncreaseIntTemplateArgument implements TemplateArgument {
     }
 
     @Override
-    public String get() {
+    public String get(Map<String, TemplateArgument> arguments) {
         String value = String.valueOf(this.current);
         if (this.current < this.max) this.current += 1;
         return value;

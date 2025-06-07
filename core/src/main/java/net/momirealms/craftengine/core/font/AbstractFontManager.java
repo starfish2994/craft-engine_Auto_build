@@ -286,7 +286,7 @@ public abstract class AbstractFontManager implements FontManager {
         }
         for (int i = -256; i <= 256; i++) {
             String shiftTag = "<shift:" + i + ">";
-            this.tagMapper.put(shiftTag, AdventureHelper.miniMessage().deserialize(this.offsetFont.createOffset(i, FormatUtils::miniMessageFont)));
+            this.tagMapper.put(shiftTag, this.offsetFont.createOffset(i));
             this.tagMapper.put("\\" + shiftTag, Component.text(shiftTag));
         }
         this.imageTagTrie = Trie.builder()
