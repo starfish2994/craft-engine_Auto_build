@@ -17,6 +17,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -227,7 +228,10 @@ public class WorldStorageInjector {
                     holder.ceChunk().setDirty(true);
                     if (Config.enableLightSystem()) {
                         // 自定义块到原版块，只需要判断旧块是否和客户端一直
-                        updateLight(holder, previous.vanillaBlockState().handle(), previousState, x, y, z);
+                        BlockStateWrapper wrapper = previous.vanillaBlockState();
+                        if (wrapper != null) {
+                            updateLight(holder, wrapper.handle(), previousState, x, y, z);
+                        }
                     }
                 }
             } else {
