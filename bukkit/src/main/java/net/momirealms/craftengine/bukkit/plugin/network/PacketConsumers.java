@@ -1458,7 +1458,7 @@ public class PacketConsumers {
         }
     }
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY_BYTEBUFFER = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_ENTITY = (user, event) -> {
         try {
             FriendlyByteBuf buf = event.getBuffer();
             buf.readVarInt();
