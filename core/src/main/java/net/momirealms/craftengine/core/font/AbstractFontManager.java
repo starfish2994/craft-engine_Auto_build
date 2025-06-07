@@ -10,7 +10,6 @@ import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
@@ -44,10 +43,8 @@ public abstract class AbstractFontManager implements FontManager {
     protected Trie emojiKeywordTrie;
     protected Map<String, Component> tagMapper;
     protected Map<String, Emoji> emojiMapper;
-
     protected List<Emoji> emojiList;
     protected List<String> allEmojiSuggestions;
-    protected Set<Path> existingImagePaths = new HashSet<>();
 
     public AbstractFontManager(CraftEngine plugin) {
         this.plugin = plugin;
@@ -68,7 +65,6 @@ public abstract class AbstractFontManager implements FontManager {
         this.images.clear();
         this.illegalChars.clear();
         this.emojis.clear();
-        this.existingImagePaths.clear();
     }
 
     @Override
@@ -472,14 +468,11 @@ public abstract class AbstractFontManager implements FontManager {
                         if (character.startsWith("\\u")) {
                             chars = List.of(CharacterUtils.decodeUnicodeToChars(character));
                         } else {
-                            if (CharacterUtils.containsCombinedCharacter(character)) {
-                                TranslationManager.instance().log("warning.config.image.invalid_char", path.toString(), id.toString());
-                            }
-                            StringBuilder stringBuilder = new StringBuilder();
-                            for (char c : character.toCharArray()) {
-                                stringBuilder.append(String.format("\\u%04x", (int) c));
-                            }
-                            chars = List.of(CharacterUtils.decodeUnicodeToChars(stringBuilder.toString()));
+                            // ??? TODO 需要测试特殊字符集
+//                            if (CharacterUtils.containsCombinedCharacter(character)) {
+//                                TranslationManager.instance().log("warning.config.image.invalid_char", path.toString(), id.toString());
+//                            }
+                            chars = List.of(character.toCharArray());
                         }
                     }
                 }
@@ -510,30 +503,26 @@ public abstract class AbstractFontManager implements FontManager {
             }
 
             Object heightObj = section.get("height");
-
             if (!resourceLocation.endsWith(".png")) resourceLocation += ".png";
-            Key namespacedPath = Key.of(resourceLocation);
-            Path targetImagePath = pack.resourcePackFolder()
-                    .resolve("assets")
-                    .resolve(namespacedPath.namespace())
-                    .resolve("textures")
-                    .resolve(namespacedPath.value());
-
-            if (!doesImageFileExist(targetImagePath)) {
-//                TranslationManager.instance().log("warning.config.image.file_not_found", path.toString(), id.toString(), targetImagePath.toString());
-                // DO NOT RETURN, JUST GIVE WARNINGS
-            } else if (heightObj == null) {
-                try (InputStream in = Files.newInputStream(targetImagePath)) {
-                    BufferedImage image = ImageIO.read(in);
-                    heightObj = image.getHeight() / codepointGrid.length;
-                } catch (IOException e) {
-                    plugin.logger().warn("Failed to load image " + targetImagePath, e);
-                    return;
-                }
-            }
 
             if (heightObj == null) {
-                throw new LocalizedResourceConfigException("warning.config.image.missing_height", path, id);
+                Key namespacedPath = Key.of(resourceLocation);
+                Path targetImagePath = pack.resourcePackFolder()
+                        .resolve("assets")
+                        .resolve(namespacedPath.namespace())
+                        .resolve("textures")
+                        .resolve(namespacedPath.value());
+                if (Files.exists(targetImagePath)) {
+                    try (InputStream in = Files.newInputStream(targetImagePath)) {
+                        BufferedImage image = ImageIO.read(in);
+                        heightObj = image.getHeight() / codepointGrid.length;
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to load image " + targetImagePath, e);
+                        return;
+                    }
+                } else {
+                    throw new LocalizedResourceConfigException("warning.config.image.missing_height", path, id);
+                }
             }
 
             int height = ResourceConfigUtils.getAsInt(heightObj, "height");
@@ -545,22 +534,11 @@ public abstract class AbstractFontManager implements FontManager {
             BitmapImage bitmapImage = new BitmapImage(id, fontKey, height, ascent, resourceLocation, codepointGrid);
             for (int[] y : codepointGrid) {
                 for (int x : y) {
-                    font.addBitMapImage(x, bitmapImage);
+                    font.addBitmapImage(x, bitmapImage);
                 }
             }
 
             images.put(id, bitmapImage);
-        }
-
-        private boolean doesImageFileExist(Path path) {
-            if (existingImagePaths.contains(path)) {
-                return true;
-            }
-            boolean exist = Files.exists(path);
-            if (exist) {
-                existingImagePaths.add(path);
-            }
-            return exist;
         }
     }
 }

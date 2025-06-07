@@ -10,22 +10,31 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-public class LoreModifier<I> implements ItemDataModifier<I> {
-    private final List<String> argument;
+public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
+    private final Map<String, List<String>> displayContexts;
+    private final String defaultContext;
 
-    public LoreModifier(List<String> argument) {
-        this.argument = argument;
+    public DynamicLoreModifier(Map<String, List<String>> displayContexts) {
+        this.defaultContext = displayContexts.keySet().iterator().next();
+        this.displayContexts = displayContexts;
     }
 
     @Override
     public String name() {
-        return "lore";
+        return "dynamic-lore";
     }
 
     @Override
     public void apply(Item<I> item, ItemBuildContext context) {
-        item.loreComponent(this.argument.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
+        String displayContext = Optional.ofNullable(item.getJavaTag("craftengine:display_context")).orElse(this.defaultContext).toString();
+        List<String> lore = this.displayContexts.get(displayContext);
+        if (lore == null) {
+            lore = this.displayContexts.get(this.defaultContext);
+        }
+        item.loreComponent(lore.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
     }
 
     @Override

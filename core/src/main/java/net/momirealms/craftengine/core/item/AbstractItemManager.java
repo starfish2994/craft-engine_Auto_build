@@ -439,16 +439,25 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         }, "external");
         registerDataFunction((obj) -> {
             String name = obj.toString();
-            return new CustomNameModifier<>(name);
+            return new CustomNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "custom-name");
         registerDataFunction((obj) -> {
             String name = obj.toString();
-            return new ItemNameModifier<>(name);
+            return new ItemNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "item-name", "display-name");
         registerDataFunction((obj) -> {
-            List<String> name = MiscUtils.getAsStringList(obj);
-            return new LoreModifier<>(name);
+            List<String> lore = MiscUtils.getAsStringList(obj).stream().map(it -> "<!i>" + it).toList();
+            return new LoreModifier<>(lore);
         }, "lore", "display-lore", "description");
+        registerDataFunction((obj) -> {
+            Map<String, List<String>> dynamicLore = new LinkedHashMap<>();
+            if (obj instanceof Map<?, ?> map) {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    dynamicLore.put(entry.getKey().toString(), MiscUtils.getAsStringList(entry.getValue()));
+                }
+            }
+            return new DynamicLoreModifier<>(dynamicLore);
+        }, "dynamic-lore");
         registerDataFunction((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             return new TagsModifier<>(data);

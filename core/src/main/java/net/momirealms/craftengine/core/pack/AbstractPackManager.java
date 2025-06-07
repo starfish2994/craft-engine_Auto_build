@@ -488,6 +488,7 @@ public abstract class AbstractPackManager implements PackManager {
         this.plugin.logger().info("Loaded packs. Took " + String.format("%.2f", ((o2 - o1) / 1_000_000.0)) + " ms");
         for (Map.Entry<ConfigParser, List<CachedConfigSection>> entry : cachedConfigs.entrySet()) {
             ConfigParser parser = entry.getKey();
+            if (!predicate.test(parser)) continue;
             long t1 = System.nanoTime();
             for (CachedConfigSection cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
@@ -497,7 +498,7 @@ public abstract class AbstractPackManager implements PackManager {
                         if (parser.supportsParsingObject()) {
                             // do not apply templates
                             parser.parseObject(cached.pack(), cached.filePath(), id, configEntry.getValue());
-                        } else if (predicate.test(parser)) {
+                        } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> config = castToMap(configSection0, false);
                                 if ((boolean) config.getOrDefault("enable", true)) {
