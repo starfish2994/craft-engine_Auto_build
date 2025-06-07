@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.bukkit.util.RecipeUtils;
@@ -45,9 +46,9 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     // 将自定义配方转为“广义”配方，接受更加宽容的输入
     // 部分过程借助bukkit完成，部分直接通过nms方法注册
     private static final Map<Key, BukkitRecipeConvertor<? extends Recipe<ItemStack>>> MIXED_RECIPE_CONVERTORS = new HashMap<>();
-    private static Object nmsRecipeManager;
     private static final List<Object> injectedIngredients = new ArrayList<>();
-    private static final IdentityHashMap<Recipe<ItemStack>, Object> recipeToMcRecipeHolder = new IdentityHashMap<>();
+    private static final IdentityHashMap<Recipe<ItemStack>, Object> CE_RECIPE_2_NMS_HOLDER = new IdentityHashMap<>();
+    private static Object nmsRecipeManager;
 
     private static void registerNMSSmithingRecipe(Object recipe) {
         try {
@@ -265,7 +266,8 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     public Object nmsRecipeHolderByRecipe(Recipe<ItemStack> recipe) {
-        return recipeToMcRecipeHolder.get(recipe);
+        if (super.isReloading) return null;
+        return CE_RECIPE_2_NMS_HOLDER.get(recipe);
     }
 
     public static Object nmsRecipeManager() {
@@ -287,6 +289,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void load() {
         if (!Config.enableRecipeSystem()) return;
+        super.isReloading = true;
         if (VersionHelper.isOrAbove1_21_2()) {
             try {
                 this.stolenFeatureFlagSet = CoreReflections.field$RecipeManager$featureflagset.get(nmsRecipeManager);
@@ -308,7 +311,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         } catch (ReflectiveOperationException e) {
             this.plugin.logger().warn("Failed to unregister recipes", e);
         }
-        recipeToMcRecipeHolder.clear();
     }
 
     @Override
@@ -320,6 +322,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void disable() {
         unload();
+        CE_RECIPE_2_NMS_HOLDER.clear();
         HandlerList.unregisterAll(this.recipeEventListener);
         if (this.crafterEventListener != null) {
             HandlerList.unregisterAll(this.crafterEventListener);
@@ -473,6 +476,15 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             // clear cache
             injectedIngredients.clear();
+
+            CE_RECIPE_2_NMS_HOLDER.clear();
+            // create mappings
+            for (Map.Entry<Key, Recipe<ItemStack>> entry : this.byId.entrySet()) {
+                Optional<Object> nmsRecipe = getOptionalNMSRecipe(entry.getKey());
+                nmsRecipe.ifPresent(o -> CE_RECIPE_2_NMS_HOLDER.put(entry.getValue(), o));
+            }
+
+            super.isReloading = false;
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to run delayed recipe tasks", e);
         }
@@ -691,7 +703,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         return optionalItem.map(itemStackCustomItem -> MaterialUtils.getMaterial(itemStackCustomItem.material())).orElse(null);
     }
 
-    private static List<Object> getIngredientLooks(List<Holder<Key>> holders) throws ReflectiveOperationException {
+    private static List<Object> getIngredientLooks(List<Holder<Key>> holders) {
         List<Object> itemStacks = new ArrayList<>();
         for (Holder<Key> holder : holders) {
             ItemStack itemStack = BukkitItemManager.instance().getBuildableItem(holder.value()).get().buildItemStack(ItemBuildContext.EMPTY, 1);
@@ -710,8 +722,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                     .map(Optional::get)
                     .toList();
 
-            Object shapedRecipe = getNMSRecipe(id);
-            recipeToMcRecipeHolder.put(recipe, shapedRecipe);
+            Object shapedRecipe = getOptionalNMSRecipe(id).get();
             if (VersionHelper.isOrAbove1_20_2()) {
                 shapedRecipe = CoreReflections.field$RecipeHolder$recipe.get(shapedRecipe);
             }
@@ -731,8 +742,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         try {
             List<Ingredient<ItemStack>> actualIngredients = recipe.ingredientsInUse();
 
-            Object shapelessRecipe = getNMSRecipe(id);
-            recipeToMcRecipeHolder.put(recipe, shapelessRecipe);
+            Object shapelessRecipe = getOptionalNMSRecipe(id).get();
             if (VersionHelper.isOrAbove1_20_2()) {
                 shapelessRecipe = CoreReflections.field$RecipeHolder$recipe.get(shapelessRecipe);
             }
@@ -751,8 +761,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private static void injectCookingRecipe(Key id, CustomCookingRecipe<ItemStack> recipe) {
         try {
             Ingredient<ItemStack> actualIngredient = recipe.ingredient();
-            Object smeltingRecipe = getNMSRecipe(id);
-            recipeToMcRecipeHolder.put(recipe, smeltingRecipe);
+            Object smeltingRecipe = getOptionalNMSRecipe(id).get();
             if (VersionHelper.isOrAbove1_20_2()) {
                 smeltingRecipe = CoreReflections.field$RecipeHolder$recipe.get(smeltingRecipe);
             }
@@ -771,23 +780,17 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     // 获取nms配方，请注意1.20.1获取配方本身，而1.20.2+获取的是配方的holder
     // recipe on 1.20.1 and holder on 1.20.2+
-    private static Object getNMSRecipe(Key id) throws ReflectiveOperationException {
+    private static Optional<Object> getOptionalNMSRecipe(Key id) throws ReflectiveOperationException {
         if (VersionHelper.isOrAbove1_21_2()) {
-            Object resourceKey = CraftBukkitReflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value()));
+            Object resourceKey = FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.RECIPE, KeyUtils.toResourceLocation(id));
             @SuppressWarnings("unchecked")
             Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceKey);
-            if (optional.isEmpty()) {
-                throw new IllegalArgumentException("Recipe " + id + " not found");
-            }
-            return optional.get();
+            return optional;
         } else {
             Object resourceLocation = KeyUtils.toResourceLocation(id);
             @SuppressWarnings("unchecked")
             Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceLocation);
-            if (optional.isEmpty()) {
-                throw new IllegalArgumentException("Recipe " + id + " not found");
-            }
-            return optional.get();
+            return optional;
         }
     }
 

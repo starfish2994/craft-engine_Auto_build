@@ -26,7 +26,7 @@ public class BukkitSoundManager extends AbstractSoundManager {
     protected void registerSongs(Map<Key, JukeboxSong> songs) {
         if (songs.isEmpty()) return;
         try {
-            Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.instance$Registries$JUKEBOX_SONG);;
+            Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);;
             unfreezeRegistry(registry);
             for (Map.Entry<Key, JukeboxSong> entry : songs.entrySet()) {
                 Key id = entry.getKey();
