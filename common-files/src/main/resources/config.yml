@@ -336,7 +336,7 @@ gui:
 
 performance:
   # Maximum chain update depth when fixing client visuals
-  max-block-chain-update-limit: 64
+  max-note-block-chain-update-limit: 32
   # Prevent lag or oversized packet when processing emoji-heavy content
   max-emojis-per-parse: 16
 

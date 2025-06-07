@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.block;
 
-public interface NoteBlockIndicator {
+public interface ChainUpdateBlockIndicator {
 
     boolean isNoteBlock();
+
+    boolean isTripwire();
 }

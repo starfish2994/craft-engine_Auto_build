@@ -28,7 +28,6 @@ import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -371,19 +370,18 @@ public class BlockEventListener implements Listener {
         // for vanilla blocks
         if (event.getChangedType() == Material.NOTE_BLOCK) {
             Block block = event.getBlock();
-            World world = block.getWorld();
-            Location location = block.getLocation();
             Block sourceBlock = event.getSourceBlock();
-            BlockFace direction = sourceBlock.getFace(block);
-            if (direction == BlockFace.UP || direction == BlockFace.DOWN) {
+            if (block.getX() == sourceBlock.getX() && block.getX() == sourceBlock.getZ()) {
+                World world = block.getWorld();
+                Location location = block.getLocation();
                 Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world);
                 Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
                 Object blockPos = LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
                 FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
-                if (direction == BlockFace.UP) {
-                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$UP, blockPos, 0);
+                if (block.getY() > sourceBlock.getY()) {
+                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$UP, blockPos, Config.maxNoteBlockChainUpdate());
                 } else {
-                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$DOWN, blockPos, 0);
+                    NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$DOWN, blockPos, Config.maxNoteBlockChainUpdate());
                 }
             }
         }

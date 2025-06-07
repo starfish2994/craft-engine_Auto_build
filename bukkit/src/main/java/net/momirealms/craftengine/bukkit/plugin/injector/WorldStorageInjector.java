@@ -220,23 +220,33 @@ public class WorldStorageInjector {
             CESection section = holder.ceSection();
             // 如果是原版方块
             if (BlockStateUtils.isVanillaBlock(stateId)) {
-                // 那么应该情况自定义块
+                // 那么应该清空自定义块
                 ImmutableBlockState previous = section.setBlockState(x, y, z, EmptyBlock.STATE);
-                // 如果先前不是空气则标记
+                // 处理  自定义块 -> 原版块
                 if (!previous.isEmpty()) {
                     holder.ceChunk().setDirty(true);
                     if (Config.enableLightSystem()) {
-                        updateLightIfChanged(holder, previousState, newState, newState, x, y, z);
+                        // 自定义块到原版块，只需要判断旧块是否和客户端一直
+                        updateLight(holder, previous.vanillaBlockState().handle(), previousState, x, y, z);
                     }
                 }
             } else {
                 ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
                 ImmutableBlockState previousImmutableBlockState = section.setBlockState(x, y, z, immutableBlockState);
                 if (previousImmutableBlockState == immutableBlockState) return;
+                // 处理  自定义块到自定义块或原版块到自定义块
                 holder.ceChunk().setDirty(true);
+                // 不可能！绝对不可能！
+                if (immutableBlockState.isEmpty()) return;
                 // 如果新方块的光照属性和客户端认为的不同
-                if (Config.enableLightSystem() && !immutableBlockState.isEmpty()) {
-                    updateLightIfChanged(holder, previousState, immutableBlockState.vanillaBlockState().handle(), newState, x, y, z);
+                if (Config.enableLightSystem()) {
+                    if (previousImmutableBlockState.isEmpty()) {
+                        // 原版块到自定义块，只需要判断新块是否和客户端视觉一致
+                        updateLight(holder, immutableBlockState.vanillaBlockState().handle(), newState, x, y, z);
+                    } else {
+                        // 自定义块到自定义块
+                        updateLight$complex(holder, immutableBlockState.vanillaBlockState().handle(), newState, previousState, x, y, z);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -244,17 +254,31 @@ public class WorldStorageInjector {
         }
     }
 
-    protected static void updateLightIfChanged(@This InjectedHolder thisObj, Object oldServerSideState, Object clientSideState, Object serverSideState, int x, int y, int z) {
+    @SuppressWarnings("DuplicatedCode")
+    protected static void updateLight(@This InjectedHolder thisObj, Object clientState, Object serverState, int x, int y, int z) {
         CEWorld world = thisObj.ceChunk().world();
         Object blockPos = LocationUtils.toBlockPos(x, y, z);
         Object serverWorld = world.world().serverWorld();
-        if (clientSideState != serverSideState && FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(clientSideState, serverSideState, serverWorld, blockPos)) {
+        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(serverState, clientState, serverWorld, blockPos)) {
+            SectionPos sectionPos = thisObj.cePos();
+            List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
+            world.sectionLightUpdated(pos);
+        }
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    protected static void updateLight$complex(@This InjectedHolder thisObj, Object newClientState, Object newServerState, Object oldServerState, int x, int y, int z) {
+        CEWorld world = thisObj.ceChunk().world();
+        Object blockPos = LocationUtils.toBlockPos(x, y, z);
+        Object serverWorld = world.world().serverWorld();
+        // 如果客户端新状态和服务端新状态光照属性不同
+        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(newClientState, newServerState, serverWorld, blockPos)) {
             SectionPos sectionPos = thisObj.cePos();
             List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
             world.sectionLightUpdated(pos);
             return;
         }
-        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(oldServerSideState, serverSideState, serverWorld, blockPos)) {
+        if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(newServerState, oldServerState, serverWorld, blockPos)) {
             SectionPos sectionPos = thisObj.cePos();
             List<SectionPos> pos = SectionPosUtils.calculateAffectedRegions((sectionPos.x() << 4) + x, (sectionPos.y() << 4) + y, (sectionPos.z() << 4) + z, 15);
             world.sectionLightUpdated(pos);

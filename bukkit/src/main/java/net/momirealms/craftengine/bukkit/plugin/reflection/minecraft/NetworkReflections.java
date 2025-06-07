@@ -1293,4 +1293,11 @@ public final class NetworkReflections {
     public static final Constructor<?> constructor$ClientboundTickingStatePacket = Optional.ofNullable(clazz$ClientboundTickingStatePacket)
             .map(it -> ReflectionUtils.getConstructor(it, float.class, boolean.class))
             .orElse(null);
+
+    public static final Class<?> clazz$ClientboundBlockEventPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutBlockAction",
+                    "network.protocol.game.ClientboundBlockEventPacket"
+            )
+    );
 }

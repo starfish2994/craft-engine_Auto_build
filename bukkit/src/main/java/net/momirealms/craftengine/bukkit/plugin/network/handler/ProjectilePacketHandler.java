@@ -81,7 +81,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
         buf.writeVarInt(event.packetID());
         buf.writeVarInt(this.entityId);
         buf.writeUUID(uuid);
-        buf.writeVarInt(MEntityTypes.instance$EntityType$ITEM_DISPLAY$registryId);
+        buf.writeVarInt(MEntityTypes.ITEM_DISPLAY$registryId);
         buf.writeDouble(x);
         buf.writeDouble(y);
         buf.writeDouble(z);

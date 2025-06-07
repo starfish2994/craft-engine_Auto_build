@@ -85,7 +85,7 @@ public class PacketConsumers {
     public static void initEntities(int registrySize) {
         ADD_ENTITY_HANDLERS = new BukkitNetworkManager.Handlers[registrySize];
         Arrays.fill(ADD_ENTITY_HANDLERS, BukkitNetworkManager.Handlers.DO_NOTHING);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$FALLING_BLOCK$registryId] = (user, event) -> {
+        ADD_ENTITY_HANDLERS[MEntityTypes.FALLING_BLOCK$registryId] = (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             UUID uuid = buf.readUUID();
@@ -122,28 +122,28 @@ public class PacketConsumers {
             }
         };
 
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$SMALL_FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$EGG$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ENDER_PEARL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$EXPERIENCE_BOTTLE$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$SNOWBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$POTION$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$TRIDENT$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.SMALL_FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.EGG$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.ENDER_PEARL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.EXPERIENCE_BOTTLE$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.SNOWBALL$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.POTION$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.TRIDENT$registryId] = createOptionalCustomProjectileEntityHandler();
         if (VersionHelper.isOrAbove1_20_5()) {
-            ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+            ADD_ENTITY_HANDLERS[MEntityTypes.OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         }
 
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$ITEM_DISPLAY$registryId] = (user, event) -> {
+        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_DISPLAY$registryId] = (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
@@ -155,8 +155,8 @@ public class PacketConsumers {
                 }
             }
         };
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$INTERACTION$registryId] = (user, event) -> {
-            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != MEntityTypes.instance$EntityType$INTERACTION) return;
+        ADD_ENTITY_HANDLERS[MEntityTypes.INTERACTION$registryId] = (user, event) -> {
+            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != MEntityTypes.INTERACTION) return;
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             // Cancel collider entity packet
@@ -166,8 +166,8 @@ public class PacketConsumers {
                 user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$OAK_BOAT$registryId] = (user, event) -> {
-            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != MEntityTypes.instance$EntityType$OAK_BOAT) return;
+        ADD_ENTITY_HANDLERS[MEntityTypes.OAK_BOAT$registryId] = (user, event) -> {
+            if (BukkitFurnitureManager.NMS_COLLISION_ENTITY_TYPE != MEntityTypes.OAK_BOAT) return;
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             // Cancel collider entity packet
@@ -2309,5 +2309,4 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
         }
     };
-
 }

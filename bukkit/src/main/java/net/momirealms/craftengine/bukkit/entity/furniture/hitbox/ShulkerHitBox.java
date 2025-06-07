@@ -61,7 +61,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                 if (interactionEntity) {
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
-                            MEntityTypes.instance$EntityType$INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
+                            MEntityTypes.INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
                     if (canUseOn) {
@@ -80,7 +80,7 @@ public class ShulkerHitBox extends AbstractHitBox {
                 if (interactionEntity) {
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f - shulkerHeight + scale, z - offset.z, 0, yaw,
-                            MEntityTypes.instance$EntityType$INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
+                            MEntityTypes.INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
                     if (canUseOn) {
@@ -102,14 +102,14 @@ public class ShulkerHitBox extends AbstractHitBox {
                     // first interaction
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[2], UUID.randomUUID(), x + offset.x, y + offset.y - 0.005f, z - offset.z, 0, yaw,
-                            MEntityTypes.instance$EntityType$INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
+                            MEntityTypes.INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[2], List.copyOf(cachedInteractionValues)), true);
                     // second interaction
                     double distance = shulkerHeight - scale;
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                             entityIds[3], UUID.randomUUID(), x + offset.x + shulkerDirection.stepX() * distance, y + offset.y - 0.005f, z - offset.z + shulkerDirection.stepZ() * distance, 0, yaw,
-                            MEntityTypes.instance$EntityType$INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
+                            MEntityTypes.INTERACTION, 0, CoreReflections.instance$Vec3$Zero, 0
                     ), true);
                     packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[3], List.copyOf(cachedInteractionValues)), true);
                     if (canUseOn) {
@@ -213,11 +213,11 @@ public class ShulkerHitBox extends AbstractHitBox {
             double processedY = (fractionalPart >= 0.5) ? integerPart + 1 : originalY;
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                     entityIds[0], UUID.randomUUID(), x + offset.x, originalY, z - offset.z, 0, yaw,
-                    MEntityTypes.instance$EntityType$ITEM_DISPLAY, 0, CoreReflections.instance$Vec3$Zero, 0
+                    MEntityTypes.ITEM_DISPLAY, 0, CoreReflections.instance$Vec3$Zero, 0
             ), false);
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
                     entityIds[1], UUID.randomUUID(), x + offset.x, processedY, z - offset.z, 0, yaw,
-                    MEntityTypes.instance$EntityType$SHULKER, 0, CoreReflections.instance$Vec3$Zero, 0
+                    MEntityTypes.SHULKER, 0, CoreReflections.instance$Vec3$Zero, 0
             ), false);
             packets.accept(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityIds[1], List.copyOf(this.cachedShulkerValues)), false);
             // add passengers

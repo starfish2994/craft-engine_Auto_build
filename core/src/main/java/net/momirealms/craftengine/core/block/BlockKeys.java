@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.util.Key;
 
 public class BlockKeys {
     public static final Key NOTE_BLOCK = Key.of("minecraft:note_block");
+    public static final Key TRIPWIRE = Key.of("minecraft:tripwire");
     public static final Key CRAFTING_TABLE = Key.of("minecraft:crafting_table");
     public static final Key STONECUTTER = Key.of("minecraft:stonecutter");
     public static final Key BELL = Key.of("minecraft:bell");

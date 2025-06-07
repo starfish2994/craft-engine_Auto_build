@@ -318,16 +318,15 @@ public class ItemEventListener implements Listener {
         if (optionalCustomItem.isEmpty()) {
             return;
         }
-        Cancellable dummy = Cancellable.dummy();
+        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
         CustomItem<ItemStack> customItem = optionalCustomItem.get();
         PlayerOptionalContext context = PlayerOptionalContext.of(this.plugin.adapt(event.getPlayer()), ContextHolder.builder()
                 .withParameter(DirectContextParameters.ITEM_IN_HAND, wrapped)
-                .withParameter(DirectContextParameters.EVENT, dummy)
+                .withParameter(DirectContextParameters.EVENT, cancellable)
                 .withParameter(DirectContextParameters.HAND, event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
         );
         customItem.execute(context, EventTrigger.CONSUME);
-        if (dummy.isCancelled()) {
-            event.setCancelled(true);
+        if (event.isCancelled()) {
             return;
         }
     }
