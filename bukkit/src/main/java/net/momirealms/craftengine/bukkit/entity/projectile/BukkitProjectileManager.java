@@ -163,6 +163,8 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         private final SchedulerTask task;
         private Object cachedServerEntity;
         private boolean injected;
+        private int lastInjectedInterval = -1;
+        private boolean wasInGround;
 
         public ProjectileInjectTask(Projectile projectile) {
             this.projectile = projectile;
@@ -183,6 +185,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             if (!this.injected) {
                 injectProjectile(nmsEntity, 1);
                 this.injected = true;
+                this.lastInjectedInterval = 1;
             }
             boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
             if (canSpawnParticle(nmsEntity, inGround)) {
@@ -191,10 +194,15 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             projectileByEntityId(this.projectile.getEntityId()).ifPresent(customProjectile -> {
                 customProjectile.setInGroundTime(inGround ? customProjectile.inGroundTime() + 1 : 0);
                 if (customProjectile.inGroundTime() > 5) {
-                    injectProjectile(nmsEntity, Integer.MAX_VALUE);
-                } else {
-                    this.injected = false;
+                    if (lastInjectedInterval != Integer.MAX_VALUE) {
+                        injectProjectile(nmsEntity, Integer.MAX_VALUE);
+                    }
+                } else if (!inGround && wasInGround) {
+                    if (lastInjectedInterval != 1) {
+                        injectProjectile(nmsEntity, 1);
+                    }
                 }
+                this.wasInGround = inGround;
             });
         }
 
@@ -208,6 +216,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             }
             try {
                 CoreReflections.handle$ServerEntity$updateIntervalSetter.invokeExact(this.cachedServerEntity, updateInterval);
+                this.lastInjectedInterval = updateInterval;
             } catch (Throwable e) {
                 plugin.logger().warn("Failed to update server entity tracking interval", e);
             }
