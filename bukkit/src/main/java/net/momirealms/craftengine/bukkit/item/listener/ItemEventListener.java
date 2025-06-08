@@ -34,6 +34,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -51,6 +52,28 @@ public class ItemEventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onInteractEntity(PlayerInteractEntityEvent event) {
+        BukkitServerPlayer serverPlayer = this.plugin.adapt(event.getPlayer());
+        if (serverPlayer == null) return;
+        InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
+
+        if (itemInHand == null) return;
+        Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+
+        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
+        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                .withParameter(DirectContextParameters.EVENT, cancellable)
+                .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
+                .withParameter(DirectContextParameters.HAND, hand)
+        );
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        customItem.execute(context, EventTrigger.RIGHT_CLICK);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInteractBlock(PlayerInteractEvent event) {
         Action action = event.getAction();
         Player player = event.getPlayer();
@@ -63,6 +86,7 @@ public class ItemEventListener implements Listener {
         }
 
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        if (serverPlayer == null) return;
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         // 如果本tick内主手已被处理，则不处理副手
         // 这是因为客户端可能会同时发主副手交互包，但实际上只能处理其中一个
