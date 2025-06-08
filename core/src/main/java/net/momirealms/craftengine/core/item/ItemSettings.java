@@ -36,6 +36,7 @@ public class ItemSettings {
     boolean dyeable = true;
     Helmet helmet = null;
     FoodData foodData = null;
+    Key consumeReplacement = null;
 
     private ItemSettings() {}
 
@@ -72,6 +73,7 @@ public class ItemSettings {
         newSettings.dyeable = settings.dyeable;
         newSettings.helmet = settings.helmet;
         newSettings.foodData = settings.foodData;
+        newSettings.consumeReplacement = settings.consumeReplacement;
         return newSettings;
     }
 
@@ -125,6 +127,11 @@ public class ItemSettings {
     }
 
     @Nullable
+    public Key consumeReplacement() {
+        return consumeReplacement;
+    }
+
+    @Nullable
     public Helmet helmet() {
         return helmet;
     }
@@ -136,6 +143,11 @@ public class ItemSettings {
 
     public ItemSettings repairItems(List<AnvilRepairItem> items) {
         this.anvilRepairItems = items;
+        return this;
+    }
+
+    public ItemSettings consumeReplacement(Key key) {
+        this.consumeReplacement = key;
         return this;
     }
 
@@ -228,6 +240,7 @@ public class ItemSettings {
                 int intValue = ResourceConfigUtils.getAsInt(value, "fuel-time");
                 return settings -> settings.fuelTime(intValue);
             }));
+            registerFactory("consume-replacement", (value -> settings -> settings.consumeReplacement(Key.of(value.toString()))));
             registerFactory("tags", (value -> {
                 List<String> tags = MiscUtils.getAsStringList(value);
                 return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));
