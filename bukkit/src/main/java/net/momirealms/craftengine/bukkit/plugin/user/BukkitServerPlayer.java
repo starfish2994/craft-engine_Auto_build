@@ -535,8 +535,10 @@ public class BukkitServerPlayer extends Player {
     public void abortMiningBlock() {
         this.swingHandAck = false;
         this.miningProgress = 0;
-        if (this.destroyPos != null) {
-            this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+        BlockPos pos = this.destroyPos;
+        if (pos != null && this.isDestroyingCustomBlock) {
+            // 只纠正自定义方块的
+            this.broadcastDestroyProgress(platformPlayer(), pos, LocationUtils.toBlockPos(pos), -1);
         }
     }
 
@@ -701,16 +703,20 @@ public class BukkitServerPlayer extends Player {
     public void setIsDestroyingBlock(boolean is, boolean custom) {
         this.miningProgress = 0;
         this.isDestroyingBlock = is;
-        this.isDestroyingCustomBlock = custom && is;
         if (is) {
             this.swingHandAck = true;
+            this.isDestroyingCustomBlock = custom;
         } else {
             this.swingHandAck = false;
             this.destroyedState = null;
             if (this.destroyPos != null) {
-                this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+                // 只纠正自定义方块的
+                if (this.isDestroyingCustomBlock) {
+                    this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+                }
                 this.destroyPos = null;
             }
+            this.isDestroyingCustomBlock = false;
         }
     }
 
