@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.*;
+import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -491,6 +492,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 List<String> data = MiscUtils.getAsStringList(obj);
                 return new RemoveComponentModifier<>(data);
             }, "remove-components", "remove-component");
+            registerDataFunction((obj) -> {
+               Map<String, Object> data = MiscUtils.castToMap(obj, false);
+                int nutrition = ResourceConfigUtils.getAsInt(data.get("nutrition"), "nutrition");
+                float saturation = ResourceConfigUtils.getAsFloat(data.get("saturation"), "saturation");
+                return new FoodModifier<>(nutrition, saturation, (boolean) data.getOrDefault("can-always-eat", false));
+            }, "food");
         }
         if (VersionHelper.isOrAbove1_21()) {
             registerDataFunction((obj) -> {

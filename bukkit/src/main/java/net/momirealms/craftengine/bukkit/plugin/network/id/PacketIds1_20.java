@@ -139,4 +139,9 @@ public class PacketIds1_20 implements PacketIds {
     public int serverboundSetCreativeModeSlotPacket() {
         return PacketIdFinder.serverboundByClazz(NetworkReflections.clazz$ServerboundSetCreativeModeSlotPacket);
     }
+
+    @Override
+    public int clientboundBlockEventPacket() {
+        return PacketIdFinder.clientboundByClazz(NetworkReflections.clazz$ClientboundBlockEventPacket);
+    }
 }

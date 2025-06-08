@@ -1297,6 +1297,13 @@ public final class NetworkReflections {
             .map(it -> ReflectionUtils.getConstructor(it, float.class, boolean.class))
             .orElse(null);
 
+    public static final Class<?> clazz$ClientboundBlockEventPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutBlockAction",
+                    "network.protocol.game.ClientboundBlockEventPacket"
+            )
+    );
+
     public static final MethodHandle handle$ServerboundRenameItemPacket$nameGetter;
     public static final MethodHandle handle$ServerboundRenameItemPacket$nameSetter;
     public static final MethodHandle handle$ServerboundHelloPacket$nameGetter;

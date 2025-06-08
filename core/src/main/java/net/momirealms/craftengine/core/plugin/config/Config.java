@@ -87,7 +87,8 @@ public class Config {
     protected Path resource_pack$delivery$file_to_upload;
     protected Component resource_pack$send$prompt;
 
-    protected int performance$max_block_chain_update_limit;
+    protected int performance$max_note_block_chain_update_limit;
+    protected int performance$max_tripwire_chain_update_limit;
     protected int performance$max_emojis_per_parse;
 
     protected boolean light_system$force_update_light;
@@ -276,7 +277,8 @@ public class Config {
         item$non_italic_tag = config.getBoolean("item.non-italic-tag", false);
 
         // performance
-        performance$max_block_chain_update_limit = config.getInt("performance.max-block-chain-update-limit", 64);
+        performance$max_note_block_chain_update_limit = config.getInt("performance.max-note-block-chain-update-limit", 64);
+        performance$max_tripwire_chain_update_limit = config.getInt("performance.max-tripwire-chain-update-limit", 128);
         performance$max_emojis_per_parse = config.getInt("performance.max-emojis-per-parse", 32);
 
         // light
@@ -391,8 +393,8 @@ public class Config {
         return instance.resource_pack$override_uniform_font;
     }
 
-    public static int maxChainUpdate() {
-        return instance.performance$max_block_chain_update_limit;
+    public static int maxNoteBlockChainUpdate() {
+        return instance.performance$max_note_block_chain_update_limit;
     }
 
     public static int maxEmojisPerParse() {

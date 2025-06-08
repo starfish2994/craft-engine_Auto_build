@@ -40,7 +40,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public static final NamespacedKey FURNITURE_SEAT_VECTOR_3F_KEY = KeyUtils.toNamespacedKey(FurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY);
     public static final NamespacedKey FURNITURE_COLLISION = KeyUtils.toNamespacedKey(FurnitureManager.FURNITURE_COLLISION);
     public static Class<?> COLLISION_ENTITY_CLASS = Interaction.class;
-    public static Object NMS_COLLISION_ENTITY_TYPE = MEntityTypes.instance$EntityType$INTERACTION;
+    public static Object NMS_COLLISION_ENTITY_TYPE = MEntityTypes.INTERACTION;
     public static ColliderType COLLISION_ENTITY_TYPE = ColliderType.INTERACTION;
     private static BukkitFurnitureManager instance;
     private final BukkitCraftEngine plugin;
@@ -93,7 +93,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     @Override
     public void delayedInit() {
         COLLISION_ENTITY_CLASS = Config.colliderType() == ColliderType.INTERACTION ? Interaction.class : Boat.class;
-        NMS_COLLISION_ENTITY_TYPE = Config.colliderType() == ColliderType.INTERACTION ? MEntityTypes.instance$EntityType$INTERACTION : MEntityTypes.instance$EntityType$OAK_BOAT;
+        NMS_COLLISION_ENTITY_TYPE = Config.colliderType() == ColliderType.INTERACTION ? MEntityTypes.INTERACTION : MEntityTypes.OAK_BOAT;
         COLLISION_ENTITY_TYPE = Config.colliderType();
         Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.javaPlugin());
         Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.javaPlugin());

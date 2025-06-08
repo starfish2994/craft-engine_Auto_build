@@ -27,7 +27,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     protected final Map<Key, List<Recipe<T>>> byIngredient = new HashMap<>();
     protected final Set<Key> dataPackRecipes = new HashSet<>();
     protected final Set<Key> customRecipes = new HashSet<>();
-    private final RecipeParser recipeParser;
+    protected final RecipeParser recipeParser;
     protected boolean isReloading;
 
     public AbstractRecipeManager() {
