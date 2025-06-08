@@ -57,4 +57,6 @@ public interface PacketIds {
     int serverboundContainerClickPacket();
 
     int serverboundSetCreativeModeSlotPacket();
+
+    int serverboundInteractPacket();
 }

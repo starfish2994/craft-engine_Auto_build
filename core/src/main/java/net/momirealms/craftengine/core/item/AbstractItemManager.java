@@ -27,6 +27,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.type.Either;
+import org.joml.Vector3f;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -459,6 +460,14 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }
             return new DynamicLoreModifier<>(dynamicLore);
         }, "dynamic-lore");
+        registerDataFunction((obj) -> {
+            if (obj instanceof Integer integer) {
+                return new DyedColorModifier<>(integer);
+            } else {
+                Vector3f vector3f = MiscUtils.getAsVector3f(obj, "dyed-color");
+                return new DyedColorModifier<>(MCUtils.fastFloor(vector3f.x) << 16 + MCUtils.fastFloor(vector3f.y) << 8 + MCUtils.fastFloor(vector3f.z));
+            }
+        }, "dyed-color");
         registerDataFunction((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             return new TagsModifier<>(data);

@@ -19,6 +19,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.RegistryUtils;
@@ -44,7 +45,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -161,8 +161,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
             list.add(new TagUtils.TagEntry(entry.getKey(), entry.getValue()));
         }
         Object packet = TagUtils.createUpdateTagsPacket(Map.of(MRegistries.BLOCK, list));
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            this.plugin.networkManager().sendPacket(this.plugin.adapt(player), packet);
+        for (BukkitServerPlayer player : this.plugin.networkManager().onlineUsers()) {
+            player.sendPacket(packet, false);
         }
         // 如果空，那么新来的玩家就没必要收到更新包了
         if (list.isEmpty()) {

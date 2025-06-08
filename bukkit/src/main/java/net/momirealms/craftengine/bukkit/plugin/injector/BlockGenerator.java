@@ -179,6 +179,10 @@ public final class BlockGenerator {
                 if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
                     startNoteBlockChain(args);
                 }
+            } else if (indicator.isTripwire()) {
+                if (CoreReflections.clazz$ServerLevel.isInstance(args[posIndex])) {
+
+                }
             }
             try {
                 return holder.value().updateShape(thisObj, args, superMethod);

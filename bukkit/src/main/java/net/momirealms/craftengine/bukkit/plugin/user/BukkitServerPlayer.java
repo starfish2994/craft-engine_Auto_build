@@ -558,6 +558,8 @@ public class BukkitServerPlayer extends Player {
         int currentTick = gameTicks();
         // optimize break speed, otherwise it would be too fast
         if (currentTick - this.lastSuccessfulBreak <= 5) return;
+        Object destroyedState = this.destroyedState;
+        if (destroyedState == null) return;
         try {
             org.bukkit.entity.Player player = platformPlayer();
             double range = getCachedInteractionRange();
@@ -575,7 +577,7 @@ public class BukkitServerPlayer extends Player {
 
             // send hit sound if the sound is removed
             if (currentTick - this.lastHitBlockTime > 3) {
-                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(this.destroyedState);
+                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(destroyedState);
                 Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(blockOwner);
                 Object soundEvent = CoreReflections.field$SoundType$hitSound.get(soundType);
                 Object soundId = FastNMS.INSTANCE.field$SoundEvent$location(soundEvent);
@@ -601,8 +603,8 @@ public class BukkitServerPlayer extends Player {
                     }
                 }
 
-                float progressToAdd = getDestroyProgress(this.destroyedState, hitPos);
-                int id = BlockStateUtils.blockStateToId(this.destroyedState);
+                float progressToAdd = getDestroyProgress(destroyedState, hitPos);
+                int id = BlockStateUtils.blockStateToId(destroyedState);
                 ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
                 // double check custom block
                 if (customState != null && !customState.isEmpty()) {
@@ -612,13 +614,13 @@ public class BukkitServerPlayer extends Player {
                             // it's correct on plugin side
                             if (blockSettings.isCorrectTool(item.id())) {
                                 // but not on serverside
-                                if (!FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                if (!FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), destroyedState)) {
                                     // we fix the speed
                                     progressToAdd = progressToAdd * (10f / 3f);
                                 }
                             } else {
                                 // not a correct tool on plugin side and not a correct tool on serverside
-                                if (!blockSettings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                if (!blockSettings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), destroyedState)) {
                                     progressToAdd = progressToAdd * (10f / 3f) * blockSettings.incorrectToolSpeed();
                                 }
                             }
@@ -681,7 +683,7 @@ public class BukkitServerPlayer extends Player {
             double d1 = (double) hitPos.y() - otherLocation.getY();
             double d2 = (double) hitPos.z() - otherLocation.getZ();
             if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                this.plugin.networkManager().sendPacket(this.plugin.adapt(other), packet);
+                FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(FastNMS.INSTANCE.method$CraftPlayer$getHandle(other)), packet);
             }
         }
     }
