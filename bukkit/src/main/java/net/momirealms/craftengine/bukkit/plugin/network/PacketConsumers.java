@@ -1106,13 +1106,13 @@ public class PacketConsumers {
             Object blockPos = FastNMS.INSTANCE.field$ServerboundPlayerActionPacket$pos(packet);
             BlockPos pos = LocationUtils.fromBlockPos(blockPos);
             if (VersionHelper.isFolia()) {
-                BukkitCraftEngine.instance().scheduler().sync().run(() -> {
+                platformPlayer.getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), (t) -> {
                     try {
                         handlePlayerActionPacketOnMainThread(player, world, pos, packet);
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundPlayerActionPacket", e);
                     }
-                }, world, pos.x() >> 4, pos.z() >> 4);
+                }, () -> {});
             } else {
                 handlePlayerActionPacketOnMainThread(player, world, pos, packet);
             }
