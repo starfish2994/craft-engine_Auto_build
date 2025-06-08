@@ -138,17 +138,17 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public Channel nettyChannel() {
-        return channel;
+        return this.channel;
     }
 
     @Override
     public CraftEngine plugin() {
-        return plugin;
+        return this.plugin;
     }
 
     @Override
     public boolean isMiningBlock() {
-        return destroyPos != null;
+        return this.destroyPos != null;
     }
 
     public void setDestroyedState(Object destroyedState) {
@@ -221,8 +221,8 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public boolean updateLastSuccessfulInteractionTick(int tick) {
-        if (lastSuccessfulInteraction != tick) {
-            lastSuccessfulInteraction = tick;
+        if (this.lastSuccessfulInteraction != tick) {
+            this.lastSuccessfulInteraction = tick;
             return true;
         } else {
             return false;
@@ -231,7 +231,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public int lastSuccessfulInteractionTick() {
-        return lastSuccessfulInteraction;
+        return this.lastSuccessfulInteraction;
     }
 
     @Override

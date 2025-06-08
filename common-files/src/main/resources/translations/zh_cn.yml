@@ -135,6 +135,7 @@ warning.config.template.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重
 warning.config.template.argument.self_increase_int.invalid_range: "<yellow>在文件 <arg:0> 发现问题 - 模板 '<arg:1>' 在 'self_increase_int' 参数中使用了一个起始值 '<arg:2>' 大于终止值 '<arg:3>'</yellow>"
 warning.config.template.invalid: "<yellow>在文件 <arg:0> 发现问题 - 配置 '<arg:1>' 使用了无效的模板 '<arg:2>'.</yellow>"
 warning.config.template.argument.list.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - 模板 '<arg:1>' 的 'list' 参数需要列表类型 但输入参数类型为 '<arg:2>'</yellow>"
+warning.config.template.argument.default_value.invalid_syntax: "<yellow>在文件 <arg:0> 发现问题 - 模板 '<arg:1>' 在参数 '<arg:3>' 中使用了无效的默认值 '<arg:2>'.</yellow>"
 warning.config.vanilla_loot.missing_type: "<yellow>在文件 <arg:0> 发现问题 - 原版战利品 '<arg:1>' 缺少必需的 'type' 参数</yellow>"
 warning.config.vanilla_loot.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - 原版战利品 '<arg:1>' 使用了无效类型 '<arg:2>' 允许的类型: [<arg:3>]</yellow>"
 warning.config.vanilla_loot.block.invalid_target: "<yellow>在文件 <arg:0> 发现问题 - 原版战利品 '<arg:1>' 中存在无效的方块目标 '<arg:2>'</yellow>"

@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.ArrayList;
@@ -62,10 +64,23 @@ public interface TemplateManager extends Manageable {
     final class Placeholder implements ArgumentString {
         private final String placeholder;
         private final String rawText;
+        private final Object defaultValue;
 
         public Placeholder(String placeholder) {
-            this.placeholder = placeholder;
-            this.rawText = "{" + this.placeholder + "}";
+            this.rawText = "{" + placeholder + "}";
+            int first = placeholder.indexOf(':');
+            if (first == -1) {
+                this.placeholder = placeholder;
+                this.defaultValue = this.rawText;
+            } else {
+                this.placeholder = placeholder.substring(0, first);
+                try {
+                    this.defaultValue = CraftEngine.instance().platform().nbt2Java(placeholder.substring(first + 1));
+                } catch (LocalizedResourceConfigException e) {
+                    e.appendTailArgument(this.placeholder);
+                    throw e;
+                }
+            }
         }
 
         public static Placeholder placeholder(String placeholder) {
@@ -78,7 +93,7 @@ public interface TemplateManager extends Manageable {
             if (replacement != null) {
                 return replacement.get(arguments);
             }
-            return rawValue();
+            return this.defaultValue;
         }
 
         @Override
@@ -210,8 +225,6 @@ public interface TemplateManager extends Manageable {
                 temp_i--;
             }
             if (input.charAt(i) == '{' && backslashes % 2 == 0) {
-                // 发现占位符起点
-                int placeholderStartIndex = i;
                 // 追加从上一个位置到当前占位符之前的文本
                 if (lastAppendPosition < i) {
                     arguments.add(Literal.literal(input.substring(lastAppendPosition, i)));

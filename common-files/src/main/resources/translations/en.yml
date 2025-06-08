@@ -135,6 +135,7 @@ warning.config.template.duplicate: "<yellow>Issue found in file <arg:0> - Duplic
 warning.config.template.invalid: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid template '<arg:2>'.</yellow>"
 warning.config.template.argument.self_increase_int.invalid_range: "<yellow>Issue found in file <arg:0> - The template '<arg:1>' is using a 'from' '<arg:2>' larger than 'to' '<arg:3>' in 'self_increase_int' argument.</yellow>"
 warning.config.template.argument.list.invalid_type: "<yellow>Issue found in file <arg:0> - The template '<arg:1>' is using a 'list' argument which expects a 'List' as argument while the input argument is a(n) '<arg:2>'.</yellow>"
+warning.config.template.argument.default_value.invalid_syntax: "<yellow>Issue found in file <arg:0> - The template '<arg:1>' is using an invalid default value '<arg:2>' for argument '<arg:3>'.</yellow>"
 warning.config.vanilla_loot.missing_type: "<yellow>Issue found in file <arg:0> - The vanilla loot '<arg:1>' is missing the required 'type' argument.</yellow>"
 warning.config.vanilla_loot.invalid_type: "<yellow>Issue found in file <arg:0> - The vanilla loot '<arg:1>' is using an invalid type '<arg:2>'. Allowed types: [<arg:3>].</yellow>"
 warning.config.vanilla_loot.block.invalid_target: "<yellow>Issue found in file <arg:0> - Invalid block target '<arg:2>' in vanilla loot '<arg:1>'.</yellow>"
