@@ -50,10 +50,7 @@ import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.BlockHitResult;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.EntityHitResult;
-import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.*;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
@@ -61,6 +58,7 @@ import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -1509,83 +1507,108 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> INTERACT_ENTITY = (user, event, packet) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> INTERACT_ENTITY = (user, event) -> {
         try {
-            Player player = (Player) user.platformPlayer();
-            if (player == null) return;
-            int entityId;
-            if (BukkitNetworkManager.hasModelEngine()) {
-                int fakeId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
-                entityId = CraftEngine.instance().compatibilityManager().interactionToBaseEntity(fakeId);
-            } else {
-                entityId = FastNMS.INSTANCE.field$ServerboundInteractPacket$entityId(packet);
-            }
+            FriendlyByteBuf buf = event.getBuffer();
+            int entityId = BukkitNetworkManager.hasModelEngine() ?
+                    CraftEngine.instance().compatibilityManager().interactionToBaseEntity(buf.readVarInt()) :
+                    buf.readVarInt();
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
-            Object action = NetworkReflections.field$ServerboundInteractPacket$action.get(packet);
-            Object actionType = NetworkReflections.method$ServerboundInteractPacket$Action$getType.invoke(action);
-            if (actionType == null) return;
-            Location location = furniture.baseEntity().getLocation();
+            int actionType = buf.readVarInt();
             BukkitServerPlayer serverPlayer = (BukkitServerPlayer) user;
             if (serverPlayer.isSpectatorMode()) return;
-            BukkitCraftEngine.instance().scheduler().sync().run(() -> {
-                if (actionType == NetworkReflections.instance$ServerboundInteractPacket$ActionType$ATTACK) {
+            Player platformPlayer = serverPlayer.platformPlayer();
+            Location location = furniture.baseEntity().getLocation();
+
+            Runnable mainThreadTask;
+            if (actionType == 1) {
+                // ATTACK
+                boolean usingSecondaryAction = buf.readBoolean();
+                if (entityId != furniture.baseEntityId()) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(furniture.baseEntityId());
+                    buf.writeVarInt(actionType);
+                    buf.writeBoolean(usingSecondaryAction);
+                }
+
+                mainThreadTask = () -> {
                     // todo 冒险模式破坏工具白名单
-                    if (serverPlayer.isAdventureMode()) return;
-                    if (furniture.isValid()) {
-                        if (!BukkitCraftEngine.instance().antiGrief().canBreak(player, location)) {
-                            return;
-                        }
-                        FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
-                        if (EventUtils.fireAndCheckCancel(breakEvent)) {
-                            return;
-                        }
+                    if (serverPlayer.isAdventureMode() ||
+                            !furniture.isValid() ||
+                            !BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location)
+                    ) return;
 
-                        // execute functions
-                        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
-                                .withParameter(DirectContextParameters.FURNITURE, furniture)
-                                .withParameter(DirectContextParameters.POSITION, furniture.position())
-                        );
-                        furniture.config().execute(context, EventTrigger.LEFT_CLICK);
-                        furniture.config().execute(context, EventTrigger.BREAK);
+                    FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
+                    if (EventUtils.fireAndCheckCancel(breakEvent))
+                        return;
 
-                        CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
+                    Cancellable cancellable = Cancellable.of(breakEvent::isCancelled, breakEvent::setCancelled);
+                    // execute functions
+                    PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                            .withParameter(DirectContextParameters.FURNITURE, furniture)
+                            .withParameter(DirectContextParameters.EVENT, cancellable)
+                            .withParameter(DirectContextParameters.HAND, InteractionHand.MAIN_HAND)
+                            .withParameter(DirectContextParameters.ITEM_IN_HAND, serverPlayer.getItemInHand(InteractionHand.MAIN_HAND))
+                            .withParameter(DirectContextParameters.POSITION, furniture.position())
+                    );
+                    furniture.config().execute(context, EventTrigger.LEFT_CLICK);
+                    furniture.config().execute(context, EventTrigger.BREAK);
+                    if (cancellable.isCancelled()) {
+                        return;
                     }
-                } else if (actionType == NetworkReflections.instance$ServerboundInteractPacket$ActionType$INTERACT_AT) {
-                    InteractionHand hand;
-                    Location interactionPoint;
-                    try {
-                        Object interactionHand = NetworkReflections.field$ServerboundInteractPacket$InteractionAtLocationAction$hand.get(action);
-                        hand = interactionHand == CoreReflections.instance$InteractionHand$MAIN_HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-                        Object vec3 = NetworkReflections.field$ServerboundInteractPacket$InteractionAtLocationAction$location.get(action);
 
-                        double x = FastNMS.INSTANCE.field$Vec3$x(vec3);
-                        double y = FastNMS.INSTANCE.field$Vec3$y(vec3);
-                        double z = FastNMS.INSTANCE.field$Vec3$z(vec3);
-                        interactionPoint = new Location(location.getWorld(), x, y, z);
-                    } catch (ReflectiveOperationException e) {
-                        throw new RuntimeException("Failed to get interaction hand from interact packet", e);
-                    }
+                    CraftEngineFurniture.remove(furniture, serverPlayer, !serverPlayer.isCreativeMode(), true);
+                };
+            } else if (actionType == 2) {
+                // INTERACT_AT
+                float x = buf.readFloat();
+                float y = buf.readFloat();
+                float z = buf.readFloat();
+                Location interactionPoint = new Location(platformPlayer.getWorld(), x, y, z);
+                InteractionHand hand = buf.readVarInt() == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                boolean usingSecondaryAction = buf.readBoolean();
+                if (entityId != furniture.baseEntityId()) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(furniture.baseEntityId());
+                    buf.writeVarInt(actionType);
+                    buf.writeFloat(x).writeFloat(y).writeFloat(z);
+                    buf.writeVarInt(hand == InteractionHand.MAIN_HAND ? 0 : 1);
+                    buf.writeBoolean(usingSecondaryAction);
+                }
+
+                mainThreadTask = () -> {
                     FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture, hand, interactionPoint);
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
                     }
 
+                    Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+                    Cancellable cancellable = Cancellable.of(interactEvent::isCancelled, interactEvent::setCancelled);
                     // execute functions
                     PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                            .withParameter(DirectContextParameters.EVENT, cancellable)
                             .withParameter(DirectContextParameters.FURNITURE, furniture)
+                            .withParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                            .withParameter(DirectContextParameters.HAND, hand)
                             .withParameter(DirectContextParameters.POSITION, furniture.position())
                     );
                     furniture.config().execute(context, EventTrigger.RIGHT_CLICK);
+                    if (cancellable.isCancelled()) {
+                        return;
+                    }
 
-                    if (player.isSneaking()) {
+                    // 必须从网络包层面处理，否则无法获取交互的具体实体
+                    if (serverPlayer.isSecondaryUseActive() && itemInHand != null) {
                         // try placing another furniture above it
                         AABB hitBox = furniture.aabbByEntityId(entityId);
                         if (hitBox == null) return;
-                        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(InteractionHand.MAIN_HAND);
-                        if (itemInHand == null) return;
-                        Optional<CustomItem<ItemStack>> optionalCustomitem = itemInHand.getCustomItem();
-                        Location eyeLocation = player.getEyeLocation();
+                        Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+                        Location eyeLocation = platformPlayer.getEyeLocation();
                         Vector direction = eyeLocation.getDirection();
                         Location endLocation = eyeLocation.clone();
                         endLocation.add(direction.multiply(serverPlayer.getCachedInteractionRange()));
@@ -1594,8 +1617,8 @@ public class PacketConsumers {
                             return;
                         }
                         EntityHitResult hitResult = result.get();
-                        if (optionalCustomitem.isPresent() && !optionalCustomitem.get().behaviors().isEmpty()) {
-                            for (ItemBehavior behavior : optionalCustomitem.get().behaviors()) {
+                        if (optionalCustomItem.isPresent() && !optionalCustomItem.get().behaviors().isEmpty()) {
+                            for (ItemBehavior behavior : optionalCustomItem.get().behaviors()) {
                                 if (behavior instanceof FurnitureItemBehavior) {
                                     behavior.useOnBlock(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND, new BlockHitResult(hitResult.hitLocation(), hitResult.direction(), BlockPos.fromVec3d(hitResult.hitLocation()), false)));
                                     return;
@@ -1604,7 +1627,12 @@ public class PacketConsumers {
                         }
                         // now simulate vanilla item behavior
                         serverPlayer.setResendSound();
-                        FastNMS.INSTANCE.simulateInteraction(serverPlayer.serverPlayer(), DirectionUtils.toNMSDirection(hitResult.direction()), hitResult.hitLocation().x, hitResult.hitLocation().y, hitResult.hitLocation().z, LocationUtils.toBlockPos(hitResult.blockPos()));
+                        FastNMS.INSTANCE.simulateInteraction(
+                                serverPlayer.serverPlayer(),
+                                DirectionUtils.toNMSDirection(hitResult.direction()),
+                                hitResult.hitLocation().x, hitResult.hitLocation().y, hitResult.hitLocation().z,
+                                LocationUtils.toBlockPos(hitResult.blockPos())
+                        );
                     } else {
                         furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
                             if (furniture.tryOccupySeat(seatPos)) {
@@ -1612,8 +1640,29 @@ public class PacketConsumers {
                             }
                         });
                     }
+                };
+            } else if (actionType == 0) {
+                int hand = buf.readVarInt();
+                boolean usingSecondaryAction = buf.readBoolean();
+                if (entityId != furniture.baseEntityId()) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeVarInt(furniture.baseEntityId());
+                    buf.writeVarInt(actionType);
+                    buf.writeVarInt(hand);
+                    buf.writeBoolean(usingSecondaryAction);
                 }
-            }, player.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+                return;
+            } else {
+                return;
+            }
+
+            if (VersionHelper.isFolia()) {
+                platformPlayer.getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), t -> mainThreadTask.run(), () -> {});
+            } else {
+                BukkitCraftEngine.instance().scheduler().executeSync(mainThreadTask);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundInteractPacket", e);
         }

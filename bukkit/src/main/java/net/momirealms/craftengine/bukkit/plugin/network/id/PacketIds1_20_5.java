@@ -143,4 +143,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int serverboundSetCreativeModeSlotPacket() {
         return PacketIdFinder.serverboundByName("minecraft:set_creative_mode_slot");
     }
+
+    @Override
+    public int serverboundInteractPacket() {
+        return PacketIdFinder.serverboundByName("minecraft:interact");
+    }
 }

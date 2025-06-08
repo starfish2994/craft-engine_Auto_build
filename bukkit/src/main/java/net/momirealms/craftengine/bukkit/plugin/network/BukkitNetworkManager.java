@@ -147,7 +147,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.SET_CREATIVE_SLOT, NetworkReflections.clazz$ServerboundSetCreativeModeSlotPacket);
         registerNMSPacketConsumer(PacketConsumers.LOGIN, NetworkReflections.clazz$ClientboundLoginPacket);
         registerNMSPacketConsumer(PacketConsumers.RESPAWN, NetworkReflections.clazz$ClientboundRespawnPacket);
-        registerNMSPacketConsumer(PacketConsumers.INTERACT_ENTITY, NetworkReflections.clazz$ServerboundInteractPacket);
         registerNMSPacketConsumer(PacketConsumers.SYNC_ENTITY_POSITION, NetworkReflections.clazz$ClientboundEntityPositionSyncPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
         registerNMSPacketConsumer(PacketConsumers.PICK_ITEM_FROM_ENTITY, NetworkReflections.clazz$ServerboundPickItemFromEntityPacket);
@@ -187,6 +186,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerS2CByteBufPacketConsumer(PacketConsumers.SET_PLAYER_INVENTORY_1_21_2, this.packetIds.clientboundSetPlayerInventoryPacket());
         registerC2SByteBufPacketConsumer(PacketConsumers.SET_CREATIVE_MODE_SLOT, this.packetIds.serverboundSetCreativeModeSlotPacket());
         registerC2SByteBufPacketConsumer(PacketConsumers.CONTAINER_CLICK_1_20, this.packetIds.serverboundContainerClickPacket());
+        registerC2SByteBufPacketConsumer(PacketConsumers.INTERACT_ENTITY, this.packetIds.serverboundInteractPacket());
     }
 
     public static BukkitNetworkManager instance() {
