@@ -681,7 +681,7 @@ public class BukkitServerPlayer extends Player {
             double d1 = (double) hitPos.y() - otherLocation.getY();
             double d2 = (double) hitPos.z() - otherLocation.getZ();
             if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                this.plugin.networkManager().sendPacket(this.plugin.adapt(other), packet);
+                FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(FastNMS.INSTANCE.method$CraftPlayer$getHandle(other)), packet);
             }
         }
     }
