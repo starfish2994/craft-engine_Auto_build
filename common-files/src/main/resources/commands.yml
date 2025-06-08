@@ -182,6 +182,13 @@ debug_clear_cooldown:
     - /craftengine debug clear-cooldown
     - /ce debug clear-cooldown
 
+debug_entity_id_to_uuid:
+  enable: true
+  permission: ce.command.debug.entity_id_to_uuid
+  usage:
+    - /craftengine debug entity-id-to-uuid
+    - /ce debug entity-id-to-uuid
+
 debug_test:
   enable: true
   permission: ce.command.debug.test
