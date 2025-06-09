@@ -68,7 +68,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.equipmentsToGenerate = new HashSet<>();
     }
 
-    protected void registerDataFunction(Function<Object, ItemDataModifier<I>> function, String... alias) {
+    public void registerDataFunction(Function<Object, ItemDataModifier<I>> function, String... alias) {
         for (String a : alias) {
             dataFunctions.put(a, function);
         }
