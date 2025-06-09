@@ -64,7 +64,7 @@ command.upload.on_progress: "<white>已开始上传进程. 检查控制台以获
 command.send_resource_pack.success.single: "<white>发送资源包给 <arg:0></white>"
 command.send_resource_pack.success.multiple: "<white>发送资源包给 <arg:0> 个玩家</white>"
 warning.config.pack.duplicated_files: "</red>发现重复文件 请通过 config.yml 的 'resource-pack.duplicated-files-handler' 部分解决</red>"
-warning.config.yaml.duplicated_key: "<yellow>在文件 <arg:0> 发现问题 - 在第<arg:2>行发现重复的键 '<arg:1>'.</yellow>"
+warning.config.yaml.duplicated_key: "<red>在文件 <arg:0> 发现问题 - 在第<arg:2>行发现重复的键 '<arg:1>', 这可能会导致一些意料之外的问题.</red>"
 warning.config.type.int: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为整数类型 (选项 '<arg:3>')</yellow>"
 warning.config.type.float: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为浮点数类型 (选项 '<arg:3>')</yellow>"
 warning.config.type.double: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为双精度类型 (选项 '<arg:3>')</yellow>"
