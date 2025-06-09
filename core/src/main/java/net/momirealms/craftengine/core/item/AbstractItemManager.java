@@ -68,9 +68,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.equipmentsToGenerate = new HashSet<>();
     }
 
-    public void registerDataFunction(Function<Object, ItemDataModifier<I>> function, String... alias) {
+    @Override
+    public void registerDataType(Function<Object, ItemDataModifier<I>> factory, String... alias) {
         for (String a : alias) {
-            dataFunctions.put(a, function);
+            dataFunctions.put(a, factory);
         }
     }
 
@@ -432,26 +433,26 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     private void registerFunctions() {
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String plugin = data.get("plugin").toString();
             String id = data.get("id").toString();
             ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin);
             return new ExternalModifier<>(id, Objects.requireNonNull(provider, "Item provider " + plugin + " not found"));
         }, "external");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             String name = obj.toString();
             return new CustomNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "custom-name");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             String name = obj.toString();
             return new ItemNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "item-name", "display-name");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             List<String> lore = MiscUtils.getAsStringList(obj).stream().map(it -> "<!i>" + it).toList();
             return new LoreModifier<>(lore);
         }, "lore", "display-lore", "description");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, List<String>> dynamicLore = new LinkedHashMap<>();
             if (obj instanceof Map<?, ?> map) {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -460,7 +461,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }
             return new DynamicLoreModifier<>(dynamicLore);
         }, "dynamic-lore");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             if (obj instanceof Integer integer) {
                 return new DyedColorModifier<>(integer);
             } else {
@@ -468,15 +469,15 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new DyedColorModifier<>(MCUtils.fastFloor(vector3f.x) << 16 + MCUtils.fastFloor(vector3f.y) << 8 + MCUtils.fastFloor(vector3f.z));
             }
         }, "dyed-color");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             return new TagsModifier<>(data);
         }, "tags", "tag", "nbt");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             boolean value = TypeUtils.checkType(obj, Boolean.class);
             return new UnbreakableModifier<>(value);
         }, "unbreakable");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             List<Enchantment> enchantments = new ArrayList<>();
             for (Map.Entry<String, Object> e : data.entrySet()) {
@@ -486,22 +487,22 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }
             return new EnchantmentModifier<>(enchantments);
         }, "enchantment", "enchantments", "enchant");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String material = data.get("material").toString().toLowerCase(Locale.ENGLISH);
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
             return new TrimModifier<>(material, pattern);
         }, "trim");
         if (VersionHelper.isOrAbove1_20_5()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new ComponentModifier<>(data);
             }, "components", "component");
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 List<String> data = MiscUtils.getAsStringList(obj);
                 return new RemoveComponentModifier<>(data);
             }, "remove-components", "remove-component");
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 int nutrition = ResourceConfigUtils.getAsInt(data.get("nutrition"), "nutrition");
                 float saturation = ResourceConfigUtils.getAsFloat(data.get("saturation"), "saturation");
@@ -509,24 +510,24 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }, "food");
         }
         if (VersionHelper.isOrAbove1_21()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 String song = obj.toString();
                 return new JukeboxSongModifier<>(new JukeboxPlayable(song, true));
             }, "jukebox-playable");
         }
         if (VersionHelper.isOrAbove1_21_2()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 String id = obj.toString();
                 return new TooltipStyleModifier<>(Key.of(id));
             }, "tooltip-style");
         }
         if (VersionHelper.isOrAbove1_21_2()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new EquippableModifier<>(EquipmentData.fromMap(data));
             }, "equippable");
         }
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             Map<String, TextProvider> arguments = new HashMap<>();
             for (Map.Entry<String, Object> entry : data.entrySet()) {

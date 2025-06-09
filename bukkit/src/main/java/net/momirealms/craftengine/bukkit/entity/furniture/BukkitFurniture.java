@@ -365,7 +365,7 @@ public class BukkitFurniture implements Furniture {
     public static void injectFurnitureEntity(Object nmsEntity) {
         try {
             Object trackedEntity = FastNMS.INSTANCE.field$Entity$trackedEntity(nmsEntity);
-            Object serverEntity = FastNMS.INSTANCE.filed$ChunkMap$TrackedEntity$serverEntity(trackedEntity);
+            Object serverEntity = FastNMS.INSTANCE.field$ChunkMap$TrackedEntity$serverEntity(trackedEntity);
             CoreReflections.handle$ServerEntity$broadcastSetter.invokeExact(serverEntity, Handlers.DO_NOTHING);
             CoreReflections.handle$ServerEntity$updateIntervalSetter.invokeExact(serverEntity, Integer.MAX_VALUE);
         } catch (Throwable e) {

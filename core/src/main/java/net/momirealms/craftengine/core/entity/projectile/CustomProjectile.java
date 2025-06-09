@@ -9,8 +9,4 @@ public interface CustomProjectile {
     Projectile projectile();
 
     Item<?> item();
-
-    int inGroundTime();
-
-    void setInGroundTime(int inGroundTime);
 }
