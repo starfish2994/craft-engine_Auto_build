@@ -62,6 +62,7 @@ public class FurnitureEventListener implements Listener {
         Entity entity = event.getEntity();
         if (entity instanceof ItemDisplay itemDisplay) {
             this.manager.handleBaseEntityLoadLate(itemDisplay, 0);
+            BukkitFurniture.injectFurnitureEntity(FastNMS.INSTANCE.method$CraftEntity$getHandle(itemDisplay));
         } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
             this.manager.handleCollisionEntityLoadLate(entity, 0);
         }
