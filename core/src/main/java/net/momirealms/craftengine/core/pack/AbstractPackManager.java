@@ -439,7 +439,6 @@ public abstract class AbstractPackManager implements PackManager {
         TreeMap<ConfigParser, List<CachedConfigSection>> cachedConfigs = new TreeMap<>();
         Map<Path, CachedConfigFile> previousFiles = this.cachedConfigFiles;
         this.cachedConfigFiles = new Object2ObjectOpenHashMap<>(32);
-        Yaml yaml = new Yaml(new StringKeyConstructor(new LoaderOptions()));
         for (Pack pack : loadedPacks()) {
             if (!pack.enabled()) continue;
             Path configurationFolderPath = pack.configurationFolder();
@@ -456,12 +455,17 @@ public abstract class AbstractPackManager implements PackManager {
                                 AbstractPackManager.this.cachedConfigFiles.put(path, cachedFile);
                             } else {
                                 try (InputStreamReader inputStream = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+                                    Yaml yaml = new Yaml(new StringKeyConstructor(path, new LoaderOptions()));
                                     Map<String, Object> data = yaml.load(inputStream);
                                     if (data == null)  return FileVisitResult.CONTINUE;
                                     cachedFile = new CachedConfigFile(data, pack, lastModifiedTime, size);
                                     AbstractPackManager.this.cachedConfigFiles.put(path, cachedFile);
                                 } catch (IOException e) {
                                     AbstractPackManager.this.plugin.logger().severe("Error while reading config file: " + path, e);
+                                    return FileVisitResult.CONTINUE;
+                                } catch (LocalizedException e) {
+                                    e.setArgument(0, path.toString());
+                                    TranslationManager.instance().log(e.node(), e.arguments());
                                     return FileVisitResult.CONTINUE;
                                 }
                             }
@@ -516,7 +520,7 @@ public abstract class AbstractPackManager implements PackManager {
                         TranslationManager.instance().log(e.node(), e.arguments());
                         this.plugin.debug(e::node);
                     } catch (Exception e) {
-                        this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help.", e);
+                        this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help. Additional info: " + GsonHelper.get().toJson(configEntry.getValue()), e);
                     }
                 }
             }
