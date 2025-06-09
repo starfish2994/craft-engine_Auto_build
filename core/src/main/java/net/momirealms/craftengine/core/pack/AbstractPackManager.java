@@ -57,10 +57,11 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
-    public static final Set<Key> VANILLA_ITEM_TEXTURES = new HashSet<>();
-    public static final Set<Key> VANILLA_BLOCK_TEXTURES = new HashSet<>();
-    public static final Set<Key> VANILLA_FONT_TEXTURES = new HashSet<>();
+    public static final Set<Key> VANILLA_TEXTURES = new HashSet<>();
+    public static final Set<Key> VANILLA_MODELS = new HashSet<>();
     private static final byte[] EMPTY_IMAGE;
+    private static final String[] TRIM_ITEMS = {"boots_trim","chestplate_trim","helmet_trim","leggings_trim"};
+    private static final String[] TRIM_COLOR_PALETTES = {"amethyst","copper","diamond","diamond_darker","emerald","gold","gold_darker","iron","iron_darker","lapis","netherite","netherite_darker","quartz","redstone","resin","trim_palette"};
     static {
         var stream = new ByteArrayOutputStream();
         try {
@@ -98,13 +99,21 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void initInternalData() {
         loadInternalData("internal/models/item/legacy/_all.json", PRESET_LEGACY_MODELS_ITEM::put);
-        loadInternalData("internal/models/item/modern/_all.json", PRESET_MODERN_MODELS_ITEM::put);
+        loadInternalData("internal/models/item/_all.json", PRESET_MODERN_MODELS_ITEM::put);
         loadInternalData("internal/models/block/_all.json", PRESET_MODELS_BLOCK::put);
         loadInternalData("internal/items/_all.json", PRESET_ITEMS::put);
 
-        loadInternalList("internal/textures/block/_list.json", VANILLA_BLOCK_TEXTURES::add);
-        loadInternalList("internal/textures/item/_list.json", VANILLA_ITEM_TEXTURES::add);
-        loadInternalList("internal/textures/font/_list.json", VANILLA_FONT_TEXTURES::add);
+        loadInternalList("textures", "block/", VANILLA_TEXTURES::add);
+        loadInternalList("textures", "item/", VANILLA_TEXTURES::add);
+        loadInternalList("textures", "font/", VANILLA_TEXTURES::add);
+        for (String trimItem : TRIM_ITEMS) {
+            for (String trimColorPalette : TRIM_COLOR_PALETTES) {
+                VANILLA_TEXTURES.add(Key.of("minecraft", "trims/items/" + trimItem + "_" + trimColorPalette));
+            }
+        }
+        
+        loadInternalList("models", "block/", VANILLA_MODELS::add);
+        loadInternalList("models", "item/", VANILLA_MODELS::add);
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -122,19 +131,25 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void loadInternalList(String path, Consumer<Key> callback) {
-        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+    private void loadInternalList(String type, String prefix, Consumer<Key> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream("internal/" + type + "/" + prefix + "_list.json")) {
             if (inputStream != null) {
                 JsonObject listJson = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
-                JsonArray list = listJson.getAsJsonArray("files");
-                for (JsonElement element : list) {
+                JsonArray fileList = listJson.getAsJsonArray("files");
+                for (JsonElement element : fileList) {
                     if (element instanceof JsonPrimitive primitive) {
-                        callback.accept(Key.of(FileUtils.pathWithoutExtension(primitive.getAsString())));
+                        callback.accept(Key.of(prefix + FileUtils.pathWithoutExtension(primitive.getAsString())));
+                    }
+                }
+                JsonArray directoryList = listJson.getAsJsonArray("directories");
+                for (JsonElement element : directoryList) {
+                    if (element instanceof JsonPrimitive primitive) {
+                        loadInternalList(type, prefix + primitive.getAsString() + "/", callback);
                     }
                 }
             }
         } catch (IOException e) {
-            this.plugin.logger().warn("Failed to load " + path, e);
+            this.plugin.logger().warn("Failed to load internal _list.json" + prefix, e);
         }
     }
 

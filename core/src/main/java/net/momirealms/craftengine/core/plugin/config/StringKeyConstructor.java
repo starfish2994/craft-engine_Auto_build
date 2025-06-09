@@ -30,7 +30,7 @@ public class StringKeyConstructor extends SafeConstructor {
             Object value = constructObject(valueNode);
             Object previous = map.put(key, value);
             if (previous != null) {
-                TranslationManager.instance().log("warning.config.yaml.duplicated_key", this.path.toString(), key, String.valueOf(node.getStartMark().getLine() + 1));
+                TranslationManager.instance().log("warning.config.yaml.duplicated_key", this.path.toAbsolutePath().toString(), key, String.valueOf(node.getStartMark().getLine() + 1));
             }
         }
         return map;

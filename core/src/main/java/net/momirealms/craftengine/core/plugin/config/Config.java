@@ -59,6 +59,8 @@ public class Config {
     protected boolean resource_pack$protection$crash_tools$method_2;
     protected boolean resource_pack$protection$crash_tools$method_3;
 
+    protected boolean resource_pack$validate$enable;
+
     protected boolean resource_pack$protection$obfuscation$enable;
     protected long resource_pack$protection$obfuscation$seed;
     protected boolean resource_pack$protection$obfuscation$fake_directory;
@@ -259,6 +261,7 @@ public class Config {
         resource_pack$protection$obfuscation$resource_location$bypass_models = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-models");
         resource_pack$protection$obfuscation$resource_location$bypass_sounds = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-sounds");
         resource_pack$protection$obfuscation$resource_location$bypass_equipments = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-equipments");
+        resource_pack$validate$enable = config.getBoolean("resource-pack.validate.enable", true);
 
         try {
             resource_pack$duplicated_files_handler = config.getMapList("resource-pack.duplicated-files-handler").stream().map(it -> {
@@ -727,6 +730,10 @@ public class Config {
 
     public static boolean injectionTarget() {
         return instance.chunk_system$injection$target;
+    }
+
+    public static boolean validateResourcePack() {
+        return instance.resource_pack$validate$enable;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {
