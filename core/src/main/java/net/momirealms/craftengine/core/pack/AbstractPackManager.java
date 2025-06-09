@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.pack;
 
+import com.google.common.collect.*;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
@@ -20,6 +21,7 @@ import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
+import net.momirealms.craftengine.core.pack.obfuscation.ObfH;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -111,7 +113,7 @@ public abstract class AbstractPackManager implements PackManager {
                 VANILLA_TEXTURES.add(Key.of("minecraft", "trims/items/" + trimItem + "_" + trimColorPalette));
             }
         }
-        
+
         loadInternalList("models", "block/", VANILLA_MODELS::add);
         loadInternalList("models", "item/", VANILLA_MODELS::add);
     }
@@ -594,6 +596,9 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
+            if (Config.validateResourcePack()) {
+                this.validateResourcePack(generatedPackPath);
+            }
             Path finalPath = resourcePackPath();
             Files.createDirectories(finalPath.getParent());
             try {
@@ -604,6 +609,234 @@ public abstract class AbstractPackManager implements PackManager {
             long end = System.currentTimeMillis();
             this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
             this.eventDispatcher.accept(generatedPackPath, finalPath);
+        }
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    private void validateResourcePack(Path path) throws IOException {
+        List<Path> rootPaths = FileUtils.collectOverlays(path);
+
+        Multimap<Key, Key> imageToFonts = ArrayListMultimap.create(); // 图片到字体的映射
+        Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
+        Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
+        Multimap<Key, Key> imageToModels = ArrayListMultimap.create(); // 图片到模型的映射
+
+        for (Path rootPath : rootPaths) {
+            Path assetsPath = rootPath.resolve("assets");
+            if (!Files.isDirectory(assetsPath)) continue;
+
+            for (Path namespacePath : FileUtils.collectNamespaces(assetsPath)) {
+                Path fontPath = namespacePath.resolve("font");
+                if (Files.isDirectory(fontPath)) {
+                    Files.walkFileTree(fontPath, new SimpleFileVisitor<>() {
+                        @Override
+                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                            JsonObject fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                            JsonArray providers = fontJson.getAsJsonArray("providers");
+                            if (providers != null) {
+                                Key fontName = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                                for (JsonElement provider : providers) {
+                                    if (provider instanceof JsonObject providerJO && providerJO.has("type")) {
+                                        String type = providerJO.get("type").getAsString();
+                                        if (type.equals("bitmap") && providerJO.has("file")) {
+                                            String pngFile = providerJO.get("file").getAsString();
+                                            Key resourceLocation = Key.of(FileUtils.pathWithoutExtension(pngFile));
+                                            imageToFonts.put(resourceLocation, fontName);
+                                        }
+                                    }
+                                }
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
+
+                Path itemsPath = namespacePath.resolve("items");
+                if (Files.isDirectory(itemsPath)) {
+                    Files.walkFileTree(itemsPath, new SimpleFileVisitor<>() {
+                        @Override
+                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                            JsonObject itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                            Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                            collectItemModelsDeeply(itemJson, (resourceLocation) -> modelToItems.put(resourceLocation, item));
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
+
+                Path blockStatesPath = namespacePath.resolve("blockstates");
+                if (Files.isDirectory(blockStatesPath)) {
+                    Files.walkFileTree(blockStatesPath, new SimpleFileVisitor<>() {
+                        @Override
+                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                            String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
+                            JsonObject blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                            if (blockStateJson.has("multipart")) {
+                                collectMultipart(blockStateJson.getAsJsonArray("multipart"), (location) -> modelToBlocks.put(location, blockId));
+                            } else if (blockStateJson.has("variants")) {
+                                collectVariants(blockId, blockStateJson.getAsJsonObject("variants"), modelToBlocks::put);
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
+            }
+        }
+
+        label: for (Map.Entry<Key, Collection<Key>> entry : imageToFonts.asMap().entrySet()) {
+            Key key = entry.getKey();
+            if (VANILLA_TEXTURES.contains(key)) continue;
+            String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
+            for (Path rootPath : rootPaths) {
+                if (Files.exists(rootPath.resolve(imagePath))) {
+                    continue label;
+                }
+            }
+            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_font_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+        }
+
+        label: for (Map.Entry<Key, Collection<Key>> entry : modelToItems.asMap().entrySet()) {
+            Key key = entry.getKey();
+            String modelPath = "assets/" + key.namespace() + "/models/" + key.value() + ".json";
+            if (VANILLA_MODELS.contains(key)) continue;
+            for (Path rootPath : rootPaths) {
+                Path modelJsonPath = rootPath.resolve(modelPath);
+                if (Files.exists(rootPath.resolve(modelPath))) {
+                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    continue label;
+                }
+            }
+            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_item_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
+        }
+
+        label: for (Map.Entry<Key, Collection<String>> entry : modelToBlocks.asMap().entrySet()) {
+            Key key = entry.getKey();
+            String modelPath = "assets/" + key.namespace() + "/models/" + key.value() + ".json";
+            if (VANILLA_MODELS.contains(key)) continue;
+            for (Path rootPath : rootPaths) {
+                Path modelJsonPath = rootPath.resolve(modelPath);
+                if (Files.exists(modelJsonPath)) {
+                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    continue label;
+                }
+            }
+            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_block_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
+        }
+
+        label: for (Map.Entry<Key, Collection<Key>> entry : imageToModels.asMap().entrySet()) {
+            Key key = entry.getKey();
+            if (VANILLA_TEXTURES.contains(key)) continue;
+            String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
+            for (Path rootPath : rootPaths) {
+                if (Files.exists(rootPath.resolve(imagePath))) {
+                    continue label;
+                }
+            }
+            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+        }
+    }
+
+    private static void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) throws IOException {
+        if (modelJson.has("parent")) {
+            Key parentResourceLocation = Key.from(modelJson.get("parent").getAsString());
+            if (!VANILLA_MODELS.contains(parentResourceLocation)) {
+                String parentModelPath = "assets/" + parentResourceLocation.namespace() + "/models/" + parentResourceLocation.value() + ".json";
+                label: {
+                    for (Path rootPath : rootPaths) {
+                        Path modelJsonPath = rootPath.resolve(parentModelPath);
+                        if (Files.exists(modelJsonPath)) {
+                            collectModels(parentResourceLocation, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                            break label;
+                        }
+                    }
+                    TranslationManager.instance().log("warning.config.resource_pack.generation.missing_parent_model", model.asString(), parentModelPath);
+                }
+            }
+        }
+        if (modelJson.has("textures")) {
+            JsonObject textures = modelJson.get("textures").getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : textures.entrySet()) {
+//                String textureId = entry.getKey();
+                String value = entry.getValue().getAsString();
+                Key textureResourceLocation = Key.from(value);
+                imageToModels.put(textureResourceLocation, model);
+            }
+        }
+    }
+
+    private static void collectMultipart(JsonArray jsonArray, Consumer<Key> callback) {
+        for (JsonElement element : jsonArray) {
+            if (element instanceof JsonObject jo) {
+                JsonElement applyJE = jo.get("apply");
+                if (applyJE instanceof JsonObject applyJO) {
+                    String modelPath = applyJO.get("model").getAsString();
+                    Key location = Key.from(modelPath);
+                    callback.accept(location);
+                } else if (applyJE instanceof JsonArray applyJA) {
+                    for (JsonElement applyInnerJE : applyJA) {
+                        if (applyInnerJE instanceof JsonObject applyInnerJO) {
+                            String modelPath = applyInnerJO.get("model").getAsString();
+                            Key location = Key.from(modelPath);
+                            callback.accept(location);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void collectVariants(String block, JsonObject jsonObject, BiConsumer<Key, String> callback) {
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            if (entry.getValue() instanceof JsonObject entryJO) {
+                String modelPath = entryJO.get("model").getAsString();
+                Key location = Key.from(modelPath);
+                callback.accept(location, block + "[" + entry.getKey() + "]");
+            } else if (entry.getValue() instanceof JsonArray entryJA) {
+                for (JsonElement entryInnerJE : entryJA) {
+                    if (entryInnerJE instanceof JsonObject entryJO) {
+                        String modelPath = entryJO.get("model").getAsString();
+                        Key location = Key.from(modelPath);
+                        callback.accept(location, block + "[" + entry.getKey() + "]");
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isJsonFile(Path filePath) {
+        String fileName = filePath.getFileName().toString();
+        return fileName.endsWith(".json") || fileName.endsWith(".mcmeta");
+    }
+
+    private static void collectItemModelsDeeply(JsonObject jo, Consumer<Key> callback) {
+        JsonElement modelJE = jo.get("model");
+        if (modelJE instanceof JsonPrimitive jsonPrimitive) {
+            Key location = Key.from(jsonPrimitive.getAsString());
+            callback.accept(location);
+            return;
+        }
+        if (jo.has("type") && jo.has("base")) {
+            if (jo.get("type") instanceof JsonPrimitive jp1 && jo.get("base") instanceof JsonPrimitive jp2) {
+                String type = jp1.getAsString();
+                if (type.equals("minecraft:special") || type.equals("special")) {
+                    Key location = Key.from(jp2.getAsString());
+                    callback.accept(location);
+                }
+            }
+        }
+        for (Map.Entry<String, JsonElement> entry : jo.entrySet()) {
+            if (entry.getValue() instanceof JsonObject innerJO) {
+                collectItemModelsDeeply(innerJO, callback);
+            } else if (entry.getValue() instanceof JsonArray innerJA) {
+                for (JsonElement innerElement : innerJA) {
+                    if (innerElement instanceof JsonObject innerJO) {
+                        collectItemModelsDeeply(innerJO, callback);
+                    }
+                }
+            }
         }
     }
 
