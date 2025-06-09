@@ -274,7 +274,8 @@ public class ItemSettings {
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
                 String type = args.getOrDefault("type", "none").toString();
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, type));
+                double range = ResourceConfigUtils.getAsDouble(args.getOrDefault("range", 1), "range");
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, range, type));
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
