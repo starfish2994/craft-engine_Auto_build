@@ -210,7 +210,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 furniture.initializeColliders();
             }
         }
-        BukkitFurniture.injectFurnitureEntity(FastNMS.INSTANCE.method$CraftEntity$getHandle(display));
         if (depth > 2) return;
         this.plugin.scheduler().sync().runLater(() -> handleBaseEntityLoadLate(display, depth + 1), 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
     }
