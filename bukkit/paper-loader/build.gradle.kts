@@ -71,30 +71,48 @@ paper {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
-        register("NeigeItems") {
-            required = false
-        }
-        register("MMOItems") {
-            required = false
-        }
-        register("ModelEngine") {
-            required = false
-        }
-        register("BetterModel") {
-            required = false
-        }
-        register("AuraSkills") {
-            required = false
-        }
-        register("LuckPerms") {
-            required = false
-        }
-        register("ViaVersion") {
-            required = false
-        }
-        register("MythicMobs") {
-            required = false
-        }
+        register("LuckPerms") { required = false }
+        register("ViaVersion") { required = false }
+
+        // external models
+        register("ModelEngine") { required = false }
+        register("BetterModel") { required = false }
+
+        // external items
+        register("NeigeItems") { required = false }
+        register("MMOItems") { required = false }
+        register("MythicMobs") { required = false }
+
+        // leveler
+        register("AuraSkills") { required = false }
+
+        // anti grief lib
+        register("Dominion") { required = false }
+        register("WorldGuard") { required = false }
+        register("Kingdoms") { required = false }
+        register("Lands") { required = false }
+        register("IridiumSkyblock") { required = false }
+        register("CrashClaim") { required = false }
+        register("GriefDefender") { required = false }
+        register("HuskClaims") { required = false }
+        register("BentoBox") { required = false }
+        register("HuskClaims") { required = false }
+        register("HuskTowns") { required = false }
+        register("PlotSquared") { required = false }
+        register("Residence") { required = false }
+        register("SuperiorSkyblock2") { required = false }
+        register("Towny") { required = false }
+        register("FabledSkyBlock") { required = false }
+        register("GriefPrevention") { required = false }
+        register("RedProtect") { required = false }
+        register("Landlord") { required = false }
+        register("uSkyBlock") { required = false }
+        register("XClaim") { required = false }
+        register("UltimateClaims") { required = false }
+        register("UltimateClans") { required = false }
+        register("PreciousStones") { required = false }
+        register("hClaims") { required = false }
+        register("Factions") { required = false }
     }
 }
 
