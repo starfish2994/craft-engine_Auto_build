@@ -52,7 +52,7 @@ The code you contribute will be open-sourced under the GPLv3 license. If you pre
 ### 🌍 Translations
 1. Clone this repository.
 2. Create a new language file in: `/common-files/src/main/resources/translations`
-3. Once done, submit a **pull request** for review. We appreciate your contributions!
+3. Once done, submit a **pull request** to **dev** branch for review. We appreciate your contributions!
 
 ## Differences Between Versions
 | Version           | Official Support | Max Players | Dev Builds |
@@ -76,7 +76,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    compileOnly("net.momirealms:craft-engine-core:0.0.56")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.56")
+    compileOnly("net.momirealms:craft-engine-core:0.0.57")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.57")
 }
 ```

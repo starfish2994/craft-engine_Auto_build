@@ -52,8 +52,7 @@ resource-pack:
           - "@vanilla_textures"
         bypass-models:
           - "@vanilla_models"
-        bypass-sounds:
-          - "@vanilla_sounds"
+        bypass-sounds: []
         bypass-equipments: []
   # Validate if there are any errors in the resource pack, such as missing textures or models
   validate:
