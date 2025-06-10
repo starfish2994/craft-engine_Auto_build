@@ -96,7 +96,6 @@ paper {
         register("GriefDefender") { required = false }
         register("HuskClaims") { required = false }
         register("BentoBox") { required = false }
-        register("HuskClaims") { required = false }
         register("HuskTowns") { required = false }
         register("PlotSquared") { required = false }
         register("Residence") { required = false }

@@ -759,8 +759,8 @@ public abstract class AbstractPackManager implements PackManager {
         if (modelJson.has("textures")) {
             JsonObject textures = modelJson.get("textures").getAsJsonObject();
             for (Map.Entry<String, JsonElement> entry : textures.entrySet()) {
-//                String textureId = entry.getKey();
                 String value = entry.getValue().getAsString();
+                if (value.charAt(0) == '#') continue;
                 Key textureResourceLocation = Key.from(value);
                 imageToModels.put(textureResourceLocation, model);
             }
