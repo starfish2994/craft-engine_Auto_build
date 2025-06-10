@@ -162,6 +162,7 @@ public class PacketConsumers {
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
             if (furniture != null) {
                 event.setCancelled(true);
+                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
         ADD_ENTITY_HANDLERS[MEntityTypes.OAK_BOAT$registryId] = (user, event) -> {
@@ -172,6 +173,7 @@ public class PacketConsumers {
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByRealEntityId(id);
             if (furniture != null) {
                 event.setCancelled(true);
+                user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
     }
@@ -1169,14 +1171,14 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HELLO_C2S = (user, event, packet) -> {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
-            String name = (String) NetworkReflections.handle$ServerboundHelloPacket$nameGetter.invokeExact(packet);
+            String name = (String) NetworkReflections.methodHandle$ServerboundHelloPacket$nameGetter.invokeExact(packet);
             player.setName(name);
             if (VersionHelper.isOrAbove1_20_2()) {
-                UUID uuid = (UUID) NetworkReflections.handle$ServerboundHelloPacket$uuidGetter.invokeExact(packet);
+                UUID uuid = (UUID) NetworkReflections.methodHandle$ServerboundHelloPacket$uuidGetter.invokeExact(packet);
                 player.setUUID(uuid);
             } else {
                 @SuppressWarnings("unchecked")
-                Optional<UUID> uuid = (Optional<UUID>) NetworkReflections.handle$ServerboundHelloPacket$uuidGetter.invokeExact(packet);
+                Optional<UUID> uuid = (Optional<UUID>) NetworkReflections.methodHandle$ServerboundHelloPacket$uuidGetter.invokeExact(packet);
                 if (uuid.isPresent()) {
                     player.setUUID(uuid.get());
                 } else {
@@ -1220,10 +1222,10 @@ public class PacketConsumers {
             player.clearView();
             Object dimensionKey;
             if (!VersionHelper.isOrAbove1_20_2()) {
-                dimensionKey = NetworkReflections.handle$ClientboundRespawnPacket$dimensionGetter.invokeExact(packet);
+                dimensionKey = NetworkReflections.methodHandle$ClientboundRespawnPacket$dimensionGetter.invokeExact(packet);
             } else {
-                Object commonInfo = NetworkReflections.handle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter.invokeExact(packet);
-                dimensionKey = NetworkReflections.handle$CommonPlayerSpawnInfo$dimensionGetter.invokeExact(commonInfo);
+                Object commonInfo = NetworkReflections.methodHandle$ClientboundRespawnPacket$commonPlayerSpawnInfoGetter.invokeExact(packet);
+                dimensionKey = NetworkReflections.methodHandle$CommonPlayerSpawnInfo$dimensionGetter.invokeExact(commonInfo);
             }
             Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
@@ -1248,10 +1250,10 @@ public class PacketConsumers {
                 if (BukkitNetworkManager.hasViaVersion()) {
                     user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(player.uuid()));
                 }
-                dimensionKey = NetworkReflections.handle$ClientboundLoginPacket$dimensionGetter.invokeExact(packet);
+                dimensionKey = NetworkReflections.methodHandle$ClientboundLoginPacket$dimensionGetter.invokeExact(packet);
             } else {
-                Object commonInfo = NetworkReflections.handle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter.invokeExact(packet);
-                dimensionKey = NetworkReflections.handle$CommonPlayerSpawnInfo$dimensionGetter.invokeExact(commonInfo);
+                Object commonInfo = NetworkReflections.methodHandle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter.invokeExact(packet);
+                dimensionKey = NetworkReflections.methodHandle$CommonPlayerSpawnInfo$dimensionGetter.invokeExact(commonInfo);
             }
             Object location = FastNMS.INSTANCE.field$ResourceKey$location(dimensionKey);
             World world = Bukkit.getWorld(Objects.requireNonNull(NamespacedKey.fromString(location.toString())));
@@ -1295,9 +1297,9 @@ public class PacketConsumers {
         Player bukkitPlayer = player.platformPlayer();
         if (bukkitPlayer == null) return;
         if (bukkitPlayer.getGameMode() != GameMode.CREATIVE) return;
-        int slot = VersionHelper.isOrAbove1_20_5() ? (short) NetworkReflections.handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet) : (int) NetworkReflections.handle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet);
+        int slot = VersionHelper.isOrAbove1_20_5() ? (short) NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet) : (int) NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet);
         if (slot < 36 || slot > 44) return;
-        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(NetworkReflections.handle$ServerboundSetCreativeModeSlotPacket$itemStackGetter.invokeExact(packet));
+        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$itemStackGetter.invokeExact(packet));
         if (ItemUtils.isEmpty(item)) return;
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
@@ -1370,7 +1372,7 @@ public class PacketConsumers {
             if (!user.isOnline()) return;
             Player player = (Player) user.platformPlayer();
             if (player == null) return;
-            Object pos = NetworkReflections.handle$ServerboundPickItemFromBlockPacket$posGetter.invokeExact(packet);
+            Object pos = NetworkReflections.methodHandle$ServerboundPickItemFromBlockPacket$posGetter.invokeExact(packet);
             if (VersionHelper.isFolia()) {
                 int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
                 int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
@@ -1408,7 +1410,7 @@ public class PacketConsumers {
     // 1.21.4+
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> PICK_ITEM_FROM_ENTITY = (user, event, packet) -> {
         try {
-            int entityId = (int) NetworkReflections.handle$ServerboundPickItemFromEntityPacket$idGetter.invokeExact(packet);
+            int entityId = (int) NetworkReflections.methodHandle$ServerboundPickItemFromEntityPacket$idGetter.invokeExact(packet);
             BukkitFurniture furniture = BukkitFurnitureManager.instance().loadedFurnitureByEntityId(entityId);
             if (furniture == null) return;
             Player player = (Player) user.platformPlayer();
@@ -1747,14 +1749,14 @@ public class PacketConsumers {
             if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_ANVIL)) {
                 return;
             }
-            String message = (String) NetworkReflections.handle$ServerboundRenameItemPacket$nameGetter.invokeExact(packet);
+            String message = (String) NetworkReflections.methodHandle$ServerboundRenameItemPacket$nameGetter.invokeExact(packet);
             if (message != null && !message.isEmpty()) {
                 // check bypass
                 FontManager manager = CraftEngine.instance().fontManager();
                 IllegalCharacterProcessResult result = manager.processIllegalCharacters(message);
                 if (result.has()) {
                     try {
-                        NetworkReflections.handle$ServerboundRenameItemPacket$nameSetter.invokeExact(packet, result.text());
+                        NetworkReflections.methodHandle$ServerboundRenameItemPacket$nameSetter.invokeExact(packet, result.text());
                     } catch (ReflectiveOperationException e) {
                         CraftEngine.instance().logger().warn("Failed to replace chat", e);
                     }
@@ -1773,7 +1775,7 @@ public class PacketConsumers {
             if (((BukkitServerPlayer) user).hasPermission(FontManager.BYPASS_SIGN)) {
                 return;
             }
-            String[] lines = (String[]) NetworkReflections.handle$ServerboundSignUpdatePacket$linesGetter.invokeExact(packet);
+            String[] lines = (String[]) NetworkReflections.methodHandle$ServerboundSignUpdatePacket$linesGetter.invokeExact(packet);
             FontManager manager = CraftEngine.instance().fontManager();
             if (!manager.isDefaultFontInUse()) return;
             for (int i = 0; i < lines.length; i++) {
@@ -1804,9 +1806,9 @@ public class PacketConsumers {
 
             boolean changed = false;
 
-            List<String> pages = (List<String>) NetworkReflections.handleServerboundEditBookPacket$pagesGetter.invokeExact(packet);
+            List<String> pages = (List<String>) NetworkReflections.methodHandle$ServerboundEditBookPacket$pagesGetter.invokeExact(packet);
             List<String> newPages = new ArrayList<>(pages.size());
-            Optional<String> title = (Optional<String>) NetworkReflections.handle$ServerboundEditBookPacket$titleGetter.invokeExact(packet);
+            Optional<String> title = (Optional<String>) NetworkReflections.methodHandle$ServerboundEditBookPacket$titleGetter.invokeExact(packet);
             Optional<String> newTitle;
 
             if (title.isPresent()) {
@@ -1830,7 +1832,7 @@ public class PacketConsumers {
 
             if (changed) {
                 Object newPacket = NetworkReflections.constructor$ServerboundEditBookPacket.newInstance(
-                        (int) NetworkReflections.handle$ServerboundEditBookPacket$slotGetter.invokeExact(packet),
+                        (int) NetworkReflections.methodHandle$ServerboundEditBookPacket$slotGetter.invokeExact(packet),
                         newPages,
                         newTitle
                 );
@@ -1863,7 +1865,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
         try {
             if (!VersionHelper.isOrAbove1_20_5()) return;
-            Object payload = NetworkReflections.handle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
+            Object payload = NetworkReflections.methodHandle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
             if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
                 Payload discardedPayload = DiscardedPayload.from(payload);
                 if (discardedPayload == null || !discardedPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
@@ -2282,7 +2284,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HANDSHAKE_C2S = (user, event, packet) -> {
         try {
             if (BukkitNetworkManager.hasViaVersion()) return;
-            int protocolVersion = (int) NetworkReflections.handle$ClientIntentionPacket$protocolVersionGetter.invokeExact(packet);
+            int protocolVersion = (int) NetworkReflections.methodHandle$ClientIntentionPacket$protocolVersionGetter.invokeExact(packet);
             user.setProtocolVersion(protocolVersion);
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientIntentionPacket", e);
@@ -2302,7 +2304,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
         try {
             if (user.sentResourcePack() || !Config.sendPackOnJoin() || !Config.kickOnDeclined()) return;
-            Object action = NetworkReflections.handle$ServerboundResourcePackPacket$actionGetter.invokeExact(packet);
+            Object action = NetworkReflections.methodHandle$ServerboundResourcePackPacket$actionGetter.invokeExact(packet);
             if (action == null) return;
             if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED
                     || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
@@ -2324,9 +2326,9 @@ public class PacketConsumers {
         try {
             Object player = user.serverPlayer();
             if (player == null) return;
-            int entityId = (int) NetworkReflections.handle$ClientboundEntityEventPacket$entityIdGetter.invokeExact(packet);
+            int entityId = (int) NetworkReflections.methodHandle$ClientboundEntityEventPacket$entityIdGetter.invokeExact(packet);
             if (entityId != FastNMS.INSTANCE.method$Entity$getId(player)) return;
-            byte eventId = (byte) NetworkReflections.handle$ClientboundEntityEventPacket$eventIdGetter.invokeExact(packet);
+            byte eventId = (byte) NetworkReflections.methodHandle$ClientboundEntityEventPacket$eventIdGetter.invokeExact(packet);
             if (eventId >= 24 && eventId <= 28) {
                 CraftEngine.instance().fontManager().refreshEmojiSuggestions(user.uuid());
             }
@@ -2344,6 +2346,18 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket$PosRot", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_ENTITY = (user, event, packet) -> {
+        try {
+            int entityId = ProtectedFieldVisitor.get().field$ClientboundMoveEntityPacket$entityId(packet);
+            EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
+            if (handler != null) {
+                handler.handleMove(user, event, packet);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket", e);
         }
     };
 }

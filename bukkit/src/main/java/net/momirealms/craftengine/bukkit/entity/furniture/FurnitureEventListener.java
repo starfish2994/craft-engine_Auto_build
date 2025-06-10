@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.entity.furniture;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
@@ -37,7 +36,6 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay itemDisplay) {
                 this.manager.handleBaseEntityLoadEarly(itemDisplay);
-                BukkitFurniture.injectFurnitureEntity(FastNMS.INSTANCE.method$CraftEntity$getHandle(itemDisplay));
             } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
                 this.manager.handleCollisionEntityLoadOnEntitiesLoad(entity);
             }
@@ -50,7 +48,6 @@ public class FurnitureEventListener implements Listener {
         for (Entity entity : entities) {
             if (entity instanceof ItemDisplay itemDisplay) {
                 this.manager.handleBaseEntityLoadEarly(itemDisplay);
-                BukkitFurniture.injectFurnitureEntity(FastNMS.INSTANCE.method$CraftEntity$getHandle(itemDisplay));
             } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
                 this.manager.handleCollisionEntityLoadOnEntitiesLoad(entity);
             }
@@ -62,7 +59,6 @@ public class FurnitureEventListener implements Listener {
         Entity entity = event.getEntity();
         if (entity instanceof ItemDisplay itemDisplay) {
             this.manager.handleBaseEntityLoadLate(itemDisplay, 0);
-            BukkitFurniture.injectFurnitureEntity(FastNMS.INSTANCE.method$CraftEntity$getHandle(itemDisplay));
         } else if (BukkitFurnitureManager.COLLISION_ENTITY_CLASS.isInstance(entity)) {
             this.manager.handleCollisionEntityLoadLate(entity, 0);
         }
