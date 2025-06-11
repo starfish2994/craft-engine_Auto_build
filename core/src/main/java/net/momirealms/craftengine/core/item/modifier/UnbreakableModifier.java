@@ -21,12 +21,13 @@ public class UnbreakableModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         item.unbreakable(this.argument);
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         if (VersionHelper.isOrAbove1_20_5()) {
             Tag previous = item.getNBTComponent(ComponentKeys.UNBREAKABLE);
             if (previous != null) {
@@ -42,5 +43,6 @@ public class UnbreakableModifier<I> implements ItemDataModifier<I> {
                 networkData.put("Unbreakable", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
         }
+        return item;
     }
 }

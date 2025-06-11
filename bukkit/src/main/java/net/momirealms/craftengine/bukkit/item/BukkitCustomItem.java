@@ -21,12 +21,12 @@ import java.util.Map;
 public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
     private final Material material;
 
-    public BukkitCustomItem(Holder<Key> id, Key materialKey, Material material,
+    public BukkitCustomItem(Holder<Key> id, Material material, Key materialKey, Key clientBoundMaterialKey,
                             List<ItemBehavior> behaviors,
                             List<ItemDataModifier<ItemStack>> modifiers, List<ItemDataModifier<ItemStack>> clientBoundModifiers,
                             ItemSettings settings,
                             Map<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
-        super(id, materialKey, behaviors, modifiers, clientBoundModifiers, settings, events);
+        super(id, materialKey, clientBoundMaterialKey, behaviors, modifiers, clientBoundModifiers, settings, events);
         this.material = material;
     }
 
@@ -57,8 +57,9 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
 
     public static class BuilderImpl implements Builder<ItemStack> {
         private Holder<Key> id;
-        private Key materialKey;
+        private final Key materialKey;
         private final Material material;
+        private Key clientBoundMaterialKey;
         private final Map<EventTrigger, List<Function<PlayerOptionalContext>>> events = new EnumMap<>(EventTrigger.class);
         private final List<ItemBehavior> behaviors = new ArrayList<>(4);
         private final List<ItemDataModifier<ItemStack>> modifiers = new ArrayList<>(4);
@@ -77,8 +78,8 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         }
 
         @Override
-        public Builder<ItemStack> material(Key material) {
-            this.materialKey = material;
+        public Builder<ItemStack> clientBoundMaterial(Key clientBoundMaterialKey) {
+            this.clientBoundMaterialKey = clientBoundMaterialKey;
             return this;
         }
 
@@ -133,7 +134,7 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         @Override
         public CustomItem<ItemStack> build() {
             this.modifiers.addAll(this.settings.modifiers());
-            return new BukkitCustomItem(this.id, this.materialKey, this.material, List.copyOf(this.behaviors),
+            return new BukkitCustomItem(this.id, this.material, this.materialKey, this.clientBoundMaterialKey, List.copyOf(this.behaviors),
                     List.copyOf(this.modifiers), List.copyOf(this.clientBoundModifiers), this.settings, this.events);
         }
     }

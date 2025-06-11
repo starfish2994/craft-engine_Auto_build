@@ -791,6 +791,7 @@ public class RecipeEventListener implements Listener {
         return new Pair<>(first, second);
     }
 
+    // 不是完美的解决方案，仍然需要更多的探讨
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onCraft(CraftItemEvent event) {
         org.bukkit.inventory.Recipe recipe = event.getRecipe();

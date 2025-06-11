@@ -18,6 +18,7 @@ import java.util.Optional;
 public abstract class AbstractCustomItem<I> implements CustomItem<I> {
     protected final Holder<Key> id;
     protected final Key material;
+    protected final Key clientBoundMaterial;
     protected final ItemDataModifier<I>[] modifiers;
     protected final Map<String, ItemDataModifier<I>> modifierMap;
     protected final ItemDataModifier<I>[] clientBoundModifiers;
@@ -27,7 +28,7 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
     protected final Map<EventTrigger, List<Function<PlayerOptionalContext>>> events;
 
     @SuppressWarnings("unchecked")
-    public AbstractCustomItem(Holder<Key> id, Key material,
+    public AbstractCustomItem(Holder<Key> id, Key material, Key clientBoundMaterial,
                               List<ItemBehavior> behaviors,
                               List<ItemDataModifier<I>> modifiers,
                               List<ItemDataModifier<I>> clientBoundModifiers,
@@ -35,6 +36,7 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
                               Map<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
         this.id = id;
         this.material = material;
+        this.clientBoundMaterial = clientBoundMaterial;
         this.events = events;
         // unchecked cast
         this.modifiers = modifiers.toArray(new ItemDataModifier[0]);
@@ -72,6 +74,11 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
     @Override
     public Key material() {
         return this.material;
+    }
+
+    @Override
+    public Key clientBoundMaterial() {
+        return this.clientBoundMaterial;
     }
 
     @Override

@@ -200,9 +200,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId) {
+    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId, Key clientBoundMaterialId) {
         Material material = ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(materialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString()));
-        return BukkitCustomItem.builder(material).material(materialId).id(id);
+        if (!clientBoundMaterialId.equals(materialId)) {
+            ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(clientBoundMaterialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", clientBoundMaterialId.toString()));
+        }
+        return BukkitCustomItem.builder(material).id(id).clientBoundMaterial(clientBoundMaterialId);
     }
 
     @SuppressWarnings("unchecked")

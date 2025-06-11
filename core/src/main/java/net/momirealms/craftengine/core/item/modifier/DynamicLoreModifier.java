@@ -28,17 +28,18 @@ public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         String displayContext = Optional.ofNullable(item.getJavaTag("craftengine:display_context")).orElse(this.defaultContext).toString();
         List<String> lore = this.displayContexts.get(displayContext);
         if (lore == null) {
             lore = this.displayContexts.get(this.defaultContext);
         }
         item.loreComponent(lore.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         if (VersionHelper.isOrAbove1_20_5()) {
             Tag previous = item.getNBTComponent(ComponentKeys.LORE);
             if (previous != null) {
@@ -54,5 +55,6 @@ public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
                 networkData.put("display.Lore", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
         }
+        return item;
     }
 }

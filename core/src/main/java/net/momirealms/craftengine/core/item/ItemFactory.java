@@ -194,4 +194,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void setJsonComponent(W item, Object type, JsonElement value);
 
     protected abstract void setNBTComponent(W item, Object type, Tag value);
+
+    protected abstract W transmuteCopy(W item, Key newItem, int amount);
 }
