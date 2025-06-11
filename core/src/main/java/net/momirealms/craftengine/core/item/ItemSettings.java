@@ -134,6 +134,11 @@ public class ItemSettings {
     }
 
     @Nullable
+    public Key craftRemainder() {
+        return craftRemainder;
+    }
+
+    @Nullable
     public Helmet helmet() {
         return helmet;
     }
@@ -251,7 +256,7 @@ public class ItemSettings {
                 if (value == null) settings.consumeReplacement(null);
                 else settings.consumeReplacement(Key.of(value.toString()));
             }));
-            registerFactory("craft-remainder", (value -> settings -> {
+            registerFactory("craft-remaining-item", (value -> settings -> {
                 if (value == null) settings.craftRemainder(null);
                 else settings.craftRemainder(Key.of(value.toString()));
             }));
