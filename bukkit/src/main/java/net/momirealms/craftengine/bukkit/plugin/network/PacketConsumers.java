@@ -124,7 +124,6 @@ public class PacketConsumers {
         ADD_ENTITY_HANDLERS[MEntityTypes.BLOCK_DISPLAY$registryId] = simpleAddEntityHandler(BlockDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_DISPLAY$registryId] = simpleAddEntityHandler(ItemDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
@@ -152,6 +151,8 @@ public class PacketConsumers {
                 if (Config.hideBaseEntity() && !furniture.hasExternalModel()) {
                     event.setCancelled(true);
                 }
+            } else {
+                user.entityPacketHandlers().put(id, ItemDisplayPacketHandler.INSTANCE);
             }
         };
         ADD_ENTITY_HANDLERS[MEntityTypes.INTERACTION$registryId] = (user, event) -> {
