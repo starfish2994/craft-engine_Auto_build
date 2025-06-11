@@ -33,6 +33,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Campfire;
 import org.bukkit.block.Furnace;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -788,6 +789,48 @@ public class RecipeEventListener implements Listener {
             }
         }
         return new Pair<>(first, second);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onCraft(CraftItemEvent event) {
+        org.bukkit.inventory.Recipe recipe = event.getRecipe();
+        if (!(recipe instanceof ShapelessRecipe) && !(recipe instanceof ShapedRecipe)) return;
+        HumanEntity humanEntity = event.getWhoClicked();
+        if (!(humanEntity instanceof Player player)) return;
+        CraftingInventory inventory = event.getInventory();
+        ItemStack result = inventory.getResult();
+        if (result == null) return;
+        ItemStack[] usedItems = inventory.getMatrix();
+        ItemStack[] replacements = new ItemStack[usedItems.length];
+        boolean hasReplacement = false;
+        for (int i = 0; i < usedItems.length; i++) {
+            ItemStack usedItem = usedItems[i];
+            if (ItemUtils.isEmpty(usedItem)) continue;
+            if (usedItem.getAmount() != 1) continue;
+            Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(usedItem);
+            if (wrapped == null) continue;
+            Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+            if (optionalCustomItem.isPresent()) {
+                CustomItem<ItemStack> customItem = optionalCustomItem.get();
+                Key remainingItem = customItem.settings().craftRemainder();
+                if (remainingItem != null) {
+                    replacements[i] = BukkitItemManager.instance().buildItemStack(remainingItem, this.plugin.adapt(player));
+                    hasReplacement = true;
+                }
+            }
+        }
+        if (!hasReplacement) return;
+        Runnable delayedTask = () -> {
+            for (int i = 0; i < replacements.length; i++) {
+                if (replacements[i] == null) continue;
+                inventory.setItem(i + 1, replacements[i]);
+            }
+        };
+        if (VersionHelper.isFolia()) {
+            player.getScheduler().run(this.plugin.javaPlugin(), (t) -> delayedTask.run(), () -> {});
+        } else {
+            this.plugin.scheduler().sync().runDelayed(delayedTask);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

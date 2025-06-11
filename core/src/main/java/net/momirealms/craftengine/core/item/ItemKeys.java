@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.util.Key;
 
 public class ItemKeys {
     public static final Key AIR = Key.of("minecraft:air");
+    public static final Key FLINT_AND_STEEL = Key.of("minecraft:flint_and_steel");
     public static final Key STONE = Key.of("minecraft:stone");
     public static final Key TRIDENT = Key.of("minecraft:trident");
     public static final Key SHIELD = Key.of("minecraft:shield");

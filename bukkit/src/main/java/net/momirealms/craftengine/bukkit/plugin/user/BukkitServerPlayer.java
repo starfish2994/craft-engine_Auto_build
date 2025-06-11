@@ -30,10 +30,12 @@ import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Position;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import org.bukkit.*;
@@ -283,8 +285,13 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void playSound(Key sound, float volume, float pitch) {
-        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundCategory.MASTER, volume, pitch);
+    public void playSound(Key sound, SoundSource source, float volume, float pitch) {
+        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundUtils.toBukkit(source), volume, pitch);
+    }
+
+    @Override
+    public void playSound(Key sound, BlockPos blockPos, SoundSource source, float volume, float pitch) {
+        platformPlayer().playSound(new Location(null, blockPos.x() + 0.5, blockPos.y() + 0.5, blockPos.z() + 0.5), sound.toString(), SoundUtils.toBukkit(source), volume, pitch);
     }
 
     @Override

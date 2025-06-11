@@ -205,7 +205,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         private void updateProjectileUpdateInterval(int updateInterval) {
             if (this.lastInjectedInterval == updateInterval) return;
             try {
-                CoreReflections.handle$ServerEntity$updateIntervalSetter.invokeExact(this.cachedServerEntity, updateInterval);
+                CoreReflections.methodHandle$ServerEntity$updateIntervalSetter.invokeExact(this.cachedServerEntity, updateInterval);
                 this.lastInjectedInterval = updateInterval;
             } catch (Throwable e) {
                 BukkitProjectileManager.this.plugin.logger().warn("Failed to update server entity update interval for " + this.projectile.getType().getKey() + "[" + this.projectile.getUniqueId() + "]", e);

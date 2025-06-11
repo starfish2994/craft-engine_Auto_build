@@ -34,6 +34,7 @@ public class ItemSettings {
     Helmet helmet = null;
     FoodData foodData = null;
     Key consumeReplacement = null;
+    Key craftRemainder = null;
     List<DamageCause> invulnerable = List.of();
 
     private ItemSettings() {}
@@ -72,6 +73,7 @@ public class ItemSettings {
         newSettings.helmet = settings.helmet;
         newSettings.foodData = settings.foodData;
         newSettings.consumeReplacement = settings.consumeReplacement;
+        newSettings.craftRemainder = settings.craftRemainder;
         newSettings.invulnerable = settings.invulnerable;
         return newSettings;
     }
@@ -131,6 +133,11 @@ public class ItemSettings {
     }
 
     @Nullable
+    public Key craftRemainder() {
+        return craftRemainder;
+    }
+
+    @Nullable
     public Helmet helmet() {
         return helmet;
     }
@@ -151,6 +158,11 @@ public class ItemSettings {
 
     public ItemSettings consumeReplacement(Key key) {
         this.consumeReplacement = key;
+        return this;
+    }
+
+    public ItemSettings craftRemainder(Key key) {
+        this.craftRemainder = key;
         return this;
     }
 
@@ -248,7 +260,14 @@ public class ItemSettings {
                 int intValue = ResourceConfigUtils.getAsInt(value, "fuel-time");
                 return settings -> settings.fuelTime(intValue);
             }));
-            registerFactory("consume-replacement", (value -> settings -> settings.consumeReplacement(Key.of(value.toString()))));
+            registerFactory("consume-replacement", (value -> settings -> {
+                if (value == null) settings.consumeReplacement(null);
+                else settings.consumeReplacement(Key.of(value.toString()));
+            }));
+            registerFactory("craft-remaining-item", (value -> settings -> {
+                if (value == null) settings.craftRemainder(null);
+                else settings.craftRemainder(Key.of(value.toString()));
+            }));
             registerFactory("tags", (value -> {
                 List<String> tags = MiscUtils.getAsStringList(value);
                 return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));

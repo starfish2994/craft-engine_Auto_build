@@ -7,32 +7,32 @@ templates#models#block:
   #   model: model_path
   #   texture: texture_path
   default:model/cube_all:
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:block/cube_all"
       textures:
-        "all": "{texture}"
+        "all": "${texture}"
   # template: default:model/simplified_cube_all
   # arguments:
   #   path: [model/texture]_path
   default:model/simplified_cube_all:
-    path: "{path}"
+    path: "${path}"
     generation:
       parent: "minecraft:block/cube_all"
       textures:
-        "all": "{path}"
+        "all": "${path}"
   # template: default:model/cube_column
   # arguments:
   #   model: model_path
   #   end_texture: end_texture_path
   #   side_texture: side_texture_path
   default:model/cube_column:
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:block/cube_column"
       textures:
-        "end": "{end_texture}"
-        "side": "{side_texture}"
+        "end": "${end_texture}"
+        "side": "${side_texture}"
   # template: default:model/cube
   # arguments:
   #   model: model_path
@@ -44,7 +44,7 @@ templates#models#block:
   #   south_texture: south_texture_path
   #   west_texture: west_texture_path
   default:model/cube:
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:block/cube_column"
       textures:
@@ -64,21 +64,21 @@ templates#models#2d:
   #   texture: texture_path
   default:model/generated:
     type: "minecraft:model"
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:item/generated"
       textures:
-        "layer0": "{texture}"
+        "layer0": "${texture}"
   # template: default:model/simplified_generated
   # arguments:
   #   path: [model/texture]_path
   default:model/simplified_generated:
     type: "minecraft:model"
-    path: "{path}"
+    path: "${path}"
     generation:
       parent: "minecraft:item/generated"
       textures:
-        "layer0": "{path}"
+        "layer0": "${path}"
   # template: default:model/2_layer_generated
   # arguments:
   #   model: model_path
@@ -86,33 +86,33 @@ templates#models#2d:
   #   layer1: texture_path
   default:model/2_layer_generated:
     type: "minecraft:model"
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:item/generated"
       textures:
-        "layer0": "{layer0}"
-        "layer1": "{layer1}"
+        "layer0": "${layer0}"
+        "layer1": "${layer1}"
   # template: default:model/handheld
   # arguments:
   #   model: model_path
   #   texture: texture_path
   default:model/handheld:
     type: "minecraft:model"
-    path: "{model}"
+    path: "${model}"
     generation:
       parent: "minecraft:item/handheld"
       textures:
-        "layer0": "{texture}"
+        "layer0": "${texture}"
   # template: default:model/simplified_handheld
   # arguments:
   #   path: [model/texture]_path
   default:model/simplified_handheld:
     type: "minecraft:model"
-    path: "{path}"
+    path: "${path}"
     generation:
       parent: "minecraft:item/handheld"
       textures:
-        "layer0": "{path}"
+        "layer0": "${path}"
   # template: default:model/elytra
   # arguments:
   #   model: model_path
@@ -123,17 +123,17 @@ templates#models#2d:
     type: "minecraft:condition"
     property: minecraft:broken
     on-false:
-      path: "{model}"
+      path: "${model}"
       generation:
         parent: "minecraft:item/generated"
         textures:
-          "layer0": "{texture}"
+          "layer0": "${texture}"
     on-true:
-      path: "{broken_model}"
+      path: "${broken_model}"
       generation:
         parent: "minecraft:item/generated"
         textures:
-          "layer0": "{broken_texture}"
+          "layer0": "${broken_texture}"
   # template: default:model/simplified_elytra
   # arguments:
   #   path: [model/texture]_path
@@ -141,10 +141,10 @@ templates#models#2d:
   default:model/simplified_elytra:
     template: default:model/elytra
     arguments:
-      model: "{path}"
-      texture: "{path}"
-      broken_model: "{broken_path}"
-      broken_texture: "{broken_path}"
+      model: "${path}"
+      texture: "${path}"
+      broken_model: "${broken_path}"
+      broken_texture: "${broken_path}"
 
 # shield
 templates#models#shield:
@@ -157,10 +157,10 @@ templates#models#shield:
     property: "minecraft:using_item"
     on-false:
       type: minecraft:model
-      path: "{model}"
+      path: "${model}"
     on-true:
       type: minecraft:model
-      path: "{block_model}"
+      path: "${block_model}"
 
 # fishing rods
 templates#models#fishing_rod:
@@ -173,10 +173,10 @@ templates#models#fishing_rod:
     property: "minecraft:fishing_rod/cast"
     on-false:
       type: "minecraft:model"
-      path: "{model}"
+      path: "${model}"
     on-true:
       type: "minecraft:model"
-      path: "{cast_model}"
+      path: "${cast_model}"
   # template: default:model/fishing_rod_2d
   # arguments:
   #   model: rod_model_path
@@ -188,18 +188,18 @@ templates#models#fishing_rod:
     property: "minecraft:fishing_rod/cast"
     on-false:
       type: "minecraft:model"
-      path: "{model}"
+      path: "${model}"
       generation:
         parent: "minecraft:item/fishing_rod"
         textures:
-          "layer0": "{texture}"
+          "layer0": "${texture}"
     on-true:
       type: "minecraft:model"
-      path: "{cast_model}"
+      path: "${cast_model}"
       generation:
         parent: "minecraft:item/fishing_rod"
         textures:
-          "layer0": "{cast_texture}"
+          "layer0": "${cast_texture}"
   # template: default:model/simplified_fishing_rod_2d
   # arguments:
   #   path: rod_[model/texture]_path
@@ -207,10 +207,10 @@ templates#models#fishing_rod:
   default:model/simplified_fishing_rod_2d:
     template: default:model/fishing_rod_2d
     arguments:
-      texture: "{path}"
-      model: "{path}"
-      cast_texture: "{cast_path}"
-      cast_model: "{cast_path}"
+      texture: "${path}"
+      model: "${path}"
+      cast_texture: "${cast_path}"
+      cast_model: "${cast_path}"
 
 # bows
 templates#models#bow:
@@ -225,7 +225,7 @@ templates#models#bow:
     property: "minecraft:using_item"
     on-false:
       type: "minecraft:model"
-      path: "{model}"
+      path: "${model}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:use_duration"
@@ -233,15 +233,15 @@ templates#models#bow:
       entries:
         - model:
             type: minecraft:model
-            path: "{pulling_1_model}"
+            path: "${pulling_1_model}"
           threshold: 0.65
         - model:
             type: minecraft:model
-            path: "{pulling_2_model}"
+            path: "${pulling_2_model}"
           threshold: 0.9
       fallback:
         type: minecraft:model
-        path: "{pulling_0_model}"
+        path: "${pulling_0_model}"
   # template: default:model/bow_2d
   # arguments:
   #   model: bow_model_path
@@ -257,11 +257,11 @@ templates#models#bow:
     property: "minecraft:using_item"
     on-false:
       type: "minecraft:model"
-      path: "{model}"
+      path: "${model}"
       generation:
         parent: "minecraft:item/bow"
         textures:
-          "layer0": "{texture}"
+          "layer0": "${texture}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:use_duration"
@@ -269,27 +269,27 @@ templates#models#bow:
       entries:
         - model:
             type: minecraft:model
-            path: "{pulling_1_model}"
+            path: "${pulling_1_model}"
             generation:
               parent: "minecraft:item/bow_pulling_1"
               textures:
-                "layer0": "{pulling_1_texture}"
+                "layer0": "${pulling_1_texture}"
           threshold: 0.65
         - model:
             type: minecraft:model
-            path: "{pulling_2_model}"
+            path: "${pulling_2_model}"
             generation:
               parent: "minecraft:item/bow_pulling_2"
               textures:
-                "layer0": "{pulling_2_texture}"
+                "layer0": "${pulling_2_texture}"
           threshold: 0.9
       fallback:
         type: minecraft:model
-        path: "{pulling_0_model}"
+        path: "${pulling_0_model}"
         generation:
           parent: "minecraft:item/bow_pulling_0"
           textures:
-            "layer0": "{pulling_0_texture}"
+            "layer0": "${pulling_0_texture}"
   # template: default:model/simplified_bow_2d
   # arguments:
   #   path: bow_[model/texture]_path
@@ -299,14 +299,14 @@ templates#models#bow:
   default:model/simplified_bow_2d:
     template: default:model/bow_2d
     arguments:
-      model: "{path}"
-      pulling_0_model: "{pulling_0_path}"
-      pulling_1_model: "{pulling_1_path}"
-      pulling_2_model: "{pulling_2_path}"
-      texture: "{path}"
-      pulling_0_texture: "{pulling_0_path}"
-      pulling_1_texture: "{pulling_1_path}"
-      pulling_2_texture: "{pulling_2_path}"
+      model: "${path}"
+      pulling_0_model: "${pulling_0_path}"
+      pulling_1_model: "${pulling_1_path}"
+      pulling_2_model: "${pulling_2_path}"
+      texture: "${path}"
+      pulling_0_texture: "${pulling_0_path}"
+      pulling_1_texture: "${pulling_1_path}"
+      pulling_2_texture: "${pulling_2_path}"
 
 # crossbows
 templates#models#crossbow:
@@ -328,29 +328,29 @@ templates#models#crossbow:
         - when: arrow
           model:
             type: minecraft:model
-            path: "{arrow_model}"
+            path: "${arrow_model}"
         - when: rocket
           model:
             type: minecraft:model
-            path: "{firework_model}"
+            path: "${firework_model}"
       fallback:
         type: minecraft:model
-        path: "{model}"
+        path: "${model}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:crossbow/pull"
       entries:
         - model:
             type: minecraft:model
-            path: "{pulling_1_model}"
+            path: "${pulling_1_model}"
           threshold: 0.58
         - model:
             type: minecraft:model
-            path: "{pulling_2_model}"
+            path: "${pulling_2_model}"
           threshold: 1.0
       fallback:
         type: minecraft:model
-        path: "{pulling_0_model}"
+        path: "${pulling_0_model}"
   # template: default:model/crossbow_2d
   # arguments:
   #   model: crossbow_model_path
@@ -375,53 +375,53 @@ templates#models#crossbow:
         - when: arrow
           model:
             type: minecraft:model
-            path: "{arrow_model}"
+            path: "${arrow_model}"
             generation:
               parent: "minecraft:item/crossbow_arrow"
               textures:
-                "layer0": "{arrow_texture}"
+                "layer0": "${arrow_texture}"
         - when: rocket
           model:
             type: minecraft:model
-            path: "{firework_model}"
+            path: "${firework_model}"
             generation:
               parent: "minecraft:item/crossbow_firework"
               textures:
-                "layer0": "{firework_texture}"
+                "layer0": "${firework_texture}"
       fallback:
         type: minecraft:model
-        path: "{model}"
+        path: "${model}"
         generation:
           parent: "minecraft:item/crossbow"
           textures:
-            "layer0": "{texture}"
+            "layer0": "${texture}"
     on-true:
       type: "minecraft:range_dispatch"
       property: "minecraft:crossbow/pull"
       entries:
         - model:
             type: minecraft:model
-            path: "{pulling_1_model}"
+            path: "${pulling_1_model}"
             generation:
               parent: "minecraft:item/crossbow_pulling_1"
               textures:
-                "layer0": "{pulling_1_texture}"
+                "layer0": "${pulling_1_texture}"
           threshold: 0.58
         - model:
             type: minecraft:model
-            path: "{pulling_2_model}"
+            path: "${pulling_2_model}"
             generation:
               parent: "minecraft:item/crossbow_pulling_2"
               textures:
-                "layer0": "{pulling_2_texture}"
+                "layer0": "${pulling_2_texture}"
           threshold: 1.0
       fallback:
         type: minecraft:model
-        path: "{pulling_0_model}"
+        path: "${pulling_0_model}"
         generation:
           parent: "minecraft:item/crossbow_pulling_0"
           textures:
-            "layer0": "{pulling_0_texture}"
+            "layer0": "${pulling_0_texture}"
   # template: default:model/simplified_crossbow_2d
   # arguments:
   #   path: crossbow_[model/texture]_path
@@ -433,28 +433,28 @@ templates#models#crossbow:
   default:model/simplified_crossbow_2d:
     template: default:model/crossbow_2d
     arguments:
-      model: "{path}"
-      texture: "{path}"
-      arrow_model: "{arrow_path}"
-      arrow_texture: "{arrow_path}"
-      firework_model: "{firework_path}"
-      firework_texture: "{firework_path}"
-      pulling_0_model: "{pulling_0_path}"
-      pulling_0_texture: "{pulling_0_path}"
-      pulling_1_model: "{pulling_1_path}"
-      pulling_1_texture: "{pulling_1_path}"
-      pulling_2_model: "{pulling_2_path}"
-      pulling_2_texture: "{pulling_2_path}"
+      model: "${path}"
+      texture: "${path}"
+      arrow_model: "${arrow_path}"
+      arrow_texture: "${arrow_path}"
+      firework_model: "${firework_path}"
+      firework_texture: "${firework_path}"
+      pulling_0_model: "${pulling_0_path}"
+      pulling_0_texture: "${pulling_0_path}"
+      pulling_1_model: "${pulling_1_path}"
+      pulling_1_texture: "${pulling_1_path}"
+      pulling_2_model: "${pulling_2_path}"
+      pulling_2_texture: "${pulling_2_path}"
 
 # sounds
 templates#settings#sounds:
   default:sound/block_template:
     sounds:
-      break: "minecraft:block.{block_type}.break"
-      step: "minecraft:block.{block_type}.step"
-      place: "minecraft:block.{block_type}.place"
-      hit: "minecraft:block.{block_type}.hit"
-      fall: "minecraft:block.{block_type}.fall"
+      break: "minecraft:block.${block_type}.break"
+      step: "minecraft:block.${block_type}.step"
+      place: "minecraft:block.${block_type}.place"
+      hit: "minecraft:block.${block_type}.hit"
+      fall: "minecraft:block.${block_type}.fall"
   default:sound/crop:
     sounds:
       break: "minecraft:block.crop.break"
@@ -614,7 +614,7 @@ templates#settings#break_level:
 # block settings
 templates#settings#blocks:
   default:settings/middle_click_pick_itself:
-    item: "{__NAMESPACE__}:{__ID__}"
+    item: "${__NAMESPACE__}:${__ID__}"
   default:settings/solid_1x1x1:
     is-suffocating: true
     replaceable: false
@@ -696,7 +696,7 @@ templates#settings#blocks:
   default:settings/ore:
     template:
       - "default:sound/stone"
-      - "default:pickaxe_power/level_{break_power}"
+      - "default:pickaxe_power/level_${break_power}"
     overrides:
       hardness: 3.0
       resistance: 3.0
@@ -712,7 +712,7 @@ templates#settings#blocks:
   default:settings/deepslate_ore:
     template:
       - "default:sound/deepslate"
-      - "default:pickaxe_power/level_{break_power}"
+      - "default:pickaxe_power/level_${break_power}"
     overrides:
       hardness: 4.5
       resistance: 3.0
@@ -735,45 +735,45 @@ templates#block_states:
         default: y
     appearances:
       axisY:
-        state: "{base_block}:{vanilla_id}"
+        state: "${base_block}:${vanilla_id}"
         model:
-          path: "{model_vertical_path}"
+          path: "${model_vertical_path}"
           generation:
             parent: "minecraft:block/cube_column"
             textures:
-              "end": "{texture_top_path}"
-              "side": "{texture_side_path}"
+              "end": "${texture_top_path}"
+              "side": "${texture_side_path}"
       axisX:
-        state: "{base_block}:{vanilla_id}"
+        state: "${base_block}:${vanilla_id}"
         model:
           x: 90
           y: 90
-          path: "{model_horizontal_path}"
+          path: "${model_horizontal_path}"
           generation:
             parent: "minecraft:block/cube_column_horizontal"
             textures:
-              "end": "{texture_top_path}"
-              "side": "{texture_side_path}"
+              "end": "${texture_top_path}"
+              "side": "${texture_side_path}"
       axisZ:
-        state: "{base_block}:{vanilla_id}"
+        state: "${base_block}:${vanilla_id}"
         model:
           x: 90
-          path: "{model_horizontal_path}"
+          path: "${model_horizontal_path}"
           generation:
             parent: "minecraft:block/cube_column_horizontal"
             textures:
-              "end": "{texture_top_path}"
-              "side": "{texture_side_path}"
+              "end": "${texture_top_path}"
+              "side": "${texture_side_path}"
     variants:
       axis=x:
         appearance: axisX
-        id: "{internal_id}"
+        id: "${internal_id}"
       axis=y:
         appearance: axisY
-        id: "{internal_id}"
+        id: "${internal_id}"
       axis=z:
         appearance: axisZ
-        id: "{internal_id}"
+        id: "${internal_id}"
   default:block_state/leaves:
     properties:
       waterlogged:
@@ -788,107 +788,107 @@ templates#block_states:
         range: 1~7
     appearances:
       default:
-        state: "{default_state}"
+        state: "${default_state}"
         model:
-          path: "{model_path}"
+          path: "${model_path}"
           generation:
             parent: "minecraft:block/leaves"
             textures:
-              "all": "{texture_path}"
+              "all": "${texture_path}"
       waterlogged:
-        state: "{waterlogged_state}"
+        state: "${waterlogged_state}"
         model:
-          path: "{model_path}"
+          path: "${model_path}"
     variants:
       distance=1,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=2,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=3,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=4,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=5,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=6,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=7,persistent=false,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           is-randomly-ticking: true
       distance=1,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=2,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=3,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=4,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=5,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=6,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=7,persistent=true,waterlogged=false:
         appearance: "default"
-        id: "{internal_id}"
+        id: "${internal_id}"
       distance=1,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=2,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=3,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=4,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=5,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=6,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=7,persistent=false,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
@@ -896,49 +896,49 @@ templates#block_states:
           fluid-state: water
       distance=1,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=2,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=3,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=4,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=5,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=6,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
           fluid-state: water
       distance=7,persistent=true,waterlogged=true:
         appearance: "waterlogged"
-        id: "{internal_id}"
+        id: "${internal_id}"
         settings:
           resistance: 1200.0
           burnable: false
@@ -951,9 +951,9 @@ templates#recipes:
     category: building
     group: planks
     ingredients:
-      A: "#default:{wood_type}_logs"
+      A: "#default:${wood_type}_logs"
     result:
-      id: "default:{wood_type}_planks"
+      id: "default:${wood_type}_planks"
       count: 4
   default:recipe/log_2_wood:
     type: shaped
@@ -963,29 +963,29 @@ templates#recipes:
       - "AA"
       - "AA"
     ingredients:
-      A: "default:{wood_type}_log"
+      A: "default:${wood_type}_log"
     result:
-      id: "default:{wood_type}_wood"
+      id: "default:${wood_type}_wood"
       count: 3
   default:recipe/smelting_ore:
     type: smelting
-    experience: "{exp}"
+    experience: "${exp}"
     category: misc
     group: topaz
     time: 200
-    ingredient: "{ingredient}"
+    ingredient: "${ingredient}"
     result:
-      id: "{result}"
+      id: "${result}"
       count: 1
   default:recipe/blasting_ore:
     type: blasting
-    experience: "{exp}"
+    experience: "${exp}"
     category: misc
     group: topaz
     time: 100
-    ingredient: "{ingredient}"
+    ingredient: "${ingredient}"
     result:
-      id: "{result}"
+      id: "${result}"
       count: 1
 
 # loot tables
@@ -1001,7 +1001,7 @@ templates#loot_tables:
           - type: survives_explosion
         entries:
           - type: item
-            item: "{__NAMESPACE__}:{__ID__}"
+            item: "${__NAMESPACE__}:${__ID__}"
 
   # drop one item
 
@@ -1015,7 +1015,7 @@ templates#loot_tables:
           - type: survives_explosion
         entries:
           - type: item
-            item: "{item}"
+            item: "${item}"
 
   # drop the original furniture item or a fallback item
 
@@ -1027,7 +1027,7 @@ templates#loot_tables:
       - rolls: 1
         entries:
           - type: furniture_item
-            item: "{item}"
+            item: "${item}"
 
   # drop with silk touch
 
@@ -1042,7 +1042,7 @@ templates#loot_tables:
             predicate: minecraft:silk_touch>=1
         entries:
           - type: item
-            item: "{item}"
+            item: "${item}"
 
   # crop drops
 
@@ -1058,21 +1058,21 @@ templates#loot_tables:
           - type: alternatives
             children:
               - type: item
-                item: "{crop_item}"
+                item: "${crop_item}"
                 conditions:
                   - type: match_block_property
                     properties:
-                      age: "{ripe_age}"
+                      age: "${ripe_age}"
               - type: item
-                item: "{crop_seed}"
+                item: "${crop_seed}"
       - rolls: 1
         conditions:
           - type: match_block_property
             properties:
-              age: "{ripe_age}"
+              age: "${ripe_age}"
         entries:
           - type: item
-            item: "{crop_seed}"
+            item: "${crop_seed}"
             functions:
               - type: apply_bonus
                 enchantment: minecraft:fortune
@@ -1090,15 +1090,15 @@ templates#loot_tables:
       - rolls: 1
         entries:
           - type: item
-            item: "{crop_item}"
+            item: "${crop_item}"
       - rolls: 1
         conditions:
           - type: match_block_property
             properties:
-              age: "{ripe_age}"
+              age: "${ripe_age}"
         entries:
           - type: item
-            item: "{crop_item}"
+            item: "${crop_item}"
             functions:
               - type: apply_bonus
                 enchantment: minecraft:fortune
@@ -1122,12 +1122,12 @@ templates#loot_tables:
           - type: alternatives
             children:
               - type: item
-                item: "{ore_block}"
+                item: "${ore_block}"
                 conditions:
                   - type: enchantment
                     predicate: minecraft:silk_touch>=1
               - type: item
-                item: "{ore_drop}"
+                item: "${ore_drop}"
                 functions:
                   - type: apply_bonus
                     enchantment: minecraft:fortune
@@ -1137,8 +1137,8 @@ templates#loot_tables:
                   - type: drop_exp
                     count:
                       type: uniform
-                      min: "{min_exp}"
-                      max: "{max_exp}"
+                      min: "${min_exp:-2}"
+                      max: "${max_exp:-4}"
 
   # template: default:loot_table/ore_no_exp
   # arguments:
@@ -1151,12 +1151,12 @@ templates#loot_tables:
           - type: alternatives
             children:
               - type: item
-                item: "{ore_block}"
+                item: "${ore_block}"
                 conditions:
                   - type: enchantment
                     predicate: minecraft:silk_touch>=1
               - type: item
-                item: "{ore_drop}"
+                item: "${ore_drop}"
                 functions:
                   - type: apply_bonus
                     enchantment: minecraft:fortune
@@ -1177,7 +1177,7 @@ templates#loot_tables:
           - type: alternatives
             children:
               - type: item
-                item: "{leaves}"
+                item: "${leaves}"
                 conditions:
                   - type: any_of
                     terms:
@@ -1186,7 +1186,7 @@ templates#loot_tables:
                       - type: enchantment
                         predicate: minecraft:silk_touch>=1
               - type: item
-                item: "{sapling}"
+                item: "${sapling}"
                 conditions:
                   - type: survives_explosion
                   - type: table_bonus
