@@ -6,6 +6,9 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Trim;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
@@ -318,5 +321,12 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
         TagCompound.merge(ItemObject.getCustomDataTag(item1.getLiteralObject()), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
         // update wrapped item
         item1.update();
+    }
+
+    @Override
+    protected LegacyItemWrapper transmuteCopy(LegacyItemWrapper item, Key newItem, int amount) {
+        Object newItemStack = FastNMS.INSTANCE.constructor$ItemStack(FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(newItem)), amount);
+        ItemObject.setCustomDataTag(newItemStack, TagCompound.clone(ItemObject.getCustomDataTag(item.getLiteralObject())));
+        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(newItemStack)), amount);
     }
 }

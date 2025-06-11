@@ -424,6 +424,11 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
         return new AbstractItem<>(this.factory, this.factory.mergeCopy(this.item, (W) ((AbstractItem) another).item));
     }
 
+    @Override
+    public AbstractItem<W, I> transmuteCopy(Key another, int count) {
+        return new AbstractItem<>(this.factory, this.factory.transmuteCopy(this.item, another, count));
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void merge(Item<I> another) {

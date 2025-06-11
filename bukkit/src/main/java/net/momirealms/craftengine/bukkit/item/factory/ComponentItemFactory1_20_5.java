@@ -5,8 +5,10 @@ import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.EnchantmentUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Trim;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -507,9 +509,9 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     protected ComponentItemWrapper mergeCopy(ComponentItemWrapper item1, ComponentItemWrapper item2) {
         Object itemStack1 = item1.getLiteralObject();
         Object itemStack2 = item2.getLiteralObject();
-        Object itemStack3 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, itemStack2);
+        Object itemStack3 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, FastNMS.INSTANCE.method$ItemStack$getItem(itemStack2), item2.count());
         FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack3, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
-        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack3), item2.count());
+        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack3));
     }
 
     @Override
@@ -519,7 +521,14 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
         try {
             FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack1, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
         } catch (Exception e) {
-            plugin.logger().warn("Failed to merge item", e);
+            this.plugin.logger().warn("Failed to merge item", e);
         }
+    }
+
+    @Override
+    protected ComponentItemWrapper transmuteCopy(ComponentItemWrapper item1, Key item, int amount) {
+        Object itemStack1 = item1.getLiteralObject();
+        Object itemStack2 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(item)), amount);
+        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack2));
     }
 }

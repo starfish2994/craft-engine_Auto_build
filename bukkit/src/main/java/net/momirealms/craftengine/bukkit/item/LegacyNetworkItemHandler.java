@@ -29,7 +29,20 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
 
     @Override
     public Optional<Item<ItemStack>> c2s(Item<ItemStack> wrapped) {
-        if (!wrapped.hasTag(NETWORK_ITEM_TAG)) return Optional.empty();
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        boolean hasDifferentMaterial = false;
+        if (optionalCustomItem.isPresent()) {
+            CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            if (!customItem.material().equals(wrapped.vanillaId())) {
+                wrapped = wrapped.transmuteCopy(customItem.material());
+                hasDifferentMaterial = true;
+            }
+        }
+        if (!wrapped.hasTag(NETWORK_ITEM_TAG)) {
+            if (hasDifferentMaterial) {
+                return Optional.of(wrapped);
+            }
+        }
         CompoundTag networkData = (CompoundTag) wrapped.getNBTTag(NETWORK_ITEM_TAG);
         if (networkData == null) return Optional.empty();
         wrapped.removeTag(NETWORK_ITEM_TAG);
@@ -46,12 +59,16 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) {
             if (!Config.interceptItem()) return Optional.empty();
-            return new OtherItem(wrapped).process();
+            return new OtherItem(wrapped, false).process();
         } else {
             CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            boolean hasDifferentMaterial = !wrapped.vanillaId().equals(customItem.clientBoundMaterial());
+            if (hasDifferentMaterial) {
+                wrapped = wrapped.transmuteCopy(customItem.clientBoundMaterial());
+            }
             if (!customItem.hasClientBoundDataModifier()) {
-                if (!Config.interceptItem()) return Optional.empty();
-                return new OtherItem(wrapped).process();
+                if (!Config.interceptItem() && !hasDifferentMaterial) return Optional.empty();
+                return new OtherItem(wrapped, hasDifferentMaterial).process();
             } else {
                 CompoundTag tag = new CompoundTag();
                 Tag argumentTag = wrapped.getNBTTag(ArgumentModifier.ARGUMENTS_TAG);
@@ -77,7 +94,12 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
                         processLore(wrapped, tag::put);
                     }
                 }
-                if (tag.isEmpty()) return Optional.empty();
+                if (tag.isEmpty()) {
+                    if (hasDifferentMaterial) {
+                        return Optional.of(wrapped);
+                    }
+                    return Optional.empty();
+                }
                 wrapped.setTag(tag, NETWORK_ITEM_TAG);
                 return Optional.of(wrapped);
             }
@@ -130,9 +152,11 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
         private final Item<ItemStack> item;
         private boolean globalChanged = false;
         private CompoundTag networkTag;
+        private final boolean forceReturn;
 
-        public OtherItem(Item<ItemStack> item) {
+        public OtherItem(Item<ItemStack> item, boolean forceReturn) {
             this.item = item;
+            this.forceReturn = forceReturn;
         }
 
         public Optional<Item<ItemStack>> process() {
@@ -144,6 +168,8 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
             }
             if (this.globalChanged) {
                 this.item.setTag(this.networkTag, NETWORK_ITEM_TAG);
+                return Optional.of(this.item);
+            } else if (this.forceReturn) {
                 return Optional.of(this.item);
             } else {
                 return Optional.empty();

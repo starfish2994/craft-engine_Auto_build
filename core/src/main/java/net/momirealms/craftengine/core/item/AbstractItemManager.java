@@ -259,7 +259,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         return VANILLA_ITEMS.contains(item);
     }
 
-    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material);
+    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material, Key clientBoundMaterial);
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
@@ -297,6 +297,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             boolean isVanillaItem = isVanillaItem(id);
             Key material = Key.from(isVanillaItem ? id.value() : ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material").toLowerCase(Locale.ENGLISH));
+            Key clientBoundMaterial = section.containsKey("client-bound-material") ? Key.from(section.get("client-bound-material").toString().toLowerCase(Locale.ENGLISH)) : material;
             int customModelData = ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
             if (customModelData < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.invalid_custom_model_data", String.valueOf(customModelData));
@@ -307,7 +308,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             Key itemModelKey = null;
 
-            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(holder, material);
+            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(holder, material, clientBoundMaterial);
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
@@ -392,7 +393,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     legacyOverridesModels = new TreeSet<>(legacyItemModel.overrides());
                 } else {
                     legacyOverridesModels = new TreeSet<>();
-                    processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, material, customModelData);
+                    processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, clientBoundMaterial, customModelData);
                     if (legacyOverridesModels.isEmpty()) {
                         TranslationManager.instance().log("warning.config.item.legacy_model.cannot_convert", path.toString(), id.asString());
                     }
@@ -403,18 +404,18 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             if (customModelData != 0) {
                 // use custom model data
                 // check conflict
-                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(material, k -> new HashMap<>());
+                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(clientBoundMaterial, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
                     throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
                 conflict.put(customModelData, id);
                 // Parse models
                 if (isModernFormatRequired() && modernModel != null) {
-                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(material, k -> new TreeMap<>());
+                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
                     map.put(customModelData, modernModel);
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
-                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(material, k -> new TreeSet<>());
+                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
             }

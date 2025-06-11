@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.sparrow.nbt.Tag;
@@ -178,7 +179,17 @@ public interface Item<I> {
 
     Item<I> mergeCopy(Item<?> another);
 
+    Item<I> transmuteCopy(Key another, int count);
+
+    default Item<I> transmuteCopy(Key another) {
+        return transmuteCopy(another, this.count());
+    }
+
     void merge(Item<I> another);
+
+    default Item<I> apply(ItemDataModifier<I> modifier, ItemBuildContext context) {
+        return modifier.apply(this, context);
+    }
 
     byte[] toByteArray();
 }

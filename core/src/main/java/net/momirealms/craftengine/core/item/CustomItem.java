@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,8 @@ public interface CustomItem<I> extends BuildableItem<I> {
     Holder<Key> idHolder();
 
     Key material();
+
+    Key clientBoundMaterial();
 
     ItemDataModifier<I>[] dataModifiers();
 
@@ -51,7 +54,7 @@ public interface CustomItem<I> extends BuildableItem<I> {
     interface Builder<I> {
         Builder<I> id(Holder<Key> id);
 
-        Builder<I> material(Key material);
+        Builder<I> clientBoundMaterial(Key clientBoundMaterialKey);
 
         Builder<I> dataModifier(ItemDataModifier<I> modifier);
 
