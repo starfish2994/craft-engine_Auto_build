@@ -104,7 +104,7 @@ public class MiscUtils {
     public static void deepMergeMaps(Map<String, Object> baseMap, Map<String, Object> mapToMerge) {
         for (Map.Entry<String, Object> entry : mapToMerge.entrySet()) {
             String key = entry.getKey();
-            if (!key.isEmpty() && key.charAt(0) == '$') {
+            if (key.length() > 2 && key.charAt(0) == '$' && key.charAt(1) == '$') {
                 Object value = entry.getValue();
                 baseMap.put(key.substring(1), value);
             } else {

@@ -69,21 +69,21 @@ images:
 templates:
   internal:icon/2d:
     material: arrow
-    custom-model-data: "{model_data}"
+    custom-model-data: "${model_data}"
     data:
-      item-name: "{name}"
-      lore: "{lore}"
+      item-name: "${name}"
+      lore: "${lore}"
     model:
       template: "internal:model/simplified_generated"
       arguments:
-        path: "minecraft:item/custom/gui/{texture}"
+        path: "minecraft:item/custom/gui/${texture}"
   internal:model/simplified_generated:
     type: "minecraft:model"
-    path: "{path}"
+    path: "${path}"
     generation:
       parent: "minecraft:item/generated"
       textures:
-        "layer0": "{path}"
+        "layer0": "${path}"
 
 items:
   internal:next_page_0:

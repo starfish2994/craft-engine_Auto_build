@@ -82,7 +82,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     private static final String CONNECTION_HANDLER_NAME = "craftengine_connection_handler";
     private static final String SERVER_CHANNEL_HANDLER_NAME = "craftengine_server_channel_handler";
-    private static final String PLAYER_CHANNEL_HANDLER_NAME = "craftengine_player_packet_handler";
+    private static final String PLAYER_CHANNEL_HANDLER_NAME = "craftengine_player_channel_handler";
     private static final String PACKET_ENCODER = "craftengine_encoder";
     private static final String PACKET_DECODER = "craftengine_decoder";
 

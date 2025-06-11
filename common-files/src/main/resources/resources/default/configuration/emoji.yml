@@ -2,7 +2,7 @@ templates:
   default:emoji/basic:
     content: "<hover:show_text:'<i18n:emoji.tip>'><!shadow><white><arg:emoji></white></!shadow></hover>"
   default:emoji/addition_info:
-    content: "<hover:show_text:'<i18n:emoji.tip>'><!shadow><white><arg:emoji></white></!shadow>{text}</hover>"
+    content: "<hover:show_text:'<i18n:emoji.tip>'><!shadow><white><arg:emoji></white></!shadow>${text}</hover>"
 
 emoji:
   default:emoji_location:

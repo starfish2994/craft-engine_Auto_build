@@ -66,16 +66,17 @@ public interface TemplateManager extends Manageable {
         private final String rawText;
         private final Object defaultValue;
 
-        public Placeholder(String placeholder) {
-            this.rawText = "{" + placeholder + "}";
-            int first = placeholder.indexOf(':');
-            if (first == -1) {
-                this.placeholder = placeholder;
+        public Placeholder(String placeholderContent) {
+            this.rawText = "${" + placeholderContent + "}";
+            int separatorIndex = placeholderContent.indexOf(":-");
+            if (separatorIndex == -1) {
+                this.placeholder = placeholderContent;
                 this.defaultValue = this.rawText;
             } else {
-                this.placeholder = placeholder.substring(0, first);
+                this.placeholder = placeholderContent.substring(0, separatorIndex);
+                String defaultValueString = placeholderContent.substring(separatorIndex + 2);
                 try {
-                    this.defaultValue = CraftEngine.instance().platform().nbt2Java(placeholder.substring(first + 1));
+                    this.defaultValue = CraftEngine.instance().platform().nbt2Java(defaultValueString);
                 } catch (LocalizedResourceConfigException e) {
                     e.appendTailArgument(this.placeholder);
                     throw e;
@@ -220,42 +221,33 @@ public interface TemplateManager extends Manageable {
         while (i < n) {
             char c = input.charAt(i);
 
-            // --- 1. 处理转义字符 ---
-            if (c == '\\') {
-                // 只在'\'后面是'{'或'}'时才作为转义处理
-                if (i + 1 < n && (input.charAt(i + 1) == '{' || input.charAt(i + 1) == '}')) {
-                    currentLiteral.append(input.charAt(i + 1)); // 添加花括号
-                    i += 2; // 跳过'\'和花括号
-                } else {
-                    // 对于所有其他情况 (如 \\, \n), 将'\'视为普通字符
-                    currentLiteral.append(c);
-                    i++;
-                }
-                continue;
-            }
+            // --- 1. 优先检测占位符触发器 ---
+            if (c == '$' && i + 1 < n && input.charAt(i + 1) == '{') {
 
-            // --- 2. 处理占位符 {key} ---
-            if (c == '{') {
-                // 如果在占位符之前有普通文本，先提交它
+                // a. 提交之前的普通文本
                 if (!currentLiteral.isEmpty()) {
                     arguments.add(Literal.literal(currentLiteral.toString()));
-                    currentLiteral.setLength(0); // 清空
+                    currentLiteral.setLength(0);
                 }
 
-                // 开始解析占位符内部
+                // b. 解析占位符内部，此处的逻辑拥有自己的转义规则
+                int contentStartIndex = i + 2;
                 StringBuilder keyBuilder = new StringBuilder();
                 int depth = 1;
-                int j = i + 1;
+                int j = contentStartIndex;
                 boolean foundMatch = false;
 
                 while (j < n) {
                     char innerChar = input.charAt(j);
-                    if (innerChar == '\\') { // 处理占位符内部的转义
+
+                    // --- 占位符内部的转义逻辑 ---
+                    if (innerChar == '\\') {
                         if (j + 1 < n && (input.charAt(j + 1) == '{' || input.charAt(j + 1) == '}')) {
                             keyBuilder.append(input.charAt(j + 1));
                             j += 2;
                         } else {
-                            keyBuilder.append(innerChar); // 将'\'视为普通字符
+                            // 在占位符内部，一个无法识别的转义\依旧被当作普通\处理
+                            keyBuilder.append(innerChar);
                             j++;
                         }
                     } else if (innerChar == '{') {
@@ -266,11 +258,11 @@ public interface TemplateManager extends Manageable {
                         depth--;
                         if (depth == 0) { // 找到匹配的闭合括号
                             arguments.add(Placeholder.placeholder(keyBuilder.toString()));
-                            i = j + 1; // 将主循环的索引跳到占位符之后
+                            i = j + 1;
                             foundMatch = true;
                             break;
                         }
-                        keyBuilder.append(innerChar); // 嵌套的 '}'
+                        keyBuilder.append(innerChar);
                         j++;
                     } else {
                         keyBuilder.append(innerChar);
@@ -279,27 +271,31 @@ public interface TemplateManager extends Manageable {
                 }
 
                 if (foundMatch) {
-                    continue; // 成功解析占位符，继续主循环
+                    continue;
                 } else {
-                    // 没有找到匹配的 '}'，将起始的 '{' 视为普通文本
+                    // 未找到闭合括号，将 '$' 视为普通字符
                     currentLiteral.append(c);
                     i++;
                 }
-            } else {
-                // --- 3. 处理普通字符 ---
+            }
+            // --- 2. 其次，只处理对触发器'$'的转义 ---
+            else if (c == '\\' && i + 1 < n && input.charAt(i + 1) == '$') {
+                currentLiteral.append('$'); // 直接添加 '$'
+                i += 2; // 跳过 '\' 和 '$'
+            }
+            // --- 3. 处理所有其他字符（包括独立的'\'和'{'）为普通文本 ---
+            else {
                 currentLiteral.append(c);
                 i++;
             }
         }
 
-        // 添加循环结束后剩余的任何普通文本
         if (!currentLiteral.isEmpty()) {
             arguments.add(Literal.literal(currentLiteral.toString()));
         }
 
-        // 根据解析出的参数数量返回最终结果
         return switch (arguments.size()) {
-            case 0 -> Literal.literal(""); // 处理 input = "{}" 等情况
+            case 0 -> Literal.literal("");
             case 1 -> arguments.getFirst();
             case 2 -> new Complex2(input, arguments.get(0), arguments.get(1));
             default -> new Complex(input, arguments);

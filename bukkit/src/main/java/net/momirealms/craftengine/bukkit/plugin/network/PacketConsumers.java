@@ -1452,11 +1452,11 @@ public class PacketConsumers {
         assert CoreReflections.method$ServerGamePacketListenerImpl$tryPickItem != null;
         if (VersionHelper.isOrAbove1_21_5()) {
             CoreReflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                    CoreReflections.handle$ServerPlayer$connectionGetter.invokeExact(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)),
+                    CoreReflections.methodHandle$ServerPlayer$connectionGetter.invokeExact(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)),
                     FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack), blockPos, entity, true);
         } else {
             CoreReflections.method$ServerGamePacketListenerImpl$tryPickItem.invoke(
-                    CoreReflections.handle$ServerPlayer$connectionGetter.invokeExact(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
+                    CoreReflections.methodHandle$ServerPlayer$connectionGetter.invokeExact(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)), FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack));
         }
     }
 

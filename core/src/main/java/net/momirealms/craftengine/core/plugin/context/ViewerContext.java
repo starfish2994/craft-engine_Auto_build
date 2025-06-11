@@ -53,19 +53,15 @@ public class ViewerContext implements RelationalContext {
     @Override
     public TagResolver[] tagResolvers() {
         if (this.tagResolvers == null) {
-            Player optionalOwner = null;
-            if (this.owner instanceof PlayerOptionalContext context) {
-                optionalOwner = context.player();
-            }
-            if (optionalOwner != null && this.viewer.player != null) {
-                this.tagResolvers = new TagResolver[]{new RelationalPlaceholderTag(optionalOwner, this.viewer.player),
+            if (this.owner instanceof PlayerOptionalContext context && context.player != null && this.viewer.player != null) {
+                this.tagResolvers = new TagResolver[]{new RelationalPlaceholderTag(context.player, this.viewer.player, this),
                         ShiftTag.INSTANCE, ImageTag.INSTANCE,
-                        new PlaceholderTag(optionalOwner), new ViewerPlaceholderTag(this.viewer.player()),
+                        new PlaceholderTag(this.owner), new ViewerPlaceholderTag(this.viewer),
                         new NamedArgumentTag(this.owner), new ViewerNamedArgumentTag(this.viewer),
                         new I18NTag(this), new ExpressionTag(this), new GlobalVariableTag(this)};
             } else {
                 this.tagResolvers = new TagResolver[]{ShiftTag.INSTANCE, ImageTag.INSTANCE,
-                        new PlaceholderTag(optionalOwner), new ViewerPlaceholderTag(this.viewer.player()),
+                        new PlaceholderTag(this.owner), new ViewerPlaceholderTag(this.viewer),
                         new NamedArgumentTag(this.owner), new ViewerNamedArgumentTag(this.viewer),
                         new I18NTag(this), new ExpressionTag(this), new GlobalVariableTag(this)};
             }
