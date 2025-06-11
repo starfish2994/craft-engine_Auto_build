@@ -81,7 +81,7 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                 }
                 BlockData vanillaBlockState = BlockStateUtils.fromBlockData(immutableBlockState.vanillaBlockState().handle());
                 // 点击的是方块上面，则只需要判断shift和可交互
-                if (context.getClickedFace() == Direction.UP) {
+                if (direction == Direction.UP) {
                     // 客户端层面必须可交互
                     if (!InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState,
                             context.getHitResult(), (Item<ItemStack>) context.getItem())) {
@@ -139,6 +139,15 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                 int stateID = BlockStateUtils.blockStateToId(nearbyBlockState);
                 if (BlockStateUtils.isVanillaBlock(stateID)) {
                     if (BlockStateUtils.isBurnable(nearbyBlockState)) {
+                        return InteractionResult.PASS;
+                    }
+                    try {
+                        if (dir == Direction.DOWN && (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                                nearbyBlockState, context.getLevel().serverWorld(), LocationUtils.toBlockPos(relPos), CoreReflections.instance$Direction$UP, CoreReflections.instance$SupportType$FULL)) {
+                            return InteractionResult.PASS;
+                        }
+                    } catch (ReflectiveOperationException e) {
+                        CraftEngine.instance().logger().warn("Failed to call method$BlockStateBase$isFaceSturdy", e);
                         return InteractionResult.PASS;
                     }
                 }
