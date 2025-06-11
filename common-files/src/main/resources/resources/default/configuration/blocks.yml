@@ -167,7 +167,7 @@ items#misc:
           template: "default:loot_table/self"
         settings:
           template:
-            - default:sound/sand
+            - default:sound/stone
             - default:pickaxe_power/level_1
             - default:settings/solid_1x1x1
           overrides:
