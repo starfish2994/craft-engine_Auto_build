@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Position;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -87,6 +88,8 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
     }
 
     public abstract void playSound(Key sound, SoundSource source, float volume, float pitch);
+
+    public abstract void playSound(Key sound, BlockPos pos, SoundSource source, float volume, float pitch);
 
     public abstract void giveItem(Item<?> item);
 

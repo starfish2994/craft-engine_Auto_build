@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.RandomUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -48,65 +49,102 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                 return InteractionResult.PASS;
             }
         } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to run BaseFireBlock$canBePlacedAt", e);
+            CraftEngine.instance().logger().warn("Failed to call BaseFireBlock$canBePlacedAt", e);
+            return InteractionResult.PASS;
+        }
+
+        // 判断点击的方块是否可燃
+        BlockData clickedBlockData = block.getBlockData();
+        Object clickedBlockState = BlockStateUtils.blockDataToBlockState(clickedBlockData);
+        boolean isClickedBlockBurnable;
+        try {
+            isClickedBlockBurnable = BlockStateUtils.isBurnable(clickedBlockState) ||
+                    (context.getClickedFace() == Direction.UP && (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                            clickedBlockState, context.getLevel().serverWorld(), LocationUtils.toBlockPos(clickedPos), CoreReflections.instance$Direction$UP, CoreReflections.instance$SupportType$FULL));
+        } catch (ReflectiveOperationException e) {
+            CraftEngine.instance().logger().warn("Failed to call method$BlockStateBase$isFaceSturdy", e);
             return InteractionResult.PASS;
         }
 
         net.momirealms.craftengine.core.entity.player.Player player = context.getPlayer();
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
-        if (state == null || state.isEmpty()) {
-            return InteractionResult.PASS;
-        } else {
-            // 玩家交互目标是自定义方块
-            if (context.getClickedFace() == Direction.UP) {
-                // 客户端层面必须可交互
-                if (!InteractUtils.isInteractable((Player) player.platformPlayer(), BlockStateUtils.fromBlockData(state.vanillaBlockState().handle()), context.getHitResult(), (Item<ItemStack>) context.getItem())) {
-                    return InteractionResult.PASS;
-                }
-                // 且没有shift
-                if (!player.isSecondaryUseActive()) {
-                    player.playSound(FLINT_SOUND, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
-                }
+        // 点击对象直接可燃，则忽略
+        if (isClickedBlockBurnable) {
+            int stateId = BlockStateUtils.blockStateToId(clickedBlockState);
+            if (BlockStateUtils.isVanillaBlock(stateId)) {
+                return InteractionResult.PASS;
             } else {
-                BlockData vanillaBlockState = BlockStateUtils.fromBlockData(state.vanillaBlockState().handle());
-                // 原版状态可燃烧，则跳过
-                if (BlockStateUtils.isBurnable(BlockStateUtils.blockDataToBlockState(vanillaBlockState))) {
+                // 点击对象为自定义方块
+                ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
+                // 原版外观也可燃
+                if (BlockStateUtils.isBurnable(immutableBlockState.vanillaBlockState().handle())) {
                     return InteractionResult.PASS;
                 }
-
-                // 客户端一定觉得这个东西不可燃烧
-                BlockPos belowFirePos = firePos.relative(Direction.DOWN);
-                BukkitBlockInWorld belowFireBlock = (BukkitBlockInWorld) context.getLevel().getBlockAt(belowFirePos);
-                boolean belowCanBurn;
-                try {
-                    Block belowBlock = belowFireBlock.block();
-                    belowCanBurn = BlockStateUtils.isBurnable(BlockStateUtils.blockDataToBlockState(belowBlock.getBlockData())) ||
-                            (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
-                                    BlockStateUtils.blockDataToBlockState(belowFireBlock.block().getBlockData()), context.getLevel().serverWorld(), LocationUtils.toBlockPos(belowFirePos), CoreReflections.instance$Direction$UP, CoreReflections.instance$SupportType$FULL);
-                } catch (ReflectiveOperationException e) {
-                    CraftEngine.instance().logger().warn("Failed to call method$BlockStateBase$isFaceSturdy", e);
-                    return InteractionResult.PASS;
-                }
-
-                // 客户端觉得这玩意可交互，就会忽略声音
-                if (InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState, context.getHitResult(), (Item<ItemStack>) context.getItem())) {
-                    // 如果按住了shift，则不会挥手，补发
-                    if (player.isSecondaryUseActive()) {
-                        // 如果底部不能燃烧，则燃烧点位为侧面，需要补发
-                        if (!belowCanBurn) {
-                            player.playSound(FLINT_SOUND, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
-                            player.swingHand(context.getHand());
-                        }
-                    } else {
-                        player.playSound(FLINT_SOUND, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+                BlockData vanillaBlockState = BlockStateUtils.fromBlockData(immutableBlockState.vanillaBlockState().handle());
+                // 点击的是方块上面，则只需要判断shift和可交互
+                if (context.getClickedFace() == Direction.UP) {
+                    // 客户端层面必须可交互
+                    if (!InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState,
+                            context.getHitResult(), (Item<ItemStack>) context.getItem())) {
+                        return InteractionResult.PASS;
+                    }
+                    // 且没有shift
+                    if (!player.isSecondaryUseActive()) {
+                        player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
                     }
                 } else {
-                    if (!belowCanBurn) {
-                        player.playSound(FLINT_SOUND, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
-                        player.swingHand(context.getHand());
+                    // 玩家觉得自定义方块不可燃，且点击了侧面，那么就要判断火源下方的方块是否可燃，如果不可燃，则补发声音
+                    BlockPos belowFirePos = firePos.relative(Direction.DOWN);
+                    BukkitBlockInWorld belowFireBlock = (BukkitBlockInWorld) context.getLevel().getBlockAt(belowFirePos);
+                    boolean belowCanBurn;
+                    try {
+                        Block belowBlock = belowFireBlock.block();
+                        belowCanBurn = BlockStateUtils.isBurnable(BlockStateUtils.blockDataToBlockState(belowBlock.getBlockData())) ||
+                                (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                                        BlockStateUtils.blockDataToBlockState(belowFireBlock.block().getBlockData()), context.getLevel().serverWorld(), LocationUtils.toBlockPos(belowFirePos), CoreReflections.instance$Direction$UP, CoreReflections.instance$SupportType$FULL);
+                    } catch (ReflectiveOperationException e) {
+                        CraftEngine.instance().logger().warn("Failed to call method$BlockStateBase$isFaceSturdy", e);
+                        return InteractionResult.PASS;
+                    }
+
+                    // 客户端觉得这玩意可交互，就会忽略声音
+                    if (InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState, context.getHitResult(), (Item<ItemStack>) context.getItem())) {
+                        // 如果按住了shift，则代表尝试对侧面方块点火
+                        if (player.isSecondaryUseActive()) {
+                            // 如果底部不能燃烧，则燃烧点位为侧面，需要补发
+                            if (!belowCanBurn) {
+                                player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+                                player.swingHand(context.getHand());
+                            }
+                        } else {
+                            player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+                        }
+                    } else {
+                        // 如果底部方块不可燃烧才补发
+                        if (!belowCanBurn) {
+                            player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+                            player.swingHand(context.getHand());
+                        }
                     }
                 }
             }
+        } else {
+            // 如果点击的方块不可燃烧，但是服务端却认为可以放置火源，则可燃烧的方块一定位于火源的六个方向之一。
+            Direction relativeDirection = direction.opposite();
+            for (Direction dir : Direction.values()) {
+                if (dir == relativeDirection) continue;
+                BlockPos relPos = firePos.relative(dir);
+                BukkitBlockInWorld nearByBlock = (BukkitBlockInWorld) context.getLevel().getBlockAt(relPos);
+                BlockData nearbyBlockData = nearByBlock.block().getBlockData();
+                Object nearbyBlockState = BlockStateUtils.blockDataToBlockState(nearbyBlockData);
+                int stateID = BlockStateUtils.blockStateToId(nearbyBlockState);
+                if (BlockStateUtils.isVanillaBlock(stateID)) {
+                    if (BlockStateUtils.isBurnable(nearbyBlockState)) {
+                        return InteractionResult.PASS;
+                    }
+                }
+            }
+            player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+            player.swingHand(context.getHand());
         }
         return InteractionResult.PASS;
     }
