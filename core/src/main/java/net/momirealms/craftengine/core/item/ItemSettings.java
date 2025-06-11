@@ -153,6 +153,11 @@ public class ItemSettings {
         return this;
     }
 
+    public ItemSettings craftRemainder(Key key) {
+        this.craftRemainder = key;
+        return this;
+    }
+
     public ItemSettings canRepair(boolean canRepair) {
         this.canRepair = canRepair;
         return this;
@@ -246,6 +251,10 @@ public class ItemSettings {
                 if (value == null) settings.consumeReplacement(null);
                 else settings.consumeReplacement(Key.of(value.toString()));
             }));
+            registerFactory("craft-remainder", (value -> settings -> {
+                if (value == null) settings.craftRemainder(null);
+                else settings.craftRemainder(Key.of(value.toString()));
+            }));
             registerFactory("tags", (value -> {
                 List<String> tags = MiscUtils.getAsStringList(value);
                 return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));
@@ -298,9 +307,6 @@ public class ItemSettings {
                 );
                 return settings -> settings.foodData(data);
             }));
-//            registerFactory("craft-remainder", (value -> {
-//
-//            }));
         }
 
         private static void registerFactory(String id, ItemSettings.Modifier.Factory factory) {
