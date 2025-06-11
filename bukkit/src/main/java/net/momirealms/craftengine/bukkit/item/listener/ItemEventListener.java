@@ -28,11 +28,13 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -397,5 +399,18 @@ public class ItemEventListener implements Listener {
             }
         }
         return false;
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.getEntityType() == EntityType.ITEM && event.getEntity() instanceof org.bukkit.entity.Item item) {
+            Optional.ofNullable(this.plugin.itemManager().wrap(item.getItemStack()))
+                    .flatMap(Item::getCustomItem)
+                    .ifPresent(it -> {
+                        if (it.settings().invulnerable().contains(DamageCauseUtils.fromBukkit(event.getCause()))) {
+                            event.setCancelled(true);
+                        }
+                    });
+        }
     }
 }

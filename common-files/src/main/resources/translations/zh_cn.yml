@@ -153,6 +153,7 @@ warning.config.furniture.hitbox.invalid_type: "<yellow>在文件 <arg:0> 发现�
 warning.config.furniture.hitbox.custom.invalid_entity: "<yellow>在文件 <arg:0> 发现问题 - 家具 '<arg:1>' 的自定义碰撞箱使用了无效的实体类型 '<arg:2>'</yellow>"
 warning.config.item.duplicate: "<yellow>在文件 <arg:0> 发现问题 - 重复的物品 '<arg:1>' 请检查其他文件中是否存在相同配置</yellow>"
 warning.config.item.settings.unknown: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 使用了未知的设置类型 '<arg:2>'</yellow>"
+warning.config.item.settings.invulnerable-unknown: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 物品使用了未知的受伤害类型 '<arg:2>'</yellow>"
 warning.config.item.missing_material: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 缺少必需的 'material' 参数</yellow>"
 warning.config.item.invalid_material: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 使用了无效的材料类型 '<arg:2>'</yellow>"
 warning.config.item.invalid_custom_model_data: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 使用了无效的负数模型值 '<arg:2>'.</yellow>"
