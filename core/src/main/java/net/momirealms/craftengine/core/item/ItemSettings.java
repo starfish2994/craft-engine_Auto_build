@@ -12,10 +12,7 @@ import net.momirealms.craftengine.core.item.setting.Helmet;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -38,6 +35,7 @@ public class ItemSettings {
     FoodData foodData = null;
     Key consumeReplacement = null;
     Key craftRemainder = null;
+    List<DamageCause> invulnerable = List.of();
 
     private ItemSettings() {}
 
@@ -76,6 +74,7 @@ public class ItemSettings {
         newSettings.foodData = settings.foodData;
         newSettings.consumeReplacement = settings.consumeReplacement;
         newSettings.craftRemainder = settings.craftRemainder;
+        newSettings.invulnerable = settings.invulnerable;
         return newSettings;
     }
 
@@ -148,6 +147,10 @@ public class ItemSettings {
         return equipment;
     }
 
+    public List<DamageCause> invulnerable() {
+        return invulnerable;
+    }
+
     public ItemSettings repairItems(List<AnvilRepairItem> items) {
         this.anvilRepairItems = items;
         return this;
@@ -210,6 +213,11 @@ public class ItemSettings {
 
     public ItemSettings helmet(Helmet helmet) {
         this.helmet = helmet;
+        return this;
+    }
+
+    public ItemSettings invulnerable(List<DamageCause> invulnerable) {
+        this.invulnerable = invulnerable;
         return this;
     }
 
@@ -311,6 +319,16 @@ public class ItemSettings {
                         ResourceConfigUtils.getAsFloat(args.get("saturation"), "saturation")
                 );
                 return settings -> settings.foodData(data);
+            }));
+            registerFactory("invulnerable", (value -> {
+                List<DamageCause> list = MiscUtils.getAsStringList(value).stream().map(it -> {
+                    try {
+                        return DamageCause.byName(it);
+                    } catch (IllegalArgumentException e) {
+                        throw new LocalizedResourceConfigException("warning.config.item.settings.invulnerable-unknown", it);
+                    }
+                }).toList();
+                return settings -> settings.invulnerable(list);
             }));
         }
 
