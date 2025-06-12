@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.sparrow.nbt.Tag;
 
@@ -423,6 +424,16 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
         return new AbstractItem<>(this.factory, this.factory.mergeCopy(this.item, (W) ((AbstractItem) another).item));
     }
 
+    @Override
+    public AbstractItem<W, I> transmuteCopy(Key another, int count) {
+        return new AbstractItem<>(this.factory, this.factory.transmuteCopy(this.item, another, count));
+    }
+
+    @Override
+    public Item<I> unsafeTransmuteCopy(Object another, int count) {
+        return new AbstractItem<>(this.factory, this.factory.unsafeTransmuteCopy(this.item, another, count));
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void merge(Item<I> another) {
@@ -432,5 +443,10 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public byte[] toByteArray() {
         return this.factory.toByteArray(this.item);
+    }
+
+    @Override
+    public void shrink(int amount) {
+        this.item.shrink(amount);
     }
 }

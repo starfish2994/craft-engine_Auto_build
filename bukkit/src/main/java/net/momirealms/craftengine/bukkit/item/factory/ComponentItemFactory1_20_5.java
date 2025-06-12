@@ -4,11 +4,16 @@ import com.google.gson.JsonElement;
 import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.EnchantmentUtils;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.Enchantment;
 import net.momirealms.craftengine.core.item.Trim;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,29 +43,136 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
         return new ComponentItemWrapper(item);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected Object getJavaTag(ComponentItemWrapper item, Object... path) {
-        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+        Map<String, Object> rootMap = (Map<String, Object>) item.getJavaComponent(ComponentTypes.CUSTOM_DATA).orElse(null);
+        if (rootMap == null) return null;
+        Object currentObj = rootMap;
+        for (int i = 0; i < path.length; i++) {
+            Object pathSegment = path[i];
+            if (pathSegment == null) return null;
+            String key = pathSegment.toString();
+            currentObj = ((Map<String, Object>) currentObj).get(key);
+            if (currentObj == null) return null;
+            if (i == path.length - 1) {
+                return currentObj;
+            }
+            if (!(currentObj instanceof Map)) {
+                return null;
+            }
+        }
+        return currentObj;
     }
 
     @Override
     protected Tag getNBTTag(ComponentItemWrapper item, Object... path) {
-        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+        CompoundTag rootTag = (CompoundTag) item.getSparrowNBTComponent(ComponentTypes.CUSTOM_DATA).orElse(null);
+        if (rootTag == null) return null;
+        Tag currentTag = rootTag;
+        for (int i = 0; i < path.length; i++) {
+            Object pathSegment = path[i];
+            if (pathSegment == null) return null;
+            CompoundTag t = (CompoundTag) currentTag;
+            String key = pathSegment.toString();
+            currentTag = t.get(key);
+            if (currentTag == null) return null;
+            if (i == path.length - 1) {
+                return currentTag;
+            }
+            if (!(currentTag instanceof CompoundTag)) {
+                return null;
+            }
+        }
+        return currentTag;
     }
 
     @Override
     protected void setTag(ComponentItemWrapper item, Object value, Object... path) {
-        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+        Tag valueTag;
+        if (value instanceof Tag tag) {
+            valueTag = tag;
+        } else if (value instanceof JsonElement je) {
+            valueTag = MRegistryOps.JSON.convertTo(MRegistryOps.SPARROW_NBT, je);
+        } else if (CoreReflections.clazz$Tag.isInstance(value)) {
+            valueTag = MRegistryOps.NBT.convertTo(MRegistryOps.SPARROW_NBT, value);
+        } else {
+            assert MRegistryOps.JAVA != null;
+            valueTag = MRegistryOps.JAVA.convertTo(MRegistryOps.SPARROW_NBT, value);
+        }
+
+        CompoundTag rootTag = (CompoundTag) item.getSparrowNBTComponent(ComponentTypes.CUSTOM_DATA).orElse(new CompoundTag());
+
+        if (path == null || path.length == 0) {
+            if (valueTag instanceof CompoundTag) {
+                rootTag = (CompoundTag) valueTag;
+            } else {
+                throw new IllegalArgumentException("Cannot set non-CompoundTag as root without path");
+            }
+        } else {
+            CompoundTag currentTag = rootTag;
+            for (int i = 0; i < path.length - 1; i++) {
+                Object pathSegment = path[i];
+                if (pathSegment == null) throw new NullPointerException("Path segment cannot be null");
+
+                String key = pathSegment.toString();
+                Tag nextTag = currentTag.get(key);
+
+                if (!(nextTag instanceof CompoundTag)) {
+                    nextTag = new CompoundTag();
+                    currentTag.put(key, nextTag);
+                }
+                currentTag = (CompoundTag) nextTag;
+            }
+
+            String finalKey = path[path.length - 1].toString();
+            currentTag.put(finalKey, valueTag);
+        }
+
+        item.setSparrowNBTComponent(ComponentTypes.CUSTOM_DATA, rootTag);
     }
 
     @Override
     protected boolean hasTag(ComponentItemWrapper item, Object... path) {
-        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+        return getNBTTag(item, path) != null;
     }
 
     @Override
     protected boolean removeTag(ComponentItemWrapper item, Object... path) {
-        throw new UnsupportedOperationException("This feature is not available on 1.20.5+");
+        CompoundTag rootTag = (CompoundTag) item.getSparrowNBTComponent(ComponentTypes.CUSTOM_DATA).orElse(null);
+        if (rootTag == null || path == null || path.length == 0) return false;
+
+        if (path.length == 1) {
+            String key = path[0].toString();
+            if (rootTag.containsKey(key)) {
+                rootTag.remove(key);
+                item.setSparrowNBTComponent(ComponentTypes.CUSTOM_DATA, rootTag);
+                return true;
+            }
+            return false;
+        }
+
+        CompoundTag parentTag = rootTag;
+        for (int i = 0; i < path.length - 1; i++) {
+            Object pathSegment = path[i];
+            if (pathSegment == null) return false;
+
+            String key = pathSegment.toString();
+            Tag childTag = parentTag.get(key);
+
+            if (!(childTag instanceof CompoundTag)) {
+                return false;
+            }
+            parentTag = (CompoundTag) childTag;
+        }
+
+        String finalKey = path[path.length - 1].toString();
+        if (parentTag.containsKey(finalKey)) {
+            parentTag.remove(finalKey);
+            item.setSparrowNBTComponent(ComponentTypes.CUSTOM_DATA, rootTag);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -397,9 +509,9 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     protected ComponentItemWrapper mergeCopy(ComponentItemWrapper item1, ComponentItemWrapper item2) {
         Object itemStack1 = item1.getLiteralObject();
         Object itemStack2 = item2.getLiteralObject();
-        Object itemStack3 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, itemStack2);
+        Object itemStack3 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, FastNMS.INSTANCE.method$ItemStack$getItem(itemStack2), item2.count());
         FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack3, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
-        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack3), item2.count());
+        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack3));
     }
 
     @Override
@@ -409,7 +521,21 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
         try {
             FastNMS.INSTANCE.method$ItemStack$applyComponents(itemStack1, FastNMS.INSTANCE.method$ItemStack$getComponentsPatch(itemStack2));
         } catch (Exception e) {
-            plugin.logger().warn("Failed to merge item", e);
+            this.plugin.logger().warn("Failed to merge item", e);
         }
+    }
+
+    @Override
+    protected ComponentItemWrapper transmuteCopy(ComponentItemWrapper item, Key newItem, int amount) {
+        Object itemStack1 = item.getLiteralObject();
+        Object itemStack2 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(newItem)), amount);
+        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack2));
+    }
+
+    @Override
+    protected ComponentItemWrapper unsafeTransmuteCopy(ComponentItemWrapper item, Object newItem, int amount) {
+        Object itemStack1 = item.getLiteralObject();
+        Object itemStack2 = FastNMS.INSTANCE.method$ItemStack$transmuteCopy(itemStack1, newItem, amount);
+        return new ComponentItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack2));
     }
 }

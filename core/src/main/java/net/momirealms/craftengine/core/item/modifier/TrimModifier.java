@@ -20,12 +20,13 @@ public class TrimModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         item.trim(new Trim(this.material, this.pattern));
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         if (VersionHelper.isOrAbove1_20_5()) {
             Tag previous = item.getNBTComponent(ComponentKeys.TRIM);
             if (previous != null) {
@@ -41,5 +42,6 @@ public class TrimModifier<I> implements ItemDataModifier<I> {
                 networkData.put("Trim", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
         }
+        return item;
     }
 }

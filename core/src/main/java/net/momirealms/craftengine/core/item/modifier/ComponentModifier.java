@@ -63,7 +63,7 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         for (Pair<Key, Object> entry : this.arguments) {
             item.setComponent(entry.left(), entry.right());
         }
@@ -75,10 +75,11 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
                 item.setComponent(ComponentKeys.CUSTOM_DATA, this.customData);
             }
         }
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         for (Pair<Key, Object> entry : this.arguments) {
             Tag previous = item.getNBTComponent(entry.left());
             if (previous != null) {
@@ -87,5 +88,6 @@ public class ComponentModifier<I> implements ItemDataModifier<I> {
                 networkData.put(entry.left().asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
         }
+        return item;
     }
 }

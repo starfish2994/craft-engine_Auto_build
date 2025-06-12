@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
@@ -193,4 +194,8 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void setJsonComponent(W item, Object type, JsonElement value);
 
     protected abstract void setNBTComponent(W item, Object type, Tag value);
+
+    protected abstract W transmuteCopy(W item, Key newItem, int amount);
+
+    protected abstract W unsafeTransmuteCopy(W item, Object newItem, int count);
 }

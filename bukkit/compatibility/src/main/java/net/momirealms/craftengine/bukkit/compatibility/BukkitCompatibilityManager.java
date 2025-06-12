@@ -3,11 +3,13 @@ package net.momirealms.craftengine.bukkit.compatibility;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
 import net.momirealms.craftengine.bukkit.compatibility.item.MMOItemsProvider;
+import net.momirealms.craftengine.bukkit.compatibility.item.MythicMobsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.leveler.AuraSkillsLevelerProvider;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
+import net.momirealms.craftengine.bukkit.compatibility.mythicmobs.MythicMobsListener;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.compatibility.permission.LuckPermsEventListeners;
 import net.momirealms.craftengine.bukkit.compatibility.skript.SkriptHook;
@@ -104,6 +106,12 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         }
         if (this.isPluginEnabled("AuraSkills")) {
             this.registerLevelerProvider("AuraSkills", new AuraSkillsLevelerProvider());
+            logHook("AuraSkills");
+        }
+        if (this.isPluginEnabled("MythicMobs")) {
+            BukkitItemManager.instance().registerExternalItemProvider(new MythicMobsProvider());
+            new MythicMobsListener(this.plugin);
+            logHook("MythicMobs");
         }
     }
 

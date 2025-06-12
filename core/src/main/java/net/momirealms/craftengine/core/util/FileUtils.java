@@ -1,5 +1,8 @@
 package net.momirealms.craftengine.core.util;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.momirealms.craftengine.core.pack.ResourceLocation;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,5 +59,29 @@ public class FileUtils {
         } catch (IOException e) {
             throw new RuntimeException("Failed to traverse directory: " + configFolder, e);
         }
+    }
+
+    public static List<Path> collectOverlays(Path resourcePackFolder) throws IOException {
+        List<Path> folders = new ObjectArrayList<>();
+        folders.add(resourcePackFolder);
+        try (Stream<Path> paths = Files.list(resourcePackFolder)) {
+            folders.addAll(paths
+                    .filter(Files::isDirectory)
+                    .filter(path -> !path.getFileName().toString().equals("assets"))
+                    .filter(path -> Files.exists(path.resolve("assets")))
+                    .toList());
+        }
+        return folders;
+    }
+
+    public static List<Path> collectNamespaces(Path assetsFolder) throws IOException {
+        List<Path> folders;
+        try (Stream<Path> paths = Files.list(assetsFolder)) {
+            folders = new ObjectArrayList<>(paths
+                    .filter(Files::isDirectory)
+                    .filter(path -> ResourceLocation.isValidNamespace(path.getFileName().toString()))
+                    .toList());
+        }
+        return folders;
     }
 }

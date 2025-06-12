@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.item;
 
 import com.saicone.rtag.item.ItemTagStream;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
+import net.momirealms.craftengine.bukkit.item.behavior.FlintAndSteelItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
 import net.momirealms.craftengine.bukkit.item.listener.ArmorEventListener;
@@ -12,6 +13,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -43,6 +45,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
         registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKETS);
         registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
+        registerVanillaItemExtraBehavior(FlintAndSteelItemBehavior.INSTANCE, ItemKeys.FLINT_AND_STEEL);
     }
 
     private static BukkitItemManager instance;
@@ -198,9 +201,19 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId) {
-        Material material = ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(materialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString()));
-        return BukkitCustomItem.builder(material).material(materialId).id(id);
+    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId, Key clientBoundMaterialId) {
+        Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(materialId));
+        Object clientBoundItem = materialId == clientBoundMaterialId ? item : FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(clientBoundMaterialId));
+        if (item == null) {
+            throw new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString());
+        }
+        if (clientBoundItem == null) {
+            throw new LocalizedResourceConfigException("warning.config.item.invalid_material", clientBoundMaterialId.toString());
+        }
+        return BukkitCustomItem.builder(item, clientBoundItem)
+                .id(id)
+                .material(materialId)
+                .clientBoundMaterial(clientBoundMaterialId);
     }
 
     @SuppressWarnings("unchecked")
@@ -214,7 +227,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                             .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                                     .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
                     Object resourceLocation = KeyUtils.toResourceLocation(id.namespace(), id.value());
-                    Object mcHolder = ((Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.ITEM, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$ITEM, resourceLocation))).get();
+                    Object mcHolder = ((Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.ITEM, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.ITEM, resourceLocation))).get();
                     Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
                     for (Object tag : tags) {
                         Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());

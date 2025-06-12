@@ -38,11 +38,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BukkitProjectileManager implements Listener, ProjectileManager {
     private static BukkitProjectileManager instance;
     private final BukkitCraftEngine plugin;
-    private final Map<Integer, BukkitCustomProjectile> projectiles;
+    // 会被netty线程访问
+    private final Map<Integer, BukkitCustomProjectile> projectiles = new ConcurrentHashMap<>();
 
     public BukkitProjectileManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
-        this.projectiles = new ConcurrentHashMap<>();
         instance = this;
     }
 
@@ -114,7 +114,8 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         wrapped.getCustomItem().ifPresent(it -> {
             ProjectileMeta meta = it.settings().projectileMeta();
             if (meta != null) {
-                this.projectiles.put(projectile.getEntityId(), new BukkitCustomProjectile(meta, projectile, wrapped));
+                BukkitCustomProjectile customProjectile = new BukkitCustomProjectile(meta, projectile, wrapped);
+                this.projectiles.put(projectile.getEntityId(), customProjectile);
                 new ProjectileInjectTask(projectile);
             }
         });
@@ -161,7 +162,8 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     public class ProjectileInjectTask implements Runnable {
         private final Projectile projectile;
         private final SchedulerTask task;
-        private boolean injected;
+        private Object cachedServerEntity;
+        private int lastInjectedInterval = 0;
 
         public ProjectileInjectTask(Projectile projectile) {
             this.projectile = projectile;
@@ -178,32 +180,42 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.task.cancel();
                 return;
             }
+
             Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(this.projectile);
-            if (!this.injected) {
+            // 获取server entity
+            if (this.cachedServerEntity == null) {
                 Object trackedEntity = FastNMS.INSTANCE.field$Entity$trackedEntity(nmsEntity);
-                if (trackedEntity == null) {
-                    return;
-                }
-                Object serverEntity = FastNMS.INSTANCE.filed$ChunkMap$TrackedEntity$serverEntity(trackedEntity);
-                if (serverEntity == null) {
-                    return;
-                }
-                try {
-                    CoreReflections.field$ServerEntity$updateInterval.set(serverEntity, 1);
-                    this.injected = true;
-                } catch (ReflectiveOperationException e) {
-                    plugin.logger().warn("Failed to update server entity tracking interval", e);
-                }
+                if (trackedEntity == null) return;
+                Object serverEntity = FastNMS.INSTANCE.field$ChunkMap$TrackedEntity$serverEntity(trackedEntity);
+                if (serverEntity == null) return;
+                this.cachedServerEntity = serverEntity;
             }
-            if (canSpawnParticle(nmsEntity)) {
+
+            boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
+            if (canSpawnParticle(nmsEntity, inGround)) {
                 this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
+            }
+            if (inGround) {
+                updateProjectileUpdateInterval(Integer.MAX_VALUE);
+            } else {
+                updateProjectileUpdateInterval(1);
             }
         }
 
-        private static boolean canSpawnParticle(Object nmsEntity) {
+        private void updateProjectileUpdateInterval(int updateInterval) {
+            if (this.lastInjectedInterval == updateInterval) return;
+            try {
+                CoreReflections.methodHandle$ServerEntity$updateIntervalSetter.invokeExact(this.cachedServerEntity, updateInterval);
+                this.lastInjectedInterval = updateInterval;
+            } catch (Throwable e) {
+                BukkitProjectileManager.this.plugin.logger().warn("Failed to update server entity update interval for " + this.projectile.getType().getKey() + "[" + this.projectile.getUniqueId() + "]", e);
+            }
+        }
+
+        private static boolean canSpawnParticle(Object nmsEntity, boolean inGround) {
             if (!FastNMS.INSTANCE.field$Entity$wasTouchingWater(nmsEntity)) return false;
             if (CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
-                return !FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
+                return !inGround;
             }
             return true;
         }

@@ -2,8 +2,10 @@ package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.core.block.*;
@@ -22,18 +24,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class BlockStateUtils {
     public static final IdentityHashMap<Object, Object> CLIENT_SIDE_NOTE_BLOCKS = new IdentityHashMap<>();
     private static int vanillaStateSize;
     private static boolean hasInit;
+    public static Map<Object, Integer> IGNITE_ODDS;
 
+    @SuppressWarnings("unchecked")
     public static void init(int size) {
         if (hasInit) {
             throw new IllegalStateException("BlockStateUtils has already been initialized");
         }
         vanillaStateSize = size;
+        try {
+            IGNITE_ODDS = (Map<Object, Integer>) CoreReflections.field$FireBlock$igniteOdds.get(MBlocks.FIRE);
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize instance$FireBlock$igniteOdds", e);
+        }
         hasInit = true;
     }
 
@@ -247,5 +257,10 @@ public class BlockStateUtils {
 
     public static int vanillaStateSize() {
         return vanillaStateSize;
+    }
+
+    public static boolean isBurnable(Object state) {
+        Object blockOwner = getBlockOwner(state);
+        return IGNITE_ODDS.getOrDefault(blockOwner, 0) > 0;
     }
 }

@@ -79,7 +79,6 @@ warning.config.image.invalid_font_chars: "<yellow><arg:0> dosyasında sorun bulu
 warning.config.image.missing_char: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' resmi gerekli 'char' argümanı eksik.</yellow>"
 warning.config.image.codepoint_conflict: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' resmi, <arg:2> yazı tipinde başka bir resim '<arg:5>' tarafından kullanılmış olan '<arg:3>(<arg:4>)' karakterini kullanıyor.</yellow>"
 warning.config.image.invalid_codepoint_grid: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' resminin geçersiz bir 'chars' kod noktası ızgarası var.</yellow>"
-warning.config.image.file_not_found: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' resmi için '<arg:2>' PNG dosyası bulunamadı.</yellow>"
 warning.config.image.invalid_hex_value: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' resmi, geçerli bir onaltılık (16 tabanlı) değer olmayan '<arg:2>' unicode karakterini kullanıyor.</yellow>"
 warning.config.recipe.duplicate: "<yellow><arg:0> dosyasında sorun bulundu - Yinelenen tarif '<arg:1>'. Diğer dosyalarda aynı yapılandırmanın olup olmadığını kontrol edin.</yellow>"
 warning.config.recipe.missing_type: "<yellow><arg:0> dosyasında sorun bulundu - '<arg:1>' tarifi gerekli 'type' argümanı eksik.</yellow>"

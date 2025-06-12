@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.modifier.ArgumentModifier;
@@ -30,8 +31,22 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
     public Optional<Item<ItemStack>> c2s(Item<ItemStack> wrapped) {
         Tag customData = wrapped.getNBTComponent(ComponentTypes.CUSTOM_DATA);
         if (!(customData instanceof CompoundTag compoundTag)) return Optional.empty();
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        boolean hasDifferentMaterial = false;
+        if (optionalCustomItem.isPresent()) {
+            BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
+            if (customItem.item() != FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject())) {
+                wrapped = wrapped.unsafeTransmuteCopy(customItem.item(), wrapped.count());
+                hasDifferentMaterial = true;
+            }
+        }
         CompoundTag networkData = compoundTag.getCompound(NETWORK_ITEM_TAG);
-        if (networkData == null) return Optional.empty();
+        if (networkData == null) {
+            if (hasDifferentMaterial) {
+                return Optional.of(wrapped);
+            }
+            return Optional.empty();
+        }
         compoundTag.remove(NETWORK_ITEM_TAG);
         for (Map.Entry<String, Tag> entry : networkData.entrySet()) {
             if (entry.getValue() instanceof CompoundTag tag) {
@@ -48,12 +63,16 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) {
             if (!Config.interceptItem()) return Optional.empty();
-            return new OtherItem(wrapped).process();
+            return new OtherItem(wrapped, false).process();
         } else {
-            CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
+            boolean hasDifferentMaterial = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject()) != customItem.clientItem();
+            if (hasDifferentMaterial) {
+                wrapped = wrapped.unsafeTransmuteCopy(customItem.clientItem(), wrapped.count());
+            }
             if (!customItem.hasClientBoundDataModifier()) {
-                if (!Config.interceptItem()) return Optional.empty();
-                return new OtherItem(wrapped).process();
+                if (!Config.interceptItem() && !hasDifferentMaterial) return Optional.empty();
+                return new OtherItem(wrapped, hasDifferentMaterial).process();
             } else {
                 CompoundTag customData = Optional.ofNullable(wrapped.getNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
                 CompoundTag arguments = customData.getCompound(ArgumentModifier.ARGUMENTS_TAG);
@@ -86,7 +105,10 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
                         else processLegacyLore(wrapped, () -> tag);
                     }
                 }
-                if (tag.isEmpty()) return Optional.empty();
+                if (tag.isEmpty()) {
+                    if (hasDifferentMaterial) return Optional.of(wrapped);
+                    return Optional.empty();
+                }
                 customData.put(NETWORK_ITEM_TAG, tag);
                 wrapped.setNBTComponent(ComponentTypes.CUSTOM_DATA, customData);
                 return Optional.of(wrapped);
@@ -203,11 +225,13 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
 
     static class OtherItem {
         private final Item<ItemStack> item;
+        private final boolean forceReturn;
         private boolean globalChanged = false;
         private CompoundTag tag;
 
-        public OtherItem(Item<ItemStack> item) {
+        public OtherItem(Item<ItemStack> item, boolean forceReturn) {
             this.item = item;
+            this.forceReturn = forceReturn;
         }
 
         public Optional<Item<ItemStack>> process() {
@@ -230,6 +254,8 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
                 CompoundTag customData = Optional.ofNullable(this.item.getNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
                 customData.put(NETWORK_ITEM_TAG, getOrCreateTag());
                 this.item.setNBTComponent(ComponentKeys.CUSTOM_DATA, customData);
+                return Optional.of(this.item);
+            } else if (this.forceReturn) {
                 return Optional.of(this.item);
             } else {
                 return Optional.empty();

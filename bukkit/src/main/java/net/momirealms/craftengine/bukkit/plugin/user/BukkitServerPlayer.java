@@ -30,10 +30,12 @@ import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
+import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Position;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import org.bukkit.*;
@@ -138,17 +140,17 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public Channel nettyChannel() {
-        return channel;
+        return this.channel;
     }
 
     @Override
     public CraftEngine plugin() {
-        return plugin;
+        return this.plugin;
     }
 
     @Override
     public boolean isMiningBlock() {
-        return destroyPos != null;
+        return this.destroyPos != null;
     }
 
     public void setDestroyedState(Object destroyedState) {
@@ -221,8 +223,8 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public boolean updateLastSuccessfulInteractionTick(int tick) {
-        if (lastSuccessfulInteraction != tick) {
-            lastSuccessfulInteraction = tick;
+        if (this.lastSuccessfulInteraction != tick) {
+            this.lastSuccessfulInteraction = tick;
             return true;
         } else {
             return false;
@@ -231,7 +233,7 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public int lastSuccessfulInteractionTick() {
-        return lastSuccessfulInteraction;
+        return this.lastSuccessfulInteraction;
     }
 
     @Override
@@ -283,8 +285,13 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void playSound(Key sound, float volume, float pitch) {
-        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundCategory.MASTER, volume, pitch);
+    public void playSound(Key sound, SoundSource source, float volume, float pitch) {
+        platformPlayer().playSound(platformPlayer(), sound.toString(), SoundUtils.toBukkit(source), volume, pitch);
+    }
+
+    @Override
+    public void playSound(Key sound, BlockPos blockPos, SoundSource source, float volume, float pitch) {
+        platformPlayer().playSound(new Location(null, blockPos.x() + 0.5, blockPos.y() + 0.5, blockPos.z() + 0.5), sound.toString(), SoundUtils.toBukkit(source), volume, pitch);
     }
 
     @Override
@@ -535,8 +542,10 @@ public class BukkitServerPlayer extends Player {
     public void abortMiningBlock() {
         this.swingHandAck = false;
         this.miningProgress = 0;
-        if (this.destroyPos != null) {
-            this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+        BlockPos pos = this.destroyPos;
+        if (pos != null && this.isDestroyingCustomBlock) {
+            // 只纠正自定义方块的
+            this.broadcastDestroyProgress(platformPlayer(), pos, LocationUtils.toBlockPos(pos), -1);
         }
     }
 
@@ -558,6 +567,8 @@ public class BukkitServerPlayer extends Player {
         int currentTick = gameTicks();
         // optimize break speed, otherwise it would be too fast
         if (currentTick - this.lastSuccessfulBreak <= 5) return;
+        Object destroyedState = this.destroyedState;
+        if (destroyedState == null) return;
         try {
             org.bukkit.entity.Player player = platformPlayer();
             double range = getCachedInteractionRange();
@@ -575,7 +586,7 @@ public class BukkitServerPlayer extends Player {
 
             // send hit sound if the sound is removed
             if (currentTick - this.lastHitBlockTime > 3) {
-                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(this.destroyedState);
+                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(destroyedState);
                 Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(blockOwner);
                 Object soundEvent = CoreReflections.field$SoundType$hitSound.get(soundType);
                 Object soundId = FastNMS.INSTANCE.field$SoundEvent$location(soundEvent);
@@ -601,8 +612,8 @@ public class BukkitServerPlayer extends Player {
                     }
                 }
 
-                float progressToAdd = getDestroyProgress(this.destroyedState, hitPos);
-                int id = BlockStateUtils.blockStateToId(this.destroyedState);
+                float progressToAdd = getDestroyProgress(destroyedState, hitPos);
+                int id = BlockStateUtils.blockStateToId(destroyedState);
                 ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
                 // double check custom block
                 if (customState != null && !customState.isEmpty()) {
@@ -612,13 +623,13 @@ public class BukkitServerPlayer extends Player {
                             // it's correct on plugin side
                             if (blockSettings.isCorrectTool(item.id())) {
                                 // but not on serverside
-                                if (!FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                if (!FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), destroyedState)) {
                                     // we fix the speed
                                     progressToAdd = progressToAdd * (10f / 3f);
                                 }
                             } else {
                                 // not a correct tool on plugin side and not a correct tool on serverside
-                                if (!blockSettings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), this.destroyedState)) {
+                                if (!blockSettings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), destroyedState)) {
                                     progressToAdd = progressToAdd * (10f / 3f) * blockSettings.incorrectToolSpeed();
                                 }
                             }
@@ -681,7 +692,7 @@ public class BukkitServerPlayer extends Player {
             double d1 = (double) hitPos.y() - otherLocation.getY();
             double d2 = (double) hitPos.z() - otherLocation.getZ();
             if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                this.plugin.networkManager().sendPacket(this.plugin.adapt(other), packet);
+                FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(FastNMS.INSTANCE.method$CraftPlayer$getHandle(other)), packet);
             }
         }
     }
@@ -699,16 +710,20 @@ public class BukkitServerPlayer extends Player {
     public void setIsDestroyingBlock(boolean is, boolean custom) {
         this.miningProgress = 0;
         this.isDestroyingBlock = is;
-        this.isDestroyingCustomBlock = custom && is;
         if (is) {
             this.swingHandAck = true;
+            this.isDestroyingCustomBlock = custom;
         } else {
             this.swingHandAck = false;
             this.destroyedState = null;
             if (this.destroyPos != null) {
-                this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+                // 只纠正自定义方块的
+                if (this.isDestroyingCustomBlock) {
+                    this.broadcastDestroyProgress(platformPlayer(), this.destroyPos, LocationUtils.toBlockPos(this.destroyPos), -1);
+                }
                 this.destroyPos = null;
             }
+            this.isDestroyingCustomBlock = false;
         }
     }
 

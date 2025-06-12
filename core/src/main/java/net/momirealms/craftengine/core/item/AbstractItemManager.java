@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.modifier.*;
+import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -26,6 +27,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.incendo.cloud.type.Either;
+import org.joml.Vector3f;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -66,9 +68,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.equipmentsToGenerate = new HashSet<>();
     }
 
-    protected void registerDataFunction(Function<Object, ItemDataModifier<I>> function, String... alias) {
+    @Override
+    public void registerDataType(Function<Object, ItemDataModifier<I>> factory, String... alias) {
         for (String a : alias) {
-            dataFunctions.put(a, function);
+            dataFunctions.put(a, factory);
         }
     }
 
@@ -256,7 +259,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         return VANILLA_ITEMS.contains(item);
     }
 
-    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material);
+    protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material, Key clientBoundMaterial);
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
@@ -294,6 +297,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             boolean isVanillaItem = isVanillaItem(id);
             Key material = Key.from(isVanillaItem ? id.value() : ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material").toLowerCase(Locale.ENGLISH));
+            Key clientBoundMaterial = section.containsKey("client-bound-material") ? Key.from(section.get("client-bound-material").toString().toLowerCase(Locale.ENGLISH)) : material;
             int customModelData = ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
             if (customModelData < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.invalid_custom_model_data", String.valueOf(customModelData));
@@ -304,7 +308,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             Key itemModelKey = null;
 
-            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(holder, material);
+            CustomItem.Builder<I> itemBuilder = createPlatformItemBuilder(holder, material, clientBoundMaterial);
             boolean hasItemModelSection = section.containsKey("item-model");
 
             // To get at least one model provider
@@ -389,7 +393,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     legacyOverridesModels = new TreeSet<>(legacyItemModel.overrides());
                 } else {
                     legacyOverridesModels = new TreeSet<>();
-                    processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, material, customModelData);
+                    processModelRecursively(modernModel, new LinkedHashMap<>(), legacyOverridesModels, clientBoundMaterial, customModelData);
                     if (legacyOverridesModels.isEmpty()) {
                         TranslationManager.instance().log("warning.config.item.legacy_model.cannot_convert", path.toString(), id.asString());
                     }
@@ -400,18 +404,18 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             if (customModelData != 0) {
                 // use custom model data
                 // check conflict
-                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(material, k -> new HashMap<>());
+                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(clientBoundMaterial, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
                     throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
                 conflict.put(customModelData, id);
                 // Parse models
                 if (isModernFormatRequired() && modernModel != null) {
-                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(material, k -> new TreeMap<>());
+                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
                     map.put(customModelData, modernModel);
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
-                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(material, k -> new TreeSet<>());
+                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
             }
@@ -430,34 +434,51 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     private void registerFunctions() {
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String plugin = data.get("plugin").toString();
             String id = data.get("id").toString();
             ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin);
             return new ExternalModifier<>(id, Objects.requireNonNull(provider, "Item provider " + plugin + " not found"));
         }, "external");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             String name = obj.toString();
-            return new CustomNameModifier<>(name);
+            return new CustomNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "custom-name");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             String name = obj.toString();
-            return new ItemNameModifier<>(name);
+            return new ItemNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
         }, "item-name", "display-name");
-        registerDataFunction((obj) -> {
-            List<String> name = MiscUtils.getAsStringList(obj);
-            return new LoreModifier<>(name);
+        registerDataType((obj) -> {
+            List<String> lore = MiscUtils.getAsStringList(obj).stream().map(it -> "<!i>" + it).toList();
+            return new LoreModifier<>(lore);
         }, "lore", "display-lore", "description");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
+            Map<String, List<String>> dynamicLore = new LinkedHashMap<>();
+            if (obj instanceof Map<?, ?> map) {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    dynamicLore.put(entry.getKey().toString(), MiscUtils.getAsStringList(entry.getValue()));
+                }
+            }
+            return new DynamicLoreModifier<>(dynamicLore);
+        }, "dynamic-lore");
+        registerDataType((obj) -> {
+            if (obj instanceof Integer integer) {
+                return new DyedColorModifier<>(integer);
+            } else {
+                Vector3f vector3f = MiscUtils.getAsVector3f(obj, "dyed-color");
+                return new DyedColorModifier<>(MCUtils.fastFloor(vector3f.x) << 16 + MCUtils.fastFloor(vector3f.y) << 8 + MCUtils.fastFloor(vector3f.z));
+            }
+        }, "dyed-color");
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             return new TagsModifier<>(data);
         }, "tags", "tag", "nbt");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             boolean value = TypeUtils.checkType(obj, Boolean.class);
             return new UnbreakableModifier<>(value);
         }, "unbreakable");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             List<Enchantment> enchantments = new ArrayList<>();
             for (Map.Entry<String, Object> e : data.entrySet()) {
@@ -467,41 +488,47 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }
             return new EnchantmentModifier<>(enchantments);
         }, "enchantment", "enchantments", "enchant");
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String material = data.get("material").toString().toLowerCase(Locale.ENGLISH);
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
             return new TrimModifier<>(material, pattern);
         }, "trim");
         if (VersionHelper.isOrAbove1_20_5()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new ComponentModifier<>(data);
             }, "components", "component");
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 List<String> data = MiscUtils.getAsStringList(obj);
                 return new RemoveComponentModifier<>(data);
             }, "remove-components", "remove-component");
+            registerDataType((obj) -> {
+               Map<String, Object> data = MiscUtils.castToMap(obj, false);
+                int nutrition = ResourceConfigUtils.getAsInt(data.get("nutrition"), "nutrition");
+                float saturation = ResourceConfigUtils.getAsFloat(data.get("saturation"), "saturation");
+                return new FoodModifier<>(nutrition, saturation, (boolean) data.getOrDefault("can-always-eat", false));
+            }, "food");
         }
         if (VersionHelper.isOrAbove1_21()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 String song = obj.toString();
                 return new JukeboxSongModifier<>(new JukeboxPlayable(song, true));
             }, "jukebox-playable");
         }
         if (VersionHelper.isOrAbove1_21_2()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 String id = obj.toString();
                 return new TooltipStyleModifier<>(Key.of(id));
             }, "tooltip-style");
         }
         if (VersionHelper.isOrAbove1_21_2()) {
-            registerDataFunction((obj) -> {
+            registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new EquippableModifier<>(EquipmentData.fromMap(data));
             }, "equippable");
         }
-        registerDataFunction((obj) -> {
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             Map<String, TextProvider> arguments = new HashMap<>();
             for (Map.Entry<String, Object> entry : data.entrySet()) {

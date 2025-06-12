@@ -5,12 +5,15 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
 import java.io.BufferedReader;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.util.*;
@@ -1351,10 +1354,6 @@ public final class CoreReflections {
 
     public static final Method method$BlockBehaviour$getBlockSupportShape = requireNonNull(
             ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getBlockSupportShape", "b_"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos)
-    );
-
-    public static final Method method$LevelAccessor$scheduleTick = requireNonNull(
-            ReflectionUtils.getMethod(clazz$LevelAccessor, void.class, CoreReflections.clazz$BlockPos, clazz$Block, int.class)
     );
 
     public static final Field field$BlockBehaviour$properties = requireNonNull(
@@ -3264,5 +3263,49 @@ public final class CoreReflections {
     // 1.21.1-
     public static final Method method$Registry$asLookup = ReflectionUtils.getMethod(
             clazz$Registry, clazz$HolderLookup$RegistryLookup, new String[]{"asLookup", "p"}
+    );
+
+    public static final Field field$ServerEntity$broadcast = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$ServerEntity, Consumer.class, 0
+            )
+    );
+
+    public static final MethodHandle methodHandle$ServerEntity$broadcastSetter;
+    public static final MethodHandle methodHandle$ServerEntity$updateIntervalSetter;
+    public static final MethodHandle methodHandle$ServerPlayer$connectionGetter;
+
+    static {
+        try {
+            methodHandle$ServerEntity$broadcastSetter = requireNonNull(
+                    ReflectionUtils.unreflectSetter(field$ServerEntity$broadcast)
+                            .asType(MethodType.methodType(void.class, Object.class, Consumer.class))
+            );
+            methodHandle$ServerEntity$updateIntervalSetter = requireNonNull(
+                    ReflectionUtils.unreflectSetter(field$ServerEntity$updateInterval)
+                            .asType(MethodType.methodType(void.class, Object.class, int.class))
+            );
+            methodHandle$ServerPlayer$connectionGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
+                            .asType(MethodType.methodType(Object.class, Object.class))
+            );
+        } catch (IllegalAccessException e) {
+            throw new ReflectionInitException("Failed to initialize reflection", e);
+        }
+    }
+
+    public static final Class<?> clazz$BaseFireBlock = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.BlockFireAbstract",
+                    "world.level.block.BaseFireBlock"
+            )
+    );
+
+    public static final Method method$BaseFireBlock$canBePlacedAt = requireNonNull(
+            ReflectionUtils.getStaticMethod(clazz$BaseFireBlock, boolean.class, clazz$Level, clazz$BlockPos, clazz$Direction)
+    );
+
+    public static final Field field$FireBlock$igniteOdds = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$FireBlock, Object2IntMap.class, 0)
     );
 }

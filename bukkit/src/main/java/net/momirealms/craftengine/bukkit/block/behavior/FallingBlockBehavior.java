@@ -36,7 +36,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object world = args[1];
         Object blockPos = args[2];
-        CoreReflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 2);
+        FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 2);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
             world = args[3];
             blockPos = args[4];
         }
-        CoreReflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 2);
+        FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 2);
         return args[0];
     }
 

@@ -8,18 +8,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     private final RtagItem rtagItem;
-    private int count;
 
-    public LegacyItemWrapper(RtagItem rtagItem, int count) {
+    public LegacyItemWrapper(RtagItem rtagItem) {
         this.rtagItem = rtagItem;
-        this.count = count;
-    }
-
-    @Override
-    public ItemStack getItem() {
-        ItemStack itemStack = this.rtagItem.getItem();
-        itemStack.setAmount(this.count);
-        return itemStack;
     }
 
     public boolean setTag(Object value, Object... path) {
@@ -49,12 +40,12 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
     }
 
     public int count() {
-        return this.count;
+        return getItem().getAmount();
     }
 
     public void count(int amount) {
         if (amount < 0) amount = 0;
-        this.count = amount;
+        getItem().setAmount(amount);
     }
 
     public Object getExactTag(Object... path) {
@@ -75,9 +66,12 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
 
     @Override
     public ItemStack load() {
-        ItemStack itemStack = this.rtagItem.load();
-        itemStack.setAmount(Math.max(this.count, 0));
-        return itemStack;
+        return this.rtagItem.load();
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return this.rtagItem.getItem();
     }
 
     @Override
@@ -87,6 +81,13 @@ public class LegacyItemWrapper implements ItemWrapper<ItemStack> {
 
     @Override
     public ItemWrapper<ItemStack> copyWithCount(int count) {
-        return new LegacyItemWrapper(new RtagItem(this.rtagItem.loadCopy()), count);
+        ItemStack copied = this.rtagItem.loadCopy();
+        copied.setAmount(count);
+        return new LegacyItemWrapper(new RtagItem(copied));
+    }
+
+    @Override
+    public void shrink(int amount) {
+        this.count(count() - amount);
     }
 }

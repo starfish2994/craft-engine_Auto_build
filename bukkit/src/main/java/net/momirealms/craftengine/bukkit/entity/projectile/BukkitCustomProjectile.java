@@ -11,4 +11,9 @@ public class BukkitCustomProjectile extends AbstractCustomProjectile {
     public BukkitCustomProjectile(ProjectileMeta meta, Projectile projectile, Item<ItemStack> projectileItem) {
         super(meta, new BukkitProjectile(projectile), projectileItem);
     }
+
+    @Override
+    public BukkitProjectile projectile() {
+        return (BukkitProjectile) super.projectile();
+    }
 }

@@ -16,6 +16,8 @@ public final class MBlocks {
     public static final Object ICE;
     public static final Object SHORT_GRASS;
     public static final Object SHORT_GRASS$defaultState;
+    public static final Object SHULKER_BOX;
+    public static final Object COMPOSTER;
 
     private static Object getById(String id) throws ReflectiveOperationException {
         Object rl = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", id);
@@ -33,6 +35,8 @@ public final class MBlocks {
             ICE = getById("ice");
             SHORT_GRASS = getById(VersionHelper.isOrAbove1_20_3() ? "short_grass" : "grass");
             SHORT_GRASS$defaultState = CoreReflections.method$Block$defaultBlockState.invoke(SHORT_GRASS);
+            SHULKER_BOX = getById("shulker_box");
+            COMPOSTER = getById("composter");
         } catch (ReflectiveOperationException e) {
             throw new ReflectionInitException("Failed to init Blocks", e);
         }
