@@ -66,7 +66,7 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
             return new OtherItem(wrapped, false).process();
         } else {
             BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
-            boolean hasDifferentMaterial = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getItem()) != customItem.clientItem();
+            boolean hasDifferentMaterial = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject()) != customItem.clientItem();
             if (hasDifferentMaterial) {
                 wrapped = wrapped.unsafeTransmuteCopy(customItem.clientItem(), wrapped.count());
             }
