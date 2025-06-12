@@ -26,7 +26,7 @@ public class ArgumentModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         if (VersionHelper.isOrAbove1_20_5()) {
             CompoundTag customData = (CompoundTag) Optional.ofNullable(item.getNBTComponent(ComponentKeys.CUSTOM_DATA)).orElse(new CompoundTag());
             CompoundTag argumentTag = new CompoundTag();
@@ -42,5 +42,6 @@ public class ArgumentModifier<I> implements ItemDataModifier<I> {
             }
             item.setTag(processed, ARGUMENTS_TAG);
         }
+        return item;
     }
 }

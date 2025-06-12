@@ -49,12 +49,14 @@ resource-pack:
         bypass-textures:
           # - minecraft:block/farmland
           - "@legacy_unicode"
-          - "@vanilla_font_textures"
-          - "@vanilla_item_textures"
-          - "@vanilla_block_textures"
-        bypass-models: []
+          - "@vanilla_textures"
+        bypass-models:
+          - "@vanilla_models"
         bypass-sounds: []
         bypass-equipments: []
+  # Validate if there are any errors in the resource pack, such as missing textures or models
+  validate:
+    enable: true
   supported-version:
     min: "1.20"
     max: LATEST
@@ -336,7 +338,7 @@ gui:
 
 performance:
   # Maximum chain update depth when fixing client visuals
-  max-block-chain-update-limit: 64
+  max-note-block-chain-update-limit: 48
   # Prevent lag or oversized packet when processing emoji-heavy content
   max-emojis-per-parse: 16
 

@@ -19,7 +19,7 @@ public class ItemTags {
         Object value = CACHE.get(key);
         if (value == null) {
             try {
-                value = CoreReflections.method$TagKey$create.invoke(null, MRegistries.instance$Registries$ITEM, KeyUtils.toResourceLocation(key));
+                value = CoreReflections.method$TagKey$create.invoke(null, MRegistries.ITEM, KeyUtils.toResourceLocation(key));
                 CACHE.put(key, value);
                 return value;
             } catch (Exception e) {

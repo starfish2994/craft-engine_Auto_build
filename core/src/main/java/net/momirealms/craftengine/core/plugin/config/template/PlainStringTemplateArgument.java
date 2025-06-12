@@ -17,7 +17,7 @@ public class PlainStringTemplateArgument implements TemplateArgument {
     }
 
     @Override
-    public String get() {
+    public String get(Map<String, TemplateArgument> arguments) {
         return value;
     }
 

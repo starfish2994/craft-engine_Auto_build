@@ -4,7 +4,6 @@ import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
-import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -14,7 +13,7 @@ public class CustomNameModifier<I> implements ItemDataModifier<I> {
     private final String argument;
 
     public CustomNameModifier(String argument) {
-        this.argument = Config.nonItalic() ? "<!i>" + argument : argument;
+        this.argument = argument;
     }
 
     @Override
@@ -23,12 +22,13 @@ public class CustomNameModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         item.customNameComponent(AdventureHelper.miniMessage().deserialize(this.argument, context.tagResolvers()));
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         if (VersionHelper.isOrAbove1_20_5()) {
             Tag previous = item.getNBTComponent(ComponentKeys.CUSTOM_NAME);
             if (previous != null) {
@@ -44,5 +44,6 @@ public class CustomNameModifier<I> implements ItemDataModifier<I> {
                 networkData.put("display.Name", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
             }
         }
+        return item;
     }
 }

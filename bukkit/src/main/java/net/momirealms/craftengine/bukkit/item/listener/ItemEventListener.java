@@ -15,12 +15,12 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.item.setting.FoodData;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
-import net.momirealms.craftengine.core.util.Cancellable;
-import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -28,11 +28,16 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -50,6 +55,28 @@ public class ItemEventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onInteractEntity(PlayerInteractEntityEvent event) {
+        BukkitServerPlayer serverPlayer = this.plugin.adapt(event.getPlayer());
+        if (serverPlayer == null) return;
+        InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
+
+        if (itemInHand == null) return;
+        Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+
+        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
+        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                .withParameter(DirectContextParameters.EVENT, cancellable)
+                .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
+                .withParameter(DirectContextParameters.HAND, hand)
+        );
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        customItem.execute(context, EventTrigger.RIGHT_CLICK);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInteractBlock(PlayerInteractEvent event) {
         Action action = event.getAction();
         Player player = event.getPlayer();
@@ -62,6 +89,7 @@ public class ItemEventListener implements Listener {
         }
 
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        if (serverPlayer == null) return;
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         // 如果本tick内主手已被处理，则不处理副手
         // 这是因为客户端可能会同时发主副手交互包，但实际上只能处理其中一个
@@ -318,18 +346,47 @@ public class ItemEventListener implements Listener {
         if (optionalCustomItem.isEmpty()) {
             return;
         }
-        Cancellable dummy = Cancellable.dummy();
+        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
         CustomItem<ItemStack> customItem = optionalCustomItem.get();
         PlayerOptionalContext context = PlayerOptionalContext.of(this.plugin.adapt(event.getPlayer()), ContextHolder.builder()
                 .withParameter(DirectContextParameters.ITEM_IN_HAND, wrapped)
-                .withParameter(DirectContextParameters.EVENT, dummy)
+                .withParameter(DirectContextParameters.EVENT, cancellable)
                 .withParameter(DirectContextParameters.HAND, event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
         );
         customItem.execute(context, EventTrigger.CONSUME);
-        if (dummy.isCancelled()) {
-            event.setCancelled(true);
+        if (event.isCancelled()) {
             return;
         }
+        if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            Key replacement = customItem.settings().consumeReplacement();
+            if (replacement == null) {
+                event.setReplacement(null);
+            } else {
+                ItemStack replacementItem = this.plugin.itemManager().buildItemStack(replacement, this.plugin.adapt(event.getPlayer()));
+                event.setReplacement(replacementItem);
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (VersionHelper.isOrAbove1_20_5()) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        ItemStack consumedItem = event.getItem();
+        if (ItemUtils.isEmpty(consumedItem)) return;
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(consumedItem);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) {
+            return;
+        }
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        FoodData foodData = customItem.settings().foodData();
+        if (foodData == null) return;
+        event.setCancelled(true);
+        int oldFoodLevel = player.getFoodLevel();
+        if (foodData.nutrition() != 0) player.setFoodLevel(MCUtils.clamp(oldFoodLevel + foodData.nutrition(), 0, 20));
+        float oldSaturation = player.getSaturation();
+        if (foodData.saturation() != 0) player.setSaturation(MCUtils.clamp(oldSaturation, 0, 10));
     }
 
     private boolean cancelEventIfHasInteraction(PlayerInteractEvent event, BukkitServerPlayer player, InteractionHand hand) {
@@ -343,5 +400,18 @@ public class ItemEventListener implements Listener {
             }
         }
         return false;
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.getEntityType() == EntityType.ITEM && event.getEntity() instanceof org.bukkit.entity.Item item) {
+            Optional.ofNullable(this.plugin.itemManager().wrap(item.getItemStack()))
+                    .flatMap(Item::getCustomItem)
+                    .ifPresent(it -> {
+                        if (it.settings().invulnerable().contains(DamageCauseUtils.fromBukkit(event.getCause()))) {
+                            event.setCancelled(true);
+                        }
+                    });
+        }
     }
 }

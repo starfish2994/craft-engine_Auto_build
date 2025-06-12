@@ -3,14 +3,16 @@ package net.momirealms.craftengine.core.item;
 import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
+import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
+import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
+import net.momirealms.craftengine.core.item.setting.EquipmentData;
+import net.momirealms.craftengine.core.item.setting.FoodData;
+import net.momirealms.craftengine.core.item.setting.Helmet;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -30,13 +32,21 @@ public class ItemSettings {
     ProjectileMeta projectileMeta;
     boolean dyeable = true;
     Helmet helmet = null;
+    FoodData foodData = null;
+    Key consumeReplacement = null;
+    Key craftRemainder = null;
+    List<DamageSource> invulnerable = List.of();
 
     private ItemSettings() {}
 
     public <I> List<ItemDataModifier<I>> modifiers() {
         ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
-        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null && this.equipment.modernData() != null) modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
-        // TODO 1.20 leather armor
+        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null && this.equipment.modernData() != null) {
+            modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
+        }
+        if (VersionHelper.isOrAbove1_20_5() && this.foodData != null) {
+            modifiers.add(new FoodModifier<>(this.foodData.nutrition(), this.foodData.saturation(), false));
+        }
         return modifiers;
     }
 
@@ -60,6 +70,11 @@ public class ItemSettings {
         newSettings.canPlaceRelatedVanillaBlock = settings.canPlaceRelatedVanillaBlock;
         newSettings.projectileMeta = settings.projectileMeta;
         newSettings.dyeable = settings.dyeable;
+        newSettings.helmet = settings.helmet;
+        newSettings.foodData = settings.foodData;
+        newSettings.consumeReplacement = settings.consumeReplacement;
+        newSettings.craftRemainder = settings.craftRemainder;
+        newSettings.invulnerable = settings.invulnerable;
         return newSettings;
     }
 
@@ -108,6 +123,21 @@ public class ItemSettings {
     }
 
     @Nullable
+    public FoodData foodData() {
+        return foodData;
+    }
+
+    @Nullable
+    public Key consumeReplacement() {
+        return consumeReplacement;
+    }
+
+    @Nullable
+    public Key craftRemainder() {
+        return craftRemainder;
+    }
+
+    @Nullable
     public Helmet helmet() {
         return helmet;
     }
@@ -117,8 +147,22 @@ public class ItemSettings {
         return equipment;
     }
 
+    public List<DamageSource> invulnerable() {
+        return invulnerable;
+    }
+
     public ItemSettings repairItems(List<AnvilRepairItem> items) {
         this.anvilRepairItems = items;
+        return this;
+    }
+
+    public ItemSettings consumeReplacement(Key key) {
+        this.consumeReplacement = key;
+        return this;
+    }
+
+    public ItemSettings craftRemainder(Key key) {
+        this.craftRemainder = key;
         return this;
     }
 
@@ -152,6 +196,11 @@ public class ItemSettings {
         return this;
     }
 
+    public ItemSettings foodData(FoodData foodData) {
+        this.foodData = foodData;
+        return this;
+    }
+
     public ItemSettings equipment(EquipmentGeneration equipment) {
         this.equipment = equipment;
         return this;
@@ -164,6 +213,11 @@ public class ItemSettings {
 
     public ItemSettings helmet(Helmet helmet) {
         this.helmet = helmet;
+        return this;
+    }
+
+    public ItemSettings invulnerable(List<DamageSource> invulnerable) {
+        this.invulnerable = invulnerable;
         return this;
     }
 
@@ -206,6 +260,14 @@ public class ItemSettings {
                 int intValue = ResourceConfigUtils.getAsInt(value, "fuel-time");
                 return settings -> settings.fuelTime(intValue);
             }));
+            registerFactory("consume-replacement", (value -> settings -> {
+                if (value == null) settings.consumeReplacement(null);
+                else settings.consumeReplacement(Key.of(value.toString()));
+            }));
+            registerFactory("craft-remaining-item", (value -> settings -> {
+                if (value == null) settings.craftRemainder(null);
+                else settings.craftRemainder(Key.of(value.toString()));
+            }));
             registerFactory("tags", (value -> {
                 List<String> tags = MiscUtils.getAsStringList(value);
                 return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));
@@ -239,7 +301,8 @@ public class ItemSettings {
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
                 String type = args.getOrDefault("type", "none").toString();
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, type));
+                double range = ResourceConfigUtils.getAsDouble(args.getOrDefault("range", 1), "range");
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, range, type));
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
@@ -248,6 +311,24 @@ public class ItemSettings {
             registerFactory("dyeable", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.dyeable(bool);
+            }));
+            registerFactory("food", (value -> {
+                Map<String, Object> args = MiscUtils.castToMap(value, false);
+                FoodData data = new FoodData(
+                        ResourceConfigUtils.getAsInt(args.get("nutrition"), "nutrition"),
+                        ResourceConfigUtils.getAsFloat(args.get("saturation"), "saturation")
+                );
+                return settings -> settings.foodData(data);
+            }));
+            registerFactory("invulnerable", (value -> {
+                List<DamageSource> list = MiscUtils.getAsStringList(value).stream().map(it -> {
+                    DamageSource source = DamageSource.byName(it);
+                    if (source == null) {
+                        throw new LocalizedResourceConfigException("warning.config.item.settings.invulnerable.invalid_damage_source", it, EnumUtils.toString(DamageSource.values()));
+                    }
+                    return source;
+                }).toList();
+                return settings -> settings.invulnerable(list);
             }));
         }
 

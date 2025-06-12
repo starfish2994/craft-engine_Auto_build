@@ -20,16 +20,17 @@ public class EnchantmentModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public void apply(Item<I> item, ItemBuildContext context) {
+    public Item<I> apply(Item<I> item, ItemBuildContext context) {
         if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
             item.setStoredEnchantments(this.enchantments);
         } else {
             item.setEnchantments(this.enchantments);
         }
+        return item;
     }
 
     @Override
-    public void prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
+    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
         if (item.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
             if (VersionHelper.isOrAbove1_20_5()) {
                 Tag previous = item.getNBTComponent(ComponentKeys.STORED_ENCHANTMENTS);
@@ -63,5 +64,6 @@ public class EnchantmentModifier<I> implements ItemDataModifier<I> {
                 }
             }
         }
+        return item;
     }
 }

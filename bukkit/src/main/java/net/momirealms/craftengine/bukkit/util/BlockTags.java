@@ -16,7 +16,7 @@ public class BlockTags {
         Object value = CACHE.get(key);
         if (value == null) {
             try {
-                value = CoreReflections.method$TagKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, KeyUtils.toResourceLocation(key));
+                value = CoreReflections.method$TagKey$create.invoke(null, MRegistries.BLOCK, KeyUtils.toResourceLocation(key));
                 CACHE.put(key, value);
                 return value;
             } catch (Exception e) {

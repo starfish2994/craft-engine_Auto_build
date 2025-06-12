@@ -129,13 +129,12 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 // init cache
                 CoreReflections.method$BlockStateBase$initCache.invoke(mcBlockState);
                 // set block light
-                if (settings.blockLight() != -1) {
-                    if (VersionHelper.isOrAbove1_21_2()) {
-                        CoreReflections.field$BlockStateBase$lightBlock.set(mcBlockState, settings.blockLight());
-                    } else {
-                        Object cache = CoreReflections.field$BlockStateBase$cache.get(mcBlockState);
-                        CoreReflections.field$BlockStateBase$Cache$lightBlock.set(cache, settings.blockLight());
-                    }
+                int blockLight = settings.blockLight() != -1 ? settings.blockLight() : CoreReflections.field$BlockStateBase$lightBlock.getInt(state.vanillaBlockState().handle());
+                if (VersionHelper.isOrAbove1_21_2()) {
+                    CoreReflections.field$BlockStateBase$lightBlock.set(mcBlockState, blockLight);
+                } else {
+                    Object cache = CoreReflections.field$BlockStateBase$cache.get(mcBlockState);
+                    CoreReflections.field$BlockStateBase$Cache$lightBlock.set(cache, blockLight);
                 }
                 // set fluid later
                 if (settings.fluidState()) {
@@ -151,7 +150,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(state.customBlockState().registryId());
                 Set<Object> tags = new HashSet<>();
                 for (Key tag : settings.tags()) {
-                    tags.add(CoreReflections.method$TagKey$create.invoke(null, MRegistries.instance$Registries$BLOCK, KeyUtils.toResourceLocation(tag)));
+                    tags.add(CoreReflections.method$TagKey$create.invoke(null, MRegistries.BLOCK, KeyUtils.toResourceLocation(tag)));
                 }
                 CoreReflections.field$Holder$Reference$tags.set(holder, tags);
                 // set burning properties

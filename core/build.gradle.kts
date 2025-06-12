@@ -20,6 +20,8 @@ dependencies {
     implementation("net.momirealms:sparrow-nbt-adventure:${rootProject.properties["sparrow_nbt_version"]}")
     implementation("net.momirealms:sparrow-nbt-codec:${rootProject.properties["sparrow_nbt_version"]}")
     implementation("net.momirealms:sparrow-nbt-legacy-codec:${rootProject.properties["sparrow_nbt_version"]}")
+    // S3
+    implementation("net.momirealms:craft-engine-s3:0.1")
     // Util
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     // Adventure
@@ -60,8 +62,8 @@ dependencies {
     compileOnly("com.ezylang:EvalEx:${rootProject.properties["evalex_version"]}")
     // Jimfs
     compileOnly("com.google.jimfs:jimfs:${rootProject.properties["jimfs_version"]}")
-    // S3
-    implementation("net.momirealms:craft-engine-s3:0.1")
+    // Brigadier
+    compileOnly("com.mojang:brigadier:${rootProject.properties["mojang_brigadier_version"]}")
 }
 
 java {

@@ -92,6 +92,7 @@ public class InteractUtils {
                     keyReference, item.getItem()
             ))) != null).isPresent();
         });
+        registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.HOPPER, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DISPENSER, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DROPPER, (player, item, blockState, result) -> true);

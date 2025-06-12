@@ -10,7 +10,7 @@ public class FeatureUtils {
 
     public static Object createFeatureKey(Key id) {
         try {
-            return CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.instance$Registries$CONFIGURED_FEATURE, KeyUtils.toResourceLocation(id));
+            return CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.CONFIGURED_FEATURE, KeyUtils.toResourceLocation(id));
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

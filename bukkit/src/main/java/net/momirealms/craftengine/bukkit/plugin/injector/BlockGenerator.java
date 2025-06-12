@@ -19,6 +19,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
 import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ObjectHolder;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -36,6 +37,7 @@ public final class BlockGenerator {
     private static Field field$CraftEngineBlock$behavior;
     private static Field field$CraftEngineBlock$shape;
     private static Field field$CraftEngineBlock$isNoteBlock;
+    private static Field field$CraftEngineBlock$isTripwire;
 
     public static void init() throws ReflectiveOperationException {
         ByteBuddy byteBuddy = new ByteBuddy(ClassFileVersion.JAVA_V17);
@@ -48,6 +50,7 @@ public final class BlockGenerator {
                 .defineField("behaviorHolder", ObjectHolder.class, Visibility.PUBLIC)
                 .defineField("shapeHolder", ObjectHolder.class, Visibility.PUBLIC)
                 .defineField("isClientSideNoteBlock", boolean.class, Visibility.PUBLIC)
+                .defineField("isClientSideTripwire", boolean.class, Visibility.PUBLIC)
                 // should always implement this interface
                 .implement(CoreReflections.clazz$Fallable)
                 .implement(CoreReflections.clazz$BonemealableBlock)
@@ -55,13 +58,15 @@ public final class BlockGenerator {
                 // internal interfaces
                 .implement(BehaviorHolder.class)
                 .implement(ShapeHolder.class)
-                .implement(NoteBlockIndicator.class)
+                .implement(ChainUpdateBlockIndicator.class)
                 .method(ElementMatchers.named("getBehaviorHolder"))
                 .intercept(FieldAccessor.ofField("behaviorHolder"))
                 .method(ElementMatchers.named("getShapeHolder"))
                 .intercept(FieldAccessor.ofField("shapeHolder"))
                 .method(ElementMatchers.named("isNoteBlock"))
                 .intercept(FieldAccessor.ofField("isClientSideNoteBlock"))
+                .method(ElementMatchers.named("isTripwire"))
+                .intercept(FieldAccessor.ofField("isClientSideTripwire"))
                 // getShape
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$getShape))
                 .intercept(MethodDelegation.to(GetShapeInterceptor.INSTANCE))
@@ -142,6 +147,7 @@ public final class BlockGenerator {
         field$CraftEngineBlock$behavior = clazz$CraftEngineBlock.getField("behaviorHolder");
         field$CraftEngineBlock$shape = clazz$CraftEngineBlock.getField("shapeHolder");
         field$CraftEngineBlock$isNoteBlock = clazz$CraftEngineBlock.getField("isClientSideNoteBlock");
+        field$CraftEngineBlock$isTripwire = clazz$CraftEngineBlock.getField("isClientSideTripwire");
     }
 
     public static Object generateBlock(Key replacedBlock, Object ownerBlock, Object properties) throws Throwable {
@@ -155,18 +161,28 @@ public final class BlockGenerator {
         field$CraftEngineBlock$behavior.set(newBlockInstance, behaviorHolder);
         field$CraftEngineBlock$shape.set(newBlockInstance, shapeHolder);
         field$CraftEngineBlock$isNoteBlock.set(newBlockInstance, replacedBlock.equals(BlockKeys.NOTE_BLOCK));
+        field$CraftEngineBlock$isTripwire.set(newBlockInstance, replacedBlock.equals(BlockKeys.TRIPWIRE));
         return newBlockInstance;
     }
 
     public static class UpdateShapeInterceptor {
         public static final UpdateShapeInterceptor INSTANCE = new UpdateShapeInterceptor();
         public static final int levelIndex = VersionHelper.isOrAbove1_21_2() ? 1 : 3;
+        public static final int directionIndex = VersionHelper.isOrAbove1_21_2() ? 4 : 1;
+        public static final int posIndex = VersionHelper.isOrAbove1_21_2() ? 3 : 4;
 
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            if (((NoteBlockIndicator) thisObj).isNoteBlock() && CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
-                startNoteBlockChain(args);
+            ChainUpdateBlockIndicator indicator = (ChainUpdateBlockIndicator) thisObj;
+            if (indicator.isNoteBlock()) {
+                if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
+                    startNoteBlockChain(args);
+                }
+            } else if (indicator.isTripwire()) {
+                if (CoreReflections.clazz$ServerLevel.isInstance(args[posIndex])) {
+
+                }
             }
             try {
                 return holder.value().updateShape(thisObj, args, superMethod);
@@ -175,30 +191,20 @@ public final class BlockGenerator {
                 return args[0];
             }
         }
-    }
 
-    private static void startNoteBlockChain(Object[] args) throws ReflectiveOperationException {
-        Object direction;
-        Object serverLevel;
-        Object blockPos;
-        if (VersionHelper.isOrAbove1_21_2()) {
-            direction = args[4];
-            serverLevel = args[1];
-            blockPos = args[3];
-        } else {
-            direction = args[1];
-            serverLevel = args[3];
-            blockPos = args[4];
-        }
-        int id = (int) CoreReflections.field$Direction$data3d.get(direction);
-        // Y axis
-        if (id == 0 || id == 1) {
-            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
-            FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
-            if (id == 1) {
-                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$DOWN, blockPos, 0);
-            } else {
-                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$UP, blockPos, 0);
+        private static void startNoteBlockChain(Object[] args) {
+            Object direction = args[directionIndex];
+            Object serverLevel = args[levelIndex];
+            Object blockPos = args[posIndex];
+            // Y axis
+            if (direction == CoreReflections.instance$Direction$DOWN) {
+                Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
+                FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
+                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$UP, blockPos, Config.maxNoteBlockChainUpdate());
+            } else if (direction == CoreReflections.instance$Direction$UP) {
+                Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(serverLevel);
+                FastNMS.INSTANCE.method$ServerChunkCache$blockChanged(chunkSource, blockPos);
+                NoteBlockChainUpdateUtils.noteBlockChainUpdate(serverLevel, chunkSource, CoreReflections.instance$Direction$DOWN, blockPos, Config.maxNoteBlockChainUpdate());
             }
         }
     }

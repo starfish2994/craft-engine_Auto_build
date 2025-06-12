@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.util.Key;
 
 public class BlockKeys {
     public static final Key NOTE_BLOCK = Key.of("minecraft:note_block");
+    public static final Key TRIPWIRE = Key.of("minecraft:tripwire");
     public static final Key CRAFTING_TABLE = Key.of("minecraft:crafting_table");
     public static final Key STONECUTTER = Key.of("minecraft:stonecutter");
     public static final Key BELL = Key.of("minecraft:bell");
@@ -38,6 +39,7 @@ public class BlockKeys {
     public static final Key COMMAND_BLOCK = Key.of("minecraft:command_block");
     public static final Key CHAIN_COMMAND_BLOCK = Key.of("minecraft:chain_command_block");
     public static final Key REPEATING_COMMAND_BLOCK = Key.of("minecraft:repeating_command_block");
+    public static final Key DECORATED_POT = Key.of("minecraft:decorated_pot");
 
     public static final Key CAKE = Key.of("minecraft:cake");
     public static final Key CANDLE_CAKE = Key.of("minecraft:candle_cake");

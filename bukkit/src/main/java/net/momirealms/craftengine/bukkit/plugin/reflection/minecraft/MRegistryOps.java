@@ -9,6 +9,7 @@ import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.sparrow.nbt.codec.LegacyJavaOps;
 import net.momirealms.sparrow.nbt.codec.LegacyNBTOps;
 import net.momirealms.sparrow.nbt.codec.NBTOps;
 
@@ -34,8 +35,12 @@ public class MRegistryOps {
     static {
         try {
             if (clazz$JavaOps != null) {
+                // 1.20.5+
                 Object javaOps = ReflectionUtils.getDeclaredField(clazz$JavaOps, clazz$JavaOps, 0).get(null);
                 JAVA = (DynamicOps<Object>) CoreReflections.method$RegistryOps$create.invoke(null, javaOps, FastNMS.INSTANCE.registryAccess());
+            } else if (!VersionHelper.isOrAbove1_20_5()) {
+                // 1.20.1-1.20.4
+                JAVA = (DynamicOps<Object>) CoreReflections.method$RegistryOps$create.invoke(null, LegacyJavaOps.INSTANCE, FastNMS.INSTANCE.registryAccess());
             } else {
                 JAVA = null;
             }

@@ -16,6 +16,8 @@ import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRecipeTypes;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.recipe.CustomCookingRecipe;
 import net.momirealms.craftengine.core.item.recipe.OptimizedIDItem;
@@ -28,7 +30,6 @@ import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
 import java.util.Optional;
 
 public class RecipeInjector {
@@ -41,17 +42,23 @@ public class RecipeInjector {
                 .name("net.momirealms.craftengine.bukkit.entity.InjectedCacheChecker")
                 .implement(CoreReflections.clazz$RecipeManager$CachedCheck)
                 .implement(InjectedCacheCheck.class)
+
                 .defineField("recipeType", Object.class, Visibility.PUBLIC)
                 .method(ElementMatchers.named("recipeType"))
                 .intercept(FieldAccessor.ofField("recipeType"))
+
+                .defineField("customRecipeType", Key.class, Visibility.PUBLIC)
+                .method(ElementMatchers.named("customRecipeType"))
+                .intercept(FieldAccessor.ofField("customRecipeType"))
+
                 .defineField("lastRecipe", Object.class, Visibility.PUBLIC)
                 .method(ElementMatchers.named("lastRecipe"))
                 .intercept(FieldAccessor.ofField("lastRecipe"))
-                .method(ElementMatchers.named("setLastRecipe"))
-                .intercept(FieldAccessor.ofField("lastRecipe"))
+
                 .defineField("lastCustomRecipe", Key.class, Visibility.PUBLIC)
                 .method(ElementMatchers.named("lastCustomRecipe"))
                 .intercept(FieldAccessor.ofField("lastCustomRecipe"))
+
                 .method(ElementMatchers.named("getRecipeFor").or(ElementMatchers.named("a")))
                 .intercept(MethodDelegation.to(
                         VersionHelper.isOrAbove1_21_2() ?
@@ -73,269 +80,227 @@ public class RecipeInjector {
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             Object recipeType = FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$recipeType(entity);
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
-            injectedChecker.recipeType(recipeType);
+            if (recipeType == MRecipeTypes.SMELTING) {
+                injectedChecker.customRecipeType(RecipeTypes.SMELTING);
+                injectedChecker.recipeType(MRecipeTypes.SMELTING);
+            } else if (recipeType == MRecipeTypes.BLASTING) {
+                injectedChecker.customRecipeType(RecipeTypes.BLASTING);
+                injectedChecker.recipeType(MRecipeTypes.BLASTING);
+            } else if (recipeType == MRecipeTypes.SMOKING) {
+                injectedChecker.customRecipeType(RecipeTypes.SMOKING);
+                injectedChecker.recipeType(MRecipeTypes.SMOKING);
+            } else {
+                throw new IllegalStateException("RecipeType " + recipeType + " not supported");
+            }
             CoreReflections.field$AbstractFurnaceBlockEntity$quickCheck.set(entity, injectedChecker);
         } else if (!VersionHelper.isOrAbove1_21_2() && CoreReflections.clazz$CampfireBlockEntity.isInstance(entity)) {
             Object quickCheck = CoreReflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
+            injectedChecker.customRecipeType(RecipeTypes.CAMPFIRE_COOKING);
             injectedChecker.recipeType(MRecipeTypes.CAMPFIRE_COOKING);
             CoreReflections.field$CampfireBlockEntity$quickCheck.set(entity, injectedChecker);
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public static class GetRecipeForMethodInterceptor1_20 {
         public static final GetRecipeForMethodInterceptor1_20 INSTANCE = new GetRecipeForMethodInterceptor1_20();
 
         @SuppressWarnings("unchecked")
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
-            Object type = injectedCacheCheck.recipeType();
-            Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Pair<Object, Object>> optionalRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
-            if (optionalRecipe.isPresent()) {
-                Pair<Object, Object> pair = optionalRecipe.get();
-                Object resourceLocation = pair.getFirst();
-                Key recipeId = Key.of(resourceLocation.toString());
-                BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-
-                ItemStack itemStack;
-                List<Object> items;
-                if (type == MRecipeTypes.CAMPFIRE_COOKING) {
-                    items = (List<Object>) CoreReflections.field$SimpleContainer$items.get(args[0]);
-                } else {
-                    items = (List<Object>) CoreReflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
-                }
-                itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
-
-                // it's a recipe from other plugins
-                boolean isCustom = recipeManager.isCustomRecipe(recipeId);
-                if (!isCustom) {
-                    injectedCacheCheck.lastRecipe(resourceLocation);
-                    return Optional.of(pair.getSecond());
-                }
-
-                Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    return Optional.empty();
-                }
-
-                SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == MRecipeTypes.SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
-                } else  {
-                    return Optional.empty();
-                }
-                if (ceRecipe == null) {
-                    return Optional.empty();
-                }
-
-                // Cache recipes, it might be incorrect on reloading
-                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
-                // It doesn't matter at all
-                injectedCacheCheck.lastRecipe(resourceLocation);
-                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(pair.getSecond()));
-            } else {
+            Object lastRecipeResourceLocation = injectedCacheCheck.lastRecipe();
+            Optional<Pair<Object, Object>> optionalRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(BukkitRecipeManager.nmsRecipeManager(), injectedCacheCheck.recipeType(), args[0], args[1], lastRecipeResourceLocation);
+            if (optionalRecipe.isEmpty()) {
                 return Optional.empty();
             }
+
+            Pair<Object, Object> resourceLocationAndRecipe = optionalRecipe.get();
+            Object rawRecipeResourceLocation = resourceLocationAndRecipe.getFirst();
+            Key rawRecipeKey = Key.of(rawRecipeResourceLocation.toString());
+            BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
+
+            boolean isCustom = recipeManager.isCustomRecipe(rawRecipeKey);
+            if (!isCustom) {
+                injectedCacheCheck.lastRecipe(rawRecipeResourceLocation);
+                return Optional.of(resourceLocationAndRecipe.getSecond());
+            }
+
+            ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(
+                    injectedCacheCheck.recipeType() == MRecipeTypes.CAMPFIRE_COOKING ?
+                            FastNMS.INSTANCE.field$SimpleContainer$items(args[0]).getFirst() :
+                            FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$getItem(args[0], 0)
+            );
+
+            Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
+            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+            if (idHolder.isEmpty()) {
+                return Optional.empty();
+            }
+
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+            CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
+            if (ceRecipe == null) {
+                return Optional.empty();
+            }
+
+            injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
+            if (!ceRecipe.id().equals(rawRecipeKey)) {
+                injectedCacheCheck.lastRecipe(KeyUtils.toResourceLocation(ceRecipe.id()));
+            }
+            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe));
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public static class GetRecipeForMethodInterceptor1_20_5 {
         public static final GetRecipeForMethodInterceptor1_20_5 INSTANCE = new GetRecipeForMethodInterceptor1_20_5();
 
         @SuppressWarnings("unchecked")
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
-            Object type = injectedCacheCheck.recipeType();
-            Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
-            if (optionalRecipe.isPresent()) {
-                Object holder = optionalRecipe.get();
-                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
-                Key recipeId = Key.of(id.toString());
-                BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-
-                ItemStack itemStack;
-                List<Object> items;
-                if (type == MRecipeTypes.CAMPFIRE_COOKING) {
-                    items = (List<Object>) CoreReflections.field$SimpleContainer$items.get(args[0]);
-                } else {
-                    items = (List<Object>) CoreReflections.field$AbstractFurnaceBlockEntity$items.get(args[0]);
-                }
-                itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(items.get(0));
-
-                // it's a recipe from other plugins
-                boolean isCustom = recipeManager.isCustomRecipe(recipeId);
-                if (!isCustom) {
-                    injectedCacheCheck.lastRecipe(id);
-                    return optionalRecipe;
-                }
-
-                Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    return Optional.empty();
-                }
-
-                SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == MRecipeTypes.SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
-                } else  {
-                    return Optional.empty();
-                }
-                if (ceRecipe == null) {
-                    return Optional.empty();
-                }
-
-                // Cache recipes, it might be incorrect on reloading
-                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
-                // It doesn't matter at all
-                injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
-            } else {
+            Object lastRecipeResourceLocation = injectedCacheCheck.lastRecipe();
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(BukkitRecipeManager.nmsRecipeManager(), injectedCacheCheck.recipeType(), args[0], args[1], lastRecipeResourceLocation);
+            if (optionalRecipe.isEmpty()) {
                 return Optional.empty();
             }
+
+            Object rawRecipeHolder = optionalRecipe.get();
+            Object rawRecipeResourceLocation = FastNMS.INSTANCE.field$RecipeHolder$id(rawRecipeHolder);
+            Key rawRecipeKey = Key.of(rawRecipeResourceLocation.toString());
+
+            BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
+            ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(
+                    injectedCacheCheck.recipeType() == MRecipeTypes.CAMPFIRE_COOKING ?
+                            FastNMS.INSTANCE.field$SimpleContainer$items(args[0]).getFirst() :
+                            FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$getItem(args[0], 0)
+            );
+
+            boolean isCustom = recipeManager.isCustomRecipe(rawRecipeKey);
+            if (!isCustom) {
+                injectedCacheCheck.lastRecipe(rawRecipeResourceLocation);
+                return optionalRecipe;
+            }
+
+            Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
+            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+            if (idHolder.isEmpty()) {
+                return Optional.empty();
+            }
+
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+            CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
+            if (ceRecipe == null) {
+                return Optional.empty();
+            }
+
+            injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
+            if (!ceRecipe.id().equals(rawRecipeKey)) {
+                injectedCacheCheck.lastRecipe(KeyUtils.toResourceLocation(ceRecipe.id()));
+            }
+            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe));
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public static class GetRecipeForMethodInterceptor1_21 {
         public static final GetRecipeForMethodInterceptor1_21 INSTANCE = new GetRecipeForMethodInterceptor1_21();
 
         @SuppressWarnings("unchecked")
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
-            Object type = injectedCacheCheck.recipeType();
-            Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
-            if (optionalRecipe.isPresent()) {
-                Object holder = optionalRecipe.get();
-                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
-                Key recipeId = Key.of(id.toString());
-                BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.field$SingleRecipeInput$item.get(args[0]));
-
-                // it's a recipe from other plugins
-                boolean isCustom = recipeManager.isCustomRecipe(recipeId);
-                if (!isCustom) {
-                    injectedCacheCheck.lastRecipe(id);
-                    return optionalRecipe;
-                }
-
-                Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    return Optional.empty();
-                }
-
-                SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == MRecipeTypes.SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.CAMPFIRE_COOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input, lastCustomRecipe);
-                } else  {
-                    return Optional.empty();
-                }
-                if (ceRecipe == null) {
-                    return Optional.empty();
-                }
-
-                // Cache recipes, it might be incorrect on reloading
-                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
-                // It doesn't matter at all
-                injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
-            } else {
+            Object lastRecipeResourceLocation = injectedCacheCheck.lastRecipe();
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(BukkitRecipeManager.nmsRecipeManager(), injectedCacheCheck.recipeType(), args[0], args[1], lastRecipeResourceLocation);
+            if (optionalRecipe.isEmpty()) {
                 return Optional.empty();
             }
+
+            Object rawRecipeHolder = optionalRecipe.get();
+            Object rawRecipeResourceLocation = FastNMS.INSTANCE.field$RecipeHolder$id(rawRecipeHolder);
+            Key rawRecipeKey = Key.of(rawRecipeResourceLocation.toString());
+
+            BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
+            boolean isCustom = recipeManager.isCustomRecipe(rawRecipeKey);
+            if (!isCustom) {
+                injectedCacheCheck.lastRecipe(rawRecipeResourceLocation);
+                return optionalRecipe;
+            }
+
+            ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.field$SingleRecipeInput$item(args[0]));
+            Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
+            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+            if (idHolder.isEmpty()) {
+                return Optional.empty();
+            }
+
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+            CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
+            if (ceRecipe == null) {
+                return Optional.empty();
+            }
+
+            injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
+            if (!ceRecipe.id().equals(rawRecipeKey)) {
+                injectedCacheCheck.lastRecipe(KeyUtils.toResourceLocation(ceRecipe.id()));
+            }
+            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe));
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public static class GetRecipeForMethodInterceptor1_21_2 {
         public static final GetRecipeForMethodInterceptor1_21_2 INSTANCE = new GetRecipeForMethodInterceptor1_21_2();
 
         @SuppressWarnings("unchecked")
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Exception {
-            Object mcRecipeManager = BukkitRecipeManager.nmsRecipeManager();
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             InjectedCacheCheck injectedCacheCheck = (InjectedCacheCheck) thisObj;
-            Object type = injectedCacheCheck.recipeType();
-            Object lastRecipe = injectedCacheCheck.lastRecipe();
-            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(mcRecipeManager, type, args[0], args[1], lastRecipe);
-            if (optionalRecipe.isPresent()) {
-                Object holder = optionalRecipe.get();
-                Object id = FastNMS.INSTANCE.field$RecipeHolder$id(holder);
-                Object resourceLocation = FastNMS.INSTANCE.field$ResourceKey$location(id);
-                Key recipeId = Key.of(resourceLocation.toString());
-                BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
-                ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.field$SingleRecipeInput$item.get(args[0]));
-
-                // it's a recipe from other plugins
-                boolean isCustom = recipeManager.isCustomRecipe(recipeId);
-                if (!isCustom) {
-                    injectedCacheCheck.lastRecipe(id);
-                    return optionalRecipe;
-                }
-
-                Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    return Optional.empty();
-                }
-
-                SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                CustomCookingRecipe<ItemStack> ceRecipe;
-                Key lastCustomRecipe = injectedCacheCheck.lastCustomRecipe();
-                if (type == MRecipeTypes.SMELTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMELTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.BLASTING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.BLASTING, input, lastCustomRecipe);
-                } else if (type == MRecipeTypes.SMOKING) {
-                    ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(RecipeTypes.SMOKING, input, lastCustomRecipe);
-                } else {
-                    return Optional.empty();
-                }
-                if (ceRecipe == null) {
-                    return Optional.empty();
-                }
-
-                // Cache recipes, it might be incorrect on reloading
-                injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
-                // It doesn't matter at all
-                injectedCacheCheck.lastRecipe(id);
-                return Optional.of(Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe)).orElse(holder));
-            } else {
+            Object lastRecipeResourceKey = injectedCacheCheck.lastRecipe();
+            Optional<Object> optionalRecipe = (Optional<Object>) FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(BukkitRecipeManager.nmsRecipeManager(), injectedCacheCheck.recipeType(), args[0], args[1], lastRecipeResourceKey);
+            if (optionalRecipe.isEmpty()) {
                 return Optional.empty();
             }
+
+            // 获取配方的基础信息
+            Object recipeHolder = optionalRecipe.get();
+            Object rawRecipeResourceKey = FastNMS.INSTANCE.field$RecipeHolder$id(recipeHolder);
+            Object rawRecipeResourceLocation = FastNMS.INSTANCE.field$ResourceKey$location(rawRecipeResourceKey);
+            Key rawRecipeKey = Key.of(rawRecipeResourceLocation.toString());
+
+            BukkitRecipeManager recipeManager = BukkitRecipeManager.instance();
+            // 来自其他插件注册的自定义配方
+            boolean isCustom = recipeManager.isCustomRecipe(rawRecipeKey);
+            if (!isCustom) {
+                injectedCacheCheck.lastRecipe(rawRecipeResourceKey);
+                return optionalRecipe;
+            }
+
+            // 获取唯一内存地址id
+            ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.field$SingleRecipeInput$item(args[0]));
+            Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
+            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
+            if (idHolder.isEmpty()) {
+                return Optional.empty();
+            }
+
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+            CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
+            // 这个ce配方并不存在，那么应该返回空
+            if (ceRecipe == null) {
+                return Optional.empty();
+            }
+
+            // 记录上一次使用的配方(ce)
+            injectedCacheCheck.lastCustomRecipe(ceRecipe.id());
+            // 更新上一次使用的配方(nms)
+            if (!ceRecipe.id().equals(rawRecipeKey)) {
+                injectedCacheCheck.lastRecipe(FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.RECIPE, KeyUtils.toResourceLocation(ceRecipe.id())));
+            }
+            return Optional.ofNullable(recipeManager.nmsRecipeHolderByRecipe(ceRecipe));
         }
     }
 }

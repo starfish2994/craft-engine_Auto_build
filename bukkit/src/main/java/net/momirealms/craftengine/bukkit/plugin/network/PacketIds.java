@@ -52,7 +52,11 @@ public interface PacketIds {
 
     int clientboundSetPlayerInventoryPacket();
 
+    int clientboundBlockEventPacket();
+
     int serverboundContainerClickPacket();
 
     int serverboundSetCreativeModeSlotPacket();
+
+    int serverboundInteractPacket();
 }
