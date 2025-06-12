@@ -30,10 +30,7 @@ import net.momirealms.craftengine.core.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class BukkitCompatibilityManager implements CompatibilityManager {
     private final BukkitCraftEngine plugin;
@@ -189,7 +186,18 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
         String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();
         if (!this.fastAsyncWorldEditVersionCheck(version)) {
-            this.plugin.logger().warn("[Compatibility] Please update FastAsyncWorldEdit to 2.13.0 or newer for better compatibility");
+            new Exception().printStackTrace();
+            this.plugin.logger().severe("");
+            this.plugin.logger().severe("");
+            if (Locale.getDefault() == Locale.SIMPLIFIED_CHINESE) {
+                this.plugin.logger().severe("[Compatibility] 插件需要更新 FastAsyncWorldEdit 到 2.13.0 或更高版本，以获得更好的兼容性。(当前版本: " + version + ")");
+                this.plugin.logger().severe("[Compatibility] 请前往 https://ci.athion.net/job/FastAsyncWorldEdit/ 下载最新版本");
+            } else {
+                this.plugin.logger().severe("[Compatibility] Please update FastAsyncWorldEdit to 2.13.0 or newer for better compatibility. (Current version: " + version + ")");
+                this.plugin.logger().severe("[Compatibility] Please go to https://ci.athion.net/job/FastAsyncWorldEdit/ to download the latest version");
+            }
+            this.plugin.logger().severe("");
+            this.plugin.logger().severe("");
         }
         new WorldEditBlockRegister(BukkitBlockManager.instance(), true);
     }
