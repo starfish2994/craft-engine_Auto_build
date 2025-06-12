@@ -35,7 +35,7 @@ public class ItemSettings {
     FoodData foodData = null;
     Key consumeReplacement = null;
     Key craftRemainder = null;
-    List<DamageCause> invulnerable = List.of();
+    List<DamageSource> invulnerable = List.of();
 
     private ItemSettings() {}
 
@@ -147,7 +147,7 @@ public class ItemSettings {
         return equipment;
     }
 
-    public List<DamageCause> invulnerable() {
+    public List<DamageSource> invulnerable() {
         return invulnerable;
     }
 
@@ -216,7 +216,7 @@ public class ItemSettings {
         return this;
     }
 
-    public ItemSettings invulnerable(List<DamageCause> invulnerable) {
+    public ItemSettings invulnerable(List<DamageSource> invulnerable) {
         this.invulnerable = invulnerable;
         return this;
     }
@@ -321,12 +321,12 @@ public class ItemSettings {
                 return settings -> settings.foodData(data);
             }));
             registerFactory("invulnerable", (value -> {
-                List<DamageCause> list = MiscUtils.getAsStringList(value).stream().map(it -> {
-                    try {
-                        return DamageCause.byName(it);
-                    } catch (IllegalArgumentException e) {
-                        throw new LocalizedResourceConfigException("warning.config.item.settings.invulnerable-unknown", it);
+                List<DamageSource> list = MiscUtils.getAsStringList(value).stream().map(it -> {
+                    DamageSource source = DamageSource.byName(it);
+                    if (source == null) {
+                        throw new LocalizedResourceConfigException("warning.config.item.settings.invulnerable.invalid_damage_source", it, EnumUtils.toString(DamageSource.values()));
                     }
+                    return source;
                 }).toList();
                 return settings -> settings.invulnerable(list);
             }));

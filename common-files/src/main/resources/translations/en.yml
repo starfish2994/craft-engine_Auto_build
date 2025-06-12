@@ -153,7 +153,7 @@ warning.config.furniture.hitbox.invalid_type: "<yellow>Issue found in file <arg:
 warning.config.furniture.hitbox.custom.invalid_entity: "<yellow>Issue found in file <arg:0> - The furniture '<arg:1>' is using a custom hitbox with invalid entity type '<arg:2>'.</yellow>"
 warning.config.item.duplicate: "<yellow>Issue found in file <arg:0> - Duplicated item '<arg:1>'. Please check if there is the same configuration in other files.</yellow>"
 warning.config.item.settings.unknown: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is using an unknown setting type '<arg:2>'.</yellow>"
-warning.config.item.settings.invulnerable-unknown: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is using an unknown damage cause type '<arg:2>'.</yellow>"
+warning.config.item.settings.invulnerable.invalid_damage_source: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is using an unknown damage source '<arg:2>'. Allowed sources: [<arg:3>].</yellow>"
 warning.config.item.missing_material: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the required 'material' argument.</yellow>"
 warning.config.item.invalid_material: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is using an invalid material type '<arg:2>'.</yellow>"
 warning.config.item.invalid_custom_model_data: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is using a negative custom model data '<arg:2>' which is invalid.</yellow>"

@@ -1,11 +1,13 @@
 package net.momirealms.craftengine.core.util;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-public enum DamageCause {
+public enum DamageSource {
     BLOCK_EXPLOSION,
     CAMPFIRE,
     CONTACT,
@@ -37,22 +39,19 @@ public enum DamageCause {
     THORNS,
     VOID,
     WITHER,
-    WORLD_BORDER,
-    @Deprecated
-    @SuppressWarnings("all")
-    DRAGON_BREATH;
+    WORLD_BORDER;
 
-    public static final Map<String, DamageCause> BY_NAME = new HashMap<>();
+    public static final Map<String, DamageSource> BY_NAME = new HashMap<>();
 
     static {
-        for (DamageCause cause : values()) {
-            BY_NAME.put(cause.name().toLowerCase(Locale.ROOT), cause);
+        for (DamageSource cause : values()) {
+            BY_NAME.put(cause.name().toLowerCase(Locale.ENGLISH), cause);
             BY_NAME.put(cause.name(), cause);
         }
     }
 
-    public static DamageCause byName(String name) {
-        return Optional.ofNullable(BY_NAME.get(name)).orElseThrow(() -> new IllegalArgumentException("Unknown damage cause: " + name));
+    @Nullable
+    public static DamageSource byName(String name) {
+        return BY_NAME.get(name);
     }
-
 }

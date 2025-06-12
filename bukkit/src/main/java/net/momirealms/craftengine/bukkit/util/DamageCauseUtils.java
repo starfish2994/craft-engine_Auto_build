@@ -1,14 +1,13 @@
 package net.momirealms.craftengine.bukkit.util;
 
-import net.momirealms.craftengine.core.util.DamageCause;
+import net.momirealms.craftengine.core.util.DamageSource;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 public class DamageCauseUtils {
     
     private DamageCauseUtils() {}
 
-    @SuppressWarnings("deprecation")
-    public static EntityDamageEvent.DamageCause toBukkit(DamageCause cause) {
+    public static EntityDamageEvent.DamageCause toBukkit(DamageSource cause) {
         return switch (cause) {
             case BLOCK_EXPLOSION -> EntityDamageEvent.DamageCause.BLOCK_EXPLOSION;
             case CAMPFIRE -> EntityDamageEvent.DamageCause.CAMPFIRE;
@@ -42,48 +41,45 @@ public class DamageCauseUtils {
             case VOID -> EntityDamageEvent.DamageCause.VOID;
             case WITHER -> EntityDamageEvent.DamageCause.WITHER;
             case WORLD_BORDER -> EntityDamageEvent.DamageCause.WORLD_BORDER;
-            case DRAGON_BREATH -> EntityDamageEvent.DamageCause.DRAGON_BREATH;
-            default -> throw new IllegalArgumentException("Unexpected value: " + cause);
+            default -> null;
         };
     }
 
-    @SuppressWarnings("deprecation")
-    public static DamageCause fromBukkit(EntityDamageEvent.DamageCause cause) {
+    public static DamageSource fromBukkit(EntityDamageEvent.DamageCause cause) {
         return switch (cause) {
-            case BLOCK_EXPLOSION -> DamageCause.BLOCK_EXPLOSION;
-            case CAMPFIRE -> DamageCause.CAMPFIRE;
-            case CONTACT -> DamageCause.CONTACT;
-            case CRAMMING -> DamageCause.CRAMMING;
-            case CUSTOM -> DamageCause.CUSTOM;
-            case DROWNING -> DamageCause.DROWNING;
-            case DRYOUT -> DamageCause.DRYOUT;
-            case ENTITY_ATTACK -> DamageCause.ENTITY_ATTACK;
-            case ENTITY_EXPLOSION -> DamageCause.ENTITY_EXPLOSION;
-            case ENTITY_SWEEP_ATTACK -> DamageCause.ENTITY_SWEEP_ATTACK;
-            case FALL -> DamageCause.FALL;
-            case FALLING_BLOCK -> DamageCause.FALLING_BLOCK;
-            case FIRE -> DamageCause.FIRE;
-            case FIRE_TICK -> DamageCause.FIRE_TICK;
-            case FLY_INTO_WALL -> DamageCause.FLY_INTO_WALL;
-            case FREEZE -> DamageCause.FREEZE;
-            case HOT_FLOOR -> DamageCause.HOT_FLOOR;
-            case KILL -> DamageCause.KILL;
-            case LAVA -> DamageCause.LAVA;
-            case LIGHTNING -> DamageCause.LIGHTNING;
-            case MAGIC -> DamageCause.MAGIC;
-            case MELTING -> DamageCause.MELTING;
-            case POISON -> DamageCause.POISON;
-            case PROJECTILE -> DamageCause.PROJECTILE;
-            case SONIC_BOOM -> DamageCause.SONIC_BOOM;
-            case STARVATION -> DamageCause.STARVATION;
-            case SUFFOCATION -> DamageCause.SUFFOCATION;
-            case SUICIDE -> DamageCause.SUICIDE;
-            case THORNS -> DamageCause.THORNS;
-            case VOID -> DamageCause.VOID;
-            case WITHER -> DamageCause.WITHER;
-            case WORLD_BORDER -> DamageCause.WORLD_BORDER;
-            case DRAGON_BREATH -> DamageCause.DRAGON_BREATH;
-            default -> throw new IllegalArgumentException("Unexpected value: " + cause);
+            case BLOCK_EXPLOSION -> DamageSource.BLOCK_EXPLOSION;
+            case CAMPFIRE -> DamageSource.CAMPFIRE;
+            case CONTACT -> DamageSource.CONTACT;
+            case CRAMMING -> DamageSource.CRAMMING;
+            case CUSTOM -> DamageSource.CUSTOM;
+            case DROWNING -> DamageSource.DROWNING;
+            case DRYOUT -> DamageSource.DRYOUT;
+            case ENTITY_ATTACK -> DamageSource.ENTITY_ATTACK;
+            case ENTITY_EXPLOSION -> DamageSource.ENTITY_EXPLOSION;
+            case ENTITY_SWEEP_ATTACK -> DamageSource.ENTITY_SWEEP_ATTACK;
+            case FALL -> DamageSource.FALL;
+            case FALLING_BLOCK -> DamageSource.FALLING_BLOCK;
+            case FIRE -> DamageSource.FIRE;
+            case FIRE_TICK -> DamageSource.FIRE_TICK;
+            case FLY_INTO_WALL -> DamageSource.FLY_INTO_WALL;
+            case FREEZE -> DamageSource.FREEZE;
+            case HOT_FLOOR -> DamageSource.HOT_FLOOR;
+            case KILL -> DamageSource.KILL;
+            case LAVA -> DamageSource.LAVA;
+            case LIGHTNING -> DamageSource.LIGHTNING;
+            case MAGIC -> DamageSource.MAGIC;
+            case MELTING -> DamageSource.MELTING;
+            case POISON -> DamageSource.POISON;
+            case PROJECTILE -> DamageSource.PROJECTILE;
+            case SONIC_BOOM -> DamageSource.SONIC_BOOM;
+            case STARVATION -> DamageSource.STARVATION;
+            case SUFFOCATION -> DamageSource.SUFFOCATION;
+            case SUICIDE -> DamageSource.SUICIDE;
+            case THORNS -> DamageSource.THORNS;
+            case VOID -> DamageSource.VOID;
+            case WITHER -> DamageSource.WITHER;
+            case WORLD_BORDER -> DamageSource.WORLD_BORDER;
+            default -> null;
         };
     }
 }
