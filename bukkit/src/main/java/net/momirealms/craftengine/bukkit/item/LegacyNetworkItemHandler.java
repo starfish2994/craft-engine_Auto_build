@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+@SuppressWarnings("DuplicatedCode")
 public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
 
     @Override
@@ -32,9 +34,9 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         boolean hasDifferentMaterial = false;
         if (optionalCustomItem.isPresent()) {
-            CustomItem<ItemStack> customItem = optionalCustomItem.get();
-            if (!customItem.material().equals(wrapped.vanillaId())) {
-                wrapped = wrapped.transmuteCopy(customItem.material());
+            BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
+            if (customItem.item() != FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject())) {
+                wrapped = wrapped.unsafeTransmuteCopy(customItem.item(), wrapped.count());
                 hasDifferentMaterial = true;
             }
         }
@@ -61,10 +63,10 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
             if (!Config.interceptItem()) return Optional.empty();
             return new OtherItem(wrapped, false).process();
         } else {
-            CustomItem<ItemStack> customItem = optionalCustomItem.get();
-            boolean hasDifferentMaterial = !wrapped.vanillaId().equals(customItem.clientBoundMaterial());
+            BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
+            boolean hasDifferentMaterial = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getItem()) != customItem.clientItem();
             if (hasDifferentMaterial) {
-                wrapped = wrapped.transmuteCopy(customItem.clientBoundMaterial());
+                wrapped = wrapped.unsafeTransmuteCopy(customItem.clientItem(), wrapped.count());
             }
             if (!customItem.hasClientBoundDataModifier()) {
                 if (!Config.interceptItem() && !hasDifferentMaterial) return Optional.empty();

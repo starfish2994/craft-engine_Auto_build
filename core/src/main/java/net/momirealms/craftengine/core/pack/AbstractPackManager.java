@@ -116,6 +116,7 @@ public abstract class AbstractPackManager implements PackManager {
 
         loadInternalList("models", "block/", VANILLA_MODELS::add);
         loadInternalList("models", "item/", VANILLA_MODELS::add);
+        VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
