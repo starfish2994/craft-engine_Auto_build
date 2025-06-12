@@ -32,7 +32,7 @@ import java.util.*;
 public class BukkitFurniture implements Furniture {
     private final Key id;
     private final CustomFurniture furniture;
-    private final AnchorType anchorType;
+    private final CustomFurniture.Placement placement;
     private FurnitureExtraData extraData;
     // location
     private final Location location;
@@ -61,7 +61,7 @@ public class BukkitFurniture implements Furniture {
         this.id = furniture.id();
         this.extraData = extraData;
         this.baseEntityId = baseEntity.getEntityId();
-        this.anchorType = extraData.anchorType().orElse(furniture.getAnyPlacement());
+
         this.location = baseEntity.getLocation();
         this.baseEntity = new WeakReference<>(baseEntity);
         this.furniture = furniture;
@@ -70,7 +70,7 @@ public class BukkitFurniture implements Furniture {
         List<Integer> mainEntityIds = new IntArrayList();
         mainEntityIds.add(this.baseEntityId);
 
-        CustomFurniture.Placement placement = furniture.getPlacement(anchorType);
+        this.placement = furniture.getValidPlacement(extraData.anchorType().orElseGet(furniture::getAnyAnchorType));
         // bind external furniture
         Optional<ExternalModel> optionalExternal = placement.externalModel();
         if (optionalExternal.isPresent()) {
@@ -171,7 +171,7 @@ public class BukkitFurniture implements Furniture {
 
     @NotNull
     public Location dropLocation() {
-        Optional<Vector3f> dropOffset = config().getPlacement(this.anchorType).dropOffset();
+        Optional<Vector3f> dropOffset = this.placement.dropOffset();
         if (dropOffset.isEmpty()) {
             return location();
         }
@@ -275,7 +275,7 @@ public class BukkitFurniture implements Furniture {
 
     @Override
     public @NotNull AnchorType anchorType() {
-        return this.anchorType;
+        return this.placement.anchorType();
     }
 
     @Override

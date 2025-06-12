@@ -70,7 +70,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public BukkitFurniture place(Location location, CustomFurniture furniture, FurnitureExtraData extraData, boolean playSound) {
         Optional<AnchorType> optionalAnchorType = extraData.anchorType();
         if (optionalAnchorType.isEmpty() || !furniture.isAllowedPlacement(optionalAnchorType.get())) {
-            extraData.anchorType(furniture.getAnyPlacement());
+            extraData.anchorType(furniture.getAnyAnchorType());
         }
         Entity furnitureEntity = EntityUtils.spawnEntity(location.getWorld(), location, EntityType.ITEM_DISPLAY, entity -> {
             ItemDisplay display = (ItemDisplay) entity;

@@ -47,6 +47,8 @@ public interface World {
         playBlockSound(location, data.id(), data.volume(), data.pitch());
     }
 
+    void levelEvent(int id, BlockPos pos, int data);
+
     void spawnParticle(Position location, Key particle, int count, double xOffset, double yOffset, double zOffset, double speed, @Nullable ParticleData extraData, @NotNull Context context);
 
     long time();

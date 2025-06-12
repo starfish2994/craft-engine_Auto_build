@@ -165,4 +165,9 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
     public void count(int amount) {
         this.item.setAmount(Math.max(amount, 0));
     }
+
+    @Override
+    public void shrink(int amount) {
+        count(count() - amount);
+    }
 }

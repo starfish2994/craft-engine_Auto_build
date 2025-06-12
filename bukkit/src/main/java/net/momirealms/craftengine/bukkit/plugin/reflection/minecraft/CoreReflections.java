@@ -1356,10 +1356,6 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getBlockSupportShape", "b_"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos)
     );
 
-    public static final Method method$LevelAccessor$scheduleTick = requireNonNull(
-            ReflectionUtils.getMethod(clazz$LevelAccessor, void.class, CoreReflections.clazz$BlockPos, clazz$Block, int.class)
-    );
-
     public static final Field field$BlockBehaviour$properties = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(clazz$BlockBehaviour, clazz$BlockBehaviour$Properties, 0)
     );

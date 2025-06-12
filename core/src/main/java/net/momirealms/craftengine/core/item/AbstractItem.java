@@ -439,4 +439,9 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     public byte[] toByteArray() {
         return this.factory.toByteArray(this.item);
     }
+
+    @Override
+    public void shrink(int amount) {
+        this.item.shrink(amount);
+    }
 }

@@ -32,7 +32,7 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
 
     @Override
     protected LegacyItemWrapper wrapInternal(ItemStack item) {
-        return new LegacyItemWrapper(new RtagItem(item), item.getAmount());
+        return new LegacyItemWrapper(new RtagItem(item));
     }
 
     @Override
@@ -308,10 +308,10 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     @Override
     protected LegacyItemWrapper mergeCopy(LegacyItemWrapper item1, LegacyItemWrapper item2) {
         Object itemStack = ItemObject.copy(item2.getLiteralObject());
-        ItemObject.setCustomDataTag(itemStack, TagCompound.clone(ItemObject.getCustomDataTag(item1.getLiteralObject())));
+        ItemObject.setCustomDataTag(itemStack, TagCompound.clone(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item1.getLiteralObject())));
         // one more step than vanilla
-        TagCompound.merge(ItemObject.getCustomDataTag(itemStack), ItemObject.getCustomDataTag(item2.getLiteralObject()), true, true);
-        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(itemStack)), item2.count());
+        TagCompound.merge(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(itemStack), FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item2.getLiteralObject()), true, true);
+        return new LegacyItemWrapper(new RtagItem(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack)));
     }
 
     @Override
@@ -326,7 +326,7 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     @Override
     protected LegacyItemWrapper transmuteCopy(LegacyItemWrapper item, Key newItem, int amount) {
         Object newItemStack = FastNMS.INSTANCE.constructor$ItemStack(FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(newItem)), amount);
-        ItemObject.setCustomDataTag(newItemStack, TagCompound.clone(ItemObject.getCustomDataTag(item.getLiteralObject())));
-        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(newItemStack)), amount);
+        ItemObject.setCustomDataTag(newItemStack, TagCompound.clone(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject())));
+        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(newItemStack)));
     }
 }

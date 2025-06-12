@@ -181,6 +181,8 @@ public interface Item<I> {
 
     Item<I> transmuteCopy(Key another, int count);
 
+    void shrink(int amount);
+
     default Item<I> transmuteCopy(Key another) {
         return transmuteCopy(another, this.count());
     }

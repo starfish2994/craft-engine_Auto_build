@@ -62,7 +62,7 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
         boolean lit = state.get(this.litProperty);
         if (lit != FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
             if (lit) {
-                CoreReflections.method$LevelAccessor$scheduleTick.invoke(world, blockPos, thisBlock, 4);
+                FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 4);
             } else {
                 // TODO Call Event
                 FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);

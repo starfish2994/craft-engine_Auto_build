@@ -73,7 +73,7 @@ public class DebugStickListener implements Listener {
                             ComponentUtils.adventureToMinecraft(Component.translatable("item.minecraft.debug_stick.empty").arguments(Component.text(blockId))), true);
                     player.sendPacket(systemChatPacket, false);
                 } else {
-                    LegacyItemWrapper wrapped = new LegacyItemWrapper(new RtagItem(itemInHand), itemInHand.getAmount());
+                    LegacyItemWrapper wrapped = new LegacyItemWrapper(new RtagItem(itemInHand));
                     Object storedData = wrapped.getJavaTag("craftengine:debug_stick_state");
                     if (storedData == null) storedData = new HashMap<>();
                     if (storedData instanceof Map<?,?> map) {
