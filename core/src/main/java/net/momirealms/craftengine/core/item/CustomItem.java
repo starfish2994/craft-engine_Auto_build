@@ -56,6 +56,8 @@ public interface CustomItem<I> extends BuildableItem<I> {
 
         Builder<I> clientBoundMaterial(Key clientBoundMaterialKey);
 
+        Builder<I> material(Key material);
+
         Builder<I> dataModifier(ItemDataModifier<I> modifier);
 
         Builder<I> dataModifiers(List<ItemDataModifier<I>> modifiers);
