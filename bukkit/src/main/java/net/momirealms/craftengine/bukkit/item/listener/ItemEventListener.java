@@ -35,6 +35,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.enchantment.EnchantItemEvent;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -412,6 +414,18 @@ public class ItemEventListener implements Listener {
                             event.setCancelled(true);
                         }
                     });
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onEnchant(PrepareItemEnchantEvent event) {
+        ItemStack itemToEnchant = event.getItem();
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(itemToEnchant);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        if (!customItem.settings().canEnchant()) {
+            event.setCancelled(true);
         }
     }
 }
