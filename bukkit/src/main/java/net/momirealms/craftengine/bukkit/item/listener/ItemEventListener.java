@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item.listener;
 
+import io.papermc.paper.event.block.CompostItemEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -427,5 +428,14 @@ public class ItemEventListener implements Listener {
         if (!customItem.settings().canEnchant()) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCompost(CompostItemEvent event) {
+        ItemStack itemToCompost = event.getItem();
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(itemToCompost);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        event.setWillRaiseLevel(RandomUtils.generateRandomFloat(0, 1) < optionalCustomItem.get().settings().compostProbability());
     }
 }

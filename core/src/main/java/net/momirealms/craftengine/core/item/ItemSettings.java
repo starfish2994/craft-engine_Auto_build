@@ -37,6 +37,7 @@ public class ItemSettings {
     Key craftRemainder = null;
     List<DamageSource> invulnerable = List.of();
     boolean canEnchant = true;
+    float compostProbability= 0.5f;
 
     private ItemSettings() {}
 
@@ -77,6 +78,7 @@ public class ItemSettings {
         newSettings.craftRemainder = settings.craftRemainder;
         newSettings.invulnerable = settings.invulnerable;
         newSettings.canEnchant = settings.canEnchant;
+        newSettings.compostProbability = settings.compostProbability;
         return newSettings;
     }
 
@@ -157,6 +159,10 @@ public class ItemSettings {
         return invulnerable;
     }
 
+    public float compostProbability() {
+        return compostProbability;
+    }
+
     public ItemSettings repairItems(List<AnvilRepairItem> items) {
         this.anvilRepairItems = items;
         return this;
@@ -169,6 +175,11 @@ public class ItemSettings {
 
     public ItemSettings craftRemainder(Key key) {
         this.craftRemainder = key;
+        return this;
+    }
+
+    public ItemSettings compostProbability(float chance) {
+        this.compostProbability = chance;
         return this;
     }
 
@@ -322,6 +333,10 @@ public class ItemSettings {
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), 1f, 1f)));
+            }));
+            registerFactory("compost-probability", (value -> {
+                float chance = ResourceConfigUtils.getAsFloat(value, "compost-probability");
+                return settings -> settings.compostProbability(chance);
             }));
             registerFactory("dyeable", (value -> {
                 boolean bool = (boolean) value;
