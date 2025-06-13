@@ -347,7 +347,7 @@ public class BlockEventListener implements Listener {
             Block block = blocks.get(i);
             Location location = block.getLocation();
             BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-            ImmutableBlockState state = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
+            ImmutableBlockState state = this.manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
             if (state != null && !state.isEmpty()) {
                 WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(blockPos));
                 ContextHolder.Builder builder = ContextHolder.builder()

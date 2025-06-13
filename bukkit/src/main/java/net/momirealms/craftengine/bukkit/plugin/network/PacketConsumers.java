@@ -12,6 +12,7 @@ import net.kyori.adventure.text.TranslationArgument;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
@@ -1539,9 +1540,14 @@ public class PacketConsumers {
                 mainThreadTask = () -> {
                     // todo 冒险模式破坏工具白名单
                     if (serverPlayer.isAdventureMode() ||
-                            !furniture.isValid() ||
-                            !BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location)
-                    ) return;
+                            !furniture.isValid()) return;
+
+                    FurnitureAttemptBreakEvent preBreakEvent = new FurnitureAttemptBreakEvent(serverPlayer.platformPlayer(), furniture);
+                    if (EventUtils.fireAndCheckCancel(preBreakEvent))
+                        return;
+
+                    if (!BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location))
+                        return;
 
                     FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
                     if (EventUtils.fireAndCheckCancel(breakEvent))
