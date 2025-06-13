@@ -2108,6 +2108,23 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            if (VersionHelper.isOrAbove1_21_5()) {
+                Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
+                if (wrapped != null && wrapped.isCustomItem()) {
+                    Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
+                    if (containerMenu != null) {
+                        ItemStack carried = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu));
+                        if (ItemUtils.isEmpty(carried)) {
+                            event.setChanged(true);
+                            buf.clear();
+                            buf.writeVarInt(event.packetID());
+                            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carried);
+                            return;
+                        }
+                    }
+                }
+            }
             BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
