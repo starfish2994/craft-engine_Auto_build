@@ -1,5 +1,23 @@
 # This file contains some useful template data. If you have good ideas, you are welcome to contribute your template!
 
+# These templates let you ditch the real custom_model_data on the server side.
+# Instead, we use client side components sent via packets to control how items look.
+templates#client_bound_model:
+  default:item/client_bound_custom_model_data:
+    custom-model-data: "${custom_model_data}"
+    data:
+      remove-components:
+        - minecraft:custom_model_data
+    client-bound-data:
+      custom-model-data: "${custom_model_data}"
+  default:item/client_bound_item_model:
+    item-model: "${item_model}"
+    data:
+      remove-components:
+        - minecraft:item_model
+    client-bound-data:
+      item-model: "${item_model}"
+
 # blocks
 templates#models#block:
   # template: default:model/cube_all

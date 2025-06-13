@@ -36,6 +36,7 @@ public class ItemSettings {
     Key consumeReplacement = null;
     Key craftRemainder = null;
     List<DamageSource> invulnerable = List.of();
+    boolean canEnchant = true;
 
     private ItemSettings() {}
 
@@ -75,6 +76,7 @@ public class ItemSettings {
         newSettings.consumeReplacement = settings.consumeReplacement;
         newSettings.craftRemainder = settings.craftRemainder;
         newSettings.invulnerable = settings.invulnerable;
+        newSettings.canEnchant = settings.canEnchant;
         return newSettings;
     }
 
@@ -116,6 +118,10 @@ public class ItemSettings {
 
     public boolean dyeable() {
         return dyeable;
+    }
+
+    public boolean canEnchant() {
+        return canEnchant;
     }
 
     public List<AnvilRepairItem> repairItems() {
@@ -168,6 +174,11 @@ public class ItemSettings {
 
     public ItemSettings canRepair(boolean canRepair) {
         this.canRepair = canRepair;
+        return this;
+    }
+
+    public ItemSettings canEnchant(boolean canEnchant) {
+        this.canEnchant = canEnchant;
         return this;
     }
 
@@ -240,6 +251,10 @@ public class ItemSettings {
             registerFactory("repairable", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.canRepair(bool);
+            }));
+            registerFactory("enchantable", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.canEnchant(bool);
             }));
             registerFactory("renameable", (value -> {
                 boolean bool = (boolean) value;
