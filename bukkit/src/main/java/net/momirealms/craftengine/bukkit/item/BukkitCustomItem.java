@@ -1,7 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
@@ -10,7 +10,6 @@ import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -19,22 +18,23 @@ import java.util.List;
 import java.util.Map;
 
 public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
-    private final Material material;
+    private final Object item;
+    private final Object clientItem;
 
-    public BukkitCustomItem(Holder<Key> id, Material material, Key materialKey, Key clientBoundMaterialKey,
+    public BukkitCustomItem(Holder<Key> id, Object item, Object clientItem, Key materialKey, Key clientBoundMaterialKey,
                             List<ItemBehavior> behaviors,
                             List<ItemDataModifier<ItemStack>> modifiers, List<ItemDataModifier<ItemStack>> clientBoundModifiers,
                             ItemSettings settings,
                             Map<EventTrigger, List<Function<PlayerOptionalContext>>> events) {
         super(id, materialKey, clientBoundMaterialKey, behaviors, modifiers, clientBoundModifiers, settings, events);
-        this.material = material;
+        this.item = item;
+        this.clientItem = clientItem;
     }
 
     @Override
     public ItemStack buildItemStack(ItemBuildContext context, int count) {
-        ItemStack item = new ItemStack(this.material);
+        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(this.item, count));
         Item<ItemStack> wrapped = BukkitCraftEngine.instance().itemManager().wrap(item);
-        wrapped.count(count);
         for (ItemDataModifier<ItemStack> modifier : this.modifiers) {
             modifier.apply(wrapped, context);
         }
@@ -43,7 +43,7 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
 
     @Override
     public Item<ItemStack> buildItem(ItemBuildContext context) {
-        ItemStack item = new ItemStack(this.material);
+        ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(this.item, 1));
         Item<ItemStack> wrapped = BukkitCraftEngine.instance().itemManager().wrap(item);
         for (ItemDataModifier<ItemStack> modifier : dataModifiers()) {
             modifier.apply(wrapped, context);
@@ -51,24 +51,33 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         return BukkitCraftEngine.instance().itemManager().wrap(wrapped.load());
     }
 
-    public static Builder<ItemStack> builder(Material material) {
-        return new BuilderImpl(material);
+    public Object clientItem() {
+        return clientItem;
+    }
+
+    public Object item() {
+        return item;
+    }
+
+    public static Builder<ItemStack> builder(Object item, Object clientBoundItem) {
+        return new BuilderImpl(item, clientBoundItem);
     }
 
     public static class BuilderImpl implements Builder<ItemStack> {
         private Holder<Key> id;
-        private final Key materialKey;
-        private final Material material;
-        private Key clientBoundMaterialKey;
+        private Key itemKey;
+        private final Object item;
+        private Key clientBoundItemKey;
+        private final Object clientBoundItem;
         private final Map<EventTrigger, List<Function<PlayerOptionalContext>>> events = new EnumMap<>(EventTrigger.class);
         private final List<ItemBehavior> behaviors = new ArrayList<>(4);
         private final List<ItemDataModifier<ItemStack>> modifiers = new ArrayList<>(4);
         private final List<ItemDataModifier<ItemStack>> clientBoundModifiers = new ArrayList<>(4);
         private ItemSettings settings;
 
-        public BuilderImpl(Material material) {
-            this.material = material;
-            this.materialKey = KeyUtils.namespacedKey2Key(material.getKey());
+        public BuilderImpl(Object item, Object clientBoundItem) {
+            this.item = item;
+            this.clientBoundItem = clientBoundItem;
         }
 
         @Override
@@ -78,8 +87,14 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         }
 
         @Override
-        public Builder<ItemStack> clientBoundMaterial(Key clientBoundMaterialKey) {
-            this.clientBoundMaterialKey = clientBoundMaterialKey;
+        public Builder<ItemStack> clientBoundMaterial(Key clientBoundMaterial) {
+            this.clientBoundItemKey = clientBoundMaterial;
+            return this;
+        }
+
+        @Override
+        public Builder<ItemStack> material(Key material) {
+            this.itemKey = material;
             return this;
         }
 
@@ -134,7 +149,7 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         @Override
         public CustomItem<ItemStack> build() {
             this.modifiers.addAll(this.settings.modifiers());
-            return new BukkitCustomItem(this.id, this.material, this.materialKey, this.clientBoundMaterialKey, List.copyOf(this.behaviors),
+            return new BukkitCustomItem(this.id, this.item, this.clientBoundItem, this.itemKey, this.clientBoundItemKey, List.copyOf(this.behaviors),
                     List.copyOf(this.modifiers), List.copyOf(this.clientBoundModifiers), this.settings, this.events);
         }
     }

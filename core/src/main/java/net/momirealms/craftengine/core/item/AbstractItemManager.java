@@ -479,6 +479,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             return new UnbreakableModifier<>(value);
         }, "unbreakable");
         registerDataType((obj) -> {
+            int customModelData = ResourceConfigUtils.getAsInt(obj, "custom-model-data");
+            return new CustomModelDataModifier<>(customModelData);
+        }, "custom-model-data");
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             List<Enchantment> enchantments = new ArrayList<>();
             for (Map.Entry<String, Object> e : data.entrySet()) {
@@ -494,6 +498,14 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
             return new TrimModifier<>(material, pattern);
         }, "trim");
+        registerDataType((obj) -> {
+            Map<String, Object> data = MiscUtils.castToMap(obj, false);
+            Map<String, TextProvider> arguments = new HashMap<>();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                arguments.put(entry.getKey(), TextProviders.fromString(entry.getValue().toString()));
+            }
+            return new ArgumentModifier<>(arguments);
+        }, "args", "argument", "arguments");
         if (VersionHelper.isOrAbove1_20_5()) {
             registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
@@ -521,21 +533,15 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 String id = obj.toString();
                 return new TooltipStyleModifier<>(Key.of(id));
             }, "tooltip-style");
-        }
-        if (VersionHelper.isOrAbove1_21_2()) {
             registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new EquippableModifier<>(EquipmentData.fromMap(data));
             }, "equippable");
+            registerDataType((obj) -> {
+                String id = obj.toString();
+                return new ItemModelModifier<>(Key.of(id));
+            }, "item-model");
         }
-        registerDataType((obj) -> {
-            Map<String, Object> data = MiscUtils.castToMap(obj, false);
-            Map<String, TextProvider> arguments = new HashMap<>();
-            for (Map.Entry<String, Object> entry : data.entrySet()) {
-                arguments.put(entry.getKey(), TextProviders.fromString(entry.getValue().toString()));
-            }
-            return new ArgumentModifier<>(arguments);
-        }, "args", "argument", "arguments");
     }
 
     protected void processModelRecursively(

@@ -196,4 +196,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void setNBTComponent(W item, Object type, Tag value);
 
     protected abstract W transmuteCopy(W item, Key newItem, int amount);
+
+    protected abstract W unsafeTransmuteCopy(W item, Object newItem, int count);
 }

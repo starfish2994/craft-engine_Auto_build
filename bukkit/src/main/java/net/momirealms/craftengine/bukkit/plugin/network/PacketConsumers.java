@@ -12,6 +12,7 @@ import net.kyori.adventure.text.TranslationArgument;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
@@ -1539,9 +1540,14 @@ public class PacketConsumers {
                 mainThreadTask = () -> {
                     // todo 冒险模式破坏工具白名单
                     if (serverPlayer.isAdventureMode() ||
-                            !furniture.isValid() ||
-                            !BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location)
-                    ) return;
+                            !furniture.isValid()) return;
+
+                    FurnitureAttemptBreakEvent preBreakEvent = new FurnitureAttemptBreakEvent(serverPlayer.platformPlayer(), furniture);
+                    if (EventUtils.fireAndCheckCancel(preBreakEvent))
+                        return;
+
+                    if (!BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location))
+                        return;
 
                     FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
                     if (EventUtils.fireAndCheckCancel(breakEvent))
@@ -2102,6 +2108,23 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            if (VersionHelper.isOrAbove1_21_5()) {
+                Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
+                if (wrapped != null && wrapped.isCustomItem()) {
+                    Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
+                    if (containerMenu != null) {
+                        ItemStack carried = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu));
+                        if (ItemUtils.isEmpty(carried)) {
+                            event.setChanged(true);
+                            buf.clear();
+                            buf.writeVarInt(event.packetID());
+                            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carried);
+                            return;
+                        }
+                    }
+                }
+            }
             BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();

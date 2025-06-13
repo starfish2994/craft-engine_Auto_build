@@ -116,6 +116,10 @@ public abstract class AbstractPackManager implements PackManager {
 
         loadInternalList("models", "block/", VANILLA_MODELS::add);
         loadInternalList("models", "item/", VANILLA_MODELS::add);
+        VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
+        for (int i = 0; i < 256; i++) {
+            VANILLA_TEXTURES.add(Key.of("minecraft", "font/unicode_page_" + String.format("%02x", i)));
+        }
     }
 
     private void loadInternalData(String path, BiConsumer<Key, JsonObject> callback) {
@@ -461,7 +465,7 @@ public abstract class AbstractPackManager implements PackManager {
             Path configurationFolderPath = pack.configurationFolder();
             if (!Files.isDirectory(configurationFolderPath)) continue;
             try {
-                Files.walkFileTree(configurationFolderPath, new SimpleFileVisitor<>() {
+                Files.walkFileTree(configurationFolderPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
                         if (Files.isRegularFile(path) && path.getFileName().toString().endsWith(".yml")) {
@@ -628,7 +632,7 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path namespacePath : FileUtils.collectNamespaces(assetsPath)) {
                 Path fontPath = namespacePath.resolve("font");
                 if (Files.isDirectory(fontPath)) {
-                    Files.walkFileTree(fontPath, new SimpleFileVisitor<>() {
+                    Files.walkFileTree(fontPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                         @Override
                         public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                             if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
@@ -654,7 +658,7 @@ public abstract class AbstractPackManager implements PackManager {
 
                 Path itemsPath = namespacePath.resolve("items");
                 if (Files.isDirectory(itemsPath)) {
-                    Files.walkFileTree(itemsPath, new SimpleFileVisitor<>() {
+                    Files.walkFileTree(itemsPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                         @Override
                         public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                             if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
@@ -668,7 +672,7 @@ public abstract class AbstractPackManager implements PackManager {
 
                 Path blockStatesPath = namespacePath.resolve("blockstates");
                 if (Files.isDirectory(blockStatesPath)) {
-                    Files.walkFileTree(blockStatesPath, new SimpleFileVisitor<>() {
+                    Files.walkFileTree(blockStatesPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                         @Override
                         public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                             if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
@@ -1447,7 +1451,7 @@ public abstract class AbstractPackManager implements PackManager {
                 .toList());
         for (Path sourceFolder : folders) {
             if (Files.exists(sourceFolder)) {
-                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
+                Files.walkFileTree(sourceFolder, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         processRegularFile(file, attrs, sourceFolder, fs, conflictChecker, previousFiles);
@@ -1500,7 +1504,7 @@ public abstract class AbstractPackManager implements PackManager {
             long zipLastModified = Files.getLastModifiedTime(zipFile).toMillis();
             long zipSize = Files.size(zipFile);
             Path zipRoot = zipFs.getPath("/");
-            Files.walkFileTree(zipRoot, new SimpleFileVisitor<>() {
+            Files.walkFileTree(zipRoot, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                 @Override
                 public @NotNull FileVisitResult visitFile(@NotNull Path entry, @NotNull BasicFileAttributes entryAttrs) throws IOException {
                     if (entryAttrs.isDirectory()) {

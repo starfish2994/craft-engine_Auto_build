@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -201,11 +202,18 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId, Key clientBoundMaterialId) {
-        Material material = ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(materialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString()));
-        if (!clientBoundMaterialId.equals(materialId)) {
-            ResourceConfigUtils.requireNonNullOrThrow(Registry.MATERIAL.get(KeyUtils.toNamespacedKey(clientBoundMaterialId)), () -> new LocalizedResourceConfigException("warning.config.item.invalid_material", clientBoundMaterialId.toString()));
+        Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(materialId));
+        Object clientBoundItem = materialId == clientBoundMaterialId ? item : FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(clientBoundMaterialId));
+        if (item == null) {
+            throw new LocalizedResourceConfigException("warning.config.item.invalid_material", materialId.toString());
         }
-        return BukkitCustomItem.builder(material).id(id).clientBoundMaterial(clientBoundMaterialId);
+        if (clientBoundItem == null) {
+            throw new LocalizedResourceConfigException("warning.config.item.invalid_material", clientBoundMaterialId.toString());
+        }
+        return BukkitCustomItem.builder(item, clientBoundItem)
+                .id(id)
+                .material(materialId)
+                .clientBoundMaterial(clientBoundMaterialId);
     }
 
     @SuppressWarnings("unchecked")

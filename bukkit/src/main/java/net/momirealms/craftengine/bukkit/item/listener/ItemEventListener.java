@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item.listener;
 
+import io.papermc.paper.event.block.CompostItemEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -26,6 +27,7 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.EntityType;
@@ -35,13 +37,18 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.enchantment.EnchantItemEvent;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.List;
 import java.util.Objects;
@@ -404,7 +411,7 @@ public class ItemEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntityType() == EntityType.ITEM && event.getEntity() instanceof org.bukkit.entity.Item item) {
+        if (event.getEntity() instanceof org.bukkit.entity.Item item) {
             Optional.ofNullable(this.plugin.itemManager().wrap(item.getItemStack()))
                     .flatMap(Item::getCustomItem)
                     .ifPresent(it -> {
@@ -413,5 +420,35 @@ public class ItemEventListener implements Listener {
                         }
                     });
         }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onEnchant(PrepareItemEnchantEvent event) {
+        ItemStack itemToEnchant = event.getItem();
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(itemToEnchant);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        if (!customItem.settings().canEnchant()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCompost(CompostItemEvent event) {
+        ItemStack itemToCompost = event.getItem();
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(itemToCompost);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        event.setWillRaiseLevel(RandomUtils.generateRandomFloat(0, 1) < optionalCustomItem.get().settings().compostProbability());
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onDragItem(InventoryClickEvent event) {
+//        Player player = (Player) event.getWhoClicked();
+//        plugin.scheduler().sync().runLater(() -> {
+//            System.out.println(1);
+//            player.updateInventory();
+//        }, 1);
     }
 }
