@@ -3308,4 +3308,11 @@ public final class CoreReflections {
     public static final Field field$FireBlock$igniteOdds = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$FireBlock, Object2IntMap.class, 0)
     );
+
+    public static final Class<?> clazz$EnchantmentMenu = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.inventory.ContainerEnchantTable",
+                    "world.inventory.EnchantmentMenu"
+            )
+    );
 }
