@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.compatibility.modelengine;
+package net.momirealms.craftengine.bukkit.compatibility.model.modelengine;
 
 import net.momirealms.craftengine.core.entity.AbstractEntity;
 import net.momirealms.craftengine.core.entity.furniture.AbstractExternalModel;

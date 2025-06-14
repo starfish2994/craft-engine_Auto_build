@@ -1,14 +1,16 @@
 package net.momirealms.craftengine.bukkit.compatibility;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
-import net.momirealms.craftengine.bukkit.compatibility.bettermodel.BetterModelModel;
+import net.momirealms.craftengine.bukkit.compatibility.model.bettermodel.BetterModelModel;
+import net.momirealms.craftengine.bukkit.compatibility.item.CustomFishingProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.MMOItemsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.MythicMobsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
-import net.momirealms.craftengine.bukkit.compatibility.leveler.AuraSkillsLevelerProvider;
-import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineModel;
-import net.momirealms.craftengine.bukkit.compatibility.modelengine.ModelEngineUtils;
+import net.momirealms.craftengine.bukkit.compatibility.leveler.*;
+import net.momirealms.craftengine.bukkit.compatibility.model.freeminecraftmodels.FreeMinecraftModelsModel;
+import net.momirealms.craftengine.bukkit.compatibility.model.modelengine.ModelEngineModel;
+import net.momirealms.craftengine.bukkit.compatibility.model.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.compatibility.mythicmobs.MythicMobsListener;
 import net.momirealms.craftengine.bukkit.compatibility.papi.PlaceholderAPIUtils;
 import net.momirealms.craftengine.bukkit.compatibility.permission.LuckPermsEventListeners;
@@ -43,7 +45,8 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         this.plugin = plugin;
         this.modelProviders = new HashMap<>(Map.of(
                 "ModelEngine", ModelEngineModel::new,
-                "BetterModel", BetterModelModel::new
+                "BetterModel", BetterModelModel::new,
+                "FreeMinecraftModels", FreeMinecraftModelsModel::new
         ));
         this.levelerProviders = new HashMap<>();
     }
@@ -104,6 +107,29 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         if (this.isPluginEnabled("AuraSkills")) {
             this.registerLevelerProvider("AuraSkills", new AuraSkillsLevelerProvider());
             logHook("AuraSkills");
+        }
+        if (this.isPluginEnabled("AureliumSkills")) {
+            this.registerLevelerProvider("AureliumSkills", new AureliumSkillsLevelerProvider());
+        }
+        if (this.isPluginEnabled("McMMO")) {
+            this.registerLevelerProvider("McMMO", new McMMOLevelerProvider());
+            logHook("McMMO");
+        }
+        if (this.isPluginEnabled("MMOCore")) {
+            this.registerLevelerProvider("MMOCore", new MMOCoreLevelerProvider());
+            logHook("MMOCore");
+        }
+        if (this.isPluginEnabled("Jobs")) {
+            registerLevelerProvider("Jobs", new JobsRebornLevelerProvider());
+            logHook("Jobs");
+        }
+        if (this.isPluginEnabled("EcoSkills")) {
+            registerLevelerProvider("EcoSkills", new EcoSkillsLevelerProvider());
+            logHook("EcoSkills");
+        }
+        if (this.isPluginEnabled("EcoJobs")) {
+            registerLevelerProvider("EcoJobs", new EcoJobsLevelerProvider());
+            logHook("EcoJobs");
         }
         if (this.isPluginEnabled("MythicMobs")) {
             BukkitItemManager.instance().registerExternalItemProvider(new MythicMobsProvider());
@@ -230,6 +256,10 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         if (this.isPluginEnabled("MMOItems")) {
             itemManager.registerExternalItemProvider(new MMOItemsProvider());
             logHook("MMOItems");
+        }
+        if (this.isPluginEnabled("CustomFishing")) {
+            itemManager.registerExternalItemProvider(new CustomFishingProvider());
+            logHook("CustomFishing");
         }
     }
 
