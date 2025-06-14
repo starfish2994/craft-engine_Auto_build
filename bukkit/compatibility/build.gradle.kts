@@ -14,7 +14,6 @@ repositories {
     maven("https://nexus.neetgames.com/repository/maven-releases/") // mcmmo
     maven("https://repo.dmulloy2.net/repository/public/") // mcmmo required
     maven("https://repo.auxilor.io/repository/maven-public/") // eco
-    maven("https://repo.magmaguy.com/releases")
 }
 
 dependencies {
@@ -68,8 +67,6 @@ dependencies {
     compileOnly("com.willfp:libreforge:4.58.1")
     // AureliumSkills
     compileOnly("com.github.Archy-X:AureliumSkills:Beta1.3.21")
-    // FreeMinecraftModels
-    compileOnly("com.magmaguy:FreeMinecraftModels:2.1.0")
 }
 
 java {
