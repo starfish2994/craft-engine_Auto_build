@@ -212,7 +212,6 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
         String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();
         if (!this.fastAsyncWorldEditVersionCheck(version)) {
-            new Exception().printStackTrace();
             this.plugin.logger().severe("");
             this.plugin.logger().severe("");
             if (Locale.getDefault() == Locale.SIMPLIFIED_CHINESE) {
