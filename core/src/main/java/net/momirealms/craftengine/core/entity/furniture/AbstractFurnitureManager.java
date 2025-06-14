@@ -122,8 +122,6 @@ public abstract class AbstractFurnitureManager implements FurnitureManager {
                     externalModel = Optional.of(plugin.compatibilityManager().createModel("ModelEngine", placementArguments.get("model-engine").toString()));
                 } else if (placementArguments.containsKey("better-model")) {
                     externalModel = Optional.of(plugin.compatibilityManager().createModel("BetterModel", placementArguments.get("better-model").toString()));
-                } else if (placementArguments.containsKey("free-minecraft-models")) {
-                    externalModel = Optional.of(plugin.compatibilityManager().createModel("FreeMinecraftModels", placementArguments.get("free-minecraft-models").toString()));
                 } else {
                     externalModel = Optional.empty();
                 }

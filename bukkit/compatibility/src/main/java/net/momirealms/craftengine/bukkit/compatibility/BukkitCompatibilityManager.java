@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.compatibility.item.MythicMobsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsProvider;
 import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.leveler.*;
-import net.momirealms.craftengine.bukkit.compatibility.model.freeminecraftmodels.FreeMinecraftModelsModel;
 import net.momirealms.craftengine.bukkit.compatibility.model.modelengine.ModelEngineModel;
 import net.momirealms.craftengine.bukkit.compatibility.model.modelengine.ModelEngineUtils;
 import net.momirealms.craftengine.bukkit.compatibility.mythicmobs.MythicMobsListener;
@@ -45,8 +44,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         this.plugin = plugin;
         this.modelProviders = new HashMap<>(Map.of(
                 "ModelEngine", ModelEngineModel::new,
-                "BetterModel", BetterModelModel::new,
-                "FreeMinecraftModels", FreeMinecraftModelsModel::new
+                "BetterModel", BetterModelModel::new
         ));
         this.levelerProviders = new HashMap<>();
     }
