@@ -10,7 +10,7 @@ import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -157,16 +157,9 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (!Config.enableRecipeSystem()) return;
             if (AbstractRecipeManager.this.byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.recipe.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.recipe.duplicate", path, id);
             }
-            Recipe<T> recipe;
-            try {
-                recipe = RecipeTypes.fromMap(id, section);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().warn(path, "Failed to create recipe: " + id, e);
-                return;
-            }
+            Recipe<T> recipe = RecipeTypes.fromMap(id, section);
             try {
                 markAsCustomRecipe(id);
                 registerInternalRecipe(id, recipe);

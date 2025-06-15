@@ -5,11 +5,8 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.util.*;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -78,18 +75,13 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.songs.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.jukebox_song.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.jukebox_song.duplicate");
             }
-            String sound = (String) section.get("sound");
-            if (sound == null) {
-                AbstractSoundManager.this.plugin.logger().warn(path, "No sound specified");
-                return;
-            }
+            String sound = ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("sound"), "warning.config.jukebox_song.missing_sound");
             Component description = AdventureHelper.miniMessage().deserialize(section.getOrDefault("description", "").toString());
-            float length = MiscUtils.getAsFloat(section.get("length"));
-            int comparatorOutput = MiscUtils.getAsInt(section.getOrDefault("comparator-output", 15));
-            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, MiscUtils.getAsFloat(section.getOrDefault("range", 32f)));
+            float length = ResourceConfigUtils.getAsFloat(section.get("length"), "length");
+            int comparatorOutput = ResourceConfigUtils.getAsInt(section.getOrDefault("comparator-output", 15), "comparator-output");
+            JukeboxSong song = new JukeboxSong(Key.of(sound), description, length, comparatorOutput, ResourceConfigUtils.getAsFloat(section.getOrDefault("range", 32f), "range"));
             AbstractSoundManager.this.songs.put(id, song);
         }
     }
@@ -110,12 +102,11 @@ public abstract class AbstractSoundManager implements SoundManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (AbstractSoundManager.this.byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.sound.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.sound.duplicate");
             }
             boolean replace = (boolean) section.getOrDefault("replace", false);
             String subtitle = (String) section.get("subtitle");
-            List<?> soundList = (List<?>) section.get("sounds");
+            List<?> soundList = (List<?>) ResourceConfigUtils.requireNonNullOrThrow(section.get("sounds"), "warning.config.sound.missing_sounds");
             List<Sound> sounds = new ArrayList<>();
             for (Object sound : soundList) {
                 if (sound instanceof String soundPath) {

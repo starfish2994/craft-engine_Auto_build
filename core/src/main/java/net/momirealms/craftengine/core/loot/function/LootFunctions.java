@@ -2,11 +2,13 @@ package net.momirealms.craftengine.core.loot.function;
 
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.loot.LootContext;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.ArrayList;
@@ -67,14 +69,11 @@ public class LootFunctions {
 
     @SuppressWarnings("unchecked")
     public static <T> LootFunction<T> fromMap(Map<String, Object> map) {
-        String type = (String) map.get("type");
-        if (type == null) {
-            throw new NullPointerException("function type cannot be null");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.loot_table.function.missing_type");
         Key key = Key.withDefaultNamespace(type, "craftengine");
         LootFunctionFactory<T> factory = (LootFunctionFactory<T>) BuiltInRegistries.LOOT_FUNCTION_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown function type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.loot_table.function.invalid_type", type);
         }
         return factory.create(map);
     }

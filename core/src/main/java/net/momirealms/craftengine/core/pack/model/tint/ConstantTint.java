@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.pack.model.tint;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.incendo.cloud.type.Either;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class ConstantTint implements Tint {
 
         @Override
         public Tint create(Map<String, Object> arguments) {
-            Object value = arguments.get("value");
+            Object value = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("value"), "warning.config.item.model.tint.constant.missing_value");
             return new ConstantTint(parseTintValue(value));
         }
     }

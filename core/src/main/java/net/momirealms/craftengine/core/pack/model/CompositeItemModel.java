@@ -3,7 +3,9 @@ package net.momirealms.craftengine.core.pack.model;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,15 +54,22 @@ public class CompositeItemModel implements ItemModel {
         @SuppressWarnings("unchecked")
         @Override
         public ItemModel create(Map<String, Object> arguments) {
-            List<Map<String, Object>> models = (List<Map<String, Object>>) arguments.get("models");
-            if (models == null || models.isEmpty()) {
-                throw new IllegalArgumentException("No 'models' specified for 'minecraft:composite'");
+            Object m = arguments.get("models");
+            if (m instanceof List<?> list) {
+                List<Map<String, Object>> models = (List<Map<String, Object>>) list;
+                if (models.isEmpty()) {
+                    throw new LocalizedResourceConfigException("warning.config.item.model.composite.missing_models");
+                }
+                List<ItemModel> modelList = new ArrayList<>();
+                for (Map<String, Object> model : models) {
+                    modelList.add(ItemModels.fromMap(model));
+                }
+                return new CompositeItemModel(modelList);
+            } else if (m instanceof Map<?, ?> map) {
+                return new CompositeItemModel(List.of(ItemModels.fromMap(MiscUtils.castToMap(map, false))));
+            } else {
+                throw new LocalizedResourceConfigException("warning.config.item.model.composite.missing_models");
             }
-            List<ItemModel> modelList = new ArrayList<>();
-            for (Map<String, Object> model : models) {
-                modelList.add(ItemModels.fromMap(model));
-            }
-            return new CompositeItemModel(modelList);
         }
     }
 }

@@ -12,7 +12,7 @@ import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSectionParser;
-import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -22,6 +22,7 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
@@ -106,18 +107,17 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
             if (byId.containsKey(id)) {
-                TranslationManager.instance().log("warning.config.furniture.duplicated", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.furniture.duplicate", path, id);
             }
 
             Map<String, Object> lootMap = MiscUtils.castToMap(section.get("loot"), true);
             Map<String, Object> settingsMap = MiscUtils.castToMap(section.get("settings"), true);
             Map<String, Object> placementMap = MiscUtils.castToMap(section.get("placement"), true);
-            EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
             if (placementMap == null) {
-                TranslationManager.instance().log("warning.config.furniture.lack_placement", path.toString(), id.toString());
-                return;
+                throw new LocalizedResourceConfigException("warning.config.furniture.missing_placement", path, id);
             }
+
+            EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
 
             for (Map.Entry<String, Object> entry : placementMap.entrySet()) {
                 // anchor type
@@ -130,16 +130,15 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 for (Map<String, Object> element : elementConfigs) {
                     String key = (String) element.get("item");
                     if (key == null) {
-                        TranslationManager.instance().log("warning.config.furniture.element.lack_item", path.toString(), id.toString());
-                        return;
+                        throw new LocalizedResourceConfigException("warning.config.furniture.element.missing_item", path, id);
                     }
                     ItemDisplayContext transform = ItemDisplayContext.valueOf(element.getOrDefault("transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                     Billboard billboard = Billboard.valueOf(element.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                     FurnitureElement furnitureElement = new BukkitFurnitureElement(Key.of(key), billboard, transform,
-                            MiscUtils.getVector3f(element.getOrDefault("scale", "1")),
-                            MiscUtils.getVector3f(element.getOrDefault("translation", "0")),
-                            MiscUtils.getVector3f(element.getOrDefault("position", "0")),
-                            MiscUtils.getQuaternionf(element.getOrDefault("rotation", "0"))
+                            MiscUtils.getAsVector3f(element.getOrDefault("scale", "1"), "scale"),
+                            MiscUtils.getAsVector3f(element.getOrDefault("translation", "0"), "translation"),
+                            MiscUtils.getAsVector3f(element.getOrDefault("position", "0"), "position"),
+                            MiscUtils.getAsQuaternionf(element.getOrDefault("rotation", "0"), "rotation")
                     );
                     elements.add(furnitureElement);
                 }
@@ -192,13 +191,12 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 }
             }
 
-            CustomFurniture furniture = new CustomFurniture(
-                    id,
-                    FurnitureSettings.fromMap(settingsMap),
-                    placements,
-                    lootMap == null ? null : LootTable.fromMap(lootMap)
-            );
+            // get furniture settings
+            FurnitureSettings settings = FurnitureSettings.fromMap(settingsMap);
 
+            // get loot table
+            LootTable<ItemStack> lootTable = lootMap == null ? null : LootTable.fromMap(lootMap);
+            CustomFurniture furniture = new CustomFurniture(id, settings, placements, lootTable);
             byId.put(id, furniture);
         }
     }
@@ -437,7 +435,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             plugin.logger().warn("Failed to get vector3f for player " + player.getName() + "'s seat");
             return;
         }
-        Vector3f seatPos = MiscUtils.getVector3f(vector3f);
+        Vector3f seatPos = MiscUtils.getAsVector3f(vector3f, "seat");
         furniture.removeOccupiedSeat(seatPos);
 
         if (player.getVehicle() != null) return;

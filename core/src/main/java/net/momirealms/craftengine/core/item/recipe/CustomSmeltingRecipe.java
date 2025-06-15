@@ -1,13 +1,12 @@
 package net.momirealms.craftengine.core.item.recipe;
 
-import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 public class CustomSmeltingRecipe<T> extends CustomCookingRecipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -21,33 +20,16 @@ public class CustomSmeltingRecipe<T> extends CustomCookingRecipe<T> {
         return RecipeTypes.SMELTING;
     }
 
-    public static class Factory<A> implements RecipeFactory<A> {
+    public static class Factory<A> extends AbstractRecipeFactory<A> {
 
         @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
         @Override
         public Recipe<A> create(Key id, Map<String, Object> arguments) {
-            CookingRecipeCategory recipeCategory = arguments.containsKey("category") ? CookingRecipeCategory.valueOf(arguments.get("category").toString().toUpperCase(Locale.ENGLISH)) : null;
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
-            int cookingTime = MiscUtils.getAsInt(arguments.getOrDefault("time", 80));
-            float experience = MiscUtils.getAsFloat(arguments.getOrDefault("experience", 0.0f));
-            List<String> items = MiscUtils.getAsStringList(arguments.get("ingredient"));
-            Set<Holder<Key>> holders = new HashSet<>();
-            for (String item : items) {
-                if (item.charAt(0) == '#') {
-                    holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
-                } else {
-                    holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(() -> new IllegalArgumentException("Invalid vanilla/custom item: " + item)));
-                }
-            }
-            return new CustomSmeltingRecipe(
-                    id,
-                    recipeCategory,
-                    group,
-                    Ingredient.of(holders),
-                    cookingTime,
-                    experience,
-                    parseResult(arguments)
-            );
+            int cookingTime = ResourceConfigUtils.getAsInt(arguments.getOrDefault("time", 80), "time");
+            float experience = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("experience", 0.0f), "experience");
+            Set<Holder<Key>> holders = ingredientHolders(arguments);
+            return new CustomSmeltingRecipe(id, cookingRecipeCategory(arguments), group, Ingredient.of(holders), cookingTime, experience, parseResult(arguments));
         }
     }
 }

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.entity.furniture.hitbox;
 import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import org.joml.Quaternionf;
@@ -48,13 +49,13 @@ public class HappyGhastHitBox extends AbstractHitBox {
 
         @Override
         public HitBox create(Map<String, Object> arguments) {
-            double scale = MiscUtils.getAsDouble(arguments.getOrDefault("scale", "1"));
+            double scale = ResourceConfigUtils.getAsDouble(arguments.getOrDefault("scale", 1), "scale");
             boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
             boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
             boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", false);
             return new HappyGhastHitBox(
                     HitBoxFactory.getSeats(arguments),
-                    MiscUtils.getVector3f(arguments.getOrDefault("position", "0")),
+                    MiscUtils.getAsVector3f(arguments.getOrDefault("position", "0"), "position"),
                     scale, canUseOn, blocksBuilding, canBeHitByProjectile
             );
         }

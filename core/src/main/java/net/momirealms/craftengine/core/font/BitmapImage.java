@@ -7,7 +7,9 @@ import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.FormatUtils;
 import net.momirealms.craftengine.core.util.Key;
 
-public class BitmapImage implements FontProvider {
+import java.util.function.Supplier;
+
+public class BitmapImage implements Supplier<JsonObject> {
     private final Key id;
     private final Key font;
     private final int height;

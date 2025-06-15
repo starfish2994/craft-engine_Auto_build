@@ -1,10 +1,12 @@
 package net.momirealms.craftengine.core.pack.model.condition;
 
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Map;
@@ -45,14 +47,11 @@ public class ConditionProperties {
     }
 
     public static ConditionProperty fromMap(Map<String, Object> map) {
-        String type = (String) map.get("property");
-        if (type == null) {
-            throw new NullPointerException("property type cannot be null");
-        }
+        String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("property"), "warning.config.item.model.condition.missing_property");
         Key key = Key.withDefaultNamespace(type, "minecraft");
         ConditionPropertyFactory factory = BuiltInRegistries.CONDITION_PROPERTY_FACTORY.getValue(key);
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown property type: " + type);
+            throw new LocalizedResourceConfigException("warning.config.item.model.condition.invalid_property", type);
         }
         return factory.create(map);
     }

@@ -232,23 +232,23 @@ public class OneDriveHost implements ResourcePackHost {
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
             boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
-            String clientId = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_ID") : (String) arguments.get("client-id");
+            String clientId = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_ID") : Optional.ofNullable(arguments.get("client-id")).map(String::valueOf).orElse(null);
             if (clientId == null || clientId.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_client_id");
+                throw new LocalizedException("warning.config.host.onedrive.missing_client_id");
             }
-            String clientSecret = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_SECRET") : (String) arguments.get("client-secret");
+            String clientSecret = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_SECRET") : Optional.ofNullable(arguments.get("client-secret")).map(String::valueOf).orElse(null);
             if (clientSecret == null || clientSecret.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_client_secret");
+                throw new LocalizedException("warning.config.host.onedrive.missing_client_secret");
             }
-            String refreshToken = useEnv ? System.getenv("CE_ONEDRIVE_REFRESH_TOKEN") : (String) arguments.get("refresh-token");
+            String refreshToken = useEnv ? System.getenv("CE_ONEDRIVE_REFRESH_TOKEN") : Optional.ofNullable(arguments.get("refresh-token")).map(String::valueOf).orElse(null);
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_refresh_token");
+                throw new LocalizedException("warning.config.host.onedrive.missing_refresh_token");
             }
-            String uploadPath = (String) arguments.getOrDefault("upload-path", "resource_pack.zip");
+            String uploadPath = arguments.getOrDefault("upload-path", "resource_pack.zip").toString();
             if (uploadPath == null || uploadPath.isEmpty()) {
-                throw new LocalizedException("warning.config.host.onedrive.lack_upload_path");
+                throw new LocalizedException("warning.config.host.onedrive.missing_upload_path");
             }
-            ProxySelector proxy = MiscUtils.getProxySelector(arguments.get("proxy"));
+            ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new OneDriveHost(clientId, clientSecret, refreshToken, uploadPath, proxy);
         }
     }

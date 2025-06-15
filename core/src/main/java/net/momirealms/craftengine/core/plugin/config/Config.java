@@ -16,6 +16,7 @@ import net.momirealms.craftengine.core.entity.furniture.ColliderType;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ConditionalResolution;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.PluginProperties;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -99,6 +100,7 @@ public class Config {
     protected boolean chunk_system$restore_custom_blocks_on_chunk_load;
     protected boolean chunk_system$sync_custom_blocks_on_chunk_load;
     protected int chunk_system$delay_serialization;
+    protected boolean chunk_system$fast_paletted_injection;
 
     protected boolean furniture$handle_invalid_furniture_on_chunk_load$enable;
     protected Map<String, String> furniture$handle_invalid_furniture_on_chunk_load$mapping;
@@ -245,8 +247,11 @@ public class Config {
                 Map<String, Object> args = MiscUtils.castToMap(it, false);
                 return ConditionalResolution.FACTORY.create(args);
             }).toList();
+        } catch (LocalizedResourceConfigException e) {
+            TranslationManager.instance().log(e.node(), e.arguments());
+            resource_pack$duplicated_files_handler = List.of();
         } catch (Exception e) {
-            this.plugin.logger().warn("Failed to load resource pack duplicated files handler", e);
+            this.plugin.logger().warn("Failed to load resource-pack.duplicated-files-handler", e);
             resource_pack$duplicated_files_handler = List.of();
         }
 
@@ -267,6 +272,7 @@ public class Config {
         chunk_system$restore_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.restore-custom-blocks-on-chunk-load", true);
         chunk_system$sync_custom_blocks_on_chunk_load = config.getBoolean("chunk-system.sync-custom-blocks-on-chunk-load", false);
         chunk_system$delay_serialization = config.getInt("chunk-system.delay-serialization", 20);
+        chunk_system$fast_paletted_injection = config.getBoolean("chunk-system.fast-palette-injection", false);
 
         // furniture
         furniture$handle_invalid_furniture_on_chunk_load$enable = config.getBoolean("furniture.handle-invalid-furniture-on-chunk-load.enable", false);
@@ -687,6 +693,10 @@ public class Config {
 
     public static int delaySerialization() {
         return instance.chunk_system$delay_serialization;
+    }
+
+    public static boolean fastPaletteInjection() {
+        return instance.chunk_system$fast_paletted_injection;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

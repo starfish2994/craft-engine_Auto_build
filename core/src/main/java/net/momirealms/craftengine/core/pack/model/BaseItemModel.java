@@ -2,17 +2,19 @@ package net.momirealms.craftengine.core.pack.model;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.tint.Tint;
 import net.momirealms.craftengine.core.pack.model.tint.Tints;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class BaseItemModel implements ItemModel {
     public static final Factory FACTORY = new Factory();
@@ -68,7 +70,10 @@ public class BaseItemModel implements ItemModel {
         @SuppressWarnings("unchecked")
         @Override
         public ItemModel create(Map<String, Object> arguments) {
-            String modelPath = Objects.requireNonNull(arguments.get("path"), "'path' is required for 'minecraft:model'. Current arguments: "+ arguments).toString();
+            String modelPath = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("path"), "warning.config.item.model.base.missing_path");
+            if (!ResourceLocation.isValid(modelPath)) {
+                throw new LocalizedResourceConfigException("warning.config.item.model.base.invalid_path", modelPath);
+            }
             Map<String, Object> generation = MiscUtils.castToMap(arguments.get("generation"), true);
             ModelGeneration modelGeneration = null;
             if (generation != null) {

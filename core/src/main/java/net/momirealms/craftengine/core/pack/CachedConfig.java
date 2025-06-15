@@ -6,12 +6,14 @@ import java.util.Map;
 public class CachedConfig {
     private final Pack pack;
     private final Path filePath;
+    private final String prefix;
     private final Map<String, Object> config;
 
-    public CachedConfig(Map<String, Object> config, Path filePath, Pack pack) {
+    public CachedConfig(String prefix, Map<String, Object> config, Path filePath, Pack pack) {
         this.config = config;
         this.filePath = filePath;
         this.pack = pack;
+        this.prefix = prefix;
     }
 
     public Map<String, Object> config() {
@@ -24,5 +26,9 @@ public class CachedConfig {
 
     public Pack pack() {
         return pack;
+    }
+
+    public String prefix() {
+        return prefix;
     }
 }

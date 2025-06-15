@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
@@ -149,7 +150,8 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
                 if (item.charAt(0) == '#') {
                     holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                 } else {
-                    holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(() -> new IllegalArgumentException("Invalid vanilla/custom item: " + item)));
+                    holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
+                            () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
                 }
             }
             return holders.isEmpty() ? null : Ingredient.of(holders);
@@ -180,12 +182,12 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         public static ItemDataProcessor fromMap(Map<String, Object> map) {
             String type = (String) map.get("type");
             if (type == null) {
-                throw new NullPointerException("processor type cannot be null");
+                throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.missing_type");
             }
             Key key = Key.withDefaultNamespace(type, "craftengine");
             ItemDataProcessor.Factory factory = BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY.getValue(key);
             if (factory == null) {
-                throw new IllegalArgumentException("Unknown processor type: " + type);
+                throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.invalid_type", type);
             }
             return factory.create(map);
         }
@@ -233,7 +235,11 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
 
             @Override
             public ItemDataProcessor create(Map<String, Object> arguments) {
-                List<String> components = MiscUtils.getAsStringList(arguments.get("components"));
+                Object componentsObj = arguments.get("components");
+                if (componentsObj == null) {
+                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.missing_components");
+                }
+                List<String> components = MiscUtils.getAsStringList(componentsObj);
                 return new KeepComponents(components.stream().map(Key::of).toList());
             }
         }
@@ -266,7 +272,11 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
 
             @Override
             public ItemDataProcessor create(Map<String, Object> arguments) {
-                List<String> tags = MiscUtils.getAsStringList(arguments.get("tags"));
+                Object tagsObj = arguments.get("tags");
+                if (tagsObj == null) {
+                    throw new LocalizedResourceConfigException("warning.config.recipe.smithing_transform.post_processor.keep_component.missing_tags");
+                }
+                List<String> tags = MiscUtils.getAsStringList(tagsObj);
                 return new KeepTags(tags.stream().map(it -> it.split("\\.")).toList());
             }
         }
