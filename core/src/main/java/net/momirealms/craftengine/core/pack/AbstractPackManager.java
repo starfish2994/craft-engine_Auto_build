@@ -280,8 +280,11 @@ public abstract class AbstractPackManager implements PackManager {
                         this.plugin.logger().warn(path.toAbsolutePath() + " is not a directory");
                         continue;
                     }
-                    Path metaFile = path.resolve("pack.yml");
                     String namespace = path.getFileName().toString();
+                    if (namespace.charAt(0) == '.') {
+                        continue;
+                    }
+                    Path metaFile = path.resolve("pack.yml");
                     String description = null;
                     String version = null;
                     String author = null;

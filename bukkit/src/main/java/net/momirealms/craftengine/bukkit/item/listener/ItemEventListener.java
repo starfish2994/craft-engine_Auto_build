@@ -3,7 +3,11 @@ package net.momirealms.craftengine.bukkit.item.listener;
 import io.papermc.paper.event.block.CompostItemEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.item.BukkitCustomItem;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
@@ -41,15 +45,18 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -444,11 +451,34 @@ public class ItemEventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onDragItem(InventoryClickEvent event) {
-//        Player player = (Player) event.getWhoClicked();
-//        plugin.scheduler().sync().runLater(() -> {
-//            System.out.println(1);
-//            player.updateInventory();
-//        }, 1);
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getInventory() instanceof EnchantingInventory inventory)) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        ItemStack lazuli = inventory.getSecondary();
+        if (lazuli != null) return;
+        ItemStack item = inventory.getItem();
+        if (item == null) return;
+        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(item);
+        if (wrapped == null) return;
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
+        if (customItem.clientItem() == FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject())) return;
+        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        if (serverPlayer == null) return;
+        this.plugin.scheduler().sync().runDelayed(() -> {
+            Object container = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
+            if (!CoreReflections.clazz$EnchantmentMenu.isInstance(container)) return;
+            Object secondSlotItem = FastNMS.INSTANCE.method$Slot$getItem(FastNMS.INSTANCE.method$AbstractContainerMenu$getSlot(container, 1));
+            if (secondSlotItem == null || FastNMS.INSTANCE.method$ItemStack$isEmpty(secondSlotItem)) return;
+            Object[] dataSlots = FastNMS.INSTANCE.field$AbstractContainerMenu$dataSlots(container).toArray();
+            List<Object> packets = new ArrayList<>(dataSlots.length);
+            for (int i = 0; i < dataSlots.length; i++) {
+                Object dataSlot = dataSlots[i];
+                int data = FastNMS.INSTANCE.method$DataSlot$get(dataSlot);
+                packets.add(FastNMS.INSTANCE.constructor$ClientboundContainerSetDataPacket(FastNMS.INSTANCE.field$AbstractContainerMenu$containerId(container), i, data));
+            }
+            serverPlayer.sendPackets(packets, false);
+        });
     }
 }
