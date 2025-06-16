@@ -496,7 +496,12 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                     super.write(context, packet, channelPromise);
                 }
                 isWrote = true;
-                if (VersionHelper.isOrAbove1_21_6()) return; // TODO: 需排查为什么从 1.21.6 开始执行 addListener 后会报错
+                if (channelPromise instanceof VoidChannelPromise) { // 从 1.21.6 开始大量使用 VoidChannelPromise
+                    if (!event.getDelayedTasks().isEmpty()) {
+                        plugin.logger().warn("Delayed tasks are not supported for void promises");
+                    }
+                    return;
+                }
                 channelPromise.addListener((p) -> {
                     for (Runnable task : event.getDelayedTasks()) {
                         task.run();
