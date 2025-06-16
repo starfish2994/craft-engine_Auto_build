@@ -658,7 +658,7 @@ public final class CoreReflections {
 
     public static final Class<?> clazz$SynchedEntityData$DataValue = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "network.syncher.DataWatcher$b",
+                    VersionHelper.isOrAbove1_20_5() ? "network.syncher.DataWatcher$c" : "network.syncher.DataWatcher$b",
                     "network.syncher.SynchedEntityData$DataValue"
             )
     );
