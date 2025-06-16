@@ -8,7 +8,6 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.Position;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

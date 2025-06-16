@@ -166,12 +166,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             this.plugin.logger().warn(id + " is not a valid namespaced key");
             return new ItemStack(Material.AIR);
         }
-        Material material = Registry.MATERIAL.get(key);
-        if (material == null) {
+        Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
+        if (item == null) {
             this.plugin.logger().warn(id + " is not a valid material");
             return new ItemStack(Material.AIR);
         }
-        return new ItemStack(material);
+        return FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(item, 1));
     }
 
     @Override

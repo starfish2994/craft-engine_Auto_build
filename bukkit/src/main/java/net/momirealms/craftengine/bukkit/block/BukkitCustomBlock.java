@@ -138,9 +138,9 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 }
                 // set fluid later
                 if (settings.fluidState()) {
-                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, CoreReflections.method$FlowingFluid$getSource.invoke(MFluids.instance$Fluids$WATER, false));
+                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, CoreReflections.method$FlowingFluid$getSource.invoke(MFluids.WATER, false));
                 } else {
-                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, MFluids.instance$Fluids$EMPTY$defaultState);
+                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, MFluids.EMPTY$defaultState);
                 }
                 // set random tick later
                 BlockStateUtils.setIsRandomlyTicking(mcBlockState, settings.isRandomlyTicking());

@@ -11,7 +11,7 @@ import java.util.Map;
 public class WaterLoggedBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     @Nullable
-    private final Property<Boolean> waterloggedProperty;
+    protected final Property<Boolean> waterloggedProperty;
 
     public WaterLoggedBlockBehavior(CustomBlock block, @Nullable Property<Boolean> waterloggedProperty) {
         super(block);

@@ -85,7 +85,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
                 LeavesBlockBehavior behavior = optionalBehavior.get();
                 int distance = behavior.getDistanceAt(neighborState) + 1;
                 if (distance != 1 || behavior.getDistance(thisState) != distance) {
-                    FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 1);
+                    FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 1);
                 }
             }
         }

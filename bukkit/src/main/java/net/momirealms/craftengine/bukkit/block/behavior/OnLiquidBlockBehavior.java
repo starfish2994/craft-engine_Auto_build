@@ -49,7 +49,7 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
     }
 
     @Override
-    protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws ReflectiveOperationException {
+    protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) {
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
         int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
         int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
@@ -58,7 +58,7 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         return mayPlaceOn(belowState, world, belowPos);
     }
 
-    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
+    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) {
         if (this.stackable) {
             int id = BlockStateUtils.blockStateToId(belowState);
             if (!BlockStateUtils.isVanillaBlock(id)) {
@@ -68,15 +68,15 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
                 }
             }
         }
-        Object fluidState = CoreReflections.method$Level$getFluidState.invoke(world, belowPos);
-        Object fluidStateAbove = CoreReflections.method$Level$getFluidState.invoke(world, LocationUtils.above(belowPos));
-        if (CoreReflections.method$FluidState$getType.invoke(fluidStateAbove) != MFluids.instance$Fluids$EMPTY) {
+        Object fluidState = FastNMS.INSTANCE.method$Level$getFluidState(world, belowPos);
+        Object fluidStateAbove = FastNMS.INSTANCE.method$Level$getFluidState(world, LocationUtils.above(belowPos));
+        if (FastNMS.INSTANCE.method$FluidState$getType(fluidStateAbove) != MFluids.EMPTY) {
             return false;
         }
-        if (this.onWater && (CoreReflections.method$FluidState$getType.invoke(fluidState) == MFluids.instance$Fluids$WATER || FastNMS.INSTANCE.method$BlockState$getBlock(belowState) == MBlocks.ICE)) {
+        if (this.onWater && (FastNMS.INSTANCE.method$FluidState$getType(fluidState) == MFluids.WATER || FastNMS.INSTANCE.method$BlockState$getBlock(belowState) == MBlocks.ICE)) {
             return true;
         }
-        if (this.onLava && CoreReflections.method$FluidState$getType.invoke(fluidState) == MFluids.instance$Fluids$LAVA) {
+        if (this.onLava && FastNMS.INSTANCE.method$FluidState$getType(fluidState) == MFluids.LAVA) {
             return true;
         }
         return false;

@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockBehavior;
@@ -62,7 +61,7 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
         boolean lit = state.get(this.litProperty);
         if (lit != FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
             if (lit) {
-                FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 4);
+                FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 4);
             } else {
                 // TODO Call Event
                 FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);
