@@ -2402,6 +2402,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_MOTION = (user, event, packet) -> {
         try {
+            if (!VersionHelper.isOrAbove1_21_6()) return;
             int entityId = (int) NetworkReflections.methodHandle$ClientboundSetEntityMotionPacket$idGetter.invokeExact(packet);
             if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
                 event.setCancelled(true);
