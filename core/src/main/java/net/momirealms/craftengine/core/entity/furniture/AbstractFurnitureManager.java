@@ -88,9 +88,16 @@ public abstract class AbstractFurnitureManager implements FurnitureManager {
             if (byId.containsKey(id)) {
                 throw new LocalizedResourceConfigException("warning.config.furniture.duplicate");
             }
-
             EnumMap<AnchorType, CustomFurniture.Placement> placements = new EnumMap<>(AnchorType.class);
-            Map<String, Object> placementMap = MiscUtils.castToMap(ResourceConfigUtils.requireNonNullOrThrow(section.get("placement"), "warning.config.furniture.missing_placement"), false);
+            Object placementObj = section.get("placement");
+            if (placementObj == null) {
+                // 防呆
+                if (section.containsKey("material")) {
+                    plugin.itemManager().parser().parseSection(pack, path, id, section);
+                    return;
+                }
+            }
+            Map<String, Object> placementMap = MiscUtils.castToMap(ResourceConfigUtils.requireNonNullOrThrow(placementObj, "warning.config.furniture.missing_placement"), false);
             if (placementMap.isEmpty()) {
                 throw new LocalizedResourceConfigException("warning.config.furniture.missing_placement");
             }
