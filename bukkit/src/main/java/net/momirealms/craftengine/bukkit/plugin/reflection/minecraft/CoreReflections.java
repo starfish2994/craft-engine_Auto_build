@@ -3325,9 +3325,8 @@ public final class CoreReflections {
     );
 
     public static final Class<?> clazz$Explosion = requireNonNull(
-            BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "world.level.Explosion",
-                    "world.level.Explosion"
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.Explosion")
             )
     );
 
