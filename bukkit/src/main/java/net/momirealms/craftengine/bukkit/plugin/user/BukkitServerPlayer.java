@@ -498,8 +498,8 @@ public class BukkitServerPlayer extends Player {
             if (canBreak) {
                 if (VersionHelper.isOrAbove1_20_5()) {
                     Object serverPlayer = serverPlayer();
-                    Object attributeInstance = CoreReflections.method$ServerPlayer$getAttribute.invoke(serverPlayer, MAttributeHolders.BLOCK_BREAK_SPEED);
-                    Object newPacket = NetworkReflections.constructor$ClientboundUpdateAttributesPacket0.newInstance(entityID(), Lists.newArrayList(attributeInstance));
+                    Object attributeInstance = CoreReflections.methodHandle$ServerPlayer$getAttributeMethod.invokeExact(serverPlayer, MAttributeHolders.BLOCK_BREAK_SPEED);
+                    Object newPacket = NetworkReflections.methodHandle$ClientboundUpdateAttributesPacket0Constructor.invokeExact(entityID(), (List<?>) Lists.newArrayList(attributeInstance));
                     sendPacket(newPacket, true);
                 } else {
                     resetEffect(MMobEffects.MINING_FATIGUE);
@@ -519,7 +519,7 @@ public class BukkitServerPlayer extends Player {
                     sendPackets(List.of(fatiguePacket, hastePacket), true);
                 }
             }
-        } catch (ReflectiveOperationException e) {
+        } catch (Throwable e) {
             plugin.logger().warn("Failed to set attribute for player " + platformPlayer().getName(), e);
         }
     }

@@ -2879,7 +2879,7 @@ public final class CoreReflections {
 
     public static final Method method$ServerPlayer$getAttribute = requireNonNull(
             VersionHelper.isOrAbove1_20_5() ?
-                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, CoreReflections.clazz$Holder) :
+                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Holder) :
                     ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Attribute)
     );
 
@@ -3275,6 +3275,7 @@ public final class CoreReflections {
     public static final MethodHandle methodHandle$ServerEntity$broadcastSetter;
     public static final MethodHandle methodHandle$ServerEntity$updateIntervalSetter;
     public static final MethodHandle methodHandle$ServerPlayer$connectionGetter;
+    public static final MethodHandle methodHandle$ServerPlayer$getAttributeMethod;
 
     static {
         try {
@@ -3289,6 +3290,10 @@ public final class CoreReflections {
             methodHandle$ServerPlayer$connectionGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
                             .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            methodHandle$ServerPlayer$getAttributeMethod = requireNonNull(
+                    ReflectionUtils.unreflectMethod(method$ServerPlayer$getAttribute)
+                            .asType(MethodType.methodType(Object.class, Object.class, Object.class))
             );
         } catch (IllegalAccessException e) {
             throw new ReflectionInitException("Failed to initialize reflection", e);

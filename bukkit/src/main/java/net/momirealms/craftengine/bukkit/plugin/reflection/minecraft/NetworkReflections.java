@@ -1331,6 +1331,7 @@ public final class NetworkReflections {
     public static final MethodHandle methodHandle$ServerboundCustomPayloadPacket$payloadGetter;
     public static final MethodHandle methodHandle$ClientboundRotateHeadPacket$entityIdGetter;
     public static final MethodHandle methodHandle$ClientboundSetEntityMotionPacket$idGetter;
+    public static final MethodHandle methodHandle$ClientboundUpdateAttributesPacket0Constructor;
 
     static {
         try {
@@ -1409,6 +1410,10 @@ public final class NetworkReflections {
             methodHandle$ClientboundSetEntityMotionPacket$idGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ClientboundSetEntityMotionPacket$id)
                             .asType(MethodType.methodType(int.class, Object.class))
+            );
+            methodHandle$ClientboundUpdateAttributesPacket0Constructor = requireNonNull(
+                    ReflectionUtils.unreflectConstructor(constructor$ClientboundUpdateAttributesPacket0)
+                            .asType(MethodType.methodType(Object.class, int.class, List.class))
             );
             if (field$ServerboundCustomPayloadPacket$payload != null) {
                 methodHandle$ServerboundCustomPayloadPacket$payloadGetter = requireNonNull(
