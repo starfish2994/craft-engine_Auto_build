@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -3323,4 +3324,23 @@ public final class CoreReflections {
                     "world.inventory.EnchantmentMenu"
             )
     );
+
+    // 1.20.5+
+    public static final Field field$ItemStack$CODEC = ReflectionUtils.getDeclaredField(
+            clazz$ItemStack, "CODEC", "b"
+    );
+
+    public static final Codec<?> instance$ItemStack$CODEC;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_5()) {
+                instance$ItemStack$CODEC = (Codec<?>) field$ItemStack$CODEC.get(null);
+            } else {
+                instance$ItemStack$CODEC = null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
