@@ -160,6 +160,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, NetworkReflections.clazz$ClientboundEntityEventPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$PosRot);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
+        registerNMSPacketConsumer(PacketConsumers.ROTATE_HEAD, NetworkReflections.clazz$ClientboundRotateHeadPacket);
+        registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_MOTION, NetworkReflections.clazz$ClientboundSetEntityMotionPacket);
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
@@ -490,6 +492,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 NMSPacketEvent event = new NMSPacketEvent(packet);
                 onNMSPacketSend(player, event, packet);
                 if (event.isCancelled()) return;
+                System.out.println(packet.getClass());
                 if (event.isUsingNewPacket()) {
                     super.write(context, event.optionalNewPacket(), channelPromise);
                 } else {

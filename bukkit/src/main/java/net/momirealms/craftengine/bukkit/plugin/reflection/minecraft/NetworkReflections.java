@@ -1329,6 +1329,8 @@ public final class NetworkReflections {
     public static final MethodHandle methodHandle$ServerboundPickItemFromBlockPacket$posGetter;
     public static final MethodHandle methodHandle$ServerboundPickItemFromEntityPacket$idGetter;
     public static final MethodHandle methodHandle$ServerboundCustomPayloadPacket$payloadGetter;
+    public static final MethodHandle methodHandle$ClientboundRotateHeadPacket$entityIdGetter;
+    public static final MethodHandle methodHandle$ClientboundSetEntityMotionPacket$idGetter;
 
     static {
         try {
@@ -1398,6 +1400,14 @@ public final class NetworkReflections {
             );
             methodHandle$ClientIntentionPacket$protocolVersionGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ClientIntentionPacket$protocolVersion)
+                            .asType(MethodType.methodType(int.class, Object.class))
+            );
+            methodHandle$ClientboundRotateHeadPacket$entityIdGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ClientboundRotateHeadPacket$entityId)
+                            .asType(MethodType.methodType(int.class, Object.class))
+            );
+            methodHandle$ClientboundSetEntityMotionPacket$idGetter = requireNonNull(
+                    ReflectionUtils.unreflectGetter(field$ClientboundSetEntityMotionPacket$id)
                             .asType(MethodType.methodType(int.class, Object.class))
             );
             if (field$ServerboundCustomPayloadPacket$payload != null) {
