@@ -49,6 +49,10 @@ public abstract class BlockBehavior {
         return (boolean) superMethod.call();
     }
 
+    public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        return (boolean) superMethod.call();
+    }
+
     public void onBrokenAfterFall(Object thisBlock, Object[] args) throws Exception {
     }
 

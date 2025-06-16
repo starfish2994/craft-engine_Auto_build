@@ -76,6 +76,9 @@ public final class BlockGenerator {
                 // getSupportShape
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$getBlockSupportShape))
                 .intercept(MethodDelegation.to(GetSupportShapeInterceptor.INSTANCE))
+                // isPathFindable
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isPathFindable))
+                .intercept(MethodDelegation.to(IsPathFindableInterceptor.INSTANCE))
                 // mirror
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$mirror))
                 .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
@@ -249,6 +252,21 @@ public final class BlockGenerator {
                 return holder.value().getSupportShape(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run getSupportShape", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class IsPathFindableInterceptor {
+        public static final IsPathFindableInterceptor INSTANCE = new IsPathFindableInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().isPathFindable(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run isPathFindable", e);
                 return superMethod.call();
             }
         }
