@@ -381,6 +381,7 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/copper_coil_on_side.png");
         // items
         plugin.saveResource("resources/default/configuration/items.yml");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/items/player_head.json");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_rod.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_rod_cast.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/topaz_bow.png");
@@ -1288,6 +1289,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
+            boolean oversizedInGui = Optional.ofNullable(originalItemModel.get("oversized_in_gui")).map(JsonElement::getAsBoolean).orElse(false);
             JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
             JsonObject newJson = new JsonObject();
             JsonObject model = new JsonObject();
@@ -1295,7 +1297,10 @@ public abstract class AbstractPackManager implements PackManager {
             model.addProperty("type", "minecraft:range_dispatch");
             model.addProperty("property", "minecraft:custom_model_data");
             if (!handAnimationOnSwap) {
-                model.addProperty("hand_animation_on_swap", false);
+                newJson.addProperty("hand_animation_on_swap", false);
+            }
+            if (oversizedInGui) {
+                newJson.addProperty("oversized_in_gui", true);
             }
             // 将原有的json读成fallback
             model.add("fallback", fallbackModel);
