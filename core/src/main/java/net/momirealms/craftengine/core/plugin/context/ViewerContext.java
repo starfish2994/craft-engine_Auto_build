@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.plugin.context;
 
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.text.minimessage.*;
 
 import java.util.Optional;

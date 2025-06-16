@@ -126,8 +126,8 @@ public class ConcretePowderBlockBehavior extends BukkitBlockBehavior {
     private static boolean canSolidify(Object state) throws ReflectiveOperationException {
         Object fluidState = CoreReflections.field$BlockStateBase$fluidState.get(state);
         if (fluidState == null) return false;
-        Object fluidType = CoreReflections.method$FluidState$getType.invoke(fluidState);
-        return fluidType == MFluids.instance$Fluids$WATER || fluidType == MFluids.instance$Fluids$FLOWING_WATER;
+        Object fluidType = FastNMS.INSTANCE.method$FluidState$getType(fluidState);
+        return fluidType == MFluids.WATER || fluidType == MFluids.FLOWING_WATER;
     }
 
     private static boolean touchesLiquid(Object level, Object pos) throws ReflectiveOperationException {

@@ -29,6 +29,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 
 public final class BlockGenerator {
     private static final BukkitBlockShape STONE_SHAPE =
@@ -140,6 +141,15 @@ public final class BlockGenerator {
                         .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$LevelReader).or(ElementMatchers.takesArgument(1, CoreReflections.clazz$Direction)))
                         .and(ElementMatchers.named("updateShape").or(ElementMatchers.named("a"))))
                 .intercept(MethodDelegation.to(UpdateShapeInterceptor.INSTANCE))
+                // onExplosionHit 1.21+
+                .method(ElementMatchers.returns(void.class)
+                        .and(ElementMatchers.takesArgument(0, CoreReflections.clazz$BlockState))
+                        .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$ServerLevel))
+                        .and(ElementMatchers.takesArgument(2, CoreReflections.clazz$BlockPos))
+                        .and(ElementMatchers.takesArgument(3, CoreReflections.clazz$Explosion))
+                        .and(ElementMatchers.takesArgument(4, BiConsumer.class))
+                )
+                .intercept(MethodDelegation.to(OnExplosionHitInterceptor.INSTANCE))
                 // neighborChanged
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$neighborChanged))
                 .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE));
@@ -441,6 +451,20 @@ public final class BlockGenerator {
                 holder.value().neighborChanged(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run neighborChanged", e);
+            }
+        }
+    }
+
+    public static class OnExplosionHitInterceptor {
+        public static final OnExplosionHitInterceptor INSTANCE = new OnExplosionHitInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().onExplosionHit(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run onExplosionHit", e);
             }
         }
     }

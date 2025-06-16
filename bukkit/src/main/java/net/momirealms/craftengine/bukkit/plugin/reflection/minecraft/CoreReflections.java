@@ -1801,10 +1801,6 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$FlowingFluid, clazz$FluidState, boolean.class)
     );
 
-    public static final Method method$Level$getFluidState = requireNonNull(
-            ReflectionUtils.getMethod(clazz$Level, clazz$FluidState, CoreReflections.clazz$BlockPos)
-    );
-
     public static final Method method$FluidState$isSource = requireNonNull(
             ReflectionUtils.getMethod(clazz$FluidState, boolean.class, new String[]{"isSource", "b"})
     );
@@ -2188,10 +2184,6 @@ public final class CoreReflections {
     public static final Field field$JukeboxSong$comparatorOutput = Optional.ofNullable(clazz$JukeboxSong)
             .map(it -> ReflectionUtils.getDeclaredField(it, int.class, 0))
             .orElse(null);
-
-    public static final Method method$FluidState$getType = requireNonNull(
-            ReflectionUtils.getMethod(clazz$FluidState, clazz$Fluid)
-    );
 
     public static final Class<?> clazz$CustomRecipe = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -3345,6 +3337,20 @@ public final class CoreReflections {
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.inventory.ContainerEnchantTable",
                     "world.inventory.EnchantmentMenu"
+            )
+    );
+
+    public static final Class<?> clazz$RedStoneWireBlock = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.BlockRedstoneWire",
+                    "world.level.block.RedStoneWireBlock"
+            )
+    );
+
+    public static final Class<?> clazz$Explosion = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.Explosion",
+                    "world.level.Explosion"
             )
     );
 }
