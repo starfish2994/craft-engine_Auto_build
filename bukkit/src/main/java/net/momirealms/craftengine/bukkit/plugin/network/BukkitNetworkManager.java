@@ -487,7 +487,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
         @Override
         public void write(ChannelHandlerContext context, Object packet, ChannelPromise channelPromise) throws Exception {
-            boolean isWrote = false;
             try {
                 NMSPacketEvent event = new NMSPacketEvent(packet);
                 onNMSPacketSend(player, event, packet);
@@ -497,23 +496,9 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 } else {
                     super.write(context, packet, channelPromise);
                 }
-                isWrote = true;
-                if (channelPromise instanceof VoidChannelPromise) { // 从 1.21.6 开始大量使用 VoidChannelPromise
-                    if (!event.getDelayedTasks().isEmpty()) {
-                        plugin.logger().warn("Delayed tasks are not supported for void promises");
-                    }
-                    return;
-                }
-                channelPromise.addListener((p) -> {
-                    for (Runnable task : event.getDelayedTasks()) {
-                        task.run();
-                    }
-                });
             } catch (Throwable e) {
                 plugin.logger().severe("An error occurred when reading packets. Packet class: " + packet.getClass(), e);
-                if (!isWrote) {
-                    super.write(context, packet, channelPromise);
-                }
+                super.write(context, packet, channelPromise);
             }
         }
 
