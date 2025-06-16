@@ -210,17 +210,18 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         Plugin fastAsyncWorldEdit = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
         String version = VersionHelper.isPaper() ? fastAsyncWorldEdit.getPluginMeta().getVersion() : fastAsyncWorldEdit.getDescription().getVersion();
         if (!this.fastAsyncWorldEditVersionCheck(version)) {
-            this.plugin.logger().severe("");
-            this.plugin.logger().severe("");
-            if (Locale.getDefault() == Locale.SIMPLIFIED_CHINESE) {
-                this.plugin.logger().severe("[Compatibility] 插件需要更新 FastAsyncWorldEdit 到 2.13.0 或更高版本，以获得更好的兼容性。(当前版本: " + version + ")");
-                this.plugin.logger().severe("[Compatibility] 请前往 https://ci.athion.net/job/FastAsyncWorldEdit/ 下载最新版本");
-            } else {
-                this.plugin.logger().severe("[Compatibility] Please update FastAsyncWorldEdit to 2.13.0 or newer for better compatibility. (Current version: " + version + ")");
-                this.plugin.logger().severe("[Compatibility] Please go to https://ci.athion.net/job/FastAsyncWorldEdit/ to download the latest version");
+
+            if (VersionHelper.isOrAbove1_20_3()) {
+                this.plugin.logger().severe("");
+                if (Locale.getDefault() == Locale.SIMPLIFIED_CHINESE) {
+                    this.plugin.logger().severe("[Compatibility] 插件需要更新 FastAsyncWorldEdit 到 2.13.0 或更高版本，以获得更好的兼容性。(当前版本: " + version + ")");
+                    this.plugin.logger().severe("[Compatibility] 请前往 https://ci.athion.net/job/FastAsyncWorldEdit/ 下载最新版本");
+                } else {
+                    this.plugin.logger().severe("[Compatibility] Update FastAsyncWorldEdit to v2.13.0+ for better compatibility (Current: " + version + ")");
+                    this.plugin.logger().severe("[Compatibility] Download latest version: https://ci.athion.net/job/FastAsyncWorldEdit/");
+                }
+                this.plugin.logger().severe("");
             }
-            this.plugin.logger().severe("");
-            this.plugin.logger().severe("");
         }
         new WorldEditBlockRegister(BukkitBlockManager.instance(), true);
     }
