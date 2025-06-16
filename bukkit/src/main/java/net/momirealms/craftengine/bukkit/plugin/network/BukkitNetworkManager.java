@@ -492,7 +492,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 NMSPacketEvent event = new NMSPacketEvent(packet);
                 onNMSPacketSend(player, event, packet);
                 if (event.isCancelled()) return;
-                System.out.println(packet.getClass());
                 if (event.isUsingNewPacket()) {
                     super.write(context, event.optionalNewPacket(), channelPromise);
                 } else {
