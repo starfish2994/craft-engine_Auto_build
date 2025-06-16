@@ -3330,12 +3330,17 @@ public final class CoreReflections {
             clazz$ItemStack, "CODEC", "b"
     );
 
-    public static final Codec<?> instance$ItemStack$CODEC;
+    public static final Codec<Object> instance$ItemStack$CODEC;
+
+    @SuppressWarnings("unchecked")
+    private static Codec<Object> getInstance$ItemStack$CODEC() throws IllegalAccessException {
+        return (Codec<Object>) field$ItemStack$CODEC.get(null);
+    }
 
     static {
         try {
             if (VersionHelper.isOrAbove1_20_5()) {
-                instance$ItemStack$CODEC = (Codec<?>) field$ItemStack$CODEC.get(null);
+                instance$ItemStack$CODEC = getInstance$ItemStack$CODEC();
             } else {
                 instance$ItemStack$CODEC = null;
             }
