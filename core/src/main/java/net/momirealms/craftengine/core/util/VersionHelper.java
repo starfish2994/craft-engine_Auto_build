@@ -1,14 +1,12 @@
 package net.momirealms.craftengine.core.util;
 
-import java.lang.reflect.Field;
+import com.google.gson.JsonObject;
 
-import static java.util.Objects.requireNonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class VersionHelper {
-    // todo 在跨平台时候，将其设计到平台实现
-    private static final Class<?> clazz$SharedConstants = requireNonNull(ReflectionUtils.getClazz("net.minecraft.SharedConstants"));
-    private static final Field field$SharedConstants$VERSION_STRING = requireNonNull(ReflectionUtils.getDeclaredField(clazz$SharedConstants, String.class, 1));
-
     private static final int version;
     private static final int majorVersion;
     private static final int minorVersion;
@@ -32,8 +30,12 @@ public class VersionHelper {
     private static final boolean v1_21_6;
 
     static {
-        try {
-            String versionString = (String) field$SharedConstants$VERSION_STRING.get(null);
+        try (InputStream inputStream = Class.forName("net.minecraft.obfuscate.DontObfuscate").getResourceAsStream("/version.json")) {
+            if (inputStream == null) {
+                throw new IOException("Failed to load version.json");
+            }
+            JsonObject json = GsonHelper.parseJsonToJsonObject(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+            String versionString = json.getAsJsonPrimitive("id").getAsString();
             String[] split = versionString.split("\\.");
             int major = Integer.parseInt(split[1]);
             int minor = split.length == 3 ? Integer.parseInt(split[2].split("-", 2)[0]) : 0;
@@ -63,7 +65,7 @@ public class VersionHelper {
             mojmap = checkMojMap();
             folia = checkFolia();
             paper = checkPaper();
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to init VersionHelper", e);
         }
     }
