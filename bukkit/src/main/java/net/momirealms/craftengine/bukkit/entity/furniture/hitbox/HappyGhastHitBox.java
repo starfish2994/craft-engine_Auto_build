@@ -115,7 +115,7 @@ public class HappyGhastHitBox extends AbstractHitBox {
                 throw new UnsupportedOperationException("HappyGhastHitBox is only supported on 1.21.6+");
             }
             double scale = ResourceConfigUtils.getAsDouble(arguments.getOrDefault("scale", 1), "scale");
-            boolean hardCollision = (boolean) arguments.getOrDefault("hard-collision", false);
+            boolean hardCollision = (boolean) arguments.getOrDefault("hard-collision", true);
             boolean canUseOn = (boolean) arguments.getOrDefault("can-use-item-on", false);
             boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
             boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", false);
