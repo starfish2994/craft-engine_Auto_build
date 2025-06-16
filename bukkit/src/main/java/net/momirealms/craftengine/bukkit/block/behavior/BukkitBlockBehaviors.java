@@ -19,6 +19,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key CROP_BLOCK = Key.from("craftengine:crop_block");
     public static final Key GRASS_BLOCK = Key.from("craftengine:grass_block");
     public static final Key LAMP_BLOCK = Key.from("craftengine:lamp_block");
+    public static final Key TRAPDOOR_BLOCK = Key.from("craftengine:trapdoor_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
@@ -36,5 +37,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(CROP_BLOCK, CropBlockBehavior.FACTORY);
         register(GRASS_BLOCK, GrassBlockBehavior.FACTORY);
         register(LAMP_BLOCK, LampBlockBehavior.FACTORY);
+        register(TRAPDOOR_BLOCK, TrapDoorBlockBehavior.FACTORY);
     }
 }

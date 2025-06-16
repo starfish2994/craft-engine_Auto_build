@@ -1344,6 +1344,38 @@ public final class CoreReflections {
             )
     );
 
+    public static final Class<?> clazz$PathComputationType = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.pathfinder.PathMode",
+                    "world.level.pathfinder.PathComputationType"
+            )
+    );
+
+    public static final Method method$PathComputationType$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(clazz$PathComputationType, clazz$PathComputationType.arrayType())
+    );
+
+    public static final Object instance$PathComputationType$LAND;
+    public static final Object instance$PathComputationType$WATER;
+    public static final Object instance$PathComputationType$AIR;
+
+    static {
+        try {
+            Object[] objs = (Object[]) method$PathComputationType$values.invoke(null);
+            instance$PathComputationType$LAND = objs[0];
+            instance$PathComputationType$WATER = objs[1];
+            instance$PathComputationType$AIR = objs[2];
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize PathComputationType", e);
+        }
+    }
+
+    public static final Method method$BlockBehaviour$isPathFindable = requireNonNull(
+            VersionHelper.isOrAbove1_20_5() ?
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, boolean.class, clazz$BlockState, clazz$PathComputationType) :
+            ReflectionUtils.getMethod(clazz$BlockBehaviour, boolean.class, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$PathComputationType)
+    );
+
     public static final Method method$BlockBehaviour$getShape = requireNonNull(
             ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$CollisionContext)
     );
