@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
+import net.momirealms.craftengine.bukkit.entity.data.HappyGhastData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
@@ -12,7 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bukkit.parser.location.LocationParser;
-import org.incendo.cloud.parser.standard.StringArrayParser;
+import org.incendo.cloud.parser.standard.IntegerParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,37 +30,34 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
         return builder
                 .senderType(Player.class)
                 .required("location", LocationParser.locationParser())
-                // .required("remove", StringArrayParser.stringArrayParser())
+                .required("remove", IntegerParser.integerParser())
                 .handler(context -> {
                     Player player = context.sender();
-                    // String[] removeEntityIds = context.get("remove");
-                    // int removeHitboxId = Integer.parseInt(removeEntityIds[0]);
-                    // int removePlayerId = Integer.parseInt(removeEntityIds[1]);
-                    // if (removeHitboxId >= 0 && removePlayerId >= 0) {
-                    //     try {
-                    //         Object packet = NetworkReflections.constructor$ClientboundRemoveEntitiesPacket.newInstance((Object) new int[]{removeHitboxId, removePlayerId});
-                    //         plugin().adapt(player).sendPacket(packet, true);
-                    //         player.sendMessage("发送成功");
-                    //     } catch (ReflectiveOperationException e) {
-                    //         player.sendMessage("发送失败");
-                    //     }
-                    //     return;
-                    // }
+                    int removeEntityId = context.get("remove");
+                    if (removeEntityId >= 0) {
+                        try {
+                            Object packet = NetworkReflections.constructor$ClientboundRemoveEntitiesPacket.newInstance((Object) new int[]{removeEntityId});
+                            plugin().adapt(player).sendPacket(packet, true);
+                            player.sendMessage("发送成功");
+                        } catch (ReflectiveOperationException e) {
+                            player.sendMessage("发送失败");
+                        }
+                        return;
+                    }
                     Location location = context.get("location");
-                    // int hitboxId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
-                    int playerId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
+                    int entityId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
                     List<Object> packets = new ArrayList<>();
-                    // packets.add(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                    //         hitboxId, UUID.randomUUID(), location.x(), location.y(), location.z(), 0, location.getYaw(),
-                    //         MEntityTypes.HAPPY_GHAST, 0, CoreReflections.instance$Vec3$Zero, 0
-                    // ));
+                    List<Object> cachedShulkerValues = new ArrayList<>();
+                    HappyGhastData.MobFlags.addEntityDataIfNotDefaultValue((byte) 0x01, cachedShulkerValues); // NO AI
+                    // HappyGhastData.SharedFlags.addEntityDataIfNotDefaultValue((byte) 0x20, cachedShulkerValues); // Invisible
+                    HappyGhastData.StaysStill.addEntityDataIfNotDefaultValue(true, cachedShulkerValues);
                     packets.add(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(
-                            playerId, UUID.randomUUID(), location.x(), location.y()/* + 4*/, location.z(), 0, location.getYaw(),
-                            MEntityTypes.PLAYER, 0, CoreReflections.instance$Vec3$Zero, 0
+                            entityId, UUID.randomUUID(), location.x(), location.y(), location.z(), 0, location.getYaw(),
+                            MEntityTypes.HAPPY_GHAST, 0, CoreReflections.instance$Vec3$Zero, 0
                     ));
-                    player.sendMessage("player: " + MEntityTypes.PLAYER);
+                    packets.add(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, List.copyOf(cachedShulkerValues)));
                     plugin().adapt(player).sendPackets(packets, true);
-                    player.sendMessage("发送成功 id: [" + /*hitboxId + ", " +*/ playerId + "]");
+                    player.sendMessage("发送成功 id: " + entityId);
                 });
     }
 
