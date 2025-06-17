@@ -473,6 +473,7 @@ public class RecipeEventListener implements Listener {
 
         // one of them is vanilla item
         if (!firstCustom || !secondCustom) {
+            if (second.canRepair(first)) return; // 这里需要考虑原版逻辑
             // block "vanilla + custom" recipes
             event.setResult(null);
             return;
