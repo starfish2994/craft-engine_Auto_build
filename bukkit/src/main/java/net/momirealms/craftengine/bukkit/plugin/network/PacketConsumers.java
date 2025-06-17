@@ -2364,6 +2364,9 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_AND_ROTATE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = ProtectedFieldVisitor.get().field$ClientboundMoveEntityPacket$entityId(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
             EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
             if (handler != null) {
                 handler.handleMoveAndRotate(user, event, packet);
@@ -2382,6 +2385,29 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ROTATE_HEAD = (user, event, packet) -> {
+        try {
+            int entityId = (int) NetworkReflections.methodHandle$ClientboundRotateHeadPacket$entityIdGetter.invokeExact(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundRotateHeadPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_MOTION = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isOrAbove1_21_6()) return;
+            int entityId = (int) NetworkReflections.methodHandle$ClientboundSetEntityMotionPacket$idGetter.invokeExact(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
         }
     };
 }

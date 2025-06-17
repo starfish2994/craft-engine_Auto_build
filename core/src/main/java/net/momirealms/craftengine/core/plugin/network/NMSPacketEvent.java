@@ -11,7 +11,6 @@ import java.util.Optional;
 public class NMSPacketEvent implements Cancellable {
     private final Object packet;
     private boolean cancelled;
-    private List<Runnable> delayedTasks = null;
     private Object newPacket = null;
 
     public NMSPacketEvent(Object packet) {
@@ -32,17 +31,6 @@ public class NMSPacketEvent implements Cancellable {
 
     public Object optionalNewPacket() {
         return newPacket;
-    }
-
-    public void addDelayedTask(Runnable task) {
-        if (delayedTasks == null) {
-            delayedTasks = new ArrayList<>();
-        }
-        delayedTasks.add(task);
-    }
-
-    public List<Runnable> getDelayedTasks() {
-        return Optional.ofNullable(delayedTasks).orElse(Collections.emptyList());
     }
 
     @Override

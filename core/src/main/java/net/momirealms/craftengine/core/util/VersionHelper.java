@@ -1,20 +1,12 @@
 package net.momirealms.craftengine.core.util;
 
-import java.lang.reflect.Field;
+import com.google.gson.JsonObject;
 
-import static java.util.Objects.requireNonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class VersionHelper {
-    // todo 在跨平台时候，将其设计到平台实现
-    private static final Class<?> clazz$DetectedVersion = requireNonNull(
-            ReflectionUtils.getClazz("net.minecraft.DetectedVersion", "net.minecraft.MinecraftVersion"));
-    private static final Class<?> clazz$WorldVersion = requireNonNull(
-            ReflectionUtils.getClazz("net.minecraft.WorldVersion"));
-    public static final Field field$DetectedVersion$BUILT_IN = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$DetectedVersion, clazz$WorldVersion, 0));
-    public static final Field field$DetectedVersion$name = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$DetectedVersion, String.class, 1));
-
     private static final int version;
     private static final int majorVersion;
     private static final int minorVersion;
@@ -35,14 +27,18 @@ public class VersionHelper {
     private static final boolean v1_21_3;
     private static final boolean v1_21_4;
     private static final boolean v1_21_5;
+    private static final boolean v1_21_6;
 
     static {
-        try {
-            Object detectedVersion = field$DetectedVersion$BUILT_IN.get(null);
-            String name = (String) field$DetectedVersion$name.get(detectedVersion);
-            String[] split = name.split("\\.");
+        try (InputStream inputStream = Class.forName("net.minecraft.obfuscate.DontObfuscate").getResourceAsStream("/version.json")) {
+            if (inputStream == null) {
+                throw new IOException("Failed to load version.json");
+            }
+            JsonObject json = GsonHelper.parseJsonToJsonObject(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+            String versionString = json.getAsJsonPrimitive("id").getAsString();
+            String[] split = versionString.split("\\.");
             int major = Integer.parseInt(split[1]);
-            int minor = split.length == 3 ? Integer.parseInt(split[2]) : 0;
+            int minor = split.length == 3 ? Integer.parseInt(split[2].split("-", 2)[0]) : 0;
 
             // 2001 = 1.20.1
             // 2104 = 1.21.4
@@ -61,6 +57,7 @@ public class VersionHelper {
             v1_21_3 = version >= 2103;
             v1_21_4 = version >= 2104;
             v1_21_5 = version >= 2105;
+            v1_21_6 = version >= 2106;
 
             majorVersion = major;
             minorVersion = minor;
@@ -68,7 +65,7 @@ public class VersionHelper {
             mojmap = checkMojMap();
             folia = checkFolia();
             paper = checkPaper();
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to init VersionHelper", e);
         }
     }
@@ -175,5 +172,9 @@ public class VersionHelper {
 
     public static boolean isOrAbove1_21_5() {
         return v1_21_5;
+    }
+
+    public static boolean isOrAbove1_21_6() {
+        return v1_21_6;
     }
 }

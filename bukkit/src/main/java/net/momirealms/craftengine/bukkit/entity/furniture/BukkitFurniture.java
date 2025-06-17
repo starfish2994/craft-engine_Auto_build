@@ -347,7 +347,10 @@ public class BukkitFurniture implements Furniture {
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 });
         this.seats.add(new WeakReference<>(seatEntity));
-        seatEntity.addPassenger(player);
+        if (!seatEntity.addPassenger(player)) {
+            seatEntity.remove();
+            this.removeOccupiedSeat(seat.offset());
+        }
     }
 
     private Location calculateSeatLocation(Seat seat) {

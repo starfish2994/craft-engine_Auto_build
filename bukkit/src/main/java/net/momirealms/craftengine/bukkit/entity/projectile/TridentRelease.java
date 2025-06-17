@@ -261,7 +261,7 @@ public class TridentRelease {
                     level,
                     null,
                     entitythrowntrident,
-                    MSoundEvents.instance$SoundEvent$TRIDENT_THROW,
+                    MSoundEvents.TRIDENT_THROW,
                     CoreReflections.instance$SoundSource$PLAYERS,
                     1.0F, 1.0F
             );
@@ -294,11 +294,11 @@ public class TridentRelease {
 
         Object soundeffect;
         if (spinStrength >= 3) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_3;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_3;
         } else if (spinStrength == 2) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_2;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_2;
         } else {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_1;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_1;
         }
 
         FastNMS.INSTANCE.method$Level$playSound(
@@ -362,7 +362,7 @@ public class TridentRelease {
                     level,
                     null,
                     entitythrowntrident,
-                    MSoundEvents.instance$SoundEvent$TRIDENT_THROW,
+                    MSoundEvents.TRIDENT_THROW,
                     CoreReflections.instance$SoundSource$PLAYERS,
                     1.0F, 1.0F
             );
@@ -395,11 +395,11 @@ public class TridentRelease {
 
         Object soundeffect;
         if (spinStrength >= 3) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_3;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_3;
         } else if (spinStrength == 2) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_2;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_2;
         } else {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_1;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_1;
         }
 
         FastNMS.INSTANCE.method$Level$playSound(
@@ -463,7 +463,7 @@ public class TridentRelease {
                     level,
                     null,
                     entitythrowntrident,
-                    MSoundEvents.instance$SoundEvent$TRIDENT_THROW,
+                    MSoundEvents.TRIDENT_THROW,
                     CoreReflections.instance$SoundSource$PLAYERS,
                     1.0F, 1.0F
             );
@@ -495,11 +495,11 @@ public class TridentRelease {
 
         Object soundeffect;
         if (spinStrength >= 3) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_3;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_3;
         } else if (spinStrength == 2) {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_2;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_2;
         } else {
-            soundeffect = MSoundEvents.instance$SoundEvent$TRIDENT_RIPTIDE_1;
+            soundeffect = MSoundEvents.TRIDENT_RIPTIDE_1;
         }
 
         FastNMS.INSTANCE.method$Level$playSound(

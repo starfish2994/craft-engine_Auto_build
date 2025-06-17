@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.MaterialUtils;
 import net.momirealms.craftengine.bukkit.util.RecipeUtils;
@@ -666,7 +667,14 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             jsonObject.addProperty("id", result.id());
             jsonObject.addProperty("count", result.count());
             jsonObject.add("components", result.components());
-            Object nmsStack = ItemObject.newItem(TagCompound.newTag(jsonObject.toString()));
+            Object nmsTag = TagCompound.newTag(jsonObject.toString());
+            Object nmsStack;
+            if (VersionHelper.isOrAbove1_21_6()) {
+                nmsStack = CoreReflections.instance$ItemStack$CODEC.parse(MRegistryOps.NBT, nmsTag)
+                        .resultOrPartial((itemId) -> plugin.logger().severe("Tried to load invalid item: '" + itemId + "'")).orElse(null);
+            } else {
+                nmsStack = ItemObject.newItem(nmsTag);
+            }
             try {
                 itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(nmsStack);
             } catch (Exception e) {

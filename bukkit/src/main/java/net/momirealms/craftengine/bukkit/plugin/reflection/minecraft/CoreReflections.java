@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -200,12 +201,12 @@ public final class CoreReflections {
             )
     );
 
-    public static final Class<?> clazz$Component$Serializer = requireNonNull(
+    // 1.20~1.21.5
+    public static final Class<?> clazz$Component$Serializer =
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.chat.IChatBaseComponent$ChatSerializer",
                     "network.chat.Component$Serializer"
-            )
-    );
+            );
 
     public static final Class<?> clazz$ComponentContents = requireNonNull(
             ReflectionUtils.getClazz(
@@ -657,7 +658,7 @@ public final class CoreReflections {
 
     public static final Class<?> clazz$SynchedEntityData$DataValue = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "network.syncher.DataWatcher$b",
+                    VersionHelper.isOrAbove1_20_5() ? "network.syncher.DataWatcher$c" : "network.syncher.DataWatcher$b",
                     "network.syncher.SynchedEntityData$DataValue"
             )
     );
@@ -2557,30 +2558,6 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$AttributeInstance, void.class, double.class)
     );
 
-    public static final Method method$Entity$canBeCollidedWith = requireNonNull(
-            VersionHelper.isOrAbove1_20_5()
-                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith"})
-                    : VersionHelper.isOrAbove1_20_3()
-                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bz"})
-                    : VersionHelper.isOrAbove1_20_2()
-                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bx"})
-                    : VersionHelper.isOrAbove1_20()
-                    ? ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"bu"})
-                    : ReflectionUtils.getMethod(clazz$Entity, boolean.class, new String[]{"canBeCollidedWith", "bu", "bx", "bz"})
-    );
-
-    public static final Method method$Entity$getId = requireNonNull(
-            VersionHelper.isOrAbove1_20_5()
-                    ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId"})
-                    : VersionHelper.isOrAbove1_20_3()
-                    ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"aj"})
-                    : VersionHelper.isOrAbove1_20_2()
-                    ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"ah"})
-                    : VersionHelper.isOrAbove1_20()
-                    ? ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"af"})
-                    : ReflectionUtils.getMethod(clazz$Entity, int.class, new String[]{"getId", "aj", "ah", "af"})
-    );
-
     public static final Class<?> clazz$Rotation = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.level.block.EnumBlockRotation",
@@ -2902,7 +2879,7 @@ public final class CoreReflections {
 
     public static final Method method$ServerPlayer$getAttribute = requireNonNull(
             VersionHelper.isOrAbove1_20_5() ?
-                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, CoreReflections.clazz$Holder) :
+                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Holder) :
                     ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$AttributeInstance, clazz$Attribute)
     );
 
@@ -3298,6 +3275,7 @@ public final class CoreReflections {
     public static final MethodHandle methodHandle$ServerEntity$broadcastSetter;
     public static final MethodHandle methodHandle$ServerEntity$updateIntervalSetter;
     public static final MethodHandle methodHandle$ServerPlayer$connectionGetter;
+    public static final MethodHandle methodHandle$ServerPlayer$getAttributeMethod;
 
     static {
         try {
@@ -3312,6 +3290,10 @@ public final class CoreReflections {
             methodHandle$ServerPlayer$connectionGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ServerPlayer$connection)
                             .asType(MethodType.methodType(Object.class, Object.class))
+            );
+            methodHandle$ServerPlayer$getAttributeMethod = requireNonNull(
+                    ReflectionUtils.unreflectMethod(method$ServerPlayer$getAttribute)
+                            .asType(MethodType.methodType(Object.class, Object.class, Object.class))
             );
         } catch (IllegalAccessException e) {
             throw new ReflectionInitException("Failed to initialize reflection", e);
@@ -3348,9 +3330,32 @@ public final class CoreReflections {
     );
 
     public static final Class<?> clazz$Explosion = requireNonNull(
-            BukkitReflectionUtils.findReobfOrMojmapClass(
-                    "world.level.Explosion",
-                    "world.level.Explosion"
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.level.Explosion")
             )
     );
+
+    // 1.20.5+
+    public static final Field field$ItemStack$CODEC = ReflectionUtils.getDeclaredField(
+            clazz$ItemStack, "CODEC", "b"
+    );
+
+    public static final Codec<Object> instance$ItemStack$CODEC;
+
+    @SuppressWarnings("unchecked")
+    private static Codec<Object> getInstance$ItemStack$CODEC() throws IllegalAccessException {
+        return (Codec<Object>) field$ItemStack$CODEC.get(null);
+    }
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_5()) {
+                instance$ItemStack$CODEC = getInstance$ItemStack$CODEC();
+            } else {
+                instance$ItemStack$CODEC = null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

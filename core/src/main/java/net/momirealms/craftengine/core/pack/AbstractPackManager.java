@@ -223,7 +223,7 @@ public abstract class AbstractPackManager implements PackManager {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
                    } catch (Exception e) {
-                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", ""));
+                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", "").replaceAll("/[Il]{2,}", ""));
                    }
                };
            } else {
@@ -1288,6 +1288,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
+            boolean oversizedInGui = Optional.ofNullable(originalItemModel.get("oversized_in_gui")).map(JsonElement::getAsBoolean).orElse(false);
             JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
             JsonObject newJson = new JsonObject();
             JsonObject model = new JsonObject();
@@ -1295,7 +1296,10 @@ public abstract class AbstractPackManager implements PackManager {
             model.addProperty("type", "minecraft:range_dispatch");
             model.addProperty("property", "minecraft:custom_model_data");
             if (!handAnimationOnSwap) {
-                model.addProperty("hand_animation_on_swap", false);
+                newJson.addProperty("hand_animation_on_swap", false);
+            }
+            if (oversizedInGui) {
+                newJson.addProperty("oversized_in_gui", true);
             }
             // 将原有的json读成fallback
             model.add("fallback", fallbackModel);

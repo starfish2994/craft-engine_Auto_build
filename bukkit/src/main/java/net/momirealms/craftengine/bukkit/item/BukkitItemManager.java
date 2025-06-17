@@ -139,6 +139,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Item<ItemStack> fromByteArray(byte[] bytes) {
+        if (VersionHelper.isOrAbove1_21_6()) {
+            return this.factory.wrap(ItemStack.deserializeBytes(bytes));
+        }
         return this.factory.wrap(ItemTagStream.INSTANCE.fromBytes(bytes));
     }
 
