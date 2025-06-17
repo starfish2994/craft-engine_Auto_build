@@ -27,12 +27,12 @@ import java.util.Set;
 public class StackableBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<Integer> amountProperty;
-    private final Set<Key> allowItems;
+    private final Set<Key> items;
 
-    public StackableBlockBehavior(CustomBlock block,Property<Integer> amountProperty, Set<Key> allowItems) {
+    public StackableBlockBehavior(CustomBlock block,Property<Integer> amountProperty, Set<Key> items) {
         super(block);
         this.amountProperty = amountProperty;
-        this.allowItems = allowItems;
+        this.items = items;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         if (item == null) {
             return InteractionResult.PASS;
         }
-        if (this.allowItems.contains(item.id()) && state.get(this.amountProperty) < this.amountProperty.possibleValues().getLast()) {
+        if (this.items.contains(item.id()) && state.get(this.amountProperty) < this.amountProperty.possibleValues().getLast()) {
             ImmutableBlockState nextStage = state.cycle(this.amountProperty);
             World world = context.getLevel();
             BlockPos pos = context.getClickedPos();
@@ -66,14 +66,14 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         @SuppressWarnings("unchecked")
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Integer> amount = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("amount"), "warning.config.block.behavior.stackable.missing_amount");
-            Set<Key> allowItems = new HashSet<>();
-            if (arguments.get("allow-items") instanceof List<?> list) {
+            Set<Key> items = new HashSet<>();
+            if (arguments.get("items") instanceof List<?> list) {
                 for (Object obj : list) {
                     if (obj == null) continue;
-                    allowItems.add(Key.of(obj.toString()));
+                    items.add(Key.of(obj.toString()));
                 }
             }
-            return new StackableBlockBehavior(block, amount, allowItems);
+            return new StackableBlockBehavior(block, amount, items);
         }
     }
 }
