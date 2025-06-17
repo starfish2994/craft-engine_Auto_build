@@ -55,7 +55,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
                 FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
                 player.swingHand(context.getHand());
             }
-            return InteractionResult.FAIL;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         return InteractionResult.PASS;
     }
