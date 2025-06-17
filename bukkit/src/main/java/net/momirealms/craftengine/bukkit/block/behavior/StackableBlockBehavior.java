@@ -31,14 +31,12 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
     private final Property<Integer> amountProperty;
     private final Set<Key> items;
     private final SoundData soundData;
-    private final boolean hasSound;
 
     public StackableBlockBehavior(CustomBlock block,Property<Integer> amountProperty, Set<Key> items, SoundData soundData) {
         super(block);
         this.amountProperty = amountProperty;
         this.items = items;
         this.soundData = soundData;
-        this.hasSound = soundData != null;
     }
 
     @Override
@@ -57,8 +55,8 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
             World world = context.getLevel();
             BlockPos pos = context.getClickedPos();
             Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
-            if (CraftEngineBlocks.place(location, nextStage, UpdateOption.UPDATE_NONE, !hasSound)) {
-                if (hasSound) {
+            if (CraftEngineBlocks.place(location, nextStage, UpdateOption.UPDATE_NONE, false)) {
+                if (soundData != null) {
                     location.getWorld().playSound(location, soundData.id().toString(), SoundCategory.BLOCKS, soundData.volume(), soundData.pitch());
                 }
                 FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
