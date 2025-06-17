@@ -12,11 +12,13 @@ import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
+import org.bukkit.SoundCategory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
@@ -28,11 +30,15 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<Integer> amountProperty;
     private final Set<Key> items;
+    private final SoundData soundData;
+    private final boolean hasSound;
 
-    public StackableBlockBehavior(CustomBlock block,Property<Integer> amountProperty, Set<Key> items) {
+    public StackableBlockBehavior(CustomBlock block,Property<Integer> amountProperty, Set<Key> items, SoundData soundData) {
         super(block);
         this.amountProperty = amountProperty;
         this.items = items;
+        this.soundData = soundData;
+        this.hasSound = soundData != null;
     }
 
     @Override
@@ -51,7 +57,10 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
             World world = context.getLevel();
             BlockPos pos = context.getClickedPos();
             Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
-            if (CraftEngineBlocks.place(location, nextStage, UpdateOption.UPDATE_NONE, true)) {
+            if (CraftEngineBlocks.place(location, nextStage, UpdateOption.UPDATE_NONE, !hasSound)) {
+                if (hasSound) {
+                    location.getWorld().playSound(location, soundData.id().toString(), SoundCategory.BLOCKS, soundData.volume(), soundData.pitch());
+                }
                 FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
                 player.swingHand(context.getHand());
             }
@@ -66,6 +75,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         @SuppressWarnings("unchecked")
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Integer> amount = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("amount"), "warning.config.block.behavior.stackable.missing_amount");
+            SoundData soundData = arguments.containsKey("sound") ? SoundData.create(arguments.get("sound"), 1f, 0.8f) : null;
             Set<Key> items = new HashSet<>();
             if (arguments.get("items") instanceof List<?> list) {
                 for (Object obj : list) {
@@ -73,7 +83,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
                     items.add(Key.of(obj.toString()));
                 }
             }
-            return new StackableBlockBehavior(block, amount, items);
+            return new StackableBlockBehavior(block, amount, items, soundData);
         }
     }
 }
