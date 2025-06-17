@@ -792,6 +792,7 @@ templates#block_states:
       axis=z:
         appearance: axisZ
         id: "${internal_id}"
+  # leaves block
   default:block_state/leaves:
     properties:
       waterlogged:
@@ -957,6 +958,504 @@ templates#block_states:
       distance=7,persistent=true,waterlogged=true:
         appearance: "waterlogged"
         id: "${internal_id}"
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+  # trapdoor block
+  default:block_state/trapdoor:
+    properties:
+      waterlogged:
+        type: boolean
+        default: false
+      open:
+        type: boolean
+        default: false
+      powered:
+        type: boolean
+        default: false
+      facing:
+        type: horizontal_direction
+      half:
+        type: single_block_half
+    appearances:
+      facing=east,half=bottom,open=false,waterlogged=false:
+        state: "${base_block}[facing=east,half=bottom,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_bottom_path}
+          y: 90
+      facing=east,half=bottom,open=true,waterlogged=false:
+        state: "${base_block}[facing=east,half=bottom,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          y: 90
+      facing=east,half=top,open=false,waterlogged=false:
+        state: "${base_block}[facing=east,half=top,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_top_path}
+          y: 90
+      facing=east,half=top,open=true,waterlogged=false:
+        state: "${base_block}[facing=east,half=top,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 270
+      facing=north,half=bottom,open=false,waterlogged=false:
+        state: "${base_block}[facing=north,half=bottom,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_bottom_path}
+      facing=north,half=bottom,open=true,waterlogged=false:
+        state: "${base_block}[facing=north,half=bottom,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+      facing=north,half=top,open=false,waterlogged=false:
+        state: "${base_block}[facing=north,half=top,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_top_path}
+      facing=north,half=top,open=true,waterlogged=false:
+        state: "${base_block}[facing=north,half=top,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 180
+      facing=south,half=bottom,open=false,waterlogged=false:
+        state: "${base_block}[facing=south,half=bottom,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_bottom_path}
+          y: 180
+      facing=south,half=bottom,open=true,waterlogged=false:
+        state: "${base_block}[facing=south,half=bottom,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          y: 180
+      facing=south,half=top,open=false,waterlogged=false:
+        state: "${base_block}[facing=south,half=top,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_top_path}
+          y: 180
+      facing=south,half=top,open=true,waterlogged=false:
+        state: "${base_block}[facing=south,half=top,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 0
+      facing=west,half=bottom,open=false,waterlogged=false:
+        state: "${base_block}[facing=west,half=bottom,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_bottom_path}
+          y: 270
+      facing=west,half=bottom,open=true,waterlogged=false:
+        state: "${base_block}[facing=west,half=bottom,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          y: 270
+      facing=west,half=top,open=false,waterlogged=false:
+        state: "${base_block}[facing=west,half=top,open=false,powered=true,waterlogged=false]"
+        model:
+          path: ${model_top_path}
+          y: 270
+      facing=west,half=top,open=true,waterlogged=false:
+        state: "${base_block}[facing=west,half=top,open=true,powered=true,waterlogged=false]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 90
+      facing=east,half=bottom,open=false,waterlogged=true:
+        state: "${base_block}[facing=east,half=bottom,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_bottom_path}
+          y: 90
+      facing=east,half=bottom,open=true,waterlogged=true:
+        state: "${base_block}[facing=east,half=bottom,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          y: 90
+      facing=east,half=top,open=false,waterlogged=true:
+        state: "${base_block}[facing=east,half=top,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_top_path}
+          y: 90
+      facing=east,half=top,open=true,waterlogged=true:
+        state: "${base_block}[facing=east,half=top,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 270
+      facing=north,half=bottom,open=false,waterlogged=true:
+        state: "${base_block}[facing=north,half=bottom,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_bottom_path}
+      facing=north,half=bottom,open=true,waterlogged=true:
+        state: "${base_block}[facing=north,half=bottom,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+      facing=north,half=top,open=false,waterlogged=true:
+        state: "${base_block}[facing=north,half=top,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_top_path}
+      facing=north,half=top,open=true,waterlogged=true:
+        state: "${base_block}[facing=north,half=top,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 180
+      facing=south,half=bottom,open=false,waterlogged=true:
+        state: "${base_block}[facing=south,half=bottom,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_bottom_path}
+          y: 180
+      facing=south,half=bottom,open=true,waterlogged=true:
+        state: "${base_block}[facing=south,half=bottom,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          y: 180
+      facing=south,half=top,open=false,waterlogged=true:
+        state: "${base_block}[facing=south,half=top,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_top_path}
+          y: 180
+      facing=south,half=top,open=true,waterlogged=true:
+        state: "${base_block}[facing=south,half=top,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 0
+      facing=west,half=bottom,open=false,waterlogged=true:
+        state: "${base_block}[facing=west,half=bottom,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_bottom_path}
+          y: 270
+      facing=west,half=bottom,open=true,waterlogged=true:
+        state: "${base_block}[facing=west,half=bottom,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          y: 270
+      facing=west,half=top,open=false,waterlogged=true:
+        state: "${base_block}[facing=west,half=top,open=false,powered=true,waterlogged=true]"
+        model:
+          path: ${model_top_path}
+          y: 270
+      facing=west,half=top,open=true,waterlogged=true:
+        state: "${base_block}[facing=west,half=top,open=true,powered=true,waterlogged=true]"
+        model:
+          path: ${model_open_path}
+          x: 180
+          y: 90
+    variants:
+      facing=east,half=bottom,open=false,powered=false,waterlogged=false:
+        appearance: facing=east,half=bottom,open=false,waterlogged=false
+        id: 0
+      facing=east,half=bottom,open=false,powered=true,waterlogged=false:
+        appearance: facing=east,half=bottom,open=false,waterlogged=false
+        id: 1
+      facing=east,half=bottom,open=true,powered=false,waterlogged=false:
+        appearance: facing=east,half=bottom,open=true,waterlogged=false
+        id: 2
+      facing=east,half=bottom,open=true,powered=true,waterlogged=false:
+        appearance: facing=east,half=bottom,open=true,waterlogged=false
+        id: 3
+      facing=east,half=top,open=false,powered=false,waterlogged=false:
+        appearance: facing=east,half=top,open=false,waterlogged=false
+        id: 4
+      facing=east,half=top,open=false,powered=true,waterlogged=false:
+        appearance: facing=east,half=top,open=false,waterlogged=false
+        id: 5
+      facing=east,half=top,open=true,powered=false,waterlogged=false:
+        appearance: facing=east,half=top,open=true,waterlogged=false
+        id: 6
+      facing=east,half=top,open=true,powered=true,waterlogged=false:
+        appearance: facing=east,half=top,open=true,waterlogged=false
+        id: 7
+      facing=north,half=bottom,open=false,powered=false,waterlogged=false:
+        appearance: facing=north,half=bottom,open=false,waterlogged=false
+        id: 8
+      facing=north,half=bottom,open=false,powered=true,waterlogged=false:
+        appearance: facing=north,half=bottom,open=false,waterlogged=false
+        id: 9
+      facing=north,half=bottom,open=true,powered=false,waterlogged=false:
+        appearance: facing=north,half=bottom,open=true,waterlogged=false
+        id: 10
+      facing=north,half=bottom,open=true,powered=true,waterlogged=false:
+        appearance: facing=north,half=bottom,open=true,waterlogged=false
+        id: 11
+      facing=north,half=top,open=false,powered=false,waterlogged=false:
+        appearance: facing=north,half=top,open=false,waterlogged=false
+        id: 12
+      facing=north,half=top,open=false,powered=true,waterlogged=false:
+        appearance: facing=north,half=top,open=false,waterlogged=false
+        id: 13
+      facing=north,half=top,open=true,powered=false,waterlogged=false:
+        appearance: facing=north,half=top,open=true,waterlogged=false
+        id: 14
+      facing=north,half=top,open=true,powered=true,waterlogged=false:
+        appearance: facing=north,half=top,open=true,waterlogged=false
+        id: 15
+      facing=south,half=bottom,open=false,powered=false,waterlogged=false:
+        appearance: facing=south,half=bottom,open=false,waterlogged=false
+        id: 16
+      facing=south,half=bottom,open=false,powered=true,waterlogged=false:
+        appearance: facing=south,half=bottom,open=false,waterlogged=false
+        id: 17
+      facing=south,half=bottom,open=true,powered=false,waterlogged=false:
+        appearance: facing=south,half=bottom,open=true,waterlogged=false
+        id: 18
+      facing=south,half=bottom,open=true,powered=true,waterlogged=false:
+        appearance: facing=south,half=bottom,open=true,waterlogged=false
+        id: 19
+      facing=south,half=top,open=false,powered=false,waterlogged=false:
+        appearance: facing=south,half=top,open=false,waterlogged=false
+        id: 20
+      facing=south,half=top,open=false,powered=true,waterlogged=false:
+        appearance: facing=south,half=top,open=false,waterlogged=false
+        id: 21
+      facing=south,half=top,open=true,powered=false,waterlogged=false:
+        appearance: facing=south,half=top,open=true,waterlogged=false
+        id: 22
+      facing=south,half=top,open=true,powered=true,waterlogged=false:
+        appearance: facing=south,half=top,open=true,waterlogged=false
+        id: 23
+      facing=west,half=bottom,open=false,powered=false,waterlogged=false:
+        appearance: facing=west,half=bottom,open=false,waterlogged=false
+        id: 24
+      facing=west,half=bottom,open=false,powered=true,waterlogged=false:
+        appearance: facing=west,half=bottom,open=false,waterlogged=false
+        id: 25
+      facing=west,half=bottom,open=true,powered=false,waterlogged=false:
+        appearance: facing=west,half=bottom,open=true,waterlogged=false
+        id: 26
+      facing=west,half=bottom,open=true,powered=true,waterlogged=false:
+        appearance: facing=west,half=bottom,open=true,waterlogged=false
+        id: 27
+      facing=west,half=top,open=false,powered=false,waterlogged=false:
+        appearance: facing=west,half=top,open=false,waterlogged=false
+        id: 28
+      facing=west,half=top,open=false,powered=true,waterlogged=false:
+        appearance: facing=west,half=top,open=false,waterlogged=false
+        id: 29
+      facing=west,half=top,open=true,powered=false,waterlogged=false:
+        appearance: facing=west,half=top,open=true,waterlogged=false
+        id: 30
+      facing=west,half=top,open=true,powered=true,waterlogged=false:
+        appearance: facing=west,half=top,open=true,waterlogged=false
+        id: 31
+      facing=east,half=bottom,open=false,powered=false,waterlogged=true:
+        appearance: facing=east,half=bottom,open=false,waterlogged=true
+        id: 32
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=bottom,open=false,powered=true,waterlogged=true:
+        appearance: facing=east,half=bottom,open=false,waterlogged=true
+        id: 33
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=bottom,open=true,powered=false,waterlogged=true:
+        appearance: facing=east,half=bottom,open=true,waterlogged=true
+        id: 34
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=bottom,open=true,powered=true,waterlogged=true:
+        appearance: facing=east,half=bottom,open=true,waterlogged=true
+        id: 35
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=top,open=false,powered=false,waterlogged=true:
+        appearance: facing=east,half=top,open=false,waterlogged=true
+        id: 36
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=top,open=false,powered=true,waterlogged=true:
+        appearance: facing=east,half=top,open=false,waterlogged=true
+        id: 37
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=top,open=true,powered=false,waterlogged=true:
+        appearance: facing=east,half=top,open=true,waterlogged=true
+        id: 38
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=east,half=top,open=true,powered=true,waterlogged=true:
+        appearance: facing=east,half=top,open=true,waterlogged=true
+        id: 39
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=bottom,open=false,powered=false,waterlogged=true:
+        appearance: facing=north,half=bottom,open=false,waterlogged=true
+        id: 40
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=bottom,open=false,powered=true,waterlogged=true:
+        appearance: facing=north,half=bottom,open=false,waterlogged=true
+        id: 41
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=bottom,open=true,powered=false,waterlogged=true:
+        appearance: facing=north,half=bottom,open=true,waterlogged=true
+        id: 42
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=bottom,open=true,powered=true,waterlogged=true:
+        appearance: facing=north,half=bottom,open=true,waterlogged=true
+        id: 43
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=top,open=false,powered=false,waterlogged=true:
+        appearance: facing=north,half=top,open=false,waterlogged=true
+        id: 44
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=top,open=false,powered=true,waterlogged=true:
+        appearance: facing=north,half=top,open=false,waterlogged=true
+        id: 45
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=top,open=true,powered=false,waterlogged=true:
+        appearance: facing=north,half=top,open=true,waterlogged=true
+        id: 46
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=north,half=top,open=true,powered=true,waterlogged=true:
+        appearance: facing=north,half=top,open=true,waterlogged=true
+        id: 47
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=bottom,open=false,powered=false,waterlogged=true:
+        appearance: facing=south,half=bottom,open=false,waterlogged=true
+        id: 48
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=bottom,open=false,powered=true,waterlogged=true:
+        appearance: facing=south,half=bottom,open=false,waterlogged=true
+        id: 49
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=bottom,open=true,powered=false,waterlogged=true:
+        appearance: facing=south,half=bottom,open=true,waterlogged=true
+        id: 50
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=bottom,open=true,powered=true,waterlogged=true:
+        appearance: facing=south,half=bottom,open=true,waterlogged=true
+        id: 51
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=top,open=false,powered=false,waterlogged=true:
+        appearance: facing=south,half=top,open=false,waterlogged=true
+        id: 52
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=top,open=false,powered=true,waterlogged=true:
+        appearance: facing=south,half=top,open=false,waterlogged=true
+        id: 53
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=top,open=true,powered=false,waterlogged=true:
+        appearance: facing=south,half=top,open=true,waterlogged=true
+        id: 54
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=south,half=top,open=true,powered=true,waterlogged=true:
+        appearance: facing=south,half=top,open=true,waterlogged=true
+        id: 55
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=bottom,open=false,powered=false,waterlogged=true:
+        appearance: facing=west,half=bottom,open=false,waterlogged=true
+        id: 56
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=bottom,open=false,powered=true,waterlogged=true:
+        appearance: facing=west,half=bottom,open=false,waterlogged=true
+        id: 57
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=bottom,open=true,powered=false,waterlogged=true:
+        appearance: facing=west,half=bottom,open=true,waterlogged=true
+        id: 58
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=bottom,open=true,powered=true,waterlogged=true:
+        appearance: facing=west,half=bottom,open=true,waterlogged=true
+        id: 59
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=top,open=false,powered=false,waterlogged=true:
+        appearance: facing=west,half=top,open=false,waterlogged=true
+        id: 60
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=top,open=false,powered=true,waterlogged=true:
+        appearance: facing=west,half=top,open=false,waterlogged=true
+        id: 61
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      facing=west,half=top,open=true,powered=false,waterlogged=true:
+        appearance: facing=west,half=top,open=true,waterlogged=true
+        id: 62
+        settings:
+          fluid-state: water
+      facing=west,half=top,open=true,powered=true,waterlogged=true:
+        appearance: facing=west,half=top,open=true,waterlogged=true
+        id: 63
         settings:
           resistance: 1200.0
           burnable: false

@@ -170,10 +170,14 @@ public class ItemEventListener implements Listener {
                 if (immutableBlockState.behavior() instanceof AbstractBlockBehavior behavior) {
                     InteractionResult result = behavior.useOnBlock(useOnContext, immutableBlockState);
                     if (result == InteractionResult.SUCCESS_AND_CANCEL) {
+                        serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.lastSuccessfulInteractionTick());
                         event.setCancelled(true);
                         return;
                     }
                     if (result != InteractionResult.PASS) {
+                        if (result == InteractionResult.SUCCESS) {
+                            serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.lastSuccessfulInteractionTick());
+                        }
                         return;
                     }
                 }

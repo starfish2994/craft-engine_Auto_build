@@ -2,8 +2,11 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -28,6 +31,7 @@ public class WaterBucketItemBehavior extends ItemBehavior {
     public static final WaterBucketItemBehavior INSTANCE = new WaterBucketItemBehavior();
     public static final Factory FACTORY = new Factory();
 
+    // todo 需要修复不完整方块取水
     @SuppressWarnings("unchecked")
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
@@ -50,9 +54,11 @@ public class WaterBucketItemBehavior extends ItemBehavior {
         block.setBlockData(BlockStateUtils.fromBlockData(nextState.vanillaBlockState().handle()), false);
         // actually we should broadcast this change
         context.getPlayer().sendPacket(BlockStateUtils.createBlockUpdatePacket(pos, state), true);
-        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() ->
-                CraftEngineBlocks.place(location, nextState, UpdateOption.UPDATE_ALL, false), world, location.getBlockX() >> 4, location.getBlockZ() >> 4);
-
+        BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> {
+            Object blockPos = LocationUtils.toBlockPos(pos);
+            FastNMS.INSTANCE.method$LevelWriter$setBlock(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world), blockPos, nextState.customBlockState().handle(), UpdateOption.UPDATE_ALL.flags());
+            FastNMS.INSTANCE.method$LevelAccessor$scheduleFluidTick(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world), blockPos, MFluids.WATER, 5);
+        }, world, location.getBlockX() >> 4, location.getBlockZ() >> 4);
         return InteractionResult.SUCCESS;
     }
 
