@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.ItemKeys;
@@ -36,8 +37,8 @@ import java.util.concurrent.Callable;
 
 public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     public static final Factory FACTORY = new Factory();
-    private final Property<Half> halfProperty;
-    private final Property<HorizontalDirection> directionProperty;
+    private final Property<SingleBlockHalf> halfProperty;
+    private final Property<HorizontalDirection> facingProperty;
     private final Property<Boolean> poweredProperty;
     private final Property<Boolean> openProperty;
     private final boolean canOpenWithHand;
@@ -45,15 +46,15 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
 
     public TrapDoorBlockBehavior(CustomBlock block,
                                  @Nullable Property<Boolean> waterloggedProperty,
-                                 Property<Half> halfProperty,
-                                 Property<HorizontalDirection> directionProperty,
+                                 Property<SingleBlockHalf> halfProperty,
+                                 Property<HorizontalDirection> facingProperty,
                                  Property<Boolean> poweredProperty,
                                  Property<Boolean> openProperty,
                                  boolean canOpenWithHand,
                                  boolean canOpenByWindCharge) {
         super(block, waterloggedProperty);
         this.halfProperty = halfProperty;
-        this.directionProperty = directionProperty;
+        this.facingProperty = facingProperty;
         this.poweredProperty = poweredProperty;
         this.openProperty = openProperty;
         this.canOpenWithHand = canOpenWithHand;
@@ -78,11 +79,11 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
         Object clickedPos = LocationUtils.toBlockPos(context.getClickedPos());
         Direction clickedFace = context.getClickedFace();
         if (!context.replacingClickedOnBlock() && clickedFace.axis().isHorizontal()) {
-            state = state.with(this.directionProperty, clickedFace.toHorizontalDirection())
-                    .with(this.halfProperty, context.getClickLocation().y - context.getClickedPos().y() > 0.5 ? Half.TOP : Half.BOTTOM);
+            state = state.with(this.facingProperty, clickedFace.toHorizontalDirection())
+                    .with(this.halfProperty, context.getClickLocation().y - context.getClickedPos().y() > 0.5 ? SingleBlockHalf.TOP : SingleBlockHalf.BOTTOM);
         } else {
-            state = state.with(this.directionProperty, context.getHorizontalDirection().opposite().toHorizontalDirection())
-                    .with(this.halfProperty, clickedFace == Direction.UP ? Half.BOTTOM : Half.TOP);
+            state = state.with(this.facingProperty, context.getHorizontalDirection().opposite().toHorizontalDirection())
+                    .with(this.halfProperty, clickedFace == Direction.UP ? SingleBlockHalf.BOTTOM : SingleBlockHalf.TOP);
         }
         if (FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(level, clickedPos)) {
             state = state.with(this.poweredProperty, true);
@@ -195,13 +196,13 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
-            Property<Half> half = (Property<Half>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("half"), "warning.config.block.behavior.trapdoor.missing_half");
-            Property<HorizontalDirection> direction = (Property<HorizontalDirection>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("direction"), "warning.config.block.behavior.trapdoor.missing_direction");
+            Property<SingleBlockHalf> half = (Property<SingleBlockHalf>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("half"), "warning.config.block.behavior.trapdoor.missing_half");
+            Property<HorizontalDirection> facing = (Property<HorizontalDirection>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("facing"), "warning.config.block.behavior.trapdoor.missing_facing");
             Property<Boolean> open = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("open"), "warning.config.block.behavior.trapdoor.missing_open");
-            Property<Boolean> powered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("open"), "warning.config.block.behavior.trapdoor.missing_powered");
+            Property<Boolean> powered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("powered"), "warning.config.block.behavior.trapdoor.missing_powered");
             boolean canOpenWithHand = (boolean) arguments.getOrDefault("can-open-with-hand", true);
             boolean canOpenByWindCharge = (boolean) arguments.getOrDefault("can-open-by-wind-charge", true);
-            return new TrapDoorBlockBehavior(block, waterlogged, half, direction, powered, open, canOpenWithHand, canOpenByWindCharge);
+            return new TrapDoorBlockBehavior(block, waterlogged, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge);
         }
     }
 }

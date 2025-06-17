@@ -33,14 +33,14 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world = args[1];
         Object blockPos = args[2];
         FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 2);
     }
 
     @Override
-    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world;
         Object blockPos;
         if (VersionHelper.isOrAbove1_21_2()) {

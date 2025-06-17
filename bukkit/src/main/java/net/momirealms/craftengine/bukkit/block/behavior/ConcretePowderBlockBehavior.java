@@ -59,6 +59,7 @@ public class ConcretePowderBlockBehavior extends BukkitBlockBehavior {
         return this.defaultBlockState;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         Object level = context.getLevel().serverWorld();

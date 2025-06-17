@@ -62,7 +62,7 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
     }
 
     @Override
-    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world = args[1];
         Object blockPos = args[2];
         FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 2);

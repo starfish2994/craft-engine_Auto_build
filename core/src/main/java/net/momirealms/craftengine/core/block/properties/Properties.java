@@ -1,5 +1,8 @@
 package net.momirealms.craftengine.core.block.properties;
 
+import net.momirealms.craftengine.core.block.state.properties.DoubleBlockHalf;
+import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
+import net.momirealms.craftengine.core.block.state.properties.DoorHinge;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -16,7 +19,9 @@ public class Properties {
     public static final Key AXIS = Key.of("craftengine:axis");
     public static final Key HORIZONTAL_DIRECTION = Key.of("craftengine:4-direction");
     public static final Key DIRECTION = Key.of("craftengine:6-direction");
-    public static final Key HALF = Key.of("craftengine:half");
+    public static final Key SINGLE_BLOCK_HALF = Key.of("craftengine:single_block_half");
+    public static final Key DOUBLE_BLOCK_HALF = Key.of("craftengine:double_block_half");
+    public static final Key HINGE = Key.of("craftengine:hinge");
 
     static {
         register(BOOLEAN, BooleanProperty.FACTORY);
@@ -25,7 +30,9 @@ public class Properties {
         register(AXIS, new EnumProperty.Factory<>(Direction.Axis.class));
         register(DIRECTION, new EnumProperty.Factory<>(Direction.class));
         register(HORIZONTAL_DIRECTION, new EnumProperty.Factory<>(HorizontalDirection.class));
-        register(HALF, new EnumProperty.Factory<>(Half.class));
+        register(SINGLE_BLOCK_HALF, new EnumProperty.Factory<>(SingleBlockHalf.class));
+        register(DOUBLE_BLOCK_HALF, new EnumProperty.Factory<>(DoubleBlockHalf.class));
+        register(HINGE, new EnumProperty.Factory<>(DoorHinge.class));
     }
 
     public static void register(Key key, PropertyFactory factory) {

@@ -45,6 +45,7 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             state = behavior.updateStateForPlacement(context, state);
+            if (state == null) return null;
         }
         return state;
     }

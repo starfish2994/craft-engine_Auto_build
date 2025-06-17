@@ -52,7 +52,7 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public void neighborChanged(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void neighborChanged(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object blockState = args[0];
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null || state.isEmpty()) return;
