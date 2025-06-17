@@ -95,42 +95,46 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public int setBlocks(final Set<BlockVector3> vset, final Pattern pattern) {
-        this.processBlocks(vset, pattern);
+        // TODO: 需要排查是否存在 mask 未应用的问题
+        this.processBlocks(vset, pattern, null, null);
         return super.setBlocks(vset, pattern);
     }
 
     @Override
     public int setBlocks(final Region region, final Pattern pattern) {
-        this.processBlocks(region, pattern);
+        // TODO: 需要排查是否存在 mask 未应用的问题
+        this.processBlocks(region, pattern, null, null);
         return super.setBlocks(region, pattern);
     }
 
     @Override
     public <B extends BlockStateHolder<B>> int setBlocks(final Region region, final B block) {
-        this.processBlocks(region, block);
+        // TODO: 需要排查是否存在 mask 未应用的问题
+        this.processBlocks(region, block, null, null);
         return super.setBlocks(region, block);
     }
 
     @Override
     public int replaceBlocks(Region region, Mask mask, Pattern pattern) {
-        this.processBlocks(region, pattern);
+        this.processBlocks(region, pattern, mask, null);
         return super.replaceBlocks(region, mask, pattern);
     }
 
     @Override
     public <B extends BlockStateHolder<B>> int replaceBlocks(final Region region, final Set<BaseBlock> filter, final B replacement) {
-        this.processBlocks(region, replacement);
+        this.processBlocks(region, replacement, null, filter);
         return super.replaceBlocks(region, filter, replacement);
     }
 
     @Override
     public int replaceBlocks(final Region region, final Set<BaseBlock> filter, final Pattern pattern) {
-        this.processBlocks(region, pattern);
+        this.processBlocks(region, pattern, null, filter);
         return super.replaceBlocks(region, filter, pattern);
     }
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(int x, int y, int z, T block) {
+        // TODO: 需要排查是否存在 mask 未应用的问题
         BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
         this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
         return super.setBlock(x, y, z, block);
@@ -138,6 +142,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 position, T block) {
+        // TODO: 需要修复 //brush sphere default:chinese_lantern 1 和 //mask lime_concrete 粘贴后无法正确应用 mask 的问题
         BaseBlock oldBlockState = getBlock(position).toBaseBlock();
         this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
         return super.setBlock(position, block);
@@ -160,9 +165,13 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         return operation;
     }
 
-    private void processBlocks(Iterable<BlockVector3> region, Pattern pattern) {
+    private void processBlocks(Iterable<BlockVector3> region, Pattern pattern, @Nullable Mask mask, @Nullable Set<BaseBlock> filter) {
+        final boolean hasMask = mask != null;
+        final boolean hasFilter = filter != null;
         for (BlockVector3 position : region) {
+            if (hasMask && !mask.test(position)) continue;
             BaseBlock blockState = pattern.applyBlock(position);
+            if (hasFilter && filter.contains(blockState)) continue;
             BaseBlock oldBlockState = getBlock(position).toBaseBlock();
             int blockX = position.x();
             int blockY = position.y();
