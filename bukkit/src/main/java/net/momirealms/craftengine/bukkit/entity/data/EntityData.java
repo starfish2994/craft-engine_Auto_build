@@ -24,7 +24,7 @@ public interface EntityData<T> {
         list.add(EntityDataValue.create(id(), serializer(), entityDataAccessor(), value));
     }
 
-    static <T> EntityData<T> of(int id, Object serializer, T defaultValue) {
-        return new SimpleEntityData<>(id, serializer, defaultValue);
+    static <T> EntityData<T> of(Class<?> clazz, Object serializer, T defaultValue) {
+        return new SimpleEntityData<>(clazz, serializer, defaultValue);
     }
 }
