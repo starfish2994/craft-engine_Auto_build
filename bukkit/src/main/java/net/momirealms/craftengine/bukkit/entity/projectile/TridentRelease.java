@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 
+@SuppressWarnings("all")
 public class TridentRelease {
 
     private TridentRelease() {}
@@ -32,14 +33,11 @@ public class TridentRelease {
     private static boolean releaseUsing_1_21_2(Object stack, Object level, Object entity) {
         Object copyStack = FastNMS.INSTANCE.method$ItemStack$copyWithCount(stack, 1);
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack)) return false;
-        Object copyStack1 = FastNMS.INSTANCE.method$ItemStack$copy(stack);
-        if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack1)) return false;
         float spinStrength = FastNMS.INSTANCE.method$EnchantmentHelper$getTridentSpinAttackStrength(stack, entity);
         if ((spinStrength > 0.0F && !FastNMS.INSTANCE.method$Entity$isInWaterOrRain(entity)) || FastNMS.INSTANCE.method$ItemStack$nextDamageWillBreak(stack)) {
             return false;
         }
         FastNMS.INSTANCE.method$ItemStack$setDamageValue(copyStack, FastNMS.INSTANCE.method$ItemStack$getDamageValue(stack) + 1);
-        FastNMS.INSTANCE.method$ItemStack$setDamageValue(copyStack1, FastNMS.INSTANCE.method$ItemStack$getDamageValue(stack) + 1);
 
         Object sound = FastNMS.INSTANCE.method$EnchantmentHelper$pickHighestLevel(stack);
 
@@ -69,7 +67,7 @@ public class TridentRelease {
                 FastNMS.INSTANCE.method$ItemStack$consume(stack, 1, entity);
             }
 
-            FastNMS.INSTANCE.field$AbstractArrow$pickupItemStack(trident, copyStack1);
+            FastNMS.INSTANCE.field$AbstractArrow$pickupItemStack(trident, copyStack);
             if (FastNMS.INSTANCE.method$Player$hasInfiniteMaterials(entity)) {
                 FastNMS.INSTANCE.field$AbstractArrow$pickup(trident, CoreReflections.instance$AbstractArrow$Pickup$CREATIVE_ONLY);
             }
@@ -118,7 +116,7 @@ public class TridentRelease {
     }
 
     private static boolean releaseUsing_1_21(Object stack, Object level, Object entity) {
-        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copy(stack);
+        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copyWithCount(stack, 1);
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack)) return false;
 
         float spinStrength = FastNMS.INSTANCE.method$EnchantmentHelper$getTridentSpinAttackStrength(stack, entity);
@@ -212,7 +210,7 @@ public class TridentRelease {
     }
 
     private static boolean releaseUsing_1_20_5(Object stack, Object level, Object entity) {
-        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copy(stack);
+        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copyWithCount(stack, 1);
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack)) return false;
 
         float spinStrength = FastNMS.INSTANCE.method$EnchantmentHelper$getTridentSpinAttackStrength(stack, entity);
@@ -313,7 +311,7 @@ public class TridentRelease {
     }
 
     private static boolean releaseUsing_1_20_3(Object stack, Object level, Object entity) {
-        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copy(stack);
+        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copyWithCount(stack, 1);
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack)) return false;
 
         float spinStrength = FastNMS.INSTANCE.method$EnchantmentHelper$getTridentSpinAttackStrength(stack, entity);
@@ -414,7 +412,7 @@ public class TridentRelease {
     }
 
     private static boolean releaseUsing_1_20(Object stack, Object level, Object entity) {
-        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copy(stack);
+        Object copyStack = FastNMS.INSTANCE.method$ItemStack$copyWithCount(stack, 1);
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(copyStack)) return false;
 
         float spinStrength = FastNMS.INSTANCE.method$EnchantmentHelper$getTridentSpinAttackStrength(stack, entity);
