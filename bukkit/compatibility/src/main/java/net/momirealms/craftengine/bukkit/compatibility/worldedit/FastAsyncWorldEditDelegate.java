@@ -3,11 +3,19 @@ package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 import com.fastasyncworldedit.bukkit.adapter.CachedBukkitAdapter;
 import com.fastasyncworldedit.bukkit.adapter.FaweAdapter;
 import com.fastasyncworldedit.core.configuration.Settings;
+import com.fastasyncworldedit.core.extent.SourceMaskExtent;
+import com.fastasyncworldedit.core.extent.processor.ExtentBatchProcessorHolder;
+import com.fastasyncworldedit.core.queue.implementation.ParallelQueueExtent;
+import com.fastasyncworldedit.core.queue.implementation.SingleThreadQueueExtent;
+import com.fastasyncworldedit.core.util.ExtentTraverser;
+import com.fastasyncworldedit.core.util.ProcessorTraverser;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
+import com.sk89q.worldedit.extent.Extent;
+import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.pattern.Pattern;
@@ -41,12 +49,14 @@ import static java.util.Objects.requireNonNull;
 
 public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
     private static int[] ordinalToIbdID;
+    private final Extent extent;
     private final Set<CEChunk> chunksToSave;
     private final CEWorld ceWorld;
     private final Set<ChunkPos> brokenChunks = Collections.synchronizedSet(new HashSet<>());
 
-    protected FastAsyncWorldEditDelegate(EditSessionEvent event) {
-        super(event.getExtent());
+    protected FastAsyncWorldEditDelegate(EditSessionEvent event, Extent extent) {
+        super(extent);
+        this.extent = extent;
         this.chunksToSave = new HashSet<>();
         World weWorld = event.getWorld();
         org.bukkit.World world = Bukkit.getWorld(requireNonNull(weWorld).getName());
@@ -71,7 +81,7 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
                 World weWorld = event.getWorld();
                 if (weWorld == null) return;
                 if (event.getStage() == EditSession.Stage.BEFORE_CHANGE) {
-                    event.setExtent(new FastAsyncWorldEditDelegate(event));
+                    event.setExtent(new FastAsyncWorldEditDelegate(event, event.getExtent()));
                 }
             }
         });
@@ -95,22 +105,19 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public int setBlocks(final Set<BlockVector3> vset, final Pattern pattern) {
-        // TODO: 需要排查是否存在 mask 未应用的问题
-        this.processBlocks(vset, pattern, null, null);
+        this.processBlocks(vset, pattern, getMask(), null);
         return super.setBlocks(vset, pattern);
     }
 
     @Override
     public int setBlocks(final Region region, final Pattern pattern) {
-        // TODO: 需要排查是否存在 mask 未应用的问题
-        this.processBlocks(region, pattern, null, null);
+        this.processBlocks(region, pattern, getMask(), null);
         return super.setBlocks(region, pattern);
     }
 
     @Override
     public <B extends BlockStateHolder<B>> int setBlocks(final Region region, final B block) {
-        // TODO: 需要排查是否存在 mask 未应用的问题
-        this.processBlocks(region, block, null, null);
+        this.processBlocks(region, block, getMask(), null);
         return super.setBlocks(region, block);
     }
 
@@ -134,18 +141,39 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(int x, int y, int z, T block) {
-        // TODO: 需要排查是否存在 mask 未应用的问题
-        BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
-        this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
-        return super.setBlock(x, y, z, block);
+        boolean result = extent.setBlock(x, y, z, block);
+        if (result) {
+            Mask mask = getMask();
+            if (mask != null && !mask.test(BlockVector3.at(x, y, z))) return true;
+            BaseBlock oldBlockState = getBlock(x, y, z).toBaseBlock();
+            this.processBlock(x, y, z, block.toBaseBlock(), oldBlockState);
+        }
+        return result;
     }
 
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 position, T block) {
-        // TODO: 需要修复 //brush sphere default:chinese_lantern 1 和 //mask lime_concrete 粘贴后无法正确应用 mask 的问题
-        BaseBlock oldBlockState = getBlock(position).toBaseBlock();
-        this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
-        return super.setBlock(position, block);
+        boolean result = super.setBlock(position, block);
+        if (result) {
+            Mask mask = getMask();
+            if (mask != null && !mask.test(position)) return true;
+            BaseBlock oldBlockState = getBlock(position).toBaseBlock();
+            this.processBlock(position.x(), position.y(), position.z(), block.toBaseBlock(), oldBlockState);
+        }
+        return result;
+    }
+
+    public Mask getMask() {
+        MaskingExtent maskingExtent = new ExtentTraverser<>(getExtent()).findAndGet(MaskingExtent.class);
+        if (maskingExtent == null) {
+            ExtentBatchProcessorHolder processorExtent =
+                    new ExtentTraverser<>(getExtent()).findAndGet(ExtentBatchProcessorHolder.class);
+            if (processorExtent != null) {
+                maskingExtent =
+                        new ProcessorTraverser<>(processorExtent.getProcessor()).find(MaskingExtent.class);
+            }
+        }
+        return maskingExtent != null ? maskingExtent.getMask() : null;
     }
 
     @Override
