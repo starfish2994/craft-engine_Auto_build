@@ -8,6 +8,7 @@ import java.util.Map;
 
 public record SoundData(Key id, float volume, float pitch) {
 
+    // todo 支持范围音量音调
     public static SoundData create(Object obj, float volume, float pitch) {
         if (obj instanceof String key) {
             return new SoundData(Key.of(key), volume, pitch);
