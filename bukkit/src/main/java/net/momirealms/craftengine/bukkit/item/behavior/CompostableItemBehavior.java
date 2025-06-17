@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item.behavior;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.EventUtils;
@@ -34,6 +35,7 @@ public class CompostableItemBehavior extends ItemBehavior {
         this.chance = chance;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
         BukkitBlockInWorld block = (BukkitBlockInWorld) context.getLevel().getBlockAt(context.getClickedPos());

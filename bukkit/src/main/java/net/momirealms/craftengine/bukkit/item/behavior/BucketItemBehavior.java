@@ -29,8 +29,8 @@ import java.util.Map;
 public class BucketItemBehavior extends ItemBehavior {
     public static final BucketItemBehavior INSTANCE = new BucketItemBehavior();
     public static final Factory FACTORY = new Factory();
-    private static final Key ITEM_BUCKET_FILL = Key.of("item.bucket.fill");
 
+    // todo 需要修复点击位置相连块为waterlogged
     @SuppressWarnings("unchecked")
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {

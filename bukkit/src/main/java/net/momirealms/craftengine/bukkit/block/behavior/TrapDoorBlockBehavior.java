@@ -18,9 +18,11 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -32,7 +34,9 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
@@ -43,6 +47,8 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     private final Property<Boolean> openProperty;
     private final boolean canOpenWithHand;
     private final boolean canOpenByWindCharge;
+    private final SoundData openSound;
+    private final SoundData closeSound;
 
     public TrapDoorBlockBehavior(CustomBlock block,
                                  @Nullable Property<Boolean> waterloggedProperty,
@@ -51,7 +57,9 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
                                  Property<Boolean> poweredProperty,
                                  Property<Boolean> openProperty,
                                  boolean canOpenWithHand,
-                                 boolean canOpenByWindCharge) {
+                                 boolean canOpenByWindCharge,
+                                 SoundData openSound,
+                                 SoundData closeSound) {
         super(block, waterloggedProperty);
         this.halfProperty = halfProperty;
         this.facingProperty = facingProperty;
@@ -59,6 +67,8 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
         this.openProperty = openProperty;
         this.canOpenWithHand = canOpenWithHand;
         this.canOpenByWindCharge = canOpenByWindCharge;
+        this.openSound = openSound;
+        this.closeSound = closeSound;
     }
 
     @Override
@@ -99,8 +109,15 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
         if (!this.canOpenWithHand) {
             return InteractionResult.PASS;
         }
-        this.toggle(state, context.getLevel(), context.getClickedPos(), context.getPlayer());
-        return InteractionResult.SUCCESS;
+        if (context.getItem() == null) {
+            this.toggle(state, context.getLevel(), context.getClickedPos(), context.getPlayer());
+            return InteractionResult.SUCCESS;
+        } else if (!context.getPlayer().isSecondaryUseActive()) {
+            this.toggle(state, context.getLevel(), context.getClickedPos(), context.getPlayer());
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        } else {
+            return InteractionResult.PASS;
+        }
     }
 
     @Override
@@ -148,13 +165,13 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
             hasSignal = event.getNewCurrent() > 0;
         }
 
-        boolean willChange = immutableBlockState.get(this.openProperty) != hasSignal;
-        if (hasSignal && willChange) {
+        World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
+        boolean changed = immutableBlockState.get(this.openProperty) != hasSignal;
+        if (hasSignal && changed) {
             Object abovePos = LocationUtils.above(blockPos);
             Object aboveBlockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, abovePos);
             if (CoreReflections.clazz$RedStoneWireBlock.isInstance(FastNMS.INSTANCE.method$BlockState$getBlock(aboveBlockState))) {
                 FastNMS.INSTANCE.method$LevelWriter$setBlock(level, abovePos, MBlocks.AIR$defaultState, UpdateOption.UPDATE_ALL.flags());
-                World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                 world.dropItemNaturally(
                         new Vec3d(FastNMS.INSTANCE.field$Vec3i$x(abovePos) + 0.5, FastNMS.INSTANCE.field$Vec3i$y(abovePos) + 0.5, FastNMS.INSTANCE.field$Vec3i$z(abovePos) + 0.5),
                         BukkitItemManager.instance().createWrappedItem(ItemKeys.REDSTONE, null)
@@ -165,16 +182,16 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
             }
         }
 
-        if (willChange) {
+        if (changed) {
             immutableBlockState = immutableBlockState.with(this.openProperty, hasSignal);
-            // todo 播放声音
             FastNMS.INSTANCE.method$Level$getCraftWorld(level).sendGameEvent(null,
-                    immutableBlockState.get(this.openProperty) ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE,
+                    hasSignal ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE,
                     new Vector(FastNMS.INSTANCE.field$Vec3i$x(blockPos), FastNMS.INSTANCE.field$Vec3i$y(blockPos), FastNMS.INSTANCE.field$Vec3i$z(blockPos))
             );
+            this.playSound(LocationUtils.fromBlockPos(blockPos), world, hasSignal);
         }
 
-        FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, immutableBlockState.customBlockState().handle(), UpdateOption.Flags.UPDATE_CLIENTS);
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, immutableBlockState.with(this.poweredProperty, hasSignal).customBlockState().handle(), UpdateOption.Flags.UPDATE_CLIENTS);
         if (this.waterloggedProperty != null && immutableBlockState.get(this.waterloggedProperty)) {
             FastNMS.INSTANCE.method$LevelAccessor$scheduleFluidTick(level, blockPos, MFluids.WATER, 5);
         }
@@ -183,12 +200,25 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     private void toggle(ImmutableBlockState state, World world, BlockPos pos, @Nullable Player player) {
         ImmutableBlockState newState = state.cycle(this.openProperty);
         FastNMS.INSTANCE.method$LevelWriter$setBlock(world.serverWorld(), LocationUtils.toBlockPos(pos), newState.customBlockState().handle(), UpdateOption.Flags.UPDATE_CLIENTS);
-        // todo 播放声音，需要补一套交互的声音系统
+        boolean open = newState.get(this.openProperty);
         ((org.bukkit.World) world.platformWorld()).sendGameEvent(
                 player != null ? (org.bukkit.entity.Player) player.platformPlayer() : null,
-                newState.get(this.openProperty) ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE,
+                open ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE,
                 new Vector(pos.x(), pos.y(), pos.z())
         );
+        this.playSound(pos, world, open);
+    }
+
+    private void playSound(BlockPos pos, World world, boolean open) {
+        if (open) {
+            if (this.openSound != null) {
+                world.playBlockSound(new Vec3d(pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5), this.openSound);
+            }
+        } else {
+            if (this.closeSound != null) {
+                world.playBlockSound(new Vec3d(pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5), this.closeSound);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -202,7 +232,14 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
             Property<Boolean> powered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("powered"), "warning.config.block.behavior.trapdoor.missing_powered");
             boolean canOpenWithHand = (boolean) arguments.getOrDefault("can-open-with-hand", true);
             boolean canOpenByWindCharge = (boolean) arguments.getOrDefault("can-open-by-wind-charge", true);
-            return new TrapDoorBlockBehavior(block, waterlogged, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge);
+            Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
+            SoundData openSound = null;
+            SoundData closeSound = null;
+            if (sounds != null) {
+                openSound = Optional.ofNullable(sounds.get("open")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
+                closeSound = Optional.ofNullable(sounds.get("close")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
+            }
+            return new TrapDoorBlockBehavior(block, waterlogged, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge, openSound, closeSound);
         }
     }
 }

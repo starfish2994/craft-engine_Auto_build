@@ -1,6 +1,6 @@
 items:
   default:palm_log:
-    material: oak_log
+    material: nether_brick
     custom-model-data: 1000
     settings:
       fuel-time: 300
@@ -42,8 +42,8 @@ items:
               from: 0
               to: 2
   default:stripped_palm_log:
-    material: stripped_oak_log
-    custom-model-data: 1000
+    material: nether_brick
+    custom-model-data: 1001
     settings:
       fuel-time: 300
       tags:
@@ -81,8 +81,8 @@ items:
               from: 3
               to: 5
   default:palm_wood:
-    material: oak_wood
-    custom-model-data: 1000
+    material: nether_brick
+    custom-model-data: 1002
     settings:
       fuel-time: 300
       tags:
@@ -123,8 +123,8 @@ items:
               from: 6
               to: 8
   default:stripped_palm_wood:
-    material: stripped_oak_wood
-    custom-model-data: 1000
+    material: nether_brick
+    custom-model-data: 1003
     settings:
       fuel-time: 300
       tags:
@@ -162,8 +162,8 @@ items:
               from: 9
               to: 11
   default:palm_planks:
-    material: oak_planks
-    custom-model-data: 1000
+    material: nether_brick
+    custom-model-data: 1004
     settings:
       fuel-time: 300
       tags:
@@ -192,7 +192,7 @@ items:
           state: note_block:12
   default:palm_sapling:
     material: nether_brick
-    custom-model-data: 1000
+    custom-model-data: 1005
     settings:
       fuel-time: 100
     data:
@@ -284,6 +284,44 @@ items:
               type: self_increase_int
               from: 0
               to: 27
+  default:palm_trapdoor:
+    material: nether_brick
+    custom-model-data: 1006
+    data:
+      item-name: "<!i><i18n:item.palm_trapdoor>"
+    model:
+      type: "minecraft:model"
+      path: "minecraft:item/custom/palm_trapdoor"
+      generation:
+        parent: "minecraft:block/custom/palm_trapdoor"
+    behavior:
+      type: block_item
+      block:
+        behavior:
+          type: trapdoor_block
+          can-open-with-hand: true
+          can-open-by-wind-charge: true
+          sounds:
+            open: block.wooden_trapdoor.open
+            close: block.wooden_trapdoor.close
+        loot:
+          template: "default:loot_table/self"
+        settings:
+          template:
+            - default:sound/wood
+          overrides:
+            map-color: 2
+            instrument: bass
+            hardness: 3.0
+            resistance: 3.0
+            burnable: true
+        states:
+          template: "default:block_state/trapdoor"
+          arguments:
+            base_block: acacia_trapdoor
+            model_bottom_path: "minecraft:block/birch_trapdoor_bottom"
+            model_open_path: "minecraft:block/birch_trapdoor_open"
+            model_top_path: "minecraft:block/birch_trapdoor_top"
 
 recipes:
   default:palm_planks:

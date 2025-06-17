@@ -22,6 +22,7 @@ categories:
       - default:palm_wood
       - default:stripped_palm_wood
       - default:palm_planks
+      - default:palm_trapdoor
   default:topaz:
     name: "<!i><#FF8C00><i18n:category.topaz></#FF8C00>"
     hidden: true
