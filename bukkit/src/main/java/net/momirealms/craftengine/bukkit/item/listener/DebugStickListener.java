@@ -77,7 +77,7 @@ public class DebugStickListener implements Listener {
                     Object storedData = wrapped.getJavaTag("craftengine:debug_stick_state");
                     if (storedData == null) storedData = new HashMap<>();
                     if (storedData instanceof Map<?,?> map) {
-                        Map<String, Object> data = MiscUtils.castToMap(map, false);
+                        Map<String, Object> data = new HashMap<>(MiscUtils.castToMap(map, false));
                         String currentPropertyName = (String) data.get(blockId);
                         Property<?> currentProperty = block.getProperty(currentPropertyName);
                         if (currentProperty == null) {
