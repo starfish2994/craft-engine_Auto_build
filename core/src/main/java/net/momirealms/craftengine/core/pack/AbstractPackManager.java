@@ -626,9 +626,14 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    private void validateResourcePack(Path path) throws IOException {
-        List<Path> rootPaths = FileUtils.collectOverlays(path);
-
+    private void validateResourcePack(Path path) {
+        List<Path> rootPaths;
+        try {
+            rootPaths = FileUtils.collectOverlays(path);
+        } catch (IOException e) {
+            plugin.logger().warn("Failed to read overlays for " + path.toAbsolutePath(), e);
+            return;
+        }
         Multimap<Key, Key> imageToFonts = ArrayListMultimap.create(); // 图片到字体的映射
         Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
         Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
@@ -638,63 +643,100 @@ public abstract class AbstractPackManager implements PackManager {
             Path assetsPath = rootPath.resolve("assets");
             if (!Files.isDirectory(assetsPath)) continue;
 
-            for (Path namespacePath : FileUtils.collectNamespaces(assetsPath)) {
+            List<Path> namespaces;
+            try {
+                namespaces = FileUtils.collectNamespaces(assetsPath);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to read namespaces for " + assetsPath.toAbsolutePath(), e);
+                return;
+            }
+            for (Path namespacePath : namespaces) {
                 Path fontPath = namespacePath.resolve("font");
                 if (Files.isDirectory(fontPath)) {
-                    Files.walkFileTree(fontPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            JsonObject fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            JsonArray providers = fontJson.getAsJsonArray("providers");
-                            if (providers != null) {
-                                Key fontName = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
-                                for (JsonElement provider : providers) {
-                                    if (provider instanceof JsonObject providerJO && providerJO.has("type")) {
-                                        String type = providerJO.get("type").getAsString();
-                                        if (type.equals("bitmap") && providerJO.has("file")) {
-                                            String pngFile = providerJO.get("file").getAsString();
-                                            Key resourceLocation = Key.of(FileUtils.pathWithoutExtension(pngFile));
-                                            imageToFonts.put(resourceLocation, fontName);
+                    try {
+                        Files.walkFileTree(fontPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs)  {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                JsonObject fontJson;
+                                try {
+                                    fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonSyntaxException e) {
+                                    plugin.logger().warn("Failed to read font json for " + file.toAbsolutePath(), e);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                JsonArray providers = fontJson.getAsJsonArray("providers");
+                                if (providers != null) {
+                                    Key fontName = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                                    for (JsonElement provider : providers) {
+                                        if (provider instanceof JsonObject providerJO && providerJO.has("type")) {
+                                            String type = providerJO.get("type").getAsString();
+                                            if (type.equals("bitmap") && providerJO.has("file")) {
+                                                String pngFile = providerJO.get("file").getAsString();
+                                                Key resourceLocation = Key.of(FileUtils.pathWithoutExtension(pngFile));
+                                                imageToFonts.put(resourceLocation, fontName);
+                                            }
                                         }
                                     }
                                 }
+                                return FileVisitResult.CONTINUE;
                             }
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate font", e);
+                    }
                 }
 
                 Path itemsPath = namespacePath.resolve("items");
                 if (Files.isDirectory(itemsPath)) {
-                    Files.walkFileTree(itemsPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            JsonObject itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
-                            collectItemModelsDeeply(itemJson, (resourceLocation) -> modelToItems.put(resourceLocation, item));
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    try {
+                        Files.walkFileTree(itemsPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                JsonObject itemJson;
+                                try {
+                                    itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonSyntaxException e) {
+                                    plugin.logger().warn("Failed to read items json for " + file.toAbsolutePath(), e);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                                collectItemModelsDeeply(itemJson, (resourceLocation) -> modelToItems.put(resourceLocation, item));
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate items", e);
+                    }
                 }
 
                 Path blockStatesPath = namespacePath.resolve("blockstates");
                 if (Files.isDirectory(blockStatesPath)) {
-                    Files.walkFileTree(blockStatesPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
-                            JsonObject blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            if (blockStateJson.has("multipart")) {
-                                collectMultipart(blockStateJson.getAsJsonArray("multipart"), (location) -> modelToBlocks.put(location, blockId));
-                            } else if (blockStateJson.has("variants")) {
-                                collectVariants(blockId, blockStateJson.getAsJsonObject("variants"), modelToBlocks::put);
+                    try {
+                        Files.walkFileTree(blockStatesPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
+                                JsonObject blockStateJson;
+                                try {
+                                    blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonSyntaxException e) {
+                                    plugin.logger().warn("Failed to read blockstates json for " + file.toAbsolutePath(), e);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                if (blockStateJson.has("multipart")) {
+                                    collectMultipart(blockStateJson.getAsJsonArray("multipart"), (location) -> modelToBlocks.put(location, blockId));
+                                } else if (blockStateJson.has("variants")) {
+                                    collectVariants(blockId, blockStateJson.getAsJsonObject("variants"), modelToBlocks::put);
+                                }
+                                return FileVisitResult.CONTINUE;
                             }
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate blockstates", e);
+                    }
                 }
             }
         }
@@ -718,7 +760,11 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(rootPath.resolve(modelPath))) {
-                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    try {
+                        collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    } catch (IOException | JsonSyntaxException e) {
+                        plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                    }
                     continue label;
                 }
             }
@@ -732,7 +778,11 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(modelJsonPath)) {
-                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    try {
+                        collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    } catch (IOException | JsonSyntaxException e) {
+                        plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                    }
                     continue label;
                 }
             }
@@ -752,7 +802,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private static void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) throws IOException {
+    private void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) {
         if (modelJson.has("parent")) {
             Key parentResourceLocation = Key.from(modelJson.get("parent").getAsString());
             if (!VANILLA_MODELS.contains(parentResourceLocation)) {
@@ -761,7 +811,11 @@ public abstract class AbstractPackManager implements PackManager {
                     for (Path rootPath : rootPaths) {
                         Path modelJsonPath = rootPath.resolve(parentModelPath);
                         if (Files.exists(modelJsonPath)) {
-                            collectModels(parentResourceLocation, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                            try {
+                                collectModels(parentResourceLocation, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                            } catch (IOException | JsonSyntaxException e) {
+                                plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                            }
                             break label;
                         }
                     }
