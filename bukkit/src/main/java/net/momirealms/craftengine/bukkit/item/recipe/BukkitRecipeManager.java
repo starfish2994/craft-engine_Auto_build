@@ -2,8 +2,6 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.saicone.rtag.item.ItemObject;
-import com.saicone.rtag.tag.TagCompound;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.CloneableConstantItem;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -492,7 +490,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     private void handleDataPackStoneCuttingRecipe(Key id, VanillaStoneCuttingRecipe recipe) {
-        ItemStack result = createResultStack(recipe.result());
+        ItemStack result = createDataPackResultStack(recipe.result());
         Set<Holder<Key>> holders = new HashSet<>();
         for (String item : recipe.ingredient()) {
             if (item.charAt(0) == '#') {
@@ -511,7 +509,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     private void handleDataPackShapelessRecipe(Key id, VanillaShapelessRecipe recipe, Consumer<Runnable> callback) {
         NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
-        ItemStack result = createResultStack(recipe.result());
+        ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag = false;
         List<Ingredient<ItemStack>> ingredientList = new ArrayList<>();
         for (List<String> list : recipe.ingredients()) {
@@ -547,7 +545,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     private void handleDataPackShapedRecipe(Key id, VanillaShapedRecipe recipe, Consumer<Runnable> callback) {
         NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
-        ItemStack result = createResultStack(recipe.result());
+        ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag = false;
         Map<Character, Ingredient<ItemStack>> ingredients = new HashMap<>();
         for (Map.Entry<Character, List<String>> entry : recipe.ingredients().entrySet()) {
@@ -587,7 +585,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                                              HeptaFunction<Key, CookingRecipeCategory, String, Ingredient<ItemStack>, Integer, Float, CustomRecipeResult<ItemStack>, CustomCookingRecipe<ItemStack>> constructor2,
                                              Consumer<Runnable> callback) {
         NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
-        ItemStack result = createResultStack(recipe.result());
+        ItemStack result = createDataPackResultStack(recipe.result());
         Set<Holder<Key>> holders = new HashSet<>();
         boolean hasCustomItemInTag = readVanillaIngredients(false, recipe.ingredient(), holders::add);
         CustomCookingRecipe<ItemStack> ceRecipe = constructor2.apply(
@@ -608,7 +606,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     private void handleDataPackSmithingTransform(Key id, VanillaSmithingTransformRecipe recipe, Consumer<Runnable> callback) {
         NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
-        ItemStack result = createResultStack(recipe.result());
+        ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag;
 
         Set<Holder<Key>> additionHolders = new HashSet<>();
@@ -657,23 +655,21 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         return hasCustomItemInTag;
     }
 
-    private ItemStack createResultStack(RecipeResult result) {
+    private ItemStack createDataPackResultStack(RecipeResult result) {
         ItemStack itemStack;
         if (result.components() == null) {
             itemStack = new ItemStack(Objects.requireNonNull(MaterialUtils.getMaterial(result.id())));
             itemStack.setAmount(result.count());
         } else {
+            // 低版本无法应用nbt或组件,所以这里是1.20.5+
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", result.id());
             jsonObject.addProperty("count", result.count());
             jsonObject.add("components", result.components());
-            Object nmsTag = TagCompound.newTag(jsonObject.toString());
-            Object nmsStack;
-            if (VersionHelper.isOrAbove1_21_6()) {
-                nmsStack = CoreReflections.instance$ItemStack$CODEC.parse(MRegistryOps.NBT, nmsTag)
-                        .resultOrPartial((itemId) -> plugin.logger().severe("Tried to load invalid item: '" + itemId + "'")).orElse(null);
-            } else {
-                nmsStack = ItemObject.newItem(nmsTag);
+            Object nmsStack = CoreReflections.instance$ItemStack$CODEC.parse(MRegistryOps.JSON, jsonObject)
+                    .resultOrPartial((itemId) -> plugin.logger().severe("Tried to load invalid item: '" + itemId + "'")).orElse(null);
+            if (nmsStack == null) {
+                return new ItemStack(Material.STONE);
             }
             try {
                 itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(nmsStack);
