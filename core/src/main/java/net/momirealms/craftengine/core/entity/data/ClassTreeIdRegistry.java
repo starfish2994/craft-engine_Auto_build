@@ -2,7 +2,6 @@ package net.momirealms.craftengine.core.entity.data;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 
 public final class ClassTreeIdRegistry {
     private final Object2IntMap<Class<?>> classToLastIdCache = new Object2IntOpenHashMap<>();

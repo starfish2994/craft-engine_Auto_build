@@ -299,7 +299,7 @@ public class ItemEventListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onInteractAir(PlayerInteractEvent event) {
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.LEFT_CLICK_AIR)
@@ -315,9 +315,9 @@ public class ItemEventListener implements Listener {
         if (itemInHand == null) return;
 
         // todo 真的需要这个吗
-//        if (cancelEventIfHasInteraction(event, serverPlayer, hand)) {
-//            return;
-//        }
+        if (cancelEventIfHasInteraction(event, serverPlayer, hand)) {
+            return;
+        }
 
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
         if (optionalCustomItem.isPresent()) {
@@ -336,6 +336,9 @@ public class ItemEventListener implements Listener {
             if (optionalItemBehaviors.isPresent()) {
                 for (ItemBehavior itemBehavior : optionalItemBehaviors.get()) {
                     InteractionResult result = itemBehavior.use(serverPlayer.world(), serverPlayer, hand);
+                    if (result.success()) {
+                        serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                    }
                     if (result == InteractionResult.SUCCESS_AND_CANCEL) {
                         event.setCancelled(true);
                         return;
