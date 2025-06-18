@@ -3336,26 +3336,15 @@ public final class CoreReflections {
     );
 
     // 1.20.5+
-    public static final Field field$ItemStack$CODEC = ReflectionUtils.getDeclaredField(
-            clazz$ItemStack, "CODEC", "b"
-    );
+    public static final Field field$ItemStack$CODEC = ReflectionUtils.getDeclaredField(clazz$ItemStack, "CODEC", "b");
 
-    public static final Codec<Object> instance$ItemStack$CODEC;
-
-    @SuppressWarnings("unchecked")
-    private static Codec<Object> getInstance$ItemStack$CODEC() throws IllegalAccessException {
-        return (Codec<Object>) field$ItemStack$CODEC.get(null);
-    }
+    public static final Codec<?> instance$ItemStack$CODEC;
 
     static {
         try {
-            if (VersionHelper.isOrAbove1_20_5()) {
-                instance$ItemStack$CODEC = getInstance$ItemStack$CODEC();
-            } else {
-                instance$ItemStack$CODEC = null;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            instance$ItemStack$CODEC = VersionHelper.isOrAbove1_20_5() ? (Codec<?>) field$ItemStack$CODEC.get(null) : null;
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to init ItemStack$CODEC", e);
         }
     }
 }

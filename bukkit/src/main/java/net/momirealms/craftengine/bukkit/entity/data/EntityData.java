@@ -5,8 +5,11 @@ import java.util.List;
 public interface EntityData<T> {
 
     Object serializer();
+
     int id();
+
     T defaultValue();
+
     Object entityDataAccessor();
 
     default Object createEntityDataIfNotDefaultValue(T value) {

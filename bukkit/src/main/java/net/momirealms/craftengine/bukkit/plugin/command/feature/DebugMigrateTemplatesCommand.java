@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import net.momirealms.craftengine.core.util.FileUtils;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.Command;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,7 +31,13 @@ public class DebugMigrateTemplatesCommand extends BukkitCommandFeature<CommandSe
                     for (Pack pack : BukkitCraftEngine.instance().packManager().loadedPacks()) {
                         for (Path file : FileUtils.getYmlConfigsDeeply(pack.configurationFolder())) {
                             try {
-                                Files.writeString(file, replacePlaceholders(Files.readString(file)));
+                                DumperOptions options = new DumperOptions();
+                                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                                options.setPrettyFlow(true);
+                                Yaml yaml = new Yaml(options);
+                                Object data = yaml.load(Files.newBufferedReader(file));
+                                String fileStr = yaml.dump(data);
+                                Files.writeString(file, fileStr);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

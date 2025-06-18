@@ -4,11 +4,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 
-public class ClassTreeIdRegistry {
+public final class ClassTreeIdRegistry {
     private final Object2IntMap<Class<?>> classToLastIdCache = new Object2IntOpenHashMap<>();
 
     public ClassTreeIdRegistry() {
-        classToLastIdCache.defaultReturnValue(-1);
+        this.classToLastIdCache.defaultReturnValue(-1);
     }
 
     public int getLastIdFor(Class<?> clazz) {
@@ -31,7 +31,6 @@ public class ClassTreeIdRegistry {
         int lastId = this.getLastIdFor(clazz);
         int nextId = lastId == -1 ? 0 : lastId + 1;
         this.classToLastIdCache.put(clazz, nextId);
-        CraftEngine.instance().debug(() -> "Defined " + clazz.getSimpleName() + " with id " + nextId);
         return nextId;
     }
 }
