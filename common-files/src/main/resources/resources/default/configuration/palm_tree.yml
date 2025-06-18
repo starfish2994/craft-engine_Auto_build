@@ -293,7 +293,7 @@ items:
       type: "minecraft:model"
       path: "minecraft:item/custom/palm_trapdoor"
       generation:
-        parent: "minecraft:block/custom/palm_trapdoor"
+        parent: "minecraft:block/custom/palm_trapdoor_bottom"
     behavior:
       type: block_item
       block:
@@ -319,9 +319,21 @@ items:
           template: "default:block_state/trapdoor"
           arguments:
             base_block: acacia_trapdoor
-            model_bottom_path: "minecraft:block/birch_trapdoor_bottom"
-            model_open_path: "minecraft:block/birch_trapdoor_open"
-            model_top_path: "minecraft:block/birch_trapdoor_top"
+            model_bottom_path: "minecraft:block/custom/palm_trapdoor_bottom"
+            model_bottom_generation:
+              parent: "minecraft:block/template_orientable_trapdoor_bottom"
+              textures:
+                texture: "minecraft:block/custom/palm_trapdoor"
+            model_open_path: "minecraft:block/custom/palm_trapdoor_open"
+            model_open_generation:
+              parent: "minecraft:block/template_orientable_trapdoor_open"
+              textures:
+                texture: "minecraft:block/custom/palm_trapdoor"
+            model_top_path: "minecraft:block/custom/palm_trapdoor_top"
+            model_top_generation:
+              parent: "minecraft:block/template_orientable_trapdoor_top"
+              textures:
+                texture: "minecraft:block/custom/palm_trapdoor"
 
 recipes:
   default:palm_planks:

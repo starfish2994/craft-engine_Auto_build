@@ -984,16 +984,19 @@ templates#block_states:
         model:
           path: ${model_bottom_path}
           y: 90
+          generation: ${model_bottom_generation}
       facing=east,half=bottom,open=true,waterlogged=false:
         state: "${base_block}[facing=east,half=bottom,open=true,powered=true,waterlogged=false]"
         model:
           path: ${model_open_path}
           y: 90
+          generation: ${model_open_generation}
       facing=east,half=top,open=false,waterlogged=false:
         state: "${base_block}[facing=east,half=top,open=false,powered=true,waterlogged=false]"
         model:
           path: ${model_top_path}
           y: 90
+          generation: ${model_top_generation}
       facing=east,half=top,open=true,waterlogged=false:
         state: "${base_block}[facing=east,half=top,open=true,powered=true,waterlogged=false]"
         model:

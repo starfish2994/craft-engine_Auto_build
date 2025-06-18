@@ -71,7 +71,7 @@ public interface TemplateManager extends Manageable {
             int separatorIndex = placeholderContent.indexOf(":-");
             if (separatorIndex == -1) {
                 this.placeholder = placeholderContent;
-                this.defaultValue = this.rawText;
+                this.defaultValue = null;
             } else {
                 this.placeholder = placeholderContent.substring(0, separatorIndex);
                 String defaultValueString = placeholderContent.substring(separatorIndex + 2);
