@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.InteractUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockBehavior;
@@ -31,6 +32,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameEvent;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,7 +98,7 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
                     .with(this.halfProperty, clickedFace == Direction.UP ? SingleBlockHalf.BOTTOM : SingleBlockHalf.TOP);
         }
         if (FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(level, clickedPos)) {
-            state = state.with(this.poweredProperty, true);
+            state = state.with(this.poweredProperty, true).with(this.openProperty, true);
         }
         if (this.waterloggedProperty != null && FastNMS.INSTANCE.method$FluidState$getType(FastNMS.INSTANCE.method$Level$getFluidState(level, clickedPos)) == MFluids.WATER) {
             state = state.with(this.waterloggedProperty, true);
@@ -110,13 +112,22 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
             return InteractionResult.PASS;
         }
         if (context.getItem() == null) {
-            this.toggle(state, context.getLevel(), context.getClickedPos(), context.getPlayer());
+            playerToggle(context, state);
             return InteractionResult.SUCCESS;
         } else if (!context.getPlayer().isSecondaryUseActive()) {
-            this.toggle(state, context.getLevel(), context.getClickedPos(), context.getPlayer());
+            playerToggle(context, state);
             return InteractionResult.SUCCESS_AND_CANCEL;
         } else {
             return InteractionResult.PASS;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void playerToggle(UseOnContext context, ImmutableBlockState state) {
+        Player player = context.getPlayer();
+        this.toggle(state, context.getLevel(), context.getClickedPos(), player);
+        if (!InteractUtils.isInteractable((org.bukkit.entity.Player) player.platformPlayer(), BlockStateUtils.fromBlockData(state.vanillaBlockState().handle()), context.getHitResult(), (Item<ItemStack>) context.getItem())) {
+            player.swingHand(context.getHand());
         }
     }
 

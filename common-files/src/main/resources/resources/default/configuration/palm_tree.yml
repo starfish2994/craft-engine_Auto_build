@@ -315,6 +315,9 @@ items:
             hardness: 3.0
             resistance: 3.0
             burnable: true
+            tags:
+              - minecraft:mineable/axe
+              - minecraft:trapdoors
         states:
           template: "default:block_state/trapdoor"
           arguments:
