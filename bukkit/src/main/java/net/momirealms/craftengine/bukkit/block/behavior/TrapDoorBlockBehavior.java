@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
+public class TrapDoorBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<SingleBlockHalf> halfProperty;
     private final Property<HorizontalDirection> facingProperty;
@@ -55,7 +55,6 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     private final SoundData closeSound;
 
     public TrapDoorBlockBehavior(CustomBlock block,
-                                 @Nullable Property<Boolean> waterloggedProperty,
                                  Property<SingleBlockHalf> halfProperty,
                                  Property<HorizontalDirection> facingProperty,
                                  Property<Boolean> poweredProperty,
@@ -64,7 +63,7 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
                                  boolean canOpenByWindCharge,
                                  SoundData openSound,
                                  SoundData closeSound) {
-        super(block, waterloggedProperty);
+        super(block);
         this.halfProperty = halfProperty;
         this.facingProperty = facingProperty;
         this.poweredProperty = poweredProperty;
@@ -78,9 +77,9 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object blockState = args[0];
-        if (this.waterloggedProperty != null) {
+        if (super.waterloggedProperty != null) {
             ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-            if (state != null && !state.isEmpty() && state.get(this.waterloggedProperty)) {
+            if (state != null && !state.isEmpty() && state.get(super.waterloggedProperty)) {
                 FastNMS.INSTANCE.method$LevelAccessor$scheduleFluidTick(VersionHelper.isOrAbove1_21_2() ? args[2] : args[3], VersionHelper.isOrAbove1_21_2() ? args[3] : args[4], MFluids.WATER, 5);
             }
         }
@@ -238,7 +237,6 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
     public static class Factory implements BlockBehaviorFactory {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
             Property<SingleBlockHalf> half = (Property<SingleBlockHalf>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("half"), "warning.config.block.behavior.trapdoor.missing_half");
             Property<HorizontalDirection> facing = (Property<HorizontalDirection>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("facing"), "warning.config.block.behavior.trapdoor.missing_facing");
             Property<Boolean> open = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("open"), "warning.config.block.behavior.trapdoor.missing_open");
@@ -252,7 +250,7 @@ public class TrapDoorBlockBehavior extends WaterLoggedBlockBehavior {
                 openSound = Optional.ofNullable(sounds.get("open")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
                 closeSound = Optional.ofNullable(sounds.get("close")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
             }
-            return new TrapDoorBlockBehavior(block, waterlogged, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge, openSound, closeSound);
+            return new TrapDoorBlockBehavior(block, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge, openSound, closeSound);
         }
     }
 }

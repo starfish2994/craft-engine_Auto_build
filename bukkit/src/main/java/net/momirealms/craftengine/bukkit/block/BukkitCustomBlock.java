@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.block;
 
+import net.momirealms.craftengine.bukkit.block.behavior.UnsafeCompositeBlockBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
@@ -10,6 +11,8 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.SoundUtils;
 import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
+import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -44,6 +47,21 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
             @Nullable LootTable<?> lootTable
     ) {
         super(id, holder, properties, appearances, variantMapper, settings, events, behavior, lootTable);
+    }
+
+    @Override
+    protected BlockBehavior setupBehavior(List<Map<String, Object>> behaviorConfig) {
+        if (behaviorConfig.isEmpty()) {
+            return new EmptyBlockBehavior();
+        } else if (behaviorConfig.size() == 1) {
+            return BlockBehaviors.fromMap(this, behaviorConfig.get(0));
+        } else {
+            List<AbstractBlockBehavior> behaviors = new ArrayList<>();
+            for (Map<String, Object> config : behaviorConfig) {
+                behaviors.add((AbstractBlockBehavior) BlockBehaviors.fromMap(this, config));
+            }
+            return new UnsafeCompositeBlockBehavior(this, behaviors);
+        }
     }
 
     @SuppressWarnings("unchecked")

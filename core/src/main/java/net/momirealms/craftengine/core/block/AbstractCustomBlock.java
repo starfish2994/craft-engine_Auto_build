@@ -2,8 +2,6 @@ package net.momirealms.craftengine.core.block;
 
 import com.google.common.collect.ImmutableMap;
 import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
-import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
-import net.momirealms.craftengine.core.block.behavior.UnsafeCompositeBlockBehavior;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.loot.LootTable;
@@ -53,17 +51,7 @@ public abstract class AbstractCustomBlock implements CustomBlock {
         this.events = events;
         this.variantProvider = new BlockStateVariantProvider(holder, ImmutableBlockState::new, properties);
         this.defaultState = this.variantProvider.getDefaultState();
-        if (behaviorConfig.isEmpty()) {
-            this.behavior = new EmptyBlockBehavior();
-        } else if (behaviorConfig.size() == 1) {
-            this.behavior = BlockBehaviors.fromMap(this, behaviorConfig.get(0));
-        } else {
-            List<AbstractBlockBehavior> behaviors = new ArrayList<>();
-            for (Map<String, Object> config : behaviorConfig) {
-                behaviors.add((AbstractBlockBehavior) BlockBehaviors.fromMap(this, config));
-            }
-            this.behavior = new UnsafeCompositeBlockBehavior(this, behaviors);
-        }
+        this.behavior = setupBehavior(behaviorConfig);
         List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements = new ArrayList<>(4);
         for (Map.Entry<String, Property<?>> propertyEntry : this.properties.entrySet()) {
             placements.add(Property.createStateForPlacement(propertyEntry.getKey(), propertyEntry.getValue()));
@@ -96,6 +84,10 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             }
         }
         this.applyPlatformSettings();
+    }
+
+    protected BlockBehavior setupBehavior(List<Map<String, Object>> behaviorConfig) {
+        return EmptyBlockBehavior.INSTANCE;
     }
 
     private static BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState> composite(List<BiFunction<BlockPlaceContext, ImmutableBlockState, ImmutableBlockState>> placements) {

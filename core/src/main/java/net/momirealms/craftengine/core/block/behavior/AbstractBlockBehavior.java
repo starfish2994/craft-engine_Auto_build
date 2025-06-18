@@ -4,9 +4,13 @@ import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 
 public abstract class AbstractBlockBehavior extends BlockBehavior {
-    protected CustomBlock customBlock;
+    protected final CustomBlock customBlock;
 
     public AbstractBlockBehavior(CustomBlock customBlock) {
         this.customBlock = customBlock;
+    }
+
+    public CustomBlock block() {
+        return this.customBlock;
     }
 }

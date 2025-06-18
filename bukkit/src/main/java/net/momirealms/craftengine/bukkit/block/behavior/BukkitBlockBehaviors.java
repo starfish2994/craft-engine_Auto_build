@@ -34,7 +34,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(SAPLING_BLOCK, SaplingBlockBehavior.FACTORY);
         register(ON_LIQUID_BLOCK, OnLiquidBlockBehavior.FACTORY);
         register(NEAR_LIQUID_BLOCK, NearLiquidBlockBehavior.FACTORY);
-        register(WATERLOGGED_BLOCK, WaterLoggedBlockBehavior.FACTORY);
         register(CONCRETE_POWDER_BLOCK, ConcretePowderBlockBehavior.FACTORY);
         register(VERTICAL_CROP_BLOCK, VerticalCropBlockBehavior.FACTORY);
         register(CROP_BLOCK, CropBlockBehavior.FACTORY);

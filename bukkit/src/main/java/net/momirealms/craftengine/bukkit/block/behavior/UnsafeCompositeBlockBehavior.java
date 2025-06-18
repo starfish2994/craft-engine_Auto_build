@@ -1,8 +1,9 @@
-package net.momirealms.craftengine.core.block.behavior;
+package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
+public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     private final AbstractBlockBehavior[] behaviors;
 
     public UnsafeCompositeBlockBehavior(CustomBlock customBlock, List<AbstractBlockBehavior> behaviors) {
@@ -163,5 +164,22 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (!behavior.isPathFindable(thisBlock, args, superMethod)) {
+                return false;
+            }
+        }
+        return (boolean) superMethod.call();
+    }
+
+    @Override
+    public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.onExplosionHit(thisBlock, args, superMethod);
+        }
     }
 }

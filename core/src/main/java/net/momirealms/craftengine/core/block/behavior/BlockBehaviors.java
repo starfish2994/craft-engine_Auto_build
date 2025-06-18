@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class BlockBehaviors {
     public static final Key EMPTY = Key.from("craftengine:empty");
+    public static final Key UNSAFE_COMBINED = Key.from("craftengine:unsafe_combined");
 
     public static void register(Key key, BlockBehaviorFactory factory) {
         Holder.Reference<BlockBehaviorFactory> holder = ((WritableRegistry<BlockBehaviorFactory>) BuiltInRegistries.BLOCK_BEHAVIOR_FACTORY)

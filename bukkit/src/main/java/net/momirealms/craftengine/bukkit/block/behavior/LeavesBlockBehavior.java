@@ -27,27 +27,26 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
+public class LeavesBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private static final Object LOG_TAG = BlockTags.getOrCreate(Key.of("minecraft", "logs"));
     private final int maxDistance;
     private final Property<Integer> distanceProperty;
     private final Property<Boolean> persistentProperty;
-    @Nullable
-    private final Property<Boolean> waterloggedProperty;
 
-    public LeavesBlockBehavior(CustomBlock block, int maxDistance, Property<Integer> distanceProperty, Property<Boolean> persistentProperty, @Nullable Property<Boolean> waterloggedProperty) {
-        super(block, waterloggedProperty);
+    public LeavesBlockBehavior(CustomBlock block,
+                               int maxDistance,
+                               Property<Integer> distanceProperty,
+                               Property<Boolean> persistentProperty) {
+        super(block);
         this.maxDistance = maxDistance;
         this.distanceProperty = distanceProperty;
         this.persistentProperty = persistentProperty;
-        this.waterloggedProperty = waterloggedProperty;
     }
 
     public int getDistance(ImmutableBlockState state) {
@@ -115,7 +114,7 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
     }
 
     @Override
-    public void randomTick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void randomTick(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object level = args[1];
         Object blockPos = args[2];
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(args[0]));
@@ -190,9 +189,8 @@ public class LeavesBlockBehavior extends WaterLoggedBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Boolean> persistent = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("persistent"), "warning.config.block.behavior.leaves.missing_persistent");
             Property<Integer> distance = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("distance"), "warning.config.block.behavior.leaves.missing_distance");
-            Property<Boolean> waterlogged = (Property<Boolean>) block.getProperty("waterlogged");
             int actual = distance.possibleValues().get(distance.possibleValues().size() - 1);
-            return new LeavesBlockBehavior(block, actual, distance, persistent, waterlogged);
+            return new LeavesBlockBehavior(block, actual, distance, persistent);
         }
     }
 }
