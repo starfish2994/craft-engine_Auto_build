@@ -3,11 +3,6 @@ package net.momirealms.craftengine.core.plugin.network;
 import net.momirealms.craftengine.core.util.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 public class NMSPacketEvent implements Cancellable {
     private final Object packet;
     private boolean cancelled;

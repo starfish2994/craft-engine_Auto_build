@@ -1,8 +1,8 @@
 package net.momirealms.craftengine.core.block.properties;
 
+import net.momirealms.craftengine.core.block.state.properties.DoorHinge;
 import net.momirealms.craftengine.core.block.state.properties.DoubleBlockHalf;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
-import net.momirealms.craftengine.core.block.state.properties.DoorHinge;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;

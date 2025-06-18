@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.item;
 
-import com.saicone.rtag.item.ItemTagStream;
 import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.FlintAndSteelItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
@@ -137,12 +136,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         HandlerList.unregisterAll(this.armorEventListener);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Item<ItemStack> fromByteArray(byte[] bytes) {
-        if (VersionHelper.isOrAbove1_21_6()) {
-            return this.factory.wrap(ItemStack.deserializeBytes(bytes));
-        }
-        return this.factory.wrap(ItemTagStream.INSTANCE.fromBytes(bytes));
+        return this.factory.wrap(Bukkit.getUnsafe().deserializeItem(bytes));
     }
 
     @Override
