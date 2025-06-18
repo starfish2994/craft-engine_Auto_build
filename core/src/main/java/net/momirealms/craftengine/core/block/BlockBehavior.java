@@ -98,4 +98,16 @@ public abstract class BlockBehavior {
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         return InteractionResult.PASS;
     }
+
+    public Object pickupBlock(Object thisObj, Object[] args, Callable<Object> superMethod) throws Exception {
+        return superMethod.call();
+    }
+
+    public boolean placeLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
+
+    public boolean canPlaceLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
 }

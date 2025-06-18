@@ -55,7 +55,7 @@ public final class BlockGenerator {
                 // should always implement this interface
                 .implement(CoreReflections.clazz$Fallable)
                 .implement(CoreReflections.clazz$BonemealableBlock)
-                // TODO .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
+                .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
                 // internal interfaces
                 .implement(BehaviorHolder.class)
                 .implement(ShapeHolder.class)
@@ -152,7 +152,16 @@ public final class BlockGenerator {
                 .intercept(MethodDelegation.to(OnExplosionHitInterceptor.INSTANCE))
                 // neighborChanged
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$neighborChanged))
-                .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE));
+                .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE))
+                // pickupBlock
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$pickupBlock))
+                .intercept(MethodDelegation.to(PickUpBlockInterceptor.INSTANCE))
+                // placeLiquid
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$placeLiquid))
+                .intercept(MethodDelegation.to(PlaceLiquidInterceptor.INSTANCE))
+                // canPlaceLiquid
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$canPlaceLiquid))
+                .intercept(MethodDelegation.to(CanPlaceLiquidInterceptor.INSTANCE));
         Class<?> clazz$CraftEngineBlock = builder.make().load(BlockGenerator.class.getClassLoader()).getLoaded();
         constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
                 .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$BlockBehaviour$Properties))
@@ -465,6 +474,51 @@ public final class BlockGenerator {
                 holder.value().onExplosionHit(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run onExplosionHit", e);
+            }
+        }
+    }
+
+    public static class PickUpBlockInterceptor {
+        public static final PickUpBlockInterceptor INSTANCE = new PickUpBlockInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().pickupBlock(thisObj, args, () -> CoreReflections.instance$ItemStack$EMPTY);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run pickupBlock", e);
+                return CoreReflections.instance$ItemStack$EMPTY;
+            }
+        }
+    }
+
+    public static class PlaceLiquidInterceptor {
+        public static final PlaceLiquidInterceptor INSTANCE = new PlaceLiquidInterceptor();
+
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().placeLiquid(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run placeLiquid", e);
+                return false;
+            }
+        }
+    }
+
+    public static class CanPlaceLiquidInterceptor {
+        public static final CanPlaceLiquidInterceptor INSTANCE = new CanPlaceLiquidInterceptor();
+
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().canPlaceLiquid(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run canPlaceLiquid", e);
+                return false;
             }
         }
     }
