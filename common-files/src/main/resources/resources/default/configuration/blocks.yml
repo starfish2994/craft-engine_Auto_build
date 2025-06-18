@@ -55,7 +55,7 @@ items#misc:
           hurt-amount: 4
           max-hurt: 80
         events:
-          - true: right_click
+          - on: right_click
             functions:
               - type: open_window
                 gui-type: anvil
