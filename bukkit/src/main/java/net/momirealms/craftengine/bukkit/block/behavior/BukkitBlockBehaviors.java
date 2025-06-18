@@ -21,6 +21,8 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key LAMP_BLOCK = Key.from("craftengine:lamp_block");
     public static final Key TRAPDOOR_BLOCK = Key.from("craftengine:trapdoor_block");
     public static final Key DOOR_BLOCK = Key.from("craftengine:door_block");
+    public static final Key STACKABLE_BLOCK = Key.from("craftengine:stackable_block");
+    public static final Key STURDY_BASE_BLOCK = Key.from("craftengine:sturdy_base_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
@@ -40,5 +42,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(LAMP_BLOCK, LampBlockBehavior.FACTORY);
         register(TRAPDOOR_BLOCK, TrapDoorBlockBehavior.FACTORY);
         register(DOOR_BLOCK, DoorBlockBehavior.FACTORY);
+        register(STACKABLE_BLOCK, StackableBlockBehavior.FACTORY);
+        register(STURDY_BASE_BLOCK, SturdyBaseBlockBehavior.FACTORY);
     }
 }
