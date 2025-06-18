@@ -169,15 +169,14 @@ public class ItemEventListener implements Listener {
                 UseOnContext useOnContext = new UseOnContext(serverPlayer, hand, itemInHand, hitResult);
                 if (immutableBlockState.behavior() instanceof AbstractBlockBehavior behavior) {
                     InteractionResult result = behavior.useOnBlock(useOnContext, immutableBlockState);
-                    if (result == InteractionResult.SUCCESS_AND_CANCEL) {
+                    if (result.success()) {
                         serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                    }
+                    if (result == InteractionResult.SUCCESS_AND_CANCEL) {
                         event.setCancelled(true);
                         return;
                     }
                     if (result != InteractionResult.PASS) {
-                        if (result == InteractionResult.SUCCESS) {
-                            serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
-                        }
                         return;
                     }
                 }
@@ -268,11 +267,13 @@ public class ItemEventListener implements Listener {
                 // 依次执行物品行为
                 for (ItemBehavior itemBehavior : optionalItemBehaviors.get()) {
                     InteractionResult result = itemBehavior.useOnBlock(useOnContext);
+                    if (result.success()) {
+                        serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                    }
                     if (result == InteractionResult.SUCCESS_AND_CANCEL) {
                         event.setCancelled(true);
                         return;
                     }
-                    // 非pass的情况直接结束
                     if (result != InteractionResult.PASS) {
                         return;
                     }

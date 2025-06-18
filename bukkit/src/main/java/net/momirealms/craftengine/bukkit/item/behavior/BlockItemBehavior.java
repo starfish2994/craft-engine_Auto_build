@@ -112,11 +112,6 @@ public class BlockItemBehavior extends ItemBehavior {
             }
         }
 
-        int gameTicks = player.gameTicks();
-        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
-            return InteractionResult.FAIL;
-        }
-
         // trigger event
         CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,
                 DirectionUtils.toBlockFace(context.getClickedFace()), bukkitBlock, context.getHand());
