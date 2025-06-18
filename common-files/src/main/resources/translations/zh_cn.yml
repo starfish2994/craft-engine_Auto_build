@@ -370,3 +370,4 @@ warning.config.resource_pack.generation.missing_model_texture: "<yellow>模型'<
 warning.config.resource_pack.generation.missing_item_model: "<yellow>物品'<arg:0>'缺少模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_block_model: "<yellow>方块'<arg:0>'缺少模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_parent_model: "<yellow>模型'<arg:0>'找不到父级模型文件: '<arg:1>'</yellow>"
+warning.config.resource_pack.generation.malformatted_json: "<yellow>Json文件 '<arg:0>' 格式错误.</yellow>"

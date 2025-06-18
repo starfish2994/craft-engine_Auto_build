@@ -631,7 +631,7 @@ public abstract class AbstractPackManager implements PackManager {
         try {
             rootPaths = FileUtils.collectOverlays(path);
         } catch (IOException e) {
-            plugin.logger().warn("Failed to read overlays for " + path.toAbsolutePath(), e);
+            plugin.logger().warn("Failed to collect overlays for " + path.toAbsolutePath(), e);
             return;
         }
         Multimap<Key, Key> imageToFonts = ArrayListMultimap.create(); // 图片到字体的映射
@@ -647,7 +647,7 @@ public abstract class AbstractPackManager implements PackManager {
             try {
                 namespaces = FileUtils.collectNamespaces(assetsPath);
             } catch (IOException e) {
-                plugin.logger().warn("Failed to read namespaces for " + assetsPath.toAbsolutePath(), e);
+                plugin.logger().warn("Failed to collect namespaces for " + assetsPath.toAbsolutePath(), e);
                 return;
             }
             for (Path namespacePath : namespaces) {
@@ -662,7 +662,7 @@ public abstract class AbstractPackManager implements PackManager {
                                 try {
                                     fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
                                 } catch (IOException | JsonSyntaxException e) {
-                                    plugin.logger().warn("Failed to read font json for " + file.toAbsolutePath(), e);
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
                                 JsonArray providers = fontJson.getAsJsonArray("providers");
@@ -698,7 +698,7 @@ public abstract class AbstractPackManager implements PackManager {
                                 try {
                                     itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
                                 } catch (IOException | JsonSyntaxException e) {
-                                    plugin.logger().warn("Failed to read items json for " + file.toAbsolutePath(), e);
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
                                 Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
@@ -716,14 +716,14 @@ public abstract class AbstractPackManager implements PackManager {
                     try {
                         Files.walkFileTree(blockStatesPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                             @Override
-                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
                                 if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
                                 String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
                                 JsonObject blockStateJson;
                                 try {
                                     blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
                                 } catch (IOException | JsonSyntaxException e) {
-                                    plugin.logger().warn("Failed to read blockstates json for " + file.toAbsolutePath(), e);
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
                                 if (blockStateJson.has("multipart")) {
@@ -760,11 +760,14 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(rootPath.resolve(modelPath))) {
+                    JsonObject jsonObject;
                     try {
-                        collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                        jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
                     } catch (IOException | JsonSyntaxException e) {
-                        plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                        continue;
                     }
+                    collectModels(key, jsonObject, rootPaths, imageToModels);
                     continue label;
                 }
             }
@@ -778,11 +781,14 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(modelJsonPath)) {
+                    JsonObject jsonObject;
                     try {
-                        collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                        jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
                     } catch (IOException | JsonSyntaxException e) {
-                        plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                        continue;
                     }
+                    collectModels(key, jsonObject, rootPaths, imageToModels);
                     continue label;
                 }
             }
@@ -811,11 +817,14 @@ public abstract class AbstractPackManager implements PackManager {
                     for (Path rootPath : rootPaths) {
                         Path modelJsonPath = rootPath.resolve(parentModelPath);
                         if (Files.exists(modelJsonPath)) {
+                            JsonObject jsonObject;
                             try {
-                                collectModels(parentResourceLocation, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                                jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
                             } catch (IOException | JsonSyntaxException e) {
-                                plugin.logger().warn("Failed to read model " + modelJsonPath.toAbsolutePath(), e);
+                                TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                                break label;
                             }
+                            collectModels(parentResourceLocation, jsonObject, rootPaths, imageToModels);
                             break label;
                         }
                     }
