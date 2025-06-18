@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
@@ -116,7 +117,8 @@ public final class CraftEngineBlocks {
         if (success) {
             FastNMS.INSTANCE.method$BlockStateBase$onPlace(blockState, worldServer, blockPos, oldBlockState, false);
             if (playSound) {
-                location.getWorld().playSound(location, block.sounds().placeSound().id().toString(), SoundCategory.BLOCKS, block.sounds().placeSound().volume(), block.sounds().placeSound().pitch());
+                SoundData data = block.sounds().placeSound();
+                location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
             }
         }
         return success;
