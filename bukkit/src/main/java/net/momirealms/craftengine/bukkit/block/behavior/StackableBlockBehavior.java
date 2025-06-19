@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.IntegerProperty;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
@@ -50,20 +51,34 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         if (item == null) {
             return InteractionResult.PASS;
         }
-        if (this.items.contains(item.id()) && state.get(this.amountProperty) < this.amountProperty.max) {
-            ImmutableBlockState nextStage = state.cycle(this.amountProperty);
-            World world = context.getLevel();
-            BlockPos pos = context.getClickedPos();
-            Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
-            FastNMS.INSTANCE.method$LevelWriter$setBlock(world.serverWorld(), LocationUtils.toBlockPos(pos), nextStage.customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
-            if (stackSound != null) {
-                location.getWorld().playSound(location, stackSound.id().toString(), SoundCategory.BLOCKS, stackSound.volume(), stackSound.pitch());
-            }
-            FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
-            player.swingHand(context.getHand());
+        if (!this.items.contains(item.id())) {
+            return InteractionResult.PASS;
+        }
+        BlockPos pos = context.getClickedPos();
+        World world = context.getLevel();
+        if (state.get(this.amountProperty) < this.amountProperty.max) {
+            updateStackableBlock(state, pos, world, item, player, context.getHand());
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        BlockPos actualPos = pos.relative(context.getClickedFace());
+        ImmutableBlockState actualState = world.getBlockAt(actualPos).customBlockState();
+        boolean isValid = actualState != null && !actualState.isEmpty() && actualState.contains(this.amountProperty);
+        if (isValid && actualState.get(this.amountProperty) < this.amountProperty.max) {
+            updateStackableBlock(actualState, actualPos, world, item, player, context.getHand());
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
         return InteractionResult.PASS;
+    }
+
+    private void updateStackableBlock(ImmutableBlockState state, BlockPos pos, World world, Item<ItemStack> item, Player player, InteractionHand hand) {
+        ImmutableBlockState nextStage = state.cycle(this.amountProperty);
+        Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(world.serverWorld(), LocationUtils.toBlockPos(pos), nextStage.customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
+        if (stackSound != null) {
+            location.getWorld().playSound(location, stackSound.id().toString(), SoundCategory.BLOCKS, stackSound.volume(), stackSound.pitch());
+        }
+        FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
+        player.swingHand(hand);
     }
 
     public static class Factory implements BlockBehaviorFactory {
