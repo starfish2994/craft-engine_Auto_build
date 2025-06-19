@@ -7,7 +7,6 @@ public final class MItems {
     private MItems() {}
 
     public static final Object AIR;
-    public static final Object Air$ItemStack;
     public static final Object WATER_BUCKET;
 
     private static Object getById(String id) throws ReflectiveOperationException {
@@ -18,7 +17,6 @@ public final class MItems {
     static {
         try {
             AIR = getById("air");
-            Air$ItemStack = CoreReflections.constructor$ItemStack.newInstance(AIR);
             WATER_BUCKET = getById("water_bucket");
         } catch (ReflectiveOperationException e) {
             throw new ReflectionInitException("Failed to init Items", e);
