@@ -357,6 +357,7 @@ items:
           template:
             - default:sound/wood
           overrides:
+            push-reaction: DESTROY
             map-color: 2
             instrument: bass
             hardness: 3.0
