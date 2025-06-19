@@ -100,7 +100,7 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
             }
             world.playBlockSound(position, previousState.sounds().breakSound());
             FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
-            return CoreReflections.method$Block$defaultBlockState.invoke(MBlocks.AIR);
+            return MBlocks.AIR$defaultState;
         }
         return state;
     }

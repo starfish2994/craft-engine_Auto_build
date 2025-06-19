@@ -194,4 +194,9 @@ public abstract class AbstractCustomBlock implements CustomBlock {
         }
         return state;
     }
+
+    @Override
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+        this.behavior.setPlacedBy(context, state);
+    }
 }

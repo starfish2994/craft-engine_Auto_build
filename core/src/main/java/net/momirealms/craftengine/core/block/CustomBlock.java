@@ -37,6 +37,8 @@ public interface CustomBlock {
 
     ImmutableBlockState getStateForPlacement(BlockPlaceContext context);
 
+    void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state);
+
     interface Builder {
 
         Builder events(Map<EventTrigger, List<Function<PlayerOptionalContext>>> events);

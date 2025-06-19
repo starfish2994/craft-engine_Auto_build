@@ -1462,6 +1462,375 @@ templates#block_states:
           resistance: 1200.0
           burnable: false
           fluid-state: water
+  # door block
+  default:block_state/door:
+    properties:
+      facing:
+        type: horizontal_direction
+      half:
+        type: double_block_half
+      hinge:
+        type: hinge
+      open:
+        type: boolean
+        default: false
+      powered:
+        type: boolean
+        default: false
+    appearances:
+      facing=east,half=lower,hinge=left,open=false:
+        state: ${base_block}[facing=east,half=lower,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_bottom_left_path}
+          generation: ${model_bottom_left_generation}
+      facing=east,half=lower,hinge=left,open=true:
+        state: ${base_block}[facing=east,half=lower,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_bottom_left_open_path}
+          y: 90
+          generation: ${model_bottom_left_open_generation}
+      facing=east,half=lower,hinge=right,open=false:
+        state: ${base_block}[facing=east,half=lower,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_bottom_right_path}
+          generation: ${model_bottom_right_generation}
+      facing=east,half=lower,hinge=right,open=true:
+        state: ${base_block}[facing=east,half=lower,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_bottom_right_open_path}
+          y: 270
+          generation: ${model_bottom_right_open_generation}
+      facing=east,half=upper,hinge=left,open=false:
+        state: ${base_block}[facing=east,half=upper,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_top_left_path}
+          generation: ${model_top_left_generation}
+      facing=east,half=upper,hinge=left,open=true:
+        state: ${base_block}[facing=east,half=upper,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_top_left_open_path}
+          y: 90
+          generation: ${model_top_left_open_generation}
+      facing=east,half=upper,hinge=right,open=false:
+        state: ${base_block}[facing=east,half=upper,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_top_right_path}
+          generation: ${model_top_right_generation}
+      facing=east,half=upper,hinge=right,open=true:
+        state: ${base_block}[facing=east,half=upper,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_top_right_open_path}
+          y: 270
+          generation: ${model_top_right_open_generation}
+      facing=north,half=lower,hinge=left,open=false:
+        state: ${base_block}[facing=north,half=lower,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_bottom_left_path}
+          y: 270
+      facing=north,half=lower,hinge=left,open=true:
+        state: ${base_block}[facing=north,half=lower,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_bottom_left_open_path}
+      facing=north,half=lower,hinge=right,open=false:
+        state: ${base_block}[facing=north,half=lower,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_bottom_right_path}
+          y: 270
+      facing=north,half=lower,hinge=right,open=true:
+        state: ${base_block}[facing=north,half=lower,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_bottom_right_open_path}
+          y: 180
+      facing=north,half=upper,hinge=left,open=false:
+        state: ${base_block}[facing=north,half=upper,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_top_left_path}
+          y: 270
+      facing=north,half=upper,hinge=left,open=true:
+        state: ${base_block}[facing=north,half=upper,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_top_left_open_path}
+      facing=north,half=upper,hinge=right,open=false:
+        state: ${base_block}[facing=north,half=upper,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_top_right_path}
+          y: 270
+      facing=north,half=upper,hinge=right,open=true:
+        state: ${base_block}[facing=north,half=upper,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_top_right_open_path}
+          y: 180
+      facing=south,half=lower,hinge=left,open=false:
+        state: ${base_block}[facing=south,half=lower,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_bottom_left_path}
+          y: 90
+      facing=south,half=lower,hinge=left,open=true:
+        state: ${base_block}[facing=south,half=lower,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_bottom_left_open_path}
+          y: 180
+      facing=south,half=lower,hinge=right,open=false:
+        state: ${base_block}[facing=south,half=lower,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_bottom_right_path}
+          y: 90
+      facing=south,half=lower,hinge=right,open=true:
+        state: ${base_block}[facing=south,half=lower,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_bottom_right_open_path}
+      facing=south,half=upper,hinge=left,open=false:
+        state: ${base_block}[facing=south,half=upper,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_top_left_path}
+          y: 90
+      facing=south,half=upper,hinge=left,open=true:
+        state: ${base_block}[facing=south,half=upper,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_top_left_open_path}
+          y: 180
+      facing=south,half=upper,hinge=right,open=false:
+        state: ${base_block}[facing=south,half=upper,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_top_right_path}
+          y: 90
+      facing=south,half=upper,hinge=right,open=true:
+        state: ${base_block}[facing=south,half=upper,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_top_right_open_path}
+      facing=west,half=lower,hinge=left,open=false:
+        state: ${base_block}[facing=west,half=lower,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_bottom_left_path}
+          y: 180
+      facing=west,half=lower,hinge=left,open=true:
+        state: ${base_block}[facing=west,half=lower,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_bottom_left_open_path}
+          y: 270
+      facing=west,half=lower,hinge=right,open=false:
+        state: ${base_block}[facing=west,half=lower,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_bottom_right_path}
+          y: 180
+      facing=west,half=lower,hinge=right,open=true:
+        state: ${base_block}[facing=west,half=lower,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_bottom_right_open_path}
+          y: 90
+      facing=west,half=upper,hinge=left,open=false:
+        state: ${base_block}[facing=west,half=upper,hinge=left,open=false,powered=true]
+        model:
+          path: ${model_top_left_path}
+          y: 180
+      facing=west,half=upper,hinge=left,open=true:
+        state: ${base_block}[facing=west,half=upper,hinge=left,open=true,powered=true]
+        model:
+          path: ${model_top_left_open_path}
+          y: 270
+      facing=west,half=upper,hinge=right,open=false:
+        state: ${base_block}[facing=west,half=upper,hinge=right,open=false,powered=true]
+        model:
+          path: ${model_top_right_path}
+          y: 180
+      facing=west,half=upper,hinge=right,open=true:
+        state: ${base_block}[facing=west,half=upper,hinge=right,open=true,powered=true]
+        model:
+          path: ${model_top_right_open_path}
+          y: 90
+    variants:
+      facing=east,half=lower,hinge=left,open=false,powered=true:
+        appearance: facing=east,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=east,half=lower,hinge=left,open=false,powered=false:
+        appearance: facing=east,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=east,half=lower,hinge=right,open=false,powered=true:
+        appearance: facing=east,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=east,half=lower,hinge=right,open=false,powered=false:
+        appearance: facing=east,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=east,half=upper,hinge=left,open=false,powered=true:
+        appearance: facing=east,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=east,half=upper,hinge=left,open=false,powered=false:
+        appearance: facing=east,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=east,half=upper,hinge=right,open=false,powered=true:
+        appearance: facing=east,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=east,half=upper,hinge=right,open=false,powered=false:
+        appearance: facing=east,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=north,half=lower,hinge=left,open=false,powered=true:
+        appearance: facing=north,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=north,half=lower,hinge=left,open=false,powered=false:
+        appearance: facing=north,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=north,half=lower,hinge=right,open=false,powered=true:
+        appearance: facing=north,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=north,half=lower,hinge=right,open=false,powered=false:
+        appearance: facing=north,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=north,half=upper,hinge=left,open=false,powered=true:
+        appearance: facing=north,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=north,half=upper,hinge=left,open=false,powered=false:
+        appearance: facing=north,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=north,half=upper,hinge=right,open=false,powered=true:
+        appearance: facing=north,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=north,half=upper,hinge=right,open=false,powered=false:
+        appearance: facing=north,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=south,half=lower,hinge=left,open=false,powered=true:
+        appearance: facing=south,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=south,half=lower,hinge=left,open=false,powered=false:
+        appearance: facing=south,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=south,half=lower,hinge=right,open=false,powered=true:
+        appearance: facing=south,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=south,half=lower,hinge=right,open=false,powered=false:
+        appearance: facing=south,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=south,half=upper,hinge=left,open=false,powered=true:
+        appearance: facing=south,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=south,half=upper,hinge=left,open=false,powered=false:
+        appearance: facing=south,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=south,half=upper,hinge=right,open=false,powered=true:
+        appearance: facing=south,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=south,half=upper,hinge=right,open=false,powered=false:
+        appearance: facing=south,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=west,half=lower,hinge=left,open=false,powered=true:
+        appearance: facing=west,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=west,half=lower,hinge=left,open=false,powered=false:
+        appearance: facing=west,half=lower,hinge=left,open=false
+        id: ${internal_id}
+      facing=west,half=lower,hinge=right,open=false,powered=true:
+        appearance: facing=west,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=west,half=lower,hinge=right,open=false,powered=false:
+        appearance: facing=west,half=lower,hinge=right,open=false
+        id: ${internal_id}
+      facing=west,half=upper,hinge=left,open=false,powered=true:
+        appearance: facing=west,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=west,half=upper,hinge=left,open=false,powered=false:
+        appearance: facing=west,half=upper,hinge=left,open=false
+        id: ${internal_id}
+      facing=west,half=upper,hinge=right,open=false,powered=true:
+        appearance: facing=west,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=west,half=upper,hinge=right,open=false,powered=false:
+        appearance: facing=west,half=upper,hinge=right,open=false
+        id: ${internal_id}
+      facing=east,half=lower,hinge=left,open=true,powered=true:
+        appearance: facing=east,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=east,half=lower,hinge=left,open=true,powered=false:
+        appearance: facing=east,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=east,half=lower,hinge=right,open=true,powered=true:
+        appearance: facing=east,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=east,half=lower,hinge=right,open=true,powered=false:
+        appearance: facing=east,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=east,half=upper,hinge=left,open=true,powered=true:
+        appearance: facing=east,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=east,half=upper,hinge=left,open=true,powered=false:
+        appearance: facing=east,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=east,half=upper,hinge=right,open=true,powered=true:
+        appearance: facing=east,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=east,half=upper,hinge=right,open=true,powered=false:
+        appearance: facing=east,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=north,half=lower,hinge=left,open=true,powered=true:
+        appearance: facing=north,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=north,half=lower,hinge=left,open=true,powered=false:
+        appearance: facing=north,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=north,half=lower,hinge=right,open=true,powered=true:
+        appearance: facing=north,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=north,half=lower,hinge=right,open=true,powered=false:
+        appearance: facing=north,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=north,half=upper,hinge=left,open=true,powered=true:
+        appearance: facing=north,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=north,half=upper,hinge=left,open=true,powered=false:
+        appearance: facing=north,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=north,half=upper,hinge=right,open=true,powered=true:
+        appearance: facing=north,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=north,half=upper,hinge=right,open=true,powered=false:
+        appearance: facing=north,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=south,half=lower,hinge=left,open=true,powered=true:
+        appearance: facing=south,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=south,half=lower,hinge=left,open=true,powered=false:
+        appearance: facing=south,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=south,half=lower,hinge=right,open=true,powered=true:
+        appearance: facing=south,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=south,half=lower,hinge=right,open=true,powered=false:
+        appearance: facing=south,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=south,half=upper,hinge=left,open=true,powered=true:
+        appearance: facing=south,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=south,half=upper,hinge=left,open=true,powered=false:
+        appearance: facing=south,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=south,half=upper,hinge=right,open=true,powered=true:
+        appearance: facing=south,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=south,half=upper,hinge=right,open=true,powered=false:
+        appearance: facing=south,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=west,half=lower,hinge=left,open=true,powered=true:
+        appearance: facing=west,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=west,half=lower,hinge=left,open=true,powered=false:
+        appearance: facing=west,half=lower,hinge=left,open=true
+        id: ${internal_id}
+      facing=west,half=lower,hinge=right,open=true,powered=true:
+        appearance: facing=west,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=west,half=lower,hinge=right,open=true,powered=false:
+        appearance: facing=west,half=lower,hinge=right,open=true
+        id: ${internal_id}
+      facing=west,half=upper,hinge=left,open=true,powered=true:
+        appearance: facing=west,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=west,half=upper,hinge=left,open=true,powered=false:
+        appearance: facing=west,half=upper,hinge=left,open=true
+        id: ${internal_id}
+      facing=west,half=upper,hinge=right,open=true,powered=true:
+        appearance: facing=west,half=upper,hinge=right,open=true
+        id: ${internal_id}
+      facing=west,half=upper,hinge=right,open=true,powered=false:
+        appearance: facing=west,half=upper,hinge=right,open=true
+        id: ${internal_id}
 
 # recipes
 templates#recipes:
