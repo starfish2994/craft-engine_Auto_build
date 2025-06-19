@@ -197,6 +197,7 @@ public final class BlockGenerator {
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             ChainUpdateBlockIndicator indicator = (ChainUpdateBlockIndicator) thisObj;
+            // todo chain updater
             if (indicator.isNoteBlock()) {
                 if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
                     startNoteBlockChain(args);

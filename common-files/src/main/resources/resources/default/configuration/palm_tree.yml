@@ -363,17 +363,13 @@ items:
             resistance: 3.0
             burnable: true
             tags:
+              - minecraft:wooden_doors
               - minecraft:doors
               - minecraft:mineable/axe
-              - minecraft:mob_interactable_doors
         states:
           template: default:block_state/door
           arguments:
             base_block: oak_door
-            internal_id:
-              type: self_increase_int
-              from: 0
-              to: 63
             model_top_left_path: minecraft:block/custom/palm_door_top_left
             model_top_left_generation:
               parent: minecraft:block/door_top_left

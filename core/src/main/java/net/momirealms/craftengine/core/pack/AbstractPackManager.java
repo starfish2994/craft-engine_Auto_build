@@ -662,7 +662,7 @@ public abstract class AbstractPackManager implements PackManager {
                                 JsonObject fontJson;
                                 try {
                                     fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                                } catch (IOException | JsonSyntaxException e) {
+                                } catch (IOException | JsonParseException e) {
                                     TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
@@ -698,7 +698,7 @@ public abstract class AbstractPackManager implements PackManager {
                                 JsonObject itemJson;
                                 try {
                                     itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                                } catch (IOException | JsonSyntaxException e) {
+                                } catch (IOException | JsonParseException e) {
                                     TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
@@ -723,7 +723,7 @@ public abstract class AbstractPackManager implements PackManager {
                                 JsonObject blockStateJson;
                                 try {
                                     blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                                } catch (IOException | JsonSyntaxException e) {
+                                } catch (IOException | JsonParseException e) {
                                     TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
                                     return FileVisitResult.CONTINUE;
                                 }
@@ -764,7 +764,7 @@ public abstract class AbstractPackManager implements PackManager {
                     JsonObject jsonObject;
                     try {
                         jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
-                    } catch (IOException | JsonSyntaxException e) {
+                    } catch (IOException | JsonParseException e) {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                         continue;
                     }
@@ -785,7 +785,7 @@ public abstract class AbstractPackManager implements PackManager {
                     JsonObject jsonObject;
                     try {
                         jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
-                    } catch (IOException | JsonSyntaxException e) {
+                    } catch (IOException | JsonParseException e) {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                         continue;
                     }
@@ -821,7 +821,7 @@ public abstract class AbstractPackManager implements PackManager {
                             JsonObject jsonObject;
                             try {
                                 jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
-                            } catch (IOException | JsonSyntaxException e) {
+                            } catch (IOException | JsonParseException e) {
                                 TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                                 break label;
                             }

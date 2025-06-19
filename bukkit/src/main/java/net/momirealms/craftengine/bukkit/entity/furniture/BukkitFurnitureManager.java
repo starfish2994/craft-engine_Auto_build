@@ -266,12 +266,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
     }
 
     public void handleCollisionEntityLoadOnEntitiesLoad(Entity collisionEntity) {
-        // faster
-        if (FastNMS.INSTANCE.method$CraftEntity$getHandle(collisionEntity) instanceof CollisionEntity) {
-            collisionEntity.remove();
-            return;
-        }
-
         // not a collision entity
         Byte flag = collisionEntity.getPersistentDataContainer().get(FURNITURE_COLLISION, PersistentDataType.BYTE);
         if (flag == null || flag != 1) {

@@ -267,18 +267,23 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
 
     @Override
     public boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws Exception {
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) return false;
-        if (immutableBlockState.get(this.halfProperty) == DoubleBlockHalf.UPPER) return true;
+        ImmutableBlockState customBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (customBlockState == null || customBlockState.isEmpty()) return false;
         int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos) - 1;
         int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
-        Object targetPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
-        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, targetPos);
-        return (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
-                blockState, world, targetPos, CoreReflections.instance$Direction$UP,
-                CoreReflections.instance$SupportType$FULL
-        );
+        Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
+        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
+        if (customBlockState.get(this.halfProperty) == DoubleBlockHalf.UPPER) {
+            ImmutableBlockState belowCustomState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(belowState));
+            if (belowCustomState == null || belowCustomState.isEmpty()) return false;
+            return belowCustomState.owner().value() == super.customBlock;
+        } else {
+            return (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                    belowState, world, belowPos, CoreReflections.instance$Direction$UP,
+                    CoreReflections.instance$SupportType$FULL
+            );
+        }
     }
 
     @SuppressWarnings("unchecked")
