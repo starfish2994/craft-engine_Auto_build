@@ -192,10 +192,11 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
     @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         if (!this.canOpenWithHand) {
+        if (!this.canOpenWithHand || context.getPlayer().isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }
         setOpen(context.getPlayer(), context.getLevel().serverWorld(), state, context.getClickedPos(), !state.get(this.openProperty));
-        return InteractionResult.SUCCESS;
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @Override
