@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -17,15 +18,16 @@ import net.momirealms.craftengine.core.block.state.properties.DoorHinge;
 import net.momirealms.craftengine.core.block.state.properties.DoubleBlockHalf;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.HorizontalDirection;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.Vec3d;
-import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.*;
 import org.bukkit.Bukkit;
 import org.bukkit.GameEvent;
 import org.bukkit.block.Block;
@@ -40,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-public class DoorBlockBehavior extends BukkitBlockBehavior {
+public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<DoubleBlockHalf> halfProperty;
     private final Property<HorizontalDirection> facingProperty;
@@ -58,7 +60,7 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
                              Property<Boolean> openProperty,
                              boolean canOpenWithHand,
                              boolean canOpenByWindCharge) {
-        super(block);
+        super(block, 0);
         this.halfProperty = halfProperty;
         this.facingProperty = facingProperty;
         this.hingeProperty = hingeProperty;
@@ -73,9 +75,19 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object level;
+        Object blockPos;
         Object blockState = args[0];
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+        if (VersionHelper.isOrAbove1_21_2()) {
+            level = args[1];
+            blockPos = args[3];
+        } else {
+            level = args[3];
+            blockPos = args[4];
+        }
+        int stateId = BlockStateUtils.blockStateToId(blockState);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return blockState;
         DoubleBlockHalf half = immutableBlockState.get(this.halfProperty);
         Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[0];
@@ -93,9 +105,21 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
             }
             return MBlocks.AIR$defaultState;
         } else {
-            return half == DoubleBlockHalf.LOWER &&
-                    direction == CoreReflections.instance$Direction$DOWN &&
-                    !FastNMS.INSTANCE.method$BlockStateBase$canSurvive(blockState, VersionHelper.isOrAbove1_21_2() ? args[1] : args[3], VersionHelper.isOrAbove1_21_2() ? args[3] : args[2]) ? MBlocks.AIR$defaultState : blockState;
+            if (half == DoubleBlockHalf.LOWER && direction == CoreReflections.instance$Direction$DOWN
+                    && !canSurvive(thisBlock, blockState, level, blockPos)) {
+                BlockPos pos = LocationUtils.fromBlockPos(blockPos);
+                net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
+                WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(pos));
+                ContextHolder.Builder builder = ContextHolder.builder()
+                        .withParameter(DirectContextParameters.POSITION, position);
+                for (Item<Object> item : immutableBlockState.getDrops(builder, world, null)) {
+                    world.dropItemNaturally(position, item);
+                }
+                world.playBlockSound(position, immutableBlockState.sounds().breakSound());
+                FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
+                return MBlocks.AIR$defaultState;
+            }
+            return blockState;
         }
     }
 
@@ -239,6 +263,22 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
             }
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, immutableBlockState.with(this.poweredProperty, flag).with(this.openProperty, flag).customBlockState().handle(), UpdateOption.Flags.UPDATE_CLIENTS);
         }
+    }
+
+    @Override
+    public boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws Exception {
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) return false;
+        if (immutableBlockState.get(this.halfProperty) == DoubleBlockHalf.UPPER) return true;
+        int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
+        int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos) - 1;
+        int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
+        Object targetPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, targetPos);
+        return (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                blockState, world, targetPos, CoreReflections.instance$Direction$UP,
+                CoreReflections.instance$SupportType$FULL
+        );
     }
 
     @SuppressWarnings("unchecked")
