@@ -84,7 +84,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         });
         if (playSound) {
             SoundData data = furniture.settings().sounds().placeSound();
-            location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
+            location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume().get(), data.pitch().get());
         }
         return loadedFurnitureByRealEntityId(furnitureEntity.getEntityId());
     }

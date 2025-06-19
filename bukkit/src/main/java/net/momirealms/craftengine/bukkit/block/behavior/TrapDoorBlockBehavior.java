@@ -247,8 +247,8 @@ public class TrapDoorBlockBehavior extends BukkitBlockBehavior {
             SoundData openSound = null;
             SoundData closeSound = null;
             if (sounds != null) {
-                openSound = Optional.ofNullable(sounds.get("open")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
-                closeSound = Optional.ofNullable(sounds.get("close")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
+                openSound = Optional.ofNullable(sounds.get("open")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)).orElse(null);
+                closeSound = Optional.ofNullable(sounds.get("close")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)).orElse(null);
             }
             return new TrapDoorBlockBehavior(block, half, facing, powered, open, canOpenWithHand, canOpenByWindCharge, openSound, closeSound);
         }

@@ -332,7 +332,7 @@ public class ItemSettings {
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), 1f, 1f)));
+                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)));
             }));
             registerFactory("compost-probability", (value -> {
                 float chance = ResourceConfigUtils.getAsFloat(value, "compost-probability");

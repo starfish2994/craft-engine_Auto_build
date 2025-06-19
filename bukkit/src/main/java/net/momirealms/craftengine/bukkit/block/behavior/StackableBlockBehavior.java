@@ -18,6 +18,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
@@ -74,8 +75,8 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         ImmutableBlockState nextStage = state.cycle(this.amountProperty);
         Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
         FastNMS.INSTANCE.method$LevelWriter$setBlock(world.serverWorld(), LocationUtils.toBlockPos(pos), nextStage.customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
-        if (stackSound != null) {
-            location.getWorld().playSound(location, stackSound.id().toString(), SoundCategory.BLOCKS, stackSound.volume(), stackSound.pitch());
+        if (this.stackSound != null) {
+            world.playBlockSound(new Vec3d(location.getX(), location.getY(), location.getZ()), this.stackSound);
         }
         FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
         player.swingHand(hand);
@@ -90,7 +91,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
             Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
             SoundData stackSound = null;
             if (sounds != null) {
-                stackSound = Optional.ofNullable(sounds.get("stack")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
+                stackSound = Optional.ofNullable(sounds.get("stack")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)).orElse(null);
             }
             Object itemsObj = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("items"), "warning.config.block.behavior.stackable.missing_items");
             List<Key> items = MiscUtils.getAsStringList(itemsObj).stream().map(Key::of).toList();
