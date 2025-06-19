@@ -350,6 +350,9 @@ items:
           type: door_block
           can-open-with-hand: true
           can-open-by-wind-charge: true
+          sounds:
+            open: block.wooden_door.open
+            close: block.wooden_door.close
         loot:
           template: default:loot_table/self
         settings:
