@@ -89,7 +89,7 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
                 return MBlocks.AIR$defaultState;
             }
             if (neighborState.get(anotherDoorBehavior.get().halfProperty) != half) {
-                return neighborState.with(anotherDoorBehavior.get().halfProperty, half);
+                return neighborState.with(anotherDoorBehavior.get().halfProperty, half).customBlockState().handle();
             }
             return MBlocks.AIR$defaultState;
         } else {

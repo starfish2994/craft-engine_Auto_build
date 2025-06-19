@@ -347,11 +347,10 @@ items:
     behavior:
       type: block_item
       block:
-        behaviors:
-          - type: door_block
-            can-open-with-hand: true
-            can-open-by-wind-charge: true
-          - type: sturdy_base_block
+        behavior:
+          type: door_block
+          can-open-with-hand: true
+          can-open-by-wind-charge: true
         loot:
           template: default:loot_table/self
         settings:
