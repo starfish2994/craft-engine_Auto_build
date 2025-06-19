@@ -334,6 +334,95 @@ items:
               parent: minecraft:block/template_orientable_trapdoor_top
               textures:
                 texture: minecraft:block/custom/palm_trapdoor
+  default:palm_door:
+    material: nether_brick
+    custom-model-data: 1007
+    data:
+      item-name: <!i><i18n:item.palm_door>
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/palm_door
+      generation:
+        parent: minecraft:item/custom/palm_door
+    behavior:
+      type: block_item
+      block:
+        behaviors:
+          - type: door_block
+            can-open-with-hand: true
+            can-open-by-wind-charge: true
+          - type: sturdy_base_block
+        loot:
+          template: default:loot_table/self
+        settings:
+          template:
+            - default:sound/wood
+          overrides:
+            map-color: 2
+            instrument: bass
+            hardness: 3.0
+            resistance: 3.0
+            burnable: true
+            tags:
+              - minecraft:doors
+              - minecraft:mineable/axe
+              - minecraft:mob_interactable_doors
+        states:
+          template: default:block_state/door
+          arguments:
+            base_block: oak_door
+            internal_id:
+              type: self_increase_int
+              from: 0
+              to: 63
+            model_top_left_path: minecraft:block/custom/palm_door_top_left
+            model_top_left_generation:
+              parent: minecraft:block/door_top_left
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_top_right_path: minecraft:block/custom/palm_door_top_right
+            model_top_right_generation:
+              parent: minecraft:block/door_top_right
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_top_left_open_path: minecraft:block/custom/palm_door_top_left_open
+            model_top_left_open_generation:
+              parent: minecraft:block/door_top_left_open
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_top_right_open_path: minecraft:block/custom/palm_door_top_right_open
+            model_top_right_open_generation:
+              parent: minecraft:block/door_top_right_open
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_bottom_left_path: minecraft:block/custom/palm_door_bottom_left
+            model_bottom_left_generation:
+              parent: minecraft:block/door_bottom_left
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_bottom_right_path: minecraft:block/custom/palm_door_bottom_right
+            model_bottom_right_generation:
+              parent: minecraft:block/door_bottom_right
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_bottom_left_open_path: minecraft:block/custom/palm_door_bottom_left_open
+            model_bottom_left_open_generation:
+              parent: minecraft:block/door_bottom_left_open
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
+            model_bottom_right_open_path: minecraft:block/custom/palm_door_bottom_right_open
+            model_bottom_right_open_generation:
+              parent: minecraft:block/door_bottom_right_open
+              textures:
+                bottom: minecraft:block/palm_door_bottom
+                top: minecraft:block/palm_door_top
 recipes:
   default:palm_planks:
     template: default:recipe/planks
