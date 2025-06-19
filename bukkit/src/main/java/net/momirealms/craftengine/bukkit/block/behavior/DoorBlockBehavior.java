@@ -112,6 +112,12 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+        BlockPos pos = context.getClickedPos();
+        context.getLevel().setBlockAt(pos.x(), pos.y() + 1, pos.z(), state.with(this.halfProperty, DoubleBlockHalf.UPPER).customBlockState(), 3);
+    }
+
+    @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         World world  = context.getLevel();
         Object level = world.serverWorld();
@@ -191,7 +197,6 @@ public class DoorBlockBehavior extends BukkitBlockBehavior {
 
     @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
-        if (!this.canOpenWithHand) {
         if (!this.canOpenWithHand || context.getPlayer().isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }

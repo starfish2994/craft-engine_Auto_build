@@ -95,6 +95,9 @@ public abstract class BlockBehavior {
         return state;
     }
 
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+    }
+
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         return InteractionResult.PASS;
     }
