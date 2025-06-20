@@ -3016,7 +3016,6 @@ $$>=1.20.3#trapdoor:
   minecraft:waxed_oxidized_copper_trapdoor[facing=east,half=bottom,open=false,powered=true,waterlogged=true]: minecraft:waxed_oxidized_copper_trapdoor[facing=east,half=bottom,open=false,powered=false,waterlogged=true]
   minecraft:waxed_oxidized_copper_trapdoor[facing=west,half=bottom,open=false,powered=true,waterlogged=true]: minecraft:waxed_oxidized_copper_trapdoor[facing=west,half=bottom,open=false,powered=false,waterlogged=true]
 
-# 1.21.4+
 $$>=1.21.4#trapdoor:
   minecraft:pale_oak_trapdoor[facing=north,half=top,open=true,powered=true,waterlogged=false]: minecraft:pale_oak_trapdoor[facing=north,half=top,open=true,powered=false,waterlogged=false]
   minecraft:pale_oak_trapdoor[facing=south,half=top,open=true,powered=true,waterlogged=false]: minecraft:pale_oak_trapdoor[facing=south,half=top,open=true,powered=false,waterlogged=false]
@@ -3438,7 +3437,6 @@ minecraft:iron_door[facing=west,half=lower,hinge=right,open=true,powered=true]: 
 minecraft:iron_door[facing=west,half=upper,hinge=left,open=true,powered=true]: minecraft:iron_door[facing=west,half=upper,hinge=left,open=true,powered=false]
 minecraft:iron_door[facing=west,half=upper,hinge=right,open=true,powered=true]: minecraft:iron_door[facing=west,half=upper,hinge=right,open=true,powered=false]
 
-# 1.20.3+
 $$>=1.20.3#door:
   minecraft:copper_door[facing=east,half=lower,hinge=left,open=false,powered=true]: minecraft:copper_door[facing=east,half=lower,hinge=left,open=false,powered=false]
   minecraft:copper_door[facing=east,half=lower,hinge=right,open=false,powered=true]: minecraft:copper_door[facing=east,half=lower,hinge=right,open=false,powered=false]
@@ -3697,7 +3695,6 @@ $$>=1.20.3#door:
   minecraft:waxed_oxidized_copper_door[facing=west,half=upper,hinge=left,open=true,powered=true]: minecraft:waxed_oxidized_copper_door[facing=west,half=upper,hinge=left,open=true,powered=false]
   minecraft:waxed_oxidized_copper_door[facing=west,half=upper,hinge=right,open=true,powered=true]: minecraft:waxed_oxidized_copper_door[facing=west,half=upper,hinge=right,open=true,powered=false]
 
-# 1.21.4+
 $$>=1.21.4#door:
   minecraft:pale_oak_door[facing=east,half=lower,hinge=left,open=false,powered=true]: minecraft:pale_oak_door[facing=east,half=lower,hinge=left,open=false,powered=false]
   minecraft:pale_oak_door[facing=east,half=lower,hinge=right,open=false,powered=true]: minecraft:pale_oak_door[facing=east,half=lower,hinge=right,open=false,powered=false]
@@ -3927,6 +3924,30 @@ $$>=1.21.4#fence_gate:
   minecraft:pale_oak_fence_gate[facing=north,in_wall=false,open=true,powered=true]: minecraft:pale_oak_fence_gate[facing=north,in_wall=false,open=true,powered=false]
   minecraft:pale_oak_fence_gate[facing=north,in_wall=true,open=false,powered=true]: minecraft:pale_oak_fence_gate[facing=north,in_wall=true,open=false,powered=false]
   minecraft:pale_oak_fence_gate[facing=north,in_wall=true,open=true,powered=true]: minecraft:pale_oak_fence_gate[facing=north,in_wall=true,open=true,powered=false]
+
+#### Slab ####
+minecraft:petrified_oak_slab[type=bottom,waterlogged=false]: minecraft:oak_slab[type=bottom,waterlogged=false]
+minecraft:petrified_oak_slab[type=top,waterlogged=false]: minecraft:oak_slab[type=top,waterlogged=false]
+minecraft:petrified_oak_slab[type=bottom,waterlogged=true]: minecraft:oak_slab[type=bottom,waterlogged=true]
+minecraft:petrified_oak_slab[type=top,waterlogged=true]: minecraft:oak_slab[type=top,waterlogged=true]
+
+$$>=1.20.3#slab:
+  minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:cut_copper_slab[type=bottom,waterlogged=false]
+  minecraft:waxed_cut_copper_slab[type=top,waterlogged=false]: minecraft:cut_copper_slab[type=top,waterlogged=false]
+  minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:cut_copper_slab[type=bottom,waterlogged=true]
+  minecraft:waxed_cut_copper_slab[type=top,waterlogged=true]: minecraft:cut_copper_slab[type=top,waterlogged=true]
+  minecraft:waxed_exposed_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:exposed_cut_copper_slab[type=bottom,waterlogged=false]
+  minecraft:waxed_exposed_cut_copper_slab[type=top,waterlogged=false]: minecraft:exposed_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:waxed_exposed_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:exposed_cut_copper_slab[type=bottom,waterlogged=true]
+  minecraft:waxed_exposed_cut_copper_slab[type=top,waterlogged=true]: minecraft:exposed_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:waxed_weathered_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:weathered_cut_copper_slab[type=bottom,waterlogged=false]
+  minecraft:waxed_weathered_cut_copper_slab[type=top,waterlogged=false]: minecraft:weathered_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:waxed_weathered_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:weathered_cut_copper_slab[type=bottom,waterlogged=true]
+  minecraft:waxed_weathered_cut_copper_slab[type=top,waterlogged=true]: minecraft:weathered_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:waxed_oxidized_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=false]
+  minecraft:waxed_oxidized_cut_copper_slab[type=top,waterlogged=false]: minecraft:oxidized_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:waxed_oxidized_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=true]
+  minecraft:waxed_oxidized_cut_copper_slab[type=top,waterlogged=true]: minecraft:oxidized_cut_copper_slab[type=top,waterlogged=true]
 
 #### Chorus Plant ####
 # Chorus Plant does support transparent textures, but man... its hitbox is super weird. You're probably better off using leaves.

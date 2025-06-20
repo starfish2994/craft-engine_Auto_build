@@ -110,7 +110,7 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
             this.registerLevelerProvider("AureliumSkills", new AureliumSkillsLevelerProvider());
         }
         if (this.isPluginEnabled("McMMO")) {
-            this.registerLevelerProvider("McMMO", new McMMOLevelerProvider());
+            this.registerLevelerProvider("mcMMO", new McMMOLevelerProvider());
             logHook("McMMO");
         }
         if (this.isPluginEnabled("MMOCore")) {
