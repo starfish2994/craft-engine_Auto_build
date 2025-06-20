@@ -2145,7 +2145,8 @@ templates#block_states:
       facing=east,half=bottom,shape=straight,waterlogged=false:
         state: ${base_block}[facing=east,half=bottom,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
+          generation: ${model_stairs_generation}
       facing=east,half=top,shape=inner_left,waterlogged=false:
         state: ${base_block}[facing=east,half=top,shape=inner_left,waterlogged=false]
         model:
@@ -2175,7 +2176,7 @@ templates#block_states:
       facing=east,half=top,shape=straight,waterlogged=false:
         state: ${base_block}[facing=east,half=top,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
       facing=north,half=bottom,shape=inner_left,waterlogged=false:
@@ -2205,7 +2206,7 @@ templates#block_states:
       facing=north,half=bottom,shape=straight,waterlogged=false:
         state: ${base_block}[facing=north,half=bottom,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 270
       facing=north,half=top,shape=inner_left,waterlogged=false:
@@ -2237,7 +2238,7 @@ templates#block_states:
       facing=north,half=top,shape=straight,waterlogged=false:
         state: ${base_block}[facing=north,half=top,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 270
@@ -2264,7 +2265,7 @@ templates#block_states:
       facing=south,half=bottom,shape=straight,waterlogged=false:
         state: ${base_block}[facing=south,half=bottom,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 90
       facing=south,half=top,shape=inner_left,waterlogged=false:
@@ -2298,7 +2299,7 @@ templates#block_states:
       facing=south,half=top,shape=straight,waterlogged=false:
         state: ${base_block}[facing=south,half=top,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 90
@@ -2329,7 +2330,7 @@ templates#block_states:
       facing=west,half=bottom,shape=straight,waterlogged=false:
         state: ${base_block}[facing=west,half=bottom,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 180
       facing=west,half=top,shape=inner_left,waterlogged=false:
@@ -2363,7 +2364,7 @@ templates#block_states:
       facing=west,half=top,shape=straight,waterlogged=false:
         state: ${base_block}[facing=west,half=top,shape=straight,waterlogged=false]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 180
@@ -2390,7 +2391,7 @@ templates#block_states:
       facing=east,half=bottom,shape=straight,waterlogged=true:
         state: ${base_block}[facing=east,half=bottom,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
       facing=east,half=top,shape=inner_left,waterlogged=true:
         state: ${base_block}[facing=east,half=top,shape=inner_left,waterlogged=true]
         model:
@@ -2420,7 +2421,7 @@ templates#block_states:
       facing=east,half=top,shape=straight,waterlogged=true:
         state: ${base_block}[facing=east,half=top,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
       facing=north,half=bottom,shape=inner_left,waterlogged=true:
@@ -2450,7 +2451,7 @@ templates#block_states:
       facing=north,half=bottom,shape=straight,waterlogged=true:
         state: ${base_block}[facing=north,half=bottom,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 270
       facing=north,half=top,shape=inner_left,waterlogged=true:
@@ -2482,7 +2483,7 @@ templates#block_states:
       facing=north,half=top,shape=straight,waterlogged=true:
         state: ${base_block}[facing=north,half=top,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 270
@@ -2509,7 +2510,7 @@ templates#block_states:
       facing=south,half=bottom,shape=straight,waterlogged=true:
         state: ${base_block}[facing=south,half=bottom,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 90
       facing=south,half=top,shape=inner_left,waterlogged=true:
@@ -2543,7 +2544,7 @@ templates#block_states:
       facing=south,half=top,shape=straight,waterlogged=true:
         state: ${base_block}[facing=south,half=top,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 90
@@ -2574,7 +2575,7 @@ templates#block_states:
       facing=west,half=bottom,shape=straight,waterlogged=true:
         state: ${base_block}[facing=west,half=bottom,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           y: 180
       facing=west,half=top,shape=inner_left,waterlogged=true:
@@ -2608,7 +2609,7 @@ templates#block_states:
       facing=west,half=top,shape=straight,waterlogged=true:
         state: ${base_block}[facing=west,half=top,shape=straight,waterlogged=true]
         model:
-          path: minecraft:block/cherry_stairs
+          path: ${model_stairs_path}
           uvlock: true
           x: 180
           y: 180
