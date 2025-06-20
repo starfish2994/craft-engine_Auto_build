@@ -23,6 +23,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.HorizontalDirection;
@@ -103,7 +104,15 @@ public class FenceGateBlockBehavior extends BukkitBlockBehavior {
         Object level = VersionHelper.isOrAbove1_21_2() ? args[1] : args[3];
         BlockPos blockPos = LocationUtils.fromBlockPos(VersionHelper.isOrAbove1_21_2() ? args[3] : args[4]);
         Object relativeState = getBlockState(level, blockPos.relative(direction.opposite()));
-        boolean flag = this.isWall(neighborState) || this.isWall(relativeState);
+        boolean neighborStateIsWall = this.isWall(neighborState);
+        boolean relativeStateIsWall = this.isWall(relativeState);
+        boolean flag = neighborStateIsWall || relativeStateIsWall;
+        if (neighborStateIsWall) {
+            // TODO: 连接原版方块
+        }
+        if (relativeStateIsWall) {
+            // TODO: 连接原版方块
+        }
         return state.with(this.inWallProperty, flag).customBlockState().handle();
     }
 
@@ -118,6 +127,7 @@ public class FenceGateBlockBehavior extends BukkitBlockBehavior {
                 || this.isWall(getBlockState(level, clickedPos.relative(Direction.EAST)))
                 || axis == Direction.Axis.X && (this.isWall(getBlockState(level, clickedPos.relative(Direction.NORTH)))
                 || this.isWall(getBlockState(level, clickedPos.relative(Direction.SOUTH))));
+        // TODO: 连接原版方块
         return state.owner().value().defaultState()
                 .with(this.facingProperty, horizontalDirection.toHorizontalDirection())
                 .with(this.openProperty, hasNeighborSignal)
