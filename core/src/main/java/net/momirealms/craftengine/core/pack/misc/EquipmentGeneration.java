@@ -3,8 +3,6 @@ package net.momirealms.craftengine.core.pack.misc;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
-import net.momirealms.craftengine.core.pack.model.tint.Tint;
-import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;

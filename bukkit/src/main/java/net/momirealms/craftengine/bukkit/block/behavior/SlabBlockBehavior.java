@@ -42,7 +42,7 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
     public boolean canBeReplaced(BlockPlaceContext context, ImmutableBlockState state) {
         SlabType type = state.get(this.typeProperty);
         Item<ItemStack> item = (Item<ItemStack>) context.getItem();
-        if (type == SlabType.DOUBLE) return false;
+        if (type == SlabType.DOUBLE || item == null) return false;
         Optional<CustomItem<ItemStack>> itemInHand = item.getCustomItem();
         if (itemInHand.isEmpty()) return false;
         CustomItem<ItemStack> customItem = itemInHand.get();
@@ -57,8 +57,8 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
         boolean upper = context.getClickLocation().y - (double) context.getClickedPos().y() > (double) 0.5F;
         Direction clickedFace = context.getClickedFace();
         return type == SlabType.BOTTOM ?
-                clickedFace == Direction.UP || upper && clickedFace.axis().isHorizontal() :
-                clickedFace == Direction.DOWN || !upper && clickedFace.axis().isHorizontal();
+                clickedFace == Direction.UP || (upper && clickedFace.axis().isHorizontal()) :
+                clickedFace == Direction.DOWN || (!upper && clickedFace.axis().isHorizontal());
     }
 
     @Override
@@ -119,8 +119,7 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
         @SuppressWarnings("unchecked")
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            Property<SlabType> type = (Property<SlabType>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("type"), "warning.config.block.behavior.trapdoor.missing_type");
-
+            Property<SlabType> type = (Property<SlabType>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("type"), "warning.config.block.behavior.slab.missing_type");
             return new SlabBlockBehavior(block, type);
         }
     }

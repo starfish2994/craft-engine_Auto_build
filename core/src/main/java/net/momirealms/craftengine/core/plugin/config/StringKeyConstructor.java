@@ -4,11 +4,13 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.*;
+import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class StringKeyConstructor extends SafeConstructor {
