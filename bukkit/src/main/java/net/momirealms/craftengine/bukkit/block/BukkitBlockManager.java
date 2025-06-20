@@ -34,6 +34,7 @@ import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
+import net.momirealms.craftengine.core.plugin.config.StringKeyConstructor;
 import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -50,9 +51,14 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -605,22 +611,30 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     private void loadMappingsAndAdditionalBlocks() {
         this.plugin.logger().info("Loading mappings.yml.");
-        File mappingFile = new File(plugin.dataFolderFile(), "mappings.yml");
-        YamlDocument mappings = Config.instance().loadOrCreateYamlData("mappings.yml");
-        Map<String, String> blockStateMappings = loadBlockStateMappings(mappings);
-        this.validateBlockStateMappings(mappingFile, blockStateMappings);
-        Map<Integer, String> stateMap = new Int2ObjectOpenHashMap<>();
-        Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
-        Map<Integer, Integer> appearanceMapper = new Int2IntOpenHashMap();
-        Map<Key, List<Integer>> appearanceArranger = new HashMap<>();
-        for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
-            this.processBlockStateMapping(mappingFile, entry, stateMap, blockTypeCounter, appearanceMapper, appearanceArranger);
+        Path mappingsFile = this.plugin.dataFolderPath().resolve("mappings.yml");
+        if (!Files.exists(mappingsFile)) {
+            this.plugin.saveResource("mappings.yml");
         }
-        this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
-        this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
-        this.plugin.logger().info("Freed " + this.blockAppearanceMapper.size() + " block state appearances.");
-        YamlDocument additionalYaml = Config.instance().loadOrCreateYamlData("additional-real-blocks.yml");
-        this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
+        File mappingFile = new File(plugin.dataFolderFile(), "mappings.yml");
+        Yaml yaml = new Yaml(new StringKeyConstructor(null, new LoaderOptions()));
+        try (InputStream inputStream =  Files.newInputStream(mappingsFile)) {
+            Map<String, String> blockStateMappings = loadBlockStateMappings(yaml.load(inputStream));
+            this.validateBlockStateMappings(mappingFile, blockStateMappings);
+            Map<Integer, String> stateMap = new Int2ObjectOpenHashMap<>();
+            Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
+            Map<Integer, Integer> appearanceMapper = new Int2IntOpenHashMap();
+            Map<Key, List<Integer>> appearanceArranger = new HashMap<>();
+            for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
+                this.processBlockStateMapping(mappingFile, entry, stateMap, blockTypeCounter, appearanceMapper, appearanceArranger);
+            }
+            this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
+            this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
+            this.plugin.logger().info("Freed " + this.blockAppearanceMapper.size() + " block state appearances.");
+            YamlDocument additionalYaml = Config.instance().loadOrCreateYamlData("additional-real-blocks.yml");
+            this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to init mappings.yml", e);
+        }
     }
 
     private void recordVanillaNoteBlocks() {
@@ -655,9 +669,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return open ? this.affectedOpenableBlockSounds.get(block).left() : this.affectedOpenableBlockSounds.get(block).right();
     }
 
-    private Map<String, String> loadBlockStateMappings(YamlDocument mappings) {
+    private Map<String, String> loadBlockStateMappings(Map<String, Object> mappings) {
         Map<String, String> blockStateMappings = new LinkedHashMap<>();
-        for (Map.Entry<String, Object> entry : mappings.getStringRouteMappedValues(false).entrySet()) {
+        for (Map.Entry<String, Object> entry : mappings.entrySet()) {
             if (entry.getValue() instanceof String afterValue) {
                 blockStateMappings.put(entry.getKey(), afterValue);
             }

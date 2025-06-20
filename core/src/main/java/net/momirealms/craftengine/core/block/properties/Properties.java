@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.block.properties;
 import net.momirealms.craftengine.core.block.state.properties.DoorHinge;
 import net.momirealms.craftengine.core.block.state.properties.DoubleBlockHalf;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
+import net.momirealms.craftengine.core.block.state.properties.StairsShape;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -22,6 +23,7 @@ public class Properties {
     public static final Key SINGLE_BLOCK_HALF = Key.of("craftengine:single_block_half");
     public static final Key DOUBLE_BLOCK_HALF = Key.of("craftengine:double_block_half");
     public static final Key HINGE = Key.of("craftengine:hinge");
+    public static final Key STAIRS_SHAPE = Key.of("craftengine:stairs_shape");
 
     static {
         register(BOOLEAN, BooleanProperty.FACTORY);
@@ -35,6 +37,7 @@ public class Properties {
         register(SINGLE_BLOCK_HALF, new EnumProperty.Factory<>(SingleBlockHalf.class));
         register(DOUBLE_BLOCK_HALF, new EnumProperty.Factory<>(DoubleBlockHalf.class));
         register(HINGE, new EnumProperty.Factory<>(DoorHinge.class));
+        register(STAIRS_SHAPE, new EnumProperty.Factory<>(StairsShape.class));
     }
 
     public static void register(Key key, PropertyFactory factory) {
