@@ -10,6 +10,7 @@ public abstract class AbstractBlockBehavior extends BlockBehavior {
         this.customBlock = customBlock;
     }
 
+    @Override
     public CustomBlock block() {
         return this.customBlock;
     }

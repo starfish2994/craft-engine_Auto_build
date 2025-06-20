@@ -286,6 +286,8 @@ items:
     custom-model-data: 1006
     data:
       item-name: <!i><i18n:item.palm_trapdoor>
+    settings:
+      fuel-time: 300
     model:
       type: minecraft:model
       path: minecraft:item/custom/palm_trapdoor
@@ -339,6 +341,8 @@ items:
     custom-model-data: 1007
     data:
       item-name: <!i><i18n:item.palm_door>
+    settings:
+      fuel-time: 200
     model:
       template: default:model/simplified_generated
       arguments:
@@ -426,6 +430,8 @@ items:
     custom-model-data: 1008
     data:
       item-name: <!i><i18n:item.palm_fence_gate>
+    settings:
+      fuel-time: 300
     model:
       type: minecraft:model
       path: minecraft:item/custom/palm_fence_gate
@@ -444,17 +450,18 @@ items:
         loot:
           template: default:loot_table/self
         settings:
-          item: default:palm_fence_gate
-          sounds:
-            break: minecraft:block.wood.break
-            step: minecraft:block.wood.step
-            place: minecraft:block.wood.place
-            hit: minecraft:block.wood.hit
-            fall: minecraft:block.wood.fall
-          tags:
-            - minecraft:fence_gates
-            - minecraft:mineable/axe
-            - minecraft:unstable_bottom_center
+          template:
+            - default:sound/wood
+          overrides:
+            map-color: 2
+            instrument: bass
+            hardness: 2.0
+            resistance: 3.0
+            burnable: true
+            tags:
+              - minecraft:fence_gates
+              - minecraft:mineable/axe
+              - minecraft:unstable_bottom_center
         states:
           template: default:block_state/fence_gate
           arguments:
@@ -476,6 +483,57 @@ items:
             model_fence_gate_wall_open_generation:
               parent: minecraft:block/template_fence_gate_wall_open
               textures: *textures
+  default:palm_slab:
+    material: nether_brick
+    custom-model-data: 1009
+    data:
+      item-name: <!i><i18n:item.palm_slab>
+    settings:
+      fuel-time: 150
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/palm_slab
+      generation:
+        parent: minecraft:block/custom/palm_slab
+    behavior:
+      type: block_item
+      block:
+        behaviors:
+          type: slab_block
+        loot:
+          template: default:loot_table/self
+        settings:
+          template:
+            - default:sound/wood
+            - default:burn_data/planks
+          overrides:
+            map-color: 2
+            instrument: bass
+            hardness: 2.0
+            resistance: 3.0
+            tags:
+              - minecraft:wooden_slabs
+              - minecraft:slabs
+              - minecraft:mineable/axe
+        states:
+          template: default:block_state/slab
+          arguments:
+            base_block: petrified_oak_slab
+            model_bottom_path: minecraft:block/custom/palm_slab
+            model_bottom_generation:
+              parent: minecraft:block/slab
+              textures:
+                bottom: minecraft:block/custom/palm_planks
+                side: minecraft:block/custom/palm_planks
+                top: minecraft:block/custom/palm_planks
+            model_top_path: minecraft:block/custom/palm_slab_top
+            model_top_generation:
+              parent: minecraft:block/slab_top
+              textures:
+                bottom: minecraft:block/custom/palm_planks
+                side: minecraft:block/custom/palm_planks
+                top: minecraft:block/custom/palm_planks
+            model_double_path: minecraft:block/custom/palm_planks
 recipes:
   default:palm_planks:
     template: default:recipe/planks
@@ -499,3 +557,34 @@ recipes:
     result:
       id: default:palm_trapdoor
       count: 2
+  default:palm_fence_gate:
+    type: shaped
+    pattern:
+      - ABA
+      - ABA
+    ingredients:
+      A: minecraft:stick
+      B: default:palm_planks
+    result:
+      id: default:palm_fence_gate
+      count: 1
+  default:palm_slab:
+    type: shaped
+    pattern:
+      - AAA
+    ingredients:
+      A: default:palm_planks
+    result:
+      id: default:palm_slab
+      count: 6
+#  default:palm_stairs:
+#    type: shaped
+#    pattern:
+#      - A
+#      - AA
+#      - AAA
+#    ingredients:
+#      A: default:palm_planks
+#    result:
+#      id: default:palm_stairs
+#      count: 4

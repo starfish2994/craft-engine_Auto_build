@@ -3928,26 +3928,36 @@ $$>=1.21.4#fence_gate:
 #### Slab ####
 minecraft:petrified_oak_slab[type=bottom,waterlogged=false]: minecraft:oak_slab[type=bottom,waterlogged=false]
 minecraft:petrified_oak_slab[type=top,waterlogged=false]: minecraft:oak_slab[type=top,waterlogged=false]
+minecraft:petrified_oak_slab[type=double,waterlogged=false]: minecraft:oak_slab[type=double,waterlogged=false]
 minecraft:petrified_oak_slab[type=bottom,waterlogged=true]: minecraft:oak_slab[type=bottom,waterlogged=true]
 minecraft:petrified_oak_slab[type=top,waterlogged=true]: minecraft:oak_slab[type=top,waterlogged=true]
+minecraft:petrified_oak_slab[type=double,waterlogged=true]: minecraft:oak_slab[type=double,waterlogged=true]
 
 $$>=1.20.3#slab:
   minecraft:cut_copper_slab[type=bottom,waterlogged=false]: minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]
   minecraft:cut_copper_slab[type=top,waterlogged=false]: minecraft:waxed_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:cut_copper_slab[type=double,waterlogged=false]: minecraft:waxed_cut_copper_slab[type=double,waterlogged=false]
   minecraft:cut_copper_slab[type=bottom,waterlogged=true]: minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=true]
   minecraft:cut_copper_slab[type=top,waterlogged=true]: minecraft:waxed_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:cut_copper_slab[type=double,waterlogged=true]: minecraft:waxed_cut_copper_slab[type=double,waterlogged=true]
   minecraft:exposed_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:waxed_exposed_cut_copper_slab[type=bottom,waterlogged=false]
   minecraft:exposed_cut_copper_slab[type=top,waterlogged=false]: minecraft:waxed_exposed_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:exposed_cut_copper_slab[type=double,waterlogged=false]: minecraft:waxed_exposed_cut_copper_slab[type=double,waterlogged=false]
   minecraft:exposed_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:waxed_exposed_cut_copper_slab[type=bottom,waterlogged=true]
   minecraft:exposed_cut_copper_slab[type=top,waterlogged=true]: minecraft:waxed_exposed_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:exposed_cut_copper_slab[type=double,waterlogged=true]: minecraft:waxed_exposed_cut_copper_slab[type=double,waterlogged=true]
   minecraft:weathered_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:waxed_weathered_cut_copper_slab[type=bottom,waterlogged=false]
   minecraft:weathered_cut_copper_slab[type=top,waterlogged=false]: minecraft:waxed_weathered_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:weathered_cut_copper_slab[type=double,waterlogged=false]: minecraft:waxed_weathered_cut_copper_slab[type=double,waterlogged=false]
   minecraft:weathered_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:waxed_weathered_cut_copper_slab[type=bottom,waterlogged=true]
   minecraft:weathered_cut_copper_slab[type=top,waterlogged=true]: minecraft:waxed_weathered_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:weathered_cut_copper_slab[type=double,waterlogged=true]: minecraft:waxed_weathered_cut_copper_slab[type=double,waterlogged=true]
   minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=false]: minecraft:waxed_oxidized_cut_copper_slab[type=bottom,waterlogged=false]
   minecraft:oxidized_cut_copper_slab[type=top,waterlogged=false]: minecraft:waxed_oxidized_cut_copper_slab[type=top,waterlogged=false]
+  minecraft:oxidized_cut_copper_slab[type=double,waterlogged=false]: minecraft:waxed_oxidized_cut_copper_slab[type=double,waterlogged=false]
   minecraft:oxidized_cut_copper_slab[type=bottom,waterlogged=true]: minecraft:waxed_oxidized_cut_copper_slab[type=bottom,waterlogged=true]
   minecraft:oxidized_cut_copper_slab[type=top,waterlogged=true]: minecraft:waxed_oxidized_cut_copper_slab[type=top,waterlogged=true]
+  minecraft:oxidized_cut_copper_slab[type=double,waterlogged=true]: minecraft:waxed_oxidized_cut_copper_slab[type=double,waterlogged=true]
 
 #### Chorus Plant ####
 # Chorus Plant does support transparent textures, but man... its hitbox is super weird. You're probably better off using leaves.

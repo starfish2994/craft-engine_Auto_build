@@ -30,25 +30,11 @@ public class BukkitBlockInWorld implements BlockInWorld {
         this.block = block;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean canBeReplaced(BlockPlaceContext context) {
         ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(this.block.getBlockData()));
         if (customState != null && !customState.isEmpty()) {
-            Key clickedBlockId = customState.owner().value().id();
-            Item<ItemStack> item = (Item<ItemStack>) context.getPlayer().getItemInHand(context.getHand());
-            Optional<CustomItem<ItemStack>> customItem = BukkitItemManager.instance().getCustomItem(item.id());
-            if (customItem.isPresent()) {
-                CustomItem<ItemStack> custom = customItem.get();
-                for (ItemBehavior behavior : custom.behaviors()) {
-                    if (behavior instanceof BlockItemBehavior blockItemBehavior) {
-                        Key blockId = blockItemBehavior.blockId();
-                        if (blockId.equals(clickedBlockId)) {
-                            return false;
-                        }
-                    }
-                }
-            }
+            return customState.behavior().canBeReplaced(context, customState);
         }
         return this.block.isReplaceable();
     }

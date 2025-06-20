@@ -43,6 +43,17 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            InteractionResult result = behavior.useWithoutItem(context, state);
+            if (result != InteractionResult.PASS) {
+                return result;
+            }
+        }
+        return super.useWithoutItem(context, state);
+    }
+
+    @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             state = behavior.updateStateForPlacement(context, state);
@@ -188,5 +199,15 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             behavior.setPlacedBy(context, state);
         }
+    }
+
+    @Override
+    public boolean canBeReplaced(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (!behavior.canBeReplaced(context, state)) {
+                return false;
+            }
+        }
+        return super.canBeReplaced(context, state);
     }
 }

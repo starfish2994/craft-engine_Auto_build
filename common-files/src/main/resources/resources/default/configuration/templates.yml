@@ -2039,6 +2039,74 @@ templates#block_states:
       facing=north,in_wall=true,open=true,powered=false:
         appearance: facing=north,in_wall=true,open=true
         id: 31
+  # slab block
+  default:block_state/slab:
+    properties:
+      type:
+        type: slab_type
+        default: bottom
+      waterlogged:
+        type: boolean
+        default: false
+    appearances:
+      type=top,waterlogged=false:
+        state: ${base_block}[type=top,waterlogged=false]
+        model:
+          path: ${model_top_path}
+          generation: ${model_top_generation}
+      type=bottom,waterlogged=false:
+        state: ${base_block}[type=bottom,waterlogged=false]
+        model:
+          path: ${model_bottom_path}
+          generation: ${model_bottom_generation}
+      type=double,waterlogged=false:
+        state: ${base_block}[type=double,waterlogged=false]
+        model:
+          path: ${model_double_path}
+          generation: ${model_double_generation}
+      type=top,waterlogged=true:
+        state: ${base_block}[type=top,waterlogged=true]
+        model:
+          path: ${model_top_path}
+      type=bottom,waterlogged=true:
+        state: ${base_block}[type=bottom,waterlogged=true]
+        model:
+          path: ${model_bottom_path}
+      type=double,waterlogged=true:
+        state: ${base_block}[type=double,waterlogged=true]
+        model:
+          path: ${model_double_path}
+    variants:
+      type=top,waterlogged=false:
+        appearance: type=top,waterlogged=false
+        id: 0
+      type=bottom,waterlogged=false:
+        appearance: type=bottom,waterlogged=false
+        id: 1
+      type=double,waterlogged=false:
+        appearance: type=double,waterlogged=false
+        id: 2
+      type=top,waterlogged=true:
+        appearance: type=top,waterlogged=true
+        id: 3
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      type=bottom,waterlogged=true:
+        appearance: type=bottom,waterlogged=true
+        id: 4
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
+      type=double,waterlogged=true:
+        appearance: type=double,waterlogged=true
+        id: 5
+        settings:
+          resistance: 1200.0
+          burnable: false
+          fluid-state: water
 
 # recipes
 templates#recipes:
