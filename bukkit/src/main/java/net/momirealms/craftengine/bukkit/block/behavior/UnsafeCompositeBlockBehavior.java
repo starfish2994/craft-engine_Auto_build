@@ -182,4 +182,11 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
             behavior.onExplosionHit(thisBlock, args, superMethod);
         }
     }
+
+    @Override
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.setPlacedBy(context, state);
+        }
+    }
 }
