@@ -66,10 +66,13 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
         BlockPos clickedPos = context.getClickedPos();
         ImmutableBlockState blockState = context.getLevel().getBlockAt(clickedPos).customBlockState();
         if (blockState != null && blockState.owner().value() == super.customBlock) {
-            return blockState.with(this.typeProperty, SlabType.DOUBLE).with(super.waterloggedProperty, false);
+            if (super.waterloggedProperty != null)
+                blockState = blockState.with(super.waterloggedProperty, false);
+            return blockState.with(this.typeProperty, SlabType.DOUBLE);
         } else {
             Object fluidState = FastNMS.INSTANCE.method$Level$getFluidState(context.getLevel().serverWorld(), LocationUtils.toBlockPos(clickedPos));
-            state = state.with(super.waterloggedProperty, FastNMS.INSTANCE.method$FluidState$getType(fluidState) == MFluids.WATER);
+            if (super.waterloggedProperty != null)
+                state = state.with(super.waterloggedProperty, FastNMS.INSTANCE.method$FluidState$getType(fluidState) == MFluids.WATER);
             Direction clickedFace = context.getClickedFace();
             return clickedFace == Direction.DOWN || clickedFace != Direction.UP && context.getClickLocation().y - (double) clickedPos.y() > (double) 0.5F ? state.with(this.typeProperty, SlabType.TOP) : state.with(this.typeProperty, SlabType.BOTTOM);
         }
@@ -94,6 +97,7 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockState = args[0];
+        if (super.waterloggedProperty == null) return blockState;
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return blockState;
         if (immutableBlockState.get(super.waterloggedProperty)) {
@@ -109,7 +113,7 @@ public class SlabBlockBehavior extends BukkitBlockBehavior {
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null || state.isEmpty()) return false;
         if (type == CoreReflections.instance$PathComputationType$WATER) {
-            return state.get(this.typeProperty) != SlabType.DOUBLE && state.get(super.waterloggedProperty);
+            return super.waterloggedProperty != null && state.get(this.typeProperty) != SlabType.DOUBLE && state.get(super.waterloggedProperty);
         }
         return false;
     }
