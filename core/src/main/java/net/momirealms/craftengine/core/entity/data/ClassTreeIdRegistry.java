@@ -12,18 +12,13 @@ public final class ClassTreeIdRegistry {
 
     public int getLastIdFor(Class<?> clazz) {
         int cachedId = this.classToLastIdCache.getInt(clazz);
-        if (cachedId == -1) {
-            Class<?> currentClass = clazz;
-            while ((currentClass = currentClass.getSuperclass()) != Object.class) {
-                int parentCachedId = this.classToLastIdCache.getInt(currentClass);
-                if (parentCachedId != -1) {
-                    return parentCachedId;
-                }
-            }
-            return -1;
-        } else {
-            return cachedId;
+        if (cachedId != -1) return cachedId;
+        Class<?> currentClass = clazz;
+        while ((currentClass = currentClass.getSuperclass()) != Object.class) {
+            int parentCachedId = this.classToLastIdCache.getInt(currentClass);
+            if (parentCachedId != -1) return parentCachedId;
         }
+        return -1;
     }
 
     public int define(Class<?> clazz) {
