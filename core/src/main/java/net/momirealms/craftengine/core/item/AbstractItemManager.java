@@ -470,10 +470,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new DyedColorModifier<>(0 << 24 /*不可省略*/ | MCUtils.fastFloor(vector3f.x) << 16 | MCUtils.fastFloor(vector3f.y) << 8 | MCUtils.fastFloor(vector3f.z));
             }
         }, "dyed-color");
-        registerDataType((obj) -> {
-            Map<String, Object> data = MiscUtils.castToMap(obj, false);
-            return new TagsModifier<>(data);
-        }, "tags", "tag", "nbt");
+        if (!VersionHelper.isOrAbove1_21_5()) {
+            registerDataType((obj) -> {
+                Map<String, Object> data = MiscUtils.castToMap(obj, false);
+                return new TagsModifier<>(data);
+            }, "tags", "tag", "nbt");
+        }
         registerDataType((obj) -> {
             boolean value = TypeUtils.checkType(obj, Boolean.class);
             return new UnbreakableModifier<>(value);
