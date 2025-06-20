@@ -24,6 +24,7 @@ categories:
       - default:palm_planks
       - default:palm_trapdoor
       - default:palm_door
+      - default:palm_fence_gate
   default:topaz:
     name: <!i><#FF8C00><i18n:category.topaz></#FF8C00>
     hidden: true

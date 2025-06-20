@@ -1831,6 +1831,214 @@ templates#block_states:
       facing=west,half=upper,hinge=right,open=true,powered=false:
         appearance: facing=west,half=upper,hinge=right,open=true
         id: 63
+  # fence gate block
+  default:block_state/fence_gate:
+    properties:
+      facing:
+        type: horizontal_direction
+      in_wall:
+        type: boolean
+        default: false
+      open:
+        type: boolean
+        default: false
+      powered:
+        type: boolean
+        default: false
+    appearances:
+      facing=east,in_wall=false,open=false:
+        state: ${base_block}[facing=east,in_wall=false,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_path}
+          y: 270
+          uvlock: true
+          generation: ${model_fence_gate_generation}
+      facing=east,in_wall=false,open=true:
+        state: ${base_block}[facing=east,in_wall=false,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_open_path}
+          y: 270
+          uvlock: true
+          generation: ${model_fence_gate_open_generation}
+      facing=east,in_wall=true,open=false:
+        state: ${base_block}[facing=east,in_wall=true,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_wall_path}
+          y: 270
+          uvlock: true
+          generation: ${model_fence_gate_wall_generation}
+      facing=east,in_wall=true,open=true:
+        state: ${base_block}[facing=east,in_wall=true,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_wall_open_path}
+          y: 270
+          uvlock: true
+          generation: ${model_fence_gate_wall_open_generation}
+      facing=north,in_wall=false,open=false:
+        state: ${base_block}[facing=north,in_wall=false,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_path}
+          y: 180
+          uvlock: true
+      facing=north,in_wall=false,open=true:
+        state: ${base_block}[facing=north,in_wall=false,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_open_path}
+          y: 180
+          uvlock: true
+      facing=north,in_wall=true,open=false:
+        state: ${base_block}[facing=north,in_wall=true,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_wall_path}
+          y: 180
+          uvlock: true
+      facing=north,in_wall=true,open=true:
+        state: ${base_block}[facing=north,in_wall=true,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_wall_open_path}
+          y: 180
+          uvlock: true
+      facing=south,in_wall=false,open=false:
+        state: ${base_block}[facing=south,in_wall=false,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_path}
+          uvlock: true
+      facing=south,in_wall=false,open=true:
+        state: ${base_block}[facing=south,in_wall=false,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_open_path}
+          uvlock: true
+      facing=south,in_wall=true,open=false:
+        state: ${base_block}[facing=south,in_wall=true,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_wall_path}
+          uvlock: true
+      facing=south,in_wall=true,open=true:
+        state: ${base_block}[facing=south,in_wall=true,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_wall_open_path}
+          uvlock: true
+      facing=west,in_wall=false,open=false:
+        state: ${base_block}[facing=west,in_wall=false,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_path}
+          y: 90
+          uvlock: true
+      facing=west,in_wall=false,open=true:
+        state: ${base_block}[facing=west,in_wall=false,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_open_path}
+          y: 90
+          uvlock: true
+      facing=west,in_wall=true,open=false:
+        state: ${base_block}[facing=west,in_wall=true,open=false,powered=true]
+        model:
+          path: ${model_fence_gate_wall_path}
+          y: 90
+          uvlock: true
+      facing=west,in_wall=true,open=true:
+        state: ${base_block}[facing=west,in_wall=true,open=true,powered=true]
+        model:
+          path: ${model_fence_gate_wall_open_path}
+          y: 90
+          uvlock: true
+    variants:
+      facing=east,in_wall=false,open=false,powered=true:
+        appearance: facing=east,in_wall=false,open=false
+        id: 0
+      facing=east,in_wall=false,open=false,powered=false:
+        appearance: facing=east,in_wall=false,open=false
+        id: 1
+      facing=east,in_wall=false,open=true,powered=true:
+        appearance: facing=east,in_wall=false,open=true
+        id: 2
+      facing=east,in_wall=false,open=true,powered=false:
+        appearance: facing=east,in_wall=false,open=true
+        id: 3
+      facing=east,in_wall=true,open=false,powered=true:
+        appearance: facing=east,in_wall=true,open=false
+        id: 4
+      facing=east,in_wall=true,open=false,powered=false:
+        appearance: facing=east,in_wall=true,open=false
+        id: 5
+      facing=east,in_wall=true,open=true,powered=true:
+        appearance: facing=east,in_wall=true,open=true
+        id: 6
+      facing=east,in_wall=true,open=true,powered=false:
+        appearance: facing=east,in_wall=true,open=true
+        id: 7
+      facing=south,in_wall=false,open=false,powered=true:
+        appearance: facing=south,in_wall=false,open=false
+        id: 8
+      facing=south,in_wall=false,open=false,powered=false:
+        appearance: facing=south,in_wall=false,open=false
+        id: 9
+      facing=south,in_wall=false,open=true,powered=true:
+        appearance: facing=south,in_wall=false,open=true
+        id: 10
+      facing=south,in_wall=false,open=true,powered=false:
+        appearance: facing=south,in_wall=false,open=true
+        id: 11
+      facing=south,in_wall=true,open=false,powered=true:
+        appearance: facing=south,in_wall=true,open=false
+        id: 12
+      facing=south,in_wall=true,open=false,powered=false:
+        appearance: facing=south,in_wall=true,open=false
+        id: 13
+      facing=south,in_wall=true,open=true,powered=true:
+        appearance: facing=south,in_wall=true,open=true
+        id: 14
+      facing=south,in_wall=true,open=true,powered=false:
+        appearance: facing=south,in_wall=true,open=true
+        id: 15
+      facing=west,in_wall=false,open=false,powered=true:
+        appearance: facing=west,in_wall=false,open=false
+        id: 16
+      facing=west,in_wall=false,open=false,powered=false:
+        appearance: facing=west,in_wall=false,open=false
+        id: 17
+      facing=west,in_wall=false,open=true,powered=true:
+        appearance: facing=west,in_wall=false,open=true
+        id: 18
+      facing=west,in_wall=false,open=true,powered=false:
+        appearance: facing=west,in_wall=false,open=true
+        id: 19
+      facing=west,in_wall=true,open=false,powered=true:
+        appearance: facing=west,in_wall=true,open=false
+        id: 20
+      facing=west,in_wall=true,open=false,powered=false:
+        appearance: facing=west,in_wall=true,open=false
+        id: 21
+      facing=west,in_wall=true,open=true,powered=true:
+        appearance: facing=west,in_wall=true,open=true
+        id: 22
+      facing=west,in_wall=true,open=true,powered=false:
+        appearance: facing=west,in_wall=true,open=true
+        id: 23
+      facing=north,in_wall=false,open=false,powered=true:
+        appearance: facing=north,in_wall=false,open=false
+        id: 24
+      facing=north,in_wall=false,open=false,powered=false:
+        appearance: facing=north,in_wall=false,open=false
+        id: 25
+      facing=north,in_wall=false,open=true,powered=true:
+        appearance: facing=north,in_wall=false,open=true
+        id: 26
+      facing=north,in_wall=false,open=true,powered=false:
+        appearance: facing=north,in_wall=false,open=true
+        id: 27
+      facing=north,in_wall=true,open=false,powered=true:
+        appearance: facing=north,in_wall=true,open=false
+        id: 28
+      facing=north,in_wall=true,open=false,powered=false:
+        appearance: facing=north,in_wall=true,open=false
+        id: 29
+      facing=north,in_wall=true,open=true,powered=true:
+        appearance: facing=north,in_wall=true,open=true
+        id: 30
+      facing=north,in_wall=true,open=true,powered=false:
+        appearance: facing=north,in_wall=true,open=true
+        id: 31
 
 # recipes
 templates#recipes:

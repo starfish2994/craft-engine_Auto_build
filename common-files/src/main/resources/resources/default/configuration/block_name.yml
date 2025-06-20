@@ -16,6 +16,7 @@ lang:
     block_name:default:palm_leaves: Palm Leaves
     block_name:default:palm_trapdoor: Palm Trapdoor
     block_name:default:palm_door: Palm Door
+    block_name:default:palm_fence_gate: Palm Fence Gate
     block_name:default:fairy_flower: Fairy Flower
     block_name:default:reed: Reed
     block_name:default:flame_cane: Flame Cane
@@ -37,6 +38,7 @@ lang:
     block_name:default:palm_leaves: 棕榈树叶
     block_name:default:palm_trapdoor: 棕榈木活板门
     block_name:default:palm_door: 棕榈木门
+    block_name:default:palm_fence_gate: 棕榈木栅门
     block_name:default:fairy_flower: 仙灵花
     block_name:default:reed: 芦苇
     block_name:default:flame_cane: 烈焰甘蔗

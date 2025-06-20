@@ -3723,6 +3723,24 @@ minecraft:iron_door[facing=west,half=upper,hinge=right,open=true,powered=true]: 
 # minecraft:pale_oak_door[facing=west,half=upper,hinge=left,open=true,powered=true]: minecraft:pale_oak_door[facing=west,half=upper,hinge=left,open=true,powered=false]
 # minecraft:pale_oak_door[facing=west,half=upper,hinge=right,open=true,powered=true]: minecraft:pale_oak_door[facing=west,half=upper,hinge=right,open=true,powered=false]
 
+#### Fence Gate ####
+minecraft:oak_fence_gate[facing=east,in_wall=false,open=false,powered=true]: minecraft:oak_fence_gate[facing=east,in_wall=false,open=false,powered=false]
+minecraft:oak_fence_gate[facing=east,in_wall=false,open=true,powered=true]: minecraft:oak_fence_gate[facing=east,in_wall=false,open=true,powered=false]
+minecraft:oak_fence_gate[facing=east,in_wall=true,open=false,powered=true]: minecraft:oak_fence_gate[facing=east,in_wall=true,open=false,powered=false]
+minecraft:oak_fence_gate[facing=east,in_wall=true,open=true,powered=true]: minecraft:oak_fence_gate[facing=east,in_wall=true,open=true,powered=false]
+minecraft:oak_fence_gate[facing=south,in_wall=false,open=false,powered=true]: minecraft:oak_fence_gate[facing=south,in_wall=false,open=false,powered=false]
+minecraft:oak_fence_gate[facing=south,in_wall=false,open=true,powered=true]: minecraft:oak_fence_gate[facing=south,in_wall=false,open=true,powered=false]
+minecraft:oak_fence_gate[facing=south,in_wall=true,open=false,powered=true]: minecraft:oak_fence_gate[facing=south,in_wall=true,open=false,powered=false]
+minecraft:oak_fence_gate[facing=south,in_wall=true,open=true,powered=true]: minecraft:oak_fence_gate[facing=south,in_wall=true,open=true,powered=false]
+minecraft:oak_fence_gate[facing=west,in_wall=false,open=false,powered=true]: minecraft:oak_fence_gate[facing=west,in_wall=false,open=false,powered=false]
+minecraft:oak_fence_gate[facing=west,in_wall=false,open=true,powered=true]: minecraft:oak_fence_gate[facing=west,in_wall=false,open=true,powered=false]
+minecraft:oak_fence_gate[facing=west,in_wall=true,open=false,powered=true]: minecraft:oak_fence_gate[facing=west,in_wall=true,open=false,powered=false]
+minecraft:oak_fence_gate[facing=west,in_wall=true,open=true,powered=true]: minecraft:oak_fence_gate[facing=west,in_wall=true,open=true,powered=false]
+minecraft:oak_fence_gate[facing=north,in_wall=false,open=false,powered=true]: minecraft:oak_fence_gate[facing=north,in_wall=false,open=false,powered=false]
+minecraft:oak_fence_gate[facing=north,in_wall=false,open=true,powered=true]: minecraft:oak_fence_gate[facing=north,in_wall=false,open=true,powered=false]
+minecraft:oak_fence_gate[facing=north,in_wall=true,open=false,powered=true]: minecraft:oak_fence_gate[facing=north,in_wall=true,open=false,powered=false]
+minecraft:oak_fence_gate[facing=north,in_wall=true,open=true,powered=true]: minecraft:oak_fence_gate[facing=north,in_wall=true,open=true,powered=false]
+
 #### Chorus Plant ####
 # Chorus Plant does support transparent textures, but man... its hitbox is super weird. You're probably better off using leaves.
 # minecraft:chorus_plant[down=false,east=false,north=false,south=false,up=false,west=false]: minecraft:chorus_plant[down=true,east=true,north=true,south=true,up=true,west=true]

@@ -33,6 +33,7 @@ i18n:
     item.palm_leaves: Palm Leaves
     item.palm_trapdoor: Palm Trapdoor
     item.palm_door: Palm Door
+    item.palm_fence_gate: Palm Fence Gate
     item.netherite_anvil: Netherite Anvil
     item.gunpowder_block: GunPowder Block
     item.solid_gunpowder_block: Solid GunPowder Block
@@ -82,6 +83,7 @@ i18n:
     item.palm_leaves: 棕榈树叶
     item.palm_trapdoor: 棕榈木活板门
     item.palm_door: 棕榈木门
+    item.palm_fence_gate: 棕榈木栅栏门
     item.netherite_anvil: 下界合金砧
     item.gunpowder_block: 火药粉末
     item.solid_gunpowder_block: 凝固火药块

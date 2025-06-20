@@ -421,6 +421,61 @@ items:
               textures:
                 bottom: minecraft:block/custom/palm_door_bottom
                 top: minecraft:block/custom/palm_door_top
+  default:palm_fence_gate:
+    material: nether_brick
+    custom-model-data: 1008
+    data:
+      item-name: <!i><i18n:item.palm_fence_gate>
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/palm_fence_gate
+      generation:
+        parent: minecraft:block/custom/palm_fence_gate
+    behavior:
+      type: block_item
+      block:
+        behaviors:
+          type: fence_gate_block
+          can-open-with-hand: true
+          can-open-by-wind-charge: true
+          sounds:
+            open: block.fence_gate.open
+            close: block.fence_gate.close
+        loot:
+          template: default:loot_table/self
+        settings:
+          item: default:palm_fence_gate
+          sounds:
+            break: minecraft:block.wood.break
+            step: minecraft:block.wood.step
+            place: minecraft:block.wood.place
+            hit: minecraft:block.wood.hit
+            fall: minecraft:block.wood.fall
+          tags:
+            - minecraft:fence_gates
+            - minecraft:mineable/axe
+            - minecraft:unstable_bottom_center
+        states:
+          template: default:block_state/fence_gate
+          arguments:
+            base_block: oak_fence_gate
+            model_fence_gate_path: minecraft:block/custom/palm_fence_gate
+            model_fence_gate_generation:
+              parent: minecraft:block/template_fence_gate
+              textures: &textures
+                texture: minecraft:block/custom/palm_fence_gate
+            model_fence_gate_open_path: minecraft:block/custom/palm_fence_gate_open
+            model_fence_gate_open_generation:
+              parent: minecraft:block/template_fence_gate_open
+              textures: *textures
+            model_fence_gate_wall_path: minecraft:block/custom/palm_fence_gate_wall
+            model_fence_gate_wall_generation:
+              parent: minecraft:block/template_fence_gate_wall
+              textures: *textures
+            model_fence_gate_wall_open_path: minecraft:block/custom/palm_fence_gate_wall_open
+            model_fence_gate_wall_open_generation:
+              parent: minecraft:block/template_fence_gate_wall_open
+              textures: *textures
 recipes:
   default:palm_planks:
     template: default:recipe/planks
