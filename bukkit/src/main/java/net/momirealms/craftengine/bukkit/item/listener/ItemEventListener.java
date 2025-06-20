@@ -20,18 +20,23 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.item.setting.FoodData;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.sound.SoundData;
+import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Openable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -167,17 +172,45 @@ public class ItemEventListener implements Listener {
 
             if (hitResult != null) {
                 UseOnContext useOnContext = new UseOnContext(serverPlayer, hand, itemInHand, hitResult);
-                if (immutableBlockState.behavior() instanceof AbstractBlockBehavior behavior) {
-                    InteractionResult result = behavior.useOnBlock(useOnContext, immutableBlockState);
-                    if (result.success()) {
-                        serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                boolean hasItem = player.getInventory().getItemInMainHand().getType() != Material.AIR || player.getInventory().getItemInOffHand().getType() != Material.AIR;
+                boolean flag = player.isSneaking() && hasItem;
+                if (!flag) {
+                    if (immutableBlockState.behavior() instanceof AbstractBlockBehavior behavior) {
+                        InteractionResult result = behavior.useOnBlock(useOnContext, immutableBlockState);
+                        if (result.success()) {
+                            serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                            if (result == InteractionResult.SUCCESS_AND_CANCEL) {
+                                event.setCancelled(true);
+                            }
+                            return;
+                        }
+                        if (result == InteractionResult.TRY_EMPTY_HAND && hand == InteractionHand.MAIN_HAND) {
+                            result = behavior.useWithoutItem(useOnContext, immutableBlockState);
+                            if (result.success()) {
+                                serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
+                                if (result == InteractionResult.SUCCESS_AND_CANCEL) {
+                                    event.setCancelled(true);
+                                }
+                                return;
+                            }
+                        }
+                        if (result == InteractionResult.FAIL) {
+                            return;
+                        }
                     }
-                    if (result == InteractionResult.SUCCESS_AND_CANCEL) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                    if (result != InteractionResult.PASS) {
-                        return;
+                }
+            }
+        } else {
+            if (Config.enableSoundSystem() && hitResult != null) {
+                Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
+                if (this.plugin.blockManager().isOpenableBlockSoundRemoved(blockOwner)) {
+                    boolean hasItem = player.getInventory().getItemInMainHand().getType() != Material.AIR || player.getInventory().getItemInOffHand().getType() != Material.AIR;
+                    boolean flag = player.isSneaking() && hasItem;
+                    if (!flag) {
+                        if (blockData instanceof Openable openable) {
+                            SoundData soundData = this.plugin.blockManager().getRemovedOpenableBlockSound(blockOwner, !openable.isOpen());
+                            serverPlayer.playSound(soundData.id(), SoundSource.BLOCK, soundData.volume().get(), soundData.pitch().get());
+                        }
                     }
                 }
             }

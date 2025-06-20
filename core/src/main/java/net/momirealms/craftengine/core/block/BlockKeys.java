@@ -118,6 +118,7 @@ public class BlockKeys {
     public static final Key BAMBOO_TRAPDOOR = Key.of("minecraft:bamboo_trapdoor");
     public static final Key CRIMSON_TRAPDOOR = Key.of("minecraft:crimson_trapdoor");
     public static final Key WARPED_TRAPDOOR = Key.of("minecraft:warped_trapdoor");
+    public static final Key IRON_TRAPDOOR = Key.of("minecraft:iron_trapdoor");
 
     public static final Key OAK_DOOR = Key.of("minecraft:oak_door");
     public static final Key SPRUCE_DOOR = Key.of("minecraft:spruce_door");
@@ -131,6 +132,7 @@ public class BlockKeys {
     public static final Key BAMBOO_DOOR = Key.of("minecraft:bamboo_door");
     public static final Key CRIMSON_DOOR = Key.of("minecraft:crimson_door");
     public static final Key WARPED_DOOR = Key.of("minecraft:warped_door");
+    public static final Key IRON_DOOR = Key.of("minecraft:iron_door");
 
     public static final Key COPPER_DOOR = Key.of("minecraft:copper_door");
     public static final Key EXPOSED_COPPER_DOOR = Key.of("minecraft:exposed_copper_door");

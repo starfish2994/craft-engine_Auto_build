@@ -39,6 +39,8 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
+import net.momirealms.craftengine.core.sound.SoundData;
+import net.momirealms.craftengine.core.sound.Sounds;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -53,6 +55,10 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class BukkitBlockManager extends AbstractBlockManager {
     private static BukkitBlockManager instance;
@@ -74,6 +80,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private Map<Key, Integer> registeredRealBlockSlots;
     // A set of blocks that sounds have been removed
     private Set<Object> affectedSoundBlocks;
+    private Map<Object, Pair<SoundData, SoundData>> affectedOpenableBlockSounds;
     private Map<Key, Key> soundMapper;
     // A list to record the order of registration
     private List<Key> blockRegisterOrder = new ObjectArrayList<>();
@@ -285,7 +292,8 @@ public class BukkitBlockManager extends AbstractBlockManager {
             ImmutableMap.Builder<Key, Integer> builder1 = ImmutableMap.builder();
             ImmutableMap.Builder<Integer, Object> builder2 = ImmutableMap.builder();
             ImmutableMap.Builder<Key, List<Integer>> builder3 = ImmutableMap.builder();
-            Set<Object> affectedSounds = new HashSet<>();
+            Set<Object> affectedBlockSounds = new HashSet<>();
+            Map<Object, Pair<SoundData, SoundData>> affectedDoors = new IdentityHashMap<>();
             Set<Object> affectedBlocks = new HashSet<>();
             List<Key> order = new ArrayList<>();
 
@@ -293,7 +301,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             int counter = 0;
             for (Map.Entry<Key, Integer> baseBlockAndItsCount : this.registeredRealBlockSlots.entrySet()) {
-                counter = registerBlockVariants(baseBlockAndItsCount, counter, builder1, builder2, builder3, affectedSounds, order);
+                counter = registerBlockVariants(baseBlockAndItsCount, counter, builder1, builder2, builder3, affectedBlockSounds, order);
             }
 
             freezeRegistry();
@@ -306,7 +314,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             for (Object block : (Iterable<Object>) MBuiltInRegistries.BLOCK) {
                 Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(block);
-                if (affectedSounds.contains(soundType)) {
+                if (affectedBlockSounds.contains(soundType)) {
                     Object state = getOnlyBlockState(block);
                     if (BlockStateUtils.isVanillaBlock(state)) {
                         affectedBlocks.add(block);
@@ -320,7 +328,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             this.affectedSoundBlocks = ImmutableSet.copyOf(affectedBlocks);
 
             ImmutableMap.Builder<Key, Key> soundMapperBuilder = ImmutableMap.builder();
-            for (Object soundType : affectedSounds) {
+            for (Object soundType : affectedBlockSounds) {
                 for (Field field : List.of(CoreReflections.field$SoundType$placeSound, CoreReflections.field$SoundType$fallSound, CoreReflections.field$SoundType$hitSound, CoreReflections.field$SoundType$stepSound, CoreReflections.field$SoundType$breakSound)) {
                     Object soundEvent = field.get(soundType);
                     Key previousId = Key.of(FastNMS.INSTANCE.field$SoundEvent$location(soundEvent).toString());
@@ -328,9 +336,50 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 }
             }
 
+            Predicate<Key> predicate = it -> this.realBlockArranger.containsKey(it);
+            Consumer<Key> soundCallback = s -> soundMapperBuilder.put(s, Key.of("replaced." + s.value()));
+            BiConsumer<Object, Pair<SoundData, SoundData>> affectedBlockCallback = affectedDoors::put;
+            Function<Key, SoundData> soundMapper = (k) -> SoundData.of(k, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.ranged(0.9f, 1f));
+            collectDoorSounds(predicate, Sounds.WOODEN_TRAPDOOR_OPEN, Sounds.WOODEN_TRAPDOOR_CLOSE, Sounds.WOODEN_TRAPDOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.NETHER_WOOD_TRAPDOOR_OPEN, Sounds.NETHER_WOOD_TRAPDOOR_CLOSE, Sounds.NETHER_TRAPDOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.BAMBOO_WOOD_TRAPDOOR_OPEN, Sounds.BAMBOO_WOOD_TRAPDOOR_CLOSE, Sounds.BAMBOO_TRAPDOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.CHERRY_WOOD_TRAPDOOR_OPEN, Sounds.CHERRY_WOOD_TRAPDOOR_CLOSE, Sounds.CHERRY_TRAPDOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.COPPER_TRAPDOOR_OPEN, Sounds.COPPER_TRAPDOOR_CLOSE, Sounds.COPPER_TRAPDOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.WOODEN_DOOR_OPEN, Sounds.WOODEN_DOOR_CLOSE, Sounds.WOODEN_DOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.NETHER_WOOD_DOOR_OPEN, Sounds.NETHER_WOOD_DOOR_CLOSE, Sounds.NETHER_DOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.BAMBOO_WOOD_DOOR_OPEN, Sounds.BAMBOO_WOOD_DOOR_CLOSE, Sounds.BAMBOO_DOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.CHERRY_WOOD_DOOR_OPEN, Sounds.CHERRY_WOOD_DOOR_CLOSE, Sounds.CHERRY_DOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.COPPER_DOOR_OPEN, Sounds.COPPER_DOOR_CLOSE, Sounds.COPPER_DOORS, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.WOODEN_FENCE_GATE_OPEN, Sounds.WOODEN_FENCE_GATE_CLOSE, Sounds.WOODEN_FENCE_GATES, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.NETHER_WOOD_FENCE_GATE_OPEN, Sounds.NETHER_WOOD_FENCE_GATE_CLOSE, Sounds.NETHER_FENCE_GATES, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.BAMBOO_WOOD_FENCE_GATE_OPEN, Sounds.BAMBOO_WOOD_FENCE_GATE_CLOSE, Sounds.BAMBOO_FENCE_GATES, soundMapper, soundCallback, affectedBlockCallback);
+            collectDoorSounds(predicate, Sounds.CHERRY_WOOD_FENCE_GATE_OPEN, Sounds.CHERRY_WOOD_FENCE_GATE_CLOSE, Sounds.CHERRY_FENCE_GATES, soundMapper, soundCallback, affectedBlockCallback);
+            this.affectedOpenableBlockSounds = ImmutableMap.copyOf(affectedDoors);
             this.soundMapper = soundMapperBuilder.buildKeepingLast();
         } catch (Throwable e) {
             plugin.logger().warn("Failed to inject blocks.", e);
+        }
+    }
+
+    private void collectDoorSounds(Predicate<Key> isUsedForCustomBlock,
+                                   Key openSound,
+                                   Key closeSound,
+                                   List<Key> doors,
+                                   Function<Key, SoundData> soundMapper,
+                                   Consumer<Key> soundCallback,
+                                   BiConsumer<Object, Pair<SoundData, SoundData>> affectedBlockCallback) {
+        for (Key d : doors) {
+            if (isUsedForCustomBlock.test(d)) {
+                soundCallback.accept(openSound);
+                soundCallback.accept(closeSound);
+                for (Key door : doors) {
+                    Object block = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(door));
+                    if (block != null) {
+                        affectedBlockCallback.accept(block, Pair.of(soundMapper.apply(Key.of("replaced." + openSound.value())), soundMapper.apply(Key.of("replaced." + closeSound.value()))));
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -596,6 +645,14 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     public boolean isBlockSoundRemoved(Object block) {
         return this.affectedSoundBlocks.contains(block);
+    }
+
+    public boolean isOpenableBlockSoundRemoved(Object block) {
+        return this.affectedOpenableBlockSounds.containsKey(block);
+    }
+
+    public SoundData getRemovedOpenableBlockSound(Object block, boolean open) {
+        return open ? this.affectedOpenableBlockSounds.get(block).left() : this.affectedOpenableBlockSounds.get(block).right();
     }
 
     private Map<String, String> loadBlockStateMappings(YamlDocument mappings) {

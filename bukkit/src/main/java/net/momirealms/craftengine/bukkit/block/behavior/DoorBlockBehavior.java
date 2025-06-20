@@ -238,15 +238,8 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         if (!this.canOpenWithHand) {
             return InteractionResult.PASS;
         }
-        if (context.getItem() == null) {
-            setOpen(context.getPlayer(), context.getLevel().serverWorld(), state, context.getClickedPos(), !state.get(this.openProperty));
-            return InteractionResult.SUCCESS;
-        } else if (!context.getPlayer().isSecondaryUseActive()) {
-            setOpen(context.getPlayer(), context.getLevel().serverWorld(), state, context.getClickedPos(), !state.get(this.openProperty));
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        } else {
-            return InteractionResult.PASS;
-        }
+        setOpen(context.getPlayer(), context.getLevel().serverWorld(), state, context.getClickedPos(), !state.get(this.openProperty));
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @Override

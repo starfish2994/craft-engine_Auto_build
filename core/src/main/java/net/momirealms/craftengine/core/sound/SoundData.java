@@ -3,7 +3,6 @@ package net.momirealms.craftengine.core.sound;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +23,10 @@ public record SoundData(Key id, SoundValue volume, SoundValue pitch) {
         } else {
             throw new IllegalArgumentException("Illegal object type for sound data: " + obj.getClass());
         }
+    }
+
+    public static SoundData of(Key id, SoundValue volume, SoundValue pitch) {
+        return new SoundData(id, volume, pitch);
     }
 
     public interface SoundValue extends Supplier<Float> {

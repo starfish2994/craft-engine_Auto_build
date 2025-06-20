@@ -99,6 +99,10 @@ public abstract class BlockBehavior {
     }
 
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        return InteractionResult.TRY_EMPTY_HAND;
+    }
+
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
         return InteractionResult.PASS;
     }
 

@@ -463,7 +463,7 @@ items:
             model_fence_gate_generation:
               parent: minecraft:block/template_fence_gate
               textures: &textures
-                texture: minecraft:block/custom/palm_fence_gate
+                texture: minecraft:block/custom/palm_planks
             model_fence_gate_open_path: minecraft:block/custom/palm_fence_gate_open
             model_fence_gate_open_generation:
               parent: minecraft:block/template_fence_gate_open

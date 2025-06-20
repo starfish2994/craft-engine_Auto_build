@@ -6,6 +6,10 @@
 # An anvil has four possible orientations, but the east-west and north-south orientations look exactly the same.
 minecraft:anvil[facing=north]: minecraft:anvil[facing=south]
 minecraft:anvil[facing=east]: minecraft:anvil[facing=west]
+minecraft:chipped_anvil[facing=north]: minecraft:chipped_anvil[facing=south]
+minecraft:chipped_anvil[facing=east]: minecraft:chipped_anvil[facing=west]
+minecraft:damaged_anvil[facing=north]: minecraft:damaged_anvil[facing=south]
+minecraft:damaged_anvil[facing=east]: minecraft:damaged_anvil[facing=west]
 
 #### Sapling ####
 # Every sapling has two stages, 0 and 1, but they look exactly the same.

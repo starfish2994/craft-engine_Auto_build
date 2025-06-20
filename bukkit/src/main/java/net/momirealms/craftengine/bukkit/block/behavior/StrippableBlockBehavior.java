@@ -49,6 +49,7 @@ public class StrippableBlockBehavior extends BukkitBlockBehavior {
         return this.stripped;
     }
 
+    // TODO 转移到 axe_item里
     @SuppressWarnings("unchecked")
     @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {

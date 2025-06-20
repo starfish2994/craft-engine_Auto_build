@@ -108,19 +108,12 @@ public class TrapDoorBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
         if (!this.canOpenWithHand) {
             return InteractionResult.PASS;
         }
-        if (context.getItem() == null) {
-            playerToggle(context, state);
-            return InteractionResult.SUCCESS;
-        } else if (!context.getPlayer().isSecondaryUseActive()) {
-            playerToggle(context, state);
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        } else {
-            return InteractionResult.PASS;
-        }
+        playerToggle(context, state);
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @SuppressWarnings("unchecked")
