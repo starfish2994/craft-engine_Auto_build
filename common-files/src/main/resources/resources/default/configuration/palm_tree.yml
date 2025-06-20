@@ -501,7 +501,7 @@ items:
         behaviors:
           type: slab_block
         loot:
-          template: default:loot_table/self
+          template: default:loot_table/slab
         settings:
           template:
             - default:sound/wood

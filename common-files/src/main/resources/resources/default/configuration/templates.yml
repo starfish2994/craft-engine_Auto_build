@@ -2208,6 +2208,25 @@ templates#loot_tables:
           - type: item
             item: ${item}
 
+  # drop 1/2 slabs
+
+  # template: default:loot_table/slab
+  default:loot_table/slab:
+    pools:
+      - rolls: 1
+        entries:
+          - type: item
+            item: ${__NAMESPACE__}:${__ID__}
+            functions:
+              - type: set_count
+                count: 2
+                add: false
+                conditions:
+                  - type: match_block_property
+                    properties:
+                      type: double
+              - type: explosion_decay
+
   # crop drops
 
   # template: default:loot_table/seed_crop
