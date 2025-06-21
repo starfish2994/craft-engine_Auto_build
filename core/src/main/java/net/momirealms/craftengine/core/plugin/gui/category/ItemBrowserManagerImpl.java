@@ -270,6 +270,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                     if (!itemId.equals(ItemKeys.AIR)) {
                         item = this.plugin.itemManager().createWrappedItem(ItemKeys.BARRIER, player);
                         item.customNameJson(AdventureHelper.componentToJson(Component.text(it).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).color(NamedTextColor.RED)));
+                        item.load();
                     }
                     canGoFurther = false;
                 } else {

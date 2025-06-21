@@ -501,48 +501,49 @@ recipes#topaz_gears:
     result:
       id: default:topaz_pickaxe
       count: 1
-  default:topaz_helmet:
-    type: shaped
-    pattern:
-      - AAA
-      - A A
-    ingredients:
-      A: default:topaz
-    result:
-      id: default:topaz_helmet
-      count: 1
-  default:topaz_chestplate:
-    type: shaped
-    pattern:
-      - A A
-      - AAA
-      - AAA
-    ingredients:
-      A: default:topaz
-    result:
-      id: default:topaz_chestplate
-      count: 1
-  default:topaz_leggings:
-    type: shaped
-    pattern:
-      - AAA
-      - A A
-      - A A
-    ingredients:
-      A: default:topaz
-    result:
-      id: default:topaz_leggings
-      count: 1
-  default:topaz_boots:
-    type: shaped
-    pattern:
-      - A A
-      - A A
-    ingredients:
-      A: default:topaz
-    result:
-      id: default:topaz_boots
-      count: 1
+  $$>=1.21.2#armor:
+    default:topaz_helmet:
+      type: shaped
+      pattern:
+        - AAA
+        - A A
+      ingredients:
+        A: default:topaz
+      result:
+        id: default:topaz_helmet
+        count: 1
+    default:topaz_chestplate:
+      type: shaped
+      pattern:
+        - A A
+        - AAA
+        - AAA
+      ingredients:
+        A: default:topaz
+      result:
+        id: default:topaz_chestplate
+        count: 1
+    default:topaz_leggings:
+      type: shaped
+      pattern:
+        - AAA
+        - A A
+        - A A
+      ingredients:
+        A: default:topaz
+      result:
+        id: default:topaz_leggings
+        count: 1
+    default:topaz_boots:
+      type: shaped
+      pattern:
+        - A A
+        - A A
+      ingredients:
+        A: default:topaz
+      result:
+        id: default:topaz_boots
+        count: 1
   default:topaz_bow:
     type: smithing_transform
     base: minecraft:bow
