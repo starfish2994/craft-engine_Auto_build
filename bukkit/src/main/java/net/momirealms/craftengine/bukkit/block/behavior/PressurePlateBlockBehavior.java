@@ -114,6 +114,8 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         int signalForState = this.getSignalForState(state);
         if (signalForState == 0) {
             this.checkPressed(args[3], args[1], args[2], state, signalForState, thisBlock);
+        } else {
+            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(args[1], args[2], thisBlock, 20);
         }
     }
 
@@ -165,7 +167,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         World world = BukkitWorldManager.instance().getWorld(craftWorld).world();
         world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.offSound);
         craftWorld.sendGameEvent(
-                FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
+                entity != null ? FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity) : null,
                 GameEvent.BLOCK_DEACTIVATE,
                 positionVector
         );
@@ -175,7 +177,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         World world = BukkitWorldManager.instance().getWorld(craftWorld).world();
         world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.onSound);
         craftWorld.sendGameEvent(
-                FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
+                entity != null ? FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity) : null,
                 GameEvent.BLOCK_ACTIVATE,
                 positionVector
         );
