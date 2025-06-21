@@ -536,7 +536,7 @@ items:
             model_double_path: minecraft:block/custom/palm_planks
   default:palm_stairs:
     material: nether_brick
-    custom-model-data: 1010
+    custom-model-data: 1013
     model:
       type: minecraft:model
       path: minecraft:item/custom/palm_stairs
