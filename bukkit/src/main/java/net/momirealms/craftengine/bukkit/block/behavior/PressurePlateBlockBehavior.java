@@ -59,14 +59,14 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             level = args[3];
             blockPos = args[4];
         }
-        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[0]);
+        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[1]);
         return direction == Direction.DOWN && !FastNMS.INSTANCE.method$BlockStateBase$canSurvive(state, level, blockPos)
                 ? MBlocks.AIR$defaultState
                 : superMethod.call();
     }
 
     public boolean canSurvive(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object blockPos = LocationUtils.fromVec(args[2]);
+        Object blockPos = LocationUtils.below(args[2]);
         Object level = args[1];
         return FastNMS.INSTANCE.method$Block$canSupportRigidBlock(level, blockPos)
                 || FastNMS.INSTANCE.method$Block$canSupportCenter(level, blockPos, CoreReflections.instance$Direction$UP);

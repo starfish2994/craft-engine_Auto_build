@@ -93,7 +93,7 @@ public class FenceGateBlockBehavior extends BukkitBlockBehavior {
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockState = args[0];
-        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[0]);
+        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[1]);
         ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (state == null || state.isEmpty()) return blockState;
         if (state.get(this.facingProperty).toDirection().clockWise().axis() != direction.axis()) {

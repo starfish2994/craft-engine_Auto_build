@@ -70,7 +70,7 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         if (super.waterloggedProperty != null && immutableBlockState.get(this.waterloggedProperty)) {
             FastNMS.INSTANCE.method$LevelAccessor$scheduleFluidTick(VersionHelper.isOrAbove1_21_2() ? args[2] : args[3], VersionHelper.isOrAbove1_21_2() ? args[3] : args[4], MFluids.WATER, 5);
         }
-        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[0]);
+        Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[1]);
         StairsShape stairsShape = getStairsShape(immutableBlockState, level, LocationUtils.fromBlockPos(blockPos));
         return direction.axis().isHorizontal()
                 ? immutableBlockState.with(this.shapeProperty, stairsShape).customBlockState().handle()
