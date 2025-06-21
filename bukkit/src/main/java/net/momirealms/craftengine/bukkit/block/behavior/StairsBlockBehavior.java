@@ -126,34 +126,39 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         return superMethod.call();
     }
 
-    private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos blockPos) {
+    private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos pos) {
         Direction direction = state.get(this.facingProperty).toDirection();
-        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction)));
-        StairsShape straight1 = getStairsShape(state, level, blockPos, blockState, direction, true);
-        if (straight1 != null) return straight1;
-        Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction.opposite())));
-        StairsShape straight = getStairsShape(state, level, blockPos, blockState1, direction, false);
-        if (straight != null) return straight;
-        return StairsShape.STRAIGHT;
-    }
-
-    @Nullable
-    private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos blockPos, Object blockState1, Direction direction, boolean opposite) {
-        if (isStairs(blockState1)) {
-            int stateId = BlockStateUtils.blockStateToId(blockState1);
-            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-            if (immutableBlockState == null || immutableBlockState.isEmpty()) return StairsShape.STRAIGHT;
-            if (state.get(this.facingProperty) == immutableBlockState.get(this.facingProperty)) {
-                Direction direction1 = immutableBlockState.get(this.facingProperty).toDirection();
-                if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, blockPos, opposite ? direction1.opposite() : direction1)) {
-                    if (direction1 == direction.counterClockWise()) {
-                        return opposite ? StairsShape.OUTER_LEFT : StairsShape.INNER_LEFT;
-                    }
-                    return opposite ? StairsShape.OUTER_RIGHT : StairsShape.INNER_LEFT;
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(direction)));
+        int stateId = BlockStateUtils.blockStateToId(blockState);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) return StairsShape.STRAIGHT;
+        if (isStairs(blockState) && state.get(this.halfProperty) == immutableBlockState.get(this.halfProperty)) {
+            Direction direction1 = immutableBlockState.get(this.facingProperty).toDirection();
+            if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction1.opposite())) {
+                if (direction1 == direction.counterClockWise()) {
+                    return StairsShape.OUTER_LEFT;
                 }
+
+                return StairsShape.OUTER_RIGHT;
             }
         }
-        return null;
+
+        Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(direction.opposite())));
+        int stateId1 = BlockStateUtils.blockStateToId(blockState1);
+        ImmutableBlockState immutableBlockState1 = BukkitBlockManager.instance().getImmutableBlockState(stateId1);
+        if (immutableBlockState1 == null || immutableBlockState1.isEmpty()) return StairsShape.STRAIGHT;
+        if (isStairs(blockState1) && state.get(this.halfProperty) == immutableBlockState1.get(this.halfProperty)) {
+            Direction direction2 = immutableBlockState1.get(this.facingProperty).toDirection();
+            if (direction2.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction2)) {
+                if (direction2 == direction.counterClockWise()) {
+                    return StairsShape.INNER_LEFT;
+                }
+
+                return StairsShape.INNER_RIGHT;
+            }
+        }
+
+        return StairsShape.STRAIGHT;
     }
 
     private boolean isStairs(Object state) {
@@ -165,16 +170,13 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         return optionalBehavior.isPresent();
     }
 
-    private boolean canTakeShape(ImmutableBlockState state, Object level, BlockPos blockPos, Direction direction) {
-        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction)));
-        if (!isStairs(blockState)) {
-            return false;
-        }
+    private boolean canTakeShape(ImmutableBlockState state, Object level, BlockPos pos, Direction face) {
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(face)));
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (immutableBlockState == null || immutableBlockState.isEmpty()) {
-            return false;
+            return !isStairs(blockState);
         }
-        return immutableBlockState.get(this.facingProperty) != state.get(this.facingProperty) || immutableBlockState.get(this.halfProperty) != state.get(this.halfProperty);
+        return !isStairs(blockState) || immutableBlockState.get(this.facingProperty) != state.get(this.facingProperty) || immutableBlockState.get(this.halfProperty) != state.get(this.halfProperty);
     }
 
     public static class Factory implements BlockBehaviorFactory {
