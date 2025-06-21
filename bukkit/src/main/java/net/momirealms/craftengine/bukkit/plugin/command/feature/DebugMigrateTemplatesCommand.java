@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DebugMigrateTemplatesCommand extends BukkitCommandFeature<CommandSender> {
-    private static final Pattern PATTERN = Pattern.compile("(?<!\\$)\\{([^}]+)}");
+    private static final Pattern PATTERN = Pattern.compile("(?<!\\$)\\{([0-9a-zA-Z_]+)}");
 
     public DebugMigrateTemplatesCommand(CraftEngineCommandManager<CommandSender> commandManager, CraftEngine plugin) {
         super(commandManager, plugin);
@@ -31,13 +31,7 @@ public class DebugMigrateTemplatesCommand extends BukkitCommandFeature<CommandSe
                     for (Pack pack : BukkitCraftEngine.instance().packManager().loadedPacks()) {
                         for (Path file : FileUtils.getYmlConfigsDeeply(pack.configurationFolder())) {
                             try {
-                                DumperOptions options = new DumperOptions();
-                                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-                                options.setPrettyFlow(true);
-                                Yaml yaml = new Yaml(options);
-                                Object data = yaml.load(Files.newBufferedReader(file));
-                                String fileStr = yaml.dump(data);
-                                Files.writeString(file, fileStr);
+                                Files.writeString(file, replacePlaceholders(Files.readString(file)));
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
