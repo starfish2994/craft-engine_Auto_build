@@ -25,6 +25,7 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
     public static final Key FENCE_GATE_BLOCK = Key.from("craftengine:fence_gate_block");
     public static final Key SLAB_BLOCK = Key.from("craftengine:slab_block");
     public static final Key STAIRS_BLOCK = Key.from("craftengine:stairs_block");
+    public static final Key PRESSURE_PLATE_BLOCK = Key.from("craftengine:pressure_plate_block");
 
     public static void init() {
         register(EMPTY, (block, args) -> EmptyBlockBehavior.INSTANCE);
@@ -48,5 +49,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(FENCE_GATE_BLOCK, FenceGateBlockBehavior.FACTORY);
         register(SLAB_BLOCK, SlabBlockBehavior.FACTORY);
         register(STAIRS_BLOCK, StairsBlockBehavior.FACTORY);
+        register(PRESSURE_PLATE_BLOCK, PressurePlateBlockBehavior.FACTORY);
     }
 }

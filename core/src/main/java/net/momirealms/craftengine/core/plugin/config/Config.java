@@ -60,7 +60,7 @@ public class Config {
     protected boolean resource_pack$protection$crash_tools$method_3;
 
     protected boolean resource_pack$validate$enable;
-    protected boolean resource_pack$remove_all_shaders;
+    protected boolean resource_pack$exclude_shaders;
 
     protected boolean resource_pack$protection$obfuscation$enable;
     protected long resource_pack$protection$obfuscation$seed;
@@ -263,7 +263,7 @@ public class Config {
         resource_pack$protection$obfuscation$resource_location$bypass_sounds = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-sounds");
         resource_pack$protection$obfuscation$resource_location$bypass_equipments = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-equipments");
         resource_pack$validate$enable = config.getBoolean("resource-pack.validate.enable", true);
-        resource_pack$remove_all_shaders = config.getBoolean("resource-pack.remove-all-shaders", false);
+        resource_pack$exclude_shaders = config.getBoolean("resource-pack.exclude-shaders", false);
 
         try {
             resource_pack$duplicated_files_handler = config.getMapList("resource-pack.duplicated-files-handler").stream().map(it -> {
@@ -738,8 +738,8 @@ public class Config {
         return instance.resource_pack$validate$enable;
     }
 
-    public static boolean removeAllShaders() {
-        return instance.resource_pack$remove_all_shaders;
+    public static boolean excludeShaders() {
+        return instance.resource_pack$exclude_shaders;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

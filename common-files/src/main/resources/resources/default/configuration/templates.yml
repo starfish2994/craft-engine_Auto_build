@@ -3014,7 +3014,30 @@ templates#block_states:
           resistance: 1200.0
           burnable: false
           fluid-state: water
-
+  # pressure plate block
+  default:block_state/pressure_plate:
+    properties:
+      powered:
+        type: boolean
+        default: false
+    appearances:
+      normal:
+        state: ${normal_state}
+        model:
+          path: ${model_normal_path}
+          generation: ${model_normal_generation}
+      powered:
+        state: ${powered_state}
+        model:
+          path: ${model_powered_path}
+          generation: ${model_powered_generation}
+    variants:
+      powered=false:
+        appearance: normal
+        id: ${normal_id}
+      powered=true:
+        appearance: powered
+        id: ${powered_id}
 # recipes
 templates#recipes:
   default:recipe/planks:

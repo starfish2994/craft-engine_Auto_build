@@ -615,7 +615,7 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
-            if (Config.removeAllShaders()) {
+            if (Config.excludeShaders()) {
                 this.removeAllShaders(generatedPackPath);
             }
             if (Config.validateResourcePack()) {
