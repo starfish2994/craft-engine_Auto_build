@@ -534,6 +534,55 @@ items:
                 side: minecraft:block/custom/palm_planks
                 top: minecraft:block/custom/palm_planks
             model_double_path: minecraft:block/custom/palm_planks
+  default:palm_stairs:
+    material: paper
+    custom-model-data: 1010
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/palm_stairs
+      generation:
+        parent: minecraft:block/custom/palm_stairs
+    data:
+      item-name: <!i><i18n:item.palm_stairs>
+    behavior:
+      type: block_item
+      block:
+        loot:
+          template: default:loot_table/self
+        settings:
+          template:
+            - default:sound/wood
+          overrides:
+            map-color: 2
+            instrument: bass
+            hardness: 2.0
+            resistance: 3.0
+            burnable: true
+            tags:
+              - minecraft:mineable/axe
+              - minecraft:stairs
+              - minecraft:wooden_stairs
+        behaviors:
+          type: stairs_block
+        states:
+          template: default:block_state/stairs
+          arguments:
+            base_block: cut_copper_stairs
+            model_stairs_inner_path: minecraft:block/custom/palm_stairs_inner
+            model_stairs_inner_generation:
+              parent: minecraft:block/inner_stairs
+              textures: &textures
+                bottom: &block_texture minecraft:block/custom/palm_planks
+                side: *block_texture
+                top: *block_texture
+            model_stairs_outer_path: minecraft:block/custom/palm_stairs_outer
+            model_stairs_outer_generation:
+              parent: minecraft:block/outer_stairs
+              textures: *textures
+            model_stairs_path: minecraft:block/custom/palm_stairs
+            model_stairs_generation:
+              parent: minecraft:block/stairs
+              textures: *textures
 recipes:
   default:palm_planks:
     template: default:recipe/planks
