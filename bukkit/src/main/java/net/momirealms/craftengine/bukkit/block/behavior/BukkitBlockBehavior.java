@@ -1,6 +1,10 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MItems;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.MirrorUtils;
 import net.momirealms.craftengine.bukkit.util.RotationUtils;
@@ -8,10 +12,8 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.properties.Property;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.HorizontalDirection;
-import net.momirealms.craftengine.core.util.Mirror;
-import net.momirealms.craftengine.core.util.Rotation;
+import net.momirealms.craftengine.core.util.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,16 +77,20 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
         });
     }
 
+    @Nullable
     private MirrorFunction mirrorFunction;
+    @Nullable
     private RotateFunction rotateFunction;
+    @Nullable
+    protected final Property<Boolean> waterloggedProperty;
 
+    @SuppressWarnings("unchecked")
     public BukkitBlockBehavior(CustomBlock customBlock) {
         super(customBlock);
         for (Property<?> property : customBlock.properties()) {
-            Optional.ofNullable(HARD_CODED_PROPERTY_DATA.get(property.name())).ifPresent(
-                    c -> c.accept(this, property)
-            );
+            Optional.ofNullable(HARD_CODED_PROPERTY_DATA.get(property.name())).ifPresent(c -> c.accept(this, property));
         }
+        this.waterloggedProperty = (Property<Boolean>) customBlock.getProperty("waterlogged");
     }
 
     @Override
@@ -117,5 +123,49 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
     interface RotateFunction {
 
         Object rotate(Object thisBlock, ImmutableBlockState state, Rotation rotation) throws Exception;
+    }
+
+    private static final int pickupBlock$world = VersionHelper.isOrAbove1_20_2() ? 1 : 0;
+    private static final int pickupBlock$pos = VersionHelper.isOrAbove1_20_2() ? 2 : 1;
+    private static final int pickupBlock$blockState = VersionHelper.isOrAbove1_20_2() ? 3 : 2;
+
+    @Override
+    public Object pickupBlock(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        if (this.waterloggedProperty == null) return CoreReflections.instance$ItemStack$EMPTY;
+        Object blockState = args[pickupBlock$blockState];
+        Object world = args[pickupBlock$world];
+        Object pos = args[pickupBlock$pos];
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+        if (immutableBlockState != null) {
+            if (immutableBlockState.get(this.waterloggedProperty)) {
+                FastNMS.INSTANCE.method$LevelWriter$setBlock(world, pos, immutableBlockState.with(this.waterloggedProperty, false).customBlockState().handle(), 3);
+                return FastNMS.INSTANCE.constructor$ItemStack(MItems.WATER_BUCKET, 1);
+            }
+        }
+        return CoreReflections.instance$ItemStack$EMPTY;
+    }
+
+    @Override
+    public boolean placeLiquid(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        if (this.waterloggedProperty == null) return false;
+        Object blockState = args[2];
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
+        if (immutableBlockState != null) {
+            Object fluidType = FastNMS.INSTANCE.method$FluidState$getType(args[3]);
+            if (!immutableBlockState.get(this.waterloggedProperty) && fluidType == MFluids.WATER) {
+                FastNMS.INSTANCE.method$LevelWriter$setBlock(args[0], args[1], immutableBlockState.with(this.waterloggedProperty, true).customBlockState().handle(), 3);
+                FastNMS.INSTANCE.method$LevelAccessor$scheduleFluidTick(args[0], args[1], fluidType, 5);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final int canPlaceLiquid$liquid = VersionHelper.isOrAbove1_20_2() ? 4 : 3;
+
+    @Override
+    public boolean canPlaceLiquid(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        if (this.waterloggedProperty == null) return false;
+        return args[canPlaceLiquid$liquid] == MFluids.WATER;
     }
 }

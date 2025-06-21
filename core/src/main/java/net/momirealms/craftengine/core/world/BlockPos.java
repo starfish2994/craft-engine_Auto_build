@@ -35,6 +35,10 @@ public class BlockPos extends Vec3i {
                 : new BlockPos(this.x() + direction.stepX() * i, this.y() + direction.stepY() * i, this.z() + direction.stepZ() * i);
     }
 
+    public BlockPos above() {
+        return new BlockPos(this.x(), this.y() + 1, this.z());
+    }
+
     public int toSectionBlockIndex() {
         return (y & 15) << 8 | (z & 15) << 4 | x & 15;
     }

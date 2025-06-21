@@ -29,6 +29,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 
 public final class BlockGenerator {
     private static final BukkitBlockShape STONE_SHAPE =
@@ -54,7 +55,7 @@ public final class BlockGenerator {
                 // should always implement this interface
                 .implement(CoreReflections.clazz$Fallable)
                 .implement(CoreReflections.clazz$BonemealableBlock)
-                // TODO .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
+                .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
                 // internal interfaces
                 .implement(BehaviorHolder.class)
                 .implement(ShapeHolder.class)
@@ -76,6 +77,9 @@ public final class BlockGenerator {
                 // getSupportShape
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$getBlockSupportShape))
                 .intercept(MethodDelegation.to(GetSupportShapeInterceptor.INSTANCE))
+                // isPathFindable
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isPathFindable))
+                .intercept(MethodDelegation.to(IsPathFindableInterceptor.INSTANCE))
                 // mirror
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$mirror))
                 .intercept(MethodDelegation.to(MirrorInterceptor.INSTANCE))
@@ -137,9 +141,44 @@ public final class BlockGenerator {
                         .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$LevelReader).or(ElementMatchers.takesArgument(1, CoreReflections.clazz$Direction)))
                         .and(ElementMatchers.named("updateShape").or(ElementMatchers.named("a"))))
                 .intercept(MethodDelegation.to(UpdateShapeInterceptor.INSTANCE))
+                // onExplosionHit 1.21+
+                .method(ElementMatchers.returns(void.class)
+                        .and(ElementMatchers.takesArgument(0, CoreReflections.clazz$BlockState))
+                        .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$ServerLevel))
+                        .and(ElementMatchers.takesArgument(2, CoreReflections.clazz$BlockPos))
+                        .and(ElementMatchers.takesArgument(3, CoreReflections.clazz$Explosion))
+                        .and(ElementMatchers.takesArgument(4, BiConsumer.class))
+                )
+                .intercept(MethodDelegation.to(OnExplosionHitInterceptor.INSTANCE))
                 // neighborChanged
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$neighborChanged))
-                .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE));
+                .intercept(MethodDelegation.to(NeighborChangedInterceptor.INSTANCE))
+                // pickupBlock
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$pickupBlock))
+                .intercept(MethodDelegation.to(PickUpBlockInterceptor.INSTANCE))
+                // placeLiquid
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$placeLiquid))
+                .intercept(MethodDelegation.to(PlaceLiquidInterceptor.INSTANCE))
+                // canPlaceLiquid
+                .method(ElementMatchers.is(CoreReflections.method$SimpleWaterloggedBlock$canPlaceLiquid))
+                .intercept(MethodDelegation.to(CanPlaceLiquidInterceptor.INSTANCE))
+                // entityInside
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$entityInside))
+                .intercept(MethodDelegation.to(EntityInsideInterceptor.INSTANCE))
+                // getSignal
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$getSignal))
+                .intercept(MethodDelegation.to(GetSignalInterceptor.INSTANCE))
+                // getDirectSignal
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$getDirectSignal))
+                .intercept(MethodDelegation.to(GetDirectSignalInterceptor.INSTANCE))
+                // isSignalSource
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isSignalSource))
+                .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE));
+        if (CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval != null) {
+            builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
+                    .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
+        }
+
         Class<?> clazz$CraftEngineBlock = builder.make().load(BlockGenerator.class.getClassLoader()).getLoaded();
         constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
                 .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$BlockBehaviour$Properties))
@@ -175,6 +214,7 @@ public final class BlockGenerator {
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
             ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
             ChainUpdateBlockIndicator indicator = (ChainUpdateBlockIndicator) thisObj;
+            // todo chain updater
             if (indicator.isNoteBlock()) {
                 if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
                     startNoteBlockChain(args);
@@ -249,6 +289,21 @@ public final class BlockGenerator {
                 return holder.value().getSupportShape(thisObj, args);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run getSupportShape", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class IsPathFindableInterceptor {
+        public static final IsPathFindableInterceptor INSTANCE = new IsPathFindableInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().isPathFindable(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run isPathFindable", e);
                 return superMethod.call();
             }
         }
@@ -423,6 +478,138 @@ public final class BlockGenerator {
                 holder.value().neighborChanged(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run neighborChanged", e);
+            }
+        }
+    }
+
+    public static class OnExplosionHitInterceptor {
+        public static final OnExplosionHitInterceptor INSTANCE = new OnExplosionHitInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().onExplosionHit(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run onExplosionHit", e);
+            }
+        }
+    }
+
+    public static class PickUpBlockInterceptor {
+        public static final PickUpBlockInterceptor INSTANCE = new PickUpBlockInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().pickupBlock(thisObj, args, () -> CoreReflections.instance$ItemStack$EMPTY);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run pickupBlock", e);
+                return CoreReflections.instance$ItemStack$EMPTY;
+            }
+        }
+    }
+
+    public static class PlaceLiquidInterceptor {
+        public static final PlaceLiquidInterceptor INSTANCE = new PlaceLiquidInterceptor();
+
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().placeLiquid(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run placeLiquid", e);
+                return false;
+            }
+        }
+    }
+
+    public static class CanPlaceLiquidInterceptor {
+        public static final CanPlaceLiquidInterceptor INSTANCE = new CanPlaceLiquidInterceptor();
+
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().canPlaceLiquid(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run canPlaceLiquid", e);
+                return false;
+            }
+        }
+    }
+
+    public static class GetDirectSignalInterceptor {
+        public static final GetDirectSignalInterceptor INSTANCE = new GetDirectSignalInterceptor();
+
+        @RuntimeType
+        public int intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().getDirectSignal(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run getDirectSignal", e);
+                return 0;
+            }
+        }
+    }
+
+    public static class GetSignalInterceptor {
+        public static final GetSignalInterceptor INSTANCE = new GetSignalInterceptor();
+
+        @RuntimeType
+        public int intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().getSignal(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run getSignal", e);
+                return 0;
+            }
+        }
+    }
+
+    public static class IsSignalSourceInterceptor {
+        public static final IsSignalSourceInterceptor INSTANCE = new IsSignalSourceInterceptor();
+
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                return holder.value().isSignalSource(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run isSignalSource", e);
+                return false;
+            }
+        }
+    }
+
+    public static class AffectNeighborsAfterRemovalInterceptor {
+        public static final AffectNeighborsAfterRemovalInterceptor INSTANCE = new AffectNeighborsAfterRemovalInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().affectNeighborsAfterRemoval(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run affectNeighborsAfterRemoval", e);
+            }
+        }
+    }
+
+    public static class EntityInsideInterceptor {
+        public static final EntityInsideInterceptor INSTANCE = new EntityInsideInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            try {
+                holder.value().entityInside(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run entityInside", e);
             }
         }
     }

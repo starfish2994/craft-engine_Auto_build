@@ -68,11 +68,15 @@ resource-pack:
   merge-external-zip-files:
     - CustomNameplates/resourcepack.zip
   exclude-file-extensions: ["md", "psd", "bbmodel", "db", "ini"]
+  # Exclude the shaders when generating the resource pack
+  exclude-core-shaders: false
   delivery:
     # Send the resource pack on joining the server
     send-on-join: true
     kick-if-declined: true
-    prompt: "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"
+    prompt: |
+      <yellow>To fully experience our server,
+      please accept our custom resource pack.</yellow>
     # If you are hosting the resource pack by yourself, replace `localhost` with your server ip otherwise it would only work on your local pc
     # If using BungeeCord or Velocity, consider using a proxy-side plugin to handle resource pack delivery.
     # Read this page for more host types: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host

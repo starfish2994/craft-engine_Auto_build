@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
 
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -35,7 +36,7 @@ public class FileUtils {
 
     public static void deleteDirectory(Path folder) throws IOException {
         if (!Files.exists(folder)) return;
-        try (Stream<Path> walk = Files.walk(folder)) {
+        try (Stream<Path> walk = Files.walk(folder, FileVisitOption.FOLLOW_LINKS)) {
             walk.sorted(Comparator.reverseOrder())
                     .forEach(path -> {
                         try {
@@ -51,7 +52,7 @@ public class FileUtils {
         if (!Files.exists(configFolder)) {
             return List.of();
         }
-        try (Stream<Path> stream = Files.walk(configFolder)) {
+        try (Stream<Path> stream = Files.walk(configFolder, FileVisitOption.FOLLOW_LINKS)) {
             return stream.parallel()
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".yml"))

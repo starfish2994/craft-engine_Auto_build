@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -62,10 +61,10 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
     }
 
     @Override
-    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world = args[1];
         Object blockPos = args[2];
-        FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 2);
+        FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 2);
     }
 
     @Override
@@ -86,7 +85,7 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
             return state;
         }
         if (this.delay != 0) {
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(level, blockPos, thisBlock, this.delay);
+            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, blockPos, thisBlock, this.delay);
             return state;
         }
         if (!canSurvive(thisBlock, new Object[] {state, level, blockPos}, () -> true)) {
@@ -100,7 +99,7 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
             }
             world.playBlockSound(position, previousState.sounds().breakSound());
             FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
-            return CoreReflections.method$Block$defaultBlockState.invoke(MBlocks.AIR);
+            return MBlocks.AIR$defaultState;
         }
         return state;
     }

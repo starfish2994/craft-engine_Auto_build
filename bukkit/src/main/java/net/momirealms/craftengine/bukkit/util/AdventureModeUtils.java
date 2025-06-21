@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MItems;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -35,7 +34,7 @@ public class AdventureModeUtils {
 
     public static boolean canPlace(Item<?> itemStack, World world, BlockPos pos, Object state) {
         Object blockPos = LocationUtils.toBlockPos(pos);
-        Object item = itemStack == null ? MItems.Air$ItemStack : itemStack.getLiteralObject();
+        Object item = itemStack == null ? CoreReflections.instance$ItemStack$EMPTY : itemStack.getLiteralObject();
         Object blockInWorld = FastNMS.INSTANCE.constructor$BlockInWorld(FastNMS.INSTANCE.field$CraftWorld$ServerLevel((org.bukkit.World) world.platformWorld()), blockPos, false);
         if (state != null) {
             try {

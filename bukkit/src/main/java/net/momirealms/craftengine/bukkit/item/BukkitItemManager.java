@@ -1,9 +1,7 @@
 package net.momirealms.craftengine.bukkit.item;
 
-import com.saicone.rtag.item.ItemTagStream;
-import net.momirealms.craftengine.bukkit.item.behavior.BucketItemBehavior;
+import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.FlintAndSteelItemBehavior;
-import net.momirealms.craftengine.bukkit.item.behavior.WaterBucketItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
 import net.momirealms.craftengine.bukkit.item.listener.ArmorEventListener;
 import net.momirealms.craftengine.bukkit.item.listener.DebugStickListener;
@@ -13,7 +11,6 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -26,7 +23,6 @@ import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.ResourceKey;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
@@ -43,9 +39,8 @@ import java.util.Set;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
-        registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKETS);
-        registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
         registerVanillaItemExtraBehavior(FlintAndSteelItemBehavior.INSTANCE, ItemKeys.FLINT_AND_STEEL);
+        registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.AXES);
     }
 
     private static BukkitItemManager instance;
@@ -139,9 +134,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         HandlerList.unregisterAll(this.armorEventListener);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Item<ItemStack> fromByteArray(byte[] bytes) {
-        return this.factory.wrap(ItemTagStream.INSTANCE.fromBytes(bytes));
+        return this.factory.wrap(Bukkit.getUnsafe().deserializeItem(bytes));
     }
 
     @Override
@@ -165,12 +161,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             this.plugin.logger().warn(id + " is not a valid namespaced key");
             return new ItemStack(Material.AIR);
         }
-        Material material = Registry.MATERIAL.get(key);
-        if (material == null) {
+        Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
+        if (item == null) {
             this.plugin.logger().warn(id + " is not a valid material");
             return new ItemStack(Material.AIR);
         }
-        return new ItemStack(material);
+        return FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(item, 1));
     }
 
     @Override

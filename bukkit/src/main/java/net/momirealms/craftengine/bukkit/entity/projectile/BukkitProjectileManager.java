@@ -9,15 +9,16 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.impl.FoliaTask;
 import net.momirealms.craftengine.bukkit.util.ParticleUtils;
-import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -65,7 +66,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     }
 
     @Override
-    public Optional<CustomProjectile> projectileByEntityId(int entityId) {
+    public Optional<BukkitCustomProjectile> projectileByEntityId(int entityId) {
         return Optional.ofNullable(this.projectiles.get(entityId));
     }
 
@@ -116,16 +117,15 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             if (meta != null) {
                 BukkitCustomProjectile customProjectile = new BukkitCustomProjectile(meta, projectile, wrapped);
                 this.projectiles.put(projectile.getEntityId(), customProjectile);
-                new ProjectileInjectTask(projectile);
+                new ProjectileInjectTask(projectile, !projectileItem.getItemMeta().hasEnchant(Enchantment.LOYALTY));
             }
         });
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerItemConsumeEvent event) {
-        String type = getType(event.getItem());
-        if (type == null) return;
-        if (type.equals("bow") || type.equals("trident")) {
+    public void onPlayerConsume(PlayerItemConsumeEvent event) {
+        ProjectileType type = getCustomProjectileType(event.getItem());
+        if (type == ProjectileType.TRIDENT) {
             event.setCancelled(true);
         }
     }
@@ -133,23 +133,21 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     @EventHandler
     public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
         ItemStack item = event.getItem();
-        String type = getType(item);
+        ProjectileType type = getCustomProjectileType(item);
         if (type == null) return;
         int ticksHeldFor = event.getTicksHeldFor();
         Player player = event.getPlayer();
-        if (type.equals("trident")) {
+        if (type == ProjectileType.TRIDENT) {
             if (ticksHeldFor < 10) return;
             Object nmsItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(item);
             Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
             Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
             TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-        } else if (type.equals("bow")) {
-            if (ticksHeldFor < 3) return;
         }
     }
 
     @Nullable
-    private String getType(ItemStack item) {
+    private ProjectileType getCustomProjectileType(ItemStack item) {
         Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(item);
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) return null;
@@ -162,11 +160,13 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     public class ProjectileInjectTask implements Runnable {
         private final Projectile projectile;
         private final SchedulerTask task;
+        private final boolean checkInGround;
         private Object cachedServerEntity;
         private int lastInjectedInterval = 0;
 
-        public ProjectileInjectTask(Projectile projectile) {
+        public ProjectileInjectTask(Projectile projectile, boolean checkInGround) {
             this.projectile = projectile;
+            this.checkInGround = checkInGround;
             if (VersionHelper.isFolia()) {
                 this.task = new FoliaTask(projectile.getScheduler().runAtFixedRate(plugin.javaPlugin(), (t) -> this.run(), () -> {}, 1, 1));
             } else {
@@ -191,14 +191,18 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.cachedServerEntity = serverEntity;
             }
 
-            boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
-            if (canSpawnParticle(nmsEntity, inGround)) {
-                this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
-            }
-            if (inGround) {
-                updateProjectileUpdateInterval(Integer.MAX_VALUE);
-            } else {
+            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity) || !this.checkInGround) {
                 updateProjectileUpdateInterval(1);
+            } else {
+                boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
+                if (canSpawnParticle(nmsEntity, inGround)) {
+                    this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
+                }
+                if (inGround) {
+                    updateProjectileUpdateInterval(Integer.MAX_VALUE);
+                } else {
+                    updateProjectileUpdateInterval(1);
+                }
             }
         }
 

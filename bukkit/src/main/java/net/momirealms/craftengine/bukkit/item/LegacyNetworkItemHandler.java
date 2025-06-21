@@ -64,7 +64,8 @@ public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
             return new OtherItem(wrapped, false).process();
         } else {
             BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
-            boolean hasDifferentMaterial = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject()) != customItem.clientItem();
+            Object serverItem = FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject());
+            boolean hasDifferentMaterial = serverItem == customItem.item() && serverItem != customItem.clientItem();
             if (hasDifferentMaterial) {
                 wrapped = wrapped.unsafeTransmuteCopy(customItem.clientItem(), wrapped.count());
             }

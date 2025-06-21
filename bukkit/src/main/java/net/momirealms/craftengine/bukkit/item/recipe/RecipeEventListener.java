@@ -473,6 +473,7 @@ public class RecipeEventListener implements Listener {
 
         // one of them is vanilla item
         if (!firstCustom || !secondCustom) {
+            if (second.canRepair(first)) return; // 这里需要考虑原版逻辑
             // block "vanilla + custom" recipes
             event.setResult(null);
             return;
@@ -792,6 +793,8 @@ public class RecipeEventListener implements Listener {
     }
 
     // 不是完美的解决方案，仍然需要更多的探讨
+    // TODO 生成类代理掉ResultSlot，并注入menu的slots对象，修改掉onTake方法
+    // TODO 对于耐久度降低的配方，应该注册special recipe？
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onCraft(CraftItemEvent event) {
         org.bukkit.inventory.Recipe recipe = event.getRecipe();

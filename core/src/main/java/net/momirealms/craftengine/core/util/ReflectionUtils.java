@@ -512,6 +512,15 @@ public class ReflectionUtils {
         }
     }
 
+    public static MethodHandle unreflectConstructor(Constructor<?> constructor) throws IllegalAccessException {
+        try {
+            return LOOKUP.unreflectConstructor(constructor);
+        } catch (IllegalAccessException e) {
+            constructor.setAccessible(true);
+            return LOOKUP.unreflectConstructor(constructor);
+        }
+    }
+
     public static VarHandle findVarHandle(Class<?> clazz, String name, Class<?> type) {
         try {
             return MethodHandles.privateLookupIn(clazz, LOOKUP)

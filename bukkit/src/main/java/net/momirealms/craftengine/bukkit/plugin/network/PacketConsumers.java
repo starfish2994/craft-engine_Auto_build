@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
@@ -127,16 +128,18 @@ public class PacketConsumers {
         ADD_ENTITY_HANDLERS[MEntityTypes.ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.SMALL_FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.EGG$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.ENDER_PEARL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.EXPERIENCE_BOTTLE$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.SNOWBALL$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.POTION$registryId] = createOptionalCustomProjectileEntityHandler();
-        ADD_ENTITY_HANDLERS[MEntityTypes.TRIDENT$registryId] = createOptionalCustomProjectileEntityHandler();
+        ADD_ENTITY_HANDLERS[MEntityTypes.FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.SMALL_FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.EGG$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ENDER_PEARL$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.EXPERIENCE_BOTTLE$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.SNOWBALL$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.POTION$registryId] = createOptionalCustomProjectileEntityHandler(true);
+        ADD_ENTITY_HANDLERS[MEntityTypes.TRIDENT$registryId] = createOptionalCustomProjectileEntityHandler(false);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ARROW$registryId] = createOptionalCustomProjectileEntityHandler(false);
+        ADD_ENTITY_HANDLERS[MEntityTypes.SPECTRAL_ARROW$registryId] = createOptionalCustomProjectileEntityHandler(false);
         if (VersionHelper.isOrAbove1_20_5()) {
             ADD_ENTITY_HANDLERS[MEntityTypes.OMINOUS_ITEM_SPAWNER$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
         }
@@ -186,7 +189,7 @@ public class PacketConsumers {
         };
     }
 
-    private static BukkitNetworkManager.Handlers createOptionalCustomProjectileEntityHandler() {
+    private static BukkitNetworkManager.Handlers createOptionalCustomProjectileEntityHandler(boolean fallback) {
         return (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
@@ -195,7 +198,9 @@ public class PacketConsumers {
                 handler.convertAddCustomProjectilePacket(buf, event);
                 user.entityPacketHandlers().put(id, handler);
             }, () -> {
-                user.entityPacketHandlers().put(id, CommonItemPacketHandler.INSTANCE);
+                if (fallback) {
+                    user.entityPacketHandlers().put(id, CommonItemPacketHandler.INSTANCE);
+                }
             });
         };
     }
@@ -1539,9 +1544,14 @@ public class PacketConsumers {
                 mainThreadTask = () -> {
                     // todo 冒险模式破坏工具白名单
                     if (serverPlayer.isAdventureMode() ||
-                            !furniture.isValid() ||
-                            !BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location)
-                    ) return;
+                            !furniture.isValid()) return;
+
+                    FurnitureAttemptBreakEvent preBreakEvent = new FurnitureAttemptBreakEvent(serverPlayer.platformPlayer(), furniture);
+                    if (EventUtils.fireAndCheckCancel(preBreakEvent))
+                        return;
+
+                    if (!BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location))
+                        return;
 
                     FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
                     if (EventUtils.fireAndCheckCancel(breakEvent))
@@ -2102,6 +2112,23 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            if (VersionHelper.isOrAbove1_21_5()) {
+                Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
+                if (wrapped != null && wrapped.isCustomItem()) {
+                    Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
+                    if (containerMenu != null) {
+                        ItemStack carried = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu));
+                        if (ItemUtils.isEmpty(carried)) {
+                            event.setChanged(true);
+                            buf.clear();
+                            buf.writeVarInt(event.packetID());
+                            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carried);
+                            return;
+                        }
+                    }
+                }
+            }
             BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
@@ -2341,6 +2368,9 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> MOVE_POS_AND_ROTATE_ENTITY = (user, event, packet) -> {
         try {
             int entityId = ProtectedFieldVisitor.get().field$ClientboundMoveEntityPacket$entityId(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
             EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
             if (handler != null) {
                 handler.handleMoveAndRotate(user, event, packet);
@@ -2359,6 +2389,29 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundMoveEntityPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> ROTATE_HEAD = (user, event, packet) -> {
+        try {
+            int entityId = (int) NetworkReflections.methodHandle$ClientboundRotateHeadPacket$entityIdGetter.invokeExact(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundRotateHeadPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_ENTITY_MOTION = (user, event, packet) -> {
+        try {
+            if (!VersionHelper.isOrAbove1_21_6()) return;
+            int entityId = (int) NetworkReflections.methodHandle$ClientboundSetEntityMotionPacket$idGetter.invokeExact(packet);
+            if (BukkitFurnitureManager.instance().isFurnitureRealEntity(entityId)) {
+                event.setCancelled(true);
+            }
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
         }
     };
 }

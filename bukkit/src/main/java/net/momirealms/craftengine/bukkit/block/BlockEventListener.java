@@ -311,7 +311,7 @@ public class BlockEventListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume(), state.sounds().stepSound().pitch());
+            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume().get(), state.sounds().stepSound().pitch().get());
         } else if (Config.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
             if (manager.isBlockSoundRemoved(ownerBlock)) {
@@ -347,7 +347,7 @@ public class BlockEventListener implements Listener {
             Block block = blocks.get(i);
             Location location = block.getLocation();
             BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-            ImmutableBlockState state = manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
+            ImmutableBlockState state = this.manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
             if (state != null && !state.isEmpty()) {
                 WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(blockPos));
                 ContextHolder.Builder builder = ContextHolder.builder()

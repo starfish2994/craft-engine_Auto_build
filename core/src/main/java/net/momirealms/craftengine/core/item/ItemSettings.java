@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.entity.Billboard;
 import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
@@ -36,6 +38,8 @@ public class ItemSettings {
     Key consumeReplacement = null;
     Key craftRemainder = null;
     List<DamageSource> invulnerable = List.of();
+    boolean canEnchant = true;
+    float compostProbability= 0.5f;
 
     private ItemSettings() {}
 
@@ -75,6 +79,8 @@ public class ItemSettings {
         newSettings.consumeReplacement = settings.consumeReplacement;
         newSettings.craftRemainder = settings.craftRemainder;
         newSettings.invulnerable = settings.invulnerable;
+        newSettings.canEnchant = settings.canEnchant;
+        newSettings.compostProbability = settings.compostProbability;
         return newSettings;
     }
 
@@ -118,6 +124,10 @@ public class ItemSettings {
         return dyeable;
     }
 
+    public boolean canEnchant() {
+        return canEnchant;
+    }
+
     public List<AnvilRepairItem> repairItems() {
         return anvilRepairItems;
     }
@@ -151,6 +161,10 @@ public class ItemSettings {
         return invulnerable;
     }
 
+    public float compostProbability() {
+        return compostProbability;
+    }
+
     public ItemSettings repairItems(List<AnvilRepairItem> items) {
         this.anvilRepairItems = items;
         return this;
@@ -166,8 +180,18 @@ public class ItemSettings {
         return this;
     }
 
+    public ItemSettings compostProbability(float chance) {
+        this.compostProbability = chance;
+        return this;
+    }
+
     public ItemSettings canRepair(boolean canRepair) {
         this.canRepair = canRepair;
+        return this;
+    }
+
+    public ItemSettings canEnchant(boolean canEnchant) {
+        this.canEnchant = canEnchant;
         return this;
     }
 
@@ -241,6 +265,10 @@ public class ItemSettings {
                 boolean bool = (boolean) value;
                 return settings -> settings.canRepair(bool);
             }));
+            registerFactory("enchantable", (value -> {
+                boolean bool = (boolean) value;
+                return settings -> settings.canEnchant(bool);
+            }));
             registerFactory("renameable", (value -> {
                 boolean bool = (boolean) value;
                 return settings -> settings.renameable(bool);
@@ -297,16 +325,21 @@ public class ItemSettings {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
                 ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
+                Billboard billboard = Billboard.valueOf(args.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                 Vector3f translation = MiscUtils.getAsVector3f(args.getOrDefault("translation", "0"), "translation");
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
-                String type = args.getOrDefault("type", "none").toString();
+                ProjectileType type = Optional.ofNullable(args.get("type")).map(String::valueOf).map(it -> ProjectileType.valueOf(it.toUpperCase(Locale.ENGLISH))).orElse(null);
                 double range = ResourceConfigUtils.getAsDouble(args.getOrDefault("range", 1), "range");
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, range, type));
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, billboard, scale, translation, rotation, range, type));
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), 1f, 1f)));
+                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)));
+            }));
+            registerFactory("compost-probability", (value -> {
+                float chance = ResourceConfigUtils.getAsFloat(value, "compost-probability");
+                return settings -> settings.compostProbability(chance);
             }));
             registerFactory("dyeable", (value -> {
                 boolean bool = (boolean) value;
