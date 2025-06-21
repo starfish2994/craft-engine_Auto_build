@@ -192,6 +192,8 @@ items#topaz_gears:
       data:
         item-name: <!i><#FF8C00><i18n:item.topaz_trident>
         tooltip-style: minecraft:topaz
+        components:
+          minecraft:max_damage: 300
       model:
         type: minecraft:select
         property: minecraft:display_context
@@ -222,50 +224,15 @@ items#topaz_gears:
           - path: minecraft:item/custom/topaz_trident_throwing
             predicate:
               throwing: 1
-  $$1.21.2~1.21.3#topaz_trident:
-    default:topaz_trident:
-      material: honey_bottle
-      custom-model-data: 1000
-      settings:
-        projectile:
-          item: default:topaz_trident
-          translation: 0,0,0
-          rotation: 1,1,1,1
-          display-transform: NONE
-          scale: 0.5
-          type: trident
-          throwing-item-in-hand: default:topaz_trident_throwing_in_hand
-        tags:
-          - default:topaz_tools
-      data:
-        item-name: <!i><#FF8C00><i18n:item.topaz_trident>
-        tooltip-style: minecraft:topaz
-        components:
-          minecraft:max_stack_size: 1
-          minecraft:consumable:
-            animation: spear
-            has_consume_particles: false
-            consume_seconds: 128000
-          minecraft:food:
-            nutrition: 0
-            saturation: 0.0
-            can_always_eat: true
-      model:
-        type: minecraft:model
-        path: minecraft:item/custom/topaz_trident_in_hand
-    default:topaz_trident_throwing_in_hand:
-      material: honey_bottle
-      custom-model-data: 1001
-      model:
-        type: minecraft:model
-        path: minecraft:item/custom/topaz_trident_throwing
-  $$1.20.1~1.21.1#topaz_trident:
+  $$1.20.1~1.21.3#topaz_trident:
     default:topaz_trident:
       material: trident
       client-bound-material: bow
       custom-model-data: 1001
       data:
         item-name: <!i><#FF8C00><i18n:item.topaz_trident>
+        components:
+          minecraft:max_damage: 300
       settings:
         projectile:
           item: default:topaz_trident

@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.entity.projectile;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import com.destroystokyo.paper.event.player.PlayerReadyArrowEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -10,14 +9,15 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.scheduler.impl.FoliaTask;
 import net.momirealms.craftengine.bukkit.util.ParticleUtils;
-import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -26,6 +26,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
@@ -123,10 +124,9 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerItemConsumeEvent event) {
-        String type = getType(event.getItem());
-        if (type == null) return;
-        if (type.equals("bow") || type.equals("trident")) {
+    public void onPlayerConsume(PlayerItemConsumeEvent event) {
+        ProjectileType type = getCustomProjectileType(event.getItem());
+        if (type == ProjectileType.TRIDENT) {
             event.setCancelled(true);
         }
     }
@@ -134,23 +134,21 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     @EventHandler
     public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
         ItemStack item = event.getItem();
-        String type = getType(item);
+        ProjectileType type = getCustomProjectileType(item);
         if (type == null) return;
         int ticksHeldFor = event.getTicksHeldFor();
         Player player = event.getPlayer();
-        if (type.equals("trident")) {
+        if (type == ProjectileType.TRIDENT) {
             if (ticksHeldFor < 10) return;
             Object nmsItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(item);
             Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
             Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
             TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-        } else if (type.equals("bow")) {
-            if (ticksHeldFor < 3) return;
         }
     }
 
     @Nullable
-    private String getType(ItemStack item) {
+    private ProjectileType getCustomProjectileType(ItemStack item) {
         Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(item);
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) return null;
