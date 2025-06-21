@@ -33,14 +33,14 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public void onPlace(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world = args[1];
         Object blockPos = args[2];
-        FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 2);
+        FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 2);
     }
 
     @Override
-    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object world;
         Object blockPos;
         if (VersionHelper.isOrAbove1_21_2()) {
@@ -50,7 +50,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
             world = args[3];
             blockPos = args[4];
         }
-        FastNMS.INSTANCE.method$LevelAccessor$scheduleTick(world, blockPos, thisBlock, 2);
+        FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 2);
         return args[0];
     }
 
@@ -113,11 +113,11 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
         Object pos = args[1];
         Object entityData = CoreReflections.field$Entity$entityData.get(fallingBlock);
         boolean isSilent = (boolean) CoreReflections.method$SynchedEntityData$get.invoke(entityData, CoreReflections.instance$Entity$DATA_SILENT);
+        Object blockState = args[2];
+        int stateId = BlockStateUtils.blockStateToId(blockState);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
         if (!isSilent) {
-            Object blockState = args[2];
-            int stateId = BlockStateUtils.blockStateToId(blockState);
-            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-            if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
             net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
             world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.sounds().landSound());
         }

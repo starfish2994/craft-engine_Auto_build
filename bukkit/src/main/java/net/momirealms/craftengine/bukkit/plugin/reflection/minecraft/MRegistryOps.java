@@ -16,7 +16,7 @@ import net.momirealms.sparrow.nbt.codec.NBTOps;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unchecked")
-public class MRegistryOps {
+public final class MRegistryOps {
     public static final DynamicOps<Object> NBT;
     public static final DynamicOps<Tag> SPARROW_NBT;
     public static final DynamicOps<Object> JAVA;

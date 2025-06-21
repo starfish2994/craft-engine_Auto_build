@@ -25,6 +25,10 @@ public final class MEntityTypes {
     public static final int OAK_BOAT$registryId;
     public static final Object TRIDENT;
     public static final int TRIDENT$registryId;
+    public static final Object ARROW;
+    public static final int ARROW$registryId;
+    public static final Object SPECTRAL_ARROW;
+    public static final int SPECTRAL_ARROW$registryId;
     public static final Object SNOWBALL;
     public static final int SNOWBALL$registryId;
     public static final Object FIREBALL;
@@ -51,6 +55,10 @@ public final class MEntityTypes {
     public static final int EXPERIENCE_BOTTLE$registryId;
     public static final Object POTION;
     public static final int POTION$registryId;
+    public static final Object HAPPY_GHAST;
+    public static final int HAPPY_GHAST$registryId;
+    public static final Object PLAYER;
+    public static final int PLAYER$registryId;
 
     private static Object getById(String id) throws ReflectiveOperationException {
         Object rl = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", id);
@@ -108,6 +116,14 @@ public final class MEntityTypes {
             POTION$registryId = getRegistryId(POTION);
             OMINOUS_ITEM_SPAWNER = VersionHelper.isOrAbove1_20_5() ? getById("ominous_item_spawner") : null;
             OMINOUS_ITEM_SPAWNER$registryId = getRegistryId(OMINOUS_ITEM_SPAWNER);
+            HAPPY_GHAST = VersionHelper.isOrAbove1_21_6() ? getById("happy_ghast") : null;
+            HAPPY_GHAST$registryId = getRegistryId(HAPPY_GHAST);
+            PLAYER = getById("player");
+            PLAYER$registryId = getRegistryId(PLAYER);
+            ARROW = getById("arrow");
+            ARROW$registryId = getRegistryId(ARROW);
+            SPECTRAL_ARROW = getById("spectral_arrow");
+            SPECTRAL_ARROW$registryId = getRegistryId(SPECTRAL_ARROW);
         } catch (ReflectiveOperationException e) {
             throw new ReflectionInitException("Failed to init EntityTypes", e);
         }

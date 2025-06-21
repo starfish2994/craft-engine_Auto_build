@@ -1,8 +1,9 @@
-package net.momirealms.craftengine.core.block.behavior;
+package net.momirealms.craftengine.bukkit.block.behavior;
 
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
+public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     private final AbstractBlockBehavior[] behaviors;
 
     public UnsafeCompositeBlockBehavior(CustomBlock customBlock, List<AbstractBlockBehavior> behaviors) {
@@ -34,7 +35,7 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             InteractionResult result = behavior.useOnBlock(context, state);
-            if (result != InteractionResult.PASS) {
+            if (result != InteractionResult.PASS && result != InteractionResult.TRY_EMPTY_HAND) {
                 return result;
             }
         }
@@ -42,9 +43,21 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
     }
 
     @Override
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            InteractionResult result = behavior.useWithoutItem(context, state);
+            if (result != InteractionResult.PASS) {
+                return result;
+            }
+        }
+        return super.useWithoutItem(context, state);
+    }
+
+    @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             state = behavior.updateStateForPlacement(context, state);
+            if (state == null) return null;
         }
         return state;
     }
@@ -162,5 +175,85 @@ public class UnsafeCompositeBlockBehavior extends AbstractBlockBehavior {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (!behavior.isPathFindable(thisBlock, args, superMethod)) {
+                return false;
+            }
+        }
+        return (boolean) superMethod.call();
+    }
+
+    @Override
+    public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.onExplosionHit(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.setPlacedBy(context, state);
+        }
+    }
+
+    @Override
+    public boolean canBeReplaced(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (!behavior.canBeReplaced(context, state)) {
+                return false;
+            }
+        }
+        return super.canBeReplaced(context, state);
+    }
+
+    @Override
+    public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.entityInside(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.affectNeighborsAfterRemoval(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getDirectSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (behavior.isSignalSource(thisBlock, args, superMethod)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

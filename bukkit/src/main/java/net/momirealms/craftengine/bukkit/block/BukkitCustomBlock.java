@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.block;
 
+import net.momirealms.craftengine.bukkit.block.behavior.UnsafeCompositeBlockBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
@@ -10,6 +11,8 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.SoundUtils;
 import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
+import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -46,6 +49,21 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         super(id, holder, properties, appearances, variantMapper, settings, events, behavior, lootTable);
     }
 
+    @Override
+    protected BlockBehavior setupBehavior(List<Map<String, Object>> behaviorConfig) {
+        if (behaviorConfig.isEmpty()) {
+            return new EmptyBlockBehavior();
+        } else if (behaviorConfig.size() == 1) {
+            return BlockBehaviors.fromMap(this, behaviorConfig.get(0));
+        } else {
+            List<AbstractBlockBehavior> behaviors = new ArrayList<>();
+            for (Map<String, Object> config : behaviorConfig) {
+                behaviors.add((AbstractBlockBehavior) BlockBehaviors.fromMap(this, config));
+            }
+            return new UnsafeCompositeBlockBehavior(this, behaviors);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
@@ -74,12 +92,27 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 BlockStateUtils.setHardness(mcBlockState, settings.hardness());
                 BlockStateUtils.setPushReaction(mcBlockState, settings.pushReaction());
                 BlockStateUtils.setReplaceable(mcBlockState, settings.replaceable());
+                boolean canOcclude;
                 if (settings.canOcclude() == Tristate.TRUE) {
                     BlockStateUtils.setCanOcclude(mcBlockState, true);
+                    canOcclude = true;
                 } else if (settings.canOcclude() == Tristate.FALSE) {
                     BlockStateUtils.setCanOcclude(mcBlockState, false);
+                    canOcclude = false;
                 } else {
-                    BlockStateUtils.setCanOcclude(mcBlockState, BlockStateUtils.isOcclude(state.vanillaBlockState().handle()));
+                    canOcclude = BlockStateUtils.isOcclude(state.vanillaBlockState().handle());
+                    BlockStateUtils.setCanOcclude(mcBlockState, canOcclude);
+                }
+                boolean useShapeForLightOcclusion;
+                if (settings.useShapeForLightOcclusion() == Tristate.TRUE) {
+                    BlockStateUtils.setUseShapeForLightOcclusion(mcBlockState, true);
+                    useShapeForLightOcclusion = true;
+                } else if (settings.useShapeForLightOcclusion() == Tristate.FALSE) {
+                    BlockStateUtils.setUseShapeForLightOcclusion(mcBlockState, false);
+                    useShapeForLightOcclusion = false;
+                } else {
+                    useShapeForLightOcclusion = CoreReflections.field$BlockStateBase$useShapeForLightOcclusion.getBoolean(state.vanillaBlockState().handle());
+                    BlockStateUtils.setUseShapeForLightOcclusion(mcBlockState, useShapeForLightOcclusion);
                 }
                 if (settings.isRedstoneConductor() == Tristate.TRUE) {
                     BlockStateUtils.setIsRedstoneConductor(mcBlockState, ALWAYS_TRUE);
@@ -126,26 +159,48 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 // set block side properties
                 CoreReflections.field$BlockBehaviour$explosionResistance.set(mcBlock, settings.resistance());
                 CoreReflections.field$BlockBehaviour$soundType.set(mcBlock, SoundUtils.toSoundType(settings.sounds()));
+                // 1.21.2以前要在init cache之前设定 isConditionallyFullOpaque
+                if (!VersionHelper.isOrAbove1_21_2()) {
+                    boolean isConditionallyFullOpaque = canOcclude & useShapeForLightOcclusion;
+                    CoreReflections.field$BlockStateBase$isConditionallyFullOpaque.set(mcBlockState, isConditionallyFullOpaque);
+                }
                 // init cache
                 CoreReflections.method$BlockStateBase$initCache.invoke(mcBlockState);
-                // set block light
-                int blockLight = settings.blockLight() != -1 ? settings.blockLight() : CoreReflections.field$BlockStateBase$lightBlock.getInt(state.vanillaBlockState().handle());
+                // modify cache
                 if (VersionHelper.isOrAbove1_21_2()) {
+                    int blockLight = settings.blockLight() != -1 ? settings.blockLight() : CoreReflections.field$BlockStateBase$lightBlock.getInt(state.vanillaBlockState().handle());
+                    // set block light
                     CoreReflections.field$BlockStateBase$lightBlock.set(mcBlockState, blockLight);
+                    // set propagates skylight
+                    if (settings.propagatesSkylightDown() == Tristate.TRUE) {
+                        CoreReflections.field$BlockStateBase$propagatesSkylightDown.set(mcBlockState, true);
+                    } else if (settings.propagatesSkylightDown() == Tristate.FALSE) {
+                        CoreReflections.field$BlockStateBase$propagatesSkylightDown.set(mcBlockState, false);
+                    } else {
+                        CoreReflections.field$BlockStateBase$propagatesSkylightDown.set(mcBlockState, CoreReflections.field$BlockStateBase$propagatesSkylightDown.getBoolean(state.vanillaBlockState().handle()));
+                    }
                 } else {
                     Object cache = CoreReflections.field$BlockStateBase$cache.get(mcBlockState);
+                    int blockLight = settings.blockLight() != -1 ? settings.blockLight() : CoreReflections.field$BlockStateBase$Cache$lightBlock.getInt(CoreReflections.field$BlockStateBase$cache.get(state.vanillaBlockState().handle()));
+                    // set block light
                     CoreReflections.field$BlockStateBase$Cache$lightBlock.set(cache, blockLight);
+                    // set propagates skylight
+                    if (settings.propagatesSkylightDown() == Tristate.TRUE) {
+                        CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.set(cache, true);
+                    } else if (settings.propagatesSkylightDown() == Tristate.FALSE) {
+                        CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.set(cache, false);
+                    } else {
+                        CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.set(cache, CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.getBoolean(CoreReflections.field$BlockStateBase$cache.get(state.vanillaBlockState().handle())));
+                    }
                 }
                 // set fluid later
                 if (settings.fluidState()) {
-                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, CoreReflections.method$FlowingFluid$getSource.invoke(MFluids.instance$Fluids$WATER, false));
+                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, CoreReflections.method$FlowingFluid$getSource.invoke(MFluids.WATER, false));
                 } else {
-                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, MFluids.instance$Fluids$EMPTY$defaultState);
+                    CoreReflections.field$BlockStateBase$fluidState.set(mcBlockState, MFluids.EMPTY$defaultState);
                 }
                 // set random tick later
                 BlockStateUtils.setIsRandomlyTicking(mcBlockState, settings.isRandomlyTicking());
-                // set propagates skylight
-                BlockStateUtils.setPropagatesSkylightDown(mcBlockState, settings.propagatesSkylightDown());
                 // bind tags
                 Object holder = BukkitCraftEngine.instance().blockManager().getMinecraftBlockHolder(state.customBlockState().registryId());
                 Set<Object> tags = new HashSet<>();

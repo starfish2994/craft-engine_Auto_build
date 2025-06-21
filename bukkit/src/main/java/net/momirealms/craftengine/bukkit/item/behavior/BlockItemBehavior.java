@@ -17,6 +17,7 @@ import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.BlockBoundItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
@@ -52,7 +53,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
-public class BlockItemBehavior extends ItemBehavior {
+public class BlockItemBehavior extends BlockBoundItemBehavior {
     public static final Factory FACTORY = new Factory();
     private final Key blockId;
 
@@ -112,11 +113,6 @@ public class BlockItemBehavior extends ItemBehavior {
             }
         }
 
-        int gameTicks = player.gameTicks();
-        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
-            return InteractionResult.FAIL;
-        }
-
         // trigger event
         CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,
                 DirectionUtils.toBlockFace(context.getClickedFace()), bukkitBlock, context.getHand());
@@ -164,6 +160,8 @@ public class BlockItemBehavior extends ItemBehavior {
             item.load();
         }
 
+        block.setPlacedBy(context, blockStateToPlace);
+
         player.swingHand(context.getHand());
         context.getLevel().playBlockSound(position, blockStateToPlace.sounds().placeSound());
         world.sendGameEvent(bukkitPlayer, GameEvent.BLOCK_PLACE, new Vector(pos.x(), pos.y(), pos.z()));
@@ -199,7 +197,8 @@ public class BlockItemBehavior extends ItemBehavior {
         }
     }
 
-    public Key blockId() {
+    @Override
+    public Key block() {
         return this.blockId;
     }
 

@@ -81,11 +81,6 @@ public class FurnitureItemBehavior extends ItemBehavior {
             return InteractionResult.FAIL;
         }
 
-        int gameTicks = player.gameTicks();
-        if (!player.updateLastSuccessfulInteractionTick(gameTicks)) {
-            return InteractionResult.FAIL;
-        }
-
         Vec3d clickedPosition = context.getClickLocation();
 
         // trigger event

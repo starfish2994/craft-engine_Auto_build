@@ -46,10 +46,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
     protected final Map<Key, List<Holder<Key>>> customItemTags;
     protected final Map<Key, Map<Integer, Key>> cmdConflictChecker;
-    protected final Map<Key, ItemModel> modernItemModels1_21_4;
+    protected final Map<Key, ModernItemModel> modernItemModels1_21_4;
     protected final Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2;
     protected final Map<Key, TreeSet<LegacyOverridesModel>> legacyOverrides;
-    protected final Map<Key, TreeMap<Integer, ItemModel>> modernOverrides;
+    protected final Map<Key, TreeMap<Integer, ModernItemModel>> modernOverrides;
     protected final Set<EquipmentGeneration> equipmentsToGenerate;
     // Cached command suggestions
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
@@ -225,7 +225,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Map<Key, ItemModel> modernItemModels1_21_4() {
+    public Map<Key, ModernItemModel> modernItemModels1_21_4() {
         return Collections.unmodifiableMap(this.modernItemModels1_21_4);
     }
 
@@ -245,7 +245,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Map<Key, TreeMap<Integer, ItemModel>> modernItemOverrides() {
+    public Map<Key, TreeMap<Integer, ModernItemModel>> modernItemOverrides() {
         return Collections.unmodifiableMap(this.modernOverrides);
     }
 
@@ -411,8 +411,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 conflict.put(customModelData, id);
                 // Parse models
                 if (isModernFormatRequired() && modernModel != null) {
-                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
-                    map.put(customModelData, modernModel);
+                    TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
+                    map.put(customModelData, new ModernItemModel(
+                            modernModel,
+                            (boolean) section.getOrDefault("oversized-in-gui", true),
+                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                    ));
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeSet<>());
@@ -423,7 +427,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // use item model
             if (itemModelKey != null) {
                 if (isModernFormatRequired() && modernModel != null) {
-                    AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, modernModel);
+                    AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, new ModernItemModel(
+                            modernModel,
+                            (boolean) section.getOrDefault("oversized-in-gui", true),
+                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                    ));
                 }
                 if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.modernItemModels1_21_2.computeIfAbsent(itemModelKey, k -> new TreeSet<>());
@@ -467,17 +475,23 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new DyedColorModifier<>(integer);
             } else {
                 Vector3f vector3f = MiscUtils.getAsVector3f(obj, "dyed-color");
-                return new DyedColorModifier<>(MCUtils.fastFloor(vector3f.x) << 16 + MCUtils.fastFloor(vector3f.y) << 8 + MCUtils.fastFloor(vector3f.z));
+                return new DyedColorModifier<>(0 << 24 /*不可省略*/ | MCUtils.fastFloor(vector3f.x) << 16 | MCUtils.fastFloor(vector3f.y) << 8 | MCUtils.fastFloor(vector3f.z));
             }
         }, "dyed-color");
-        registerDataType((obj) -> {
-            Map<String, Object> data = MiscUtils.castToMap(obj, false);
-            return new TagsModifier<>(data);
-        }, "tags", "tag", "nbt");
+        if (!VersionHelper.isOrAbove1_21_5()) {
+            registerDataType((obj) -> {
+                Map<String, Object> data = MiscUtils.castToMap(obj, false);
+                return new TagsModifier<>(data);
+            }, "tags", "tag", "nbt");
+        }
         registerDataType((obj) -> {
             boolean value = TypeUtils.checkType(obj, Boolean.class);
             return new UnbreakableModifier<>(value);
         }, "unbreakable");
+        registerDataType((obj) -> {
+            int customModelData = ResourceConfigUtils.getAsInt(obj, "custom-model-data");
+            return new CustomModelDataModifier<>(customModelData);
+        }, "custom-model-data");
         registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             List<Enchantment> enchantments = new ArrayList<>();
@@ -494,6 +508,14 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
             return new TrimModifier<>(material, pattern);
         }, "trim");
+        registerDataType((obj) -> {
+            Map<String, Object> data = MiscUtils.castToMap(obj, false);
+            Map<String, TextProvider> arguments = new HashMap<>();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                arguments.put(entry.getKey(), TextProviders.fromString(entry.getValue().toString()));
+            }
+            return new ArgumentModifier<>(arguments);
+        }, "args", "argument", "arguments");
         if (VersionHelper.isOrAbove1_20_5()) {
             registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
@@ -521,21 +543,15 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 String id = obj.toString();
                 return new TooltipStyleModifier<>(Key.of(id));
             }, "tooltip-style");
-        }
-        if (VersionHelper.isOrAbove1_21_2()) {
             registerDataType((obj) -> {
                 Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 return new EquippableModifier<>(EquipmentData.fromMap(data));
             }, "equippable");
+            registerDataType((obj) -> {
+                String id = obj.toString();
+                return new ItemModelModifier<>(Key.of(id));
+            }, "item-model");
         }
-        registerDataType((obj) -> {
-            Map<String, Object> data = MiscUtils.castToMap(obj, false);
-            Map<String, TextProvider> arguments = new HashMap<>();
-            for (Map.Entry<String, Object> entry : data.entrySet()) {
-                arguments.put(entry.getKey(), TextProviders.fromString(entry.getValue().toString()));
-            }
-            return new ArgumentModifier<>(arguments);
-        }, "args", "argument", "arguments");
     }
 
     protected void processModelRecursively(

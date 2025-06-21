@@ -17,8 +17,8 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
-import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.model.ModernItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
@@ -223,7 +223,7 @@ public abstract class AbstractPackManager implements PackManager {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
                    } catch (Exception e) {
-                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", ""));
+                       this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", "").replaceAll("/[Il]{2,}", ""));
                    }
                };
            } else {
@@ -280,8 +280,11 @@ public abstract class AbstractPackManager implements PackManager {
                         this.plugin.logger().warn(path.toAbsolutePath() + " is not a directory");
                         continue;
                     }
-                    Path metaFile = path.resolve("pack.yml");
                     String namespace = path.getFileName().toString();
+                    if (namespace.charAt(0) == '.') {
+                        continue;
+                    }
+                    Path metaFile = path.resolve("pack.yml");
                     String description = null;
                     String version = null;
                     String author = null;
@@ -401,8 +404,13 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/flame_elytra.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/broken_flame_elytra.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/entity/equipment/wings/flame_elytra.png");
-//        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/cap.png");
-//        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/item/custom/cap.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/cap.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/item/custom/cap.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/pebble.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/pebble.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_1.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_2.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_3.json");
 
         // ores
         plugin.saveResource("resources/default/configuration/ores.yml");
@@ -421,6 +429,10 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/stripped_palm_log.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/stripped_palm_log_top.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/palm_leaves.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/palm_trapdoor.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/palm_door_top.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/palm_door_bottom.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/palm_door.png");
         // plants
         plugin.saveResource("resources/default/configuration/plants.yml");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/fairy_flower_1.png");
@@ -465,7 +477,7 @@ public abstract class AbstractPackManager implements PackManager {
             Path configurationFolderPath = pack.configurationFolder();
             if (!Files.isDirectory(configurationFolderPath)) continue;
             try {
-                Files.walkFileTree(configurationFolderPath, new SimpleFileVisitor<>() {
+                Files.walkFileTree(configurationFolderPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
                         if (Files.isRegularFile(path) && path.getFileName().toString().endsWith(".yml")) {
@@ -526,6 +538,9 @@ public abstract class AbstractPackManager implements PackManager {
                         } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> config = castToMap(configSection0, false);
+                                if (Config.debug() && (boolean) config.getOrDefault("debug", false)) {
+                                    this.plugin.logger().info(GsonHelper.get().toJson(this.plugin.templateManager().applyTemplates(id, config)));
+                                }
                                 if ((boolean) config.getOrDefault("enable", true)) {
                                     parser.parseSection(cached.pack(), cached.filePath(), id, MiscUtils.castToMap(this.plugin.templateManager().applyTemplates(id, config), false));
                                 }
@@ -600,6 +615,9 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
+            if (Config.excludeShaders()) {
+                this.removeAllShaders(generatedPackPath);
+            }
             if (Config.validateResourcePack()) {
                 this.validateResourcePack(generatedPackPath);
             }
@@ -616,10 +634,33 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    private void validateResourcePack(Path path) throws IOException {
-        List<Path> rootPaths = FileUtils.collectOverlays(path);
+    private void removeAllShaders(Path path) {
+        List<Path> rootPaths;
+        try {
+            rootPaths = FileUtils.collectOverlays(path);
+        } catch (IOException e) {
+            plugin.logger().warn("Failed to collect overlays for " + path.toAbsolutePath(), e);
+            return;
+        }
+        for (Path rootPath : rootPaths) {
+            Path shadersPath = rootPath.resolve("assets/minecraft/shaders");
+            try {
+                FileUtils.deleteDirectory(shadersPath);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to delete shaders directory for " + shadersPath.toAbsolutePath(), e);
+            }
+        }
+    }
 
+    @SuppressWarnings("DuplicatedCode")
+    private void validateResourcePack(Path path) {
+        List<Path> rootPaths;
+        try {
+            rootPaths = FileUtils.collectOverlays(path);
+        } catch (IOException e) {
+            plugin.logger().warn("Failed to collect overlays for " + path.toAbsolutePath(), e);
+            return;
+        }
         Multimap<Key, Key> imageToFonts = ArrayListMultimap.create(); // 图片到字体的映射
         Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
         Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
@@ -629,63 +670,100 @@ public abstract class AbstractPackManager implements PackManager {
             Path assetsPath = rootPath.resolve("assets");
             if (!Files.isDirectory(assetsPath)) continue;
 
-            for (Path namespacePath : FileUtils.collectNamespaces(assetsPath)) {
+            List<Path> namespaces;
+            try {
+                namespaces = FileUtils.collectNamespaces(assetsPath);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to collect namespaces for " + assetsPath.toAbsolutePath(), e);
+                return;
+            }
+            for (Path namespacePath : namespaces) {
                 Path fontPath = namespacePath.resolve("font");
                 if (Files.isDirectory(fontPath)) {
-                    Files.walkFileTree(fontPath, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            JsonObject fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            JsonArray providers = fontJson.getAsJsonArray("providers");
-                            if (providers != null) {
-                                Key fontName = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
-                                for (JsonElement provider : providers) {
-                                    if (provider instanceof JsonObject providerJO && providerJO.has("type")) {
-                                        String type = providerJO.get("type").getAsString();
-                                        if (type.equals("bitmap") && providerJO.has("file")) {
-                                            String pngFile = providerJO.get("file").getAsString();
-                                            Key resourceLocation = Key.of(FileUtils.pathWithoutExtension(pngFile));
-                                            imageToFonts.put(resourceLocation, fontName);
+                    try {
+                        Files.walkFileTree(fontPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs)  {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                JsonObject fontJson;
+                                try {
+                                    fontJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonParseException e) {
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                JsonArray providers = fontJson.getAsJsonArray("providers");
+                                if (providers != null) {
+                                    Key fontName = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                                    for (JsonElement provider : providers) {
+                                        if (provider instanceof JsonObject providerJO && providerJO.has("type")) {
+                                            String type = providerJO.get("type").getAsString();
+                                            if (type.equals("bitmap") && providerJO.has("file")) {
+                                                String pngFile = providerJO.get("file").getAsString();
+                                                Key resourceLocation = Key.of(FileUtils.pathWithoutExtension(pngFile));
+                                                imageToFonts.put(resourceLocation, fontName);
+                                            }
                                         }
                                     }
                                 }
+                                return FileVisitResult.CONTINUE;
                             }
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate font", e);
+                    }
                 }
 
                 Path itemsPath = namespacePath.resolve("items");
                 if (Files.isDirectory(itemsPath)) {
-                    Files.walkFileTree(itemsPath, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            JsonObject itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
-                            collectItemModelsDeeply(itemJson, (resourceLocation) -> modelToItems.put(resourceLocation, item));
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    try {
+                        Files.walkFileTree(itemsPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                JsonObject itemJson;
+                                try {
+                                    itemJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonParseException e) {
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                Key item = Key.of(namespacePath.getFileName().toString(), FileUtils.pathWithoutExtension(file.getFileName().toString()));
+                                collectItemModelsDeeply(itemJson, (resourceLocation) -> modelToItems.put(resourceLocation, item));
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate items", e);
+                    }
                 }
 
                 Path blockStatesPath = namespacePath.resolve("blockstates");
                 if (Files.isDirectory(blockStatesPath)) {
-                    Files.walkFileTree(blockStatesPath, new SimpleFileVisitor<>() {
-                        @Override
-                        public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                            if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
-                            String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
-                            JsonObject blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
-                            if (blockStateJson.has("multipart")) {
-                                collectMultipart(blockStateJson.getAsJsonArray("multipart"), (location) -> modelToBlocks.put(location, blockId));
-                            } else if (blockStateJson.has("variants")) {
-                                collectVariants(blockId, blockStateJson.getAsJsonObject("variants"), modelToBlocks::put);
+                    try {
+                        Files.walkFileTree(blockStatesPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+                            @Override
+                            public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+                                if (!isJsonFile(file)) return FileVisitResult.CONTINUE;
+                                String blockId = FileUtils.pathWithoutExtension(file.getFileName().toString());
+                                JsonObject blockStateJson;
+                                try {
+                                    blockStateJson = GsonHelper.readJsonFile(file).getAsJsonObject();
+                                } catch (IOException | JsonParseException e) {
+                                    TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", file.toAbsolutePath().toString());
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                if (blockStateJson.has("multipart")) {
+                                    collectMultipart(blockStateJson.getAsJsonArray("multipart"), (location) -> modelToBlocks.put(location, blockId));
+                                } else if (blockStateJson.has("variants")) {
+                                    collectVariants(blockId, blockStateJson.getAsJsonObject("variants"), modelToBlocks::put);
+                                }
+                                return FileVisitResult.CONTINUE;
                             }
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                        });
+                    } catch (IOException e) {
+                        plugin.logger().warn("Failed to validate blockstates", e);
+                    }
                 }
             }
         }
@@ -709,7 +787,14 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(rootPath.resolve(modelPath))) {
-                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    JsonObject jsonObject;
+                    try {
+                        jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
+                    } catch (IOException | JsonParseException e) {
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                        continue;
+                    }
+                    collectModels(key, jsonObject, rootPaths, imageToModels);
                     continue label;
                 }
             }
@@ -723,7 +808,14 @@ public abstract class AbstractPackManager implements PackManager {
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(modelJsonPath)) {
-                    collectModels(key, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                    JsonObject jsonObject;
+                    try {
+                        jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
+                    } catch (IOException | JsonParseException e) {
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                        continue;
+                    }
+                    collectModels(key, jsonObject, rootPaths, imageToModels);
                     continue label;
                 }
             }
@@ -743,7 +835,7 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private static void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) throws IOException {
+    private void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) {
         if (modelJson.has("parent")) {
             Key parentResourceLocation = Key.from(modelJson.get("parent").getAsString());
             if (!VANILLA_MODELS.contains(parentResourceLocation)) {
@@ -752,7 +844,14 @@ public abstract class AbstractPackManager implements PackManager {
                     for (Path rootPath : rootPaths) {
                         Path modelJsonPath = rootPath.resolve(parentModelPath);
                         if (Files.exists(modelJsonPath)) {
-                            collectModels(parentResourceLocation, GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject(), rootPaths, imageToModels);
+                            JsonObject jsonObject;
+                            try {
+                                jsonObject = GsonHelper.readJsonFile(modelJsonPath).getAsJsonObject();
+                            } catch (IOException | JsonParseException e) {
+                                TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
+                                break label;
+                            }
+                            collectModels(parentResourceLocation, jsonObject, rootPaths, imageToModels);
                             break label;
                         }
                     }
@@ -1226,7 +1325,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, ItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
+        for (Map.Entry<Key, ModernItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
                     .resolve("assets")
@@ -1249,7 +1348,14 @@ public abstract class AbstractPackManager implements PackManager {
                 continue;
             }
             JsonObject model = new JsonObject();
-            model.add("model", entry.getValue().get());
+            ModernItemModel modernItemModel = entry.getValue();
+            model.add("model", modernItemModel.itemModel().get());
+            if (!modernItemModel.handAnimationOnSwap()) {
+                model.addProperty("hand_animation_on_swap", false);
+            }
+            if (modernItemModel.oversizedInGui()) {
+                model.addProperty("oversized_in_gui", true);
+            }
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
                 GsonHelper.get().toJson(model, writer);
             } catch (IOException e) {
@@ -1260,7 +1366,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateModernItemOverrides(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, TreeMap<Integer, ItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
+        for (Map.Entry<Key, TreeMap<Integer, ModernItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
             Key vanillaItemModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
                     .resolve("assets")
@@ -1285,24 +1391,35 @@ public abstract class AbstractPackManager implements PackManager {
             }
 
             boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
+            boolean oversizedInGui = Optional.ofNullable(originalItemModel.get("oversized_in_gui")).map(JsonElement::getAsBoolean).orElse(false);
             JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
             JsonObject newJson = new JsonObject();
             JsonObject model = new JsonObject();
             newJson.add("model", model);
             model.addProperty("type", "minecraft:range_dispatch");
             model.addProperty("property", "minecraft:custom_model_data");
-            if (!handAnimationOnSwap) {
-                model.addProperty("hand_animation_on_swap", false);
-            }
             // 将原有的json读成fallback
             model.add("fallback", fallbackModel);
             JsonArray entries = new JsonArray();
             model.add("entries", entries);
-            for (Map.Entry<Integer, ItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
+            for (Map.Entry<Integer, ModernItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
                 JsonObject entryObject = new JsonObject();
+                ModernItemModel modernItemModel = modelWithDataEntry.getValue();
                 entryObject.addProperty("threshold", modelWithDataEntry.getKey());
-                entryObject.add("model", modelWithDataEntry.getValue().get());
+                entryObject.add("model", modernItemModel.itemModel().get());
                 entries.add(entryObject);
+                if (modernItemModel.handAnimationOnSwap()) {
+                    handAnimationOnSwap = true;
+                }
+                if (modernItemModel.oversizedInGui()) {
+                    oversizedInGui = true;
+                }
+            }
+            if (!handAnimationOnSwap) {
+                newJson.addProperty("hand_animation_on_swap", false);
+            }
+            if (oversizedInGui) {
+                newJson.addProperty("oversized_in_gui", true);
             }
             try {
                 Files.createDirectories(overridedItemPath.getParent());
@@ -1451,7 +1568,7 @@ public abstract class AbstractPackManager implements PackManager {
                 .toList());
         for (Path sourceFolder : folders) {
             if (Files.exists(sourceFolder)) {
-                Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
+                Files.walkFileTree(sourceFolder, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                     @Override
                     public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                         processRegularFile(file, attrs, sourceFolder, fs, conflictChecker, previousFiles);
@@ -1504,7 +1621,7 @@ public abstract class AbstractPackManager implements PackManager {
             long zipLastModified = Files.getLastModifiedTime(zipFile).toMillis();
             long zipSize = Files.size(zipFile);
             Path zipRoot = zipFs.getPath("/");
-            Files.walkFileTree(zipRoot, new SimpleFileVisitor<>() {
+            Files.walkFileTree(zipRoot, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                 @Override
                 public @NotNull FileVisitResult visitFile(@NotNull Path entry, @NotNull BasicFileAttributes entryAttrs) throws IOException {
                     if (entryAttrs.isDirectory()) {
