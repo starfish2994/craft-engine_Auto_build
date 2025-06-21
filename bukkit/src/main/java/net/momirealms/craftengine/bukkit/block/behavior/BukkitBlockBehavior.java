@@ -40,6 +40,7 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
             };
         });
         HARD_CODED_PROPERTY_DATA.put("facing", (behavior, property) -> {
+            if (behavior instanceof StairsBlockBehavior) return;
             if (property.valueClass() == HorizontalDirection.class) {
                 @SuppressWarnings("unchecked")
                 Property<HorizontalDirection> directionProperty = (Property<HorizontalDirection>) property;

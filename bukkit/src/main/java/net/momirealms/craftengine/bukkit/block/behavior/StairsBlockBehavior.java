@@ -4,9 +4,7 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
-import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
-import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -15,10 +13,8 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
 import net.momirealms.craftengine.core.block.state.properties.StairsShape;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
-import net.momirealms.craftengine.core.util.Direction;
-import net.momirealms.craftengine.core.util.HorizontalDirection;
-import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,6 +64,73 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         return direction.axis().isHorizontal()
                 ? immutableBlockState.with(this.shapeProperty, getStairsShape(immutableBlockState, level, LocationUtils.fromBlockPos(blockPos))).customBlockState().handle()
                 : superMethod.call();
+    }
+
+    @Override
+    public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object state = args[0];
+        Rotation rot = RotationUtils.fromNMSRotation(args[1]);
+        ImmutableBlockState blockState = rotate(state, rot);
+        return blockState != null ? blockState.customBlockState().handle() : superMethod.call();
+    }
+
+    @Nullable
+    private ImmutableBlockState rotate(Object state, Rotation rotation) {
+        int stateId = BlockStateUtils.blockStateToId(state);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) return null;
+        Direction facing = immutableBlockState.get(this.facingProperty).toDirection();
+        return immutableBlockState.with(this.facingProperty, rotation.rotate(facing).toHorizontalDirection());
+    }
+
+    @Override
+    public Object mirror(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object state = args[0];
+        Mirror mirror = MirrorUtils.fromNMSMirror(args[1]);
+        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 1 " + state + " " + mirror);
+        int stateId = BlockStateUtils.blockStateToId(state);
+        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (immutableBlockState == null || immutableBlockState.isEmpty()) return superMethod.call();
+        Direction direction = immutableBlockState.get(this.facingProperty).toDirection();
+        StairsShape stairsShape = immutableBlockState.get(this.shapeProperty);
+        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 2 " + immutableBlockState + " " + direction + " " + stairsShape);
+        switch (mirror) {
+            case LEFT_RIGHT:
+                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 3 " + direction.axis());
+                if (direction.axis() == Direction.Axis.Z) {
+                    CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 4 " + stairsShape);
+                    return switch (stairsShape) {
+                        case OUTER_LEFT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_RIGHT).customBlockState().handle();
+                        case INNER_RIGHT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_LEFT).customBlockState().handle();
+                        case INNER_LEFT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_RIGHT).customBlockState().handle();
+                        case OUTER_RIGHT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_LEFT).customBlockState().handle();
+                        default -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
+                    };
+                }
+                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 5");
+            case FRONT_BACK:
+                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 6 " + direction.axis());
+                if (direction.axis() == Direction.Axis.X) {
+                    CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 7 " + stairsShape);
+                    return switch (stairsShape) {
+                        case STRAIGHT -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
+                        case OUTER_LEFT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_RIGHT).customBlockState().handle();
+                        case INNER_RIGHT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_RIGHT).customBlockState().handle();
+                        case INNER_LEFT -> rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_LEFT).customBlockState().handle();
+                        case OUTER_RIGHT ->
+                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_LEFT).customBlockState().handle();
+                    };
+                }
+                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 8");
+        }
+        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 9");
+        return superMethod.call();
     }
 
     private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos blockPos) {
