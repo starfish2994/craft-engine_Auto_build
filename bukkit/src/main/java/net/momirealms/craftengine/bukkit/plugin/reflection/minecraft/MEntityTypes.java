@@ -25,6 +25,10 @@ public final class MEntityTypes {
     public static final int OAK_BOAT$registryId;
     public static final Object TRIDENT;
     public static final int TRIDENT$registryId;
+    public static final Object ARROW;
+    public static final int ARROW$registryId;
+    public static final Object SPECTRAL_ARROW;
+    public static final int SPECTRAL_ARROW$registryId;
     public static final Object SNOWBALL;
     public static final int SNOWBALL$registryId;
     public static final Object FIREBALL;
@@ -116,6 +120,10 @@ public final class MEntityTypes {
             HAPPY_GHAST$registryId = getRegistryId(HAPPY_GHAST);
             PLAYER = getById("player");
             PLAYER$registryId = getRegistryId(PLAYER);
+            ARROW = getById("arrow");
+            ARROW$registryId = getRegistryId(ARROW);
+            SPECTRAL_ARROW = getById("spectral_arrow");
+            SPECTRAL_ARROW$registryId = getRegistryId(SPECTRAL_ARROW);
         } catch (ReflectiveOperationException e) {
             throw new ReflectionInitException("Failed to init EntityTypes", e);
         }
