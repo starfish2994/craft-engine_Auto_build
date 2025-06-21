@@ -272,6 +272,8 @@ items#misc:
           behaviors:
             - type: sturdy_base_block
               direction: down
+              support-types:
+                - full
             - type: stackable_block
               property: pebble
               items:

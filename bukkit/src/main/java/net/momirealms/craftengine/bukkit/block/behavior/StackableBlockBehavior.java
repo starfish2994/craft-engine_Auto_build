@@ -71,7 +71,9 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         if (this.stackSound != null) {
             world.playBlockSound(new Vec3d(location.getX(), location.getY(), location.getZ()), this.stackSound);
         }
-        item.count(item.count() - 1);
+        if (!player.isCreativeMode()) {
+            item.count(item.count() - 1);
+        }
         player.swingHand(hand);
     }
 

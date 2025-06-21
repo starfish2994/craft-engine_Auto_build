@@ -545,7 +545,7 @@ items:
                 - minecraft:mineable/axe
                 - minecraft:stairs
                 - minecraft:wooden_stairs
-          behaviors:
+          behavior:
             type: stairs_block
           states:
             template: default:block_state/stairs
