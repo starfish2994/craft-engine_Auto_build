@@ -1274,8 +1274,8 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 11)
     );
 
-    public static final Field field$BlockStateBase$Cache$propagatesSkylightDown = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$BlockStateBase$Cache, boolean.class, 2)
+    public static final Field field$BlockStateBase$Cache$propagatesSkylightDown = ReflectionUtils.getDeclaredField(
+            clazz$BlockStateBase$Cache, boolean.class, 2
     );
 
     public static final Field field$BlockStateBase$requiresCorrectToolForDrops = requireNonNull(

@@ -406,6 +406,11 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/entity/equipment/wings/flame_elytra.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/cap.png");
         plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/item/custom/cap.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/item/custom/pebble.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/textures/block/custom/pebble.png");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_1.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_2.json");
+        plugin.saveResource("resources/default/resourcepack/assets/minecraft/models/block/custom/pebble_3.json");
 
         // ores
         plugin.saveResource("resources/default/configuration/ores.yml");

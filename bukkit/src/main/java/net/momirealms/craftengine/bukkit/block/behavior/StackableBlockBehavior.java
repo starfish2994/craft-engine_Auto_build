@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -56,18 +57,11 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         }
         BlockPos pos = context.getClickedPos();
         World world = context.getLevel();
-        if (state.get(this.amountProperty) < this.amountProperty.max) {
-            updateStackableBlock(state, pos, world, item, player, context.getHand());
+        if (state.get(this.amountProperty) >= this.amountProperty.max) {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
-        BlockPos actualPos = pos.relative(context.getClickedFace());
-        ImmutableBlockState actualState = world.getBlockAt(actualPos).customBlockState();
-        boolean isValid = actualState != null && !actualState.isEmpty() && actualState.contains(this.amountProperty);
-        if (isValid && actualState.get(this.amountProperty) < this.amountProperty.max) {
-            updateStackableBlock(actualState, actualPos, world, item, player, context.getHand());
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        }
-        return InteractionResult.PASS;
+        updateStackableBlock(state, pos, world, item, player, context.getHand());
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     private void updateStackableBlock(ImmutableBlockState state, BlockPos pos, World world, Item<ItemStack> item, Player player, InteractionHand hand) {
@@ -77,7 +71,7 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         if (this.stackSound != null) {
             world.playBlockSound(new Vec3d(location.getX(), location.getY(), location.getZ()), this.stackSound);
         }
-        FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
+        item.count(item.count() - 1);
         player.swingHand(hand);
     }
 
@@ -86,7 +80,10 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         @Override
         @SuppressWarnings("unchecked")
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            IntegerProperty amount = (IntegerProperty) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("amount"), "warning.config.block.behavior.stackable.missing_amount");
+            String propertyName = String.valueOf(arguments.getOrDefault("property", "amount"));
+            IntegerProperty amount = (IntegerProperty) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty(propertyName), () -> {
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.stackable.missing_property", propertyName);
+            });
             Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
             SoundData stackSound = null;
             if (sounds != null) {

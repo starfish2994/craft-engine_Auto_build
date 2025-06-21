@@ -301,8 +301,8 @@ items:
           can-open-with-hand: true
           can-open-by-wind-charge: true
           sounds:
-            open: block.wooden_trapdoor.open
-            close: block.wooden_trapdoor.close
+            open: minecraft:block.wooden_trapdoor.open
+            close: minecraft:block.wooden_trapdoor.close
         loot:
           template: default:loot_table/self
         settings:
@@ -355,8 +355,8 @@ items:
           can-open-with-hand: true
           can-open-by-wind-charge: true
           sounds:
-            open: block.wooden_door.open
-            close: block.wooden_door.close
+            open: minecraft:block.wooden_door.open
+            close: minecraft:block.wooden_door.close
         loot:
           template: default:loot_table/self
         settings:
@@ -431,8 +431,8 @@ items:
           can-open-with-hand: true
           can-open-by-wind-charge: true
           sounds:
-            open: block.fence_gate.open
-            close: block.fence_gate.close
+            open: minecraft:block.fence_gate.open
+            close: minecraft:block.fence_gate.close
         loot:
           template: default:loot_table/self
         settings:

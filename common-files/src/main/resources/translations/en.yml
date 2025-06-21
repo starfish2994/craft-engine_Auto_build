@@ -256,7 +256,7 @@ warning.config.block.behavior.trapdoor.missing_half: "<yellow>Issue found in fil
 warning.config.block.behavior.trapdoor.missing_facing: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'facing' property for 'trapdoor_block' behavior.</yellow>"
 warning.config.block.behavior.trapdoor.missing_open: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'open' property for 'trapdoor_block' behavior.</yellow>"
 warning.config.block.behavior.trapdoor.missing_powered: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'powered' property for 'trapdoor_block' behavior.</yellow>"
-warning.config.block.behavior.stackable.missing_amount: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'amount' property for 'stackable_block' behavior.</yellow>"
+warning.config.block.behavior.stackable.missing_property: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required '<arg:2>' property for 'stackable_block' behavior.</yellow>"
 warning.config.block.behavior.stackable.missing_items: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'items' argument for 'stackable_block' behavior.</yellow>"
 warning.config.block.behavior.fence_gate.missing_facing: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'facing' argument for 'fence_gate_block' behavior.</yellow>"
 warning.config.block.behavior.fence_gate.missing_in_wall: "<yellow>Issue found in file <arg:0> - The block '<arg:1>' is missing the required 'in_wall' argument for 'fence_gate_block' behavior.</yellow>"

@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.entity.Billboard;
 import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
@@ -324,12 +325,13 @@ public class ItemSettings {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
                 ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
+                Billboard billboard = Billboard.valueOf(args.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                 Vector3f translation = MiscUtils.getAsVector3f(args.getOrDefault("translation", "0"), "translation");
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
                 ProjectileType type = Optional.ofNullable(args.get("type")).map(String::valueOf).map(it -> ProjectileType.valueOf(it.toUpperCase(Locale.ENGLISH))).orElse(null);
                 double range = ResourceConfigUtils.getAsDouble(args.getOrDefault("range", 1), "range");
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, range, type));
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, billboard, scale, translation, rotation, range, type));
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);

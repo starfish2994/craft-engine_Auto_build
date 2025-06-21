@@ -27,6 +27,7 @@ categories:
       - default:palm_fence_gate
       - default:palm_slab
       - default:palm_stairs
+      - default:palm_pressure_plate
   default:topaz:
     name: <!i><#FF8C00><i18n:category.topaz></#FF8C00>
     hidden: true
@@ -75,3 +76,4 @@ categories:
       - default:copper_coil
       - default:flame_elytra
       - default:cap
+      - default:pebble

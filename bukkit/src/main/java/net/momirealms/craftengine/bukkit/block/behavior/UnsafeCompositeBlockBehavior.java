@@ -35,7 +35,7 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             InteractionResult result = behavior.useOnBlock(context, state);
-            if (result != InteractionResult.PASS) {
+            if (result != InteractionResult.PASS && result != InteractionResult.TRY_EMPTY_HAND) {
                 return result;
             }
         }

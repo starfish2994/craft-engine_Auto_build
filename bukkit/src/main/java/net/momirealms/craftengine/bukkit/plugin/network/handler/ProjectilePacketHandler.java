@@ -130,6 +130,7 @@ public class ProjectilePacketHandler implements EntityPacketHandler {
                 it -> ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(FastNMS.INSTANCE.field$CraftItemStack$handle(it), itemDisplayValues),
                 () -> ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(literalItem, itemDisplayValues));
         ItemDisplayEntityData.DisplayType.addEntityDataIfNotDefaultValue(meta.displayType().id(), itemDisplayValues);
+        ItemDisplayEntityData.BillboardConstraints.addEntityDataIfNotDefaultValue(meta.billboard().id(), itemDisplayValues);
         return itemDisplayValues;
     }
 
