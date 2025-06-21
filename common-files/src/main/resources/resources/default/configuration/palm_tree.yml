@@ -535,7 +535,7 @@ items:
                 top: minecraft:block/custom/palm_planks
             model_double_path: minecraft:block/custom/palm_planks
   default:palm_stairs:
-    material: paper
+    material: nether_brick
     custom-model-data: 1010
     model:
       type: minecraft:model
@@ -626,14 +626,14 @@ recipes:
     result:
       id: default:palm_slab
       count: 6
-#  default:palm_stairs:
-#    type: shaped
-#    pattern:
-#      - A
-#      - AA
-#      - AAA
-#    ingredients:
-#      A: default:palm_planks
-#    result:
-#      id: default:palm_stairs
-#      count: 4
+  default:palm_stairs:
+    type: shaped
+    pattern:
+      - A
+      - AA
+      - AAA
+    ingredients:
+      A: default:palm_planks
+    result:
+      id: default:palm_stairs
+      count: 4
