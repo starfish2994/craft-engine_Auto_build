@@ -629,9 +629,9 @@ recipes:
   default:palm_stairs:
     type: shaped
     pattern:
-      - A
-      - AA
-      - AAA
+      - 'A  '
+      - 'AA '
+      - 'AAA'
     ingredients:
       A: default:palm_planks
     result:
