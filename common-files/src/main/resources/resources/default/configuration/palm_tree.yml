@@ -589,6 +589,7 @@ items:
             - default:hardness/planks
           overrides:
             burnable: true
+            push-reaction: DESTROY
             map-color: 2
             instrument: bass
             tags:

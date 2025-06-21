@@ -23,13 +23,17 @@ public class SturdyBaseBlockBehavior extends AbstractCanSurviveBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Direction direction;
     private final boolean stackable;
-    private final List<Object> supportTypes;
+    private final boolean checkFull;
+    private final boolean checkRigid;
+    private final boolean checkCenter;
 
-    public SturdyBaseBlockBehavior(CustomBlock block, int delay, Direction direction, boolean stackable, List<Object> supportTypes) {
+    public SturdyBaseBlockBehavior(CustomBlock block, int delay, Direction direction, boolean stackable, boolean checkFull, boolean checkRigid, boolean checkCenter) {
         super(block, delay);
         this.direction = direction;
         this.stackable = stackable;
-        this.supportTypes = supportTypes;
+        this.checkFull = checkFull;
+        this.checkRigid = checkRigid;
+        this.checkCenter = checkCenter;
     }
 
     @Override
@@ -39,13 +43,17 @@ public class SturdyBaseBlockBehavior extends AbstractCanSurviveBlockBehavior {
         int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos) + this.direction.stepZ();
         Object targetPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
         Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, targetPos);
-        for (Object supportType : this.supportTypes) {
-            if ((boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
-                    blockState, world, targetPos, DirectionUtils.toNMSDirection(this.direction.opposite()),
-                    supportType
-            )) {
-                return true;
-            }
+        if (this.checkFull && (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                blockState, world, targetPos, DirectionUtils.toNMSDirection(this.direction.opposite()),
+                CoreReflections.instance$SupportType$FULL
+        )) {
+            return true;
+        }
+        if (this.checkRigid && FastNMS.INSTANCE.method$Block$canSupportRigidBlock(world, targetPos)) {
+            return true;
+        }
+        if (this.checkCenter && FastNMS.INSTANCE.method$Block$canSupportCenter(world, targetPos, DirectionUtils.toNMSDirection(this.direction.opposite()))) {
+            return true;
         }
         if (!this.stackable) {
             return false;
@@ -62,22 +70,8 @@ public class SturdyBaseBlockBehavior extends AbstractCanSurviveBlockBehavior {
             int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
             Direction direction = Direction.valueOf(arguments.getOrDefault("direction", "down").toString().toUpperCase(Locale.ENGLISH));
             boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
-            List<Object> supportTypes = MiscUtils.getAsStringList(arguments.getOrDefault("support-types", List.of("full")))
-                    .stream()
-                    .map(it -> {
-                        if (it.equalsIgnoreCase("full")) {
-                            return CoreReflections.instance$SupportType$FULL;
-                        } else if (it.equalsIgnoreCase("rigid")) {
-                            return CoreReflections.instance$SupportType$RIGID;
-                        } else if (it.equalsIgnoreCase("center")) {
-                            return CoreReflections.instance$SupportType$CENTER;
-                        } else {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
-            return new SturdyBaseBlockBehavior(block, delay, direction, stackable, supportTypes);
+            List<String> supportTypes = MiscUtils.getAsStringList(arguments.getOrDefault("support-types", List.of("full")));
+            return new SturdyBaseBlockBehavior(block, delay, direction, stackable, supportTypes.contains("full"), supportTypes.contains("rigid"), supportTypes.contains("center"));
         }
     }
 }
