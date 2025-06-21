@@ -3347,4 +3347,11 @@ public final class CoreReflections {
             throw new ReflectionInitException("Failed to init ItemStack$CODEC", e);
         }
     }
+
+    public static final Class<?> clazz$StairBlock = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.BlockStairs",
+                    "world.level.block.StairBlock"
+            )
+    );
 }
