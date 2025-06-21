@@ -69,7 +69,7 @@ resource-pack:
     - CustomNameplates/resourcepack.zip
   exclude-file-extensions: ["md", "psd", "bbmodel", "db", "ini"]
   # Exclude the shaders when generating the resource pack
-  exclude-shaders: false
+  exclude-core-shaders: false
   delivery:
     # Send the resource pack on joining the server
     send-on-join: true
