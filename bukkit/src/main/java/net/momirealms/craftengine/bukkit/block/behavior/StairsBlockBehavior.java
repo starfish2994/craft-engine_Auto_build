@@ -4,7 +4,9 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
-import net.momirealms.craftengine.bukkit.util.*;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -13,9 +15,11 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
 import net.momirealms.craftengine.core.block.state.properties.StairsShape;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
-import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.HorizontalDirection;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -68,93 +72,35 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
                 : superMethod.call();
     }
 
-    @Override
-    public Object rotate(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object state = args[0];
-        Rotation rot = RotationUtils.fromNMSRotation(args[1]);
-        ImmutableBlockState blockState = rotate(state, rot);
-        return blockState != null ? blockState.customBlockState().handle() : superMethod.call();
-    }
-
-    @Nullable
-    private ImmutableBlockState rotate(Object state, Rotation rotation) {
-        int stateId = BlockStateUtils.blockStateToId(state);
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) return null;
-        Direction facing = immutableBlockState.get(this.facingProperty).toDirection();
-        return immutableBlockState.with(this.facingProperty, rotation.rotate(facing).toHorizontalDirection());
-    }
-
-    @Override
-    public Object mirror(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object state = args[0];
-        Mirror mirror = MirrorUtils.fromNMSMirror(args[1]);
-        int stateId = BlockStateUtils.blockStateToId(state);
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) return superMethod.call();
-        Direction direction = immutableBlockState.get(this.facingProperty).toDirection();
-        StairsShape stairsShape = immutableBlockState.get(this.shapeProperty);
-        switch (mirror) {
-            case LEFT_RIGHT:
-                if (direction.axis() == Direction.Axis.Z) {
-                    return switch (stairsShape) {
-                        case OUTER_LEFT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_RIGHT).customBlockState().handle();
-                        case INNER_RIGHT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_LEFT).customBlockState().handle();
-                        case INNER_LEFT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_RIGHT).customBlockState().handle();
-                        case OUTER_RIGHT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_LEFT).customBlockState().handle();
-                        default -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
-                    };
-                }
-            case FRONT_BACK:
-                if (direction.axis() == Direction.Axis.X) {
-                    return switch (stairsShape) {
-                        case STRAIGHT -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
-                        case OUTER_LEFT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_RIGHT).customBlockState().handle();
-                        case INNER_RIGHT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_RIGHT).customBlockState().handle();
-                        case INNER_LEFT -> rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.INNER_LEFT).customBlockState().handle();
-                        case OUTER_RIGHT ->
-                                rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_LEFT).customBlockState().handle();
-                    };
-                }
-        }
-        return superMethod.call();
-    }
-
     private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos pos) {
         Direction direction = state.get(this.facingProperty).toDirection();
         Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(direction)));
         int stateId = BlockStateUtils.blockStateToId(blockState);
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) return StairsShape.STRAIGHT;
-        if (isStairs(blockState) && state.get(this.halfProperty) == immutableBlockState.get(this.halfProperty)) {
-            Direction direction1 = immutableBlockState.get(this.facingProperty).toDirection();
-            if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction1.opposite())) {
-                if (direction1 == direction.counterClockWise()) {
-                    return StairsShape.OUTER_LEFT;
+        if (immutableBlockState != null && !immutableBlockState.isEmpty()) {
+            if (isStairs(blockState) && state.get(this.halfProperty) == immutableBlockState.get(this.halfProperty)) {
+                Direction direction1 = immutableBlockState.get(this.facingProperty).toDirection();
+                if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction1.opposite())) {
+                    if (direction1 == direction.counterClockWise()) {
+                        return StairsShape.OUTER_LEFT;
+                    }
+                    return StairsShape.OUTER_RIGHT;
                 }
-
-                return StairsShape.OUTER_RIGHT;
             }
         }
 
         Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(direction.opposite())));
         int stateId1 = BlockStateUtils.blockStateToId(blockState1);
         ImmutableBlockState immutableBlockState1 = BukkitBlockManager.instance().getImmutableBlockState(stateId1);
-        if (immutableBlockState1 == null || immutableBlockState1.isEmpty()) return StairsShape.STRAIGHT;
-        if (isStairs(blockState1) && state.get(this.halfProperty) == immutableBlockState1.get(this.halfProperty)) {
-            Direction direction2 = immutableBlockState1.get(this.facingProperty).toDirection();
-            if (direction2.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction2)) {
-                if (direction2 == direction.counterClockWise()) {
-                    return StairsShape.INNER_LEFT;
+        if (immutableBlockState1 != null && !immutableBlockState1.isEmpty()) {
+            if (isStairs(blockState1) && state.get(this.halfProperty) == immutableBlockState1.get(this.halfProperty)) {
+                Direction direction2 = immutableBlockState1.get(this.facingProperty).toDirection();
+                if (direction2.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction2)) {
+                    if (direction2 == direction.counterClockWise()) {
+                        return StairsShape.INNER_LEFT;
+                    }
+                    return StairsShape.INNER_RIGHT;
                 }
-
-                return StairsShape.INNER_RIGHT;
             }
         }
 
