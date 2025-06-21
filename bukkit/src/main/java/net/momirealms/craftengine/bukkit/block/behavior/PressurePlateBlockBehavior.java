@@ -39,19 +39,22 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
     private final SoundData onSound;
     private final SoundData offSound;
     private final PressurePlateSensitivity pressurePlateSensitivity;
+    private final int pressedTime;
 
     public PressurePlateBlockBehavior(
             CustomBlock block,
             Property<Boolean> poweredProperty,
             SoundData onSound,
             SoundData offSound,
-            PressurePlateSensitivity pressurePlateSensitivity
+            PressurePlateSensitivity pressurePlateSensitivity,
+            int pressedTime
     ) {
         super(block);
         this.poweredProperty = poweredProperty;
         this.onSound = onSound;
         this.offSound = offSound;
         this.pressurePlateSensitivity = pressurePlateSensitivity;
+        this.pressedTime = pressedTime;
     }
 
     @Override
@@ -115,7 +118,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         if (signalForState == 0) {
             this.checkPressed(args[3], args[1], args[2], state, signalForState, thisBlock);
         } else {
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(args[1], args[2], thisBlock, 20);
+            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(args[1], args[2], thisBlock, this.pressedTime);
         }
     }
 
@@ -159,7 +162,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         }
 
         if (isActive) {
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, 20);
+            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, this.pressedTime);
         }
     }
 
@@ -225,6 +228,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Boolean> powered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("powered"), "warning.config.block.behavior.pressure_plate.missing_powered");
             PressurePlateSensitivity pressurePlateSensitivity = PressurePlateSensitivity.byName(arguments.getOrDefault("sensitivity", "everything").toString());
+            int pressedTime = ResourceConfigUtils.getAsInt(arguments.getOrDefault("pressed-time", 20), "pressed-time");
             Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
             SoundData onSound = null;
             SoundData offSound = null;
@@ -232,7 +236,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
                 onSound = Optional.ofNullable(sounds.get("on")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.ranged(0.9f, 1f))).orElse(null);
                 offSound = Optional.ofNullable(sounds.get("off")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.ranged(0.9f, 1f))).orElse(null);
             }
-            return new PressurePlateBlockBehavior(block, powered, onSound, offSound, pressurePlateSensitivity);
+            return new PressurePlateBlockBehavior(block, powered, onSound, offSound, pressurePlateSensitivity, pressedTime);
         }
     }
 }
