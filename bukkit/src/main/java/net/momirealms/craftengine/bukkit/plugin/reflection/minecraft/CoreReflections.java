@@ -3480,4 +3480,27 @@ public final class CoreReflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$BasePressurePlateBlock = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.BlockPressurePlateAbstract",
+                    "world.level.block.BasePressurePlateBlock"
+            )
+    );
+
+    public static final Field field$BasePressurePlateBlock$TOUCH_AABB = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$BasePressurePlateBlock, clazz$AABB, 0
+            )
+    );
+
+    public static final Object instance$BasePressurePlateBlock$TOUCH_AABB;
+
+    static {
+        try {
+            instance$BasePressurePlateBlock$TOUCH_AABB = requireNonNull(field$BasePressurePlateBlock$TOUCH_AABB.get(null));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
