@@ -615,17 +615,16 @@ public class BukkitBlockManager extends AbstractBlockManager {
         if (!Files.exists(mappingsFile)) {
             this.plugin.saveResource("mappings.yml");
         }
-        File mappingFile = new File(plugin.dataFolderFile(), "mappings.yml");
-        Yaml yaml = new Yaml(new StringKeyConstructor(null, new LoaderOptions()));
+        Yaml yaml = new Yaml(new StringKeyConstructor(mappingsFile, new LoaderOptions()));
         try (InputStream inputStream =  Files.newInputStream(mappingsFile)) {
             Map<String, String> blockStateMappings = loadBlockStateMappings(yaml.load(inputStream));
-            this.validateBlockStateMappings(mappingFile, blockStateMappings);
+            this.validateBlockStateMappings(mappingsFile, blockStateMappings);
             Map<Integer, String> stateMap = new Int2ObjectOpenHashMap<>();
             Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
             Map<Integer, Integer> appearanceMapper = new Int2IntOpenHashMap();
             Map<Key, List<Integer>> appearanceArranger = new HashMap<>();
             for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
-                this.processBlockStateMapping(mappingFile, entry, stateMap, blockTypeCounter, appearanceMapper, appearanceArranger);
+                this.processBlockStateMapping(mappingsFile, entry, stateMap, blockTypeCounter, appearanceMapper, appearanceArranger);
             }
             this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
             this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
@@ -679,7 +678,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         return blockStateMappings;
     }
 
-    private void validateBlockStateMappings(File mappingFile, Map<String, String> blockStateMappings) {
+    private void validateBlockStateMappings(Path mappingFile, Map<String, String> blockStateMappings) {
         Map<String, String> temp = new HashMap<>(blockStateMappings);
         for (Map.Entry<String, String> entry : temp.entrySet()) {
             String state = entry.getValue();
@@ -690,7 +689,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private void processBlockStateMapping(File mappingFile,
+    private void processBlockStateMapping(Path mappingFile,
                                           Map.Entry<String, String> entry,
                                           Map<Integer, String> stateMap,
                                           Map<Key, Integer> counter,
@@ -725,7 +724,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private Object createBlockState(File mappingFile, String state) {
+    private Object createBlockState(Path mappingFile, String state) {
         try {
             Object registryOrLookUp = MBuiltInRegistries.BLOCK;
             if (CoreReflections.method$Registry$asLookup != null) {

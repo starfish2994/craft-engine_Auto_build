@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.entity.projectile;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import com.destroystokyo.paper.event.player.PlayerReadyArrowEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -65,7 +66,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     }
 
     @Override
-    public Optional<CustomProjectile> projectileByEntityId(int entityId) {
+    public Optional<BukkitCustomProjectile> projectileByEntityId(int entityId) {
         return Optional.ofNullable(this.projectiles.get(entityId));
     }
 
@@ -191,14 +192,18 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.cachedServerEntity = serverEntity;
             }
 
-            boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
-            if (canSpawnParticle(nmsEntity, inGround)) {
-                this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
-            }
-            if (inGround) {
-                updateProjectileUpdateInterval(Integer.MAX_VALUE);
-            } else {
+            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
                 updateProjectileUpdateInterval(1);
+            } else {
+                boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
+                if (canSpawnParticle(nmsEntity, inGround)) {
+                    this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
+                }
+                if (inGround) {
+                    updateProjectileUpdateInterval(Integer.MAX_VALUE);
+                } else {
+                    updateProjectileUpdateInterval(1);
+                }
             }
         }
 

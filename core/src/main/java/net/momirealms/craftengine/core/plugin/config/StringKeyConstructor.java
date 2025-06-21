@@ -139,6 +139,7 @@ public class StringKeyConstructor extends SafeConstructor {
     }
 
     private void logWarning(String keyInLocale, String configKey, Node node) {
+        if (this.path == null) return;
         TranslationManager.instance().log("warning.config.yaml." + keyInLocale,
                 this.path.toAbsolutePath().toString(),
                 configKey,

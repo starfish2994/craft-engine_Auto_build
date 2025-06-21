@@ -303,13 +303,14 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     public void unload() {
         if (!Config.enableRecipeSystem()) return;
         super.unload();
-        try {
-            if (VersionHelper.isOrAbove1_21_2()) {
-                // TODO: 排查为什么会出现并发修改问题
-                CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
-            }
-        } catch (ReflectiveOperationException e) {
-            this.plugin.logger().warn("Failed to unregister recipes", e);
+        if (VersionHelper.isOrAbove1_21_2()) {
+            this.plugin.scheduler().executeSync(() -> {
+                try {
+                    CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
+                } catch (ReflectiveOperationException e) {
+                    this.plugin.logger().warn("Failed to unregister recipes", e);
+                }
+            });
         }
     }
 
@@ -435,7 +436,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 }
             }
         } catch (Exception e) {
-            plugin.logger().warn("Failed to read data pack recipes", e);
+            this.plugin.logger().warn("Failed to read data pack recipes", e);
         }
     }
 
