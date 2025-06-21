@@ -5,7 +5,7 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MTagKey;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MTagKeys;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.InteractUtils;
@@ -83,7 +83,7 @@ public class FenceGateBlockBehavior extends BukkitBlockBehavior {
 
     public boolean isWall(Object state) {
         if (state == null) return false;
-        return FastNMS.INSTANCE.method$BlockStateBase$isTagKeyBlock(state, MTagKey.Block$WALLS);
+        return FastNMS.INSTANCE.method$BlockStateBase$isTagKeyBlock(state, MTagKeys.Block$WALLS);
     }
 
     private Object getBlockState(Object level, BlockPos blockPos) {

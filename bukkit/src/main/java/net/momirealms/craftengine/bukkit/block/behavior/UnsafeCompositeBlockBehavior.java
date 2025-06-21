@@ -210,4 +210,50 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
         }
         return super.canBeReplaced(context, state);
     }
+
+    @Override
+    public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.entityInside(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.affectNeighborsAfterRemoval(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getDirectSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (behavior.isSignalSource(thisBlock, args, superMethod)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

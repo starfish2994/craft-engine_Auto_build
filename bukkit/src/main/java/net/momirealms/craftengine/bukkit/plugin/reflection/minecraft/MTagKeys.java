@@ -4,8 +4,8 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 
 import java.util.Objects;
 
-public class MTagKey {
-    private MTagKey() {}
+public final class MTagKeys {
+    private MTagKeys() {}
 
     public static final Object Item$WOOL = create(MRegistries.ITEM, "wool");
     public static final Object Block$WALLS = create(MRegistries.BLOCK, "walls");

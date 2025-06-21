@@ -566,6 +566,8 @@ items:
               model_stairs_generation:
                 parent: minecraft:block/stairs
                 textures: *textures
+  default:palm_pressure_plate:
+
 recipes:
   default:palm_planks:
     template: default:recipe/planks
@@ -609,6 +611,15 @@ recipes:
     result:
       id: default:palm_slab
       count: 6
+  default:palm_pressure_plate:
+    type: shaped
+    pattern:
+      - AA
+    ingredients:
+      A: default:palm_planks
+    result:
+      id: default:palm_pressure_plate
+      count: 1
   $$>=1.20.3#palm_stairs:
     default:palm_stairs:
       type: shaped

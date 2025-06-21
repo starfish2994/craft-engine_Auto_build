@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
@@ -898,11 +899,11 @@ public final class CoreReflections {
     );
 
     public static final Field field$BLOCK_STATE_REGISTRY = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$Block, CoreReflections.clazz$IdMapper, 0)
+            ReflectionUtils.getDeclaredField(clazz$Block, clazz$IdMapper, 0)
     );
 
     public static final Method method$IdMapper$add = requireNonNull(
-            ReflectionUtils.getMethod(CoreReflections.clazz$IdMapper, void.class, Object.class)
+            ReflectionUtils.getMethod(clazz$IdMapper, void.class, Object.class)
     );
 
     public static final Object instance$Block$BLOCK_STATE_REGISTRY;
@@ -1392,15 +1393,15 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockBehaviour$getShape = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$CollisionContext)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext)
     );
 
     public static final Method method$BlockBehaviour$getCollisionShape = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getCollisionShape", VersionHelper.isOrAbove1_20_3() ? "b" : "c"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$CollisionContext)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getCollisionShape", VersionHelper.isOrAbove1_20_3() ? "b" : "c"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext)
     );
 
     public static final Method method$BlockBehaviour$getBlockSupportShape = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getBlockSupportShape", "b_"}, clazz$BlockState, clazz$BlockGetter, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$VoxelShape, new String[]{"getBlockSupportShape", "b_"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos)
     );
 
     public static final Field field$BlockBehaviour$properties = requireNonNull(
@@ -1577,7 +1578,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$Entity$getOnPos = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$Entity, CoreReflections.clazz$BlockPos, float.class)
+            ReflectionUtils.getDeclaredMethod(clazz$Entity, clazz$BlockPos, float.class)
     );
 
     public static final Class<?> clazz$ItemStack = requireNonNull(
@@ -1607,8 +1608,8 @@ public final class CoreReflections {
 
     public static final Method method$BlockBehaviour$updateShape = requireNonNull(
             VersionHelper.isOrAbove1_21_2() ?
-                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$LevelReader, clazz$ScheduledTickAccess, CoreReflections.clazz$BlockPos, CoreReflections.clazz$Direction, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$RandomSource) :
-                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, CoreReflections.clazz$Direction, clazz$BlockState, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, CoreReflections.clazz$BlockPos)
+                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$LevelReader, clazz$ScheduledTickAccess, clazz$BlockPos, clazz$Direction, clazz$BlockPos, clazz$BlockState, clazz$RandomSource) :
+                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, clazz$BlockState, clazz$BlockState, clazz$Direction, clazz$BlockState, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockPos)
     );
 
     public static final Class<?> clazz$Fallable = requireNonNull(
@@ -1634,7 +1635,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$FallingBlockEntity$fall = requireNonNull(
-            ReflectionUtils.getStaticMethod(clazz$FallingBlockEntity, clazz$FallingBlockEntity, clazz$Level, CoreReflections.clazz$BlockPos, clazz$BlockState)
+            ReflectionUtils.getStaticMethod(clazz$FallingBlockEntity, clazz$FallingBlockEntity, clazz$Level, clazz$BlockPos, clazz$BlockState)
     );
 
     public static final Method method$FallingBlockEntity$setHurtsEntities = requireNonNull(
@@ -1662,11 +1663,11 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockStateBase$hasTag = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, CoreReflections.clazz$TagKey)
+            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$TagKey)
     );
 
     public static final Method method$Level$removeBlock = requireNonNull(
-            ReflectionUtils.getMethod(clazz$Level, boolean.class, CoreReflections.clazz$BlockPos, boolean.class)
+            ReflectionUtils.getMethod(clazz$Level, boolean.class, clazz$BlockPos, boolean.class)
     );
 
     public static final Class<?> clazz$LeavesBlock = requireNonNull(
@@ -1704,18 +1705,18 @@ public final class CoreReflections {
 
 
     public static final Method method$Block$updateFromNeighbourShapes = requireNonNull(
-            ReflectionUtils.getStaticMethod(clazz$Block, clazz$BlockState, clazz$BlockState, clazz$LevelAccessor, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getStaticMethod(clazz$Block, clazz$BlockState, clazz$BlockState, clazz$LevelAccessor, clazz$BlockPos)
     );
 
     public static final Method method$BlockStateBase$updateNeighbourShapes = requireNonNull(
             ReflectionUtils.getMethod(
                     // flags   // depth
-                    clazz$BlockStateBase, void.class, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, int.class, int.class
+                    clazz$BlockStateBase, void.class, clazz$LevelAccessor, clazz$BlockPos, int.class, int.class
             )
     );
 
     public static final Method method$BlockState$getShape = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$CollisionContext)
+            ReflectionUtils.getMethod(clazz$BlockStateBase, clazz$VoxelShape, new String[]{"getShape", "a"}, clazz$BlockGetter, clazz$BlockPos, clazz$CollisionContext)
     );
 
     public static final Method method$VoxelShape$isEmpty = requireNonNull(
@@ -1727,7 +1728,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$LevelWriter$setBlock = requireNonNull(
-            ReflectionUtils.getMethod(clazz$LevelWriter, boolean.class, CoreReflections.clazz$BlockPos, clazz$BlockState, int.class)
+            ReflectionUtils.getMethod(clazz$LevelWriter, boolean.class, clazz$BlockPos, clazz$BlockState, int.class)
     );
 
     public static final Method method$CollisionContext$of = requireNonNull(
@@ -1739,15 +1740,15 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockStateBase$canSurvive = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$LevelReader, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$LevelReader, clazz$BlockPos)
     );
 
     public static final Method method$BlockStateBase$onPlace = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, void.class, clazz$Level, CoreReflections.clazz$BlockPos, clazz$BlockState, boolean.class)
+            ReflectionUtils.getMethod(clazz$BlockStateBase, void.class, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class)
     );
 
     public static final Method method$ItemStack$isTag = requireNonNull(
-            ReflectionUtils.getMethod(clazz$ItemStack, boolean.class, CoreReflections.clazz$TagKey)
+            ReflectionUtils.getMethod(clazz$ItemStack, boolean.class, clazz$TagKey)
     );
 
     public static final Class<?> clazz$FireBlock = requireNonNull(
@@ -1867,7 +1868,7 @@ public final class CoreReflections {
     );
 
     public static final Field field$Inventory$items = requireNonNull(
-            ReflectionUtils.getInstanceDeclaredField(clazz$Inventory, CoreReflections.clazz$NonNullList, 0)
+            ReflectionUtils.getInstanceDeclaredField(clazz$Inventory, clazz$NonNullList, 0)
     );
 
     public static final Class<?> clazz$Ingredient = requireNonNull(
@@ -1906,7 +1907,7 @@ public final class CoreReflections {
 
     // 1.20.1-1.20.2
     public static final Field field$1_20_1$ShapedRecipe$recipeItems=
-            ReflectionUtils.getDeclaredField(clazz$ShapedRecipe, CoreReflections.clazz$NonNullList, 0);
+            ReflectionUtils.getDeclaredField(clazz$ShapedRecipe, clazz$NonNullList, 0);
 
     // 1.20.3+
     public static final Field field$1_20_3$ShapedRecipe$pattern=
@@ -1914,7 +1915,7 @@ public final class CoreReflections {
 
     // 1.20.3-1.21.1
     public static final Field field$ShapedRecipePattern$ingredients1_20_3 = Optional.ofNullable(clazz$ShapedRecipePattern)
-            .map(it -> ReflectionUtils.getDeclaredField(it, CoreReflections.clazz$NonNullList, 0))
+            .map(it -> ReflectionUtils.getDeclaredField(it, clazz$NonNullList, 0))
             .orElse(null);
 
     // 1.21.2+
@@ -1967,7 +1968,7 @@ public final class CoreReflections {
 
     public static final Field field$ShapelessRecipe$ingredients =
             Optional.ofNullable(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, List.class, 0))
-                    .orElse(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, CoreReflections.clazz$NonNullList, 0));
+                    .orElse(ReflectionUtils.getDeclaredField(clazz$ShapelessRecipe, clazz$NonNullList, 0));
 
     // require ResourceLocation for 1.20.1-1.21.1
     // require ResourceKey for 1.21.2+
@@ -2095,7 +2096,7 @@ public final class CoreReflections {
             .orElse(null);
 
     public static final Field field$AbstractFurnaceBlockEntity$items = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$AbstractFurnaceBlockEntity, CoreReflections.clazz$NonNullList, 0)
+            ReflectionUtils.getDeclaredField(clazz$AbstractFurnaceBlockEntity, clazz$NonNullList, 0)
     );
 
     public static final Class<?> clazz$SimpleContainer = requireNonNull(
@@ -2106,15 +2107,15 @@ public final class CoreReflections {
     );
 
     public static final Field field$SimpleContainer$items = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$SimpleContainer, CoreReflections.clazz$NonNullList, 0)
+            ReflectionUtils.getDeclaredField(clazz$SimpleContainer, clazz$NonNullList, 0)
     );
 
     public static final Method method$LevelReader$getMaxLocalRawBrightness = requireNonNull(
-            ReflectionUtils.getMethod(clazz$LevelReader, int.class, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getMethod(clazz$LevelReader, int.class, clazz$BlockPos)
     );
 
     public static final Method method$ConfiguredFeature$place = requireNonNull(
-            ReflectionUtils.getMethod(clazz$ConfiguredFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getMethod(clazz$ConfiguredFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, clazz$BlockPos)
     );
 
     public static final Class<?> clazz$BonemealableBlock = requireNonNull(
@@ -2126,12 +2127,12 @@ public final class CoreReflections {
 
     public static final Method method$BonemealableBlock$isValidBonemealTarget = requireNonNull(
             VersionHelper.isOrAbove1_20_2() ?
-                    ReflectionUtils.getInstanceMethod(clazz$BonemealableBlock, boolean.class, clazz$LevelReader, CoreReflections.clazz$BlockPos, clazz$BlockState) :
-                    ReflectionUtils.getInstanceMethod(clazz$BonemealableBlock, boolean.class, clazz$LevelReader, CoreReflections.clazz$BlockPos, clazz$BlockState, boolean.class)
+                    ReflectionUtils.getInstanceMethod(clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState) :
+                    ReflectionUtils.getInstanceMethod(clazz$BonemealableBlock, boolean.class, clazz$LevelReader, clazz$BlockPos, clazz$BlockState, boolean.class)
     );
 
     public static final Method method$BonemealableBlock$isBonemealSuccess = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BonemealableBlock, boolean.class, clazz$Level, clazz$RandomSource, CoreReflections.clazz$BlockPos, clazz$BlockState)
+            ReflectionUtils.getMethod(clazz$BonemealableBlock, boolean.class, clazz$Level, clazz$RandomSource, clazz$BlockPos, clazz$BlockState)
     );
     
     public static final Method method$PalettedContainer$getAndSet = Objects.requireNonNull(
@@ -2181,11 +2182,11 @@ public final class CoreReflections {
     );
 
     public static final Constructor<?> constructor$JukeboxSong = Optional.ofNullable(clazz$JukeboxSong)
-            .map(it -> ReflectionUtils.getConstructor(it, CoreReflections.clazz$Holder, clazz$Component, float.class, int.class))
+            .map(it -> ReflectionUtils.getConstructor(it, clazz$Holder, clazz$Component, float.class, int.class))
             .orElse(null);
 
     public static final Field field$JukeboxSong$soundEvent = Optional.ofNullable(clazz$JukeboxSong)
-            .map(it -> ReflectionUtils.getDeclaredField(it, CoreReflections.clazz$Holder, 0))
+            .map(it -> ReflectionUtils.getDeclaredField(it, clazz$Holder, 0))
             .orElse(null);
 
     public static final Field field$JukeboxSong$description = Optional.ofNullable(clazz$JukeboxSong)
@@ -2298,15 +2299,15 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockHitResult$withPosition = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockHitResult, clazz$BlockHitResult, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getMethod(clazz$BlockHitResult, clazz$BlockHitResult, clazz$BlockPos)
     );
 
     public static final Field field$BlockHitResul$blockPos = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$BlockHitResult, CoreReflections.clazz$BlockPos, 0)
+            ReflectionUtils.getDeclaredField(clazz$BlockHitResult, clazz$BlockPos, 0)
     );
 
     public static final Field field$BlockHitResul$direction = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$BlockHitResult, CoreReflections.clazz$Direction, 0)
+            ReflectionUtils.getDeclaredField(clazz$BlockHitResult, clazz$Direction, 0)
     );
 
     public static final Field field$BlockHitResul$miss = requireNonNull(
@@ -2337,22 +2338,22 @@ public final class CoreReflections {
 
     public static final Method method$SimpleWaterloggedBlock$canPlaceLiquid = requireNonNull(
             VersionHelper.isOrAbove1_21_5()
-                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LivingEntity, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$Fluid)
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LivingEntity, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
                     : VersionHelper.isOrAbove1_20_2()
-                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$Fluid)
-                    : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$Fluid)
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$Player, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
+                    : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$BlockState, clazz$Fluid)
     );
 
     public static final Method method$SimpleWaterloggedBlock$placeLiquid = requireNonNull(
-            ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$FluidState)
+            ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, boolean.class, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState, clazz$FluidState)
     );
 
     public static final Method method$SimpleWaterloggedBlock$pickupBlock = requireNonNull(
             VersionHelper.isOrAbove1_21_5()
-                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LivingEntity, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, clazz$BlockState)
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LivingEntity, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
                     : VersionHelper.isOrAbove1_20_2()
-                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, clazz$BlockState)
-                    : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, CoreReflections.clazz$BlockPos, clazz$BlockState)
+                    ? ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$Player, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
+                    : ReflectionUtils.getMethod(clazz$SimpleWaterloggedBlock, clazz$ItemStack, clazz$LevelAccessor, clazz$BlockPos, clazz$BlockState)
     );
 
     public static final Method method$Fluid$getTickDelay = requireNonNull(
@@ -2448,7 +2449,7 @@ public final class CoreReflections {
     }
 
     public static final Method method$BlockStateBase$isFaceSturdy = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$BlockGetter, CoreReflections.clazz$BlockPos, CoreReflections.clazz$Direction, clazz$SupportType)
+            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$BlockGetter, clazz$BlockPos, clazz$Direction, clazz$SupportType)
     );
 
     public static final Class<?> clazz$BlockInWorld = requireNonNull(
@@ -2480,7 +2481,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockAndTintGetter$getRawBrightness = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockAndTintGetter, int.class, CoreReflections.clazz$BlockPos, int.class)
+            ReflectionUtils.getMethod(clazz$BlockAndTintGetter, int.class, clazz$BlockPos, int.class)
     );
 
     public static final Field field$Entity$boundingBox = requireNonNull(
@@ -2566,7 +2567,7 @@ public final class CoreReflections {
 
     // 1.20.5+
     public static final Constructor<?> constructor$AttributeInstance =
-            ReflectionUtils.getConstructor(clazz$AttributeInstance, CoreReflections.clazz$Holder, Consumer.class);
+            ReflectionUtils.getConstructor(clazz$AttributeInstance, clazz$Holder, Consumer.class);
 
     public static final Method method$AttributeInstance$setBaseValue = requireNonNull(
             ReflectionUtils.getMethod(clazz$AttributeInstance, void.class, double.class)
@@ -2730,9 +2731,9 @@ public final class CoreReflections {
 
     public static final Method method$BlockBehaviour$neighborChanged = requireNonNull(
             VersionHelper.isOrAbove1_21_2() ?
-                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, CoreReflections.clazz$BlockPos, clazz$Block, clazz$Orientation, boolean.class) :
-                    Optional.ofNullable(ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, CoreReflections.clazz$BlockPos, clazz$Block, CoreReflections.clazz$BlockPos, boolean.class))
-                            .orElse(ReflectionUtils.getMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, CoreReflections.clazz$BlockPos, clazz$Block, CoreReflections.clazz$BlockPos, boolean.class))
+                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$Orientation, boolean.class) :
+                    Optional.ofNullable(ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
+                            .orElse(ReflectionUtils.getMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Block, clazz$BlockPos, boolean.class))
     );
 
     public static final Class<?> clazz$InventoryMenu = requireNonNull(
@@ -2784,7 +2785,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$ServerLevel$getNoiseBiome = requireNonNull(
-            ReflectionUtils.getMethod(clazz$ServerLevel, CoreReflections.clazz$Holder, int.class, int.class, int.class)
+            ReflectionUtils.getMethod(clazz$ServerLevel, clazz$Holder, int.class, int.class, int.class)
     );
 
     public static final Class<?> clazz$MinecraftServer = requireNonNull(
@@ -2796,7 +2797,7 @@ public final class CoreReflections {
     );
 
     public static final Field field$MinecraftServer$registries = requireNonNull(
-            ReflectionUtils.getDeclaredField(clazz$MinecraftServer, CoreReflections.clazz$LayeredRegistryAccess, 0)
+            ReflectionUtils.getDeclaredField(clazz$MinecraftServer, clazz$LayeredRegistryAccess, 0)
     );
 
     public static final Class<?> clazz$ServerConnectionListener = requireNonNull(
@@ -2930,13 +2931,13 @@ public final class CoreReflections {
     );
 
     public static final Method method$ServerPlayerGameMode$destroyBlock = requireNonNull(
-            ReflectionUtils.getMethod(clazz$ServerPlayerGameMode, boolean.class, CoreReflections.clazz$BlockPos)
+            ReflectionUtils.getMethod(clazz$ServerPlayerGameMode, boolean.class, clazz$BlockPos)
     );
 
     public static final Method method$ServerPlayer$getEffect = requireNonNull(
             !VersionHelper.isOrAbove1_20_5() ?
                     ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$MobEffectInstance, clazz$MobEffect) :
-                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$MobEffectInstance, CoreReflections.clazz$Holder)
+                    ReflectionUtils.getMethod(clazz$ServerPlayer, clazz$MobEffectInstance, clazz$Holder)
     );
 
     public static final Field field$ServerLevel$uuid = requireNonNull(
@@ -2944,7 +2945,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$ServerLevel$checkEntityCollision = requireNonNull(
-            ReflectionUtils.getMethod(clazz$ServerLevel, boolean.class, clazz$BlockState, clazz$Entity, clazz$CollisionContext, CoreReflections.clazz$BlockPos, boolean.class)
+            ReflectionUtils.getMethod(clazz$ServerLevel, boolean.class, clazz$BlockState, clazz$Entity, clazz$CollisionContext, clazz$BlockPos, boolean.class)
     );
 
     public static final Class<?> clazz$ResourceManager = requireNonNull(
@@ -3061,19 +3062,19 @@ public final class CoreReflections {
 
     public static final Method method$ServerLevel$sendBlockUpdated = requireNonNull(
             ReflectionUtils.getMethod(
-                    clazz$ServerLevel, void.class, CoreReflections.clazz$BlockPos, clazz$BlockState, clazz$BlockState, int.class
+                    clazz$ServerLevel, void.class, clazz$BlockPos, clazz$BlockState, clazz$BlockState, int.class
             )
     );
 
     public static final Method method$ServerLevel$levelEvent = requireNonNull(
             VersionHelper.isOrAbove1_21_5()
-                    ? ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Entity, int.class, CoreReflections.clazz$BlockPos, int.class)
-                    : ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Player, int.class, CoreReflections.clazz$BlockPos, int.class)
+                    ? ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Entity, int.class, clazz$BlockPos, int.class)
+                    : ReflectionUtils.getMethod(clazz$ServerLevel, void.class, clazz$Player, int.class, clazz$BlockPos, int.class)
     );
 
     public static final Method method$ServerGamePacketListenerImpl$tryPickItem =
             VersionHelper.isOrAbove1_21_5() ?
-                    ReflectionUtils.getDeclaredMethod(clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack, CoreReflections.clazz$BlockPos, clazz$Entity, boolean.class) :
+                    ReflectionUtils.getDeclaredMethod(clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack, clazz$BlockPos, clazz$Entity, boolean.class) :
                     ReflectionUtils.getDeclaredMethod(clazz$ServerGamePacketListenerImpl, void.class, clazz$ItemStack);
 
     public static final Method method$ServerPlayer$nextContainerCounter = requireNonNull(
@@ -3216,15 +3217,45 @@ public final class CoreReflections {
     );
 
     public static final Method method$BonemealableBlock$performBonemeal = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BonemealableBlock, void.class, clazz$ServerLevel, clazz$RandomSource, CoreReflections.clazz$BlockPos, clazz$BlockState)
+            ReflectionUtils.getMethod(clazz$BonemealableBlock, void.class, clazz$ServerLevel, clazz$RandomSource, clazz$BlockPos, clazz$BlockState)
     );
     
     public static final Method method$BlockBehaviour$tick = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"tick", "a"}, clazz$BlockState, clazz$ServerLevel, CoreReflections.clazz$BlockPos, clazz$RandomSource)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"tick", "a"}, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$RandomSource)
     );
 
     public static final Method method$BlockBehaviour$randomTick = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"randomTick", "b"}, clazz$BlockState, clazz$ServerLevel, CoreReflections.clazz$BlockPos, clazz$RandomSource)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"randomTick", "b"}, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$RandomSource)
+    );
+
+    public static final Class<?> clazz$InsideBlockEffectApplier = BukkitReflectionUtils.findReobfOrMojmapClass(
+            "world.entity.InsideBlockEffectApplier",
+            "world.entity.InsideBlockEffectApplier"
+    );
+
+    public static final Method method$BlockBehaviour$entityInside = requireNonNull(
+            VersionHelper.isOrAbove1_21_5() ?
+                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"entityInside", "a"}, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Entity, clazz$InsideBlockEffectApplier) :
+                    ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"entityInside", "a"}, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$Entity)
+    );
+
+    // 1.21.5+
+    public static final Method method$BlockBehaviour$affectNeighborsAfterRemoval = ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"affectNeighborsAfterRemoval", "a"}, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, boolean.class);
+
+    public static final Method method$BlockBehaviour$getSignal = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, int.class, new String[]{"getSignal", "a"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$Direction)
+    );
+
+    public static final Method method$BlockBehaviour$getDirectSignal = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, int.class, new String[]{"getDirectSignal", "b"}, clazz$BlockState, clazz$BlockGetter, clazz$BlockPos, clazz$Direction)
+    );
+
+    public static final Method method$BlockBehaviour$isSignalSource = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, boolean.class, new String[]{
+                    "isSignalSource",
+                    !VersionHelper.isOrAbove1_20_5() ? "f_" : // 1.20.1-1.20.4
+                    !VersionHelper.isOrAbove1_21_2() ? "e_" /* 1.20.5-1.21.1 */ : "f_" // 1.21.2+
+            }, clazz$BlockState)
     );
 
     public static final Method method$FileToIdConverter$listMatchingResources = requireNonNull(
@@ -3232,7 +3263,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$RegistryOps$create = requireNonNull(
-            ReflectionUtils.getStaticMethod(clazz$RegistryOps, clazz$RegistryOps, DynamicOps.class, CoreReflections.clazz$HolderLookup$Provider)
+            ReflectionUtils.getStaticMethod(clazz$RegistryOps, clazz$RegistryOps, DynamicOps.class, clazz$HolderLookup$Provider)
     );
 
     public static final Method method$DefaultedRegistry$get = requireNonNull(

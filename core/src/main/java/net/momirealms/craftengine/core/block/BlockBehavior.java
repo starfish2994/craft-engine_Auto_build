@@ -114,6 +114,30 @@ public abstract class BlockBehavior {
         return superMethod.call();
     }
 
+    // 1.20-1.21.4 BlockState state, Level level, BlockPos pos, Entity entity
+    // 1.21.5+ BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier
+    public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    }
+
+    // 1.21.5+ BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    }
+
+    // BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side
+    public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return 0;
+    }
+
+    // BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side
+    public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return 0;
+    }
+
+    // BlockState blockState
+    public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
+
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         return state;
     }
