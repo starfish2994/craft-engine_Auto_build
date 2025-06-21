@@ -46,10 +46,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
     protected final Map<Key, List<Holder<Key>>> customItemTags;
     protected final Map<Key, Map<Integer, Key>> cmdConflictChecker;
-    protected final Map<Key, ItemModel> modernItemModels1_21_4;
+    protected final Map<Key, ModernItemModel> modernItemModels1_21_4;
     protected final Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2;
     protected final Map<Key, TreeSet<LegacyOverridesModel>> legacyOverrides;
-    protected final Map<Key, TreeMap<Integer, ItemModel>> modernOverrides;
+    protected final Map<Key, TreeMap<Integer, ModernItemModel>> modernOverrides;
     protected final Set<EquipmentGeneration> equipmentsToGenerate;
     // Cached command suggestions
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
@@ -225,7 +225,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Map<Key, ItemModel> modernItemModels1_21_4() {
+    public Map<Key, ModernItemModel> modernItemModels1_21_4() {
         return Collections.unmodifiableMap(this.modernItemModels1_21_4);
     }
 
@@ -245,7 +245,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Map<Key, TreeMap<Integer, ItemModel>> modernItemOverrides() {
+    public Map<Key, TreeMap<Integer, ModernItemModel>> modernItemOverrides() {
         return Collections.unmodifiableMap(this.modernOverrides);
     }
 
@@ -411,8 +411,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 conflict.put(customModelData, id);
                 // Parse models
                 if (isModernFormatRequired() && modernModel != null) {
-                    TreeMap<Integer, ItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
-                    map.put(customModelData, modernModel);
+                    TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
+                    map.put(customModelData, new ModernItemModel(
+                            modernModel,
+                            (boolean) section.getOrDefault("oversized-in-gui", true),
+                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                    ));
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeSet<>());
@@ -423,7 +427,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // use item model
             if (itemModelKey != null) {
                 if (isModernFormatRequired() && modernModel != null) {
-                    AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, modernModel);
+                    AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, new ModernItemModel(
+                            modernModel,
+                            (boolean) section.getOrDefault("oversized-in-gui", true),
+                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                    ));
                 }
                 if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.modernItemModels1_21_2.computeIfAbsent(itemModelKey, k -> new TreeSet<>());

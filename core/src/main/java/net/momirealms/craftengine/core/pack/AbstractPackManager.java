@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.model.ModernItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
@@ -1299,7 +1300,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateModernItemModels1_21_4(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, ItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
+        for (Map.Entry<Key, ModernItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
                     .resolve("assets")
@@ -1322,7 +1323,14 @@ public abstract class AbstractPackManager implements PackManager {
                 continue;
             }
             JsonObject model = new JsonObject();
-            model.add("model", entry.getValue().get());
+            ModernItemModel modernItemModel = entry.getValue();
+            model.add("model", modernItemModel.itemModel().get());
+            if (!modernItemModel.handAnimationOnSwap()) {
+                model.addProperty("hand_animation_on_swap", false);
+            }
+            if (modernItemModel.oversizedInGui()) {
+                model.addProperty("oversized_in_gui", true);
+            }
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
                 GsonHelper.get().toJson(model, writer);
             } catch (IOException e) {
@@ -1333,7 +1341,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateModernItemOverrides(Path generatedPackPath) {
         if (Config.packMaxVersion() < 21.39f) return;
-        for (Map.Entry<Key, TreeMap<Integer, ItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
+        for (Map.Entry<Key, TreeMap<Integer, ModernItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
             Key vanillaItemModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
                     .resolve("assets")
@@ -1365,21 +1373,28 @@ public abstract class AbstractPackManager implements PackManager {
             newJson.add("model", model);
             model.addProperty("type", "minecraft:range_dispatch");
             model.addProperty("property", "minecraft:custom_model_data");
+            // 将原有的json读成fallback
+            model.add("fallback", fallbackModel);
+            JsonArray entries = new JsonArray();
+            model.add("entries", entries);
+            for (Map.Entry<Integer, ModernItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
+                JsonObject entryObject = new JsonObject();
+                ModernItemModel modernItemModel = modelWithDataEntry.getValue();
+                entryObject.addProperty("threshold", modelWithDataEntry.getKey());
+                entryObject.add("model", modernItemModel.itemModel().get());
+                entries.add(entryObject);
+                if (modernItemModel.handAnimationOnSwap()) {
+                    handAnimationOnSwap = true;
+                }
+                if (modernItemModel.oversizedInGui()) {
+                    oversizedInGui = true;
+                }
+            }
             if (!handAnimationOnSwap) {
                 newJson.addProperty("hand_animation_on_swap", false);
             }
             if (oversizedInGui) {
                 newJson.addProperty("oversized_in_gui", true);
-            }
-            // 将原有的json读成fallback
-            model.add("fallback", fallbackModel);
-            JsonArray entries = new JsonArray();
-            model.add("entries", entries);
-            for (Map.Entry<Integer, ItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
-                JsonObject entryObject = new JsonObject();
-                entryObject.addProperty("threshold", modelWithDataEntry.getKey());
-                entryObject.add("model", modelWithDataEntry.getValue().get());
-                entries.add(entryObject);
             }
             try {
                 Files.createDirectories(overridedItemPath.getParent());

@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
+import net.momirealms.craftengine.core.pack.model.ModernItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -25,11 +26,11 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     Map<Key, TreeSet<LegacyOverridesModel>> legacyItemOverrides();
 
-    Map<Key, TreeMap<Integer, ItemModel>> modernItemOverrides();
+    Map<Key, TreeMap<Integer, ModernItemModel>> modernItemOverrides();
 
     Collection<EquipmentGeneration> equipmentsToGenerate();
 
-    Map<Key, ItemModel> modernItemModels1_21_4();
+    Map<Key, ModernItemModel> modernItemModels1_21_4();
 
     Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2();
 

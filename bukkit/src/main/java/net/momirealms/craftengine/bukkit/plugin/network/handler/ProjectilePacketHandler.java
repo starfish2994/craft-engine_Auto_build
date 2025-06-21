@@ -1,13 +1,11 @@
 package net.momirealms.craftengine.bukkit.plugin.network.handler;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.entity.data.ItemDisplayEntityData;
 import net.momirealms.craftengine.bukkit.entity.projectile.BukkitCustomProjectile;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.injector.ProtectedFieldVisitor;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
-import net.momirealms.craftengine.core.entity.projectile.CustomProjectile;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
