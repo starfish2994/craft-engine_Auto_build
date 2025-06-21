@@ -196,6 +196,13 @@ debug_migrate_templates:
     - /craftengine debug migrate-templates
     - /ce debug migrate-templates
 
+debug_is_chunk_persistent_loaded:
+  enable: true
+  permission: ce.command.debug.is_chunk_persistent_loaded
+  usage:
+    - /craftengine debug is-chunk-persistent-loaded
+    - /ce debug is-chunk-persistent-loaded
+
 debug_test:
   enable: true
   permission: ce.command.debug.test
