@@ -97,7 +97,7 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return blockState;
         DoubleBlockHalf half = immutableBlockState.get(this.halfProperty);
-        Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[0];
+        Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[1];
         if (DirectionUtils.isYAxis(direction) && half == DoubleBlockHalf.LOWER == (direction == CoreReflections.instance$Direction$UP)) {
             ImmutableBlockState neighborState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(VersionHelper.isOrAbove1_21_2() ? args[6] : args[2]));
             if (neighborState == null || neighborState.isEmpty()) {
