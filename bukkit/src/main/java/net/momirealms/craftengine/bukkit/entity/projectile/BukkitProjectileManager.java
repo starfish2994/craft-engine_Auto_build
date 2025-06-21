@@ -18,6 +18,7 @@ import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -116,7 +117,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             if (meta != null) {
                 BukkitCustomProjectile customProjectile = new BukkitCustomProjectile(meta, projectile, wrapped);
                 this.projectiles.put(projectile.getEntityId(), customProjectile);
-                new ProjectileInjectTask(projectile);
+                new ProjectileInjectTask(projectile, !projectileItem.getItemMeta().hasEnchant(Enchantment.LOYALTY));
             }
         });
     }
@@ -159,11 +160,13 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     public class ProjectileInjectTask implements Runnable {
         private final Projectile projectile;
         private final SchedulerTask task;
+        private final boolean checkInGround;
         private Object cachedServerEntity;
         private int lastInjectedInterval = 0;
 
-        public ProjectileInjectTask(Projectile projectile) {
+        public ProjectileInjectTask(Projectile projectile, boolean checkInGround) {
             this.projectile = projectile;
+            this.checkInGround = checkInGround;
             if (VersionHelper.isFolia()) {
                 this.task = new FoliaTask(projectile.getScheduler().runAtFixedRate(plugin.javaPlugin(), (t) -> this.run(), () -> {}, 1, 1));
             } else {
@@ -188,7 +191,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.cachedServerEntity = serverEntity;
             }
 
-            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
+            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity) || !this.checkInGround) {
                 updateProjectileUpdateInterval(1);
             } else {
                 boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
