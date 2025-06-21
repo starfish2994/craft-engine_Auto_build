@@ -1,11 +1,13 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
+import io.papermc.paper.event.entity.EntityInsideBlockEvent;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.EventUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
@@ -52,6 +54,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         this.pressurePlateSensitivity = pressurePlateSensitivity;
     }
 
+    @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object state = args[0];
         Object level;
@@ -80,9 +83,10 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
             return MBlocks.AIR$defaultState;
         }
-        return superMethod.call();
+        return state;
     }
 
+    @Override
     public boolean canSurvive(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockPos = LocationUtils.below(args[2]);
         Object level = args[1];
@@ -90,6 +94,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
                 || FastNMS.INSTANCE.method$Block$canSupportCenter(level, blockPos, CoreReflections.instance$Direction$UP);
     }
 
+    @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object state = args[0];
         int signalForState = this.getSignalForState(state);
@@ -98,7 +103,13 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         }
     }
 
+    @Override
+    @SuppressWarnings("UnstableApiUsage")
     public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        EntityInsideBlockEvent event = new EntityInsideBlockEvent(FastNMS.INSTANCE.method$Entity$getBukkitEntity(args[3]), FastNMS.INSTANCE.method$CraftBlock$at(args[1], args[2]));
+        if (EventUtils.fireAndCheckCancel(event)) {
+            return;
+        }
         Object state = args[0];
         int signalForState = this.getSignalForState(state);
         if (signalForState == 0) {
@@ -123,8 +134,9 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
 
     private void checkPressed(@Nullable Object entity, Object level, Object pos, Object state, int currentSignal, Object thisBlock) {
         int signalStrength = this.getSignalStrength(level, pos);
-        boolean flag = currentSignal > 0;
-        boolean flag1 = signalStrength > 0;
+        boolean wasActive = currentSignal > 0;
+        boolean isActive = signalStrength > 0;
+
         if (currentSignal != signalStrength) {
             Object blockState = this.setSignalForState(state, signalStrength);
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, pos, blockState, 2);
@@ -132,27 +144,44 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             FastNMS.INSTANCE.method$Level$setBlocksDirty(level, pos, state, blockState);
         }
 
-        if (!flag1 && flag) {
-            World world = BukkitWorldManager.instance().getWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level)).world();
-            world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.offSound);
-            FastNMS.INSTANCE.method$Level$getCraftWorld(level).sendGameEvent(FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
-                    GameEvent.BLOCK_DEACTIVATE,
-                    new Vector(FastNMS.INSTANCE.field$Vec3i$x(pos), FastNMS.INSTANCE.field$Vec3i$y(pos), FastNMS.INSTANCE.field$Vec3i$z(pos))
-            );
-        } else if (flag1 && !flag) {
-            World world = BukkitWorldManager.instance().getWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level)).world();
-            world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.onSound);
-            FastNMS.INSTANCE.method$Level$getCraftWorld(level).sendGameEvent(FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
-                    GameEvent.BLOCK_ACTIVATE,
-                    new Vector(FastNMS.INSTANCE.field$Vec3i$x(pos), FastNMS.INSTANCE.field$Vec3i$y(pos), FastNMS.INSTANCE.field$Vec3i$z(pos))
-            );
+        org.bukkit.World craftWorld = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
+        int x = FastNMS.INSTANCE.field$Vec3i$x(pos);
+        int y = FastNMS.INSTANCE.field$Vec3i$y(pos);
+        int z = FastNMS.INSTANCE.field$Vec3i$z(pos);
+        Vector positionVector = new Vector(x, y, z);
+
+        if (!isActive && wasActive) {
+            handleDeactivation(entity, craftWorld, pos, positionVector);
+        } else if (isActive && !wasActive) {
+            handleActivation(entity, craftWorld, pos, positionVector);
         }
 
-        if (flag1) {
+        if (isActive) {
             FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, 20);
         }
     }
 
+    private void handleDeactivation(Object entity, org.bukkit.World craftWorld, Object pos, Vector positionVector) {
+        World world = BukkitWorldManager.instance().getWorld(craftWorld).world();
+        world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.offSound);
+        craftWorld.sendGameEvent(
+                FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
+                GameEvent.BLOCK_DEACTIVATE,
+                positionVector
+        );
+    }
+
+    private void handleActivation(Object entity, org.bukkit.World craftWorld, Object pos, Vector positionVector) {
+        World world = BukkitWorldManager.instance().getWorld(craftWorld).world();
+        world.playBlockSound(LocationUtils.toVec3d(LocationUtils.fromBlockPos(pos)), this.onSound);
+        craftWorld.sendGameEvent(
+                FastNMS.INSTANCE.method$Entity$getBukkitEntity(entity),
+                GameEvent.BLOCK_ACTIVATE,
+                positionVector
+        );
+    }
+
+    @Override
     public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         boolean movedByPiston = (boolean) args[3];
         if (!movedByPiston && this.getSignalForState(args[0]) > 0) {
@@ -165,6 +194,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         FastNMS.INSTANCE.method$Level$updateNeighborsAt(level, LocationUtils.below(pos), thisBlock);
     }
 
+    @Override
     public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         return this.getSignalForState(args[0]);
     }
@@ -175,11 +205,13 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         return blockState.get(this.poweredProperty) ? 15 : 0;
     }
 
+    @Override
     public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Direction direction = DirectionUtils.fromNMSDirection(args[3]);
         return direction == Direction.UP ? this.getSignalForState(args[0]) : 0;
     }
 
+    @Override
     public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         return true;
     }
