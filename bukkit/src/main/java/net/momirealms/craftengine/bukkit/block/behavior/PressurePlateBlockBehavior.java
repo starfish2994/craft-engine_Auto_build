@@ -7,18 +7,22 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.PressurePlateSensitivity;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.*;
 import org.bukkit.GameEvent;
 import org.bukkit.util.Vector;
 
@@ -60,9 +64,23 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             blockPos = args[4];
         }
         Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[1]);
-        return direction == Direction.DOWN && !FastNMS.INSTANCE.method$BlockStateBase$canSurvive(state, level, blockPos)
-                ? MBlocks.AIR$defaultState
-                : superMethod.call();
+        if (direction == Direction.DOWN && !FastNMS.INSTANCE.method$BlockStateBase$canSurvive(state, level, blockPos)) {
+            BlockPos pos = LocationUtils.fromBlockPos(blockPos);
+            net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
+            WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(pos));
+            ContextHolder.Builder builder = ContextHolder.builder()
+                    .withParameter(DirectContextParameters.POSITION, position);
+            int stateId = BlockStateUtils.blockStateToId(state);
+            ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+            if (immutableBlockState == null || immutableBlockState.isEmpty()) return MBlocks.AIR$defaultState;
+            for (Item<Object> item : immutableBlockState.getDrops(builder, world, null)) {
+                world.dropItemNaturally(position, item);
+            }
+            world.playBlockSound(position, immutableBlockState.sounds().breakSound());
+            FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
+            return MBlocks.AIR$defaultState;
+        }
+        return superMethod.call();
     }
 
     public boolean canSurvive(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
