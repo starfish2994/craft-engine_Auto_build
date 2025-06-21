@@ -615,6 +615,9 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
+            if (Config.removeAllShaders()) {
+                this.removeAllShaders(generatedPackPath);
+            }
             if (Config.validateResourcePack()) {
                 this.validateResourcePack(generatedPackPath);
             }
@@ -628,6 +631,24 @@ public abstract class AbstractPackManager implements PackManager {
             long end = System.currentTimeMillis();
             this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
             this.eventDispatcher.accept(generatedPackPath, finalPath);
+        }
+    }
+
+    private void removeAllShaders(Path path) {
+        List<Path> rootPaths;
+        try {
+            rootPaths = FileUtils.collectOverlays(path);
+        } catch (IOException e) {
+            plugin.logger().warn("Failed to collect overlays for " + path.toAbsolutePath(), e);
+            return;
+        }
+        for (Path rootPath : rootPaths) {
+            Path shadersPath = rootPath.resolve("assets/minecraft/shaders");
+            try {
+                FileUtils.deleteDirectory(shadersPath);
+            } catch (IOException e) {
+                plugin.logger().warn("Failed to delete shaders directory for " + shadersPath.toAbsolutePath(), e);
+            }
         }
     }
 
