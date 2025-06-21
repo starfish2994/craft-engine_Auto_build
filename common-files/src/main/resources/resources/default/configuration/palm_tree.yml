@@ -599,7 +599,7 @@ items:
               - minecraft:pressure_plates
         behaviors:
           type: pressure_plate_block
-          pressure-plate-sensitivity: all
+          sensitivity: all
           sounds:
             on: minecraft:block.wooden_pressure_plate.click_on
             off: minecraft:block.wooden_pressure_plate.click_off

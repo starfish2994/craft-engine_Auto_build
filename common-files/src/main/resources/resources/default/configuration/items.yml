@@ -229,7 +229,7 @@ items#topaz_gears:
       material: trident
       client-bound-material:
         $$1.20.1~1.21.1: bow
-        $$1.20.2~1.21.3: honey_bottle
+        $$1.21.2~1.21.3: honey_bottle
       custom-model-data: 1001
       data:
         item-name: <!i><#FF8C00><i18n:item.topaz_trident>
