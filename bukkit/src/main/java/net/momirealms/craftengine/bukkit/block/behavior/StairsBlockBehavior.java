@@ -13,12 +13,12 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.block.state.properties.SingleBlockHalf;
 import net.momirealms.craftengine.core.block.state.properties.StairsShape;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class StairsBlockBehavior extends BukkitBlockBehavior {
@@ -61,8 +61,9 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return blockState;
         Direction direction = DirectionUtils.fromNMSDirection(VersionHelper.isOrAbove1_21_2() ? args[4] : args[0]);
+        StairsShape stairsShape = getStairsShape(immutableBlockState, level, LocationUtils.fromBlockPos(blockPos));
         return direction.axis().isHorizontal()
-                ? immutableBlockState.with(this.shapeProperty, getStairsShape(immutableBlockState, level, LocationUtils.fromBlockPos(blockPos))).customBlockState().handle()
+                ? immutableBlockState.with(this.shapeProperty, stairsShape).customBlockState().handle()
                 : superMethod.call();
     }
 
@@ -87,18 +88,14 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
     public Object mirror(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object state = args[0];
         Mirror mirror = MirrorUtils.fromNMSMirror(args[1]);
-        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 1 " + state + " " + mirror);
         int stateId = BlockStateUtils.blockStateToId(state);
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return superMethod.call();
         Direction direction = immutableBlockState.get(this.facingProperty).toDirection();
         StairsShape stairsShape = immutableBlockState.get(this.shapeProperty);
-        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 2 " + immutableBlockState + " " + direction + " " + stairsShape);
         switch (mirror) {
             case LEFT_RIGHT:
-                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 3 " + direction.axis());
                 if (direction.axis() == Direction.Axis.Z) {
-                    CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 4 " + stairsShape);
                     return switch (stairsShape) {
                         case OUTER_LEFT ->
                                 rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_RIGHT).customBlockState().handle();
@@ -111,11 +108,8 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
                         default -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
                     };
                 }
-                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 5");
             case FRONT_BACK:
-                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 6 " + direction.axis());
                 if (direction.axis() == Direction.Axis.X) {
-                    CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 7 " + stairsShape);
                     return switch (stairsShape) {
                         case STRAIGHT -> rotate(state, Rotation.CLOCKWISE_180).customBlockState().handle();
                         case OUTER_LEFT ->
@@ -127,22 +121,18 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
                                 rotate(state, Rotation.CLOCKWISE_180).with(this.shapeProperty, StairsShape.OUTER_LEFT).customBlockState().handle();
                     };
                 }
-                CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 8");
         }
-        CraftEngine.instance().logger().warn("DoorBlockBehavior.mirror 9");
         return superMethod.call();
     }
 
     private StairsShape getStairsShape(ImmutableBlockState state, Object level, BlockPos blockPos) {
-        if (!state.customBlockState().isVanillaBlock()) {
-            Direction direction = state.get(this.facingProperty).toDirection();
-            Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction)));
-            StairsShape straight1 = getStairsShape(state, level, blockPos, blockState, direction);
-            if (straight1 != null) return straight1;
-            Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction.opposite())));
-            StairsShape straight = getStairsShape(state, level, blockPos, blockState1, direction);
-            if (straight != null) return straight;
-        }
+        Direction direction = state.get(this.facingProperty).toDirection();
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction)));
+        StairsShape straight1 = getStairsShape(state, level, blockPos, blockState, direction);
+        if (straight1 != null) return straight1;
+        Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(blockPos.relative(direction.opposite())));
+        StairsShape straight = getStairsShape(state, level, blockPos, blockState1, direction);
+        if (straight != null) return straight;
         return StairsShape.STRAIGHT;
     }
 
@@ -170,7 +160,8 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         if (immutableBlockState == null || immutableBlockState.isEmpty()) {
             return FastNMS.INSTANCE.method$BlockState$getBlock(state).equals(CoreReflections.clazz$StairBlock);
         }
-        return immutableBlockState.behavior().equals(this);
+        Optional<StairsBlockBehavior> optionalBehavior = immutableBlockState.behavior().getAs(StairsBlockBehavior.class);
+        return optionalBehavior.isPresent();
     }
 
     private boolean canTakeShape(ImmutableBlockState state, Object level, BlockPos blockPos, Direction direction) {
