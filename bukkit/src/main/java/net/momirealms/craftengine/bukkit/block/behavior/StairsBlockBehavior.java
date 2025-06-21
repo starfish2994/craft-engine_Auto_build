@@ -87,6 +87,24 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
                     return StairsShape.OUTER_RIGHT;
                 }
             }
+        } else if (isStairs(blockState)) {
+            // 处理可能是原版楼梯
+            // try {
+            //     Object nmsHalf = CoreReflections.method$StateHolder$getValue.invoke(blockState, CoreReflections.instance$StairBlock$HALF);
+            //     SingleBlockHalf half = SingleBlockHalf.valueOf(nmsHalf.toString().toUpperCase(Locale.ROOT));
+            //     if (state.get(this.halfProperty).equals(half)) {
+            //         Object nmsFacing = CoreReflections.method$StateHolder$getValue.invoke(blockState, CoreReflections.instance$StairBlock$FACING);
+            //         Direction direction1 = DirectionUtils.fromNMSDirection(nmsFacing);
+            //         if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction1.opposite())) {
+            //             if (direction1 == direction.counterClockWise()) {
+            //                 return StairsShape.OUTER_LEFT;
+            //             }
+            //             return StairsShape.OUTER_RIGHT;
+            //         }
+            //     }
+            // } catch (Exception e) {
+            //     CraftEngine.instance().logger().warn("Failed to get facing from blockState", e);
+            // }
         }
 
         Object blockState1 = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(direction.opposite())));
@@ -102,6 +120,24 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
                     return StairsShape.INNER_RIGHT;
                 }
             }
+        } else if (isStairs(blockState1)) {
+            // 处理可能是原版楼梯
+            // try {
+            //     Object nmsHalf = CoreReflections.method$StateHolder$getValue.invoke(blockState1, CoreReflections.instance$StairBlock$HALF);
+            //     SingleBlockHalf half = SingleBlockHalf.valueOf(nmsHalf.toString().toUpperCase(Locale.ROOT));
+            //     if (state.get(this.halfProperty).equals(half)) {
+            //         Object nmsFacing = CoreReflections.method$StateHolder$getValue.invoke(blockState1, CoreReflections.instance$StairBlock$FACING);
+            //         Direction direction1 = DirectionUtils.fromNMSDirection(nmsFacing);
+            //         if (direction1.axis() != state.get(this.facingProperty).toDirection().axis() && canTakeShape(state, level, pos, direction1)) {
+            //             if (direction1 == direction.counterClockWise()) {
+            //                 return StairsShape.INNER_LEFT;
+            //             }
+            //             return StairsShape.INNER_RIGHT;
+            //         }
+            //     }
+            // } catch (Exception e) {
+            //     CraftEngine.instance().logger().warn("Failed to get facing from blockState", e);
+            // }
         }
 
         return StairsShape.STRAIGHT;
@@ -120,6 +156,17 @@ public class StairsBlockBehavior extends BukkitBlockBehavior {
         Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, LocationUtils.toBlockPos(pos.relative(face)));
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
         if (immutableBlockState == null || immutableBlockState.isEmpty()) {
+            // 处理可能是原版楼梯
+            // try {
+            //     Object nmsFacing = CoreReflections.method$StateHolder$getValue.invoke(blockState, CoreReflections.instance$StairBlock$FACING);
+            //     Direction direction = DirectionUtils.fromNMSDirection(nmsFacing);
+            //     if (direction != state.get(this.facingProperty).toDirection()) return true;
+            //     Object nmsHalf = CoreReflections.method$StateHolder$getValue.invoke(blockState, CoreReflections.instance$StairBlock$HALF);
+            //     SingleBlockHalf half = SingleBlockHalf.valueOf(nmsHalf.toString().toUpperCase(Locale.ROOT));
+            //     if (half != state.get(this.halfProperty)) return true;
+            // } catch (Exception e) {
+            //     CraftEngine.instance().logger().warn("Failed to handle canTakeShape", e);
+            // }
             return !isStairs(blockState);
         }
         return !isStairs(blockState) || immutableBlockState.get(this.facingProperty) != state.get(this.facingProperty) || immutableBlockState.get(this.halfProperty) != state.get(this.halfProperty);

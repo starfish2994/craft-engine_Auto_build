@@ -3354,4 +3354,86 @@ public final class CoreReflections {
                     "world.level.block.StairBlock"
             )
     );
+
+    public static final Class<?> clazz$StairsShape = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.properties.BlockPropertyStairsShape",
+                    "world.level.block.state.properties.StairsShape"
+            )
+    );
+
+    public static final Method method$StairsShape$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(clazz$StairsShape, clazz$StairsShape.arrayType())
+    );
+
+    public static final Method method$StairsShape$ordinal = requireNonNull(
+            ReflectionUtils.getMethod(
+                    clazz$StairsShape, new String[]{"ordinal"}
+            )
+    );
+
+    public static final Object instance$StairsShape$STRAIGHT;
+    public static final Object instance$StairsShape$INNER_LEFT;
+    public static final Object instance$StairsShape$INNER_RIGHT;
+    public static final Object instance$StairsShape$OUTER_LEFT;
+    public static final Object instance$StairsShape$OUTER_RIGHT;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$StairsShape$values.invoke(null);
+            instance$StairsShape$STRAIGHT = values[0];
+            instance$StairsShape$INNER_LEFT = values[1];
+            instance$StairsShape$INNER_RIGHT = values[2];
+            instance$StairsShape$OUTER_LEFT = values[3];
+            instance$StairsShape$OUTER_RIGHT = values[4];
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final Class<?> clazz$EnumProperty = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.properties.BlockStateEnum",
+                    "world.level.block.state.properties.EnumProperty"
+            )
+    );
+
+    // 1.20~1.21.1
+    public static final Class<?> clazz$DirectionProperty =
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.properties.BlockStateDirection",
+                    "world.level.block.state.properties.DirectionProperty"
+            );
+
+    public static final Field field$StairBlock$FACING = requireNonNull(
+            VersionHelper.isOrAbove1_21_2()
+                    ? ReflectionUtils.getDeclaredField(clazz$StairBlock, clazz$EnumProperty, 0)
+                    : ReflectionUtils.getDeclaredField(clazz$StairBlock, clazz$DirectionProperty, 0)
+    );
+
+    public static final Field field$StairBlock$HALF = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$StairBlock, clazz$EnumProperty, VersionHelper.isOrAbove1_21_2() ? 1 : 0
+            )
+    );
+
+    public static final Field field$StairBlock$SHAPE = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$StairBlock, clazz$EnumProperty, VersionHelper.isOrAbove1_21_2() ? 2 : 1
+            )
+    );
+
+    public static final Object instance$StairBlock$FACING;
+    public static final Object instance$StairBlock$HALF;
+    public static final Object instance$StairBlock$SHAPE;
+
+    static {
+        try {
+            instance$StairBlock$FACING = requireNonNull(field$StairBlock$FACING.get(null));
+            instance$StairBlock$HALF = requireNonNull(field$StairBlock$HALF.get(null));
+            instance$StairBlock$SHAPE = requireNonNull(field$StairBlock$SHAPE.get(null));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
