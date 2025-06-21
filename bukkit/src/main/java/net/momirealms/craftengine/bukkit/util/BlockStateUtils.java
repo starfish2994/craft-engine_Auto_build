@@ -197,6 +197,10 @@ public class BlockStateUtils {
         CoreReflections.field$BlockStateBase$burnable.set(state, burnable);
     }
 
+    public static void setUseShapeForLightOcclusion(Object state, boolean useShapeForLightOcclusion) throws ReflectiveOperationException {
+        CoreReflections.field$BlockStateBase$useShapeForLightOcclusion.set(state, useShapeForLightOcclusion);
+    }
+
     public static void setPushReaction(Object state, PushReaction reaction) throws ReflectiveOperationException {
         Object pushReaction = ((Object[])  CoreReflections.method$PushReaction$values.invoke(null))[reaction.ordinal()];
         CoreReflections.field$BlockStateBase$pushReaction.set(state, pushReaction);
@@ -204,10 +208,6 @@ public class BlockStateUtils {
 
     public static void setIsRandomlyTicking(Object state, boolean randomlyTicking) throws ReflectiveOperationException {
         CoreReflections.field$BlockStateBase$isRandomlyTicking.set(state, randomlyTicking);
-    }
-
-    public static void setPropagatesSkylightDown(Object state, boolean propagatesSkylightDown) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$propagatesSkylightDown.set(state, propagatesSkylightDown);
     }
 
     public static void setReplaceable(Object state, boolean replaceable) throws ReflectiveOperationException {

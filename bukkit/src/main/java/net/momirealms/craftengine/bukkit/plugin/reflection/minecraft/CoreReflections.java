@@ -1252,6 +1252,10 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, float.class, 0)
     );
 
+    public static final Field field$BlockStateBase$useShapeForLightOcclusion = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 0)
+    );
+
     public static final Field field$BlockStateBase$burnable = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 2)
     );
@@ -1260,8 +1264,18 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 9)
     );
 
+    // 1.21.2以前用
+    public static final Field field$BlockStateBase$isConditionallyFullOpaque = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, VersionHelper.isOrAbove1_21() ? 10 : 11)
+    );
+
+    // 1.21.2+，其他版本在cache里
     public static final Field field$BlockStateBase$propagatesSkylightDown = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 11)
+    );
+
+    public static final Field field$BlockStateBase$Cache$propagatesSkylightDown = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$BlockStateBase$Cache, boolean.class, 2)
     );
 
     public static final Field field$BlockStateBase$requiresCorrectToolForDrops = requireNonNull(

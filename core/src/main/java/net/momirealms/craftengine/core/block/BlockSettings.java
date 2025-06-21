@@ -23,6 +23,8 @@ public class BlockSettings {
     Tristate isRedstoneConductor = Tristate.UNDEFINED;
     Tristate isSuffocating = Tristate.UNDEFINED;
     Tristate isViewBlocking = Tristate.UNDEFINED;
+    Tristate useShapeForLightOcclusion = Tristate.UNDEFINED;
+    Tristate propagatesSkylightDown = Tristate.UNDEFINED;
     MapColor mapColor = MapColor.CLEAR;
     PushReaction pushReaction = PushReaction.NORMAL;
     int luminance;
@@ -35,7 +37,6 @@ public class BlockSettings {
     Set<Key> correctTools = Set.of();
     String name;
     String supportShapeBlockState;
-    boolean propagatesSkylightDown;
 
     private BlockSettings() {}
 
@@ -98,6 +99,7 @@ public class BlockSettings {
         newSettings.incorrectToolSpeed = settings.incorrectToolSpeed;
         newSettings.supportShapeBlockState = settings.supportShapeBlockState;
         newSettings.propagatesSkylightDown = settings.propagatesSkylightDown;
+        newSettings.useShapeForLightOcclusion = settings.useShapeForLightOcclusion;
         return newSettings;
     }
 
@@ -205,8 +207,12 @@ public class BlockSettings {
         return supportShapeBlockState;
     }
 
-    public boolean propagatesSkylightDown() {
+    public Tristate propagatesSkylightDown() {
         return propagatesSkylightDown;
+    }
+
+    public Tristate useShapeForLightOcclusion() {
+        return useShapeForLightOcclusion;
     }
 
     public BlockSettings correctTools(Set<Key> correctTools) {
@@ -304,7 +310,7 @@ public class BlockSettings {
         return this;
     }
 
-    public BlockSettings propagatesSkylightDown(boolean propagatesSkylightDown) {
+    public BlockSettings propagatesSkylightDown(Tristate propagatesSkylightDown) {
         this.propagatesSkylightDown = propagatesSkylightDown;
         return this;
     }
@@ -344,6 +350,11 @@ public class BlockSettings {
         return this;
     }
 
+    public BlockSettings useShapeForLightOcclusion(Tristate useShapeForLightOcclusion) {
+        this.useShapeForLightOcclusion = useShapeForLightOcclusion;
+        return this;
+    }
+
     public interface Modifier {
 
         void apply(BlockSettings settings);
@@ -380,7 +391,7 @@ public class BlockSettings {
             }));
             registerFactory("propagate-skylight", (value -> {
                 boolean booleanValue = (boolean) value;
-                return settings -> settings.propagatesSkylightDown(booleanValue);
+                return settings -> settings.propagatesSkylightDown(booleanValue ? Tristate.TRUE : Tristate.FALSE);
             }));
             registerFactory("push-reaction", (value -> {
                 PushReaction reaction = PushReaction.valueOf(value.toString().toUpperCase(Locale.ENGLISH));
@@ -440,7 +451,7 @@ public class BlockSettings {
             }));
             registerFactory("can-occlude", (value -> {
                 boolean booleanValue = (boolean) value;
-                return settings -> settings.canOcclude(booleanValue ? Tristate.FALSE : Tristate.TRUE);
+                return settings -> settings.canOcclude(booleanValue ? Tristate.TRUE : Tristate.FALSE);
             }));
             registerFactory("correct-tools", (value -> {
                 List<String> tools = MiscUtils.getAsStringList(value);
@@ -453,6 +464,10 @@ public class BlockSettings {
             registerFactory("respect-tool-component", (value -> {
                 boolean booleanValue = (boolean) value;
                 return settings -> settings.respectToolComponent(booleanValue);
+            }));
+            registerFactory("use-shape-for-light-occlusion", (value -> {
+                boolean booleanValue = (boolean) value;
+                return settings -> settings.useShapeForLightOcclusion(booleanValue ? Tristate.TRUE : Tristate.FALSE);
             }));
             registerFactory("incorrect-tool-dig-speed", (value -> {
                 float floatValue = ResourceConfigUtils.getAsFloat(value, "incorrect-tool-dig-speed");
