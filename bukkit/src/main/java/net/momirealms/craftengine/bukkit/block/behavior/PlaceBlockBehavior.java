@@ -24,6 +24,7 @@ import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
@@ -93,6 +94,9 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                                     continue;
                                 }
                                 Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
+                                if (placeLocation.getBlock().getType() != Material.AIR) {
+                                    break;
+                                }
                                 if (CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
                                     return true;
                                 }
