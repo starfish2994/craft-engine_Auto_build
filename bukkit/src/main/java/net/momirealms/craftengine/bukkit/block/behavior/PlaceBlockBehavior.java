@@ -39,7 +39,13 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object state = args[0];
         Object level = args[1];
-        BlockPos pos = LocationUtils.fromBlockPos(args[2]);
+        Object pos = args[2];
+        tick(state, level, pos);
+    }
+
+    @Override
+    public void tick(Object state, Object level, Object nmsBlockPos) {
+        BlockPos pos = LocationUtils.fromBlockPos(nmsBlockPos);
         ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
         if (blockState == null || blockState.isEmpty()) return;
         Direction direction = blockState.get(this.facingProperty);
@@ -50,11 +56,11 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
             if (FastNMS.INSTANCE.method$ItemStack$isEmpty(itemStack)) {
                 return false;
             } else {
-                Object itemStack1 = FastNMS.INSTANCE.method$ItemEntity$getItem(itemStack);
+                Object itemStack1 = FastNMS.INSTANCE.method$ItemStack$getItem(itemStack);
                 boolean flag = CoreReflections.clazz$BlockItem.isInstance(itemStack1)
                         && FastNMS.INSTANCE.method$InteractionResult$consumesAction(FastNMS.INSTANCE.method$BlockItem$place(
-                                itemStack1, FastNMS.INSTANCE.constructor$PlaceBlockBlockPlaceContext(
-                                        level, CoreReflections.instance$InteractionHand$MAIN_HAND, itemStack,
+                        itemStack1, FastNMS.INSTANCE.constructor$PlaceBlockBlockPlaceContext(
+                                level, CoreReflections.instance$InteractionHand$MAIN_HAND, itemStack,
                                 FastNMS.INSTANCE.constructor$BlockHitResult(
                                         FastNMS.INSTANCE.method$BlockPos$getCenter(LocationUtils.toBlockPos(blockPos1)),
                                         DirectionUtils.toNMSDirection(opposite),
@@ -75,11 +81,12 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                 return true;
             }
         });
+
     }
 
     private static boolean getItemAndDoThings(Object level, BlockPos blockPos, Direction direction, Function<Object, Boolean> function) {
         for (Object container : getContainersAt(level, blockPos)) {
-            boolean flag = FastNMS.INSTANCE.method$HopperBlockEntity$getSlots(container, direction).anyMatch(i -> {
+            boolean flag = FastNMS.INSTANCE.method$HopperBlockEntity$getSlots(container, DirectionUtils.toNMSDirection(direction)).anyMatch(i -> {
                 Object itemStack = FastNMS.INSTANCE.method$Container$removeItem(container, i, 1);
                 if (!FastNMS.INSTANCE.method$ItemStack$isEmpty(itemStack)) {
                     boolean flag1 = function.apply(FastNMS.INSTANCE.method$ItemStack$copy(itemStack));
@@ -98,7 +105,7 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                 return true;
             }
         }
-        Object itemAt = getItemAt(level, blockPos);
+        Object itemAt = getItemAt(level, LocationUtils.toBlockPos(blockPos));
         if (itemAt != null) {
             Object item = FastNMS.INSTANCE.method$ItemEntity$getItem(itemAt);
             if (!FastNMS.INSTANCE.method$ItemStack$isEmpty(item)) {

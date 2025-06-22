@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
@@ -30,9 +31,15 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
 
     @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        CraftEngine.instance().logger().warn("PickaxeBlockBehavior.tick");
         Object state = args[0];
         Object level = args[1];
         Object pos = args[2];
+        tick(state, level, pos);
+    }
+
+    @Override
+    public void tick(Object state, Object level, Object pos) {
         ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
         if (blockState == null || blockState.isEmpty()) return;
         Object blockPos = FastNMS.INSTANCE.method$BlockPos$relative(pos, DirectionUtils.toNMSDirection(blockState.get(this.facingProperty)));

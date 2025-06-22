@@ -31,7 +31,8 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
         if (blockState == null || blockState.isEmpty()) return;
         boolean triggeredValue = blockState.get(this.triggeredProperty);
         if (hasNeighborSignal && !triggeredValue) {
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, 1, this.getTickPriority());
+            // FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, 1, this.getTickPriority()); // 鬼知道为什么这个无法触发 tick
+            tick(state, level, pos);
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, pos, blockState.with(this.triggeredProperty, true).customBlockState().handle(), 2);
         } else if (!hasNeighborSignal && triggeredValue) {
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, pos, blockState.with(this.triggeredProperty, false).customBlockState().handle(), 2);
@@ -44,4 +45,6 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
     }
 
     protected abstract Object getTickPriority();
+
+    protected abstract void tick(Object state, Object level, Object pos);
 }
