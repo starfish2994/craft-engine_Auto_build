@@ -1,6 +1,9 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
+import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
@@ -10,16 +13,24 @@ import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.item.CustomItem;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
+import org.bukkit.Location;
+import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -70,6 +81,23 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                         )));
 
                 if (!flag) {
+                    Item<ItemStack> item = BukkitItemManager.instance().wrap(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack));
+                    Optional<CustomItem<ItemStack>> optionalCustomItem = item.getCustomItem();
+                    if (optionalCustomItem.isPresent()) {
+                        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+                        for (ItemBehavior itemBehavior : customItem.behaviors()) {
+                            if (itemBehavior instanceof BlockItemBehavior blockItemBehavior) {
+                                Optional<CustomBlock> optionalBlock = BukkitBlockManager.instance().blockById(blockItemBehavior.block());
+                                if (optionalBlock.isEmpty()) {
+                                    CraftEngine.instance().logger().warn("Failed to place unknown block " + blockItemBehavior.block());
+                                    continue;
+                                }
+                                Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
+                                CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true);
+                                return true;
+                            }
+                        }
+                    }
                     double d = FastNMS.INSTANCE.method$EntityType$getHeight(MEntityTypes.ITEM) / 2.0;
                     double d1 = blockPos1.x() + 0.5;
                     double d2 = blockPos1.y() + 0.5 - d;
