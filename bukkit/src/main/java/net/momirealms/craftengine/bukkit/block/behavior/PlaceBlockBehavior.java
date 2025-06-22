@@ -1,0 +1,176 @@
+package net.momirealms.craftengine.bukkit.block.behavior;
+
+import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.core.block.BlockBehavior;
+import net.momirealms.craftengine.core.block.CustomBlock;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
+import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.world.BlockPos;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
+public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
+    public static final Factory FACTORY = new Factory();
+
+    public PlaceBlockBehavior(CustomBlock customBlock, Property<Direction> facing, Property<Boolean> triggered) {
+        super(customBlock, facing, triggered);
+    }
+
+    @Override
+    protected Object getTickPriority() {
+        return CoreReflections.instance$TickPriority$EXTREMELY_LOW;
+    }
+
+    @Override
+    public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        Object state = args[0];
+        Object level = args[1];
+        BlockPos pos = LocationUtils.fromBlockPos(args[2]);
+        ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (blockState == null || blockState.isEmpty()) return;
+        Direction direction = blockState.get(this.facingProperty);
+        Direction opposite = direction.opposite();
+        BlockPos blockPos = pos.relative(opposite);
+        BlockPos blockPos1 = pos.relative(direction);
+        getItemAndDoThings(level, blockPos, opposite, itemStack -> {
+            if (FastNMS.INSTANCE.method$ItemStack$isEmpty(itemStack)) {
+                return false;
+            } else {
+                Object itemStack1 = FastNMS.INSTANCE.method$ItemEntity$getItem(itemStack);
+                boolean flag = CoreReflections.clazz$BlockItem.isInstance(itemStack1)
+                        && FastNMS.INSTANCE.method$InteractionResult$consumesAction(FastNMS.INSTANCE.method$BlockItem$place(
+                                itemStack1, FastNMS.INSTANCE.constructor$PlaceBlockBlockPlaceContext(
+                                        level, CoreReflections.instance$InteractionHand$MAIN_HAND, itemStack,
+                                FastNMS.INSTANCE.constructor$BlockHitResult(
+                                        FastNMS.INSTANCE.method$BlockPos$getCenter(LocationUtils.toBlockPos(blockPos1)),
+                                        DirectionUtils.toNMSDirection(opposite),
+                                        LocationUtils.toBlockPos(blockPos1),
+                                        false
+                                )
+                        )));
+
+                if (!flag) {
+                    double d = FastNMS.INSTANCE.method$EntityType$getHeight(MEntityTypes.ITEM) / 2.0;
+                    double d1 = blockPos1.x() + 0.5;
+                    double d2 = blockPos1.y() + 0.5 - d;
+                    double d3 = blockPos1.z() + 0.5;
+                    Object itemEntity = FastNMS.INSTANCE.constructor$ItemEntity(level, d1, d2, d3, itemStack);
+                    FastNMS.INSTANCE.method$ItemEntity$setDefaultPickUpDelay(itemEntity);
+                    FastNMS.INSTANCE.method$LevelWriter$addFreshEntity(level, itemEntity);
+                }
+                return true;
+            }
+        });
+    }
+
+    private static boolean getItemAndDoThings(Object level, BlockPos blockPos, Direction direction, Function<Object, Boolean> function) {
+        for (Object container : getContainersAt(level, blockPos)) {
+            boolean flag = FastNMS.INSTANCE.method$HopperBlockEntity$getSlots(container, direction).anyMatch(i -> {
+                Object itemStack = FastNMS.INSTANCE.method$Container$removeItem(container, i, 1);
+                if (!FastNMS.INSTANCE.method$ItemStack$isEmpty(itemStack)) {
+                    boolean flag1 = function.apply(FastNMS.INSTANCE.method$ItemStack$copy(itemStack));
+                    if (flag1) {
+                        FastNMS.INSTANCE.method$Container$setChanged(container);
+                    } else {
+                        FastNMS.INSTANCE.method$Container$setItem(container, i, itemStack);
+                    }
+
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            if (flag) {
+                return true;
+            }
+        }
+        Object itemAt = getItemAt(level, blockPos);
+        if (itemAt != null) {
+            Object item = FastNMS.INSTANCE.method$ItemEntity$getItem(itemAt);
+            if (!FastNMS.INSTANCE.method$ItemStack$isEmpty(item)) {
+                boolean flag = function.apply(FastNMS.INSTANCE.method$ItemStack$copyWithCount(item, 1));
+                if (flag) {
+                    FastNMS.INSTANCE.method$ItemStack$shrink(item, 1);
+                    if (FastNMS.INSTANCE.method$ItemStack$getCount(item) <= 0) {
+                        FastNMS.INSTANCE.method$Entity$discard(itemAt);
+                    }
+                }
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Object> getContainersAt(Object level, BlockPos blockPos) {
+        Object nmsBlockPos = LocationUtils.toBlockPos(blockPos);
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, nmsBlockPos);
+        Object block = FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
+        if (CoreReflections.clazz$WorldlyContainerHolder.isInstance(block)) {
+            Object container = FastNMS.INSTANCE.method$WorldlyContainerHolder$getContainer(block, blockState, level, nmsBlockPos);
+            if (container != null) {
+                return List.of(container);
+            }
+        } else if (FastNMS.INSTANCE.method$BlockStateBase$hasBlockEntity(blockState)) {
+            Object blockEntity = FastNMS.INSTANCE.method$BlockGetter$getBlockEntity(level, nmsBlockPos);
+            if (CoreReflections.clazz$Container.isInstance(blockEntity)) {
+                if (!(CoreReflections.clazz$ChestBlockEntity.isInstance(blockEntity)) || !(CoreReflections.clazz$ChestBlock.isInstance(block))) {
+                    return List.of(blockEntity);
+                }
+                Object container = FastNMS.INSTANCE.method$ChestBlock$getContainer(block, blockState, level, nmsBlockPos, true);
+                if (container != null) {
+                    return List.of(container);
+                }
+            }
+        }
+        List<Object> list = new ArrayList<>();
+        for (Object entity : (List<Object>) FastNMS.INSTANCE.method$EntityGetter$getEntities(
+                level, null, blockAABB(nmsBlockPos),
+                entity -> CoreReflections.clazz$Container.isInstance(entity) && FastNMS.INSTANCE.method$Entity$isAlive(entity))
+        ) {
+            if (CoreReflections.clazz$Container.isInstance(entity)) {
+                list.add(entity);
+            }
+        }
+        return list;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static Object getItemAt(Object level, Object blockPos) {
+        List<Object> entitiesOfClass = (List<Object>) FastNMS.INSTANCE.method$EntityGetter$getEntitiesOfClass(
+                level, CoreReflections.clazz$ItemEntity, blockAABB(blockPos), FastNMS.INSTANCE::method$Entity$isAlive
+        );
+        return entitiesOfClass.isEmpty() ? null : entitiesOfClass.getFirst();
+    }
+
+    private static Object blockAABB(Object blockPos) {
+        return FastNMS.INSTANCE.method$AABB$ofSize(FastNMS.INSTANCE.method$BlockPos$getCenter(blockPos), 0.9999999, 0.9999999, 0.9999999);
+    }
+
+    public static class Factory implements BlockBehaviorFactory {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
+            Property<Direction> facing = (Property<Direction>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("facing"), "warning.config.block.behavior.place_block.missing_facing");
+            Property<Boolean> triggered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("triggered"), "warning.config.block.behavior.place_block.missing_triggered");
+            return new PlaceBlockBehavior(block, facing, triggered);
+        }
+    }
+}
