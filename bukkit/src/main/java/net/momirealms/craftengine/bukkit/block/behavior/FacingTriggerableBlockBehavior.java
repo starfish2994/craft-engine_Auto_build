@@ -41,7 +41,7 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
 
     @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
-        return state.owner().value().defaultState().with(this.facingProperty, context.getNearestLookingDirection().opposite());
+        return state.owner().value().defaultState().with(this.facingProperty, Direction.orderedByNearest(context.getPlayer())[1]);
     }
 
     protected abstract Object getTickPriority();

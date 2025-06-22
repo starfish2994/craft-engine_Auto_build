@@ -97,6 +97,7 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                                 if (placeLocation.getBlock().getType() != Material.AIR) {
                                     break;
                                 }
+                                // TODO: 修复放置多方块自定义方块问题
                                 if (CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
                                     return true;
                                 }
