@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.util.Direction;
 
@@ -41,7 +42,12 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
 
     @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
-        return state.owner().value().defaultState().with(this.facingProperty, Direction.orderedByNearest(context.getPlayer())[1]);
+        Player player = context.getPlayer();
+        Direction direction = player.getDirection().opposite();
+        float yRot = player.yRot();
+        if (yRot > 45 && yRot < 90) direction = Direction.UP;
+        if (yRot < -45 && yRot > -90) direction = Direction.DOWN;
+        return state.owner().value().defaultState().with(this.facingProperty, direction);
     }
 
     protected abstract Object getTickPriority();
