@@ -93,8 +93,9 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                                     continue;
                                 }
                                 Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
-                                CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true);
-                                return true;
+                                if (CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
+                                    return true;
+                                }
                             }
                         }
                     }
