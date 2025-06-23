@@ -152,7 +152,7 @@ public class SNBTDeserializer {
             }
         }
         // 没有扫描到结束引号
-        throw new IllegalArgumentException("Unterminated string");
+        throw new IllegalArgumentException("Unterminated string at " + start);
     }
 
     // 解析Key值
@@ -205,15 +205,14 @@ public class SNBTDeserializer {
         try {
             char lastChar = sourceContent[tokenStart + tokenLength - 1];
             if (tokenLength > 1 && isTypeSuffix(lastChar)) {
-                String valueContent = new String(sourceContent, tokenStart, tokenLength - 1);
                 return switch (lastChar) {
                     case BYTE_SUFFIX -> parseByte(tokenStart, tokenLength - 1);
                     case SHORT_SUFFIX -> parseShort(tokenStart, tokenLength - 1);
                     case LONG_SUFFIX -> parseLong(tokenStart, tokenLength - 1);
-                    case FLOAT_SUFFIX -> Float.parseFloat(valueContent);
-                    case DOUBLE_SUFFIX -> Double.parseDouble(valueContent);
-                    case BOOLEAN_SUFFIX -> parseBoolean(valueContent);
-                    default -> Double.parseDouble(valueContent);
+                    case FLOAT_SUFFIX -> Float.parseFloat(new String(sourceContent, tokenStart, tokenLength - 1));
+                    case DOUBLE_SUFFIX -> Double.parseDouble(new String(sourceContent, tokenStart, tokenLength - 1));
+                    case BOOLEAN_SUFFIX -> parseBoolean(new String(sourceContent, tokenStart, tokenLength - 1));
+                    default -> throw new IllegalArgumentException("Invalid suffixed value " + new String(sourceContent, tokenStart, tokenLength - 1));
                 };
             }
             // 没有后缀就默认为 double 喵
@@ -321,12 +320,11 @@ public class SNBTDeserializer {
     }
 
 
-    // 跳过空格 - 优化24：手动展开循环，处理常见情况
+    // 跳过空格
     private void skipWhitespace() {
         while (position < length) {
             char c = sourceContent[position];
             if (c > ' ') { break; } // 大于空格的字符都不是空白字符
-
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                 position++;
             } else {
