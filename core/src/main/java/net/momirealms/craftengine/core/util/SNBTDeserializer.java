@@ -202,22 +202,25 @@ public class SNBTDeserializer {
         }
 
         // 带后缀的值处理
-        char lastChar = sourceContent[tokenStart + tokenLength - 1];
-        if (tokenLength > 1 && isTypeSuffix(lastChar)) {
-            String valueContent = new String(sourceContent, tokenStart, tokenLength - 1);
-            return switch (lastChar) {
-                case BYTE_SUFFIX -> parseByte(tokenStart, tokenLength - 1);
-                case SHORT_SUFFIX -> parseShort(tokenStart, tokenLength - 1);
-                case LONG_SUFFIX -> parseLong(tokenStart, tokenLength - 1);
-                case FLOAT_SUFFIX -> Float.parseFloat(valueContent);
-                case DOUBLE_SUFFIX -> Double.parseDouble(valueContent);
-                case BOOLEAN_SUFFIX -> parseBoolean(valueContent);
-                default -> Double.parseDouble(valueContent);
-            };
+        try {
+            char lastChar = sourceContent[tokenStart + tokenLength - 1];
+            if (tokenLength > 1 && isTypeSuffix(lastChar)) {
+                String valueContent = new String(sourceContent, tokenStart, tokenLength - 1);
+                return switch (lastChar) {
+                    case BYTE_SUFFIX -> parseByte(tokenStart, tokenLength - 1);
+                    case SHORT_SUFFIX -> parseShort(tokenStart, tokenLength - 1);
+                    case LONG_SUFFIX -> parseLong(tokenStart, tokenLength - 1);
+                    case FLOAT_SUFFIX -> Float.parseFloat(valueContent);
+                    case DOUBLE_SUFFIX -> Double.parseDouble(valueContent);
+                    case BOOLEAN_SUFFIX -> parseBoolean(valueContent);
+                    default -> Double.parseDouble(valueContent);
+                };
+            }
+            // 没有后缀就默认为 double 喵
+            return Double.parseDouble(new String(sourceContent, tokenStart, tokenLength));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number value at position " + tokenStart, e);
         }
-
-        // 手动解析Double数字
-        return Double.parseDouble(new String(sourceContent, tokenStart, tokenLength));
     }
 
     // 工具函数: 快速检查布尔值字符串匹配, 忽略大小写.
