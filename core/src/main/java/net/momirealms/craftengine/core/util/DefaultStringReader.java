@@ -4,9 +4,9 @@ public class DefaultStringReader implements StringReader {
     private static final char SYNTAX_ESCAPE = '\\';
     private static final char SYNTAX_DOUBLE_QUOTE = '"';
     private static final char SYNTAX_SINGLE_QUOTE = '\'';
-    private final String string;
-    private int cursor;
-    private int marker;
+    protected final String string;
+    protected int cursor;
+    protected int marker;
 
     public DefaultStringReader(DefaultStringReader other) {
         this.string = other.string;
@@ -114,6 +114,10 @@ public class DefaultStringReader implements StringReader {
 
     public static boolean isAllowedNumber(char c) {
         return c >= '0' && c <= '9' || c == '.' || c == '-';
+    }
+
+    public static boolean isNumber(char c) {
+        return c >= '0' && c <= '9';
     }
 
     public static boolean isQuotedStringStart(char c) {

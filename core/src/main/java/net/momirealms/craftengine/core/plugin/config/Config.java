@@ -82,6 +82,7 @@ public class Config {
 
     protected float resource_pack$supported_version$min;
     protected float resource_pack$supported_version$max;
+    protected String resource_pack$overlay_format;
 
     protected boolean resource_pack$delivery$kick_if_declined;
     protected boolean resource_pack$delivery$send_on_join;
@@ -264,6 +265,10 @@ public class Config {
         resource_pack$protection$obfuscation$resource_location$bypass_equipments = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-equipments");
         resource_pack$validate$enable = config.getBoolean("resource-pack.validate.enable", true);
         resource_pack$exclude_core_shaders = config.getBoolean("resource-pack.exclude-core-shaders", false);
+        resource_pack$overlay_format = config.getString("resource-pack.overlay-format", "overlay_{version}");
+        if (!resource_pack$overlay_format.contains("{version}")) {
+            TranslationManager.instance().log("warning.config.resource_pack.invalid_overlay_format", resource_pack$overlay_format);
+        }
 
         try {
             resource_pack$duplicated_files_handler = config.getMapList("resource-pack.duplicated-files-handler").stream().map(it -> {

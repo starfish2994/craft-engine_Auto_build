@@ -5,8 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SNBTDeserializer {
-
+public final class SNBTDeserializer {
     private static final char COMPOUND_START = '{';
     private static final char COMPOUND_END = '}';
     private static final char LIST_START = '[';
@@ -30,7 +29,6 @@ public class SNBTDeserializer {
     private static final int TRUE_LENGTH = 4;
     private static final int FALSE_LENGTH = 5;
 
-    // 使用 char[] 处理获得更高的性能
     private final char[] sourceContent;
     private final int length;
     private int position = 0;
@@ -41,7 +39,7 @@ public class SNBTDeserializer {
     }
 
     // 入口API
-    public static Object parse(String input) throws IllegalArgumentException {
+    public static Object deserializeAsJava(String input) throws IllegalArgumentException {
         SNBTDeserializer parser = new SNBTDeserializer(input);
         Object result = parser.parseValue();
         parser.skipWhitespace();

@@ -382,3 +382,4 @@ warning.config.resource_pack.generation.missing_item_model: "<yellow>物品'<arg
 warning.config.resource_pack.generation.missing_block_model: "<yellow>方块'<arg:0>'缺少模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_parent_model: "<yellow>模型'<arg:0>'找不到父级模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.malformatted_json: "<yellow>Json文件 '<arg:0>' 格式错误.</yellow>"
+warning.config.resource_pack.invalid_overlay_format: "<yellow>在 config.yml 的 'resource-pack.overlay-format' 处发现问题 - 无效的overlay格式 '<arg:0>'. Overlay格式必须包含占位符 '{version}'.</yellow>"

@@ -23,6 +23,7 @@ public class SpecialModels {
     public static final Key SHULKER_BOX = Key.of("minecraft:shulker_box");
     public static final Key STANDING_SIGN = Key.of("minecraft:standing_sign");
     public static final Key TRIDENT = Key.of("minecraft:trident");
+    public static final Key PLAYER_HEAD = Key.of("minecraft:player_head");
 
     static {
         register(TRIDENT, SimpleSpecialModel.FACTORY);
@@ -31,6 +32,7 @@ public class SpecialModels {
         register(SHIELD, SimpleSpecialModel.FACTORY);
         register(HANGING_SIGN, SignSpecialModel.FACTORY);
         register(STANDING_SIGN, SignSpecialModel.FACTORY);
+        register(PLAYER_HEAD, SignSpecialModel.FACTORY);
         register(CHEST, ChestSpecialModel.FACTORY);
         register(BANNER, BannerSpecialModel.FACTORY);
         register(BED, BedSpecialModel.FACTORY);
