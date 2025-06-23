@@ -76,7 +76,7 @@ public interface TemplateManager extends Manageable {
                 this.placeholder = placeholderContent.substring(0, separatorIndex);
                 String defaultValueString = placeholderContent.substring(separatorIndex + 2);
                 try {
-                    this.defaultValue = CraftEngine.instance().platform().nbt2Java(defaultValueString);
+                    this.defaultValue = CraftEngine.instance().platform().snbtToJava(defaultValueString);
                 } catch (LocalizedResourceConfigException e) {
                     e.appendTailArgument(this.placeholder);
                     throw e;
