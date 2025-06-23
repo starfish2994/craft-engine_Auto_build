@@ -10,18 +10,43 @@ import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
     public static final Factory FACTORY = new Factory();
+    private static final List<Key> DEFAULT_BLACK_BLOCKS = List.of(
+            Key.of("minecraft:bedrock"),
+            Key.of("minecraft:end_portal_frame"),
+            Key.of("minecraft:end_portal"),
+            Key.of("minecraft:nether_portal"),
+            Key.of("minecraft:barrier"),
+            Key.of("minecraft:command_block"),
+            Key.of("minecraft:chain_command_block"),
+            Key.of("minecraft:repeating_command_block"),
+            Key.of("minecraft:structure_block"),
+            Key.of("minecraft:end_gateway"),
+            Key.of("minecraft:jigsaw"),
+            Key.of("minecraft:structure_void"),
+            Key.of("minecraft:test_instance_block"),
+            Key.of("minecraft:moving_piston"),
+            Key.of("minecraft:test_block"),
+            Key.of("minecraft:light")
+    );
+    private final List<Key> blocks;
+    private final boolean whitelistMode;
 
-    public PickaxeBlockBehavior(CustomBlock customBlock, Property<Direction> facing, Property<Boolean> triggered) {
+    public PickaxeBlockBehavior(CustomBlock customBlock, Property<Direction> facing, Property<Boolean> triggered, List<Key> blocks, boolean whitelistMode) {
         super(customBlock, facing, triggered);
+        this.blocks = blocks;
+        this.whitelistMode = whitelistMode;
     }
 
     @Override
@@ -31,7 +56,6 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
 
     @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        CraftEngine.instance().logger().warn("PickaxeBlockBehavior.tick");
         Object state = args[0];
         Object level = args[1];
         Object pos = args[2];
@@ -43,9 +67,20 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
         ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
         if (blockState == null || blockState.isEmpty()) return;
         Object blockPos = FastNMS.INSTANCE.method$BlockPos$relative(pos, DirectionUtils.toNMSDirection(blockState.get(this.facingProperty)));
-        if (!FastNMS.INSTANCE.method$BlockStateBase$isAir(FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos))) {
+        if (breakCheck(FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos))) {
             FastNMS.INSTANCE.method$LevelWriter$destroyBlock(level, blockPos, true, null, 512);
         }
+    }
+
+    private boolean breakCheck(Object blockState) {
+        if (blockState == null || FastNMS.INSTANCE.method$BlockStateBase$isAir(blockState)) {
+            return false;
+        }
+        Key blockId = Optional.ofNullable(BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState)))
+                .filter(state -> !state.isEmpty())
+                .map(state -> state.owner().value().id())
+                .orElseGet(() -> BlockStateUtils.getBlockOwnerIdFromState(blockState));
+        return this.blocks.contains(blockId) == this.whitelistMode;
     }
 
     public static class Factory implements BlockBehaviorFactory {
@@ -55,7 +90,12 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Direction> facing = (Property<Direction>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("facing"), "warning.config.block.behavior.pickaxe.missing_facing");
             Property<Boolean> triggered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("triggered"), "warning.config.block.behavior.pickaxe.missing_triggered");
-            return new PickaxeBlockBehavior(block, facing, triggered);
+            boolean whitelistMode = (boolean) arguments.getOrDefault("whitelist", false);
+            List<Key> blocks = MiscUtils.getAsStringList(arguments.get("blocks")).stream().map(Key::of).toList();
+            if (blocks.isEmpty() && !whitelistMode) {
+                blocks = DEFAULT_BLACK_BLOCKS;
+            }
+            return new PickaxeBlockBehavior(block, facing, triggered, blocks, whitelistMode);
         }
     }
 }
