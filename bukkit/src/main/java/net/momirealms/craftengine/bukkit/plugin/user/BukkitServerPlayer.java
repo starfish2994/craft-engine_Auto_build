@@ -31,6 +31,7 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.sound.SoundSource;
+import net.momirealms.craftengine.core.util.ClientInformation;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -75,6 +76,7 @@ public class BukkitServerPlayer extends Player {
     // client side dimension info
     private int sectionCount;
     private Key clientSideDimension;
+    private ClientInformation clientInformation;
     // check main hand/offhand interaction
     private int lastSuccessfulInteraction;
     // re-sync attribute timely to prevent some bugs
@@ -882,6 +884,16 @@ public class BukkitServerPlayer extends Player {
     @Override
     public void setSentResourcePack(boolean sentResourcePack) {
         this.sentResourcePack = sentResourcePack;
+    }
+
+    @Override
+    public void setClientInformation(ClientInformation clientInfo) {
+        this.clientInformation = clientInfo;
+    }
+
+    @Override
+    public ClientInformation getClientInformation() {
+        return this.clientInformation;
     }
 
     @Override

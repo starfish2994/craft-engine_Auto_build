@@ -1089,20 +1089,12 @@ public final class NetworkReflections {
             ReflectionUtils.getDeclaredConstructor(clazz$ClientboundMoveEntityPacket$Pos, int.class, short.class, short.class, short.class, boolean.class)
     );
 
-    // 1.20.2+
-    public static final Class<?> clazz$ServerboundClientInformationPacket =
-            ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundClientInformationPacket"));
-
-    // 1.20.2+
-    public static final Constructor<?> constructor$ServerboundClientInformationPacket = Optional.ofNullable(clazz$ServerboundClientInformationPacket)
-            .map(it -> ReflectionUtils.getConstructor(it, 1))
-            .orElse(null);
-
-    // 1.20.2+
-    public static final Field field$ServerboundClientInformationPacket$information = Optional.ofNullable(clazz$ServerboundClientInformationPacket)
-            .map(it -> ReflectionUtils.getDeclaredField(it, 0))
-            .orElse(null);
-
+    public static final Class<?> clazz$ServerboundClientInformationPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    List.of("network.protocol.game.PacketPlayInSettings", "network.protocol.common.ServerboundClientInformationPacket"),
+                    List.of("network.protocol.game.ServerboundClientInformationPacket", "network.protocol.common.ServerboundClientInformationPacket")
+            )
+    );
 
     public static final Class<?> clazz$ClientboundSetTitleTextPacket = requireNonNull(
             ReflectionUtils.getClazz(

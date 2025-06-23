@@ -92,8 +92,7 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
     }
 
     public void setJavaComponent(Object type, Object value) {
-        setSparrowNBTComponent(type, MRegistryOps.JAVA.convertTo(MRegistryOps.SPARROW_NBT, value));
-        // setComponentInternal(type, MRegistryOps.JAVA, value); // 这里可能出现潜在的Integer和Boolean不区分问题
+        setComponentInternal(type, MRegistryOps.JAVA, value);
     }
 
     public void setJsonComponent(Object type, JsonElement value) {

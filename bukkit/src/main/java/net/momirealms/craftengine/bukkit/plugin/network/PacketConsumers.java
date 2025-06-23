@@ -2414,4 +2414,23 @@ public class PacketConsumers {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
         }
     };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CLIENT_INFO = (user, event, packet) -> {
+        try {
+            Map<String, Object> information = FastNMS.INSTANCE.method$ServerboundClientInformationPacket$information(packet);
+            user.setClientInformation(new ClientInformation(
+                    (String) information.getOrDefault("language", "en_us"),
+                    (int) information.getOrDefault("viewDistance", 2),
+                    information.getOrDefault("chatVisibility", null),
+                    (boolean) information.getOrDefault("chatColors", true),
+                    (int) information.getOrDefault("modelCustomisation", 0),
+                    information.getOrDefault("mainHand", null),
+                    (boolean) information.getOrDefault("textFilteringEnabled", false),
+                    (boolean) information.getOrDefault("allowsListing", false),
+                    information.getOrDefault("particleStatus", null)
+            ));
+        } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
+        }
+    };
 }

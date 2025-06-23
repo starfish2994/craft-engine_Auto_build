@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.plugin.Plugin;
+import net.momirealms.craftengine.core.util.ClientInformation;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -64,4 +65,8 @@ public interface NetWorkUser {
     boolean sentResourcePack();
 
     void setSentResourcePack(boolean sentResourcePack);
+
+    void setClientInformation(ClientInformation clientInfo);
+
+    ClientInformation getClientInformation();
 }

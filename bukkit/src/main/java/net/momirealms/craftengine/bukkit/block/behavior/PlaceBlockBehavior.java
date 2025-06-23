@@ -21,6 +21,8 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Location;
@@ -38,8 +40,8 @@ import java.util.function.Function;
 public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
     public static final Factory FACTORY = new Factory();
 
-    public PlaceBlockBehavior(CustomBlock customBlock, Property<Direction> facing, Property<Boolean> triggered) {
-        super(customBlock, facing, triggered);
+    public PlaceBlockBehavior(CustomBlock customBlock, Property<Direction> facing, Property<Boolean> triggered, List<Key> blocks, boolean whitelistMode) {
+        super(customBlock, facing, triggered, blocks, whitelistMode);
     }
 
     @Override
@@ -69,17 +71,23 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                 return false;
             } else {
                 Object itemStack1 = FastNMS.INSTANCE.method$ItemStack$getItem(itemStack);
-                boolean flag = CoreReflections.clazz$BlockItem.isInstance(itemStack1)
-                        && FastNMS.INSTANCE.method$InteractionResult$consumesAction(FastNMS.INSTANCE.method$BlockItem$place(
-                        itemStack1, FastNMS.INSTANCE.constructor$PlaceBlockBlockPlaceContext(
-                                level, CoreReflections.instance$InteractionHand$MAIN_HAND, itemStack,
-                                FastNMS.INSTANCE.constructor$BlockHitResult(
-                                        FastNMS.INSTANCE.method$BlockPos$getCenter(LocationUtils.toBlockPos(blockPos1)),
-                                        DirectionUtils.toNMSDirection(opposite),
-                                        LocationUtils.toBlockPos(blockPos1),
-                                        false
-                                )
-                        )));
+                boolean flag = false;
+                if (CoreReflections.clazz$BlockItem.isInstance(itemStack1)) {
+                    Object block = FastNMS.INSTANCE.method$BlockItem$getBlock(itemStack1);
+                    if (blockCheck(FastNMS.INSTANCE.method$Block$defaultState(block))) {
+                        Object blockHitResult = FastNMS.INSTANCE.constructor$BlockHitResult(
+                                FastNMS.INSTANCE.method$BlockPos$getCenter(LocationUtils.toBlockPos(blockPos1)),
+                                DirectionUtils.toNMSDirection(opposite),
+                                LocationUtils.toBlockPos(blockPos1),
+                                false
+                        );
+                        Object placeBlockBlockPlaceContext = FastNMS.INSTANCE.constructor$PlaceBlockBlockPlaceContext(
+                                level, CoreReflections.instance$InteractionHand$MAIN_HAND, itemStack, blockHitResult
+                        );
+                        Object interactionResult = FastNMS.INSTANCE.method$BlockItem$place(itemStack1, placeBlockBlockPlaceContext);
+                        flag = FastNMS.INSTANCE.method$InteractionResult$consumesAction(interactionResult);
+                    }
+                }
 
                 if (!flag) {
                     Item<ItemStack> item = BukkitItemManager.instance().wrap(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack));
@@ -93,12 +101,19 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                                     CraftEngine.instance().logger().warn("Failed to place unknown block " + blockItemBehavior.block());
                                     continue;
                                 }
+                                ImmutableBlockState placeBlockState = optionalBlock.get().defaultState();
+                                if (placeBlockState.contains(this.facingProperty)) {
+                                    placeBlockState = placeBlockState.with(this.facingProperty, opposite);
+                                }
+                                if (blockCheck(placeBlockState.customBlockState().handle())) {
+                                    continue;
+                                }
                                 Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
                                 if (placeLocation.getBlock().getType() != Material.AIR) {
                                     break;
                                 }
                                 // TODO: 修复放置多方块自定义方块问题
-                                if (CraftEngineBlocks.place(placeLocation, optionalBlock.get().defaultState(), UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
+                                if (CraftEngineBlocks.place(placeLocation, placeBlockState, UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
                                     return true;
                                 }
                             }
@@ -211,7 +226,12 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<Direction> facing = (Property<Direction>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("facing"), "warning.config.block.behavior.place_block.missing_facing");
             Property<Boolean> triggered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("triggered"), "warning.config.block.behavior.place_block.missing_triggered");
-            return new PlaceBlockBehavior(block, facing, triggered);
+            boolean whitelistMode = (boolean) arguments.getOrDefault("whitelist", false);
+            List<Key> blocks = MiscUtils.getAsStringList(arguments.get("blocks")).stream().map(Key::of).toList();
+            if (blocks.isEmpty() && !whitelistMode) {
+                blocks = FacingTriggerableBlockBehavior.DEFAULT_BLACKLIST_BLOCKS;
+            }
+            return new PlaceBlockBehavior(block, facing, triggered, blocks, whitelistMode);
         }
     }
 }
