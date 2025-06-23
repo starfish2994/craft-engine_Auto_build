@@ -262,15 +262,15 @@ public class ItemSettings {
 
         static {
             registerFactory("repairable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "repairable");
                 return settings -> settings.canRepair(bool);
             }));
             registerFactory("enchantable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "enchantable");
                 return settings -> settings.canEnchant(bool);
             }));
             registerFactory("renameable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "renameable");
                 return settings -> settings.renameable(bool);
             }));
             registerFactory("anvil-repair-item", (value -> {
@@ -318,7 +318,7 @@ public class ItemSettings {
                 return settings -> settings.equipment(equipment);
             }));
             registerFactory("can-place", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "can-place");
                 return settings -> settings.canPlaceRelatedVanillaBlock(bool);
             }));
             registerFactory("projectile", (value -> {
@@ -342,7 +342,7 @@ public class ItemSettings {
                 return settings -> settings.compostProbability(chance);
             }));
             registerFactory("dyeable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "dyeable");
                 return settings -> settings.dyeable(bool);
             }));
             registerFactory("food", (value -> {

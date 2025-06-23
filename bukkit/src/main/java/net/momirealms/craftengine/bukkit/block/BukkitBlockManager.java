@@ -555,7 +555,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             json.addProperty("x", ResourceConfigUtils.getAsInt(singleModelMap.get("x"), "x"));
         if (singleModelMap.containsKey("y"))
             json.addProperty("y", ResourceConfigUtils.getAsInt(singleModelMap.get("y"), "y"));
-        if (singleModelMap.containsKey("uvlock")) json.addProperty("uvlock", (boolean) singleModelMap.get("uvlock"));
+        if (singleModelMap.containsKey("uvlock")) json.addProperty("uvlock", ResourceConfigUtils.getAsBoolean(singleModelMap.get("uvlock"), "uvlock"));
         if (singleModelMap.containsKey("weight"))
             json.addProperty("weight", ResourceConfigUtils.getAsInt(singleModelMap.get("weight"), "weight"));
         Map<String, Object> generationMap = MiscUtils.castToMap(singleModelMap.get("generation"), true);

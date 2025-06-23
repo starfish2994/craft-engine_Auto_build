@@ -414,8 +414,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
                     map.put(customModelData, new ModernItemModel(
                             modernModel,
-                            (boolean) section.getOrDefault("oversized-in-gui", true),
-                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("oversized-in-gui", true), "oversized-in-gui"),
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("hand-animation-on-swap", true), "hand-animation-on-swap")
                     ));
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
@@ -429,8 +429,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 if (isModernFormatRequired() && modernModel != null) {
                     AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, new ModernItemModel(
                             modernModel,
-                            (boolean) section.getOrDefault("oversized-in-gui", true),
-                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("oversized-in-gui", true), "oversized-in-gui"),
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("hand-animation-on-swap", true), "hand-animation-on-swap")
                     ));
                 }
                 if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
@@ -529,7 +529,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 int nutrition = ResourceConfigUtils.getAsInt(data.get("nutrition"), "nutrition");
                 float saturation = ResourceConfigUtils.getAsFloat(data.get("saturation"), "saturation");
-                return new FoodModifier<>(nutrition, saturation, (boolean) data.getOrDefault("can-always-eat", false));
+                return new FoodModifier<>(nutrition, saturation, ResourceConfigUtils.getAsBoolean(data.getOrDefault("can-always-eat", false), "can-always-eat"));
             }, "food");
         }
         if (VersionHelper.isOrAbove1_21()) {

@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.pack.model.rangedisptach;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.pack.model.LegacyModelPredicate;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class DamageRangeDispatchProperty implements RangeDispatchProperty, Legac
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            boolean normalize = (boolean) arguments.getOrDefault("normalize", true);
+            boolean normalize = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("normalize", true), "normalize");
             return new DamageRangeDispatchProperty(normalize);
         }
     }

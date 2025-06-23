@@ -63,7 +63,7 @@ public class DropboxHost implements ResourcePackHost {
 
             CraftEngine.instance().logger().info("[Dropbox] Loaded cached resource pack info");
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn("[Dropbox] Failed to load cache", e);
+            CraftEngine.instance().logger().warn("[Dropbox] Failed to load cache " + cachePath, e);
         }
     }
 
@@ -263,7 +263,7 @@ public class DropboxHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
+            boolean useEnv = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("use-environment-variables", false), "use-environment-variables");
             String appKey = useEnv ? System.getenv("CE_DROPBOX_APP_KEY") : Optional.ofNullable(arguments.get("app-key")).map(String::valueOf).orElse(null);
             if (appKey == null || appKey.isEmpty()) {
                 throw new LocalizedException("warning.config.host.dropbox.missing_app_key");

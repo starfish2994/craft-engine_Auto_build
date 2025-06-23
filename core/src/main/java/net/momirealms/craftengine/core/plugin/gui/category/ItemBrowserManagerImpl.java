@@ -117,7 +117,8 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
             List<String> members = MiscUtils.getAsStringList(section.getOrDefault("list", List.of()));
             Key icon = Key.of(section.getOrDefault("icon", ItemKeys.STONE).toString());
             int priority = ResourceConfigUtils.getAsInt(section.getOrDefault("priority", 0), "priority");
-            Category category = new Category(id, name, MiscUtils.getAsStringList(section.getOrDefault("lore", List.of())), icon, members.stream().distinct().toList(), priority, (boolean) section.getOrDefault("hidden", false));
+            Category category = new Category(id, name, MiscUtils.getAsStringList(section.getOrDefault("lore", List.of())), icon, members.stream().distinct().toList(), priority,
+                    ResourceConfigUtils.getAsBoolean(section.getOrDefault("hidden", false), "hidden"));
             if (ItemBrowserManagerImpl.this.byId.containsKey(id)) {
                 ItemBrowserManagerImpl.this.byId.get(id).merge(category);
             } else {

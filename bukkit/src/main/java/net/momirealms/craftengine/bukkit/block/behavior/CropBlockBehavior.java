@@ -205,7 +205,7 @@ public class CropBlockBehavior extends BukkitBlockBehavior {
             Property<Integer> ageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("age"), "warning.config.block.behavior.crop.missing_age");
             int minGrowLight = ResourceConfigUtils.getAsInt(arguments.getOrDefault("light-requirement", 9), "light-requirement");
             float growSpeed = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("grow-speed", 0.125f), "grow-speed");
-            boolean isBoneMealTarget = (boolean) arguments.getOrDefault("is-bone-meal-target", true);
+            boolean isBoneMealTarget = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("is-bone-meal-target", true), "is-bone-meal-target");
             NumberProvider boneMealAgeBonus = NumberProviders.fromObject(arguments.getOrDefault("bone-meal-age-bonus", 1));
             return new CropBlockBehavior(block, ageProperty, growSpeed, minGrowLight, isBoneMealTarget, boneMealAgeBonus);
         }

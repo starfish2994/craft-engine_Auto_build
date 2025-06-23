@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.pack.model.LegacyModelPredicate;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class UseDurationRangeDispatchProperty implements RangeDispatchProperty, 
 
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
-            boolean remaining = (boolean) arguments.getOrDefault("remaining", false);
+            boolean remaining = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("remaining", false), "remaining");
             return new UseDurationRangeDispatchProperty(remaining);
         }
     }
