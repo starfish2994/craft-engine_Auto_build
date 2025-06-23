@@ -2430,7 +2430,7 @@ public class PacketConsumers {
                     information.getOrDefault("particleStatus", null)
             ));
         } catch (Throwable e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundClientInformationPacket", e);
         }
     };
 }
