@@ -177,47 +177,43 @@ public final class SNBTDeserializer {
 
     // 解析原生值
     private Object parsePrimitive() {
-        skipWhitespace();
-        int tokenStart = position;
-
         // 先解析获取值的长度
+        int tokenStart = position;
         while (position < length) {
             char c = sourceContent[position];
             if (c <= ' ' || c == ',' || c == ']' || c == '}') break;
             position++;
         }
         int tokenLength = position - tokenStart;
-        if (tokenLength == 0) {
-            throw new IllegalArgumentException("Empty value at position " + tokenStart);
-        }
+        if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
 
         // 布尔值快速检查
-        if (tokenLength == TRUE_LENGTH && matchesAt(tokenStart, TRUE_LITERAL)) {
-            return Boolean.TRUE;
-        }
-        if (tokenLength == FALSE_LENGTH && matchesAt(tokenStart, FALSE_LITERAL)) {
-            return Boolean.FALSE;
-        }
+        if (tokenLength == TRUE_LENGTH && matchesAt(tokenStart, TRUE_LITERAL)) return Boolean.TRUE;
+        if (tokenLength == FALSE_LENGTH && matchesAt(tokenStart, FALSE_LITERAL)) return Boolean.FALSE;
+
+        // 无后缀数字处理
+        if (isNumber(tokenStart, tokenStart + tokenLength) == 1) return Integer.parseInt(new String(sourceContent, tokenStart, tokenLength));
+        if (isNumber(tokenStart, tokenStart + tokenLength) == 2) return Double.parseDouble(new String(sourceContent, tokenStart, tokenLength));
 
         // 带后缀的值处理
-        try {
-            char lastChar = sourceContent[tokenStart + tokenLength - 1];
-            if (tokenLength > 1 && isTypeSuffix(lastChar)) {
-                return switch (lastChar) {
-                    case BYTE_SUFFIX -> parseByte(tokenStart, tokenLength - 1);
-                    case SHORT_SUFFIX -> parseShort(tokenStart, tokenLength - 1);
-                    case LONG_SUFFIX -> parseLong(tokenStart, tokenLength - 1);
-                    case FLOAT_SUFFIX -> Float.parseFloat(new String(sourceContent, tokenStart, tokenLength - 1));
-                    case DOUBLE_SUFFIX -> Double.parseDouble(new String(sourceContent, tokenStart, tokenLength - 1));
-                    case BOOLEAN_SUFFIX -> parseBoolean(new String(sourceContent, tokenStart, tokenLength - 1));
-                    default -> throw new IllegalArgumentException("Invalid suffixed value " + new String(sourceContent, tokenStart, tokenLength - 1));
-                };
-            }
-            // 没有后缀就默认为 double 喵
-            return Double.parseDouble(new String(sourceContent, tokenStart, tokenLength));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number value at position " + tokenStart, e);
+        char lastChar = sourceContent[tokenStart + tokenLength - 1];
+        if (tokenLength > 1 &&                                      // 要求: 长度>1
+            isTypeSuffix(lastChar) &&                               // 要求: 有效后缀
+            isNumber(tokenStart, tokenStart + tokenLength - 1) > 0  // 要求: 除后缀外是合法数字
+        ) {
+            return switch (lastChar) {
+                case BYTE_SUFFIX -> parseByte(tokenStart, tokenLength - 1);
+                case SHORT_SUFFIX -> parseShort(tokenStart, tokenLength - 1);
+                case LONG_SUFFIX -> parseLong(tokenStart, tokenLength - 1);
+                case FLOAT_SUFFIX -> Float.parseFloat(new String(sourceContent, tokenStart, tokenLength - 1));
+                case DOUBLE_SUFFIX -> Double.parseDouble(new String(sourceContent, tokenStart, tokenLength - 1));
+                case BOOLEAN_SUFFIX -> parseBoolean(new String(sourceContent, tokenStart, tokenLength - 1));
+                default -> new IllegalArgumentException("Parse Error with: " + new String(sourceContent, tokenStart, tokenLength - 1)); // 永远不应进入此 case.
+            };
         }
+
+        // 都无法匹配就默认为 String 喵~
+        return new String(sourceContent, tokenStart, tokenLength);
     }
 
     // 工具函数: 快速检查布尔值字符串匹配, 忽略大小写.
@@ -317,7 +313,6 @@ public final class SNBTDeserializer {
         return sourceContent[position];
     }
 
-
     // 跳过空格
     private void skipWhitespace() {
         while (position < length) {
@@ -329,6 +324,33 @@ public final class SNBTDeserializer {
                 break;
             }
         }
+    }
+
+    // 检查是不是合法数字.
+    // 返回0代表不合法, 1代表整数, 2代表小数.
+    private int isNumber(int start, int end) {
+        // 跳过负号
+        if (sourceContent[start] == '-') start++;
+
+        // 除负号外第一个字符必须是数字.
+        char c1 = sourceContent[start];
+        if (c1 < '0' || c1 > '9') return 0;
+
+        // 检查剩余的数字, 只能有一个小数点
+        boolean hasDecimal = false;
+        for (; start < end; start++) {
+            char c = sourceContent[start];
+            if (c < '0' || c > '9') {
+                if (c == '.') {
+                    if (hasDecimal) return 0; // bro 不能有2个小数点.
+                    hasDecimal = true;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        return hasDecimal ? 2 : 1;
     }
 
 }
