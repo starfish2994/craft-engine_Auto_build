@@ -235,6 +235,8 @@ public class BukkitWorldManager implements WorldManager, Listener {
     public <T> net.momirealms.craftengine.core.world.World wrap(T world) {
         if (world instanceof World w) {
             return new BukkitWorld(w);
+        } else if (CoreReflections.clazz$Level.isInstance(world)) {
+            return new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(world));
         } else {
             throw new IllegalArgumentException(world.getClass() + " is not a Bukkit World");
         }

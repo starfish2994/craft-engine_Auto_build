@@ -3578,4 +3578,19 @@ public final class CoreReflections {
                     "world.item.BlockItem"
             )
     );
+
+    public static final Object instance$CollisionContext$empty;
+
+    static {
+        try {
+            instance$CollisionContext$empty = requireNonNull(method$CollisionContext$empty.invoke(null));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 1.21.6+
+    public static final Method method$CollisionContext$placementContext = ReflectionUtils.getStaticMethod(
+            clazz$CollisionContext, clazz$CollisionContext, clazz$Player
+    );
 }

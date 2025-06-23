@@ -6,7 +6,6 @@ import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
-import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
@@ -67,15 +66,10 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
 
     @Override
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
-        Player player = context.getPlayer();
-        Direction direction = player.getDirection().opposite();
-        float yRot = player.yRot();
-        if (yRot > 45 && yRot < 90) direction = Direction.UP;
-        if (yRot < -45 && yRot > -90) direction = Direction.DOWN;
-        return state.owner().value().defaultState().with(this.facingProperty, direction);
+        return state.owner().value().defaultState().with(this.facingProperty, context.getNearestLookingDirection().opposite());
     }
 
-    protected boolean blockCheck(Object blockState) {
+    protected boolean blockCheckByBlockState(Object blockState) {
         if (blockState == null || FastNMS.INSTANCE.method$BlockStateBase$isAir(blockState)) {
             return false;
         }
@@ -83,6 +77,10 @@ public abstract class FacingTriggerableBlockBehavior extends BukkitBlockBehavior
                 .filter(state -> !state.isEmpty())
                 .map(state -> state.owner().value().id())
                 .orElseGet(() -> BlockStateUtils.getBlockOwnerIdFromState(blockState));
+        return blockCheckByKey(blockId);
+    }
+
+    protected boolean blockCheckByKey(Key blockId) {
         return this.blocks.contains(blockId) == this.whitelistMode;
     }
 

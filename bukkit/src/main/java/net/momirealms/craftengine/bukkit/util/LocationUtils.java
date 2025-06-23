@@ -4,6 +4,7 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.Vec3i;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -97,5 +98,12 @@ public class LocationUtils {
         centerLoc.setZ(location.getBlockZ() + 0.5);
         centerLoc.setY(location.getBlockY());
         return centerLoc;
+    }
+
+    public static Vec3d atCenterOf(Vec3d vec) {
+        return atLowerCornerWithOffset(vec, 0.5F, 0.5F, 0.5F);
+    }
+    public static Vec3d atLowerCornerWithOffset(Vec3d vec, double deltaX, double deltaY, double deltaZ) {
+        return new Vec3d(vec.x() + deltaX, vec.y() + deltaY, vec.z() + deltaZ);
     }
 }

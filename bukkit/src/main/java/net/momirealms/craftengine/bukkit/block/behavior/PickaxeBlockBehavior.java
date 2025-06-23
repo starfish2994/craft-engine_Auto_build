@@ -44,7 +44,7 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
         ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
         if (blockState == null || blockState.isEmpty()) return;
         Object blockPos = FastNMS.INSTANCE.method$BlockPos$relative(pos, DirectionUtils.toNMSDirection(blockState.get(this.facingProperty)));
-        if (blockCheck(FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos))) {
+        if (blockCheckByBlockState(FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos))) {
             FastNMS.INSTANCE.method$LevelWriter$destroyBlock(level, blockPos, true, null, 512);
         }
     }

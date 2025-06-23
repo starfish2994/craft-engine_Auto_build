@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.World;
 
+import javax.annotation.Nullable;
+
 public class BlockPlaceContext extends UseOnContext {
     private final BlockPos relativePos;
     protected boolean replaceClicked;
@@ -16,7 +18,7 @@ public class BlockPlaceContext extends UseOnContext {
         this(context.getLevel(), context.getPlayer(), context.getHand(), context.getItem(), context.getHitResult());
     }
 
-    public BlockPlaceContext(World world, Player player, InteractionHand hand, Item<?> stack, BlockHitResult hit) {
+    public BlockPlaceContext(World world, @Nullable Player player, InteractionHand hand, Item<?> stack, BlockHitResult hit) {
         super(world, player, hand, stack, hit);
         this.relativePos = hit.getBlockPos().relative(hit.getDirection());
         this.replaceClicked = true;

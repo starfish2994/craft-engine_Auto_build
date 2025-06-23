@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
@@ -10,23 +9,24 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityType
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.item.context.PlaceBlockBlockPlaceContext;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
@@ -74,7 +74,7 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                 boolean flag = false;
                 if (CoreReflections.clazz$BlockItem.isInstance(itemStack1)) {
                     Object block = FastNMS.INSTANCE.method$BlockItem$getBlock(itemStack1);
-                    if (blockCheck(FastNMS.INSTANCE.method$Block$defaultState(block))) {
+                    if (blockCheckByBlockState(FastNMS.INSTANCE.method$Block$defaultState(block))) {
                         Object blockHitResult = FastNMS.INSTANCE.constructor$BlockHitResult(
                                 FastNMS.INSTANCE.method$BlockPos$getCenter(LocationUtils.toBlockPos(blockPos1)),
                                 DirectionUtils.toNMSDirection(opposite),
@@ -88,7 +88,6 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                         flag = FastNMS.INSTANCE.method$InteractionResult$consumesAction(interactionResult);
                     }
                 }
-
                 if (!flag) {
                     Item<ItemStack> item = BukkitItemManager.instance().wrap(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack));
                     Optional<CustomItem<ItemStack>> optionalCustomItem = item.getCustomItem();
@@ -96,21 +95,21 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                         CustomItem<ItemStack> customItem = optionalCustomItem.get();
                         for (ItemBehavior itemBehavior : customItem.behaviors()) {
                             if (itemBehavior instanceof BlockItemBehavior blockItemBehavior) {
-                                Optional<CustomBlock> optionalBlock = BukkitBlockManager.instance().blockById(blockItemBehavior.block());
-                                if (optionalBlock.isEmpty()) {
-                                    CraftEngine.instance().logger().warn("Failed to place unknown block " + blockItemBehavior.block());
-                                    continue;
-                                }
-                                ImmutableBlockState placeBlockState = optionalBlock.get().defaultState();
-                                if (!blockCheck(placeBlockState.customBlockState().handle())) {
-                                    continue;
-                                }
-                                Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
-                                if (placeLocation.getBlock().getType() != Material.AIR) {
-                                    break;
-                                }
-                                // TODO: 修复放置多方块自定义方块问题
-                                if (CraftEngineBlocks.place(placeLocation, placeBlockState, UpdateOption.UPDATE_ALL_IMMEDIATE, true)) {
+                                if (!blockCheckByKey(blockItemBehavior.block())) continue;
+                                BlockHitResult hitResult = new BlockHitResult(
+                                        LocationUtils.toVec3d(blockPos1),
+                                        opposite,
+                                        blockPos1,
+                                        false
+                                );
+                                PlaceBlockBlockPlaceContext context = new PlaceBlockBlockPlaceContext(
+                                        BukkitWorldManager.instance().wrap(level),
+                                        InteractionHand.MAIN_HAND,
+                                        BukkitItemManager.instance().wrap(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack)),
+                                        hitResult
+                                );
+                                InteractionResult result = blockItemBehavior.place(context);
+                                if (result.success()) {
                                     return true;
                                 }
                             }
@@ -130,6 +129,7 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
 
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private static boolean getItemAndDoThings(Object level, BlockPos blockPos, Direction direction, Function<Object, Boolean> function) {
         for (Object container : getContainersAt(level, blockPos)) {
             boolean flag = FastNMS.INSTANCE.method$HopperBlockEntity$getSlots(container, DirectionUtils.toNMSDirection(direction)).anyMatch(i -> {
