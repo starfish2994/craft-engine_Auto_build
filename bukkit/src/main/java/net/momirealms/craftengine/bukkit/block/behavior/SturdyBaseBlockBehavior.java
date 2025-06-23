@@ -69,7 +69,7 @@ public class SturdyBaseBlockBehavior extends AbstractCanSurviveBlockBehavior {
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             int delay = ResourceConfigUtils.getAsInt(arguments.getOrDefault("delay", 0), "delay");
             Direction direction = Direction.valueOf(arguments.getOrDefault("direction", "down").toString().toUpperCase(Locale.ENGLISH));
-            boolean stackable = (boolean) arguments.getOrDefault("stackable", false);
+            boolean stackable = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("stackable", false), "stackable");
             List<String> supportTypes = MiscUtils.getAsStringList(arguments.getOrDefault("support-types", List.of("full")));
             return new SturdyBaseBlockBehavior(block, delay, direction, stackable, supportTypes.contains("full"), supportTypes.contains("rigid"), supportTypes.contains("center"));
         }

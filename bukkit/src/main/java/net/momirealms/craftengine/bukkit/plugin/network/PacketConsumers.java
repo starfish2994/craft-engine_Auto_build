@@ -1646,11 +1646,13 @@ public class PacketConsumers {
                                 LocationUtils.toBlockPos(hitResult.blockPos())
                         );
                     } else {
-                        furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
-                            if (furniture.tryOccupySeat(seatPos)) {
-                                furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
-                            }
-                        });
+                        if (!serverPlayer.isSecondaryUseActive()) {
+                            furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                                if (furniture.tryOccupySeat(seatPos)) {
+                                    furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
+                                }
+                            });
+                        }
                     }
                 };
             } else if (actionType == 0) {

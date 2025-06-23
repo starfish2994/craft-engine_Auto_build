@@ -110,23 +110,32 @@ public class EquipmentGeneration implements Supplier<JsonObject> {
         layersJson.add(key, layersArray);
     }
 
-    public record Layer(String texture, DyeableData data) implements Supplier<JsonObject> {
+    public record Layer(String texture, DyeableData data, boolean usePlayerTexture) implements Supplier<JsonObject> {
 
         @NotNull
         public static List<Layer> fromConfig(Object obj) {
-            if (obj instanceof String texture) {
-                return List.of(new Layer(texture, null));
-            } else if (obj instanceof Map<?, ?> map) {
-                String texture = map.get("texture").toString();
-                return List.of(new Layer(texture, DyeableData.fromObj(map.get("dyeable"))));
-            } else if (obj instanceof List<?> list) {
-                List<Layer> layers = new ArrayList<>();
-                for (Object inner : list) {
-                    layers.addAll(fromConfig(inner));
+            switch (obj) {
+                case String texture -> {
+                    return List.of(new Layer(texture, null, false));
                 }
-                return layers;
-            } else {
-                return List.of();
+                case Map<?, ?> map -> {
+                    Map<String, Object> data = MiscUtils.castToMap(map, false);
+                    String texture = data.get("texture").toString();
+                    return List.of(new Layer(texture,
+                            DyeableData.fromObj(data.get("dyeable")),
+                            ResourceConfigUtils.getAsBoolean(data.getOrDefault("use-player-texture", false), "use-player-texture")
+                    ));
+                }
+                case List<?> list -> {
+                    List<Layer> layers = new ArrayList<>();
+                    for (Object inner : list) {
+                        layers.addAll(fromConfig(inner));
+                    }
+                    return layers;
+                }
+                case null, default -> {
+                    return List.of();
+                }
             }
         }
 
@@ -137,6 +146,9 @@ public class EquipmentGeneration implements Supplier<JsonObject> {
             if (this.data != null) {
                 jsonObject.add("dyeable", this.data.get());
             }
+            if (this.usePlayerTexture) {
+                jsonObject.addProperty("use_player_texture", true);
+            }
             return jsonObject;
         }
 
@@ -146,7 +158,6 @@ public class EquipmentGeneration implements Supplier<JsonObject> {
                 if (obj instanceof Map<?,?> map) {
                     Map<String, Object> data = MiscUtils.castToMap(map, false);
                     if (data.containsKey("color-when-undyed")) {
-                        // todo 添加更多数据类型支持
                         return new DyeableData(ResourceConfigUtils.getAsInt(data.get("color-when-undyed"), "color-when-undyed"));
                     }
                 }

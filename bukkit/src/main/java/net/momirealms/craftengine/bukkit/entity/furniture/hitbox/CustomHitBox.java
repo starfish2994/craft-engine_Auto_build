@@ -91,8 +91,8 @@ public class CustomHitBox extends AbstractHitBox {
             if (entityType == null) {
                 throw new LocalizedResourceConfigException("warning.config.furniture.hitbox.custom.invalid_entity", new IllegalArgumentException("EntityType not found: " + type), type);
             }
-            boolean canBeHitByProjectile = (boolean) arguments.getOrDefault("can-be-hit-by-projectile", false);
-            boolean blocksBuilding = (boolean) arguments.getOrDefault("blocks-building", true);
+            boolean canBeHitByProjectile = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("can-be-hit-by-projectile", false), "can-be-hit-by-projectile");
+            boolean blocksBuilding = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("blocks-building", true), "blocks-building");
             return new CustomHitBox(HitBoxFactory.getSeats(arguments), position, entityType, scale, blocksBuilding, canBeHitByProjectile);
         }
     }

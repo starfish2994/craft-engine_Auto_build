@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.item.setting;
 
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +44,7 @@ public class EquipmentData {
     public static EquipmentData fromMap(@NotNull final Map<String, Object> data) {
         String slot = (String) data.get("slot");
         if (slot == null) {
-            throw new IllegalArgumentException("No `slot` option set for `equippable`");
+            throw new LocalizedResourceConfigException("warning.config.item.settings.equippable.missing_slot");
         }
         EquipmentSlot slotEnum = EquipmentSlot.valueOf(slot.toUpperCase(Locale.ENGLISH));
         EquipmentData.Builder builder = EquipmentData.builder().slot(slotEnum);
@@ -53,16 +55,16 @@ public class EquipmentData {
             builder.cameraOverlay(Key.of(data.get("camera-overlay").toString()));
         }
         if (data.containsKey("dispensable")) {
-            builder.dispensable((boolean) data.get("dispensable"));
+            builder.dispensable(ResourceConfigUtils.getAsBoolean(data.get("dispensable"), "dispensable"));
         }
         if (data.containsKey("swappable")) {
-            builder.swappable((boolean) data.get("swappable"));
+            builder.swappable(ResourceConfigUtils.getAsBoolean(data.get("swappable"), "swappable"));
         }
         if (data.containsKey("equip-on-interact")) {
-            builder.equipOnInteract((boolean) data.get("equip-on-interact"));
+            builder.equipOnInteract(ResourceConfigUtils.getAsBoolean(data.get("equip-on-interact"), "equip-on-interact"));
         }
         if (data.containsKey("damage-on-hurt")) {
-            builder.damageOnHurt((boolean) data.get("damage-on-hurt"));
+            builder.damageOnHurt(ResourceConfigUtils.getAsBoolean(data.get("damage-on-hurt"), "damage-on-hurt"));
         }
         return builder.build();
     }

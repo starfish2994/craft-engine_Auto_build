@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.pack.model.rangedisptach;
 
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class NormalizeRangeDispatchProperty implements RangeDispatchProperty {
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
             Key type = Key.of(arguments.get("property").toString());
-            boolean normalize = (boolean) arguments.getOrDefault("normalize", true);
+            boolean normalize = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("normalize", true), "normalize");
             return new NormalizeRangeDispatchProperty(type, normalize);
         }
     }
