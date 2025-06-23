@@ -102,10 +102,7 @@ public class PlaceBlockBehavior extends FacingTriggerableBlockBehavior {
                                     continue;
                                 }
                                 ImmutableBlockState placeBlockState = optionalBlock.get().defaultState();
-                                if (placeBlockState.contains(this.facingProperty)) {
-                                    placeBlockState = placeBlockState.with(this.facingProperty, opposite);
-                                }
-                                if (blockCheck(placeBlockState.customBlockState().handle())) {
+                                if (!blockCheck(placeBlockState.customBlockState().handle())) {
                                     continue;
                                 }
                                 Location placeLocation = new Location(FastNMS.INSTANCE.method$Level$getCraftWorld(level), blockPos1.x(), blockPos1.y(), blockPos1.z());
