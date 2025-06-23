@@ -11,6 +11,8 @@ public final class SNBTDeserializer {
     private static final char LIST_START = '[';
     private static final char LIST_END = ']';
     private static final char STRING_DELIMITER = '"';
+    private static final char SINGLE_QUOTES = '\'';
+    private static final char DOUBLE_QUOTES = '"';
     private static final char KEY_VALUE_SEPARATOR = ':';
     private static final char ELEMENT_SEPARATOR = ',';
     private static final char ESCAPE_CHAR = '\\';
@@ -23,15 +25,10 @@ public final class SNBTDeserializer {
     private static final char DOUBLE_SUFFIX = 'd';
     private static final char BOOLEAN_SUFFIX = 'B';
 
-    // 布尔值常量
-    private static final String TRUE_LITERAL = "true";
-    private static final String FALSE_LITERAL = "false";
-    private static final int TRUE_LENGTH = 4;
-    private static final int FALSE_LENGTH = 5;
-
+    // 使用 char[] 处理获得更高的性能
     private final char[] sourceContent;
     private final int length;
-    private int position = 0;
+    private int cursor = 0;
 
     private SNBTDeserializer(String content) {
         this.sourceContent = content.toCharArray();
@@ -44,10 +41,10 @@ public final class SNBTDeserializer {
         Object result = parser.parseValue();
         parser.skipWhitespace();
 
-        if (parser.position != parser.length) {
+        if (parser.cursor != parser.length) {
             throw new IllegalArgumentException("Extra content at end: " +
-                    new String(parser.sourceContent, parser.position,
-                            parser.length - parser.position));
+                    new String(parser.sourceContent, parser.cursor,
+                            parser.length - parser.cursor));
         }
         return result;
     }
@@ -58,92 +55,94 @@ public final class SNBTDeserializer {
         return switch (peekCurrentChar()) {
             case COMPOUND_START -> parseCompound();
             case LIST_START -> parseList();
-            case STRING_DELIMITER -> parseString();
+            case DOUBLE_QUOTES -> parseString(DOUBLE_QUOTES);
+            case SINGLE_QUOTES -> parseString(SINGLE_QUOTES);
             default -> parsePrimitive();
         };
     }
 
     // 解析包小肠 {}
     private Map<String, Object> parseCompound() {
-        position++; // 跳过 '{'
+        cursor++; // 跳过 '{'
         skipWhitespace();
 
         Map<String, Object> compoundMap = new LinkedHashMap<>(16); // 避免一次扩容, 应该有一定的性能提升
 
-        if (position < length && sourceContent[position] != COMPOUND_END) {
+        if (cursor < length && sourceContent[cursor] != COMPOUND_END) {
             do {
                 String key = parseKey();
-                if (position >= length || sourceContent[position] != KEY_VALUE_SEPARATOR) {
-                    throw new IllegalArgumentException("Expected ':' at position " + position);
+                if (cursor >= length || sourceContent[cursor] != KEY_VALUE_SEPARATOR) {
+                    throw new IllegalArgumentException("Expected ':' at position " + cursor);
                 }
-                position++; // 跳过 ':'
+                cursor++; // 跳过 ':'
                 Object value = parseValue();
                 compoundMap.put(key, value);
                 skipWhitespace();
-            } while (position < length && sourceContent[position] == ELEMENT_SEPARATOR && ++position > 0);
+            } while (cursor < length && sourceContent[cursor] == ELEMENT_SEPARATOR && ++cursor > 0);
         }
 
-        if (position >= length || sourceContent[position] != COMPOUND_END) {
-            throw new IllegalArgumentException("Expected '}' at position " + position);
+        if (cursor >= length || sourceContent[cursor] != COMPOUND_END) {
+            throw new IllegalArgumentException("Expected '}' at position " + cursor);
         }
-        position++; // 跳过 '}'
+        cursor++; // 跳过 '}'
         return compoundMap;
     }
 
     // 解析列表值 [1, 2, 3]
     private List<Object> parseList() {
-        position++; // 跳过 '['
+        cursor++; // 跳过 '['
         skipWhitespace();
         List<Object> elementList = new ArrayList<>();
 
-        if (position < length && sourceContent[position] != LIST_END) {
+        if (cursor < length && sourceContent[cursor] != LIST_END) {
             do {
                 elementList.add(parseValue());
                 skipWhitespace();
-            } while (position < length && sourceContent[position] == ELEMENT_SEPARATOR && ++position > 0);
+            } while (cursor < length && sourceContent[cursor] == ELEMENT_SEPARATOR && ++cursor > 0);
         }
 
-        if (position >= length || sourceContent[position] != LIST_END) {
-            throw new IllegalArgumentException("Expected ']' at position " + position);
+        if (cursor >= length || sourceContent[cursor] != LIST_END) {
+            throw new IllegalArgumentException("Expected ']' at position " + cursor);
         }
-        position++; // 跳过 ']'
+        cursor++; // 跳过 ']'
         return elementList;
     }
 
     // 解析字符串
-    private String parseString() {
-        position++; // 跳过开始的引号
-        int start = position;
+    private String parseString(char delimiter) {
+        cursor++; // 跳过开始的引号
+        int start = cursor;
 
         // 扫一次字符串, 如果没有发现转义就直接返回, 发现了就再走转义解析.
         // 这样可以避免创建一次 StringBuilder.
-        while (position < length) {
-            char c = sourceContent[position];
-            if (c == STRING_DELIMITER) {
-                String result = new String(sourceContent, start, position - start);
-                position++; // 跳过结束引号
+        while (cursor < length) {
+            char c = sourceContent[cursor];
+            if (c == delimiter) {
+                String result = new String(sourceContent, start, cursor - start);
+                cursor++; // 跳过结束引号
                 return result; // 没有转义直接返回字符串.
             }
-            // 如果发现转义字符，
+            // 如果发现转义字符，进行转义处理.
             else if (c == ESCAPE_CHAR) {
-                return parseStringWithEscape(start);
+                return parseStringWithEscape(start, delimiter);
             }
-            position++;
+            cursor++;
         }
         // 没有扫描到结束引号
         throw new IllegalArgumentException("Unterminated string at " + start);
     }
 
     // 处理含转义的字符串
-    private String parseStringWithEscape(int start) {
-        StringBuilder sb = new StringBuilder(position - start + 16);
-        sb.append(sourceContent, start, position - start);
+    private String parseStringWithEscape(int start, char delimiter) {
+        // 先把之前遍历没有包含转义的字符保存
+        StringBuilder sb = new StringBuilder(cursor - start + 16);
+        sb.append(sourceContent, start, cursor - start);
 
-        while (position < length) {
-            char c = sourceContent[position++];
-            if (c == ESCAPE_CHAR && position < length) {
-                sb.append(getEscapedChar(sourceContent[position++]));
-            } else if (c == STRING_DELIMITER) { // 字符
+        while (cursor < length) {
+            char c = sourceContent[cursor++];
+            if (c == ESCAPE_CHAR && cursor < length) {
+                sb.append(getEscapedChar(sourceContent[cursor++])); // 解析转义.
+            } else if (c == delimiter) { // 发现结束分隔字符, 返回.
                 return sb.toString();
             } else {
                 sb.append(c);
@@ -157,39 +156,40 @@ public final class SNBTDeserializer {
     private String parseKey() {
         skipWhitespace();
         // 如果有双引号就委托给string解析处理.
-        if (position < length && sourceContent[position] == STRING_DELIMITER) {
-            return parseString();
+        if (cursor < length) {
+            if (sourceContent[cursor] == STRING_DELIMITER) return parseString(STRING_DELIMITER);
+            if (sourceContent[cursor] == SINGLE_QUOTES) return parseString(SINGLE_QUOTES);
         }
 
-        int start = position;
-        while (position < length) {
-            char c = sourceContent[position];
+        int start = cursor;
+        while (cursor < length) {
+            char c = sourceContent[cursor];
             if (Character.isJavaIdentifierPart(c)) {
-                position++;
+                cursor++;
             } else {
                 break;
             }
         }
 
         skipWhitespace();
-        return new String(sourceContent, start, position - start);
+        return new String(sourceContent, start, cursor - start);
     }
 
     // 解析原生值
     private Object parsePrimitive() {
         // 先解析获取值的长度
-        int tokenStart = position;
-        while (position < length) {
-            char c = sourceContent[position];
+        int tokenStart = cursor;
+        while (cursor < length) {
+            char c = sourceContent[cursor];
             if (c <= ' ' || c == ',' || c == ']' || c == '}') break;
-            position++;
+            cursor++;
         }
-        int tokenLength = position - tokenStart;
+        int tokenLength = cursor - tokenStart;
         if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
 
         // 布尔值快速检查
-        if (tokenLength == TRUE_LENGTH && matchesAt(tokenStart, TRUE_LITERAL)) return Boolean.TRUE;
-        if (tokenLength == FALSE_LENGTH && matchesAt(tokenStart, FALSE_LITERAL)) return Boolean.FALSE;
+        if (tokenLength == 4 && matchesAt(tokenStart, "true")) return Boolean.TRUE;
+        if (tokenLength == 5 && matchesAt(tokenStart, "false")) return Boolean.FALSE;
 
         // 无后缀数字处理
         if (isNumber(tokenStart, tokenStart + tokenLength) == 1) return Integer.parseInt(new String(sourceContent, tokenStart, tokenLength));
@@ -295,7 +295,8 @@ public final class SNBTDeserializer {
     // 转义字符处理
     private char getEscapedChar(char escapedChar) {
         return switch (escapedChar) {
-            case STRING_DELIMITER -> '"';
+            case DOUBLE_QUOTES -> '"';
+            case SINGLE_QUOTES -> '\'';
             case ESCAPE_CHAR -> '\\';
             case COMPOUND_START -> '{';
             case COMPOUND_END -> '}';
@@ -309,17 +310,17 @@ public final class SNBTDeserializer {
 
     // 获取当前字符
     private char peekCurrentChar() {
-        if (position >= length) throw new IllegalArgumentException("Unexpected end of input at position " + position);
-        return sourceContent[position];
+        if (cursor >= length) throw new IllegalArgumentException("Unexpected end of input at position " + cursor);
+        return sourceContent[cursor];
     }
 
     // 跳过空格
     private void skipWhitespace() {
-        while (position < length) {
-            char c = sourceContent[position];
+        while (cursor < length) {
+            char c = sourceContent[cursor];
             if (c > ' ') { break; } // 大于空格的字符都不是空白字符
             if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
-                position++;
+                cursor++;
             } else {
                 break;
             }
