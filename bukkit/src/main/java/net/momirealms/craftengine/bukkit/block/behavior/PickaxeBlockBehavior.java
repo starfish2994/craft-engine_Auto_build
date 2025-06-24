@@ -5,15 +5,24 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.bukkit.world.BukkitWorldManager;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
+import net.momirealms.craftengine.core.block.state.properties.DoubleBlockHalf;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.WorldPosition;
 
 import java.util.List;
 import java.util.Map;
@@ -43,9 +52,27 @@ public class PickaxeBlockBehavior extends FacingTriggerableBlockBehavior {
     public void tick(Object state, Object level, Object pos) {
         ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
         if (blockState == null || blockState.isEmpty()) return;
-        Object blockPos = FastNMS.INSTANCE.method$BlockPos$relative(pos, DirectionUtils.toNMSDirection(blockState.get(this.facingProperty)));
-        if (blockCheckByBlockState(FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, blockPos))) {
-            FastNMS.INSTANCE.method$LevelWriter$destroyBlock(level, blockPos, true, null, 512);
+        Object breakPos = FastNMS.INSTANCE.method$BlockPos$relative(pos, DirectionUtils.toNMSDirection(blockState.get(this.facingProperty)));
+        Object breakState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(level, breakPos);
+        if (blockCheckByBlockState(breakState)) {
+            FastNMS.INSTANCE.method$LevelWriter$destroyBlock(level, breakPos, true, null, 512);
+            tryHandleDoubleBlock(level, breakState, breakPos);
+        }
+    }
+
+    private static void tryHandleDoubleBlock(Object level, Object state, Object blockPos) {
+        int stateId = BlockStateUtils.blockStateToId(state);
+        ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
+        if (blockState == null || blockState.isEmpty()) return;
+        for (Property<?> property : blockState.getProperties()) {
+            if (property.valueClass() != DoubleBlockHalf.class) continue;
+            World world = BukkitWorldManager.instance().wrap(level);
+            WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos)));
+            ContextHolder.Builder builder = ContextHolder.builder().withParameter(DirectContextParameters.POSITION, position);
+            blockState.getDrops(builder, world, null).forEach(item -> world.dropItemNaturally(position, item));
+            world.playBlockSound(position, blockState.sounds().breakSound());
+            FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, stateId);
+            return;
         }
     }
 

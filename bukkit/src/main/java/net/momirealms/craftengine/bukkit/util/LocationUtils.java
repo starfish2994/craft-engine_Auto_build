@@ -99,11 +99,4 @@ public class LocationUtils {
         centerLoc.setY(location.getBlockY());
         return centerLoc;
     }
-
-    public static Vec3d atCenterOf(Vec3d vec) {
-        return atLowerCornerWithOffset(vec, 0.5F, 0.5F, 0.5F);
-    }
-    public static Vec3d atLowerCornerWithOffset(Vec3d vec, double deltaX, double deltaY, double deltaZ) {
-        return new Vec3d(vec.x() + deltaX, vec.y() + deltaY, vec.z() + deltaZ);
-    }
 }

@@ -139,7 +139,7 @@ public class BukkitCraftEngine extends CraftEngine {
             logger.info("Patching the server...");
             LevelInjector.patch();
         } catch (Exception e) {
-            throw new InjectionException("Error injecting level", e);
+            throw new InjectionException("Error injecting Level", e);
         }
         super.onPluginLoad();
         super.blockManager.init();
