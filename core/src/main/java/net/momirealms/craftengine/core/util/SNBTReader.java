@@ -194,15 +194,15 @@ public final class SNBTReader extends DefaultStringReader {
         if ("1B".equals(fullContent) || (tokenLength == 4 && matchesAt(tokenStart, "true"))) return Boolean.TRUE;
         if ("0B".equals(fullContent) || (tokenLength == 5 && matchesAt(tokenStart, "false"))) return Boolean.FALSE;
 
-        // 无后缀数字处理
-        if (isNumber(tokenStart, tokenStart + tokenLength) == 1) return Integer.parseInt(fullContent);
-        if (isNumber(tokenStart, tokenStart + tokenLength) == 2) return Double.parseDouble(fullContent);
+        int numberType = isNumber(tokenStart, tokenStart + tokenLength);  // 返回0代表不是合法数字, 1代表整数, 2代表小数.
+        if (numberType == 1) return Integer.parseInt(fullContent);
+        if (numberType == 2) return Double.parseDouble(fullContent);
 
         // 带后缀的值处理
         char lastChar = string.charAt(tokenStart + tokenLength - 1);
         if (tokenLength > 1 &&                                      // 要求: 长度>1
-            isTypeSuffix(lastChar) &&                               // 要求: 有效后缀
-            isNumber(tokenStart, tokenStart + tokenLength - 1) > 0  // 要求: 除后缀外是合法数字
+                isTypeSuffix(lastChar) &&                               // 要求: 有效后缀
+                numberType > 0                                          // 要求: 除后缀外是合法数字
         ) {
             final String content = string.substring(tokenStart, tokenStart + tokenLength - 1);
             try {
