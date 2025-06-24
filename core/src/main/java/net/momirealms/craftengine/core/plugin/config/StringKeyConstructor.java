@@ -16,6 +16,7 @@ import java.util.Map;
 public class StringKeyConstructor extends SafeConstructor {
     private final Path path;
     private static final String VERSION_PREFIX = "$$";
+    private static final String DEEP_KEY_SEPARATOR = "::";
 
     public StringKeyConstructor(Path path, LoaderOptions loaderOptions) {
         super(loaderOptions);
@@ -60,8 +61,9 @@ public class StringKeyConstructor extends SafeConstructor {
     }
 
     /**
-     * 场景A (块合并): 构造一个Map，同时处理其中的版本化块合并。
+     * 场景A (块合并与路径展开): 构造一个Map，同时处理其中的版本化块合并和 `::` 分隔的深层键。
      */
+    @SuppressWarnings("unchecked")
     @Override
     protected Map<Object, Object> constructMapping(MappingNode node) {
         Map<Object, Object> map = new LinkedHashMap<>();
@@ -70,19 +72,51 @@ public class StringKeyConstructor extends SafeConstructor {
             if (!(keyNode instanceof ScalarNode)) continue;
 
             String key = constructScalar((ScalarNode) keyNode);
+            Node valueNode = tuple.getValueNode();
 
             if (key.startsWith(VERSION_PREFIX)) {
+                // 处理版本化块合并
                 String versionSpec = key.substring(VERSION_PREFIX.length());
                 if (isVersionMatch(versionSpec)) {
-                    Node valueNode = tuple.getValueNode();
                     if (valueNode instanceof MappingNode) {
+                        // 将版本匹配的map内容合并到当前map
                         map.putAll(constructMapping((MappingNode) valueNode));
                     } else {
                         logWarning("versioned_key_not_a_map", key, valueNode);
                     }
                 }
+            } else if (key.contains(DEEP_KEY_SEPARATOR)) {
+                // 处理 '::' 分隔的深层键
+                String[] parts = key.split(DEEP_KEY_SEPARATOR);
+                Object value = constructObject(valueNode);
+                Map<Object, Object> currentMap = map;
+
+                // 遍历除最后一个部分外的所有路径，创建嵌套的map
+                for (int i = 0; i < parts.length - 1; i++) {
+                    String part = parts[i];
+                    Object nextObject = currentMap.get(part);
+                    if (nextObject instanceof Map) {
+                        currentMap = (Map<Object, Object>) nextObject;
+                    } else {
+                        // 如果路径中存在一个非map的值，发出警告并覆盖它
+                        if (nextObject != null) {
+                            logWarning("key_path_conflict", part, keyNode);
+                        }
+                        Map<Object, Object> newMap = new LinkedHashMap<>();
+                        currentMap.put(part, newMap);
+                        currentMap = newMap;
+                    }
+                }
+
+                // 在最深层的map中设置最终的键值对
+                String finalKey = parts[parts.length - 1];
+                Object previous = currentMap.put(finalKey, value);
+                if (previous != null) {
+                    // 使用完整的原始键来报告重复键，更清晰
+                    logWarning("duplicated_key", key, keyNode);
+                }
             } else {
-                Node valueNode = tuple.getValueNode();
+                // 原始逻辑：处理普通键
                 Object value = constructObject(valueNode);
                 Object previous = map.put(key, value);
                 if (previous != null) {
