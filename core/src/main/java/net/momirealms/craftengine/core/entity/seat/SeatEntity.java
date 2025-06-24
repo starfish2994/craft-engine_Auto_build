@@ -8,21 +8,21 @@ import org.joml.Vector3f;
 
 public interface SeatEntity extends EntityPacketHandler {
 
-	void add(NetWorkUser from, NetWorkUser to);
+    void add(NetWorkUser from, NetWorkUser to);
 
-	void dismount(Player player);
+    void dismount(Player player);
 
-	void onDismount(Player player);
+    void onDismount(Player player);
 
-	void event(Player player, Object event);
+    void event(Player player, Object event);
 
-	void destroy();
+    void destroy();
 
-	boolean destroyed();
+    boolean destroyed();
 
-	Furniture furniture();
+    Furniture furniture();
 
-	Vector3f vector3f();
+    Vector3f vector3f();
 
-	int playerID();
+    int playerID();
 }

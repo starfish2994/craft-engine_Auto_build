@@ -12,49 +12,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SeatType {
-	public static final Key SIT = Key.of("craftengine:sit");
-	public static final Key LAY = Key.of("craftengine:lay");
-	public static final Key CRAWL = Key.of("craftengine:crawl");
+    public static final Key SIT = Key.of("craftengine:sit");
+    public static final Key LAY = Key.of("craftengine:lay");
+    public static final Key CRAWL = Key.of("craftengine:crawl");
 
-	public static void register(Key key, SeatFactory factory) {
-		Holder.Reference<SeatFactory> holder =((WritableRegistry<SeatFactory>) BuiltInRegistries.SEAT_FACTORY)
-				.registerForHolder(new ResourceKey<>(Registries.SEAT_FACTORY.location(), key));
-		holder.bindValue(factory);
-	}
+    public static void register(Key key, SeatFactory factory) {
+        Holder.Reference<SeatFactory> holder = ((WritableRegistry<SeatFactory>) BuiltInRegistries.SEAT_FACTORY)
+                .registerForHolder(new ResourceKey<>(Registries.SEAT_FACTORY.location(), key));
+        holder.bindValue(factory);
+    }
 
-	public static Seat fromString(String s) {
-		int lastSpaceIndex = s.lastIndexOf(' ');
+    public static Seat fromString(String s) {
+        int lastSpaceIndex = s.lastIndexOf(' ');
 
-		Key type = SIT;
-		SeatFactory factory;
-		String numericPart;
+        Key type = SIT;
+        SeatFactory factory;
+        String numericPart;
 
-		if (lastSpaceIndex != -1) {
-			numericPart = s.substring(lastSpaceIndex + 1);
-			try {
-				Float.parseFloat(numericPart);
-			} catch (NumberFormatException e) {
-				type = Key.withDefaultNamespace(numericPart, "craftengine");
-				s = s.substring(0, lastSpaceIndex);
-				lastSpaceIndex = s.lastIndexOf(' ');
-			}
-		}
+        if (lastSpaceIndex != -1) {
+            numericPart = s.substring(lastSpaceIndex + 1);
+            try {
+                Float.parseFloat(numericPart);
+            } catch (NumberFormatException e) {
+                type = Key.withDefaultNamespace(numericPart, "craftengine");
+                s = s.substring(0, lastSpaceIndex);
+                lastSpaceIndex = s.lastIndexOf(' ');
+            }
+        }
 
-		List<String> split = new ArrayList<>();
-		int start = 0;
-		while (lastSpaceIndex != -1) {
-			split.add(s.substring(start, lastSpaceIndex));
-			start = lastSpaceIndex + 1;
-			lastSpaceIndex = s.indexOf(' ', start);
-		}
-		if (start < s.length()) {
-			split.add(s.substring(start));
-		}
+        List<String> split = new ArrayList<>();
+        int start = 0;
+        while (lastSpaceIndex != -1) {
+            split.add(s.substring(start, lastSpaceIndex));
+            start = lastSpaceIndex + 1;
+            lastSpaceIndex = s.indexOf(' ', start);
+        }
+        if (start < s.length()) {
+            split.add(s.substring(start));
+        }
 
-		factory = BuiltInRegistries.SEAT_FACTORY.getValue(type);
-		if (factory == null) {
-			throw new LocalizedResourceConfigException("warning.config.furniture.seat.invalid_type", type.toString());
-		}
-		return factory.create(split);
-	}
+        factory = BuiltInRegistries.SEAT_FACTORY.getValue(type);
+        if (factory == null) {
+            throw new LocalizedResourceConfigException("warning.config.furniture.seat.invalid_type", type.toString());
+        }
+        return factory.create(split);
+    }
 }

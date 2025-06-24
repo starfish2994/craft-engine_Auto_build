@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface SeatFactory {
 
-	Seat create(List<String> args);
+    Seat create(List<String> args);
 }
