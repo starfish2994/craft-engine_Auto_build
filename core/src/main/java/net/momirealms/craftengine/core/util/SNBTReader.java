@@ -171,6 +171,7 @@ public final class SNBTReader extends DefaultStringReader {
         // 先解析获取值的长度
         int tokenStart = cursor;
         int lastWhitespace = 0; // 记录值末尾的空格数量,{a:炒鸡 大保健} 和 {a:  炒鸡 大保健  } 都应解析成 "炒鸡 大保健".
+        boolean contentHasWhitespace = false; // 记录值中有没有空格.
         while (cursor < length) {
             char c = peek();
             if (c == ',' || c == ']' || c == '}') break;
@@ -179,11 +180,15 @@ public final class SNBTReader extends DefaultStringReader {
                 lastWhitespace++; // 遇到空格先增加值, 代表值尾部空格数量.
                 continue;
             }
-            lastWhitespace = 0; // 遇到正常字符时清空记录的尾部空格数.
+            if (lastWhitespace > 0) {
+                lastWhitespace = 0; // 遇到正常字符时清空记录的尾部空格数.
+                contentHasWhitespace = true;
+            }
         }
         int tokenLength = cursor - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
         if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
         String fullContent = string.substring(tokenStart, tokenStart + tokenLength);
+        if (contentHasWhitespace) return fullContent; // 如果值的中间有空格, 一定是字符串, 可直接返回.
 
         // 布尔值检查
         if ("1B".equals(fullContent) || (tokenLength == 4 && matchesAt(tokenStart, "true"))) return Boolean.TRUE;
