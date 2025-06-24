@@ -59,7 +59,7 @@ public final class SNBTReader extends DefaultStringReader {
         cursor++; // 跳过 '{'
         skipWhitespace();
 
-        Map<String, Object> compoundMap = new LinkedHashMap<>(16); // 避免一次扩容, 应该有一定的性能提升
+        Map<String, Object> compoundMap = new LinkedHashMap<>();
 
         if (cursor < length && peek() != COMPOUND_END) {
             do {
@@ -156,11 +156,14 @@ public final class SNBTReader extends DefaultStringReader {
 
         int start = cursor;
         while (cursor < length) {
-            if (Character.isJavaIdentifierPart(peek())) cursor++; else break;
+            char c = peek();
+            if (c == ' ') break; // 忽略 key 后面的空格, { a :1} 应当解析成 {a:1}
+            if (Character.isJavaIdentifierPart(c)) cursor++; else break;
         }
 
-        skipWhitespace();
-        return string.substring(start, cursor);
+        String key = string.substring(start, cursor);
+        skipWhitespace(); // 跳过 key 后面的空格.
+        return key;
     }
 
     // 解析原生值
@@ -176,7 +179,7 @@ public final class SNBTReader extends DefaultStringReader {
         if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
         String fullContent = string.substring(tokenStart, tokenStart + tokenLength);
 
-        // 布尔值快速检查
+        // 布尔值检查
         if ("1B".equals(fullContent) || (tokenLength == 4 && matchesAt(tokenStart, "true"))) return Boolean.TRUE;
         if ("0B".equals(fullContent) || (tokenLength == 5 && matchesAt(tokenStart, "false"))) return Boolean.FALSE;
 
@@ -266,5 +269,4 @@ public final class SNBTReader extends DefaultStringReader {
 
         return hasDecimal ? 2 : 1;
     }
-
 }
