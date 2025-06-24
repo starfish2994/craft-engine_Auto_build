@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class DamageRangeDispatchProperty implements RangeDispatchProperty, LegacyModelPredicate<Float> {
     public static final Factory FACTORY = new Factory();
+    public static final Reader READER = new Reader();
     private final boolean normalize;
 
     public DamageRangeDispatchProperty(boolean normalize) {
@@ -41,10 +42,17 @@ public class DamageRangeDispatchProperty implements RangeDispatchProperty, Legac
     }
 
     public static class Factory implements RangeDispatchPropertyFactory {
-
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
             boolean normalize = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("normalize", true), "normalize");
+            return new DamageRangeDispatchProperty(normalize);
+        }
+    }
+
+    public static class Reader implements RangeDispatchPropertyReader {
+        @Override
+        public RangeDispatchProperty read(JsonObject json) {
+            boolean normalize = !json.has("normalize") || json.get("normalize").getAsBoolean();
             return new DamageRangeDispatchProperty(normalize);
         }
     }

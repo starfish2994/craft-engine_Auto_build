@@ -57,6 +57,8 @@ resource-pack:
   # Validate if there are any errors in the resource pack, such as missing textures or models
   validate:
     enable: true
+  # Define the name of the overlay folders
+  overlay-format: "ce_overlay_{version}"
   supported-version:
     min: "1.20"
     max: LATEST

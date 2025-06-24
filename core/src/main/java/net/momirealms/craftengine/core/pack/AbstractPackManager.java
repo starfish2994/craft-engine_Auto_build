@@ -17,11 +17,15 @@ import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
 import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.ModernItemModel;
+import net.momirealms.craftengine.core.pack.model.RangeDispatchItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
+import net.momirealms.craftengine.core.pack.model.rangedisptach.CustomModelDataRangeDispatchProperty;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
+import net.momirealms.craftengine.core.pack.revision.Revision;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -54,11 +58,12 @@ import java.util.function.Predicate;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
+@SuppressWarnings("DuplicatedCode")
 public abstract class AbstractPackManager implements PackManager {
     public static final Map<Key, JsonObject> PRESET_MODERN_MODELS_ITEM = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
-    public static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
+    public static final Map<Key, ModernItemModel> PRESET_ITEMS = new HashMap<>();
     public static final Set<Key> VANILLA_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_MODELS = new HashSet<>();
     private static final byte[] EMPTY_IMAGE;
@@ -103,7 +108,7 @@ public abstract class AbstractPackManager implements PackManager {
         loadInternalData("internal/models/item/legacy/_all.json", PRESET_LEGACY_MODELS_ITEM::put);
         loadInternalData("internal/models/item/_all.json", PRESET_MODERN_MODELS_ITEM::put);
         loadInternalData("internal/models/block/_all.json", PRESET_MODELS_BLOCK::put);
-        loadInternalData("internal/items/_all.json", PRESET_ITEMS::put);
+        loadModernItemModel("internal/items/_all.json", PRESET_ITEMS::put);
 
         loadInternalList("textures", "block/", VANILLA_TEXTURES::add);
         loadInternalList("textures", "item/", VANILLA_TEXTURES::add);
@@ -119,6 +124,21 @@ public abstract class AbstractPackManager implements PackManager {
         VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
         for (int i = 0; i < 256; i++) {
             VANILLA_TEXTURES.add(Key.of("minecraft", "font/unicode_page_" + String.format("%02x", i)));
+        }
+    }
+
+    private void loadModernItemModel(String path, BiConsumer<Key, ModernItemModel> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+            if (inputStream != null) {
+                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
+                    if (entry.getValue() instanceof JsonObject modelJson) {
+                        callback.accept(Key.of(entry.getKey()), ModernItemModel.fromJson(modelJson));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load " + path, e);
         }
     }
 
@@ -311,7 +331,7 @@ public abstract class AbstractPackManager implements PackManager {
         // internal
         plugin.saveResource("resources/remove_shulker_head/resourcepack/pack.mcmeta");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/shaders/core/rendertype_entity_solid.fsh");
-        plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_assets/minecraft/shaders/core/rendertype_entity_solid.fsh");
+        plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_remove_shulker_head_overlay/minecraft/shaders/core/rendertype_entity_solid.fsh");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/textures/entity/shulker/shulker_white.png");
         plugin.saveResource("resources/remove_shulker_head/pack.yml");
         // internal
@@ -602,19 +622,21 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
 
+            HashSet<Revision> revisions = new HashSet<>();
             this.generateFonts(generatedPackPath);
             this.generateItemModels(generatedPackPath, this.plugin.itemManager());
             this.generateItemModels(generatedPackPath, this.plugin.blockManager());
             this.generateBlockOverrides(generatedPackPath);
             this.generateLegacyItemOverrides(generatedPackPath);
-            this.generateModernItemOverrides(generatedPackPath);
+            this.generateModernItemOverrides(generatedPackPath, revisions::add);
             this.generateModernItemModels1_21_2(generatedPackPath);
-            this.generateModernItemModels1_21_4(generatedPackPath);
+            this.generateModernItemModels1_21_4(generatedPackPath, revisions::add);
             this.generateOverrideSounds(generatedPackPath);
             this.generateCustomSounds(generatedPackPath);
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
+            this.generatePackMetadata(generatedPackPath.resolve("pack.mcmeta"), revisions);
             if (Config.excludeShaders()) {
                 this.removeAllShaders(generatedPackPath);
             }
@@ -632,6 +654,57 @@ public abstract class AbstractPackManager implements PackManager {
             this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
             this.eventDispatcher.accept(generatedPackPath, finalPath);
         }
+    }
+
+    private void generatePackMetadata(Path path, Set<Revision> revisions) throws IOException {
+        JsonObject rawMeta;
+        boolean changed = false;
+        if (!Files.exists(path)) {
+            rawMeta = new JsonObject();
+            changed = true;
+        } else {
+            rawMeta = GsonHelper.readJsonFile(path).getAsJsonObject();
+        }
+        if (!rawMeta.has("pack")) {
+            JsonObject pack = new JsonObject();
+            rawMeta.add("pack", pack);
+            pack.addProperty("pack_format", Config.packMinVersion().packFormat());
+            JsonObject supportedFormats = new JsonObject();
+            supportedFormats.addProperty("min_inclusive", Config.packMinVersion().packFormat());
+            supportedFormats.addProperty("max_inclusive", Config.packMaxVersion().packFormat());
+            pack.add("supported_formats", supportedFormats);
+            changed = true;
+        }
+        if (revisions.isEmpty()) {
+            if (changed) {
+                GsonHelper.writeJsonFile(rawMeta, path);
+            }
+            return;
+        }
+        JsonObject overlays;
+        if (rawMeta.has("overlays")) {
+            overlays = rawMeta.get("overlays").getAsJsonObject();
+        } else {
+            overlays = new JsonObject();
+            rawMeta.add("overlays", overlays);
+        }
+        JsonArray entries;
+        if (overlays.has("entries")) {
+            entries = overlays.get("entries").getAsJsonArray();
+        } else {
+            entries = new JsonArray();
+            overlays.add("entries", entries);
+        }
+        for (Revision revision : revisions) {
+            JsonObject entry = new JsonObject();
+            JsonObject formats = new JsonObject();
+            entry.add("formats", formats);
+            formats.addProperty("min_inclusive", revision.minPackVersion());
+            formats.addProperty("max_inclusive", revision.maxPackVersion());
+            entry.addProperty("directory", Config.createOverlayFolderName(revision.versionString()));
+            entries.add(entry);
+        }
+        GsonHelper.writeJsonFile(rawMeta, path);
     }
 
     private void removeAllShaders(Path path) {
@@ -945,7 +1018,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateParticle(Path generatedPackPath) {
         if (!Config.removeTintedLeavesParticle()) return;
-        if (Config.packMaxVersion() < 21.49f) return;
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_5)) return;
         JsonObject particleJson = new JsonObject();
         JsonArray textures = new JsonArray();
         textures.add("empty");
@@ -979,7 +1052,7 @@ public abstract class AbstractPackManager implements PackManager {
     private void generateEquipments(Path generatedPackPath) {
         for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
             EquipmentData equipmentData = generator.modernData();
-            if (equipmentData != null && Config.packMaxVersion() >= 21.4f) {
+            if (equipmentData != null && Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
                         .resolve(equipmentData.assetId().namespace())
@@ -1012,7 +1085,7 @@ public abstract class AbstractPackManager implements PackManager {
                     this.plugin.logger().severe("Error writing equipment file", e);
                 }
             }
-            if (equipmentData != null && Config.packMaxVersion() >= 21.2f && Config.packMinVersion() < 21.4f) {
+            if (equipmentData != null && Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
                         .resolve(equipmentData.assetId().namespace())
@@ -1257,8 +1330,8 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateModernItemModels1_21_2(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.19f) return;
-        if (Config.packMinVersion() > 21.39f) return;
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_2)) return;
+        if (Config.packMinVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) return;
 
         // 此段代码生成1.21.2专用的item model文件，情况非常复杂！
         for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
@@ -1323,8 +1396,8 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void generateModernItemModels1_21_4(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.39f) return;
+    private void generateModernItemModels1_21_4(Path generatedPackPath, Consumer<Revision> callback) {
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, ModernItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
@@ -1347,25 +1420,43 @@ public abstract class AbstractPackManager implements PackManager {
                 this.plugin.logger().severe("Error creating " + itemPath.toAbsolutePath(), e);
                 continue;
             }
-            JsonObject model = new JsonObject();
             ModernItemModel modernItemModel = entry.getValue();
-            model.add("model", modernItemModel.itemModel().get());
-            if (!modernItemModel.handAnimationOnSwap()) {
-                model.addProperty("hand_animation_on_swap", false);
-            }
-            if (modernItemModel.oversizedInGui()) {
-                model.addProperty("oversized_in_gui", true);
-            }
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
-                GsonHelper.get().toJson(model, writer);
+                GsonHelper.get().toJson(modernItemModel.toJson(Config.packMinVersion()), writer);
             } catch (IOException e) {
                 this.plugin.logger().warn("Failed to save item model for " + key, e);
+            }
+
+            List<Revision> revisions = modernItemModel.revisions();
+            if (!revisions.isEmpty()) {
+                for (Revision revision : revisions) {
+                    if (revision.matches(Config.packMinVersion(), Config.packMaxVersion())) {
+                        Path overlayItemPath = generatedPackPath
+                                .resolve(Config.createOverlayFolderName(revision.versionString()))
+                                .resolve("assets")
+                                .resolve(key.namespace())
+                                .resolve("items")
+                                .resolve(key.value() + ".json");
+                        try {
+                            Files.createDirectories(overlayItemPath.getParent());
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error creating " + overlayItemPath.toAbsolutePath(), e);
+                            continue;
+                        }
+                        try (BufferedWriter writer = Files.newBufferedWriter(overlayItemPath)) {
+                            GsonHelper.get().toJson(modernItemModel.toJson(revision.minVersion()), writer);
+                            callback.accept(revision);
+                        } catch (IOException e) {
+                            this.plugin.logger().warn("Failed to save item model for " + key, e);
+                        }
+                    }
+                }
             }
         }
     }
 
-    private void generateModernItemOverrides(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.39f) return;
+    private void generateModernItemOverrides(Path generatedPackPath, Consumer<Revision> callback) {
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, TreeMap<Integer, ModernItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
             Key vanillaItemModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
@@ -1374,10 +1465,10 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve("items")
                     .resolve(vanillaItemModel.value() + ".json");
 
-            JsonObject originalItemModel;
+            ModernItemModel originalItemModel;
             if (Files.exists(overridedItemPath)) {
                 try {
-                    originalItemModel = GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject();
+                    originalItemModel = ModernItemModel.fromJson(GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject());
                 } catch (IOException e) {
                     this.plugin.logger().warn("Failed to load existing item model (modern)", e);
                     continue;
@@ -1390,24 +1481,13 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
 
-            boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
-            boolean oversizedInGui = Optional.ofNullable(originalItemModel.get("oversized_in_gui")).map(JsonElement::getAsBoolean).orElse(false);
-            JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
-            JsonObject newJson = new JsonObject();
-            JsonObject model = new JsonObject();
-            newJson.add("model", model);
-            model.addProperty("type", "minecraft:range_dispatch");
-            model.addProperty("property", "minecraft:custom_model_data");
-            // 将原有的json读成fallback
-            model.add("fallback", fallbackModel);
-            JsonArray entries = new JsonArray();
-            model.add("entries", entries);
+            boolean handAnimationOnSwap = originalItemModel.handAnimationOnSwap();
+            boolean oversizedInGui = originalItemModel.oversizedInGui();
+
+            Map<Float, ItemModel> entries = new HashMap<>();
             for (Map.Entry<Integer, ModernItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
-                JsonObject entryObject = new JsonObject();
                 ModernItemModel modernItemModel = modelWithDataEntry.getValue();
-                entryObject.addProperty("threshold", modelWithDataEntry.getKey());
-                entryObject.add("model", modernItemModel.itemModel().get());
-                entries.add(entryObject);
+                entries.put(modelWithDataEntry.getKey().floatValue(), modernItemModel.itemModel());
                 if (modernItemModel.handAnimationOnSwap()) {
                     handAnimationOnSwap = true;
                 }
@@ -1415,28 +1495,58 @@ public abstract class AbstractPackManager implements PackManager {
                     oversizedInGui = true;
                 }
             }
-            if (!handAnimationOnSwap) {
-                newJson.addProperty("hand_animation_on_swap", false);
-            }
-            if (oversizedInGui) {
-                newJson.addProperty("oversized_in_gui", true);
-            }
+
+            RangeDispatchItemModel rangeDispatch = new RangeDispatchItemModel(
+                new CustomModelDataRangeDispatchProperty(0),
+                1f,
+                    originalItemModel.itemModel(),
+                    entries
+            );
+
+            ModernItemModel newItemModel = new ModernItemModel(rangeDispatch, handAnimationOnSwap, oversizedInGui);
             try {
                 Files.createDirectories(overridedItemPath.getParent());
             } catch (IOException e) {
                 this.plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath(), e);
                 continue;
             }
+
             try (BufferedWriter writer = Files.newBufferedWriter(overridedItemPath)) {
-                GsonHelper.get().toJson(newJson, writer);
+                GsonHelper.get().toJson(newItemModel.toJson(Config.packMinVersion()), writer);
             } catch (IOException e) {
                 this.plugin.logger().warn("Failed to save item model for " + vanillaItemModel, e);
+            }
+
+            List<Revision> revisions = newItemModel.revisions();
+            if (!revisions.isEmpty()) {
+                for (Revision revision : revisions) {
+                    if (revision.matches(Config.packMinVersion(), Config.packMaxVersion())) {
+                        Path overlayItemPath = generatedPackPath
+                                .resolve(Config.createOverlayFolderName(revision.versionString()))
+                                .resolve("assets")
+                                .resolve(vanillaItemModel.namespace())
+                                .resolve("items")
+                                .resolve(vanillaItemModel.value() + ".json");
+                        try {
+                            Files.createDirectories(overlayItemPath.getParent());
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error creating " + overlayItemPath.toAbsolutePath(), e);
+                            continue;
+                        }
+                        try (BufferedWriter writer = Files.newBufferedWriter(overlayItemPath)) {
+                            GsonHelper.get().toJson(newItemModel.toJson(revision.minVersion()), writer);
+                            callback.accept(revision);
+                        } catch (IOException e) {
+                            this.plugin.logger().warn("Failed to save item model for " + vanillaItemModel, e);
+                        }
+                    }
+                }
             }
         }
     }
 
     private void generateLegacyItemOverrides(Path generatedPackPath) {
-        if (Config.packMinVersion() > 21.39f) return;
+        if (Config.packMinVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().legacyItemOverrides().entrySet()) {
             Key vanillaLegacyModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
