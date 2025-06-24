@@ -66,7 +66,7 @@ public interface NetWorkUser {
 
     void setSentResourcePack(boolean sentResourcePack);
 
-    void setClientInformation(ClientInformation clientInfo);
+    void setClientInformation(ClientInformation clientInformation);
 
-    ClientInformation getClientInformation();
+    ClientInformation clientInformation();
 }

@@ -887,12 +887,12 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void setClientInformation(ClientInformation clientInfo) {
-        this.clientInformation = clientInfo;
+    public void setClientInformation(ClientInformation clientInformation) {
+        this.clientInformation = clientInformation;
     }
 
     @Override
-    public ClientInformation getClientInformation() {
+    public ClientInformation clientInformation() {
         return this.clientInformation;
     }
 
