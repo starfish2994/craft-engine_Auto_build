@@ -170,12 +170,18 @@ public final class SNBTReader extends DefaultStringReader {
     private Object parsePrimitive() {
         // 先解析获取值的长度
         int tokenStart = cursor;
+        int lastWhitespace = 0; // 记录值末尾的空格数量,{a:炒鸡 大保健} 和 {a:  炒鸡 大保健  } 都应解析成 "炒鸡 大保健".
         while (cursor < length) {
             char c = peek();
             if (c == ',' || c == ']' || c == '}') break;
             cursor++;
+            if (c == ' ') {
+                lastWhitespace++; // 遇到空格先增加值, 代表值尾部空格数量.
+                continue;
+            }
+            lastWhitespace = 0; // 遇到正常字符时清空记录的尾部空格数.
         }
-        int tokenLength = cursor - tokenStart;
+        int tokenLength = cursor - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
         if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
         String fullContent = string.substring(tokenStart, tokenStart + tokenLength);
 
