@@ -78,7 +78,7 @@ public interface TemplateManager extends Manageable {
                 String defaultValueString = placeholderContent.substring(separatorIndex + 2);
                 try {
                     // TODO 改进报错检测
-                    this.defaultValue = SNBTReader.deserializeAsJava(defaultValueString);
+                    this.defaultValue = new SNBTReader(defaultValueString).deserializeAsJava();
                 } catch (LocalizedResourceConfigException e) {
                     e.appendTailArgument(this.placeholder);
                     throw e;
