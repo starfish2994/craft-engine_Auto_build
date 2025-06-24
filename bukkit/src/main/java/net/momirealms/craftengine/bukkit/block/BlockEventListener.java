@@ -311,7 +311,7 @@ public class BlockEventListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume(), state.sounds().stepSound().pitch());
+            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume().get(), state.sounds().stepSound().pitch().get());
         } else if (Config.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
             if (manager.isBlockSoundRemoved(ownerBlock)) {

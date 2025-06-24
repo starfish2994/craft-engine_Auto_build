@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class BukkitFurnitureManager extends AbstractFurnitureManager {
     public static final NamespacedKey FURNITURE_KEY = KeyUtils.toNamespacedKey(FurnitureManager.FURNITURE_KEY);
@@ -82,7 +83,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         });
         if (playSound) {
             SoundData data = furniture.settings().sounds().placeSound();
-            location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
+            location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume().get(), data.pitch().get());
         }
         return loadedFurnitureByRealEntityId(furnitureEntity.getEntityId());
     }
@@ -94,15 +95,31 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         COLLISION_ENTITY_TYPE = Config.colliderType();
         Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.javaPlugin());
         Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.javaPlugin());
-        for (World world : Bukkit.getWorlds()) {
-            List<Entity> entities = world.getEntities();
-            for (Entity entity : entities) {
-                if (entity instanceof ItemDisplay display) {
-                    handleBaseEntityLoadEarly(display);
-                } else if (entity instanceof Interaction interaction) {
-                    handleCollisionEntityLoadOnEntitiesLoad(interaction);
-                } else if (entity instanceof Boat boat) {
-                    handleCollisionEntityLoadOnEntitiesLoad(boat);
+        if (VersionHelper.isFolia()) {
+            BiConsumer<Entity, Runnable> taskExecutor = (entity, runnable) -> entity.getScheduler().run(this.plugin.javaPlugin(), (t) -> runnable.run(), () -> {});
+            for (World world : Bukkit.getWorlds()) {
+                List<Entity> entities = world.getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof ItemDisplay display) {
+                        taskExecutor.accept(entity, () -> handleBaseEntityLoadEarly(display));
+                    } else if (entity instanceof Interaction interaction) {
+                        taskExecutor.accept(entity, () -> handleCollisionEntityLoadOnEntitiesLoad(interaction));
+                    } else if (entity instanceof Boat boat) {
+                        taskExecutor.accept(entity, () -> handleCollisionEntityLoadOnEntitiesLoad(boat));
+                    }
+                }
+            }
+        } else {
+            for (World world : Bukkit.getWorlds()) {
+                List<Entity> entities = world.getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof ItemDisplay display) {
+                        handleBaseEntityLoadEarly(display);
+                    } else if (entity instanceof Interaction interaction) {
+                        handleCollisionEntityLoadOnEntitiesLoad(interaction);
+                    } else if (entity instanceof Boat boat) {
+                        handleCollisionEntityLoadOnEntitiesLoad(boat);
+                    }
                 }
             }
         }

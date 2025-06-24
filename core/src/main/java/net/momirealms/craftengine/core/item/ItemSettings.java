@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.entity.Billboard;
 import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
+import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
@@ -260,15 +262,15 @@ public class ItemSettings {
 
         static {
             registerFactory("repairable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "repairable");
                 return settings -> settings.canRepair(bool);
             }));
             registerFactory("enchantable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "enchantable");
                 return settings -> settings.canEnchant(bool);
             }));
             registerFactory("renameable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "renameable");
                 return settings -> settings.renameable(bool);
             }));
             registerFactory("anvil-repair-item", (value -> {
@@ -316,30 +318,31 @@ public class ItemSettings {
                 return settings -> settings.equipment(equipment);
             }));
             registerFactory("can-place", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "can-place");
                 return settings -> settings.canPlaceRelatedVanillaBlock(bool);
             }));
             registerFactory("projectile", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
                 ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
+                Billboard billboard = Billboard.valueOf(args.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                 Vector3f translation = MiscUtils.getAsVector3f(args.getOrDefault("translation", "0"), "translation");
                 Vector3f scale = MiscUtils.getAsVector3f(args.getOrDefault("scale", "1"), "scale");
                 Quaternionf rotation = MiscUtils.getAsQuaternionf(ResourceConfigUtils.get(args, "rotation-left", "rotation"), "rotation-left");
-                String type = args.getOrDefault("type", "none").toString();
+                ProjectileType type = Optional.ofNullable(args.get("type")).map(String::valueOf).map(it -> ProjectileType.valueOf(it.toUpperCase(Locale.ENGLISH))).orElse(null);
                 double range = ResourceConfigUtils.getAsDouble(args.getOrDefault("range", 1), "range");
-                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, scale, translation, rotation, range, type));
+                return settings -> settings.projectileMeta(new ProjectileMeta(customTridentItemId, displayType, billboard, scale, translation, rotation, range, type));
             }));
             registerFactory("helmet", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), 1f, 1f)));
+                return settings -> settings.helmet(new Helmet(SoundData.create(args.getOrDefault("equip-sound", "minecraft:intentionally_empty"), SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)));
             }));
             registerFactory("compost-probability", (value -> {
                 float chance = ResourceConfigUtils.getAsFloat(value, "compost-probability");
                 return settings -> settings.compostProbability(chance);
             }));
             registerFactory("dyeable", (value -> {
-                boolean bool = (boolean) value;
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "dyeable");
                 return settings -> settings.dyeable(bool);
             }));
             registerFactory("food", (value -> {

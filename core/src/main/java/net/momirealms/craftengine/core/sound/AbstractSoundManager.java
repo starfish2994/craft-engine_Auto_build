@@ -104,7 +104,7 @@ public abstract class AbstractSoundManager implements SoundManager {
             if (AbstractSoundManager.this.byId.containsKey(id)) {
                 throw new LocalizedResourceConfigException("warning.config.sound.duplicate");
             }
-            boolean replace = (boolean) section.getOrDefault("replace", false);
+            boolean replace = ResourceConfigUtils.getAsBoolean(section.getOrDefault("replace", false), "replace");
             String subtitle = (String) section.get("subtitle");
             List<?> soundList = (List<?>) ResourceConfigUtils.requireNonNullOrThrow(section.get("sounds"), "warning.config.sound.missing_sounds");
             List<Sound> sounds = new ArrayList<>();

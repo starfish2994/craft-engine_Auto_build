@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.FlintAndSteelItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
 import net.momirealms.craftengine.bukkit.item.listener.ArmorEventListener;
@@ -38,9 +39,8 @@ import java.util.Set;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
-//        registerVanillaItemExtraBehavior(WaterBucketItemBehavior.INSTANCE, ItemKeys.WATER_BUCKETS);
-//        registerVanillaItemExtraBehavior(BucketItemBehavior.INSTANCE, ItemKeys.BUCKET);
         registerVanillaItemExtraBehavior(FlintAndSteelItemBehavior.INSTANCE, ItemKeys.FLINT_AND_STEEL);
+        registerVanillaItemExtraBehavior(AxeItemBehavior.INSTANCE, ItemKeys.AXES);
     }
 
     private static BukkitItemManager instance;

@@ -112,7 +112,7 @@ public abstract class AbstractFurnitureManager implements FurnitureManager {
                 for (Map<String, Object> element : elementConfigs) {
                     FurnitureElement furnitureElement = furnitureElementBuilder()
                             .item(Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(element.get("item"), "warning.config.furniture.element.missing_item")))
-                            .applyDyedColor((boolean) element.getOrDefault("apply-dyed-color", true))
+                            .applyDyedColor(ResourceConfigUtils.getAsBoolean(element.getOrDefault("apply-dyed-color", true), "apply-dyed-color"))
                             .billboard(ResourceConfigUtils.getOrDefault(element.get("billboard"), o -> Billboard.valueOf(o.toString().toUpperCase(Locale.ENGLISH)), Billboard.FIXED))
                             .transform(ResourceConfigUtils.getOrDefault(element.get("transform"), o -> ItemDisplayContext.valueOf(o.toString().toUpperCase(Locale.ENGLISH)), ItemDisplayContext.NONE))
                             .scale(MiscUtils.getAsVector3f(element.getOrDefault("scale", "1"), "scale"))

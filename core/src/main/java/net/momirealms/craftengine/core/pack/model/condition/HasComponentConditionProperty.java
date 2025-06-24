@@ -42,7 +42,7 @@ public class HasComponentConditionProperty implements ConditionProperty {
 
         @Override
         public ConditionProperty create(Map<String, Object> arguments) {
-            boolean ignoreDefault = (boolean) arguments.getOrDefault("ignore-default", false);
+            boolean ignoreDefault = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("ignore-default", false), "ignore-default");
             String componentObj = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("component"), "warning.config.item.model.condition.has_component.missing_component");
             return new HasComponentConditionProperty(componentObj, ignoreDefault);
         }

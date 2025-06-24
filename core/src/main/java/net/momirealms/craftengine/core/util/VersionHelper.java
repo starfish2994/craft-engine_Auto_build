@@ -42,22 +42,22 @@ public class VersionHelper {
 
             // 2001 = 1.20.1
             // 2104 = 1.21.4
-            version = major * 100 + minor;
+            version = parseVersionToInteger(versionString);
 
-            v1_20 = version >= 2000;
-            v1_20_1 = version >= 2001;
-            v1_20_2 = version >= 2002;
-            v1_20_3 = version >= 2003;
-            v1_20_4 = version >= 2004;
-            v1_20_5 = version >= 2005;
-            v1_20_6 = version >= 2006;
-            v1_21 = version >= 2100;
-            v1_21_1 = version >= 2101;
-            v1_21_2 = version >= 2102;
-            v1_21_3 = version >= 2103;
-            v1_21_4 = version >= 2104;
-            v1_21_5 = version >= 2105;
-            v1_21_6 = version >= 2106;
+            v1_20 = version >= 12000;
+            v1_20_1 = version >= 12001;
+            v1_20_2 = version >= 12002;
+            v1_20_3 = version >= 12003;
+            v1_20_4 = version >= 12004;
+            v1_20_5 = version >= 12005;
+            v1_20_6 = version >= 12006;
+            v1_21 = version >= 12100;
+            v1_21_1 = version >= 12101;
+            v1_21_2 = version >= 12102;
+            v1_21_3 = version >= 12103;
+            v1_21_4 = version >= 12104;
+            v1_21_5 = version >= 12105;
+            v1_21_6 = version >= 12106;
 
             majorVersion = major;
             minorVersion = minor;
@@ -68,6 +68,34 @@ public class VersionHelper {
         } catch (Exception e) {
             throw new RuntimeException("Failed to init VersionHelper", e);
         }
+    }
+
+    public static int parseVersionToInteger(String versionString) {
+        int major = 0;
+        int minor = 0;
+        int currentNumber = 0;
+        int part = 0;
+        for (int i = 0; i < versionString.length(); i++) {
+            char c = versionString.charAt(i);
+            if (c >= '0' && c <= '9') {
+                currentNumber = currentNumber * 10 + (c - '0');
+            } else if (c == '.') {
+                if (part == 1) {
+                    major = currentNumber;
+                }
+                part++;
+                currentNumber = 0;
+                if (part > 2) {
+                    break;
+                }
+            }
+        }
+        if (part == 1) {
+            major = currentNumber;
+        } else if (part == 2) {
+            minor = currentNumber;
+        }
+        return 10000 + major * 100 + minor;
     }
 
     public static int majorVersion() {

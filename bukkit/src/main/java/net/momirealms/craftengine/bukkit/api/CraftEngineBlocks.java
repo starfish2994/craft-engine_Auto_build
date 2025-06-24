@@ -118,7 +118,7 @@ public final class CraftEngineBlocks {
             FastNMS.INSTANCE.method$BlockStateBase$onPlace(blockState, worldServer, blockPos, oldBlockState, false);
             if (playSound) {
                 SoundData data = block.sounds().placeSound();
-                location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume(), data.pitch());
+                location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume().get(), data.pitch().get());
             }
         }
         return success;

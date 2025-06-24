@@ -23,6 +23,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.HorizontalDirection;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -51,6 +52,8 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     private final Property<Boolean> openProperty;
     private final boolean canOpenWithHand;
     private final boolean canOpenByWindCharge;
+    private final SoundData openSound;
+    private final SoundData closeSound;
 
     public DoorBlockBehavior(CustomBlock block,
                              Property<DoubleBlockHalf> halfProperty,
@@ -59,7 +62,9 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
                              Property<Boolean> poweredProperty,
                              Property<Boolean> openProperty,
                              boolean canOpenWithHand,
-                             boolean canOpenByWindCharge) {
+                             boolean canOpenByWindCharge,
+                             SoundData openSound,
+                             SoundData closeSound) {
         super(block, 0);
         this.halfProperty = halfProperty;
         this.facingProperty = facingProperty;
@@ -68,6 +73,8 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         this.openProperty = openProperty;
         this.canOpenWithHand = canOpenWithHand;
         this.canOpenByWindCharge = canOpenByWindCharge;
+        this.openSound = openSound;
+        this.closeSound = closeSound;
     }
 
     public boolean isOpen(ImmutableBlockState state) {
@@ -90,7 +97,7 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(stateId);
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return blockState;
         DoubleBlockHalf half = immutableBlockState.get(this.halfProperty);
-        Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[0];
+        Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[1];
         if (DirectionUtils.isYAxis(direction) && half == DoubleBlockHalf.LOWER == (direction == CoreReflections.instance$Direction$UP)) {
             ImmutableBlockState neighborState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(VersionHelper.isOrAbove1_21_2() ? args[6] : args[2]));
             if (neighborState == null || neighborState.isEmpty()) {
@@ -138,7 +145,7 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     @Override
     public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
         BlockPos pos = context.getClickedPos();
-        context.getLevel().setBlockAt(pos.x(), pos.y() + 1, pos.z(), state.with(this.halfProperty, DoubleBlockHalf.UPPER).customBlockState(), 3);
+        context.getLevel().setBlockAt(pos.x(), pos.y() + 1, pos.z(), state.with(this.halfProperty, DoubleBlockHalf.UPPER).customBlockState(), UpdateOption.UPDATE_ALL.flags());
     }
 
     @Override
@@ -213,15 +220,22 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
 
     public void setOpen(@Nullable Player player, Object serverLevel, ImmutableBlockState state, BlockPos pos, boolean isOpen) {
         if (isOpen(state) != isOpen) {
+            org.bukkit.World world = FastNMS.INSTANCE.method$Level$getCraftWorld(serverLevel);
             FastNMS.INSTANCE.method$LevelWriter$setBlock(serverLevel, LocationUtils.toBlockPos(pos), state.with(this.openProperty, isOpen).customBlockState().handle(), UpdateOption.builder().updateImmediate().updateClients().build().flags());
-            FastNMS.INSTANCE.method$Level$getCraftWorld(serverLevel).sendGameEvent(player == null ? null : (org.bukkit.entity.Player) player.platformPlayer(), isOpen ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, new Vector(pos.x(), pos.y(), pos.z()));
-            // todo 播放声音
+            world.sendGameEvent(player == null ? null : (org.bukkit.entity.Player) player.platformPlayer(), isOpen ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, new Vector(pos.x(), pos.y(), pos.z()));
+            SoundData soundData = isOpen ? this.openSound : this.closeSound;
+            if (soundData != null) {
+                new BukkitWorld(world).playBlockSound(
+                        new Vec3d(pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5),
+                        soundData
+                );
+            }
         }
     }
 
     @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
-        if (!this.canOpenWithHand || context.getPlayer().isSecondaryUseActive()) {
+        if (!this.canOpenWithHand) {
             return InteractionResult.PASS;
         }
         setOpen(context.getPlayer(), context.getLevel().serverWorld(), state, context.getClickedPos(), !state.get(this.openProperty));
@@ -258,8 +272,15 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
             Bukkit.getPluginManager().callEvent(event);
             boolean flag = event.getNewCurrent() > 0;
             if (flag != immutableBlockState.get(this.openProperty)) {
-                FastNMS.INSTANCE.method$Level$getCraftWorld(level).sendGameEvent(null, flag ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, new Vector(bukkitBlock.getX(), bukkitBlock.getY(), bukkitBlock.getZ()));
-                // todo 播放声音
+                org.bukkit.World world = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
+                world.sendGameEvent(null, flag ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, new Vector(bukkitBlock.getX(), bukkitBlock.getY(), bukkitBlock.getZ()));
+                SoundData soundData = flag ? this.openSound : this.closeSound;
+                if (soundData != null) {
+                    new BukkitWorld(world).playBlockSound(
+                            new Vec3d(FastNMS.INSTANCE.field$Vec3i$x(blockPos) + 0.5, FastNMS.INSTANCE.field$Vec3i$y(blockPos) + 0.5, FastNMS.INSTANCE.field$Vec3i$z(blockPos) + 0.5),
+                            soundData
+                    );
+                }
             }
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, immutableBlockState.with(this.poweredProperty, flag).with(this.openProperty, flag).customBlockState().handle(), UpdateOption.Flags.UPDATE_CLIENTS);
         }
@@ -267,18 +288,23 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
 
     @Override
     public boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws Exception {
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) return false;
-        if (immutableBlockState.get(this.halfProperty) == DoubleBlockHalf.UPPER) return true;
+        ImmutableBlockState customBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
+        if (customBlockState == null || customBlockState.isEmpty()) return false;
         int x = FastNMS.INSTANCE.field$Vec3i$x(blockPos);
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos) - 1;
         int z = FastNMS.INSTANCE.field$Vec3i$z(blockPos);
-        Object targetPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
-        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, targetPos);
-        return (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
-                blockState, world, targetPos, CoreReflections.instance$Direction$UP,
-                CoreReflections.instance$SupportType$FULL
-        );
+        Object belowPos = FastNMS.INSTANCE.constructor$BlockPos(x, y, z);
+        Object belowState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(world, belowPos);
+        if (customBlockState.get(this.halfProperty) == DoubleBlockHalf.UPPER) {
+            ImmutableBlockState belowCustomState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(belowState));
+            if (belowCustomState == null || belowCustomState.isEmpty()) return false;
+            return belowCustomState.owner().value() == super.customBlock;
+        } else {
+            return (boolean) CoreReflections.method$BlockStateBase$isFaceSturdy.invoke(
+                    belowState, world, belowPos, CoreReflections.instance$Direction$UP,
+                    CoreReflections.instance$SupportType$FULL
+            );
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -290,9 +316,16 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
             Property<DoorHinge> hinge = (Property<DoorHinge>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("hinge"), "warning.config.block.behavior.door.missing_hinge");
             Property<Boolean> open = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("open"), "warning.config.block.behavior.door.missing_open");
             Property<Boolean> powered = (Property<Boolean>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("powered"), "warning.config.block.behavior.door.missing_powered");
-            boolean canOpenWithHand = (boolean) arguments.getOrDefault("can-open-with-hand", true);
-            boolean canOpenByWindCharge = (boolean) arguments.getOrDefault("can-open-by-wind-charge", true);
-            return new DoorBlockBehavior(block, half, facing, hinge, powered, open, canOpenWithHand, canOpenByWindCharge);
+            boolean canOpenWithHand = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("can-open-with-hand", true), "can-open-with-hand");
+            boolean canOpenByWindCharge = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("can-open-by-wind-charge", true), "can-open-by-wind-charge");
+            Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
+            SoundData openSound = null;
+            SoundData closeSound = null;
+            if (sounds != null) {
+                openSound = Optional.ofNullable(sounds.get("open")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.ranged(0.9f, 1f))).orElse(null);
+                closeSound = Optional.ofNullable(sounds.get("close")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.ranged(0.9f, 1f))).orElse(null);
+            }
+            return new DoorBlockBehavior(block, half, facing, hinge, powered, open, canOpenWithHand, canOpenByWindCharge, openSound, closeSound);
         }
     }
 }

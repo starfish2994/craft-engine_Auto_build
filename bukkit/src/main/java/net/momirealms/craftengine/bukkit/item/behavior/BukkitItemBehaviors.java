@@ -10,6 +10,7 @@ public class BukkitItemBehaviors extends ItemBehaviors {
     public static final Key FURNITURE_ITEM = Key.from("craftengine:furniture_item");
     public static final Key FLINT_AND_STEEL_ITEM = Key.from("craftengine:flint_and_steel_item");
     public static final Key COMPOSTABLE_ITEM = Key.from("craftengine:compostable_item");
+    public static final Key AXE_ITEM = Key.from("craftengine:axe_item");
 
     public static void init() {
         register(EMPTY, EmptyItemBehavior.FACTORY);
@@ -18,5 +19,6 @@ public class BukkitItemBehaviors extends ItemBehaviors {
         register(FURNITURE_ITEM, FurnitureItemBehavior.FACTORY);
         register(FLINT_AND_STEEL_ITEM, FlintAndSteelItemBehavior.FACTORY);
         register(COMPOSTABLE_ITEM, CompostableItemBehavior.FACTORY);
+        register(AXE_ITEM, AxeItemBehavior.FACTORY);
     }
 }

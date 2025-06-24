@@ -1,8 +1,14 @@
 package net.momirealms.craftengine.core.block;
 
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.item.CustomItem;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.BlockBoundItemBehavior;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -91,26 +97,78 @@ public abstract class BlockBehavior {
     public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) {
     }
 
+    // LevelAccessor level, BlockPos pos, BlockState state, FluidState fluidState
+    public boolean placeLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
+
+    // 1.20.1 BlockGetter world, BlockPos pos, BlockState state, Fluid fluid
+    // 1.20.2+ LivingEntity owner, BlockGetter level, BlockPos pos, BlockState state, Fluid fluid
+    public boolean canPlaceLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
+
+    // 1.20.1 LivingEntity owner, LevelAccessor level, BlockPos pos, BlockState state
+    // 1.20.2+ LevelAccessor world, BlockPos pos, BlockState state
+    public Object pickupBlock(Object thisObj, Object[] args, Callable<Object> superMethod) throws Exception {
+        return superMethod.call();
+    }
+
+    // 1.20-1.21.4 BlockState state, Level level, BlockPos pos, Entity entity
+    // 1.21.5+ BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier
+    public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    }
+
+    // 1.21.5+ BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    }
+
+    // BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side
+    public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return 0;
+    }
+
+    // BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side
+    public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return 0;
+    }
+
+    // BlockState blockState
+    public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        return false;
+    }
+
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         return state;
+    }
+
+    public boolean canBeReplaced(BlockPlaceContext context, ImmutableBlockState state) {
+        Key clickedBlockId = state.owner().value().id();
+        Item<?> item = context.getItem();
+        Optional<CustomItem<Object>> customItem = CraftEngine.instance().itemManager().getCustomItem(item.id());
+        if (customItem.isEmpty()) return state.settings().replaceable();
+        CustomItem<Object> custom = customItem.get();
+        for (ItemBehavior behavior : custom.behaviors()) {
+            if (behavior instanceof BlockBoundItemBehavior blockItemBehavior) {
+                Key blockId = blockItemBehavior.block();
+                if (blockId.equals(clickedBlockId)) {
+                    return false;
+                }
+            }
+        }
+        return state.settings().replaceable();
     }
 
     public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
     }
 
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        return InteractionResult.TRY_EMPTY_HAND;
+    }
+
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
         return InteractionResult.PASS;
     }
 
-    public Object pickupBlock(Object thisObj, Object[] args, Callable<Object> superMethod) throws Exception {
-        return superMethod.call();
-    }
-
-    public boolean placeLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
-        return false;
-    }
-
-    public boolean canPlaceLiquid(Object thisObj, Object[] args, Callable<Object> superMethod) {
-        return false;
-    }
+    public abstract CustomBlock block();
 }

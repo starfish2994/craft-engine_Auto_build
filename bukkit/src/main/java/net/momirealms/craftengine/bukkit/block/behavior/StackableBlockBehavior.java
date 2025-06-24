@@ -13,14 +13,15 @@ import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
-import org.bukkit.SoundCategory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -56,28 +57,23 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         }
         BlockPos pos = context.getClickedPos();
         World world = context.getLevel();
-        if (state.get(this.amountProperty) < this.amountProperty.max) {
-            updateStackableBlock(state, pos, world, item, player, context.getHand());
+        if (state.get(this.amountProperty) >= this.amountProperty.max) {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
-        BlockPos actualPos = pos.relative(context.getClickedFace());
-        ImmutableBlockState actualState = world.getBlockAt(actualPos).customBlockState();
-        boolean isValid = actualState != null && !actualState.isEmpty() && actualState.contains(this.amountProperty);
-        if (isValid && actualState.get(this.amountProperty) < this.amountProperty.max) {
-            updateStackableBlock(actualState, actualPos, world, item, player, context.getHand());
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        }
-        return InteractionResult.PASS;
+        updateStackableBlock(state, pos, world, item, player, context.getHand());
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     private void updateStackableBlock(ImmutableBlockState state, BlockPos pos, World world, Item<ItemStack> item, Player player, InteractionHand hand) {
         ImmutableBlockState nextStage = state.cycle(this.amountProperty);
         Location location = new Location((org.bukkit.World) world.platformWorld(), pos.x(), pos.y(), pos.z());
         FastNMS.INSTANCE.method$LevelWriter$setBlock(world.serverWorld(), LocationUtils.toBlockPos(pos), nextStage.customBlockState().handle(), UpdateOption.UPDATE_NONE.flags());
-        if (stackSound != null) {
-            location.getWorld().playSound(location, stackSound.id().toString(), SoundCategory.BLOCKS, stackSound.volume(), stackSound.pitch());
+        if (this.stackSound != null) {
+            world.playBlockSound(new Vec3d(location.getX(), location.getY(), location.getZ()), this.stackSound);
         }
-        FastNMS.INSTANCE.method$ItemStack$consume(item.getLiteralObject(), 1, player.serverPlayer());
+        if (!player.isCreativeMode()) {
+            item.count(item.count() - 1);
+        }
         player.swingHand(hand);
     }
 
@@ -86,11 +82,14 @@ public class StackableBlockBehavior extends BukkitBlockBehavior {
         @Override
         @SuppressWarnings("unchecked")
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            IntegerProperty amount = (IntegerProperty) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("amount"), "warning.config.block.behavior.stackable.missing_amount");
+            String propertyName = String.valueOf(arguments.getOrDefault("property", "amount"));
+            IntegerProperty amount = (IntegerProperty) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty(propertyName), () -> {
+                throw new LocalizedResourceConfigException("warning.config.block.behavior.stackable.missing_property", propertyName);
+            });
             Map<String, Object> sounds = (Map<String, Object>) arguments.get("sounds");
             SoundData stackSound = null;
             if (sounds != null) {
-                stackSound = Optional.ofNullable(sounds.get("stack")).map(obj -> SoundData.create(obj, 1, 1)).orElse(null);
+                stackSound = Optional.ofNullable(sounds.get("stack")).map(obj -> SoundData.create(obj, SoundData.SoundValue.FIXED_1, SoundData.SoundValue.FIXED_1)).orElse(null);
             }
             Object itemsObj = ResourceConfigUtils.requireNonNullOrThrow(arguments.get("items"), "warning.config.block.behavior.stackable.missing_items");
             List<Key> items = MiscUtils.getAsStringList(itemsObj).stream().map(Key::of).toList();

@@ -80,7 +80,7 @@ public class OneDriveHost implements ResourcePackHost {
             CraftEngine.instance().logger().info("[OneDrive] Loaded cached resource pack info");
         } catch (Exception e) {
             CraftEngine.instance().logger().warn(
-                    "[OneDrive] Failed to load cache from disk: " + e.getMessage());
+                    "[OneDrive] Failed to load cache" + cachePath, e);
         }
     }
 
@@ -102,7 +102,7 @@ public class OneDriveHost implements ResourcePackHost {
             );
         } catch (IOException e) {
             CraftEngine.instance().logger().warn(
-                    "[OneDrive] Failed to persist cache to disk: " + e.getMessage());
+                    "[OneDrive] Failed to persist cache", e);
         }
     }
 
@@ -230,7 +230,7 @@ public class OneDriveHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
+            boolean useEnv = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("use-environment-variables", false), "use-environment-variables");
             String clientId = useEnv ? System.getenv("CE_ONEDRIVE_CLIENT_ID") : Optional.ofNullable(arguments.get("client-id")).map(String::valueOf).orElse(null);
             if (clientId == null || clientId.isEmpty()) {
                 throw new LocalizedException("warning.config.host.onedrive.missing_client_id");

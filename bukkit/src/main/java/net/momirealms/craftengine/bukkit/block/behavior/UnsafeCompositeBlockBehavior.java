@@ -35,11 +35,22 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             InteractionResult result = behavior.useOnBlock(context, state);
-            if (result != InteractionResult.PASS) {
+            if (result != InteractionResult.PASS && result != InteractionResult.TRY_EMPTY_HAND) {
                 return result;
             }
         }
         return super.useOnBlock(context, state);
+    }
+
+    @Override
+    public InteractionResult useWithoutItem(UseOnContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            InteractionResult result = behavior.useWithoutItem(context, state);
+            if (result != InteractionResult.PASS) {
+                return result;
+            }
+        }
+        return super.useWithoutItem(context, state);
     }
 
     @Override
@@ -181,5 +192,68 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             behavior.onExplosionHit(thisBlock, args, superMethod);
         }
+    }
+
+    @Override
+    public void setPlacedBy(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.setPlacedBy(context, state);
+        }
+    }
+
+    @Override
+    public boolean canBeReplaced(BlockPlaceContext context, ImmutableBlockState state) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (!behavior.canBeReplaced(context, state)) {
+                return false;
+            }
+        }
+        return super.canBeReplaced(context, state);
+    }
+
+    @Override
+    public void entityInside(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.entityInside(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.affectNeighborsAfterRemoval(thisBlock, args, superMethod);
+        }
+    }
+
+    @Override
+    public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getDirectSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int signal = behavior.getDirectSignal(thisBlock, args, superMethod);
+            if (signal != 0) {
+                return signal;
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean isSignalSource(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (behavior.isSignalSource(thisBlock, args, superMethod)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -57,6 +57,8 @@ resource-pack:
   # Validate if there are any errors in the resource pack, such as missing textures or models
   validate:
     enable: true
+  # Define the name of the overlay folders
+  overlay-format: "overlay_{version}"
   supported-version:
     min: "1.20"
     max: LATEST
@@ -68,6 +70,8 @@ resource-pack:
   merge-external-zip-files:
     - CustomNameplates/resourcepack.zip
   exclude-file-extensions: ["md", "psd", "bbmodel", "db", "ini"]
+  # Exclude the shaders when generating the resource pack
+  exclude-core-shaders: false
   delivery:
     # Send the resource pack on joining the server
     send-on-join: true

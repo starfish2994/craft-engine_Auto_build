@@ -33,11 +33,16 @@ i18n:
     item.palm_leaves: Palm Leaves
     item.palm_trapdoor: Palm Trapdoor
     item.palm_door: Palm Door
+    item.palm_fence_gate: Palm Fence Gate
+    item.palm_slab: Palm Slab
+    item.palm_stairs: Palm Stairs
+    item.palm_pressure_plate: Palm Pressure Plate
     item.netherite_anvil: Netherite Anvil
     item.gunpowder_block: GunPowder Block
     item.solid_gunpowder_block: Solid GunPowder Block
     item.copper_coil: Copper Coil
     item.flame_elytra: Flame Elytra
+    item.pebble: Pebble
     item.cap: Cap
     category.default.name: Default Assets
     category.default.lore: Contains the default configuration of CraftEngine
@@ -82,11 +87,16 @@ i18n:
     item.palm_leaves: 棕榈树叶
     item.palm_trapdoor: 棕榈木活板门
     item.palm_door: 棕榈木门
+    item.palm_fence_gate: 棕榈木栅栏门
+    item.palm_slab: 棕榈木台阶
+    item.palm_stairs: 棕榈木楼梯
+    item.palm_pressure_plate: 棕榈木压力板
     item.netherite_anvil: 下界合金砧
     item.gunpowder_block: 火药粉末
     item.solid_gunpowder_block: 凝固火药块
     item.copper_coil: 铜线圈
     item.flame_elytra: 烈焰鞘翅
+    item.pebble: 石子
     item.cap: 鸭舌帽
     category.default.name: 默认资产
     category.default.lore: 包含了CraftEngine的默认配置

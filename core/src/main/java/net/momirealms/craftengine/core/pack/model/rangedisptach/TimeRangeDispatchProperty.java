@@ -35,7 +35,7 @@ public class TimeRangeDispatchProperty implements RangeDispatchProperty {
         @Override
         public RangeDispatchProperty create(Map<String, Object> arguments) {
             String sourceObj = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("source"), "warning.config.item.model.range_dispatch.time.missing_source");
-            boolean wobble = (boolean) arguments.getOrDefault("wobble", true);
+            boolean wobble = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("wobble", true), "wobble");
             return new TimeRangeDispatchProperty(sourceObj, wobble);
         }
     }
