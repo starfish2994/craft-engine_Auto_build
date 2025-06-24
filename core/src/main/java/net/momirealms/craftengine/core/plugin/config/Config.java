@@ -21,6 +21,7 @@ import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MinecraftVersion;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.world.InjectionTarget;
 import net.momirealms.craftengine.core.world.chunk.storage.CompressionMethod;
@@ -80,8 +81,8 @@ public class Config {
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_sounds;
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_equipments;
 
-    protected float resource_pack$supported_version$min;
-    protected float resource_pack$supported_version$max;
+    protected MinecraftVersion resource_pack$supported_version$min;
+    protected MinecraftVersion resource_pack$supported_version$max;
     protected String resource_pack$overlay_format;
 
     protected boolean resource_pack$delivery$kick_if_declined;
@@ -368,15 +369,11 @@ public class Config {
         firstTime = false;
     }
 
-    private static float getVersion(String version) {
+    private static MinecraftVersion getVersion(String version) {
         if (version.equalsIgnoreCase("LATEST")) {
-            version = PluginProperties.getValue("latest-version");
+            return new MinecraftVersion(PluginProperties.getValue("latest-version"));
         }
-        String[] split = version.split("\\.", 2);
-        if (split.length != 2) {
-            throw new IllegalArgumentException("Invalid version: " + version);
-        }
-        return Float.parseFloat(split[1]);
+        return MinecraftVersion.parse(version);
     }
 
     public static String configVersion() {
@@ -427,11 +424,11 @@ public class Config {
         return instance.light_system$enable;
     }
 
-    public static float packMinVersion() {
+    public static MinecraftVersion packMinVersion() {
         return instance.resource_pack$supported_version$min;
     }
 
-    public static float packMaxVersion() {
+    public static MinecraftVersion packMaxVersion() {
         return instance.resource_pack$supported_version$max;
     }
 
@@ -745,6 +742,10 @@ public class Config {
 
     public static boolean excludeShaders() {
         return instance.resource_pack$exclude_core_shaders;
+    }
+
+    public static String createOverlayFolderName(String version) {
+        return instance.resource_pack$overlay_format.replace("{version}", version);
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item.modifier;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;

@@ -58,7 +58,7 @@ resource-pack:
   validate:
     enable: true
   # Define the name of the overlay folders
-  overlay-format: "overlay_{version}"
+  overlay-format: "ce_overlay_{version}"
   supported-version:
     min: "1.20"
     max: LATEST
