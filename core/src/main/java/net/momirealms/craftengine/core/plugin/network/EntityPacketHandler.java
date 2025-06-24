@@ -20,7 +20,7 @@ public interface EntityPacketHandler {
     default void handleMove(NetWorkUser user, NMSPacketEvent event, Object packet) {
     }
 
-    default void handleSetEquipment(NetWorkUser user, NMSPacketEvent event, Object packet) {
+    default void handleSetEquipment(NetWorkUser user, ByteBufPacketEvent event, Object slots) {
     }
 
     default void handleContainerSetSlot(NetWorkUser user, NMSPacketEvent event, Object packet) {

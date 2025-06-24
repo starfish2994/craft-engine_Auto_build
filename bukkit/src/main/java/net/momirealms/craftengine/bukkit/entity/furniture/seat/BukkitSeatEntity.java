@@ -14,6 +14,7 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
 	private final BukkitFurniture furniture;
 	private final Vector3f vector3f;
 	private final int playerID;
+	private boolean destroyed = false;
 
 	public BukkitSeatEntity(Entity entity, Furniture furniture, Vector3f vector3f, int playerID) {
 		super(entity);
@@ -27,8 +28,15 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
 
 	@Override
 	public void dismount(Player player) {
+		if (player == null || destroyed) return;
 		player.setSeat(null);
+		onDismount(player);
 		destroy();
+	}
+
+	@Override
+	public void onDismount(Player player) {
+
 	}
 
 	@Override
@@ -36,19 +44,29 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
 
 	@Override
 	public void destroy() {
+		if (destroyed) return;
+		destroyed = true;
+
 		org.bukkit.entity.Entity entity = this.literalObject();
 		if (entity == null) return;
 
 		for (org.bukkit.entity.Entity passenger : entity.getPassengers()) {
 			entity.removePassenger(passenger);
 			if (passenger instanceof org.bukkit.entity.Player p && p.getEntityId() == this.playerID) {
-				dismount(BukkitAdaptors.adapt(p));
-				return;
+				Player cePlayer = BukkitAdaptors.adapt(p);
+				if (cePlayer != null && cePlayer.entityID() == playerID()) {
+					cePlayer.setSeat(null);
+					onDismount(cePlayer);
+				}
 			}
 		}
+		entity.remove();
 		furniture.removeSeatEntity(playerID());
 		furniture.removeOccupiedSeat(vector3f());
-		entity.remove();
+	}
+
+	public boolean destroyed() {
+		return destroyed;
 	}
 
 	@Override

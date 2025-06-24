@@ -1,11 +1,7 @@
 package net.momirealms.craftengine.bukkit.entity.furniture.seat;
 
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
-import net.momirealms.craftengine.bukkit.util.EntityUtils;
-import net.momirealms.craftengine.core.entity.furniture.AbstractSeat;
-import net.momirealms.craftengine.core.entity.furniture.Furniture;
-import net.momirealms.craftengine.core.entity.furniture.Seat;
-import net.momirealms.craftengine.core.entity.furniture.SeatFactory;
+import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.util.Key;
@@ -32,8 +28,10 @@ public class SitSeat extends AbstractSeat {
 
 	public SeatEntity spawn(org.bukkit.entity.Player player, Furniture furniture) {
 		Location location = ((BukkitFurniture)furniture).calculateSeatLocation(this);
-		org.bukkit.entity.Entity seatEntity = EntityUtils.spawnSeatEntity(furniture, this, player.getWorld(), location, this.limitPlayerRotation, null);
-		seatEntity.addPassenger(player);
+		org.bukkit.entity.Entity seatEntity = BukkitFurniture.spawnSeatEntity(furniture, player.getWorld(), location, this.limitPlayerRotation, null);
+		if (!seatEntity.addPassenger(player)) {
+			return null;
+		};
 		return new SitEntity(seatEntity, furniture, offset(), player.getEntityId());
 	}
 
@@ -45,7 +43,7 @@ public class SitSeat extends AbstractSeat {
 
 		@Override
 		public Key type() {
-			return Key.of("craftengine", "sit") ;
+			return SeatType.SIT;
 		}
 	}
 

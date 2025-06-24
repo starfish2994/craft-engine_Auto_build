@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 
 import java.util.Objects;
 
-public abstract class AbstractSeat implements Seat{
+public abstract class AbstractSeat implements Seat {
 	protected final Vector3f offset;
 	protected final float yaw;
 

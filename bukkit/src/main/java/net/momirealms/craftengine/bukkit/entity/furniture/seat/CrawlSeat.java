@@ -12,12 +12,8 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MAttributeH
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
-import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.PlayerUtils;
-import net.momirealms.craftengine.core.entity.furniture.AbstractSeat;
-import net.momirealms.craftengine.core.entity.furniture.Furniture;
-import net.momirealms.craftengine.core.entity.furniture.Seat;
-import net.momirealms.craftengine.core.entity.furniture.SeatFactory;
+import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -61,15 +57,17 @@ public class CrawlSeat extends AbstractSeat {
 	public SeatEntity spawn(org.bukkit.entity.Player player, Furniture furniture) {
 		Location location = ((BukkitFurniture)furniture).calculateSeatLocation(this);
 
-		org.bukkit.entity.Entity seatEntity = EntityUtils.spawnSeatEntity(furniture, this, player.getWorld(), location, this.limitPlayerRotation, null);
-		seatEntity.addPassenger(player);
+		org.bukkit.entity.Entity seatEntity = BukkitFurniture.spawnSeatEntity(furniture, player.getWorld(), location, this.limitPlayerRotation, null);
+		if (!seatEntity.addPassenger(player)) {
+			return null;
+		};
 
 		// Fix Rider Pose
-		int visualId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
+		int entityId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
 		List<Object> packets = new ArrayList<>();
-		packets.add(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(visualId, UUID.randomUUID(), location.getX(), location.getY(), location.getZ(), location.getPitch(), location.getYaw(),
-				MEntityTypes.instance$EntityType$SHULKER, 0, CoreReflections.instance$Vec3$Zero, 0));
-		packets.add(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(visualId, List.copyOf(visualData)));
+		packets.add(FastNMS.INSTANCE.constructor$ClientboundAddEntityPacket(entityId, UUID.randomUUID(), location.getX(), location.getY(), location.getZ(), location.getPitch(), location.getYaw(),
+				MEntityTypes.SHULKER, 0, CoreReflections.instance$Vec3$Zero, 0));
+		packets.add(FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(entityId, List.copyOf(visualData)));
 
 		try {
 			if (VersionHelper.isOrAbove1_20_5()) {
@@ -77,9 +75,9 @@ public class CrawlSeat extends AbstractSeat {
 				CoreReflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, 0.6);
 				packets.add(
 						NetworkReflections.constructor$ClientboundUpdateAttributesPacket0
-								.newInstance(visualId, Collections.singletonList(attributeInstance))
+								.newInstance(entityId, Collections.singletonList(attributeInstance))
 				);
-				packets.add(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(seatEntity.getEntityId(), visualId));
+				packets.add(FastNMS.INSTANCE.constructor$ClientboundSetPassengersPacket(seatEntity.getEntityId(), entityId));
 			}
 		} catch (Exception e) {
 			CraftEngine.instance().logger().warn("Failed to add crawl seat attributes", e);
@@ -109,17 +107,17 @@ public class CrawlSeat extends AbstractSeat {
 			}
 		}, 1, location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
 
-		return new CrawlEntity(seatEntity, furniture, offset(), player.getEntityId(), visualId, syncPosePacket);
+		return new CrawlEntity(seatEntity, furniture, offset(), player.getEntityId(), entityId, syncPosePacket);
 	}
 
 	private static class CrawlEntity extends BukkitSeatEntity {
-		private final int visualId;
+		private final int entityId;
 		private final Object syncPosePacket;
 
 
-		public CrawlEntity(Entity entity, Furniture furniture, Vector3f vector3f, int playerID, int visualId, Object fixPosePacket) {
+		public CrawlEntity(Entity entity, Furniture furniture, Vector3f vector3f, int playerID, int entityId, Object fixPosePacket) {
 			super(entity, furniture, vector3f, playerID);
-			this.visualId = visualId;
+			this.entityId = entityId;
 			this.syncPosePacket = fixPosePacket;
 		}
 
@@ -129,20 +127,21 @@ public class CrawlSeat extends AbstractSeat {
 		}
 
 		@Override
-		public void dismount(Player player) {
-			super.dismount(player);
-			((org.bukkit.entity.Player) player.platformPlayer()).setPose(Pose.STANDING, false);
+		public void onDismount(Player player) {
+			if (player == null) return;
+			org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
+			bukkitPlayer.setPose(Pose.STANDING, false);
 			try {
-				Object packet = NetworkReflections.constructor$ClientboundRemoveEntitiesPacket.newInstance((Object) new int[]{visualId});
+				Object packet = NetworkReflections.constructor$ClientboundRemoveEntitiesPacket.newInstance((Object) new int[]{entityId});
 				player.sendPacket(packet, false);
 			} catch (Exception e) {
-				BukkitCraftEngine.instance().logger().warn("Failed to remove crawl entity", e);
+				BukkitCraftEngine.instance().logger().warn("Failed to dismount from CrawlEntity", e);
 			}
 		}
 
 		@Override
 		public Key type() {
-			return Key.of("craftengine", "crawl");
+			return SeatType.CRAWL;
 		}
 	}
 

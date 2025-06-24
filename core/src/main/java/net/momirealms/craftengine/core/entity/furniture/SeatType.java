@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
-import com.google.common.collect.Lists;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -9,6 +8,7 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SeatType {
@@ -23,16 +23,34 @@ public class SeatType {
 	}
 
 	public static Seat fromString(String s) {
-		List<String> split = Lists.newArrayList(s.split(" "));
-		int last = split.size() - 1;
+		int lastSpaceIndex = s.lastIndexOf(' ');
+
 		Key type = SIT;
 		SeatFactory factory;
-		try {
-			Float.parseFloat(split.get(last));
-		} catch (NullPointerException | NumberFormatException e) {
-			type = Key.withDefaultNamespace(split.get(last), "craftengine");
-			split.remove(last);
+		String numericPart;
+
+		if (lastSpaceIndex != -1) {
+			numericPart = s.substring(lastSpaceIndex + 1);
+			try {
+				Float.parseFloat(numericPart);
+			} catch (NumberFormatException e) {
+				type = Key.withDefaultNamespace(numericPart, "craftengine");
+				s = s.substring(0, lastSpaceIndex);
+				lastSpaceIndex = s.lastIndexOf(' ');
+			}
 		}
+
+		List<String> split = new ArrayList<>();
+		int start = 0;
+		while (lastSpaceIndex != -1) {
+			split.add(s.substring(start, lastSpaceIndex));
+			start = lastSpaceIndex + 1;
+			lastSpaceIndex = s.indexOf(' ', start);
+		}
+		if (start < s.length()) {
+			split.add(s.substring(start));
+		}
+
 		factory = BuiltInRegistries.SEAT_FACTORY.getValue(type);
 		if (factory == null) {
 			throw new LocalizedResourceConfigException("warning.config.furniture.seat.invalid_type", type.toString());

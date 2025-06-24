@@ -3540,9 +3540,9 @@ public final class CoreReflections {
     );
 
     // 1.20.2 +
-    public static final Method method$ServerPlayer$clientInformation = VersionHelper.isOrAbove1_20_2() ? requireNonNull(ReflectionUtils.getMethod(
-            clazz$ServerPlayer, clazz$ClientInformation, 0
-    )) : null;
+    public static final Method method$ServerPlayer$clientInformation = Optional.ofNullable(clazz$ClientInformation)
+            .map(it -> ReflectionUtils.getMethod(clazz$ServerPlayer, it, 0))
+            .orElse(null);
 
     public static final Class<?> clazz$CompoundTag = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -3634,11 +3634,13 @@ public final class CoreReflections {
     }
 
     // 1.21.3 +
-    public static final Class<?> clazz$PositionMoveRotation = VersionHelper.isOrAbove1_21_3() ? ReflectionUtils.getClazz(
-            requireNonNull(BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation"))) : null;
+    public static final Class<?> clazz$PositionMoveRotation = ReflectionUtils.getClazz(
+            BukkitReflectionUtils.assembleMCClass("world.entity.PositionMoveRotation")
+    );
 
-    public static final Method method$PositionMoveRotation$of = VersionHelper.isOrAbove1_21_3() ? requireNonNull(
-            ReflectionUtils.getStaticMethod(clazz$PositionMoveRotation, clazz$PositionMoveRotation, clazz$Entity)) : null;
+    public static final Method method$PositionMoveRotation$of = Optional.ofNullable(clazz$PositionMoveRotation)
+            .map(it -> ReflectionUtils.getStaticMethod(it, it, clazz$Entity))
+            .orElse(null);
 
     public static final Method method$Entity$absSnapTo = requireNonNull(
             ReflectionUtils.getMethod(

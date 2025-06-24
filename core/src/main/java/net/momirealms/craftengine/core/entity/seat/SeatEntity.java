@@ -12,9 +12,13 @@ public interface SeatEntity extends EntityPacketHandler {
 
 	void dismount(Player player);
 
+	void onDismount(Player player);
+
 	void event(Player player, Object event);
 
 	void destroy();
+
+	boolean destroyed();
 
 	Furniture furniture();
 

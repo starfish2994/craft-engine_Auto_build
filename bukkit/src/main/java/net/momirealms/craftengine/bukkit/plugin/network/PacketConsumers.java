@@ -182,7 +182,7 @@ public class PacketConsumers {
                 user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
         };
-        ADD_ENTITY_HANDLERS[MEntityTypes.instance$EntityType$PLAYER$registryId] = (user, event) -> {
+        ADD_ENTITY_HANDLERS[MEntityTypes.PLAYER$registryId] = (user, event) -> {
             FriendlyByteBuf buf = event.getBuffer();
             buf.readVarInt();
             UUID uuid = buf.readUUID();
@@ -2198,6 +2198,10 @@ public class PacketConsumers {
                     FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, pair.getSecond());
                 }
             }
+            EntityPacketHandler handler = user.entityPacketHandlers().get(entity);
+            if (handler != null) {
+                handler.handleSetEquipment(user, event, slots);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
         }
@@ -2433,18 +2437,6 @@ public class PacketConsumers {
             }
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_EQUIPMENT_NMS = (user, event, packet) -> {
-        try {
-            int entityId = (int) NetworkReflections.method$ClientboundSetEquipmentPacket$getEntity.invoke(packet);
-            EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
-            if (handler != null) {
-                handler.handleSetEquipment(user, event, packet);
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
         }
     };
 

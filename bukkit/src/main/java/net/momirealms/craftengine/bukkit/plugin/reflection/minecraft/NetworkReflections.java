@@ -178,6 +178,10 @@ public final class NetworkReflections {
             "network.protocol.game.ClientboundAddPlayerPacket"
     );
 
+    public static final Constructor<?> constructor$ClientboundAddPlayerPacket = Optional.ofNullable(clazz$ClientboundAddPlayerPacket)
+            .map(it -> ReflectionUtils.getConstructor(clazz$ClientboundAddPlayerPacket, CoreReflections.clazz$Player))
+            .orElse(null);
+
     public static final Class<?> clazz$ClientboundRemoveEntitiesPacket = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "network.protocol.game.PacketPlayOutEntityDestroy",

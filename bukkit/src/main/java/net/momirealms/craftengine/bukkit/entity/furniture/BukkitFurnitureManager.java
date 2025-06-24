@@ -12,6 +12,7 @@ import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.entity.furniture.*;
+import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.Key;
@@ -336,6 +337,21 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
 
     protected void tryLeavingSeat(@NotNull Player player, @NotNull Entity vehicle) {
         net.momirealms.craftengine.core.entity.player.Player serverPlayer = BukkitAdaptors.adapt(player);
+        if (serverPlayer == null) {
+            Integer baseFurniture = vehicle.getPersistentDataContainer().get(FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER);
+            if (baseFurniture == null) return;
+            BukkitFurniture furniture = loadedFurnitureByRealEntityId(baseFurniture);
+            if (furniture == null) {
+                vehicle.remove();
+                return;
+            }
+            SeatEntity seatEntity = furniture.seatByPlayerId(player.getEntityId());
+            if (seatEntity != null && !seatEntity.destroyed()) {
+                seatEntity.destroy();
+            }
+            return;
+        }
+
         BukkitSeatEntity seatEntity = (BukkitSeatEntity) serverPlayer.seat();
         if (seatEntity == null || seatEntity.literalObject() != vehicle) return;
 
