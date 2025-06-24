@@ -172,7 +172,7 @@ public final class SNBTReader extends DefaultStringReader {
         int tokenStart = cursor;
         while (cursor < length) {
             char c = peek();
-            if (c <= ' ' || c == ',' || c == ']' || c == '}') break;
+            if (c == ',' || c == ']' || c == '}') break;
             cursor++;
         }
         int tokenLength = cursor - tokenStart;
