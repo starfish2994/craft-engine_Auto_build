@@ -44,8 +44,8 @@ public class VersionHelper {
             int major = Integer.parseInt(split[1]);
             int minor = split.length == 3 ? Integer.parseInt(split[2].split("-", 2)[0]) : 0;
 
-            // 2001 = 1.20.1
-            // 2104 = 1.21.4
+            // 12001 = 1.20.1
+            // 12104 = 1.21.4
             version = parseVersionToInteger(versionString);
 
             v1_20 = version >= 12000;
