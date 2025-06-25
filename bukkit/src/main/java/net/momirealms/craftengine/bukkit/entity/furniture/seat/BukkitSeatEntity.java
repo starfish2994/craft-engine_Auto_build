@@ -24,20 +24,18 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
     }
 
     @Override
-    public void add(NetWorkUser from, NetWorkUser to) {}
+    public void add(NetWorkUser to) {}
 
     @Override
     public void dismount(Player player) {
-        if (player == null || destroyed) return;
+        if (player == null) return;
         player.setSeat(null);
         onDismount(player);
         destroy();
     }
 
     @Override
-    public void onDismount(Player player) {
-
-    }
+    public void onDismount(Player player) {}
 
     @Override
     public void event(Player player, Object event) {}
@@ -54,10 +52,7 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
             entity.removePassenger(passenger);
             if (passenger instanceof org.bukkit.entity.Player p && p.getEntityId() == this.playerID) {
                 Player cePlayer = BukkitAdaptors.adapt(p);
-                if (cePlayer != null && cePlayer.entityID() == playerID()) {
-                    cePlayer.setSeat(null);
-                    onDismount(cePlayer);
-                }
+                dismount(cePlayer);
             }
         }
         entity.remove();

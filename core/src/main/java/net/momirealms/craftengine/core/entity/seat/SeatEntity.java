@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 
 public interface SeatEntity extends EntityPacketHandler {
 
-    void add(NetWorkUser from, NetWorkUser to);
+    void add(NetWorkUser to);
 
     void dismount(Player player);
 

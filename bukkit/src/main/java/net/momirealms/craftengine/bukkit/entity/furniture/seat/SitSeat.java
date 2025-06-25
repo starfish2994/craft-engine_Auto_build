@@ -30,6 +30,7 @@ public class SitSeat extends AbstractSeat {
         Location location = ((BukkitFurniture) furniture).calculateSeatLocation(this);
         org.bukkit.entity.Entity seatEntity = BukkitFurniture.spawnSeatEntity(furniture, player.getWorld(), location, this.limitPlayerRotation, null);
         if (!seatEntity.addPassenger(player)) {
+            seatEntity.remove();
             return null;
         }
         return new SitEntity(seatEntity, furniture, offset(), player.getEntityId());

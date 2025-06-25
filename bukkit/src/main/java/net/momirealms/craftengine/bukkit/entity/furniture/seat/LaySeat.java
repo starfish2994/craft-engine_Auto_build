@@ -226,6 +226,7 @@ public class LaySeat extends AbstractSeat {
             // Spawn
             org.bukkit.entity.Entity seatEntity = BukkitFurniture.spawnSeatEntity(furniture, player.getWorld(), loc, false, null);
             if (!seatEntity.addPassenger(player)) { // 0.5 higher
+                seatEntity.remove();
                 return null;
             }
             cePlayer.sendPacket(npcInitPackets, true);
@@ -235,6 +236,7 @@ public class LaySeat extends AbstractSeat {
                         50, TimeUnit.MILLISECONDS); // over height 0 cost 2 npcTeleportPacket
             }
 
+            Set<NetWorkUser> trackers = new HashSet<>();
             for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(player)) {
                 NetWorkUser tracker = BukkitNetworkManager.instance().getOnlineUser(o);
                 tracker.sendPacket(npcInitPackets, false);
@@ -243,6 +245,7 @@ public class LaySeat extends AbstractSeat {
                     BukkitCraftEngine.instance().scheduler().asyncLater(() -> tracker.sendPacket(npcTeleportPacket, false),
                             50, TimeUnit.MILLISECONDS);
                 }
+                trackers.add(tracker);
             }
 
             // HeadRot
@@ -266,6 +269,7 @@ public class LaySeat extends AbstractSeat {
                     npcLeftAnimatePacket,
                     npcRightAnimatePacket,
                     (BukkitServerPlayer) cePlayer,
+                    trackers,
                     bedLoc,
                     npc,
                     npcId,
@@ -292,6 +296,7 @@ public class LaySeat extends AbstractSeat {
         private final Location bedLoc;
         private final int npcID;
         private final Direction npcDir;
+        private final Set<NetWorkUser> trackers;
 
         // Equipment
         private final PlayerMonitorTask task;
@@ -314,6 +319,7 @@ public class LaySeat extends AbstractSeat {
                 Object npcLeftAnimatePacket,
                 Object npcRightAnimatePacket,
                 BukkitServerPlayer serverPlayer,
+                Set<NetWorkUser> trackers,
                 Location bedLoc,
                 Object npc,
                 int npcID,
@@ -330,6 +336,7 @@ public class LaySeat extends AbstractSeat {
             this.npcLeftAnimatePacket = npcLeftAnimatePacket;
             this.npcRightAnimatePacket = npcRightAnimatePacket;
             this.serverPlayer = serverPlayer;
+            this.trackers = trackers;
             this.bedLoc = bedLoc;
             this.npc = npc;
             this.npcID = npcID;
@@ -344,7 +351,7 @@ public class LaySeat extends AbstractSeat {
         }
 
         @Override
-        public void add(NetWorkUser from, NetWorkUser to) {
+        public void add(NetWorkUser to) {
             to.sendPacket(this.npcInitPackets, false);
             to.sendPacket(this.fullEquipPacket, false);
             to.sendPacket(this.npcRotHeadPacket, false);
@@ -353,18 +360,34 @@ public class LaySeat extends AbstractSeat {
                 BukkitCraftEngine.instance().scheduler().asyncLater(() ->
                         to.sendPacket(this.npcTPPacket, false), 50, TimeUnit.MILLISECONDS);
             }
+            trackers.add(to);
         }
 
         @Override
         public boolean handleEntitiesRemove(NetWorkUser user, IntList entityIds) {
             entityIds.add(npcID);
+            trackers.remove(user);
             return true;
         }
 
         @Override
-        public void onDismount(Player player) {
-            if (player == null) return;
+        public void dismount(Player player) {
+            super.dismount(player);
+            if (player != null) return;
+            try { // for disconnect recover
+                Object blockPos = LocationUtils.toBlockPos(bedLoc.getBlockX(), bedLoc.getBlockY(), bedLoc.getBlockZ());
+                Object blockState = BlockStateUtils.blockDataToBlockState(bedLoc.getBlock().getBlockData());
+                Object blockRecoverPacket = NetworkReflections.constructor$ClientboundBlockUpdatePacket.newInstance(blockPos, blockState);
+                for (NetWorkUser tracker : trackers) {
+                    tracker.sendPacket(blockRecoverPacket, false);
+                }
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to dismount player", e);
+            }
+        }
 
+        @Override
+        public void onDismount(Player player) {
             this.task.task.cancel();
 
             org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.platformPlayer();
@@ -372,9 +395,9 @@ public class LaySeat extends AbstractSeat {
             Object blockState = BlockStateUtils.blockDataToBlockState(bedLoc.getBlock().getBlockData());
 
             try {
-                Object blockUpdatePacket = NetworkReflections.constructor$ClientboundBlockUpdatePacket.newInstance(blockPos, blockState);
+                Object blockRecoverPacket = NetworkReflections.constructor$ClientboundBlockUpdatePacket.newInstance(blockPos, blockState);
                 player.sendPacket(this.npcRemovePacket, true);
-                player.sendPacket(blockUpdatePacket, true);
+                player.sendPacket(blockRecoverPacket, true);
 
                 if (bukkitPlayer.getPotionEffect(PotionEffectType.INVISIBILITY) == null) {
                     CoreReflections.method$Entity$setInvisible.invoke(serverPlayer.serverPlayer(), false);
@@ -392,9 +415,6 @@ public class LaySeat extends AbstractSeat {
                         PlayerData.ShoulderRight.entityDataAccessor(),
                         CoreReflections.method$SynchedEntityData$get.invoke(npcData, PlayerData.ShoulderRight.entityDataAccessor())
                 );
-                if (bukkitPlayer.getPotionEffect(PotionEffectType.INVISIBILITY) == null) {
-                    CoreReflections.method$Entity$setInvisible.invoke(serverPlayer.serverPlayer(), false);
-                }
 
                 bukkitPlayer.updateInventory();
 
@@ -405,11 +425,9 @@ public class LaySeat extends AbstractSeat {
                 Object fullSlots = NetworkReflections.method$ClientboundSetEquipmentPacket$getSlots.invoke(this.fullEquipPacket);
                 Object recoverEquip = NetworkReflections.constructor$ClientboundSetEquipmentPacket.newInstance(bukkitPlayer.getEntityId(), fullSlots);
 
-                for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(bukkitPlayer)) {
-                    BukkitServerPlayer tracker = (BukkitServerPlayer) BukkitNetworkManager.instance().getOnlineUser(o);
-                    tracker.entityPacketHandlers().remove(playerID());
+                for (NetWorkUser tracker : trackers) {
                     tracker.sendPacket(this.npcRemovePacket, false);
-                    tracker.sendPacket(blockUpdatePacket, false);
+                    tracker.sendPacket(blockRecoverPacket, false);
                     tracker.sendPacket(recoverEquip, false);
                 }
             } catch (Exception e) {
@@ -444,8 +462,8 @@ public class LaySeat extends AbstractSeat {
             serverPlayer.sendPacket(this.emptyEquipPacket, false);
             serverPlayer.sendPacket(this.updateEquipPacket, false);
 
-            for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(player)) {
-                BukkitNetworkManager.instance().getOnlineUser(o).sendPacket(this.updateEquipPacket, false);
+            for (NetWorkUser tracker : trackers) {
+                tracker.sendPacket(this.updateEquipPacket, false);
             }
         }
 
@@ -497,8 +515,8 @@ public class LaySeat extends AbstractSeat {
                         animatePacket = npcRightAnimatePacket;
                     }
                     serverPlayer.sendPacket(animatePacket, true);
-                    for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(serverPlayer.platformPlayer())) {
-                        BukkitNetworkManager.instance().getOnlineUser(o).sendPacket(animatePacket, true);
+                    for (NetWorkUser tracker : trackers) {
+                        tracker.sendPacket(animatePacket, true);
                     }
                 } catch (Exception exception) {
                     CraftEngine.instance().logger().warn("Failed to handle PlayerAnimationEvent", exception);
@@ -554,8 +572,7 @@ public class LaySeat extends AbstractSeat {
                 if (lastYaw != playerYaw) {
                     updateNpcYaw(playerYaw);
                     serverPlayer.sendPacket(npcRotHeadPacket, false);
-                    for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(player)) {
-                        NetWorkUser tracker = BukkitNetworkManager.instance().getOnlineUser(o);
+                    for (NetWorkUser tracker : trackers) {
                         tracker.sendPacket(npcRotHeadPacket, true);
                     }
                     this.lastYaw = playerYaw;
@@ -632,8 +649,8 @@ public class LaySeat extends AbstractSeat {
                     Object dataValue = CoreReflections.method$SynchedEntityData$DataItem$value.invoke(dataItem);
                     Object packet = FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(npcID, List.of(dataValue));
                     serverPlayer.sendPacket(packet, false);
-                    for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(player)) {
-                        BukkitNetworkManager.instance().getOnlineUser(o).sendPacket(packet, false);
+                    for (NetWorkUser tracker : trackers) {
+                        tracker.sendPacket(packet, false);
                     }
                 } else if (player.getPotionEffect(PotionEffectType.INVISIBILITY) != null && npcDataPacket == null) {
                     CoreReflections.method$Entity$setInvisible.invoke(npc, true);
@@ -642,8 +659,8 @@ public class LaySeat extends AbstractSeat {
                     Object dataValue = CoreReflections.method$SynchedEntityData$DataItem$value.invoke(dataItem);
                     npcDataPacket = FastNMS.INSTANCE.constructor$ClientboundSetEntityDataPacket(npcID, List.of(dataValue));
                     serverPlayer.sendPacket(npcDataPacket, false);
-                    for (org.bukkit.entity.Player o : PlayerUtils.getTrackedBy(player)) {
-                        BukkitNetworkManager.instance().getOnlineUser(o).sendPacket(npcDataPacket, false);
+                    for (NetWorkUser tracker : trackers) {
+                        tracker.sendPacket(npcDataPacket, false);
                     }
                 }
             } catch (Exception e) {

@@ -59,6 +59,7 @@ public class CrawlSeat extends AbstractSeat {
 
         org.bukkit.entity.Entity seatEntity = BukkitFurniture.spawnSeatEntity(furniture, player.getWorld(), location, this.limitPlayerRotation, null);
         if (!seatEntity.addPassenger(player)) {
+            seatEntity.remove();
             return null;
         }
 
@@ -122,7 +123,7 @@ public class CrawlSeat extends AbstractSeat {
         }
 
         @Override
-        public void add(NetWorkUser from, NetWorkUser to) {
+        public void add(NetWorkUser to) {
             to.sendPacket(syncPosePacket, false);
         }
 

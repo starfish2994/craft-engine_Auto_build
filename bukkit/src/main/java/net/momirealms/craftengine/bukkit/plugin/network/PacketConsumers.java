@@ -191,7 +191,7 @@ public class PacketConsumers {
             SeatEntity seat = player.seat();
             if (seat == null) return;
             user.entityPacketHandlers().put(seat.playerID(), seat);
-            seat.add(player, user);
+            seat.add(user);
         };
     }
 
