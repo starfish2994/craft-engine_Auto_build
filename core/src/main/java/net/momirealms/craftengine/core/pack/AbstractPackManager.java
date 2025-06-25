@@ -25,6 +25,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.pack.model.rangedisptach.CustomModelDataRangeDispatchProperty;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
+import net.momirealms.craftengine.core.pack.obfuscation.ResourcePackGenerationException;
 import net.momirealms.craftengine.core.pack.revision.Revision;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -242,6 +243,8 @@ public abstract class AbstractPackManager implements PackManager {
                    try {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
+                   } catch (ResourcePackGenerationException e) {
+                       this.plugin.logger().warn("Failed to generate resource pack: " + e.getMessage());
                    } catch (Exception e) {
                        this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", "").replaceAll("/[Il]{2,}", ""));
                    }
