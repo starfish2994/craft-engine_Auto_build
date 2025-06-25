@@ -1,3 +1,4 @@
+
 package net.momirealms.craftengine.core.plugin.config;
 
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
@@ -74,57 +75,109 @@ public class StringKeyConstructor extends SafeConstructor {
             String key = constructScalar((ScalarNode) keyNode);
             Node valueNode = tuple.getValueNode();
 
+            // 处理 版本化块 合并.
             if (key.startsWith(VERSION_PREFIX)) {
-                // 处理版本化块合并
                 String versionSpec = key.substring(VERSION_PREFIX.length());
                 if (isVersionMatch(versionSpec)) {
                     if (valueNode instanceof MappingNode) {
                         // 将版本匹配的map内容合并到当前map
-                        map.putAll(constructMapping((MappingNode) valueNode));
+                        Map<Object, Object> versionedMap = constructMapping((MappingNode) valueNode);
+                        mergeMap(map, versionedMap);
                     } else {
                         logWarning("versioned_key_not_a_map", key, valueNode);
                     }
                 }
-            } else if (key.contains(DEEP_KEY_SEPARATOR)) {
-                // 处理 '::' 分隔的深层键
-                String[] parts = key.split(DEEP_KEY_SEPARATOR);
+            }
+            // 处理::分隔的键 ->  {a::b::c: value} 和 {a::b: {c: value}}.
+            else if (key.contains(DEEP_KEY_SEPARATOR)) {
+                processDeepKey(map, key, valueNode, keyNode);
+            }
+            // 处理正常的内容.
+            else {
                 Object value = constructObject(valueNode);
-                Map<Object, Object> currentMap = map;
 
-                // 遍历除最后一个部分外的所有路径，创建嵌套的map
-                for (int i = 0; i < parts.length - 1; i++) {
-                    String part = parts[i];
-                    Object nextObject = currentMap.get(part);
-                    if (nextObject instanceof Map) {
-                        currentMap = (Map<Object, Object>) nextObject;
-                    } else {
-                        // 如果路径中存在一个非map的值，发出警告并覆盖它
-                        if (nextObject != null) {
-                            logWarning("key_path_conflict", part, keyNode);
-                        }
-                        Map<Object, Object> newMap = new LinkedHashMap<>();
-                        currentMap.put(part, newMap);
-                        currentMap = newMap;
+                // 检查是否需要与现有的Map合并
+                Object existing = map.get(key);
+                if (existing instanceof Map && value instanceof Map) {
+                    // 如果已存在同名的Map（可能是由深层键创建的），则合并它们
+                    mergeMap((Map<Object, Object>) existing, (Map<Object, Object>) value);
+                } else {
+                    // 否则正常设置
+                    Object previous = map.put(key, value);
+
+                    // 如果之前有值,
+                    if (previous != null && !(previous instanceof Map)) {
+                        logWarning("duplicated_key", key, keyNode);
                     }
-                }
-
-                // 在最深层的map中设置最终的键值对
-                String finalKey = parts[parts.length - 1];
-                Object previous = currentMap.put(finalKey, value);
-                if (previous != null) {
-                    // 使用完整的原始键来报告重复键，更清晰
-                    logWarning("duplicated_key", key, keyNode);
-                }
-            } else {
-                // 原始逻辑：处理普通键
-                Object value = constructObject(valueNode);
-                Object previous = map.put(key, value);
-                if (previous != null) {
-                    logWarning("duplicated_key", key, keyNode);
                 }
             }
         }
         return map;
+    }
+
+    /**
+     * 处理深层键的逻辑，支持完全深层键和部分深层键的合并
+     */
+    @SuppressWarnings("unchecked")
+    private void processDeepKey(Map<Object, Object> rootMap, String key, Node valueNode, Node keyNode) {
+        String[] parts = key.split(DEEP_KEY_SEPARATOR);
+        Map<Object, Object> currentMap = rootMap;
+
+        // 遍历除最后一个部分外的所有路径，创建或导航到嵌套的map
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            Object nextObject = currentMap.get(part);
+            if (nextObject instanceof Map) {
+                currentMap = (Map<Object, Object>) nextObject;
+            } else {
+                // 如果路径中存在一个非map的值，发出警告并覆盖它
+                if (nextObject != null) {
+                    logWarning("key_path_conflict", part, keyNode);
+                }
+                Map<Object, Object> newMap = new LinkedHashMap<>();
+                currentMap.put(part, newMap);
+                currentMap = newMap;
+            }
+        }
+
+        // 处理最后一个部分
+        String finalKey = parts[parts.length - 1];
+        Object value = constructObject(valueNode);
+
+        // 检查最终键是否需要合并
+        Object existing = currentMap.get(finalKey);
+        if (existing instanceof Map && value instanceof Map) {
+            // 如果目标位置已经有一个Map，且新值也是Map，则合并它们
+            mergeMap((Map<Object, Object>) existing, (Map<Object, Object>) value);
+        } else {
+            // 否则直接设置值
+            Object previous = currentMap.put(finalKey, value);
+            if (previous != null && !(previous instanceof Map)) {
+                // 只有当之前的值不是Map时才报告重复键警告
+                logWarning("duplicated_key", key, keyNode);
+            }
+        }
+    }
+
+    /**
+     * 合并两个Map
+     */
+    @SuppressWarnings("unchecked")
+    private void mergeMap(Map<Object, Object> target, Map<Object, Object> source) {
+        for (Map.Entry<Object, Object> entry : source.entrySet()) {
+            Object key = entry.getKey();
+            Object sourceValue = entry.getValue();
+            Object targetValue = target.get(key);
+
+            // 如果都是Map，则递归合并.
+            if (targetValue instanceof Map && sourceValue instanceof Map) {
+                mergeMap((Map<Object, Object>) targetValue, (Map<Object, Object>) sourceValue);
+                return;
+            }
+
+            // TODO 不能覆盖, 得想办法丢个异常.
+            target.put(key, sourceValue);
+        }
     }
 
     /**
