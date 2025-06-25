@@ -102,27 +102,32 @@ public class StringKeyConstructor extends SafeConstructor {
 
     // 处理深层键
     private void processDeepKey(Map<Object, Object> rootMap, String fullKey, Node valueNode, Node keyNode) {
+        // 分割出不同的层级
         String[] keyParts = fullKey.split(DEEP_KEY_SEPARATOR);
         Map<Object, Object> currentMap = rootMap;
 
-        // 创建必要的的中间层级
+        // 创建必要的的中间层级(最后一个key不应遍历, 如aa::bb::cc, 只应创建aa和bb.)
         for (int i = 0; i < keyParts.length - 1; i++) {
             String keyPart = keyParts[i];
             Object existingValue = currentMap.get(keyPart);
 
+            // 路径中的值
             if (existingValue instanceof Map) {
                 currentMap = (Map<Object, Object>) existingValue;
-            } else {
-                if (existingValue != null) {
-                    logWarning("key_path_conflict", keyPart, keyNode);
-                }
-                Map<Object, Object> newMap = new LinkedHashMap<>();
-                currentMap.put(keyPart, newMap);
-                currentMap = newMap;
+                continue;
             }
+
+            // 如果路径中存在一个非map的值, 这意味着
+            // 当存在了 {aa: bb}, 又想要写入 {aa::bb::c: value} 时, 会触发这个警告, 然后会覆盖之前的.
+            if (existingValue != null) logWarning("key_path_conflict", keyPart, keyNode);
+
+            // 创建层级
+            Map<Object, Object> newMap = new LinkedHashMap<>();
+            currentMap.put(keyPart, newMap);
+            currentMap = newMap;
         }
 
-        // 处理最终键
+        // 这里再处理最后的 cc key.
         String finalKey = keyParts[keyParts.length - 1];
         Object newValue = constructObject(valueNode);
         String keyPath = String.join(DEEP_KEY_SEPARATOR, keyParts); // 构建完整的键路径字符串
