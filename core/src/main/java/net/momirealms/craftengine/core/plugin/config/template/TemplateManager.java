@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
