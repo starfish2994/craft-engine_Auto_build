@@ -46,7 +46,7 @@ public class VersionHelper {
 
             // 12001 = 1.20.1
             // 12104 = 1.21.4
-            version = parseVersionToInteger(versionString);
+            version = MINECRAFT_VERSION.version();
 
             v1_20 = version >= 12000;
             v1_20_1 = version >= 12001;

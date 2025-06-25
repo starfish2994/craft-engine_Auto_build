@@ -31,7 +31,11 @@ public final class MinecraftVersion implements Comparable<MinecraftVersion> {
         return new MinecraftVersion(version);
     }
 
-    public String version() {
+    public int version() {
+        return version;
+    }
+
+    public String versionString() {
         return versionString;
     }
 
