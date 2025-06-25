@@ -112,6 +112,16 @@ public class DefaultStringReader implements StringReader {
         this.cursor += count;
     }
 
+    @Override
+    public char charAt(int index) {
+        return this.string.charAt(index);
+    }
+
+    @Override
+    public String substring(int start, int end) {
+        return this.string.substring(start, end);
+    }
+
     public static boolean isAllowedNumber(char c) {
         return c >= '0' && c <= '9' || c == '.' || c == '-';
     }

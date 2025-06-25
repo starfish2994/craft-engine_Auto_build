@@ -13,8 +13,7 @@ items#gui_head:
             translation: 0,8,0
             scale: 2,2,2
       model:
-        type: minecraft:head
-        kind: player
+        type: minecraft:player_head
   default:gui_head_size_4:
     material: player_head
     custom-model-data: 1001
@@ -29,8 +28,7 @@ items#gui_head:
             translation: 9,7,0
             scale: 4,4,4
       model:
-        type: minecraft:head
-        kind: player
+        type: minecraft:player_head
 items#topaz_gears:
   default:topaz_rod:
     material: fishing_rod

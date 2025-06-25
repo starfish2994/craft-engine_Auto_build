@@ -263,15 +263,13 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
-        private static final float VERSION_1_21_2 = 21.2f;
-        private static final float VERSION_1_21_4 = 21.4f;
 
         private boolean isModernFormatRequired() {
-            return Config.packMaxVersion() >= VERSION_1_21_4;
+            return Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4);
         }
 
         private boolean needsLegacyCompatibility() {
-            return Config.packMinVersion() < VERSION_1_21_4;
+            return Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4);
         }
 
         @Override
@@ -433,7 +431,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                             ResourceConfigUtils.getAsBoolean(section.getOrDefault("hand-animation-on-swap", true), "hand-animation-on-swap")
                     ));
                 }
-                if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
+                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.modernItemModels1_21_2.computeIfAbsent(itemModelKey, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
