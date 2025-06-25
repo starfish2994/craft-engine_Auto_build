@@ -149,12 +149,13 @@ public final class SNBTReader extends DefaultStringReader {
             }
         }
         int tokenLength = getCursor() - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
-        if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
+        if (tokenLength == 0) return null; // 如果值长度为0则返回null.
         if (contentHasWhitespace) return substring(tokenStart, tokenStart + tokenLength); // 如果值的中间有空格, 一定是字符串, 可直接返回.
 
         // 布尔值检查
         if (tokenLength == 4) {
             if (matchesAt(tokenStart, "true")) return Boolean.TRUE;
+            if (matchesAt(tokenStart, "null")) return null; // 支持 {key:null}.
         } else if (tokenLength == 5) {
             if (matchesAt(tokenStart, "false")) return Boolean.FALSE;
         }
