@@ -226,7 +226,20 @@ public final class SNBTReader extends DefaultStringReader {
         }
         int tokenLength = getCursor() - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
         if (tokenLength == 0) return null; // 如果值长度为0则返回null.
-        if (contentHasWhitespace) return substring(tokenStart, tokenStart + tokenLength); // 如果值的中间有空格, 一定是字符串, 可直接返回.
+        String fullString = substring(tokenStart, tokenStart + tokenLength);
+        if (contentHasWhitespace) return fullString; // 如果值的中间有空格, 一定是字符串, 可直接返回.
+
+        // 十六进制处理
+        String fullHex = fullString.toLowerCase();
+        boolean negativeHex = fullHex.startsWith("-0x");
+        boolean positiveHex = fullHex.startsWith("0x");
+        if (negativeHex || positiveHex) {
+            String hexDigits = fullHex.substring(negativeHex ? 3 : 2); // 去掉 0x / -0x
+            if (hexDigits.isEmpty()) return fullString; // 没值了代表这是个字符串.
+            long value = Long.parseLong(hexDigits, 16);
+            if (negativeHex) value = -value;
+            return (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) ? (int) value : value; // 默认返回的还是Int类型的喵.
+        }
 
         // 布尔值检查
         if (tokenLength == 4) {
@@ -257,7 +270,6 @@ public final class SNBTReader extends DefaultStringReader {
                         return Double.parseDouble(substring(tokenStart, tokenStart + tokenLength));
                     }
                     default -> {
-                        String fullString = substring(tokenStart, tokenStart + tokenLength);
                         try {
                             double d = Double.parseDouble(fullString);
                             if (d % 1 != 0 || fullString.contains(".") || fullString.contains("e")) {
