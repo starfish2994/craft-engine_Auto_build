@@ -35,6 +35,8 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.seat.SeatEntity;
+import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.item.CustomItem;
@@ -179,6 +181,17 @@ public class PacketConsumers {
                 event.setCancelled(true);
                 user.entityPacketHandlers().put(id, FurnitureCollisionPacketHandler.INSTANCE);
             }
+        };
+        ADD_ENTITY_HANDLERS[MEntityTypes.PLAYER$registryId] = (user, event) -> {
+            FriendlyByteBuf buf = event.getBuffer();
+            buf.readVarInt();
+            UUID uuid = buf.readUUID();
+            BukkitServerPlayer player = (BukkitServerPlayer) BukkitCraftEngine.instance().networkManager().getOnlineUser(uuid);
+            if (player == null) return;
+            SeatEntity seat = player.seat();
+            if (seat == null) return;
+            user.entityPacketHandlers().put(seat.playerID(), seat);
+            seat.add(user);
         };
     }
 
@@ -1499,7 +1512,7 @@ public class PacketConsumers {
             for (int i = 0, size = intList.size(); i < size; i++) {
                 int entityId = intList.getInt(i);
                 EntityPacketHandler handler = user.entityPacketHandlers().remove(entityId);
-                if (handler != null && handler.handleEntitiesRemove(intList)) {
+                if (handler != null && handler.handleEntitiesRemove(user, intList)) {
                     isChange = true;
                 }
             }
@@ -1649,6 +1662,8 @@ public class PacketConsumers {
                         if (!serverPlayer.isSecondaryUseActive()) {
                             furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
                                 if (furniture.tryOccupySeat(seatPos)) {
+                                    SeatEntity currentSeat = serverPlayer.seat();
+                                    if (currentSeat != null) currentSeat.dismount(serverPlayer);
                                     furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
                                 }
                             });
@@ -1915,6 +1930,10 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA = (user, event) -> {
         try {
+            SeatEntity seat = ((BukkitServerPlayer)user).seat();
+            if (seat != null) {
+                seat.handleSetEntityData(user, event);
+            }
             FriendlyByteBuf buf = event.getBuffer();
             int id = buf.readVarInt();
             EntityPacketHandler handler = user.entityPacketHandlers().get(id);
@@ -2179,6 +2198,10 @@ public class PacketConsumers {
                     FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, pair.getSecond());
                 }
             }
+            EntityPacketHandler handler = user.entityPacketHandlers().get(entity);
+            if (handler != null) {
+                handler.handleSetEquipment(user, event, slots);
+            }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
         }
@@ -2414,6 +2437,15 @@ public class PacketConsumers {
             }
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEntityMotionPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_CONTAINER_SLOT = (user, event, packet) -> {
+        try {
+            SeatEntity seat = ((BukkitServerPlayer) user).seat();
+            if (seat != null) seat.handleContainerSetSlot(user, event, packet);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundSetEquipmentPacket", e);
         }
     };
 
