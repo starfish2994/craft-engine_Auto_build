@@ -74,7 +74,7 @@ public class Config {
     protected String resource_pack$protection$obfuscation$resource_location$random_path$source;
     protected int resource_pack$protection$obfuscation$resource_location$random_path$depth;
     protected boolean resource_pack$protection$obfuscation$resource_location$random_path$anti_unzip;
-    protected int resource_pack$protection$obfuscation$resource_location$random_atlas$amount;
+    protected int resource_pack$protection$obfuscation$resource_location$random_atlas$images_per_canvas;
     protected boolean resource_pack$protection$obfuscation$resource_location$random_atlas$use_double;
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_textures;
     protected List<String> resource_pack$protection$obfuscation$resource_location$bypass_models;
@@ -258,7 +258,7 @@ public class Config {
         resource_pack$protection$obfuscation$resource_location$random_path$depth = config.getInt("resource-pack.protection.obfuscation.resource-location.random-path.depth", 16);
         resource_pack$protection$obfuscation$resource_location$random_path$source = config.getString("resource-pack.protection.obfuscation.resource-location.random-path.source", "obf");
         resource_pack$protection$obfuscation$resource_location$random_path$anti_unzip = config.getBoolean("resource-pack.protection.obfuscation.resource-location.random-path.anti-unzip", false);
-        resource_pack$protection$obfuscation$resource_location$random_atlas$amount = config.getInt("resource-pack.protection.obfuscation.resource-location.random-atlas.amount", 5);
+        resource_pack$protection$obfuscation$resource_location$random_atlas$images_per_canvas = config.getInt("resource-pack.protection.obfuscation.resource-location.random-atlas.images-per-canvas", 16);
         resource_pack$protection$obfuscation$resource_location$random_atlas$use_double = config.getBoolean("resource-pack.protection.obfuscation.resource-location.random-atlas.use-double", true);
         resource_pack$protection$obfuscation$resource_location$bypass_textures = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-textures");
         resource_pack$protection$obfuscation$resource_location$bypass_models = config.getStringList("resource-pack.protection.obfuscation.resource-location.bypass-models");
@@ -572,8 +572,8 @@ public class Config {
         return instance.resource_pack$protection$obfuscation$resource_location$random_path$anti_unzip;
     }
 
-    public static int atlasAmount() {
-        return instance.resource_pack$protection$obfuscation$resource_location$random_atlas$amount;
+    public static int imagesPerCanvas() {
+        return instance.resource_pack$protection$obfuscation$resource_location$random_atlas$images_per_canvas;
     }
 
     public static boolean useDouble() {

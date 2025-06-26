@@ -35,14 +35,14 @@ resource-pack:
       resource-location:
         enable: true
         random-namespace:
-          amount: 32 # 0 = disable
+          amount: 16 # 0 = disable
           length: 9
         random-path:
           source: obf
           depth: 16
           anti-unzip: false
         random-atlas:
-          amount: 5 # 0 = disable
+          images-per-canvas: 32 # 0 = disable
           use-double: true
         # Sometimes, some vanilla files that have been overwritten might be mistakenly obfuscated.
         # Please add the ignored textures/models/sounds here.
