@@ -130,7 +130,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 Channel channel = future.channel();
                 injectServerChannel(channel);
                 this.injectedChannels.add(channel);
-            }, (object) -> {});
+            }, (object) -> {
+            });
             CoreReflections.field$ServerConnectionListener$channels.set(serverConnection, monitor);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to init server connection", e);
@@ -162,7 +163,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
         registerNMSPacketConsumer(PacketConsumers.ROTATE_HEAD, NetworkReflections.clazz$ClientboundRotateHeadPacket);
         registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_MOTION, NetworkReflections.clazz$ClientboundSetEntityMotionPacket);
-		registerNMSPacketConsumer(PacketConsumers.SET_CONTAINER_SLOT, NetworkReflections.clazz$ClientboundContainerSetSlotPacket);
+        registerNMSPacketConsumer(PacketConsumers.SET_CONTAINER_SLOT, NetworkReflections.clazz$ClientboundContainerSetSlotPacket);
         registerNMSPacketConsumer(PacketConsumers.CLIENT_INFO, NetworkReflections.clazz$ServerboundClientInformationPacket);
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
@@ -690,7 +691,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         ByteBuf temp = ctx.alloc().buffer();
         try {
             if (compressor != null) {
-               callEncode(compressor, ctx, input, temp);
+                callEncode(compressor, ctx, input, temp);
             }
         } finally {
             input.clear().writeBytes(temp);

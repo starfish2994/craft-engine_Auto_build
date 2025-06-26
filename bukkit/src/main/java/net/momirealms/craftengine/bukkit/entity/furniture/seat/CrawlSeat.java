@@ -72,7 +72,8 @@ public class CrawlSeat extends AbstractSeat {
 
         try {
             if (VersionHelper.isOrAbove1_20_5()) {
-                Object attributeInstance = CoreReflections.constructor$AttributeInstance.newInstance(MAttributeHolders.SCALE, (Consumer<?>) (o) -> {});
+                Object attributeInstance = CoreReflections.constructor$AttributeInstance.newInstance(MAttributeHolders.SCALE, (Consumer<?>) (o) -> {
+                });
                 CoreReflections.method$AttributeInstance$setBaseValue.invoke(attributeInstance, 0.6);
                 packets.add(
                         NetworkReflections.constructor$ClientboundUpdateAttributesPacket0

@@ -36,7 +36,6 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.seat.SeatEntity;
-import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.font.IllegalCharacterProcessResult;
 import net.momirealms.craftengine.core.item.CustomItem;
@@ -524,7 +523,8 @@ public class PacketConsumers {
                 return;
             }
             EnumSet<? extends Enum<?>> enums = FastNMS.INSTANCE.field$ClientboundPlayerInfoUpdatePacket$actions(packet);
-            outer: {
+            outer:
+            {
                 for (Object entry : enums) {
                     if (entry == NetworkReflections.instance$ClientboundPlayerInfoUpdatePacket$Action$UPDATE_DISPLAY_NAME) {
                         break outer;
@@ -1130,7 +1130,8 @@ public class PacketConsumers {
                     } catch (Exception e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundPlayerActionPacket", e);
                     }
-                }, () -> {});
+                }, () -> {
+                });
             } else {
                 handlePlayerActionPacketOnMainThread(player, world, pos, packet);
             }
@@ -1303,7 +1304,8 @@ public class PacketConsumers {
                     } catch (Throwable e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundSetCreativeModeSlotPacket", e);
                     }
-                }, () -> {});
+                }, () -> {
+                });
             } else {
                 handleSetCreativeSlotPacketOnMainThread(player, packet);
             }
@@ -1441,7 +1443,8 @@ public class PacketConsumers {
                     } catch (Throwable e) {
                         CraftEngine.instance().logger().warn("Failed to handle ServerboundPickItemFromEntityPacket", e);
                     }
-                }, () -> {});
+                }, () -> {
+                });
             } else {
                 BukkitCraftEngine.instance().scheduler().sync().run(() -> {
                     try {
@@ -1688,7 +1691,8 @@ public class PacketConsumers {
             }
 
             if (VersionHelper.isFolia()) {
-                platformPlayer.getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), t -> mainThreadTask.run(), () -> {});
+                platformPlayer.getScheduler().run(BukkitCraftEngine.instance().javaPlugin(), t -> mainThreadTask.run(), () -> {
+                });
             } else {
                 BukkitCraftEngine.instance().scheduler().executeSync(mainThreadTask);
             }
@@ -1930,7 +1934,7 @@ public class PacketConsumers {
     @SuppressWarnings("unchecked")
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> SET_ENTITY_DATA = (user, event) -> {
         try {
-            SeatEntity seat = ((BukkitServerPlayer)user).seat();
+            SeatEntity seat = ((BukkitServerPlayer) user).seat();
             if (seat != null) {
                 seat.handleSetEntityData(user, event);
             }

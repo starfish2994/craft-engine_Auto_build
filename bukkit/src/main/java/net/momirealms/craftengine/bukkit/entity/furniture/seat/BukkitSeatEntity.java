@@ -24,7 +24,8 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
     }
 
     @Override
-    public void add(NetWorkUser to) {}
+    public void add(NetWorkUser to) {
+    }
 
     @Override
     public void dismount(Player player) {
@@ -35,10 +36,12 @@ public abstract class BukkitSeatEntity extends BukkitEntity implements SeatEntit
     }
 
     @Override
-    public void onDismount(Player player) {}
+    public void onDismount(Player player) {
+    }
 
     @Override
-    public void event(Player player, Object event) {}
+    public void event(Player player, Object event) {
+    }
 
     @Override
     public void destroy() {

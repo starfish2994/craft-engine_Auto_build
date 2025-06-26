@@ -97,7 +97,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         Bukkit.getPluginManager().registerEvents(this.dismountListener, this.plugin.javaPlugin());
         Bukkit.getPluginManager().registerEvents(this.furnitureEventListener, this.plugin.javaPlugin());
         if (VersionHelper.isFolia()) {
-            BiConsumer<Entity, Runnable> taskExecutor = (entity, runnable) -> entity.getScheduler().run(this.plugin.javaPlugin(), (t) -> runnable.run(), () -> {});
+            BiConsumer<Entity, Runnable> taskExecutor = (entity, runnable) -> entity.getScheduler().run(this.plugin.javaPlugin(), (t) -> runnable.run(), () -> {
+            });
             for (World world : Bukkit.getWorlds()) {
                 List<Entity> entities = world.getEntities();
                 for (Entity entity : entities) {
@@ -426,7 +427,8 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
                 Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);
                 return FastNMS.INSTANCE.method$Entity$canBeCollidedWith(nmsEntity);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return false;
     }
 }
