@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public final class SNBTReader extends DefaultStringReader {
     private static final char COMPOUND_START = '{';
@@ -99,12 +100,35 @@ public final class SNBTReader extends DefaultStringReader {
                 skipWhitespace();
                 if (canRead() && peek() == ARRAY_DELIMITER) {  // 下一个必须是 ';'
                     skip();
-                    return switch (typeChar){ // 解析并返回数组喵
-                        case BYTE_ARRAY -> parseArray(Byte.class);
-                        case INT_ARRAY -> parseArray(Integer.class);
-                        case LONG_ARRAY -> parseArray(Long.class);
-                        default -> throw new IllegalArgumentException("Unknown typed-array prefix: " + typeChar);
-                    };
+                    switch (typeChar) { // 解析并返回数组喵
+                        case BYTE_ARRAY -> {
+                            return parseArray(list -> {
+                                byte[] bytes = new byte[list.size()];
+                                for (int i = 0; i < bytes.length; i++) {
+                                    bytes[i] = list.get(i).byteValue();
+                                }
+                                return bytes;
+                            });
+                        }
+                        case INT_ARRAY -> {
+                            return parseArray(list -> {
+                                int[] ints = new int[list.size()];
+                                for (int i = 0; i < ints.length; i++) {
+                                    ints[i] = list.get(i).intValue();
+                                }
+                                return ints;
+                            });
+                        }
+                        case LONG_ARRAY -> {
+                            return parseArray(list -> {
+                                long[] longs = new long[list.size()];
+                                for (int i = 0; i < longs.length; i++) {
+                                    longs[i] = list.get(i).longValue();
+                                }
+                                return longs;
+                            });
+                        }
+                    }
                 }
             }
             restore(); // 复原指针.
@@ -128,7 +152,7 @@ public final class SNBTReader extends DefaultStringReader {
 
     // 解析数组 [I; 11, 41, 54]
     // ArrayType -> B, I, L.
-    private Object parseArray(Class<?> arrayType) {
+    private Object parseArray(Function<List<Number>, Object> convertor) {
         skipWhitespace();
         // 用来暂存解析出的数字
         List<Number> elements = new ArrayList<>();
@@ -140,39 +164,18 @@ public final class SNBTReader extends DefaultStringReader {
                 // 如果需要和原版对齐, 那么只需要判断是否是数字就行了.
                 // if (!(element instanceof Number number))
                 //    throw new IllegalArgumentException("Error element type at pos " + getCursor());
-                if (!arrayType.isInstance(element))
-                    throw new IllegalArgumentException("Error element type at pos " + getCursor());
+                if (!(element instanceof Number number))
+                    throw new IllegalArgumentException("Error parsing number at pos " + getCursor());
 
-                elements.add((Number) element); // 校验通过后加入
+                elements.add(number); // 校验通过后加入
                 skipWhitespace();
             } while (canRead() && peek() == ELEMENT_SEPARATOR && ++cursor > 0 /* 跳过 ',' */);
         }
 
         if (!canRead() || peek() != LIST_END)
             throw new IllegalArgumentException("Expected ']' at position " + getCursor());
-
         skip(); // 跳过 ']'
-
-        // 根据数组类型创建并返回对应的数组
-        // 构造并返回真正的 Java 数组
-        return switch (arrayType.getSimpleName()) {
-            case "Byte" -> {
-                byte[] arr = new byte[elements.size()];
-                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).byteValue();
-                yield arr;
-            }
-            case "Integer" -> {
-                int[] arr = new int[elements.size()];
-                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).intValue();
-                yield arr;
-            }
-            case "Long" -> {
-                long[] arr = new long[elements.size()];
-                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).longValue();
-                yield arr;
-            }
-            default -> throw new IllegalArgumentException("Unknown typed-array prefix: " + getCursor());
-        };
+        return convertor.apply(elements);
     }
 
     // 解析Key值
@@ -225,22 +228,7 @@ public final class SNBTReader extends DefaultStringReader {
         }
         int tokenLength = getCursor() - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
         if (tokenLength == 0) return null; // 如果值长度为0则返回null.
-        String fullString = substring(tokenStart, tokenStart + tokenLength);
-        if (contentHasWhitespace) return fullString; // 如果值的中间有空格, 一定是字符串, 可直接返回.
-
-        // 十六进制处理
-        String fullHex = fullString.toLowerCase();
-        boolean negativeHex = fullHex.startsWith("-0x");
-        boolean positiveHex = fullHex.startsWith("0x");
-        if (negativeHex || positiveHex) {
-            String hexDigits = fullHex.substring(negativeHex ? 3 : 2); // 去掉 0x / -0x
-            if (hexDigits.isEmpty()) return fullString; // 没值了代表这是个字符串.
-            long value = Long.parseLong(hexDigits, 16);
-            if (negativeHex) value = -value;
-            // 默认返回的还是Int类型的, 三元坑我喵.
-            if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) return (int) value;
-            else return value;
-        }
+        if (contentHasWhitespace) return substring(tokenStart, tokenStart + tokenLength); // 如果值的中间有空格, 一定是字符串, 可直接返回.
 
         // 布尔值检查
         if (tokenLength == 4) {
@@ -255,22 +243,23 @@ public final class SNBTReader extends DefaultStringReader {
             lastChar = Character.toLowerCase(lastChar); // 强制转小写进行匹配.
             try {
                 switch (lastChar) {
-                    case BYTE_SUFFIX -> {
+                    case 'b', 'B' -> {
                         return Byte.parseByte(substring(tokenStart, tokenStart + tokenLength - 1));
                     }
-                    case SHORT_SUFFIX -> {
+                    case 's', 'S' -> {
                         return Short.parseShort(substring(tokenStart, tokenStart + tokenLength - 1));
                     }
-                    case LONG_SUFFIX -> {
+                    case 'l', 'L' -> {
                         return Long.parseLong(substring(tokenStart, tokenStart + tokenLength - 1));
                     }
-                    case FLOAT_SUFFIX -> {
+                    case 'f', 'F' -> {
                         return Float.parseFloat(substring(tokenStart, tokenStart + tokenLength));
                     }
-                    case DOUBLE_SUFFIX -> {
+                    case 'd', 'D' -> {
                         return Double.parseDouble(substring(tokenStart, tokenStart + tokenLength));
                     }
                     default -> {
+                        String fullString = substring(tokenStart, tokenStart + tokenLength);
                         try {
                             double d = Double.parseDouble(fullString);
                             if (d % 1 != 0 || fullString.contains(".") || fullString.contains("e")) {
