@@ -238,7 +238,9 @@ public final class SNBTReader extends DefaultStringReader {
             if (hexDigits.isEmpty()) return fullString; // 没值了代表这是个字符串.
             long value = Long.parseLong(hexDigits, 16);
             if (negativeHex) value = -value;
-            return (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) ? (int) value : value; // 默认返回的还是Int类型的喵.
+            // 默认返回的还是Int类型的, 三元坑我喵.
+            if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) return (int) value;
+            else return value;
         }
 
         // 布尔值检查
