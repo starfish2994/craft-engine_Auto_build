@@ -276,7 +276,7 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public String serverVersion() {
-        return Bukkit.getServer().getBukkitVersion().split("-")[0];
+        return VersionHelper.MINECRAFT_VERSION.versionString();
     }
 
     @Override
