@@ -70,5 +70,5 @@ public class Registries {
     public static final ResourceKey<Registry<FunctionFactory<PlayerOptionalContext>>> EVENT_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_function_factory"));
     public static final ResourceKey<Registry<ConditionFactory<PlayerOptionalContext>>> EVENT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_condition_factory"));
     public static final ResourceKey<Registry<PlayerSelectorFactory<?>>> PLAYER_SELECTOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_selector"));
-	public static final ResourceKey<Registry<SeatFactory>> SEAT_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("seat_factory"));
+    public static final ResourceKey<Registry<SeatFactory>> SEAT_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("seat_factory"));
 }

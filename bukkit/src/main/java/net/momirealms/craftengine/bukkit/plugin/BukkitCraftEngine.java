@@ -7,14 +7,15 @@ import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehaviors;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurnitureManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BukkitHitBoxTypes;
-import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
 import net.momirealms.craftengine.bukkit.entity.furniture.seat.BukkitSeatTypes;
+import net.momirealms.craftengine.bukkit.entity.projectile.BukkitProjectileManager;
 import net.momirealms.craftengine.bukkit.font.BukkitFontManager;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BukkitItemBehaviors;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.bukkit.loot.BukkitVanillaLootManager;
 import net.momirealms.craftengine.bukkit.pack.BukkitPackManager;
+import net.momirealms.craftengine.bukkit.plugin.agent.LevelInjector;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandManager;
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitSenderFactory;
 import net.momirealms.craftengine.bukkit.plugin.gui.BukkitGuiManager;
@@ -134,6 +135,12 @@ public class BukkitCraftEngine extends CraftEngine {
             ProtectedFieldVisitor.init();
         } catch (Exception e) {
             throw new InjectionException("Error initializing ProtectedFieldVisitor", e);
+        }
+        try {
+            logger.info("Patching the server...");
+            LevelInjector.patch();
+        } catch (Exception e) {
+            throw new InjectionException("Error injecting Level", e);
         }
         super.onPluginLoad();
         super.blockManager.init();
@@ -271,7 +278,7 @@ public class BukkitCraftEngine extends CraftEngine {
 
     @Override
     public String serverVersion() {
-        return Bukkit.getServer().getBukkitVersion().split("-")[0];
+        return VersionHelper.MINECRAFT_VERSION.versionString();
     }
 
     @Override

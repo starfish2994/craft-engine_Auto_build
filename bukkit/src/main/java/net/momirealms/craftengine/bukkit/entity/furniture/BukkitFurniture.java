@@ -50,7 +50,7 @@ public class BukkitFurniture implements Furniture {
     // cache
     private final List<Integer> fakeEntityIds;
     private final List<Integer> entityIds;
-    private final Map<Integer, HitBox> hitBoxes  = new Int2ObjectArrayMap<>();
+    private final Map<Integer, HitBox> hitBoxes = new Int2ObjectArrayMap<>();
     private final Map<Integer, AABB> aabb = new Int2ObjectArrayMap<>();
     private final boolean minimized;
     private final boolean hasExternalModel;
@@ -345,7 +345,7 @@ public class BukkitFurniture implements Furniture {
         EntityType type;
         if (limitPlayerRotation) {
             type = EntityType.ARMOR_STAND;
-            loc = VersionHelper.isOrAbove1_20_2() ? loc.subtract(0,0.9875,0) : loc.subtract(0,0.990625,0);
+            loc = VersionHelper.isOrAbove1_20_2() ? loc.subtract(0, 0.9875, 0) : loc.subtract(0, 0.990625, 0);
             if (function == null) {
                 function = entity -> {
                     ArmorStand armorStand = (ArmorStand) entity;
@@ -364,18 +364,18 @@ public class BukkitFurniture implements Furniture {
                     armorStand.setGravity(false);
                     armorStand.setPersistent(false);
                     armorStand.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER, furniture.baseEntityId());
-                    //armorStand.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
+                    // armorStand.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 };
             }
         } else {
             type = EntityType.ITEM_DISPLAY;
-            loc = VersionHelper.isOrAbove1_20_2() ? loc : loc.subtract(0,0.25,0);
+            loc = VersionHelper.isOrAbove1_20_2() ? loc : loc.subtract(0, 0.25, 0);
             if (function == null) {
                 function = entity -> {
                     ItemDisplay itemDisplay = (ItemDisplay) entity;
                     itemDisplay.setPersistent(false);
                     itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_BASE_ENTITY_KEY, PersistentDataType.INTEGER, furniture.baseEntityId());
-                    //itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
+                    // itemDisplay.getPersistentDataContainer().set(BukkitFurnitureManager.FURNITURE_SEAT_VECTOR_3F_KEY, PersistentDataType.STRING, seat.offset().x + ", " + seat.offset().y + ", " + seat.offset().z);
                 };
             }
         }

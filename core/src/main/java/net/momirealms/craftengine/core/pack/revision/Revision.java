@@ -48,7 +48,7 @@ public interface Revision {
         @Override
         public String versionString() {
             if (this.versionString == null) {
-                this.versionString = this.minVersion.version().replace(".", "_");
+                this.versionString = this.minVersion.versionString().replace(".", "_");
             }
             return this.versionString;
         }
@@ -118,7 +118,7 @@ public interface Revision {
         @Override
         public String versionString() {
             if (this.versionString == null) {
-                this.versionString = this.minVersion.version().replace(".", "_") + "-" + this.maxVersion.version().replace(".", "_");
+                this.versionString = this.minVersion.versionString().replace(".", "_") + "-" + this.maxVersion.versionString().replace(".", "_");
             }
             return this.versionString;
         }
