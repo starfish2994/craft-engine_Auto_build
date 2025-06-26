@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
+import net.momirealms.craftengine.bukkit.util.ItemUtils;
 
 public final class MItems {
     private MItems() {}
@@ -22,4 +23,6 @@ public final class MItems {
             throw new ReflectionInitException("Failed to init Items", e);
         }
     }
+
+    public static final Object AIR$Item = FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(ItemUtils.AIR);
 }
