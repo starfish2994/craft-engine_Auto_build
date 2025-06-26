@@ -16,6 +16,11 @@ public final class SNBTReader extends DefaultStringReader {
     private static final char KEY_VALUE_SEPARATOR = ':';
     private static final char ELEMENT_SEPARATOR = ',';
 
+    private static final char ARRAY_DELIMITER = ';';
+    private static final char BYTE_ARRAY = 'b';
+    private static final char INT_ARRAY = 'i';
+    private static final char LONG_ARRAY = 'l';
+
     // 数字类型后缀
     private static final char BYTE_SUFFIX = 'b';
     private static final char SHORT_SUFFIX = 's';
@@ -81,9 +86,30 @@ public final class SNBTReader extends DefaultStringReader {
     }
 
     // 解析列表值 [1, 2, 3]
-    private List<Object> parseList() {
+    private Object parseList() {
         skip(); // 跳过 '['
         skipWhitespace();
+
+        // 检查接下来的2个非空格字符, 确认是否要走数组解析.
+        if (canRead()) {
+            setMarker(cursor); // 记录指针, 尝试解析数组.
+            char typeChar = Character.toLowerCase(peek());
+            if (typeChar == BYTE_ARRAY || typeChar == INT_ARRAY || typeChar == LONG_ARRAY) {
+                skip();
+                skipWhitespace();
+                if (canRead() && peek() == ARRAY_DELIMITER) {  // 下一个必须是 ';'
+                    skip();
+                    return switch (typeChar){ // 解析并返回数组喵
+                        case BYTE_ARRAY -> parseArray(Byte.class);
+                        case INT_ARRAY -> parseArray(Integer.class);
+                        case LONG_ARRAY -> parseArray(Long.class);
+                        default -> throw new IllegalArgumentException("Unknown typed-array prefix: " + typeChar);
+                    };
+                }
+            }
+            restore(); // 复原指针.
+        }
+
         List<Object> elementList = new ArrayList<>();
 
         if (canRead() && peek() != LIST_END) {
@@ -98,6 +124,55 @@ public final class SNBTReader extends DefaultStringReader {
         }
         skip(); // 跳过 ']'
         return elementList;
+    }
+
+    // 解析数组 [I; 11, 41, 54]
+    // ArrayType -> B, I, L.
+    private Object parseArray(Class<?> arrayType) {
+        skipWhitespace();
+        // 用来暂存解析出的数字
+        List<Number> elements = new ArrayList<>();
+        if (canRead() && peek() != LIST_END) {
+            do {
+                Object element = parseValue();
+
+                // 1.21.6的SNBT原版是支持 {key:[B;1,2b,0xFF]} 这种奇葩写法的, 越界部分会被自动舍弃, 如0xff的byte值为-1.
+                // 如果需要和原版对齐, 那么只需要判断是否是数字就行了.
+                // if (!(element instanceof Number number))
+                //    throw new IllegalArgumentException("Error element type at pos " + getCursor());
+                if (!arrayType.isInstance(element))
+                    throw new IllegalArgumentException("Error element type at pos " + getCursor());
+
+                elements.add((Number) element); // 校验通过后加入
+                skipWhitespace();
+            } while (canRead() && peek() == ELEMENT_SEPARATOR && ++cursor > 0 /* 跳过 ',' */);
+        }
+
+        if (!canRead() || peek() != LIST_END)
+            throw new IllegalArgumentException("Expected ']' at position " + getCursor());
+
+        skip(); // 跳过 ']'
+
+        // 根据数组类型创建并返回对应的数组
+        // 构造并返回真正的 Java 数组
+        return switch (arrayType.getSimpleName()) {
+            case "Byte" -> {
+                byte[] arr = new byte[elements.size()];
+                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).byteValue();
+                yield arr;
+            }
+            case "Integer" -> {
+                int[] arr = new int[elements.size()];
+                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).intValue();
+                yield arr;
+            }
+            case "Long" -> {
+                long[] arr = new long[elements.size()];
+                for (int i = 0; i < arr.length; i++) arr[i] = elements.get(i).longValue();
+                yield arr;
+            }
+            default -> throw new IllegalArgumentException("Unknown typed-array prefix: " + getCursor());
+        };
     }
 
     // 解析Key值
@@ -149,18 +224,35 @@ public final class SNBTReader extends DefaultStringReader {
             }
         }
         int tokenLength = getCursor() - tokenStart - lastWhitespace; // 计算值长度需要再减去尾部空格.
-        if (tokenLength == 0) throw new IllegalArgumentException("Empty value at position " + tokenStart);
-        if (contentHasWhitespace) return substring(tokenStart, tokenStart + tokenLength); // 如果值的中间有空格, 一定是字符串, 可直接返回.
+        if (tokenLength == 0) return null; // 如果值长度为0则返回null.
+        String fullString = substring(tokenStart, tokenStart + tokenLength);
+        if (contentHasWhitespace) return fullString; // 如果值的中间有空格, 一定是字符串, 可直接返回.
+
+        // 十六进制处理
+        String fullHex = fullString.toLowerCase();
+        boolean negativeHex = fullHex.startsWith("-0x");
+        boolean positiveHex = fullHex.startsWith("0x");
+        if (negativeHex || positiveHex) {
+            String hexDigits = fullHex.substring(negativeHex ? 3 : 2); // 去掉 0x / -0x
+            if (hexDigits.isEmpty()) return fullString; // 没值了代表这是个字符串.
+            long value = Long.parseLong(hexDigits, 16);
+            if (negativeHex) value = -value;
+            // 默认返回的还是Int类型的, 三元坑我喵.
+            if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) return (int) value;
+            else return value;
+        }
 
         // 布尔值检查
         if (tokenLength == 4) {
             if (matchesAt(tokenStart, "true")) return Boolean.TRUE;
+            if (matchesAt(tokenStart, "null")) return null; // 支持 {key:null}.
         } else if (tokenLength == 5) {
             if (matchesAt(tokenStart, "false")) return Boolean.FALSE;
         }
         if (tokenLength > 1) {
             // 至少有1个字符，给了后缀的可能性
             char lastChar = charAt(tokenStart + tokenLength - 1);
+            lastChar = Character.toLowerCase(lastChar); // 强制转小写进行匹配.
             try {
                 switch (lastChar) {
                     case BYTE_SUFFIX -> {
@@ -179,7 +271,6 @@ public final class SNBTReader extends DefaultStringReader {
                         return Double.parseDouble(substring(tokenStart, tokenStart + tokenLength));
                     }
                     default -> {
-                        String fullString = substring(tokenStart, tokenStart + tokenLength);
                         try {
                             double d = Double.parseDouble(fullString);
                             if (d % 1 != 0 || fullString.contains(".") || fullString.contains("e")) {
