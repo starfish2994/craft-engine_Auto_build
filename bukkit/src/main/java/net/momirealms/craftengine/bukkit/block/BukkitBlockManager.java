@@ -320,7 +320,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             for (Object block : (Iterable<Object>) MBuiltInRegistries.BLOCK) {
                 Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(block);
                 if (affectedBlockSounds.contains(soundType)) {
-                    Object state = getOnlyBlockState(block);
+                    Object state = FastNMS.INSTANCE.method$Block$defaultState(block);
                     if (BlockStateUtils.isVanillaBlock(state)) {
                         affectedBlocks.add(block);
                     }
@@ -792,7 +792,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             CoreReflections.method$Holder$Reference$bindValue.invoke(blockHolder, newRealBlock);
             CoreReflections.field$Holder$Reference$tags.set(blockHolder, Set.of());
 
-            newBlockState = getOnlyBlockState(newRealBlock);
+            newBlockState = FastNMS.INSTANCE.method$Block$defaultState(newRealBlock);
             CoreReflections.method$IdMapper$add.invoke(CoreReflections.instance$Block$BLOCK_STATE_REGISTRY, newBlockState);
 
             if (isNoteBlock) {
@@ -836,13 +836,6 @@ public class BukkitBlockManager extends AbstractBlockManager {
             CoreReflections.field$BlockBehaviour$Properties$id.set(blockProperties, realBlockResourceKey);
         }
         return blockProperties;
-    }
-
-    private Object getOnlyBlockState(Object newBlock) throws IllegalAccessException {
-        Object stateDefinition = CoreReflections.field$Block$StateDefinition.get(newBlock);
-        @SuppressWarnings("unchecked")
-        ImmutableList<Object> states = (ImmutableList<Object>) CoreReflections.field$StateDefinition$states.get(stateDefinition);
-        return states.get(0);
     }
 
     @SuppressWarnings("unchecked")

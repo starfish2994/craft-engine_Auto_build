@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -1152,6 +1153,28 @@ public final class CoreReflections {
             )
     );
 
+    public static final Class<?> clazz$StateDefinition$Builder = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.BlockStateList$a",
+                    "world.level.block.state.StateDefinition$Builder"
+            )
+    );
+
+    public static final Class<?> clazz$StateDefinition$Factory = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.BlockStateList$b",
+                    "world.level.block.state.StateDefinition$Factory"
+            )
+    );
+
+    public static final Constructor<?> constructor$StateDefinition$Builder = requireNonNull(
+            ReflectionUtils.getTheOnlyConstructor(clazz$StateDefinition$Builder)
+    );
+
+    public static final Method method$StateDefinition$Builder$create = requireNonNull(
+            ReflectionUtils.getMethod(clazz$StateDefinition$Builder, clazz$StateDefinition, Function.class, clazz$StateDefinition$Factory)
+    );
+
     public static final Field field$Block$StateDefinition = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$Block, clazz$StateDefinition, 0)
     );
@@ -1572,8 +1595,8 @@ public final class CoreReflections {
         }
     }
 
-    public static final Method method$Block$defaultBlockState = requireNonNull(
-            ReflectionUtils.getMethod(clazz$Block, clazz$BlockState)
+    public static final Field field$Block$defaultBlockState = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$Block, clazz$BlockState, 0)
     );
 
     public static final Method method$Entity$getOnPos = requireNonNull(
@@ -3503,4 +3526,5 @@ public final class CoreReflections {
             throw new RuntimeException(e);
         }
     }
+
 }

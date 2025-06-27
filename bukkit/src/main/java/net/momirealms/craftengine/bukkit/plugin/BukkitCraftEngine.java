@@ -108,6 +108,7 @@ public class BukkitCraftEngine extends CraftEngine {
         if (super.blockManager != null) return;
         try {
             BlockGenerator.init();
+            BlockStateGenerator.init();
             super.blockManager = new BukkitBlockManager(this);
         } catch (Exception e) {
             throw new InjectionException("Error injecting blocks", e);

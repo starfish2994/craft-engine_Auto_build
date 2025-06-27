@@ -27,14 +27,14 @@ public final class MBlocks {
     static {
         try {
             AIR = getById("air");
-            AIR$defaultState = CoreReflections.method$Block$defaultBlockState.invoke(AIR);
+            AIR$defaultState = FastNMS.INSTANCE.method$Block$defaultState(AIR);
             FIRE = getById("fire");
             SOUL_FIRE = getById("soul_fire");
             STONE = getById("stone");
-            STONE$defaultState = CoreReflections.method$Block$defaultBlockState.invoke(STONE);
+            STONE$defaultState = FastNMS.INSTANCE.method$Block$defaultState(STONE);
             ICE = getById("ice");
             SHORT_GRASS = getById(VersionHelper.isOrAbove1_20_3() ? "short_grass" : "grass");
-            SHORT_GRASS$defaultState = CoreReflections.method$Block$defaultBlockState.invoke(SHORT_GRASS);
+            SHORT_GRASS$defaultState = FastNMS.INSTANCE.method$Block$defaultState(SHORT_GRASS);
             SHULKER_BOX = getById("shulker_box");
             COMPOSTER = getById("composter");
         } catch (ReflectiveOperationException e) {

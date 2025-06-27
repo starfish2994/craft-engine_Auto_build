@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.injector;
 
+import com.google.common.collect.ImmutableList;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.ClassFileVersion;
 import net.bytebuddy.description.modifier.Visibility;
@@ -30,6 +31,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public final class BlockGenerator {
     private static final BukkitBlockShape STONE_SHAPE =
@@ -201,6 +203,12 @@ public final class BlockGenerator {
         field$CraftEngineBlock$shape.set(newBlockInstance, shapeHolder);
         field$CraftEngineBlock$isNoteBlock.set(newBlockInstance, replacedBlock.equals(BlockKeys.NOTE_BLOCK));
         field$CraftEngineBlock$isTripwire.set(newBlockInstance, replacedBlock.equals(BlockKeys.TRIPWIRE));
+
+        Object stateDefinitionBuilder = CoreReflections.constructor$StateDefinition$Builder.newInstance(newBlockInstance);
+        Object stateDefinition = CoreReflections.method$StateDefinition$Builder$create.invoke(stateDefinitionBuilder,
+                (Function<Object, Object>) FastNMS.INSTANCE::method$Block$defaultState, BlockStateGenerator.instance$StateDefinition$Factory);
+        CoreReflections.field$Block$StateDefinition.set(newBlockInstance, stateDefinition);
+        CoreReflections.field$Block$defaultBlockState.set(newBlockInstance, ((ImmutableList<?>) CoreReflections.field$StateDefinition$states.get(stateDefinition)).getFirst());
         return newBlockInstance;
     }
 
