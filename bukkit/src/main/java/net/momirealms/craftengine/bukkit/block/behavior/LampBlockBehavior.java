@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+@SuppressWarnings("DuplicatedCode")
 public class LampBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<Boolean> litProperty;
@@ -51,11 +51,12 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
     @Override
     public void neighborChanged(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object blockState = args[0];
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (state == null || state.isEmpty()) return;
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) return;
         Object world = args[1];
         Object blockPos = args[2];
-        boolean lit = state.get(this.litProperty);
+        ImmutableBlockState customState = optionalCustomState.get();
+        boolean lit = customState.get(this.litProperty);
         if (lit != FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
             if (lit) {
                 FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 4);
@@ -63,7 +64,7 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
                 if (FastNMS.INSTANCE.method$CraftEventFactory$callRedstoneChange(world, blockPos, 0, 15).getNewCurrent() != 15) {
                     return;
                 }
-                FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);
+                FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, customState.cycle(this.litProperty).customBlockState().handle(), 2);
             }
         }
     }

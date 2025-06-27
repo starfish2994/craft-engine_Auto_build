@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.block;
 
-public class BlockRegistryMirror {
+public final class BlockRegistryMirror {
     private static BlockStateWrapper[] customBlockStates;
     private static BlockStateWrapper stoneState;
 

@@ -218,11 +218,10 @@ public class BlockEventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreakBlock(BlockBreakBlockEvent event) {
         Block block = event.getBlock();
-        Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
-        int stateId = BlockStateUtils.blockStateToId(blockState);
-        if (!BlockStateUtils.isVanillaBlock(stateId)) {
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(block.getWorld()), LocationUtils.toBlockPos(block.getX(), block.getY(), block.getZ()));
+        if (BlockStateUtils.isVanillaBlock(blockState)) {
             // override vanilla block loots
-            this.plugin.vanillaLootManager().getBlockLoot(stateId).ifPresent(it -> {
+            this.plugin.vanillaLootManager().getBlockLoot(BlockStateUtils.blockStateToId(blockState)).ifPresent(it -> {
                 if (it.override()) {
                     event.getDrops().clear();
                     event.setExpToDrop(0);
@@ -249,12 +248,12 @@ public class BlockEventListener implements Listener {
         if (!(entity instanceof Player player)) return;
         BlockPos pos = EntityUtils.getOnPos(player);
         Block block = player.getWorld().getBlockAt(pos.x(), pos.y(), pos.z());
-        Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
-        int stateId = BlockStateUtils.blockStateToId(blockState);
-        if (!BlockStateUtils.isVanillaBlock(stateId)) {
+        Object blockState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(block.getWorld()), LocationUtils.toBlockPos(block.getX(), block.getY(), block.getZ()));
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isPresent()) {
             Location location = player.getLocation();
-            ImmutableBlockState state = manager.getImmutableBlockStateUnsafe(stateId);
-            Cancellable cancellable = Cancellable.dummy();
+            ImmutableBlockState state = optionalCustomState.get();
+            Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
             state.owner().value().execute(PlayerOptionalContext.of(this.plugin.adapt(player), ContextHolder.builder()
                     .withParameter(DirectContextParameters.EVENT, cancellable)
                     .withParameter(DirectContextParameters.POSITION, new WorldPosition(new BukkitWorld(event.getWorld()), LocationUtils.toVec3d(location)))
@@ -262,19 +261,18 @@ public class BlockEventListener implements Listener {
                     .withParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, state)
             ), EventTrigger.STEP);
             if (cancellable.isCancelled()) {
-                event.setCancelled(true);
                 return;
             }
             player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume().get(), state.sounds().stepSound().pitch().get());
         } else if (Config.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
-            if (manager.isBlockSoundRemoved(ownerBlock)) {
+            if (this.manager.isBlockSoundRemoved(ownerBlock)) {
                 try {
                     Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(ownerBlock);
                     Object stepSound = CoreReflections.field$SoundType$stepSound.get(soundType);
                     player.playSound(player.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(stepSound).toString(), SoundCategory.BLOCKS, 0.15f, 1f);
                 } catch (ReflectiveOperationException e) {
-                    plugin.logger().warn("Failed to get sound type", e);
+                    this.plugin.logger().warn("Failed to get sound type", e);
                 }
             }
         }

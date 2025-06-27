@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -15,7 +14,6 @@ import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -57,26 +55,17 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
 
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Object world;
-        Object blockPos;
-        Object neighborState;
+        Object world = args[updateShape$level];
+        Object blockPos = args[updateShape$blockPos];
+        Object neighborState = args[updateShape$neighborState];
         Object blockState = args[0];
-        if (VersionHelper.isOrAbove1_21_2()) {
-            world = args[1];
-            neighborState = args[6];
-            blockPos = args[3];
-        } else {
-            world = args[3];
-            blockPos = args[4];
-            neighborState = args[2];
-        }
-        ImmutableBlockState thisState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (thisState != null) {
-            Optional<LeavesBlockBehavior> optionalBehavior = thisState.behavior().getAs(LeavesBlockBehavior.class);
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isPresent()) {
+            Optional<LeavesBlockBehavior> optionalBehavior = optionalCustomState.get().behavior().getAs(LeavesBlockBehavior.class);
             if (optionalBehavior.isPresent()) {
                 LeavesBlockBehavior behavior = optionalBehavior.get();
                 int distance = behavior.getDistanceAt(neighborState) + 1;
-                if (distance != 1 || behavior.getDistance(thisState) != distance) {
+                if (distance != 1 || behavior.getDistance(optionalCustomState.get()) != distance) {
                     FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 1);
                 }
             }
@@ -89,13 +78,14 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
         Object blockState = args[0];
         Object level = args[1];
         Object blockPos = args[2];
-        ImmutableBlockState currentState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (currentState != null && !currentState.isEmpty()) {
-            Optional<LeavesBlockBehavior> optionalBehavior = currentState.behavior().getAs(LeavesBlockBehavior.class);
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isPresent()) {
+            ImmutableBlockState customState = optionalCustomState.get();
+            Optional<LeavesBlockBehavior> optionalBehavior = customState.behavior().getAs(LeavesBlockBehavior.class);
             if (optionalBehavior.isPresent()) {
                 LeavesBlockBehavior behavior = optionalBehavior.get();
-                ImmutableBlockState newState = behavior.updateDistance(currentState, level, blockPos);
-                if (newState != currentState) {
+                ImmutableBlockState newState = behavior.updateDistance(customState, level, blockPos);
+                if (newState != customState) {
                     if (blockState == newState.customBlockState().handle()) {
                         CoreReflections.method$BlockStateBase$updateNeighbourShapes.invoke(blockState, level, blockPos, UpdateOption.UPDATE_ALL.flags(), 512);
                     } else {
@@ -156,14 +146,14 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
     private int getDistanceAt(Object blockState) throws ReflectiveOperationException {
         boolean isLog = FastNMS.INSTANCE.method$BlockStateBase$is(blockState, LOG_TAG);
         if (isLog) return 0;
-        int id = BlockStateUtils.blockStateToId(blockState);
-        if (BlockStateUtils.isVanillaBlock(id)) {
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) {
             Object distanceProperty = CoreReflections.field$LeavesBlock$DISTANCE.get(null);
             boolean hasDistanceProperty = (boolean) CoreReflections.method$StateHolder$hasProperty.invoke(blockState, distanceProperty);
             if (!hasDistanceProperty) return this.maxDistance;
             return (int) CoreReflections.method$StateHolder$getValue.invoke(blockState, distanceProperty);
         } else {
-            ImmutableBlockState anotherBlockState = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(id);
+            ImmutableBlockState anotherBlockState = optionalCustomState.get();
             Optional<LeavesBlockBehavior> optionalAnotherBehavior = anotherBlockState.behavior().getAs(LeavesBlockBehavior.class);
             return optionalAnotherBehavior.map(leavesBlockBehavior -> leavesBlockBehavior.getDistance(anotherBlockState)).orElse(this.maxDistance);
         }

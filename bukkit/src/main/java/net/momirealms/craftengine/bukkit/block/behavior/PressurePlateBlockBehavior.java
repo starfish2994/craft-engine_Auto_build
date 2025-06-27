@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
 import io.papermc.paper.event.entity.EntityInsideBlockEvent;
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
@@ -54,6 +53,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         this.pressedTime = pressedTime;
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object state = args[0];
@@ -105,6 +105,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         if (signalForState == 0) {
             this.checkPressed(args[3], args[1], args[2], state, signalForState, thisBlock);
         } else {
+            // todo 为什么
             FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(args[1], args[2], thisBlock, this.pressedTime);
         }
     }
@@ -119,9 +120,9 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
     }
 
     private Object setSignalForState(Object state, int strength) {
-        ImmutableBlockState blockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(state));
-        if (blockState == null || blockState.isEmpty()) return state;
-        return blockState.with(this.poweredProperty, strength > 0).customBlockState().handle();
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(state);
+        if (optionalCustomState.isEmpty()) return state;
+        return optionalCustomState.get().with(this.poweredProperty, strength > 0).customBlockState().handle();
     }
 
     private void checkPressed(@Nullable Object entity, Object level, Object pos, Object state, int currentSignal, Object thisBlock) {

@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
@@ -1316,7 +1317,7 @@ public class PacketConsumers {
         if (result == null) return;
         Block hitBlock = result.getHitBlock();
         if (hitBlock == null) return;
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(hitBlock.getBlockData()));
+        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(hitBlock);
         // not a custom block
         if (state == null || state.isEmpty()) return;
         Key itemId = state.settings().itemId();

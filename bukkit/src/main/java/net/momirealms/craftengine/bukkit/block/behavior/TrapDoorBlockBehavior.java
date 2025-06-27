@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+@SuppressWarnings("DuplicatedCode")
 public class TrapDoorBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<SingleBlockHalf> halfProperty;

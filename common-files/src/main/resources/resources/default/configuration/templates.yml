@@ -3123,6 +3123,20 @@ templates#loot_tables:
           - type: furniture_item
             item: ${item}
 
+  # drop the door
+
+  # template: default:loot_table/door
+  default:loot_table/door:
+    pools:
+      - rolls: 1
+        entries:
+          - type: item
+            item: ${__NAMESPACE__}:${__ID__}
+            conditions:
+              - type: match_block_property
+                properties:
+                  half: lower
+
   # drop with silk touch
 
   # template: default:loot_table/silk_touch

@@ -47,6 +47,7 @@ public class OnLiquidBlockBehavior extends AbstractCanSurviveBlockBehavior {
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) {
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);

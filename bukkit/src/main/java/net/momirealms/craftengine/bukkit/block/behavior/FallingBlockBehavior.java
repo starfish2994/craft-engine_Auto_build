@@ -73,6 +73,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public void onBrokenAfterFall(Object thisBlock, Object[] args) throws Exception {
         // Use EntityRemoveEvent for 1.20.3+

@@ -5,7 +5,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import net.kyori.adventure.text.Component;
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
@@ -450,15 +450,15 @@ public class BukkitServerPlayer extends Player {
             }
             return;
         }
-        int stateId = BlockStateUtils.blockDataToId(hitBlock.getBlockData());
-        if (BlockStateUtils.isVanillaBlock(stateId)) {
+        ImmutableBlockState nextBlock = CraftEngineBlocks.getCustomBlockState(hitBlock);
+        if (nextBlock == null) {
             if (!this.clientSideCanBreak) {
                 setClientSideCanBreakBlock(true);
             }
-            return;
-        }
-        if (this.clientSideCanBreak) {
-            setClientSideCanBreakBlock(false);
+        } else {
+            if (this.clientSideCanBreak) {
+                setClientSideCanBreakBlock(false);
+            }
         }
     }
 
@@ -612,10 +612,10 @@ public class BukkitServerPlayer extends Player {
                 }
 
                 float progressToAdd = getDestroyProgress(destroyedState, hitPos);
-                int id = BlockStateUtils.blockStateToId(destroyedState);
-                ImmutableBlockState customState = BukkitBlockManager.instance().getImmutableBlockState(id);
+                Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(destroyedState);
                 // double check custom block
-                if (customState != null && !customState.isEmpty()) {
+                if (optionalCustomState.isPresent()) {
+                    ImmutableBlockState customState = optionalCustomState.get();
                     BlockSettings blockSettings = customState.settings();
                     if (blockSettings.requireCorrectTool()) {
                         if (item != null) {
@@ -666,7 +666,7 @@ public class BukkitServerPlayer extends Player {
                             CoreReflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
                         }
                         // send break particle + (removed sounds)
-                        sendPacket(FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(WorldEvents.BLOCK_BREAK_EFFECT, blockPos, id, false), false);
+                        sendPacket(FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(WorldEvents.BLOCK_BREAK_EFFECT, blockPos, customState.customBlockState().registryId(), false), false);
                         this.lastSuccessfulBreak = currentTick;
                         this.destroyPos = null;
                         this.setIsDestroyingBlock(false, false);

@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
@@ -40,6 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+@SuppressWarnings("DuplicatedCode")
 public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<DoubleBlockHalf> halfProperty;
@@ -91,10 +91,11 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         DoubleBlockHalf half = customState.get(this.halfProperty);
         Object direction = VersionHelper.isOrAbove1_21_2() ? args[4] : args[1];
         if (DirectionUtils.isYAxis(direction) && half == DoubleBlockHalf.LOWER == (direction == CoreReflections.instance$Direction$UP)) {
-            ImmutableBlockState neighborState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(VersionHelper.isOrAbove1_21_2() ? args[6] : args[2]));
-            if (neighborState == null || neighborState.isEmpty()) {
+            Optional<ImmutableBlockState> optionalNeighborState = BlockStateUtils.getOptionalCustomBlockState(args[updateShape$neighborState]);
+            if (optionalNeighborState.isEmpty()) {
                 return MBlocks.AIR$defaultState;
             }
+            ImmutableBlockState neighborState = optionalNeighborState.get();
             Optional<DoorBlockBehavior> anotherDoorBehavior = neighborState.behavior().getAs(DoorBlockBehavior.class);
             if (anotherDoorBehavior.isEmpty()) {
                 return MBlocks.AIR$defaultState;
@@ -120,8 +121,9 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     @Override
     public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         if (this.canOpenByWindCharge && FastNMS.INSTANCE.method$Explosion$canTriggerBlocks(args[3])) {
-            ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(args[0]));
-            if (state == null || state.isEmpty()) return;
+            Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(args[0]);
+            if (optionalCustomState.isEmpty()) return;
+            ImmutableBlockState state = optionalCustomState.get();
             if (state.get(this.poweredProperty)) return;
             if (state.get(this.halfProperty) == DoubleBlockHalf.LOWER) {
                 this.setOpen(null, args[1], state, LocationUtils.fromBlockPos(args[2]), !this.isOpen(state));
@@ -193,15 +195,13 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     }
 
     private boolean isAnotherDoor(Object blockState) {
-        int id = BlockStateUtils.blockStateToId(blockState);
-        if (BlockStateUtils.isVanillaBlock(id)) {
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) {
             BlockData blockData = BlockStateUtils.fromBlockData(blockState);
             return blockData instanceof Door door && door.getHalf() == Bisected.Half.BOTTOM;
         } else {
-            ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(id);
-            if (state.isEmpty()) return false;
-            Optional<DoorBlockBehavior> optional = state.behavior().getAs(DoorBlockBehavior.class);
-            return optional.isPresent() && state.get(optional.get().halfProperty) == DoubleBlockHalf.LOWER;
+            Optional<DoorBlockBehavior> optional = optionalCustomState.get().behavior().getAs(DoorBlockBehavior.class);
+            return optional.isPresent() && optionalCustomState.get().get(optional.get().halfProperty) == DoubleBlockHalf.LOWER;
         }
     }
 
@@ -233,10 +233,10 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
     public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         Object type = VersionHelper.isOrAbove1_20_5() ? args[1] : args[3];
         Object blockState = args[0];
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (state == null || state.isEmpty()) return false;
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) return false;
         if (type == CoreReflections.instance$PathComputationType$LAND || type == CoreReflections.instance$PathComputationType$AIR) {
-            return state.get(this.openProperty);
+            return optionalCustomState.get().get(this.openProperty);
         }
         return false;
     }

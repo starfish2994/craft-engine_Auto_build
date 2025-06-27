@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("DuplicatedCode")
 public class GrassBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
 

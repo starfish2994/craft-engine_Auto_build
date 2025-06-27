@@ -1320,7 +1320,6 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 8)
     );
 
-
     public static final Field field$BlockStateBase$lightEmission = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, int.class, 0)
     );

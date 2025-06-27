@@ -73,6 +73,7 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
         return new Tuple<>(mcTags, mcBlocks, customBlocks);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     protected boolean canSurvive(Object thisBlock, Object state, Object world, Object blockPos) throws Exception {
         int y = FastNMS.INSTANCE.field$Vec3i$y(blockPos);
