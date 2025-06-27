@@ -1,4 +1,3 @@
-
 package net.momirealms.craftengine.core.plugin.config;
 
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
@@ -62,7 +61,6 @@ public class StringKeyConstructor extends SafeConstructor {
     /**
      * 场景A (块合并与路径展开): 构造一个Map，同时处理其中的版本化块合并和 `::` 分隔的深层键。
      */
-    @SuppressWarnings("unchecked")
     @Override
     protected Map<Object, Object> constructMapping(MappingNode node) {
         Map<Object, Object> map = new LinkedHashMap<>();
@@ -101,6 +99,7 @@ public class StringKeyConstructor extends SafeConstructor {
     }
 
     // 处理深层键
+    @SuppressWarnings("unchecked")
     private void processDeepKey(Map<Object, Object> rootMap, String fullKey, Node valueNode, Node keyNode) {
         // 分割出不同的层级
         String[] keyParts = fullKey.split(DEEP_KEY_SEPARATOR);
