@@ -1487,6 +1487,14 @@ public final class NetworkReflections {
             "network.codec.StreamCodec"
     );
 
-    public static final Object instance$ParticleTypes$STREAM_CODEC = !VersionHelper.isOrAbove1_20_5() ? null :
-            ReflectionUtils.getDeclaredField(CoreReflections.clazz$ParticleTypes, clazz$StreamCodec, 0);
+    public static final Object instance$ParticleTypes$STREAM_CODEC;
+
+    static {
+        try {
+            instance$ParticleTypes$STREAM_CODEC = !VersionHelper.isOrAbove1_20_5() ? null :
+                    ReflectionUtils.getDeclaredField(CoreReflections.clazz$ParticleTypes, clazz$StreamCodec, 0).get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize ParticleTypes$STREAM_CODEC", e);
+        }
+    }
 }
