@@ -65,7 +65,7 @@ public final class BlockStateGenerator {
         public static final GetDropsInterceptor INSTANCE = new GetDropsInterceptor();
 
         @RuntimeType
-        public Object intercept(@This Object thisObj, @AllArguments Object[] args) throws Throwable {
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
             ImmutableBlockState state = ((CustomBlockStateHolder) thisObj).customBlockState();
             if (state == null) return List.of();
             Object builder = args[0];
