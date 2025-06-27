@@ -32,11 +32,10 @@ public abstract class AbstractCanSurviveBlockBehavior extends BukkitBlockBehavio
         if (!canSurvive(thisBlock, args, () -> true)) {
             BlockStateUtils.getOptionalCustomBlockState(blockState).ifPresent(customState -> {
                 if (!customState.isEmpty() && customState.owner().value() == this.customBlock) {
-                    FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
                     net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
                     WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(LocationUtils.fromBlockPos(blockPos)));
                     world.playBlockSound(position, customState.sounds().breakSound());
-                    FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, customState.customBlockState().registryId());
+                    FastNMS.INSTANCE.method$Level$destroyBlock(level, blockPos, true);
                 }
             });
         }
