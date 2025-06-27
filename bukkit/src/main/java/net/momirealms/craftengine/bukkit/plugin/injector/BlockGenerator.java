@@ -59,9 +59,7 @@ public final class BlockGenerator {
                 .implement(CoreReflections.clazz$BonemealableBlock)
                 .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
                 // internal interfaces
-                .implement(BehaviorHolder.class)
-                .implement(ShapeHolder.class)
-                .implement(ChainUpdateBlockIndicator.class)
+                .implement(CraftEngineNMSBlock.class)
                 .method(ElementMatchers.named("getBehaviorHolder"))
                 .intercept(FieldAccessor.ofField("behaviorHolder"))
                 .method(ElementMatchers.named("getShapeHolder"))

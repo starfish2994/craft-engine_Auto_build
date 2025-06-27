@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
+import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MAttributeHolders;
@@ -655,10 +656,10 @@ public class BukkitServerPlayer extends Player {
                             if (canBreak(hitPos, customState.vanillaBlockState().handle())) {
                                 // Error might occur so we use try here
                                 try {
-                                    FastNMS.INSTANCE.setMayBuild(serverPlayer, true);
+                                    FastNMS.INSTANCE.field$Player$mayBuild(serverPlayer, true);
                                     CoreReflections.method$ServerPlayerGameMode$destroyBlock.invoke(gameMode, blockPos);
                                 } finally {
-                                    FastNMS.INSTANCE.setMayBuild(serverPlayer, false);
+                                    FastNMS.INSTANCE.field$Player$mayBuild(serverPlayer, false);
                                 }
                             }
                         } else {
@@ -691,7 +692,14 @@ public class BukkitServerPlayer extends Player {
             double d1 = (double) hitPos.y() - otherLocation.getY();
             double d2 = (double) hitPos.z() - otherLocation.getZ();
             if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(FastNMS.INSTANCE.method$CraftPlayer$getHandle(other)), packet);
+                FastNMS.INSTANCE.method$Connection$send(
+                        FastNMS.INSTANCE.field$ServerGamePacketListenerImpl$connection(
+                                FastNMS.INSTANCE.field$Player$connection(
+                                        FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)
+                                )
+                        ),
+                        packet
+                );
             }
         }
     }
@@ -701,7 +709,7 @@ public class BukkitServerPlayer extends Player {
         if (this.lastUpdateInteractionRangeTick + 20 > gameTicks()) {
             return this.cachedInteractionRange;
         }
-        this.cachedInteractionRange = FastNMS.INSTANCE.getInteractionRange(serverPlayer());
+        this.cachedInteractionRange = FastNMS.INSTANCE.method$Player$getInteractionRange(serverPlayer());
         this.lastUpdateInteractionRangeTick = gameTicks();
         return this.cachedInteractionRange;
     }
@@ -807,7 +815,9 @@ public class BukkitServerPlayer extends Player {
         if (this.connection == null) {
             Object serverPlayer = serverPlayer();
             if (serverPlayer != null) {
-                this.connection = (ChannelHandler) FastNMS.INSTANCE.field$Player$connection$connection(serverPlayer);
+                this.connection = (ChannelHandler) FastNMS.INSTANCE.field$ServerGamePacketListenerImpl$connection(
+                        FastNMS.INSTANCE.field$Player$connection(serverPlayer)
+                );
             } else {
                 throw new IllegalStateException("Cannot init or find connection instance for player " + name());
             }

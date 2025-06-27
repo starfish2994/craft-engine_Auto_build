@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.sound;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
@@ -19,7 +20,10 @@ public class BukkitSoundManager extends AbstractSoundManager {
 
     public BukkitSoundManager(CraftEngine plugin) {
         super(plugin);
-        VANILLA_SOUND_EVENTS.addAll(FastNMS.INSTANCE.getAllVanillaSounds().stream().map(it -> Key.of(it.getNamespace(), it.getKey())).toList());
+        for (Object soundEvent : (Iterable<?>) MBuiltInRegistries.SOUND_EVENT) {
+            Object resourceLocation = FastNMS.INSTANCE.field$SoundEvent$location(soundEvent);
+            VANILLA_SOUND_EVENTS.add(KeyUtils.resourceLocationToKey(resourceLocation));
+        }
     }
 
     @Override

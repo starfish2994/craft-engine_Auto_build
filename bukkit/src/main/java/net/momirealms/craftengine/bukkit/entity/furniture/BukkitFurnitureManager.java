@@ -171,7 +171,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         BukkitFurniture furniture = this.furnitureByRealEntityId.remove(id);
         if (furniture != null) {
             Location location = entity.getLocation();
-            boolean isPreventing = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+            boolean isPreventing = FastNMS.INSTANCE.method$ServerLevel$isPreventingStatusUpdates(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld()), location.getBlockX() >> 4, location.getBlockZ() >> 4);
             if (!isPreventing) {
                 furniture.destroySeats();
             }
@@ -202,7 +202,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
 
         Location location = display.getLocation();
         boolean above1_20_1 = VersionHelper.isOrAbove1_20_2();
-        boolean preventChange = FastNMS.INSTANCE.isPreventingStatusUpdates(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+        boolean preventChange = FastNMS.INSTANCE.method$ServerLevel$isPreventingStatusUpdates(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld()), location.getBlockX() >> 4, location.getBlockZ() >> 4);
         if (above1_20_1) {
             if (!preventChange) {
                 BukkitFurniture furniture = addNewFurniture(display, customFurniture);
@@ -243,7 +243,7 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         World world = location.getWorld();
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
-        if (!FastNMS.INSTANCE.isPreventingStatusUpdates(world, chunkX, chunkZ)) {
+        if (!FastNMS.INSTANCE.method$ServerLevel$isPreventingStatusUpdates(FastNMS.INSTANCE.field$CraftWorld$ServerLevel(world), chunkX, chunkZ)) {
             entity.remove();
             return;
         }
@@ -381,7 +381,6 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
         int z = location.getBlockZ();
         if (!world.getBlockAt(x, y - 1, z).getType().isSolid()) return false;
         if (!world.getBlockAt(x, y, z).isPassable()) return false;
-        if (isEntityBlocking(location)) return false;
         return world.getBlockAt(x, y + 1, z).isPassable();
     }
 
@@ -402,19 +401,5 @@ public class BukkitFurnitureManager extends AbstractFurnitureManager {
             }
         }
         return null;
-    }
-
-    private boolean isEntityBlocking(Location location) {
-        World world = location.getWorld();
-        if (world == null) return true;
-        try {
-            Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 0.38, 2, 0.38);
-            for (Entity bukkitEntity : nearbyEntities) {
-                if (bukkitEntity instanceof Player) continue;
-                Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(bukkitEntity);
-                return FastNMS.INSTANCE.method$Entity$canBeCollidedWith(nmsEntity);
-            }
-        } catch (Exception ignored) {}
-        return false;
     }
 }

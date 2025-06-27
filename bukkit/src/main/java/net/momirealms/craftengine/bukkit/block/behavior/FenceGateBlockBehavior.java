@@ -83,7 +83,7 @@ public class FenceGateBlockBehavior extends BukkitBlockBehavior {
 
     public boolean isWall(Object state) {
         if (state == null) return false;
-        return FastNMS.INSTANCE.method$BlockStateBase$isTagKeyBlock(state, MTagKeys.Block$WALLS);
+        return FastNMS.INSTANCE.method$BlockStateBase$is(state, MTagKeys.Block$WALLS);
     }
 
     private Object getBlockState(Object level, BlockPos blockPos) {

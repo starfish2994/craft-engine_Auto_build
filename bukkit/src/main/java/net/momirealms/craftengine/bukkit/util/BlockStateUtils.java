@@ -104,14 +104,6 @@ public class BlockStateUtils {
         }
     }
 
-    public static Object createBlockUpdatePacket(BlockPos pos, ImmutableBlockState state) {
-        try {
-            return NetworkReflections.constructor$ClientboundBlockUpdatePacket.newInstance(LocationUtils.toBlockPos(pos), state.customBlockState().handle());
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static BlockData fromBlockData(Object blockState) {
         return FastNMS.INSTANCE.method$CraftBlockData$fromData(blockState);
     }
@@ -120,28 +112,14 @@ public class BlockStateUtils {
         return blockStateToId(blockDataToBlockState(blockData));
     }
 
-    public static Key getBlockOwnerId(Block block) {
-        return getBlockOwnerIdFromData(block.getBlockData());
-    }
-
     public static Key getBlockOwnerIdFromData(BlockData block) {
-        Object blockState = blockDataToBlockState(block);
-        return getBlockOwnerIdFromState(blockState);
+        return getBlockOwnerIdFromState(blockDataToBlockState(block));
     }
 
     public static Key getBlockOwnerIdFromState(Object blockState) {
-        return getBlockOwnerIdFromString(blockState.toString());
-    }
-
-    public static Key getBlockOwnerIdFromString(String id) {
-        int first = id.indexOf('{');
-        int last = id.indexOf('}');
-        if (first != -1 && last != -1 && last > first) {
-            String blockId = id.substring(first + 1, last);
-            return Key.of(blockId);
-        } else {
-            throw new IllegalArgumentException("Invalid block ID format: " + id);
-        }
+        Object blockOwner = FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
+        Object resourceLocation = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.BLOCK, blockOwner);
+        return KeyUtils.resourceLocationToKey(resourceLocation);
     }
 
     public static Object blockDataToBlockState(BlockData blockData) {
@@ -160,86 +138,12 @@ public class BlockStateUtils {
         return FastNMS.INSTANCE.method$BlockState$getBlock(blockState);
     }
 
-    public static int physicsEventToId(BlockPhysicsEvent event) throws ReflectiveOperationException {
-        Object blockData = CraftBukkitReflections.field$BlockPhysicsEvent$changed.get(event);
-        Object blockState = CraftBukkitReflections.field$CraftBlockData$data.get(blockData);
-        return FastNMS.INSTANCE.method$IdMapper$getId(CoreReflections.instance$Block$BLOCK_STATE_REGISTRY, blockState);
-    }
-
-    public static Object physicsEventToState(BlockPhysicsEvent event) throws ReflectiveOperationException {
-        Object blockData = CraftBukkitReflections.field$BlockPhysicsEvent$changed.get(event);
-        return CraftBukkitReflections.field$CraftBlockData$data.get(blockData);
-    }
-
-    public static void setLightEmission(Object state, int emission) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$lightEmission.set(state, emission);
-    }
-
-    public static int getLightEmission(Object state) {
-        return FastNMS.INSTANCE.method$BlockStateBase$getLightEmission(state);
-    }
-
-    public static void setMapColor(Object state, MapColor color) throws ReflectiveOperationException {
-        Object mcMapColor = CoreReflections.method$MapColor$byId.invoke(null, color.id);
-        CoreReflections.field$BlockStateBase$mapColor.set(state, mcMapColor);
-    }
-
-    public static void setInstrument(Object state, Instrument instrument) throws ReflectiveOperationException {
-        Object mcInstrument = ((Object[]) CoreReflections.method$NoteBlockInstrument$values.invoke(null))[instrument.ordinal()];
-        CoreReflections.field$BlockStateBase$instrument.set(state, mcInstrument);
-    }
-
-    public static void setHardness(Object state, float hardness) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$hardness.set(state, hardness);
-    }
-
-    public static void setBurnable(Object state, boolean burnable) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$burnable.set(state, burnable);
-    }
-
-    public static void setUseShapeForLightOcclusion(Object state, boolean useShapeForLightOcclusion) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$useShapeForLightOcclusion.set(state, useShapeForLightOcclusion);
-    }
-
-    public static void setPushReaction(Object state, PushReaction reaction) throws ReflectiveOperationException {
-        Object pushReaction = ((Object[])  CoreReflections.method$PushReaction$values.invoke(null))[reaction.ordinal()];
-        CoreReflections.field$BlockStateBase$pushReaction.set(state, pushReaction);
-    }
-
-    public static void setIsRandomlyTicking(Object state, boolean randomlyTicking) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$isRandomlyTicking.set(state, randomlyTicking);
-    }
-
-    public static void setReplaceable(Object state, boolean replaceable) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$replaceable.set(state, replaceable);
-    }
-
-    public static boolean isReplaceable(Object state) {
-        try {
-            return (boolean) CoreReflections.field$BlockStateBase$replaceable.get(state);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to get replaceable property", e);
-        }
-    }
-
-    public static void setCanOcclude(Object state, boolean canOcclude) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$canOcclude.set(state, canOcclude);
-    }
-
     public static boolean isOcclude(Object state) {
         return FastNMS.INSTANCE.method$BlockStateBase$canOcclude(state);
     }
 
-    public static void setIsRedstoneConductor(Object state, Object predicate) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$isRedstoneConductor.set(state, predicate);
-    }
-
-    public static void setIsSuffocating(Object state, Object predicate) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$isSuffocating.set(state, predicate);
-    }
-
-    public static void setIsViewBlocking(Object state, Object predicate) throws ReflectiveOperationException {
-        CoreReflections.field$BlockStateBase$isViewBlocking.set(state, predicate);
+    public static boolean isReplaceable(Object state) {
+        return FastNMS.INSTANCE.method$BlockStateBase$isReplaceable(state);
     }
 
     public static boolean isClientSideNoteBlock(Object state) {
@@ -247,8 +151,11 @@ public class BlockStateUtils {
     }
 
     public static boolean isVanillaBlock(Object state) {
-        int id = blockStateToId(state);
-        return id >= 0 && id < vanillaStateSize;
+        return !(state instanceof CustomBlockStateHolder);
+    }
+
+    public static boolean isCustomBlock(Object state) {
+        return state instanceof CustomBlockStateHolder;
     }
 
     public static boolean isVanillaBlock(int id) {

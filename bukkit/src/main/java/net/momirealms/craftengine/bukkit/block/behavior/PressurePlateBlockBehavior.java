@@ -128,7 +128,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             case MOBS -> CoreReflections.clazz$LivingEntity;
         };
         Object box = FastNMS.INSTANCE.method$AABB$move(CoreReflections.instance$BasePressurePlateBlock$TOUCH_AABB, pos);
-        return FastNMS.INSTANCE.method$BasePressurePlateBlock$getEntityCount(level, box, clazz) > 0 ? 15 : 0;
+        return FastNMS.INSTANCE.method$EntityGetter$getEntitiesOfClass(level, box, clazz) > 0 ? 15 : 0;
     }
 
     private Object setSignalForState(Object state, int strength) {

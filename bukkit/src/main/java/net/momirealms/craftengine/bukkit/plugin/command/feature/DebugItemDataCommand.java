@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import com.saicone.rtag.RtagMirror;
+import com.saicone.rtag.item.ItemTagStream;
 import com.saicone.rtag.tag.TagCompound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -55,7 +56,7 @@ public class DebugItemDataCommand extends BukkitCommandFeature<CommandSender> {
     }
 
     private static Map<String, Object> toMap(ItemStack object) {
-        return TagCompound.getValue(RtagMirror.INSTANCE, FastNMS.INSTANCE.itemStackToCompoundTag(object));
+        return ItemTagStream.INSTANCE.toMap(object);
     }
 
     private List<String> mapToList(Map<String, Object> readableDataMap) {

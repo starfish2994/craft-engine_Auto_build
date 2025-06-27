@@ -104,7 +104,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         // register packet handlers
         this.registerPacketHandlers();
         // set up packet senders
-        this.packetConsumer = FastNMS.INSTANCE::sendPacket;
+        this.packetConsumer = FastNMS.INSTANCE::method$Connection$send;
         this.packetsConsumer = ((connection, packets) -> {
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             this.packetConsumer.accept(connection, bundle);
@@ -114,7 +114,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             Object bundle = FastNMS.INSTANCE.constructor$ClientboundBundlePacket(packets);
             this.immediatePacketConsumer.accept(channel, bundle);
         };
-        // todo 可以删除吗
         // set up mod channel
         this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL, this);
         this.plugin.javaPlugin().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL);
@@ -302,7 +301,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     public Channel getChannel(Player player) {
-        return (Channel) FastNMS.INSTANCE.field$Player$connection$connection$channel(FastNMS.INSTANCE.method$CraftPlayer$getHandle(player));
+        return FastNMS.INSTANCE.field$Connection$channel(
+                FastNMS.INSTANCE.field$ServerGamePacketListenerImpl$connection(
+                        FastNMS.INSTANCE.field$Player$connection(
+                                FastNMS.INSTANCE.method$CraftPlayer$getHandle(player)
+                        )
+                )
+        );
     }
 
     @Override

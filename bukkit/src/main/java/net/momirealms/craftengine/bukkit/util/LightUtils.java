@@ -27,7 +27,9 @@ public class LightUtils {
                 Object chunkPos = FastNMS.INSTANCE.constructor$ChunkPos((int) chunkKey, (int) (chunkKey >> 32));
                 Object lightPacket = FastNMS.INSTANCE.constructor$ClientboundLightUpdatePacket(chunkPos, lightEngine, entry.getValue(), entry.getValue());
                 for (Object player : players) {
-                    FastNMS.INSTANCE.sendPacket(FastNMS.INSTANCE.field$Player$connection$connection(player), lightPacket);
+                    FastNMS.INSTANCE.method$Connection$send(
+                            FastNMS.INSTANCE.field$ServerGamePacketListenerImpl$connection(FastNMS.INSTANCE.field$ServerGamePacketListenerImpl$connection(player)),
+                            lightPacket);
                 }
             }
         } catch (Exception e) {

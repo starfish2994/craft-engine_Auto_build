@@ -495,6 +495,13 @@ public final class CoreReflections {
             }).orElseThrow()
     );
 
+    public static final Class<?> clazz$ParticleTypes = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "core.particles.Particles",
+                    "core.particles.ParticleTypes"
+            )
+    );
+
     public static final Class<?> clazz$MappedRegistry = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "core.RegistryMaterials",
@@ -3526,5 +3533,17 @@ public final class CoreReflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$LootParams$Builder = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.storage.loot.LootParams$a",
+                    "world.level.storage.loot.LootParams$Builder"
+            )
+    );
+
+    public static final Method method$BlockStateBase$getDrops = requireNonNull(
+            ReflectionUtils.getMethod(clazz$BlockStateBase, List.class, clazz$LootParams$Builder)
+    );
+
 
 }

@@ -32,7 +32,9 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
 
     @Override
     public boolean isValidBoneMealTarget(Object thisBlock, Object[] args) {
-        return FastNMS.INSTANCE.method$GrassBlock$isValidBonemealTarget(args[0], args[1], args[2]);
+        Object above = LocationUtils.above(args[1]);
+        Object aboveState = FastNMS.INSTANCE.method$BlockGetter$getBlockState(args[0], above);
+        return FastNMS.INSTANCE.method$BlockStateBase$isAir(aboveState);
     }
 
     @Override
@@ -101,7 +103,7 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
 
     @Override
     public void performBoneMeal(Object thisBlock, Object[] args) {
-        FastNMS.INSTANCE.method$GrassBlock$performBoneMeal(args[0], args[1], args[2], args[3], thisBlock);
+        // TODO 使用骨粉
     }
 
     public static class Factory implements BlockBehaviorFactory {

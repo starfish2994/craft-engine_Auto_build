@@ -122,41 +122,6 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
         });
     }
 
-    @EventHandler
-    public void onPlayerConsume(PlayerItemConsumeEvent event) {
-        ProjectileType type = getCustomProjectileType(event.getItem());
-        if (type == ProjectileType.TRIDENT) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
-        ItemStack item = event.getItem();
-        ProjectileType type = getCustomProjectileType(item);
-        if (type == null) return;
-        int ticksHeldFor = event.getTicksHeldFor();
-        Player player = event.getPlayer();
-        if (type == ProjectileType.TRIDENT) {
-            if (ticksHeldFor < 10) return;
-            Object nmsItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(item);
-            Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
-            Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
-            TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-        }
-    }
-
-    @Nullable
-    private ProjectileType getCustomProjectileType(ItemStack item) {
-        Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(item);
-        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
-        if (optionalCustomItem.isEmpty()) return null;
-        CustomItem<ItemStack> customItem = optionalCustomItem.get();
-        ProjectileMeta meta = customItem.settings().projectileMeta();
-        if (meta == null) return null;
-        return meta.type();
-    }
-
     public class ProjectileInjectTask implements Runnable {
         private final Projectile projectile;
         private final SchedulerTask task;

@@ -53,9 +53,6 @@ public class BukkitAdvancementManager extends AbstractAdvancementManager {
             if (advancements.containsKey(id)) {
                 throw new LocalizedResourceConfigException("warning.config.advancement.duplicate", path, id);
             }
-            JsonElement jsonTree = GsonHelper.get().toJsonTree(section);
-            FastNMS.INSTANCE.registerAdvancement(id.decompose(), jsonTree);
-            advancements.put(id, jsonTree);
         }
     }
 }
