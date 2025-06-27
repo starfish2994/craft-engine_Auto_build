@@ -230,7 +230,6 @@ public final class SNBTReader extends DefaultStringReader {
         if (tokenLength > 1) {
             // 至少有1个字符，给了后缀的可能性
             char lastChar = charAt(tokenStart + tokenLength - 1);
-            lastChar = Character.toLowerCase(lastChar); // 强制转小写进行匹配.
             try {
                 switch (lastChar) {
                     case 'b', 'B' -> {
