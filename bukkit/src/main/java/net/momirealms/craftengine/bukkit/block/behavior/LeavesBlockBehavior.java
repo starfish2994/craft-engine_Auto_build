@@ -6,25 +6,18 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.BlockTags;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
-import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockBehavior;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.Property;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.plugin.context.ContextHolder;
-import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.Vec3d;
-import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.block.LeavesDecayEvent;
 
@@ -113,16 +106,18 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void randomTick(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+        Object blockState = args[0];
         Object level = args[1];
         Object blockPos = args[2];
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(args[0]));
-        if (immutableBlockState != null) {
-            Optional<LeavesBlockBehavior> optionalBehavior = immutableBlockState.behavior().getAs(LeavesBlockBehavior.class);
+        BlockStateUtils.getOptionalCustomBlockState(blockState).ifPresent(customState -> {
+            // 可能是另一种树叶
+            Optional<LeavesBlockBehavior> optionalBehavior = customState.behavior().getAs(LeavesBlockBehavior.class);
             if (optionalBehavior.isPresent()) {
                 LeavesBlockBehavior behavior = optionalBehavior.get();
-                if (behavior.isDecaying(immutableBlockState)) {
+                if (behavior.isDecaying(customState)) {
                     World bukkitWorld = FastNMS.INSTANCE.method$Level$getCraftWorld(level);
                     BlockPos pos = LocationUtils.fromBlockPos(blockPos);
                     // call bukkit event
@@ -132,19 +127,10 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
                         return;
                     }
                     FastNMS.INSTANCE.method$Level$removeBlock(level, blockPos, false);
-                    if (isWaterLogged(immutableBlockState)) {
-                        bukkitWorld.setBlockData(pos.x(), pos.y(), pos.z(), Material.WATER.createBlockData());
-                    }
-                    net.momirealms.craftengine.core.world.World world = new BukkitWorld(bukkitWorld);
-                    WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(pos));
-                    ContextHolder.Builder builder = ContextHolder.builder()
-                            .withParameter(DirectContextParameters.POSITION, position);
-                    for (Item<Object> item : immutableBlockState.getDrops(builder, world, null)) {
-                        world.dropItemNaturally(position, item);
-                    }
+                    FastNMS.INSTANCE.method$Block$dropResources(blockState, level, blockPos);
                 }
             }
-        }
+        });
     }
 
     private boolean isDecaying(ImmutableBlockState blockState) {
@@ -168,7 +154,7 @@ public class LeavesBlockBehavior extends BukkitBlockBehavior {
     }
 
     private int getDistanceAt(Object blockState) throws ReflectiveOperationException {
-        boolean isLog = (boolean) CoreReflections.method$BlockStateBase$hasTag.invoke(blockState, LOG_TAG);
+        boolean isLog = FastNMS.INSTANCE.method$BlockStateBase$is(blockState, LOG_TAG);
         if (isLog) return 0;
         int id = BlockStateUtils.blockStateToId(blockState);
         if (BlockStateUtils.isVanillaBlock(id)) {

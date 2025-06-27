@@ -1691,10 +1691,6 @@ public final class CoreReflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$Entity, double.class, 2)
     );
 
-    public static final Method method$BlockStateBase$hasTag = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$TagKey)
-    );
-
     public static final Method method$Level$removeBlock = requireNonNull(
             ReflectionUtils.getMethod(clazz$Level, boolean.class, clazz$BlockPos, boolean.class)
     );
@@ -2490,10 +2486,6 @@ public final class CoreReflections {
 
     public static final Field field$BlockInWorld$state = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockInWorld, clazz$BlockState, 0)
-    );
-
-    public static final Method method$BlockStateBase$getBlock = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, clazz$Block)
     );
 
     public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
@@ -3545,5 +3537,10 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$BlockStateBase, List.class, clazz$LootParams$Builder)
     );
 
-
+    public static final Class<?> clazz$LootContextParams = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.storage.loot.parameters.LootContextParameters",
+                    "world.level.storage.loot.parameters.LootContextParams"
+            )
+    );
 }

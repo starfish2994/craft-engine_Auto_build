@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class LampBlockBehavior extends BukkitBlockBehavior {
@@ -34,20 +35,16 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
     @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         Object blockState = args[0];
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (state == null || state.isEmpty()) return;
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) return;
         Object world = args[1];
         Object blockPos = args[2];
-        if (state.get(this.litProperty)) {
-            if (!FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
-                // TODO Call Event
-                FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);
+        ImmutableBlockState customState = optionalCustomState.get();
+        if (customState.get(this.litProperty) && !FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
+            if (FastNMS.INSTANCE.method$CraftEventFactory$callRedstoneChange(world, blockPos, 0, 15).getNewCurrent() != 15) {
+                return;
             }
-        } else {
-            if (FastNMS.INSTANCE.method$SignalGetter$hasNeighborSignal(world, blockPos)) {
-                // TODO Call Event
-                FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);
-            }
+            FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, customState.cycle(this.litProperty).customBlockState().handle(), 2);
         }
     }
 
@@ -63,7 +60,9 @@ public class LampBlockBehavior extends BukkitBlockBehavior {
             if (lit) {
                 FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(world, blockPos, thisBlock, 4);
             } else {
-                // TODO Call Event
+                if (FastNMS.INSTANCE.method$CraftEventFactory$callRedstoneChange(world, blockPos, 0, 15).getNewCurrent() != 15) {
+                    return;
+                }
                 FastNMS.INSTANCE.method$LevelWriter$setBlock(world, blockPos, state.cycle(this.litProperty).customBlockState().handle(), 2);
             }
         }

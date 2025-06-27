@@ -1,23 +1,17 @@
 package net.momirealms.craftengine.bukkit.util;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
-import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
-import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.block.BlockSettings;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
+import net.momirealms.craftengine.core.block.CustomBlockStateHolder;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.util.Instrument;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MapColor;
-import net.momirealms.craftengine.core.world.BlockPos;
-import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -136,6 +130,14 @@ public class BlockStateUtils {
 
     public static int vanillaStateSize() {
         return vanillaStateSize;
+    }
+
+    public static Optional<ImmutableBlockState> getOptionalCustomBlockState(Object state) {
+        if (state instanceof CustomBlockStateHolder holder) {
+            return Optional.ofNullable(holder.customBlockState());
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static boolean isBurnable(Object state) {

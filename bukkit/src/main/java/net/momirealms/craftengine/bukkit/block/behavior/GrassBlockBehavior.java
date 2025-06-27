@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -15,13 +14,13 @@ import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class GrassBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
@@ -38,18 +37,19 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) throws Exception {
+    public boolean isBoneMealSuccess(Object thisBlock, Object[] args) {
         if (!VersionHelper.isOrAbove1_20_2()) return true;
         Object level = args[0];
         Object blockPos = args[2];
         Object blockState = args[3];
-        ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockStateToId(blockState));
-        if (immutableBlockState == null || immutableBlockState.isEmpty()) {
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(blockState);
+        if (optionalCustomState.isEmpty()) {
             return false;
         }
         boolean sendParticles = false;
-        Object visualState = immutableBlockState.vanillaBlockState().handle();
-        Object visualStateBlock = CoreReflections.method$BlockStateBase$getBlock.invoke(visualState);
+        ImmutableBlockState customState = optionalCustomState.get();
+        Object visualState = customState.vanillaBlockState().handle();
+        Object visualStateBlock = BlockStateUtils.getBlockOwner(visualState);
         if (CoreReflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
             boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, level, blockPos, visualState);
             if (!is) {
@@ -80,20 +80,15 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
         if (!block.isEmpty())
             return InteractionResult.PASS;
         boolean sendSwing = false;
-        try {
-            Object visualState = state.vanillaBlockState().handle();
-            Object visualStateBlock = CoreReflections.method$BlockStateBase$getBlock.invoke(visualState);
-            if (CoreReflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
-                boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), visualState);
-                if (!is) {
-                    sendSwing = true;
-                }
-            } else {
+        Object visualState = state.vanillaBlockState().handle();
+        Object visualStateBlock = BlockStateUtils.getBlockOwner(visualState);
+        if (CoreReflections.clazz$BonemealableBlock.isInstance(visualStateBlock)) {
+            boolean is = FastNMS.INSTANCE.method$BonemealableBlock$isValidBonemealTarget(visualStateBlock, context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), visualState);
+            if (!is) {
                 sendSwing = true;
             }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to check visual state bone meal state", e);
-            return InteractionResult.FAIL;
+        } else {
+            sendSwing = true;
         }
         if (sendSwing) {
             context.getPlayer().swingHand(context.getHand());

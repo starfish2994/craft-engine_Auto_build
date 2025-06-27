@@ -13,12 +13,23 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
 import net.bytebuddy.matcher.ElementMatchers;
+import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MItems;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MLootContextParams;
+import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
+import net.momirealms.craftengine.bukkit.world.BukkitWorld;
+import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.CustomBlockStateHolder;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.WorldPosition;
+import org.bukkit.inventory.ItemStack;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -69,7 +80,37 @@ public final class BlockStateGenerator {
             ImmutableBlockState state = ((CustomBlockStateHolder) thisObj).customBlockState();
             if (state == null) return List.of();
             Object builder = args[0];
-            return List.of(FastNMS.INSTANCE.constructor$ItemStack(MItems.WATER_BUCKET, 1));
+            Object vec3 = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.ORIGIN);
+            if (vec3 == null) return List.of();
+
+            Object tool = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.TOOL);
+
+            Item<ItemStack> item = BukkitItemManager.instance().wrap(tool == null || FastNMS.INSTANCE.method$ItemStack$isEmpty(tool) ? null : FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(tool));
+
+            // do not drop if it's not the correct tool
+            BlockSettings settings = state.settings();
+            if (settings.requireCorrectTool()) {
+                if (tool == null) return List.of();
+                if (!settings.isCorrectTool(item.id()) &&
+                        (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool, state.customBlockState().handle()))) {
+                    return List.of();
+                }
+            }
+
+            Object serverLevel = FastNMS.INSTANCE.method$LootParams$Builder$getLevel(builder);
+            World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(serverLevel));
+            ContextHolder.Builder lootBuilder = new ContextHolder.Builder()
+                    .withParameter(DirectContextParameters.POSITION, new WorldPosition(world, FastNMS.INSTANCE.field$Vec3$x(vec3), FastNMS.INSTANCE.field$Vec3$y(vec3), FastNMS.INSTANCE.field$Vec3$z(vec3)));
+            if (item != null) {
+                lootBuilder.withParameter(DirectContextParameters.ITEM_IN_HAND, item);
+            }
+            Object optionalPlayer = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.THIS_ENTITY);
+            BukkitServerPlayer player = optionalPlayer != null ? BukkitCraftEngine.instance().adapt(FastNMS.INSTANCE.method$ServerPlayer$getBukkitEntity(optionalPlayer)) : null;
+            Float radius = (Float) FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.EXPLOSION_RADIUS);
+            if (radius != null) {
+                lootBuilder.withParameter(DirectContextParameters.EXPLOSION_RADIUS, radius);
+            }
+            return state.getDrops(lootBuilder, world, player).stream().map(Item::getLiteralObject).toList();
         }
     }
 

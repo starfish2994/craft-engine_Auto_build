@@ -1,8 +1,6 @@
 package net.momirealms.craftengine.bukkit.block.behavior;
 
-import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.BlockTags;
 import net.momirealms.craftengine.core.block.BlockBehavior;
@@ -85,29 +83,27 @@ public class BushBlockBehavior extends AbstractCanSurviveBlockBehavior {
         return mayPlaceOn(belowState, world, belowPos);
     }
 
-    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) throws ReflectiveOperationException {
+    protected boolean mayPlaceOn(Object belowState, Object world, Object belowPos) {
         for (Object tag : this.tagsCanSurviveOn) {
-            if ((boolean) CoreReflections.method$BlockStateBase$hasTag.invoke(belowState, tag)) {
+            if (FastNMS.INSTANCE.method$BlockStateBase$is(belowState, tag)) {
                 return !this.blacklistMode;
             }
         }
-        int id = BlockStateUtils.blockStateToId(belowState);
-        if (BlockStateUtils.isVanillaBlock(id)) {
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(belowState);
+        if (optionalCustomState.isEmpty()) {
             if (!this.blockStatesCanSurviveOn.isEmpty() && this.blockStatesCanSurviveOn.contains(belowState)) {
                 return !this.blacklistMode;
             }
         } else {
-            ImmutableBlockState belowCustomState = BukkitBlockManager.instance().getImmutableBlockState(id);
-            if (belowCustomState != null && !belowCustomState.isEmpty()) {
-                if (belowCustomState.owner().value() == super.customBlock) {
-                    return this.stackable;
-                }
-                if (this.customBlocksCansSurviveOn.contains(belowCustomState.owner().value().id().toString())) {
-                    return !this.blacklistMode;
-                }
-                if (this.customBlocksCansSurviveOn.contains(belowCustomState.toString())) {
-                    return !this.blacklistMode;
-                }
+            ImmutableBlockState belowCustomState = optionalCustomState.get();
+            if (belowCustomState.owner().value() == super.customBlock) {
+                return this.stackable;
+            }
+            if (this.customBlocksCansSurviveOn.contains(belowCustomState.owner().value().id().toString())) {
+                return !this.blacklistMode;
+            }
+            if (this.customBlocksCansSurviveOn.contains(belowCustomState.toString())) {
+                return !this.blacklistMode;
             }
         }
         return this.blacklistMode;

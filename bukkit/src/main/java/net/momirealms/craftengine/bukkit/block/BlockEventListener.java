@@ -11,7 +11,6 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitBlockInWorld;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
@@ -24,7 +23,6 @@ import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextPar
 import net.momirealms.craftengine.core.util.Cancellable;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -34,16 +32,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
 import java.util.Optional;
 
 public class BlockEventListener implements Listener {
@@ -179,36 +174,8 @@ public class BlockEventListener implements Listener {
                     return;
                 }
 
-                // handle waterlogged blocks
-                @SuppressWarnings("unchecked")
-                Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
-                if (waterloggedProperty != null) {
-                    boolean waterlogged = state.get(waterloggedProperty);
-                    if (waterlogged) {
-                        location.getWorld().setBlockData(location, Material.WATER.createBlockData());
-                    }
-                }
-
                 // play sound
                 world.playBlockSound(position, state.sounds().breakSound());
-                if (player.getGameMode() == GameMode.CREATIVE || !customBreakEvent.dropItems()) {
-                    return;
-                }
-
-                // do not drop if it's not the correct tool
-                if (!BlockStateUtils.isCorrectTool(state, itemInHand)) {
-                    return;
-                }
-
-                // drop items
-                ContextHolder.Builder lootContext = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position)
-                        .withParameter(DirectContextParameters.PLAYER, serverPlayer)
-                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                        .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand);
-                for (Item<Object> item : state.getDrops(lootContext, world, serverPlayer)) {
-                    world.dropItemNaturally(position, item);
-                }
             }
         } else {
             // override vanilla block loots
@@ -254,19 +221,6 @@ public class BlockEventListener implements Listener {
         Object blockState = BlockStateUtils.blockDataToBlockState(block.getBlockData());
         int stateId = BlockStateUtils.blockStateToId(blockState);
         if (!BlockStateUtils.isVanillaBlock(stateId)) {
-            // custom blocks
-            ImmutableBlockState immutableBlockState = this.manager.getImmutableBlockStateUnsafe(stateId);
-            if (!immutableBlockState.isEmpty()) {
-                Location location = block.getLocation();
-                net.momirealms.craftengine.core.world.World world = new BukkitWorld(block.getWorld());
-                WorldPosition position = new WorldPosition(world, location.getBlockX() + 0.5, location.getBlockY() + 0.5, location.getBlockZ() + 0.5);
-                for (Item<?> item : immutableBlockState.getDrops(ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position)
-                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block)), world, null)) {
-                    world.dropItemNaturally(position, item);
-                }
-            }
-        } else {
             // override vanilla block loots
             this.plugin.vanillaLootManager().getBlockLoot(stateId).ifPresent(it -> {
                 if (it.override()) {
@@ -322,44 +276,6 @@ public class BlockEventListener implements Listener {
                 } catch (ReflectiveOperationException e) {
                     plugin.logger().warn("Failed to get sound type", e);
                 }
-            }
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onEntityExplode(EntityExplodeEvent event) {
-        if (VersionHelper.isOrAbove1_21()) {
-            if (!ExplosionUtils.isDroppingItems(event)) return;
-        }
-        handleExplodeEvent(event.blockList(), new BukkitWorld(event.getEntity().getWorld()), event.getYield());
-    }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onBlockExplode(BlockExplodeEvent event) {
-        if (VersionHelper.isOrAbove1_21()) {
-            if (!ExplosionUtils.isDroppingItems(event)) return;
-        }
-        handleExplodeEvent(event.blockList(), new BukkitWorld(event.getBlock().getWorld()), event.getYield());
-    }
-
-    private void handleExplodeEvent(List<org.bukkit.block.Block> blocks, net.momirealms.craftengine.core.world.World world, float yield) {
-        for (int i = blocks.size() - 1; i >= 0; i--) {
-            Block block = blocks.get(i);
-            Location location = block.getLocation();
-            BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-            ImmutableBlockState state = this.manager.getImmutableBlockState(BlockStateUtils.blockDataToId(block.getBlockData()));
-            if (state != null && !state.isEmpty()) {
-                WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(blockPos));
-                ContextHolder.Builder builder = ContextHolder.builder()
-                        .withParameter(DirectContextParameters.POSITION, position)
-                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block));
-                if (yield < 1f) {
-                    builder.withParameter(DirectContextParameters.EXPLOSION_RADIUS, 1.0f / yield);
-                }
-                for (Item<Object> item : state.getDrops(builder, world, null)) {
-                    world.dropItemNaturally(position, item);
-                }
-                world.playBlockSound(position, state.sounds().breakSound());
             }
         }
     }
