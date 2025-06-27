@@ -52,7 +52,6 @@ resource-pack:
           - "@vanilla_textures"
         bypass-models:
           - "@vanilla_models"
-          - "minecraft:item/player_head"
         bypass-sounds: []
         bypass-equipments: []
   # Validate if there are any errors in the resource pack, such as missing textures or models

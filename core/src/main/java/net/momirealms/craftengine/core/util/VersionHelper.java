@@ -29,7 +29,6 @@ public class VersionHelper {
     private static final boolean v1_21_4;
     private static final boolean v1_21_5;
     private static final boolean v1_21_6;
-    private static final boolean v1_21_7;
 
     static {
         try (InputStream inputStream = Class.forName("net.minecraft.obfuscate.DontObfuscate").getResourceAsStream("/version.json")) {
@@ -39,15 +38,15 @@ public class VersionHelper {
             JsonObject json = GsonHelper.parseJsonToJsonObject(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
             String versionString = json.getAsJsonPrimitive("id").getAsString();
 
-            MINECRAFT_VERSION = new MinecraftVersion(versionString.split("-", 2)[0]); // 确保去掉-rc1
+            MINECRAFT_VERSION = new MinecraftVersion(versionString);
 
             String[] split = versionString.split("\\.");
             int major = Integer.parseInt(split[1]);
             int minor = split.length == 3 ? Integer.parseInt(split[2].split("-", 2)[0]) : 0;
 
-            // 12001 = 1.20.1
-            // 12104 = 1.21.4
-            version = MINECRAFT_VERSION.version();
+            // 2001 = 1.20.1
+            // 2104 = 1.21.4
+            version = parseVersionToInteger(versionString);
 
             v1_20 = version >= 12000;
             v1_20_1 = version >= 12001;
@@ -63,7 +62,6 @@ public class VersionHelper {
             v1_21_4 = version >= 12104;
             v1_21_5 = version >= 12105;
             v1_21_6 = version >= 12106;
-            v1_21_7 = version >= 12107;
 
             majorVersion = major;
             minorVersion = minor;
@@ -210,9 +208,5 @@ public class VersionHelper {
 
     public static boolean isOrAbove1_21_6() {
         return v1_21_6;
-    }
-
-    public static boolean isOrAbove1_21_7() {
-        return v1_21_7;
     }
 }

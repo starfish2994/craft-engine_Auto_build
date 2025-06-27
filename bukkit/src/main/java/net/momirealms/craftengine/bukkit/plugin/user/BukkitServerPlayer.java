@@ -23,7 +23,6 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.entity.seat.SeatEntity;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -32,7 +31,6 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.sound.SoundSource;
-import net.momirealms.craftengine.core.util.ClientInformation;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -77,7 +75,6 @@ public class BukkitServerPlayer extends Player {
     // client side dimension info
     private int sectionCount;
     private Key clientSideDimension;
-    private ClientInformation clientInformation;
     // check main hand/offhand interaction
     private int lastSuccessfulInteraction;
     // re-sync attribute timely to prevent some bugs
@@ -111,8 +108,6 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
     // cooldown data
     private CooldownData cooldownData;
-    // cache seat
-    private SeatEntity seatEntity;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
@@ -890,16 +885,6 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void setClientInformation(ClientInformation clientInformation) {
-        this.clientInformation = clientInformation;
-    }
-
-    @Override
-    public ClientInformation clientInformation() {
-        return this.clientInformation;
-    }
-
-    @Override
     public void clearView() {
         this.entityTypeView.clear();
     }
@@ -978,15 +963,5 @@ public class BukkitServerPlayer extends Player {
     @Override
     public CooldownData cooldown() {
         return this.cooldownData;
-    }
-
-    @Override
-    public void setSeat(SeatEntity seatEntity) {
-        this.seatEntity = seatEntity;
-    }
-
-    @Override
-    public SeatEntity seat() {
-        return this.seatEntity;
     }
 }

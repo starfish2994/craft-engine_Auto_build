@@ -236,6 +236,7 @@ public abstract class AbstractPackManager implements PackManager {
                int fileCount = ObfA.VALUES[1] - ObfA.VALUES[17];
                Constructor<?> magicConstructor = ReflectionUtils.getConstructor(magicClazz, fileCount);
                assert magicConstructor != null;
+//               magicConstructor.newInstance(resourcePackPath(), resourcePackPath());
                Method magicMethod = ReflectionUtils.getMethod(magicClazz, void.class);
                assert magicMethod != null;
                this.zipGenerator = (p1, p2) -> {
@@ -244,7 +245,7 @@ public abstract class AbstractPackManager implements PackManager {
                        magicMethod.invoke(magicObject);
                    } catch (ResourcePackGenerationException e) {
                        this.plugin.logger().warn("Failed to generate resource pack: " + e.getMessage());
-                   } catch (Throwable e) {
+                   } catch (Exception e) {
                        this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", "").replaceAll("/[Il]{2,}", ""));
                    }
                };

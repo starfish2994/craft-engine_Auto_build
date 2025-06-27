@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.core.util.RandomUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Location;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
@@ -175,9 +173,5 @@ public final class PlayerUtils {
         } catch (ReflectiveOperationException e) {
             BukkitCraftEngine.instance().logger().warn("Failed to send totem animation");
         }
-    }
-
-    public static Set<Player> getTrackedBy(Player player) {
-        return VersionHelper.isOrAbove1_20_2() ? player.getTrackedBy() : player.getTrackedPlayers();
     }
 }
