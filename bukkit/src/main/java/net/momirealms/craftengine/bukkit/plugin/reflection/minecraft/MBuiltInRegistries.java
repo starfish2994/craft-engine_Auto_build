@@ -47,7 +47,7 @@ public final class MBuiltInRegistries {
                             registries$EntityType = field.get(null);
                         } else if (rawType == CoreReflections.clazz$RecipeType) {
                             registries$RecipeType = field.get(null);
-                        } else if (rawType == CoreReflections.clazz$DataComponentType) {
+                        } else if (rawType == CoreReflections.clazz$DataComponentType && registries$DataComponentType == null) {
                             registries$DataComponentType = field.get(null);
                         }
                     } else {

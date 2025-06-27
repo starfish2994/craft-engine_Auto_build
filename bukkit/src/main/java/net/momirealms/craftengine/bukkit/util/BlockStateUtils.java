@@ -65,34 +65,6 @@ public class BlockStateUtils {
         return true;
     }
 
-    public static List<Object> getAllBlockStates(String blockState) {
-        int index = blockState.indexOf('[');
-        if (index == -1) {
-            return getAllBlockStates(Key.of(blockState));
-        } else {
-            String blockTypeString = blockState.substring(0, index);
-            Key block = Key.of(blockTypeString);
-            Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().blockById(block);
-            if (optionalCustomBlock.isPresent()) {
-                ImmutableBlockState state = BlockStateParser.deserialize(blockState);
-                if (state == null) {
-                    return List.of();
-                } else {
-                    return List.of(state.customBlockState().handle());
-                }
-            } else {
-                BlockData blockData = Bukkit.createBlockData(blockState);
-                return List.of(blockDataToBlockState(blockData));
-            }
-        }
-    }
-
-    public static List<Object> getAllBlockStates(Key block) {
-        Optional<CustomBlock> optionalCustomBlock = BukkitBlockManager.instance().blockById(block);
-        return optionalCustomBlock.map(customBlock -> customBlock.variantProvider().states().stream().map(it -> it.customBlockState().handle()).toList())
-                .orElseGet(() -> getAllVanillaBlockStates(block));
-    }
-
     @SuppressWarnings("unchecked")
     public static List<Object> getAllVanillaBlockStates(Key block) {
         try {
