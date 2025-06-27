@@ -52,6 +52,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
     public void unload() {
         this.byId.clear();
         this.categoryOnMainPage.clear();
+        this.externalMembers.clear();
     }
 
     @Override
