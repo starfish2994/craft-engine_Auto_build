@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.dejvokep.boostedyaml.YamlDocument;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -628,12 +627,16 @@ public final class BukkitBlockManager extends AbstractBlockManager {
         if (!Files.exists(mappingsFile)) {
             this.plugin.saveResource("mappings.yml");
         }
+        Path additionalFile = this.plugin.dataFolderPath().resolve("additional-real-blocks.yml");
+        if (!Files.exists(additionalFile)) {
+            this.plugin.saveResource("additional-real-blocks.yml");
+        }
         Yaml yaml = new Yaml(new StringKeyConstructor(mappingsFile, new LoaderOptions()));
-        try (InputStream inputStream =  Files.newInputStream(mappingsFile)) {
-            Map<String, String> blockStateMappings = loadBlockStateMappings(yaml.load(inputStream));
+        Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
+        try (InputStream is = Files.newInputStream(mappingsFile)) {
+            Map<String, String> blockStateMappings = loadBlockStateMappings(yaml.load(is));
             this.validateBlockStateMappings(mappingsFile, blockStateMappings);
             Map<Integer, String> stateMap = new Int2ObjectOpenHashMap<>();
-            Map<Key, Integer> blockTypeCounter = new LinkedHashMap<>();
             Map<Integer, Integer> appearanceMapper = new Int2IntOpenHashMap();
             Map<Key, List<Integer>> appearanceArranger = new HashMap<>();
             for (Map.Entry<String, String> entry : blockStateMappings.entrySet()) {
@@ -642,10 +645,13 @@ public final class BukkitBlockManager extends AbstractBlockManager {
             this.blockAppearanceMapper = ImmutableMap.copyOf(appearanceMapper);
             this.blockAppearanceArranger = ImmutableMap.copyOf(appearanceArranger);
             this.plugin.logger().info("Freed " + this.blockAppearanceMapper.size() + " block state appearances.");
-            YamlDocument additionalYaml = Config.instance().loadOrCreateYamlData("additional-real-blocks.yml");
-            this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, additionalYaml);
         } catch (IOException e) {
             throw new RuntimeException("Failed to init mappings.yml", e);
+        }
+        try (InputStream is = Files.newInputStream(additionalFile)) {
+            this.registeredRealBlockSlots = this.buildRegisteredRealBlockSlots(blockTypeCounter, yaml.load(is));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to init additional-real-blocks.yml", e);
         }
     }
 
@@ -751,11 +757,11 @@ public final class BukkitBlockManager extends AbstractBlockManager {
         }
     }
 
-    private LinkedHashMap<Key, Integer> buildRegisteredRealBlockSlots(Map<Key, Integer> counter, YamlDocument additionalYaml) {
+    private LinkedHashMap<Key, Integer> buildRegisteredRealBlockSlots(Map<Key, Integer> counter, Map<String, Object> additionalYaml) {
         LinkedHashMap<Key, Integer> map = new LinkedHashMap<>();
         for (Map.Entry<Key, Integer> entry : counter.entrySet()) {
             String id = entry.getKey().toString();
-            int additionalStates = additionalYaml.getInt(id, 0);
+            int additionalStates = (int) additionalYaml.getOrDefault(id, 0);
             int internalIds = entry.getValue() + additionalStates;
             plugin.logger().info("Loaded " + id + " with " + entry.getValue() + " appearances and " + internalIds + " real block states");
             map.put(entry.getKey(), internalIds);
