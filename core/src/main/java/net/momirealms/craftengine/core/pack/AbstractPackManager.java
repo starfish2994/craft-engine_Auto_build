@@ -83,6 +83,7 @@ public abstract class AbstractPackManager implements PackManager {
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigParser> sectionParsers = new HashMap<>();
+    private final JsonObject vanillaAtlas;
     private Map<Path, CachedConfigFile> cachedConfigFiles = Collections.emptyMap();
     private Map<Path, CachedAssetFile> cachedAssetFiles = Collections.emptyMap();
     protected BiConsumer<Path, Path> zipGenerator;
@@ -102,6 +103,11 @@ public abstract class AbstractPackManager implements PackManager {
             this.plugin.logger().warn("Failed to create default configs folder", e);
         }
         this.initInternalData();
+        try (InputStream inputStream = plugin.resourceStream("internal/atlases/blocks.json")) {
+            this.vanillaAtlas = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read internal/atlases/blocks.json", e);
+        }
     }
 
     private void initInternalData() {
@@ -725,6 +731,61 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
+    private void processAtlas(JsonObject atlasJsonObject, BiConsumer<String, String> directory, Consumer<Key> unstitch, Consumer<Key> included) {
+        JsonArray sources = atlasJsonObject.getAsJsonArray("sources");
+        if (sources != null) {
+            for (JsonElement source : sources) {
+                if (!(source instanceof JsonObject sourceJson)) continue;
+                String type = Optional.ofNullable(sourceJson.get("type")).map(JsonElement::getAsString).orElse(null);
+                if (type == null) continue;
+                switch (type) {
+                    case "directory", "minecraft:directory" -> {
+                        JsonElement source0 = sourceJson.get("source");
+                        JsonElement prefix = sourceJson.get("prefix");
+                        if (prefix == null || source0 == null) continue;
+                        directory.accept(prefix.getAsString(), source0.getAsString() + "/");
+                    }
+                    case "single", "minecraft:single" -> {
+                        JsonElement resource = sourceJson.get("resource");
+                        if (resource == null) continue;
+                        included.accept(Key.of(resource.getAsString()));
+                    }
+                    case "unstitch", "minecraft:unstitch" -> {
+                        JsonElement resource = sourceJson.get("resource");
+                        if (resource == null) continue;
+                        included.accept(Key.of(resource.getAsString()));
+                        JsonArray regions = sourceJson.getAsJsonArray("regions");
+                        if (regions != null) {
+                            for (JsonElement region : regions) {
+                                if (!(region instanceof JsonObject regionJson)) continue;
+                                JsonElement sprite = regionJson.get("sprite");
+                                if (sprite == null) continue;
+                                unstitch.accept(Key.of(sprite.getAsString()));
+                            }
+                        }
+                    }
+                    case "filter", "minecraft:filter" -> {
+                        // todo filter
+                    }
+                    case "paletted_permutations", "minecraft:paletted_permutations" -> {
+                        JsonArray textures = sourceJson.getAsJsonArray("textures");
+                        if (textures == null) continue;
+                        JsonObject permutationsJson = sourceJson.getAsJsonObject("permutations");
+                        if (permutationsJson == null) continue;
+                        String separator = sourceJson.has("separator") ? sourceJson.get("separator").getAsString() : "_";
+                        List<String> permutations = new ArrayList<>(permutationsJson.keySet());
+                        for (JsonElement texture : textures) {
+                            if (!(texture instanceof JsonPrimitive texturePath)) continue;
+                            for (String permutation : permutations) {
+                                included.accept(Key.of(texturePath.getAsString() + separator + permutation));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @SuppressWarnings("DuplicatedCode")
     private void validateResourcePack(Path path) {
         List<Path> rootPaths;
@@ -741,8 +802,7 @@ public abstract class AbstractPackManager implements PackManager {
         Set<Key> texturesInAtlas = new HashSet<>();
         Set<Key> unstitchTextures = new HashSet<>();
         Map<String, String> directoryMapper = new HashMap<>();
-        directoryMapper.put("item/", "item/");
-        directoryMapper.put("block/", "block/");
+        processAtlas(this.vanillaAtlas, directoryMapper::put, unstitchTextures::add, texturesInAtlas::add);
 
         for (Path rootPath : rootPaths) {
             Path assetsPath = rootPath.resolve("assets");
@@ -760,47 +820,7 @@ public abstract class AbstractPackManager implements PackManager {
                 if (Files.exists(atlasesFile)) {
                     try {
                         JsonObject atlasJsonObject = GsonHelper.readJsonFile(atlasesFile).getAsJsonObject();
-                        JsonArray sources = atlasJsonObject.getAsJsonArray("sources");
-                        if (sources != null) {
-                            for (JsonElement source : sources) {
-                                if (!(source instanceof JsonObject sourceJson)) continue;
-                                String type = Optional.ofNullable(sourceJson.get("type")).map(JsonElement::getAsString).orElse(null);
-                                if (type == null) continue;
-                                switch (type) {
-                                    case "directory", "minecraft:directory" -> {
-                                        JsonElement source0 = sourceJson.get("source");
-                                        JsonElement prefix = sourceJson.get("prefix");
-                                        if (prefix == null || source0 == null) continue;
-                                        directoryMapper.put(prefix.getAsString(), source0.getAsString() + "/");
-                                    }
-                                    case "single", "minecraft:single" -> {
-                                        JsonElement resource = sourceJson.get("resource");
-                                        if (resource == null) continue;
-                                        texturesInAtlas.add(Key.of(resource.getAsString()));
-                                    }
-                                    case "unstitch", "minecraft:unstitch" -> {
-                                        JsonElement resource = sourceJson.get("resource");
-                                        if (resource == null) continue;
-                                        texturesInAtlas.add(Key.of(resource.getAsString()));
-                                        JsonArray regions = sourceJson.getAsJsonArray("regions");
-                                        if (regions != null) {
-                                            for (JsonElement region : regions) {
-                                                if (!(region instanceof JsonObject regionJson)) continue;
-                                                JsonElement sprite = regionJson.get("sprite");
-                                                if (sprite == null) continue;
-                                                unstitchTextures.add(Key.of(sprite.getAsString()));
-                                            }
-                                        }
-                                    }
-                                    case "filter", "minecraft:filter" -> {
-                                        // todo filter
-                                    }
-                                    case "paletted_permutations", "minecraft:paletted_permutations" -> {
-                                        // todo paletted_permutations
-                                    }
-                                }
-                            }
-                        }
+                        processAtlas(atlasJsonObject, directoryMapper::put, unstitchTextures::add, texturesInAtlas::add);
                     } catch (IOException | JsonParseException e) {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", atlasesFile.toAbsolutePath().toString());
                     }
