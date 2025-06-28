@@ -182,7 +182,6 @@ public final class BukkitCustomBlock extends AbstractCustomBlock {
                 if (settings.burnable()) {
                     CoreReflections.method$FireBlock$setFlammable.invoke(MBlocks.FIRE, nmsBlock, settings.burnChance(), settings.fireSpreadChance());
                 }
-                CoreReflections.field$BlockStateBase$requiresCorrectToolForDrops.set(nmsState, settings.requireCorrectTool());
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to init block settings", e);

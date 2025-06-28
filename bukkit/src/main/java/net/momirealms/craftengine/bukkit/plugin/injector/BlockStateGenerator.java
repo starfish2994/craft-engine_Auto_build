@@ -98,13 +98,13 @@ public final class BlockStateGenerator {
             if (vec3 == null) return List.of();
 
             Object tool = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.TOOL);
-
             Item<ItemStack> item = BukkitItemManager.instance().wrap(tool == null || FastNMS.INSTANCE.method$ItemStack$isEmpty(tool) ? null : FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(tool));
+            Object optionalPlayer = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.THIS_ENTITY);
 
             // do not drop if it's not the correct tool
             BlockSettings settings = state.settings();
-            if (settings.requireCorrectTool()) {
-                if (tool == null) return List.of();
+            if (optionalPlayer != null && settings.requireCorrectTool()) {
+                if (item == null) return List.of();
                 if (!settings.isCorrectTool(item.id()) &&
                         (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool, state.customBlockState().handle()))) {
                     return List.of();
@@ -118,7 +118,7 @@ public final class BlockStateGenerator {
             if (item != null) {
                 lootBuilder.withParameter(DirectContextParameters.ITEM_IN_HAND, item);
             }
-            Object optionalPlayer = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.THIS_ENTITY);
+
             BukkitServerPlayer player = optionalPlayer != null ? BukkitCraftEngine.instance().adapt(FastNMS.INSTANCE.method$ServerPlayer$getBukkitEntity(optionalPlayer)) : null;
             Float radius = (Float) FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.EXPLOSION_RADIUS);
             if (radius != null) {
