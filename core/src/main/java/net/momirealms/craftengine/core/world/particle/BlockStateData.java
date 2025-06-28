@@ -1,12 +1,12 @@
 package net.momirealms.craftengine.core.world.particle;
 
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
-import net.momirealms.craftengine.core.block.DelayedInitBlockState;
+import net.momirealms.craftengine.core.block.LazyBlockState;
 
 public class BlockStateData implements ParticleData {
-    private final DelayedInitBlockState blockState;
+    private final LazyBlockState blockState;
 
-    public BlockStateData(DelayedInitBlockState blockState) {
+    public BlockStateData(LazyBlockState blockState) {
         this.blockState = blockState;
     }
 

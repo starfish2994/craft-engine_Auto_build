@@ -21,7 +21,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MLootContex
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
-import net.momirealms.craftengine.core.block.CustomBlockStateHolder;
+import net.momirealms.craftengine.core.block.DelegatingBlockState;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
@@ -48,10 +48,10 @@ public final class BlockStateGenerator {
                 .subclass(CoreReflections.clazz$BlockState, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                 .name(generatedStateClassName)
                 .defineField("immutableBlockState", ImmutableBlockState.class, Visibility.PUBLIC)
-                .implement(CustomBlockStateHolder.class)
-                .method(ElementMatchers.named("customBlockState"))
+                .implement(DelegatingBlockState.class)
+                .method(ElementMatchers.named("blockState"))
                 .intercept(FieldAccessor.ofField("immutableBlockState"))
-                .method(ElementMatchers.named("setCustomBlockState"))
+                .method(ElementMatchers.named("setBlockState"))
                 .intercept(FieldAccessor.ofField("immutableBlockState"))
                 .method(ElementMatchers.is(CoreReflections.method$BlockStateBase$getDrops))
                 .intercept(MethodDelegation.to(GetDropsInterceptor.INSTANCE));
@@ -77,7 +77,7 @@ public final class BlockStateGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ImmutableBlockState state = ((CustomBlockStateHolder) thisObj).customBlockState();
+            ImmutableBlockState state = ((DelegatingBlockState) thisObj).blockState();
             if (state == null) return List.of();
             Object builder = args[0];
             Object vec3 = FastNMS.INSTANCE.method$LootParams$Builder$getOptionalParameter(builder, MLootContextParams.ORIGIN);

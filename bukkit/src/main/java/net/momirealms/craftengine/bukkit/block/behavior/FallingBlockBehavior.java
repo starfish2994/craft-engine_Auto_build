@@ -97,7 +97,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
         Object entityData = CoreReflections.field$Entity$entityData.get(fallingBlockEntity);
         boolean isSilent = (boolean) CoreReflections.method$SynchedEntityData$get.invoke(entityData, CoreReflections.instance$Entity$DATA_SILENT);
         if (!isSilent) {
-            world.playBlockSound(position, customState.sounds().destroySound());
+            world.playBlockSound(position, customState.settings().sounds().destroySound());
         }
     }
 
@@ -114,7 +114,7 @@ public class FallingBlockBehavior extends BukkitBlockBehavior {
         if (immutableBlockState == null || immutableBlockState.isEmpty()) return;
         if (!isSilent) {
             net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
-            world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.sounds().landSound());
+            world.playBlockSound(Vec3d.atCenterOf(LocationUtils.fromBlockPos(pos)), immutableBlockState.settings().sounds().landSound());
         }
     }
 

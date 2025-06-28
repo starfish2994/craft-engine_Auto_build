@@ -163,7 +163,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         block.setPlacedBy(context, blockStateToPlace);
 
         player.swingHand(context.getHand());
-        context.getLevel().playBlockSound(position, blockStateToPlace.sounds().placeSound());
+        context.getLevel().playBlockSound(position, blockStateToPlace.settings().sounds().placeSound());
         world.sendGameEvent(bukkitPlayer, GameEvent.BLOCK_PLACE, new Vector(pos.x(), pos.y(), pos.z()));
         return InteractionResult.SUCCESS;
     }

@@ -366,7 +366,7 @@ public class BukkitCraftEngine extends CraftEngine {
         );
     }
 
-    public AntiGriefLib antiGrief() {
+    public AntiGriefLib antiGriefProvider() {
         if (this.antiGrief == null) {
             this.antiGrief = AntiGriefLib.builder(this.javaPlugin)
                     .ignoreOP(true)

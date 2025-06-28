@@ -7,7 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
-import net.momirealms.craftengine.core.block.CustomBlockStateHolder;
+import net.momirealms.craftengine.core.block.DelegatingBlockState;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
@@ -117,11 +117,11 @@ public class BlockStateUtils {
     }
 
     public static boolean isVanillaBlock(Object state) {
-        return !(state instanceof CustomBlockStateHolder);
+        return !(state instanceof DelegatingBlockState);
     }
 
     public static boolean isCustomBlock(Object state) {
-        return state instanceof CustomBlockStateHolder;
+        return state instanceof DelegatingBlockState;
     }
 
     public static boolean isVanillaBlock(int id) {
@@ -133,8 +133,8 @@ public class BlockStateUtils {
     }
 
     public static Optional<ImmutableBlockState> getOptionalCustomBlockState(Object state) {
-        if (state instanceof CustomBlockStateHolder holder) {
-            return Optional.ofNullable(holder.customBlockState());
+        if (state instanceof DelegatingBlockState holder) {
+            return Optional.ofNullable(holder.blockState());
         } else {
             return Optional.empty();
         }

@@ -116,7 +116,7 @@ public final class CraftEngineBlocks {
         if (success) {
             FastNMS.INSTANCE.method$BlockStateBase$onPlace(blockState, worldServer, blockPos, oldBlockState, false);
             if (playSound) {
-                SoundData data = block.sounds().placeSound();
+                SoundData data = block.settings().sounds().placeSound();
                 location.getWorld().playSound(location, data.id().toString(), SoundCategory.BLOCKS, data.volume().get(), data.pitch().get());
             }
         }
@@ -181,7 +181,7 @@ public final class CraftEngineBlocks {
             }
         }
         if (playSound) {
-            world.playBlockSound(position, state.sounds().breakSound());
+            world.playBlockSound(position, state.settings().sounds().breakSound());
         }
         if (sendParticles) {
             FastNMS.INSTANCE.method$Level$levelEvent(world.serverWorld(), WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), state.customBlockState().registryId());

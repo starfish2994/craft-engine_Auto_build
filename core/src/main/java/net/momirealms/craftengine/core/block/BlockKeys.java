@@ -2,7 +2,9 @@ package net.momirealms.craftengine.core.block;
 
 import net.momirealms.craftengine.core.util.Key;
 
-public class BlockKeys {
+public final class BlockKeys {
+    private BlockKeys() {}
+
     public static final Key NOTE_BLOCK = Key.of("minecraft:note_block");
     public static final Key TRIPWIRE = Key.of("minecraft:tripwire");
     public static final Key CRAFTING_TABLE = Key.of("minecraft:crafting_table");

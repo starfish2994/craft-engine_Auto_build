@@ -2,11 +2,11 @@ package net.momirealms.craftengine.core.block;
 
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 
-public class DelayedInitBlockState {
+public final class LazyBlockState {
     private final String state;
     private BlockStateWrapper packedBlockState;
 
-    public DelayedInitBlockState(String state) {
+    public LazyBlockState(String state) {
         this.state = state;
     }
 

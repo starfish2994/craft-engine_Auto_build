@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ImmutableBlockState extends BlockStateHolder {
+public final class ImmutableBlockState extends BlockStateHolder {
     private CompoundTag tag;
     private BlockStateWrapper customBlockState;
     private BlockStateWrapper vanillaBlockState;
@@ -26,7 +26,7 @@ public class ImmutableBlockState extends BlockStateHolder {
     private Integer hashCode;
     private BlockSettings settings;
 
-    protected ImmutableBlockState(
+    ImmutableBlockState(
             Holder<CustomBlock> owner,
             Reference2ObjectArrayMap<Property<?>, Comparable<?>> propertyMap
     ) {
@@ -54,7 +54,7 @@ public class ImmutableBlockState extends BlockStateHolder {
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ImmutableBlockState state)) return false;
         return state.owner == this.owner && state.tag.equals(this.tag);
@@ -62,22 +62,10 @@ public class ImmutableBlockState extends BlockStateHolder {
 
     @Override
     public int hashCode() {
-        if (hashCode == null) {
-            hashCode = getNbtToSave().hashCode();
+        if (this.hashCode == null) {
+            this.hashCode = getNbtToSave().hashCode();
         }
-        return hashCode;
-    }
-
-    public BlockSounds sounds() {
-        return settings.sounds;
-    }
-
-    public int luminance() {
-        return settings.luminance;
-    }
-
-    public PushReaction pushReaction() {
-        return settings.pushReaction;
+        return this.hashCode;
     }
 
     public BlockStateWrapper customBlockState() {

@@ -17,7 +17,7 @@ import org.bukkit.event.Listener;
 import java.util.Optional;
 
 @SuppressWarnings("DuplicatedCode")
-public class FallingBlockRemoveListener implements Listener {
+public final class FallingBlockRemoveListener implements Listener {
 
     @EventHandler
     public void onFallingBlockBreak(org.bukkit.event.entity.EntityRemoveEvent event) {
@@ -41,7 +41,7 @@ public class FallingBlockRemoveListener implements Listener {
                 Object entityData = CoreReflections.field$Entity$entityData.get(fallingBlockEntity);
                 boolean isSilent = (boolean) CoreReflections.method$SynchedEntityData$get.invoke(entityData, CoreReflections.instance$Entity$DATA_SILENT);
                 if (!isSilent) {
-                    world.playBlockSound(position, customState.sounds().destroySound());
+                    world.playBlockSound(position, customState.settings().sounds().destroySound());
                 }
             } catch (ReflectiveOperationException e) {
                 CraftEngine.instance().logger().warn("Failed to handle EntityRemoveEvent", e);

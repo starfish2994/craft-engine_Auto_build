@@ -1551,7 +1551,7 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(preBreakEvent))
                         return;
 
-                    if (!BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location))
+                    if (!BukkitCraftEngine.instance().antiGriefProvider().canBreak(platformPlayer, location))
                         return;
 
                     FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);

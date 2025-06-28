@@ -41,7 +41,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
-public class BlockEventListener implements Listener {
+public final class BlockEventListener implements Listener {
     private final BukkitCraftEngine plugin;
     private final boolean enableNoteBlockCheck;
     private final BukkitBlockManager manager;
@@ -175,7 +175,7 @@ public class BlockEventListener implements Listener {
                 }
 
                 // play sound
-                world.playBlockSound(position, state.sounds().breakSound());
+                world.playBlockSound(position, state.settings().sounds().breakSound());
             }
         } else {
             // override vanilla block loots
@@ -263,7 +263,7 @@ public class BlockEventListener implements Listener {
             if (cancellable.isCancelled()) {
                 return;
             }
-            player.playSound(location, state.sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.sounds().stepSound().volume().get(), state.sounds().stepSound().pitch().get());
+            player.playSound(location, state.settings().sounds().stepSound().id().toString(), SoundCategory.BLOCKS, state.settings().sounds().stepSound().volume().get(), state.settings().sounds().stepSound().pitch().get());
         } else if (Config.enableSoundSystem()) {
             Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
             if (this.manager.isBlockSoundRemoved(ownerBlock)) {

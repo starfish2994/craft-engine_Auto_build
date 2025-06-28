@@ -25,6 +25,8 @@ import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.RegistryUtils;
 import net.momirealms.craftengine.bukkit.util.TagUtils;
 import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.block.behavior.EmptyBlockBehavior;
+import net.momirealms.craftengine.core.block.parser.BlockStateParser;
 import net.momirealms.craftengine.core.block.properties.Properties;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
@@ -65,7 +67,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class BukkitBlockManager extends AbstractBlockManager {
+public final class BukkitBlockManager extends AbstractBlockManager {
     private static BukkitBlockManager instance;
     private final BukkitCraftEngine plugin;
     private final BlockParser blockParser;
@@ -75,6 +77,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     // Minecraft objects
     // Cached new blocks $ holders
     private Map<Key, Integer> internalId2StateId;
+    private Map<Key, DelegatingBlock> registeredBlocks;
     private Map<Integer, Object> stateId2BlockHolder;
     // This map is used to change the block states that are not necessarily needed into a certain block state
     private Map<Integer, Integer> blockAppearanceMapper;
@@ -93,7 +96,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
     private BlockEventListener blockEventListener;
     private FallingBlockRemoveListener fallingBlockRemoveListener;
     // cached tag packet
-    protected Object cachedUpdateTagsPacket;
+    Object cachedUpdateTagsPacket;
 
     private final List<Tuple<Object, Key, Boolean>> blocksToDeceive = new ArrayList<>();
 
@@ -144,6 +147,12 @@ public class BukkitBlockManager extends AbstractBlockManager {
         super.unload();
         if (EmptyBlock.STATE != null)
             Arrays.fill(this.stateId2ImmutableBlockStates, EmptyBlock.STATE);
+        for (DelegatingBlock block : this.registeredBlocks.values()) {
+            block.behaviorDelegate().bindValue(EmptyBlockBehavior.INSTANCE);
+            block.shapeDelegate().bindValue(BukkitBlockShape.STONE);
+            DelegatingBlockState state = (DelegatingBlockState) FastNMS.INSTANCE.method$Block$defaultState(block);
+            state.setBlockState(null);
+        }
     }
 
     @Override
@@ -201,7 +210,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
     @Nullable
     public Object getMinecraftBlockHolder(int stateId) {
-        return stateId2BlockHolder.get(stateId);
+        return this.stateId2BlockHolder.get(stateId);
     }
 
     @NotNull
@@ -297,6 +306,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             ImmutableMap.Builder<Key, Integer> builder1 = ImmutableMap.builder();
             ImmutableMap.Builder<Integer, Object> builder2 = ImmutableMap.builder();
             ImmutableMap.Builder<Key, List<Integer>> builder3 = ImmutableMap.builder();
+            ImmutableMap.Builder<Key, DelegatingBlock> builder4 = ImmutableMap.builder();
             Set<Object> affectedBlockSounds = new HashSet<>();
             Map<Object, Pair<SoundData, SoundData>> affectedDoors = new IdentityHashMap<>();
             Set<Object> affectedBlocks = new HashSet<>();
@@ -306,7 +316,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             int counter = 0;
             for (Map.Entry<Key, Integer> baseBlockAndItsCount : this.registeredRealBlockSlots.entrySet()) {
-                counter = registerBlockVariants(baseBlockAndItsCount, counter, builder1, builder2, builder3, affectedBlockSounds, order);
+                counter = registerBlockVariants(baseBlockAndItsCount, counter, builder1, builder2, builder3, builder4, affectedBlockSounds, order);
             }
 
             freezeRegistry();
@@ -315,6 +325,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             this.internalId2StateId = builder1.build();
             this.stateId2BlockHolder = builder2.build();
             this.realBlockArranger = builder3.build();
+            this.registeredBlocks = builder4.build();
             this.blockRegisterOrder = ImmutableList.copyOf(order);
 
             for (Object block : (Iterable<Object>) MBuiltInRegistries.BLOCK) {
@@ -420,7 +431,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
             // read states
             Map<String, Property<?>> properties;
             Map<String, Integer> appearances;
-            Map<String, VariantState> variants;
+            Map<String, BlockStateVariant> variants;
 
             Map<String, Object> stateSection = MiscUtils.castToMap(ResourceConfigUtils.requireNonNullOrThrow(ResourceConfigUtils.get(section, "state", "states"), "warning.config.block.missing_state"), true);
             boolean singleState = !stateSection.containsKey("properties");
@@ -435,7 +446,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                 if (internalBlockRegistryId == -1) {
                     throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", internalBlockId.toString(), String.valueOf(availableAppearances(vanillaBlock.type()) - 1));
                 }
-                variants = Map.of("", new VariantState("", settings, internalBlockRegistryId));
+                variants = Map.of("", new BlockStateVariant("", settings, internalBlockRegistryId));
             } else {
                 // properties
                 properties = getProperties(MiscUtils.castToMap(ResourceConfigUtils.requireNonNullOrThrow(stateSection.get("properties"), "warning.config.block.state.missing_properties"), true));
@@ -467,7 +478,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                             throw new LocalizedResourceConfigException("warning.config.block.state.invalid_real_id", internalBlockId.toString(), String.valueOf(availableAppearances(baseBlock) - 1));
                         }
                         Map<String, Object> anotherSetting = MiscUtils.castToMap(variantSection.get("settings"), true);
-                        variants.put(variantNBT, new VariantState(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
+                        variants.put(variantNBT, new BlockStateVariant(appearance, anotherSetting == null ? settings : BlockSettings.ofFullCopy(settings, anotherSetting), internalBlockRegistryId));
                     }
                 }
             }
@@ -542,6 +553,9 @@ public class BukkitBlockManager extends AbstractBlockManager {
         this.blockStateOverrides.computeIfAbsent(blockId, k -> new HashMap<>()).put(propertyNBT, combinedVariant);
         this.tempVanillaBlockStateModels.put(vanillaBlockStateRegistryId, combinedVariant);
         return new VanillaBlockState(blockId, propertyNBT, vanillaBlockStateRegistryId);
+    }
+
+    public record VanillaBlockState(Key type, String properties, int registryId) {
     }
 
     private JsonObject getVariantModel(Map<String, Object> singleModelMap) {
@@ -763,6 +777,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
                                       ImmutableMap.Builder<Key, Integer> builder1,
                                       ImmutableMap.Builder<Integer, Object> builder2,
                                       ImmutableMap.Builder<Key, List<Integer>> builder3,
+                                      ImmutableMap.Builder<Key, DelegatingBlock> builder4,
                                       Set<Object> affectSoundTypes,
                                       List<Key> order) throws Exception {
         Key clientSideBlockType = blockWithCount.getKey();
@@ -803,6 +818,7 @@ public class BukkitBlockManager extends AbstractBlockManager {
 
             builder1.put(realBlockKey, stateId);
             builder2.put(stateId, blockHolder);
+            builder4.put(realBlockKey, (DelegatingBlock) newRealBlock);
             stateIds.add(stateId);
 
             this.blocksToDeceive.add(Tuple.of(newRealBlock, clientSideBlockType, isNoteBlock));

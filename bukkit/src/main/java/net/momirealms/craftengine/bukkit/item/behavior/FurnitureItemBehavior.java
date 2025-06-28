@@ -117,7 +117,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
             }
         }
 
-        if (!BukkitCraftEngine.instance().antiGrief().canPlace(bukkitPlayer, furnitureLocation)) {
+        if (!BukkitCraftEngine.instance().antiGriefProvider().canPlace(bukkitPlayer, furnitureLocation)) {
             return InteractionResult.FAIL;
         }
 

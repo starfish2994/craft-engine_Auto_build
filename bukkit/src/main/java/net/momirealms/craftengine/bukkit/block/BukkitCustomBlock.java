@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.util.SoundUtils;
 import net.momirealms.craftengine.core.block.*;
 import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
+import net.momirealms.craftengine.core.block.behavior.EmptyBlockBehavior;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.loot.LootTable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -30,16 +31,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class BukkitCustomBlock extends AbstractCustomBlock {
+public final class BukkitCustomBlock extends AbstractCustomBlock {
     private static final Object ALWAYS_FALSE = FastNMS.INSTANCE.method$StatePredicate$always(false);
     private static final Object ALWAYS_TRUE = FastNMS.INSTANCE.method$StatePredicate$always(true);
 
-    protected BukkitCustomBlock(
+    private BukkitCustomBlock(
             @NotNull Key id,
             @NotNull Holder.Reference<CustomBlock> holder,
             @NotNull Map<String, Property<?>> properties,
             @NotNull Map<String, Integer> appearances,
-            @NotNull Map<String, VariantState> variantMapper,
+            @NotNull Map<String, BlockStateVariant> variantMapper,
             @NotNull BlockSettings settings,
             @NotNull Map<EventTrigger, List<Function<PlayerOptionalContext>>> events,
             @Nullable List<Map<String, Object>> behavior,
@@ -81,8 +82,8 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                     CraftEngine.instance().logger().warn("Could not find custom block immutableBlockState for " + immutableBlockState + ". This might cause errors!");
                     continue;
                 }
-                CustomBlockStateHolder nmsState = (CustomBlockStateHolder) immutableBlockState.customBlockState().handle();
-                nmsState.setCustomBlockState(immutableBlockState);
+                DelegatingBlockState nmsState = (DelegatingBlockState) immutableBlockState.customBlockState().handle();
+                nmsState.setBlockState(immutableBlockState);
                 BlockSettings settings = immutableBlockState.settings();
 
                 // set block properties
@@ -108,8 +109,8 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                 CoreReflections.field$BlockStateBase$isViewBlocking.set(nmsState, settings.isViewBlocking() == Tristate.UNDEFINED ? settings.isSuffocating().asBoolean() ? ALWAYS_TRUE : ALWAYS_FALSE : (settings.isViewBlocking().asBoolean() ? ALWAYS_TRUE : ALWAYS_FALSE));
 
                 // set parent block properties
-                CraftEngineNMSBlock nmsBlock = (CraftEngineNMSBlock) BlockStateUtils.getBlockOwner(nmsState);
-                ObjectHolder<BlockShape> shapeHolder = nmsBlock.getShapeHolder();
+                DelegatingBlock nmsBlock = (DelegatingBlock) BlockStateUtils.getBlockOwner(nmsState);
+                ObjectHolder<BlockShape> shapeHolder = nmsBlock.shapeDelegate();
                 shapeHolder.bindValue(new BukkitBlockShape(immutableBlockState.vanillaBlockState().handle(), Optional.ofNullable(immutableBlockState.settings().supportShapeBlockState()).map(it -> {
                     try {
                         Object blockState = BlockStateUtils.blockDataToBlockState(Bukkit.createBlockData(it));
@@ -123,7 +124,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
                     }
                 }).orElse(null)));
                 // bind behavior
-                ObjectHolder<BlockBehavior> behaviorHolder = nmsBlock.getBehaviorHolder();
+                ObjectHolder<BlockBehavior> behaviorHolder = nmsBlock.behaviorDelegate();
                 behaviorHolder.bindValue(super.behavior);
                 // set block side properties
                 CoreReflections.field$BlockBehaviour$explosionResistance.set(nmsBlock, settings.resistance());
@@ -196,7 +197,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         protected final Key id;
         protected Map<String, Property<?>> properties;
         protected Map<String, Integer> appearances;
-        protected Map<String, VariantState> variantMapper;
+        protected Map<String, BlockStateVariant> variantMapper;
         protected BlockSettings settings;
         protected List<Map<String, Object>> behavior;
         protected LootTable<?> lootTable;
@@ -243,7 +244,7 @@ public class BukkitCustomBlock extends AbstractCustomBlock {
         }
 
         @Override
-        public Builder variantMapper(Map<String, VariantState> variantMapper) {
+        public Builder variantMapper(Map<String, BlockStateVariant> variantMapper) {
             this.variantMapper = variantMapper;
             return this;
         }

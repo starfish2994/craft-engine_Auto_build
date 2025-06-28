@@ -69,7 +69,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             BlockPos pos = LocationUtils.fromBlockPos(blockPos);
             net.momirealms.craftengine.core.world.World world = new BukkitWorld(FastNMS.INSTANCE.method$Level$getCraftWorld(level));
             WorldPosition position = new WorldPosition(world, Vec3d.atCenterOf(pos));
-            world.playBlockSound(position, customState.sounds().breakSound());
+            world.playBlockSound(position, customState.settings().sounds().breakSound());
             FastNMS.INSTANCE.method$Level$levelEvent(level, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, customState.customBlockState().registryId());
             return MBlocks.AIR$defaultState;
         }

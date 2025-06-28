@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.plugin.context.function;
 
-import net.momirealms.craftengine.core.block.DelayedInitBlockState;
+import net.momirealms.craftengine.core.block.LazyBlockState;
 import net.momirealms.craftengine.core.item.DelayedInitItem;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
@@ -26,7 +26,7 @@ public class ParticleFunction<CTX extends Context> extends AbstractConditionalFu
 
     static {
         registerParticleData(map -> new BlockStateData(
-                        new DelayedInitBlockState(ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("block-state"), "warning.config.function.particle.missing_block_state"))),
+                        new LazyBlockState(ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("block-state"), "warning.config.function.particle.missing_block_state"))),
                 ParticleTypes.BLOCK, ParticleTypes.FALLING_DUST, ParticleTypes.DUST_PILLAR, ParticleTypes.BLOCK_CRUMBLE, ParticleTypes.BLOCK_MARKER);
         registerParticleData(map -> new ColorData(
                         Color.fromString(ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("color"), "warning.config.function.particle.missing_color").split(","))),
