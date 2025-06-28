@@ -2149,6 +2149,10 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$ConfiguredFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, clazz$BlockPos)
     );
 
+    public static final Method method$PlacedFeature$place = requireNonNull(
+            ReflectionUtils.getMethod(clazz$PlacedFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, clazz$BlockPos)
+    );
+
     public static final Class<?> clazz$BonemealableBlock = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.level.block.IBlockFragilePlantElement",

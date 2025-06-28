@@ -82,7 +82,7 @@ public class SaplingBlockBehavior extends BukkitBlockBehavior {
         Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.CONFIGURED_FEATURE);
         if (registry == null) return;
         @SuppressWarnings("unchecked")
-        Optional<Object> holder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(registry, FeatureUtils.createFeatureKey(treeFeature()));
+        Optional<Object> holder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(registry, FeatureUtils.createConfiguredFeatureKey(treeFeature()));
         if (holder.isEmpty()) {
             CraftEngine.instance().logger().warn("Configured feature not found: " + treeFeature());
             return;
@@ -172,7 +172,7 @@ public class SaplingBlockBehavior extends BukkitBlockBehavior {
         @SuppressWarnings("unchecked")
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
-            String feature = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("feature"), "warning.config.block.behavior.sapling.missing_feature");
+            String feature = ResourceConfigUtils.requireNonEmptyStringOrThrow(ResourceConfigUtils.get(arguments, "feature", "configured-feature"), "warning.config.block.behavior.sapling.missing_feature");
             Property<Integer> stageProperty = (Property<Integer>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("stage"), "warning.config.block.behavior.sapling.missing_stage");
             double boneMealSuccessChance = ResourceConfigUtils.getAsDouble(arguments.getOrDefault("bone-meal-success-chance", 0.45), "bone-meal-success-chance");
             return new SaplingBlockBehavior(block, Key.of(feature), (IntegerProperty) stageProperty, boneMealSuccessChance,
