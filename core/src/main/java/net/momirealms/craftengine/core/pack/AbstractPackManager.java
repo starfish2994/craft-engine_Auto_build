@@ -336,8 +336,6 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_remove_shulker_head_overlay/minecraft/shaders/core/rendertype_entity_solid.fsh");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/textures/entity/shulker/shulker_white.png");
         plugin.saveResource("resources/remove_shulker_head/pack.yml");
-        // internal
-        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/models/block/default_chorus_plant.json");
         plugin.saveResource("resources/internal/pack.yml");
         // i18n
         plugin.saveResource("resources/internal/configuration/i18n.yml");
@@ -1268,9 +1266,6 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateBlockOverrides(Path generatedPackPath) {
-        Path blockStatesFile = this.plugin.dataFolderPath().resolve("blockstates.yml");
-        if (!Files.exists(blockStatesFile)) this.plugin.saveResource("blockstates.yml");
-        YamlDocument preset = Config.instance().loadYamlData(blockStatesFile);
         for (Map.Entry<Key, Map<String, JsonElement>> entry : plugin.blockManager().blockOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedBlockPath = generatedPackPath
@@ -1278,16 +1273,25 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve(key.namespace())
                     .resolve("blockstates")
                     .resolve(key.value() + ".json");
-            JsonObject stateJson = new JsonObject();
-            JsonObject variants = new JsonObject();
-            stateJson.add("variants", variants);
-            Section presetSection = preset.getSection(key.toString());
-            if (presetSection != null) {
-                for (Map.Entry<String, Object> presetEntry : presetSection.getStringRouteMappedValues(false).entrySet()) {
-                    if (presetEntry.getValue() instanceof Section section) {
-                        variants.add(presetEntry.getKey(), YamlUtils.sectionToJson(section));
+            JsonObject stateJson;
+            if (Files.exists(overridedBlockPath)) {
+                try {
+                    stateJson = GsonHelper.readJsonFile(overridedBlockPath).getAsJsonObject();
+                    if (!stateJson.has("variants")) {
+                        stateJson = new JsonObject();
                     }
+                } catch (IOException e) {
+                    stateJson = new JsonObject();
                 }
+            } else {
+                stateJson = new JsonObject();
+            }
+            JsonObject variants;
+            if (!stateJson.has("variants")) {
+                variants = new JsonObject();
+                stateJson.add("variants", variants);
+            } else {
+                variants = stateJson.get("variants").getAsJsonObject();
             }
             for (Map.Entry<String, JsonElement> resourcePathEntry : entry.getValue().entrySet()) {
                 variants.add(resourcePathEntry.getKey(), resourcePathEntry.getValue());
