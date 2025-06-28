@@ -383,6 +383,7 @@ warning.config.resource_pack.item_model.already_exist: "<yellow>无法为 '<arg:
 warning.config.resource_pack.model.generation.already_exist: "<yellow>无法生成模型，因为模型文件 '<arg:0>' 已存在</yellow>"
 warning.config.resource_pack.generation.missing_font_texture: "<yellow>字体'<arg:0>'缺少必要纹理: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_model_texture: "<yellow>模型'<arg:0>'缺少纹理'<arg:1>'</yellow>"
+warning.config.resource_pack.generation.texture_not_in_atlas: "<yellow>纹理'<arg:0>'不在图集内. 你需要将纹理路径或文件夹前缀添加到图集内，或者启用 config.yml 中的 'obfuscation' 选项</yellow>"
 warning.config.resource_pack.generation.missing_item_model: "<yellow>物品'<arg:0>'缺少模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_block_model: "<yellow>方块'<arg:0>'缺少模型文件: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_parent_model: "<yellow>模型'<arg:0>'找不到父级模型文件: '<arg:1>'</yellow>"

@@ -92,6 +92,8 @@ public class MiscUtils {
             String[] split = stringFormat.split(",");
             if (split.length == 4) {
                 return new Quaternionf(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]), Float.parseFloat(split[3]));
+            } else if (split.length == 3) {
+                return QuaternionUtils.toQuaternionf(Math.toRadians(Float.parseFloat(split[2])), Float.parseFloat(split[1]), Math.toRadians(-Float.parseFloat(split[0])));
             } else if (split.length == 1) {
                 return QuaternionUtils.toQuaternionf(0, Math.toRadians(Float.parseFloat(split[0])), 0);
             } else {

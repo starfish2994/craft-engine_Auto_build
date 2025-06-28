@@ -381,6 +381,7 @@ warning.config.resource_pack.item_model.conflict.vanilla: "<yellow>Failed to gen
 warning.config.resource_pack.item_model.already_exist: "<yellow>Failed to generate item model for '<arg:0>' because the file '<arg:1>' already exists.</yellow>"
 warning.config.resource_pack.model.generation.already_exist: "<yellow>Failed to generate model because the model file '<arg:0>' already exists.</yellow>"
 warning.config.resource_pack.generation.missing_font_texture: "<yellow>Font '<arg:0>' is missing required texture: '<arg:1>'</yellow>"
+warning.config.resource_pack.generation.texture_not_in_atlas: "<yellow>Texture '<arg:0>' is not listed in the atlas. You need to add the texture path to the atlas or enable 'obfuscation' option in config.yml.</yellow>"
 warning.config.resource_pack.generation.missing_model_texture: "<yellow>Model '<arg:0>' is missing texture '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_item_model: "<yellow>Item '<arg:0>' is missing model file: '<arg:1>'</yellow>"
 warning.config.resource_pack.generation.missing_block_model: "<yellow>Block '<arg:0>' is missing model file: '<arg:1>'</yellow>"

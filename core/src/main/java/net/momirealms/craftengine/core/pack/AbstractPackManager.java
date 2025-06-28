@@ -738,6 +738,11 @@ public abstract class AbstractPackManager implements PackManager {
         Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
         Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
         Multimap<Key, Key> imageToModels = ArrayListMultimap.create(); // 图片到模型的映射
+        Set<Key> texturesInAtlas = new HashSet<>();
+        Set<Key> unstitchTextures = new HashSet<>();
+        Map<String, String> directoryMapper = new HashMap<>();
+        directoryMapper.put("item/", "item/");
+        directoryMapper.put("block/", "block/");
 
         for (Path rootPath : rootPaths) {
             Path assetsPath = rootPath.resolve("assets");
@@ -751,6 +756,56 @@ public abstract class AbstractPackManager implements PackManager {
                 return;
             }
             for (Path namespacePath : namespaces) {
+                Path atlasesFile = namespacePath.resolve("atlases").resolve("blocks.json");
+                if (Files.exists(atlasesFile)) {
+                    try {
+                        JsonObject atlasJsonObject = GsonHelper.readJsonFile(atlasesFile).getAsJsonObject();
+                        JsonArray sources = atlasJsonObject.getAsJsonArray("sources");
+                        if (sources != null) {
+                            for (JsonElement source : sources) {
+                                if (!(source instanceof JsonObject sourceJson)) continue;
+                                String type = Optional.ofNullable(sourceJson.get("type")).map(JsonElement::getAsString).orElse(null);
+                                if (type == null) continue;
+                                switch (type) {
+                                    case "directory", "minecraft:directory" -> {
+                                        JsonElement source0 = sourceJson.get("source");
+                                        JsonElement prefix = sourceJson.get("prefix");
+                                        if (prefix == null || source0 == null) continue;
+                                        directoryMapper.put(prefix.getAsString(), source0.getAsString() + "/");
+                                    }
+                                    case "single", "minecraft:single" -> {
+                                        JsonElement resource = sourceJson.get("resource");
+                                        if (resource == null) continue;
+                                        texturesInAtlas.add(Key.of(resource.getAsString()));
+                                    }
+                                    case "unstitch", "minecraft:unstitch" -> {
+                                        JsonElement resource = sourceJson.get("resource");
+                                        if (resource == null) continue;
+                                        texturesInAtlas.add(Key.of(resource.getAsString()));
+                                        JsonArray regions = sourceJson.getAsJsonArray("regions");
+                                        if (regions != null) {
+                                            for (JsonElement region : regions) {
+                                                if (!(region instanceof JsonObject regionJson)) continue;
+                                                JsonElement sprite = regionJson.get("sprite");
+                                                if (sprite == null) continue;
+                                                unstitchTextures.add(Key.of(sprite.getAsString()));
+                                            }
+                                        }
+                                    }
+                                    case "filter", "minecraft:filter" -> {
+                                        // todo filter
+                                    }
+                                    case "paletted_permutations", "minecraft:paletted_permutations" -> {
+                                        // todo paletted_permutations
+                                    }
+                                }
+                            }
+                        }
+                    } catch (IOException | JsonParseException e) {
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", atlasesFile.toAbsolutePath().toString());
+                    }
+                }
+
                 Path fontPath = namespacePath.resolve("font");
                 if (Files.isDirectory(fontPath)) {
                     try {
@@ -895,16 +950,37 @@ public abstract class AbstractPackManager implements PackManager {
             TranslationManager.instance().log("warning.config.resource_pack.generation.missing_block_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
         }
 
+        boolean enableObf = Config.enableObfuscation() && Config.enableRandomResourceLocation();
         label: for (Map.Entry<Key, Collection<Key>> entry : imageToModels.asMap().entrySet()) {
             Key key = entry.getKey();
             if (VANILLA_TEXTURES.contains(key)) continue;
-            String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
-            for (Path rootPath : rootPaths) {
-                if (Files.exists(rootPath.resolve(imagePath))) {
-                    continue label;
+            // 已经拆散的贴图，直接包含
+            if (unstitchTextures.contains(key)) continue;
+            // 直接在single中被指定的贴图，只检测是否存在
+            if (enableObf || texturesInAtlas.contains(key)) {
+                String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
+                for (Path rootPath : rootPaths) {
+                    if (Files.exists(rootPath.resolve(imagePath))) {
+                        continue label;
+                    }
                 }
+                TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+            } else {
+                for (Map.Entry<String, String> directorySource : directoryMapper.entrySet()) {
+                    String prefix = directorySource.getKey();
+                    if (key.value().startsWith(prefix)) {
+                        String imagePath = "assets/" + key.namespace() + "/textures/" + directorySource.getValue() + key.value().substring(prefix.length()) + ".png";
+                        for (Path rootPath : rootPaths) {
+                            if (Files.exists(rootPath.resolve(imagePath))) {
+                                continue label;
+                            }
+                        }
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+                        continue label;
+                    }
+                }
+                TranslationManager.instance().log("warning.config.resource_pack.generation.texture_not_in_atlas", key.toString());
             }
-            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
         }
     }
 
