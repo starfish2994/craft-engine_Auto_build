@@ -10,13 +10,12 @@ import dev.dejvokep.boostedyaml.block.implementation.Section;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
-import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionConditional;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
-import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.pack.misc.Equipment;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.ModernItemModel;
@@ -1053,14 +1052,14 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateEquipments(Path generatedPackPath) {
-        for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
-            EquipmentData equipmentData = generator.modernData();
-            if (equipmentData != null && Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
+        for (Map.Entry<Key, Equipment> entry : this.plugin.itemManager().equipmentsToGenerate().entrySet()) {
+            Key assetId = entry.getKey();
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
-                        .resolve(equipmentData.assetId().namespace())
+                        .resolve(assetId.namespace())
                         .resolve("equipment")
-                        .resolve(equipmentData.assetId().value() + ".json");
+                        .resolve(assetId.value() + ".json");
 
                 JsonObject equipmentJson = null;
                 if (Files.exists(equipmentPath)) {
@@ -1072,9 +1071,9 @@ public abstract class AbstractPackManager implements PackManager {
                     }
                 }
                 if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
                 } else {
-                    equipmentJson = generator.get();
+                    equipmentJson = entry.getValue().get();
                 }
                 try {
                     Files.createDirectories(equipmentPath.getParent());
@@ -1088,13 +1087,13 @@ public abstract class AbstractPackManager implements PackManager {
                     this.plugin.logger().severe("Error writing equipment file", e);
                 }
             }
-            if (equipmentData != null && Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
-                        .resolve(equipmentData.assetId().namespace())
+                        .resolve(assetId.namespace())
                         .resolve("models")
                         .resolve("equipment")
-                        .resolve(equipmentData.assetId().value() + ".json");
+                        .resolve(assetId.value() + ".json");
 
                 JsonObject equipmentJson = null;
                 if (Files.exists(equipmentPath)) {
@@ -1106,9 +1105,9 @@ public abstract class AbstractPackManager implements PackManager {
                     }
                 }
                 if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
                 } else {
-                    equipmentJson = generator.get();
+                    equipmentJson = entry.getValue().get();
                 }
                 try {
                     Files.createDirectories(equipmentPath.getParent());

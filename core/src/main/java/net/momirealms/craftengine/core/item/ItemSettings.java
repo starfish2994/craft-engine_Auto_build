@@ -7,11 +7,8 @@ import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
-import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
-import net.momirealms.craftengine.core.item.setting.EquipmentData;
-import net.momirealms.craftengine.core.item.setting.FoodData;
-import net.momirealms.craftengine.core.item.setting.Helmet;
-import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.item.setting.*;
+import net.momirealms.craftengine.core.pack.misc.EquipmentLayerType;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.*;
@@ -26,7 +23,7 @@ public class ItemSettings {
     int fuelTime;
     Set<Key> tags = Set.of();
     @Nullable
-    EquipmentGeneration equipment;
+    ItemEquipment equipment;
     boolean canRepair = true;
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
@@ -45,8 +42,8 @@ public class ItemSettings {
 
     public <I> List<ItemDataModifier<I>> modifiers() {
         ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
-        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null && this.equipment.modernData() != null) {
-            modifiers.add(new EquippableModifier<>(this.equipment.modernData()));
+        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null) {
+            modifiers.add(new EquippableModifier<>(this.equipment.data()));
         }
         if (VersionHelper.isOrAbove1_20_5() && this.foodData != null) {
             modifiers.add(new FoodModifier<>(this.foodData.nutrition(), this.foodData.saturation(), false));
@@ -153,7 +150,7 @@ public class ItemSettings {
     }
 
     @Nullable
-    public EquipmentGeneration equipment() {
+    public ItemEquipment equipment() {
         return equipment;
     }
 
@@ -225,7 +222,7 @@ public class ItemSettings {
         return this;
     }
 
-    public ItemSettings equipment(EquipmentGeneration equipment) {
+    public ItemSettings equipment(ItemEquipment equipment) {
         this.equipment = equipment;
         return this;
     }
@@ -302,20 +299,15 @@ public class ItemSettings {
             }));
             registerFactory("equippable", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                EquipmentData data;
-                if (VersionHelper.isOrAbove1_21_2() && args.containsKey("slot")) data = EquipmentData.fromMap(args);
-                else data = null;
-                EquipmentGeneration equipment = new EquipmentGeneration(
-                        EquipmentGeneration.Layer.fromConfig(args.get("humanoid")),
-                        EquipmentGeneration.Layer.fromConfig(args.get("humanoid-leggings")),
-                        EquipmentGeneration.Layer.fromConfig(args.get("llama-body")),
-                        EquipmentGeneration.Layer.fromConfig(args.get("horse-body")),
-                        EquipmentGeneration.Layer.fromConfig(args.get("wolf-body")),
-                        EquipmentGeneration.Layer.fromConfig(args.get("wings")),
-                        data,
-                        ResourceConfigUtils.getAsInt(args.getOrDefault("trim", -1), "trim")
-                );
-                return settings -> settings.equipment(equipment);
+                EquipmentData data = EquipmentData.fromMap(args);
+                ItemEquipment itemEquipment = new ItemEquipment(data);
+                for (Map.Entry<String, Object> entry : args.entrySet()) {
+                    EquipmentLayerType layerType = EquipmentLayerType.byId(entry.getKey());
+                    if (layerType != null) {
+                        itemEquipment.addLayer(layerType, ItemEquipment.Layer.fromConfig(entry.getValue()));
+                    }
+                }
+                return settings -> settings.equipment(itemEquipment);
             }));
             registerFactory("can-place", (value -> {
                 boolean bool = ResourceConfigUtils.getAsBoolean(value, "can-place");
