@@ -112,7 +112,6 @@ public interface Item<I> {
 
     Item<I> equippable(EquipmentData equipmentData);
 
-
     Item<I> unbreakable(boolean unbreakable);
 
     boolean unbreakable();

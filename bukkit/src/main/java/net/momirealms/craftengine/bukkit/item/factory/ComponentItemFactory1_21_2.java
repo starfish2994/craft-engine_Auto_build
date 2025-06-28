@@ -46,7 +46,7 @@ public class ComponentItemFactory1_21_2 extends ComponentItemFactory1_21 {
         if (data == null) {
             item.resetComponent(ComponentTypes.EQUIPPABLE);
         } else {
-            item.setJavaComponent(ComponentTypes.EQUIPPABLE, data.toMap());
+            item.setSparrowNBTComponent(ComponentTypes.EQUIPPABLE, data.toNBT());
         }
     }
 
