@@ -1715,6 +1715,10 @@ public final class CoreReflections {
             )
     );
 
+    public static final Field field$Property$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$Property, String.class, 0)
+    );
+
     public static final Field field$LeavesBlock$DISTANCE = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$LeavesBlock, clazz$IntegerProperty, 0)
     );
@@ -1727,6 +1731,9 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"getValue", "c"}, clazz$Property)
     );
 
+    public static final Method method$StateHolder$setValue = requireNonNull(
+            ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"setValue", "b"}, clazz$Property, Comparable.class)
+    );
 
     public static final Method method$Block$updateFromNeighbourShapes = requireNonNull(
             ReflectionUtils.getStaticMethod(clazz$Block, clazz$BlockState, clazz$BlockState, clazz$LevelAccessor, clazz$BlockPos)
@@ -3540,6 +3547,13 @@ public final class CoreReflections {
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.level.storage.loot.parameters.LootContextParameters",
                     "world.level.storage.loot.parameters.LootContextParams"
+            )
+    );
+
+    public static final Class<?> clazz$BlockStateProperties = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.properties.BlockProperties",
+                    "world.level.block.state.properties.BlockStateProperties"
             )
     );
 }

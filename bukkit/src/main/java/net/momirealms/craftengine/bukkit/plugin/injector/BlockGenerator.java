@@ -220,6 +220,7 @@ public final class BlockGenerator {
         public static final int directionIndex = VersionHelper.isOrAbove1_21_2() ? 4 : 1;
         public static final int posIndex = VersionHelper.isOrAbove1_21_2() ? 3 : 4;
 
+        @SuppressWarnings("deprecation")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
             ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();

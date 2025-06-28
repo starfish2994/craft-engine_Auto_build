@@ -17,12 +17,14 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlockStateProperties;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MLootContextParams;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockSettings;
 import net.momirealms.craftengine.core.block.DelegatingBlockState;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
@@ -54,7 +56,13 @@ public final class BlockStateGenerator {
                 .method(ElementMatchers.named("setBlockState"))
                 .intercept(FieldAccessor.ofField("immutableBlockState"))
                 .method(ElementMatchers.is(CoreReflections.method$BlockStateBase$getDrops))
-                .intercept(MethodDelegation.to(GetDropsInterceptor.INSTANCE));
+                .intercept(MethodDelegation.to(GetDropsInterceptor.INSTANCE))
+                .method(ElementMatchers.is(CoreReflections.method$StateHolder$hasProperty))
+                .intercept(MethodDelegation.to(HasPropertyInterceptor.INSTANCE))
+                .method(ElementMatchers.is(CoreReflections.method$StateHolder$getValue))
+                .intercept(MethodDelegation.to(GetPropertyValueInterceptor.INSTANCE))
+                .method(ElementMatchers.is(CoreReflections.method$StateHolder$setValue))
+                .intercept(MethodDelegation.to(SetPropertyValueInterceptor.INSTANCE));
         Class<?> clazz$CraftEngineBlock = stateBuilder.make().load(BlockStateGenerator.class.getClassLoader()).getLoaded();
         constructor$CraftEngineBlockState = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
                 .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$Block, Reference2ObjectArrayMap.class, MapCodec.class))
@@ -111,6 +119,56 @@ public final class BlockStateGenerator {
                 lootBuilder.withParameter(DirectContextParameters.EXPLOSION_RADIUS, radius);
             }
             return state.getDrops(lootBuilder, world, player).stream().map(Item::getLiteralObject).toList();
+        }
+    }
+
+    public static class HasPropertyInterceptor {
+        public static final HasPropertyInterceptor INSTANCE = new HasPropertyInterceptor();
+
+        @SuppressWarnings("unchecked")
+        @RuntimeType
+        public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
+            Object property = args[0];
+            if (property != MBlockStateProperties.WATERLOGGED) return false;
+            DelegatingBlockState customState = (DelegatingBlockState) thisObj;
+            ImmutableBlockState state = customState.blockState();
+            if (state == null) return false;
+            Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
+            return waterloggedProperty != null;
+        }
+    }
+
+    public static class GetPropertyValueInterceptor {
+        public static final GetPropertyValueInterceptor INSTANCE = new GetPropertyValueInterceptor();
+
+        @SuppressWarnings("unchecked")
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
+            Object property = args[0];
+            if (property != MBlockStateProperties.WATERLOGGED) return null;
+            DelegatingBlockState customState = (DelegatingBlockState) thisObj;
+            ImmutableBlockState state = customState.blockState();
+            if (state == null) return null;
+            Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
+            if (waterloggedProperty == null) return null;
+            return state.get(waterloggedProperty);
+        }
+    }
+
+    public static class SetPropertyValueInterceptor {
+        public static final SetPropertyValueInterceptor INSTANCE = new SetPropertyValueInterceptor();
+
+        @SuppressWarnings("unchecked")
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args) {
+            Object property = args[0];
+            if (property != MBlockStateProperties.WATERLOGGED) return thisObj;
+            DelegatingBlockState customState = (DelegatingBlockState) thisObj;
+            ImmutableBlockState state = customState.blockState();
+            if (state == null) return thisObj;
+            Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
+            if (waterloggedProperty == null) return thisObj;
+            return state.with(waterloggedProperty, (boolean) args[1]).customBlockState().handle();
         }
     }
 

@@ -74,8 +74,8 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             for (ImmutableBlockState state : this.getPossibleStates(tag)) {
                 state.setBehavior(this.behavior);
                 state.setSettings(blockStateVariant.settings());
-                state.setVanillaBlockState(BlockRegistryMirror.stateByRegistryId(vanillaStateRegistryId));
-                state.setCustomBlockState(BlockRegistryMirror.stateByRegistryId(blockStateVariant.internalRegistryId()));
+                state.setVanillaBlockState((BlockStateWrapper.VanillaBlockState) BlockRegistryMirror.stateByRegistryId(vanillaStateRegistryId));
+                state.setCustomBlockState((BlockStateWrapper.CustomBlockState) BlockRegistryMirror.stateByRegistryId(blockStateVariant.internalRegistryId()));
             }
         }
         // double check if there's any invalid state
