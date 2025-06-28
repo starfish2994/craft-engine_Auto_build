@@ -51,10 +51,10 @@ public final class BukkitCustomBlock extends AbstractCustomBlock {
 
     @Override
     protected BlockBehavior setupBehavior(List<Map<String, Object>> behaviorConfig) {
-        if (behaviorConfig.isEmpty()) {
+        if (behaviorConfig == null || behaviorConfig.isEmpty()) {
             return new EmptyBlockBehavior();
         } else if (behaviorConfig.size() == 1) {
-            return BlockBehaviors.fromMap(this, behaviorConfig.get(0));
+            return BlockBehaviors.fromMap(this, behaviorConfig.getFirst());
         } else {
             List<AbstractBlockBehavior> behaviors = new ArrayList<>();
             for (Map<String, Object> config : behaviorConfig) {

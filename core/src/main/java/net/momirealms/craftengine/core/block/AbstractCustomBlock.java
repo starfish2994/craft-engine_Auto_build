@@ -41,7 +41,7 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             @NotNull Map<String, BlockStateVariant> variantMapper,
             @NotNull BlockSettings settings,
             @NotNull Map<EventTrigger, List<Function<PlayerOptionalContext>>> events,
-            @NotNull List<Map<String, Object>> behaviorConfig,
+            @Nullable List<Map<String, Object>> behaviorConfig,
             @Nullable LootTable<?> lootTable
     ) {
         holder.bindValue(this);

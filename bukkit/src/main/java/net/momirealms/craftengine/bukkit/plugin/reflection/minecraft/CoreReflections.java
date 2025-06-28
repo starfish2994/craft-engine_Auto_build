@@ -1732,7 +1732,7 @@ public final class CoreReflections {
     );
 
     public static final Method method$StateHolder$setValue = requireNonNull(
-            ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"setValue", "b"}, clazz$Property, Comparable.class)
+            ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"setValue", VersionHelper.isOrAbove1_21_2() ? "b" : "a"}, clazz$Property, Comparable.class)
     );
 
     public static final Method method$Block$updateFromNeighbourShapes = requireNonNull(

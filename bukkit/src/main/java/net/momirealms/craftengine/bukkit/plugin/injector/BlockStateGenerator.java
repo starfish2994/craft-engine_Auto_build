@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.injector;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.bytebuddy.ByteBuddy;
@@ -29,6 +30,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import org.bukkit.inventory.ItemStack;
@@ -64,9 +66,13 @@ public final class BlockStateGenerator {
                 .method(ElementMatchers.is(CoreReflections.method$StateHolder$setValue))
                 .intercept(MethodDelegation.to(SetPropertyValueInterceptor.INSTANCE));
         Class<?> clazz$CraftEngineBlock = stateBuilder.make().load(BlockStateGenerator.class.getClassLoader()).getLoaded();
-        constructor$CraftEngineBlockState = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
+        constructor$CraftEngineBlockState = VersionHelper.isOrAbove1_20_5() ?
+                MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
                 .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$Block, Reference2ObjectArrayMap.class, MapCodec.class))
-                .asType(MethodType.methodType(CoreReflections.clazz$BlockState, CoreReflections.clazz$Block, Reference2ObjectArrayMap.class, MapCodec.class));
+                .asType(MethodType.methodType(CoreReflections.clazz$BlockState, CoreReflections.clazz$Block, Reference2ObjectArrayMap.class, MapCodec.class)) :
+                MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
+                .findConstructor(clazz$CraftEngineBlock, MethodType.methodType(void.class, CoreReflections.clazz$Block, ImmutableMap.class, MapCodec.class))
+                .asType(MethodType.methodType(CoreReflections.clazz$BlockState, CoreReflections.clazz$Block, ImmutableMap.class, MapCodec.class));
 
         String generatedFactoryClassName = packageWithName.substring(0, packageWithName.lastIndexOf('.')) + ".CraftEngineStateFactory";
         DynamicType.Builder<?> factoryBuilder = byteBuddy
