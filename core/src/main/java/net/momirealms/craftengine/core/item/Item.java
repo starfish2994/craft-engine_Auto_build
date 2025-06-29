@@ -122,11 +122,7 @@ public interface Item<I> {
 
     Item<I> setEnchantments(List<Enchantment> enchantments);
 
-    Item<I> addEnchantment(Enchantment enchantment);
-
     Item<I> setStoredEnchantments(List<Enchantment> enchantments);
-
-    Item<I> addStoredEnchantment(Enchantment enchantment);
 
     Item<I> itemFlags(List<String> flags);
 
@@ -163,8 +159,6 @@ public interface Item<I> {
     void resetComponent(Object type);
 
     I getItem();
-
-    I load();
 
     int maxStackSize();
 

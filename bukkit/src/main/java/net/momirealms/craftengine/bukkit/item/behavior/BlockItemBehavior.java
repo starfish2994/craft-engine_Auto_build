@@ -157,7 +157,6 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         if (!player.isCreativeMode()) {
             Item<?> item = context.getItem();
             item.count(item.count() - 1);
-            item.load();
         }
 
         block.setPlacedBy(context, blockStateToPlace);

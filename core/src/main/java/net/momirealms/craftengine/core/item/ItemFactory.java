@@ -57,8 +57,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract void resetComponent(W item, Object type);
 
-    protected abstract I load(W item);
-
     protected abstract I getItem(W item);
 
     protected abstract void customModelData(W item, Integer data);
@@ -138,10 +136,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void enchantments(W item, List<Enchantment> enchantments);
 
     protected abstract void storedEnchantments(W item, List<Enchantment> enchantments);
-
-    protected abstract void addEnchantment(W item, Enchantment enchantment);
-
-    protected abstract void addStoredEnchantment(W item, Enchantment enchantment);
 
     protected abstract Optional<Enchantment> getEnchantment(W item, Key key);
 

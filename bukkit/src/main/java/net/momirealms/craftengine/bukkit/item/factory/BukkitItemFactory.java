@@ -70,11 +70,6 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     }
 
     @Override
-    protected ItemStack load(W item) {
-        return item.load();
-    }
-
-    @Override
     protected ItemStack getItem(W item) {
         return item.getItem();
     }

@@ -130,7 +130,8 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 } else if (VersionHelper.isOrAbove1_20_2()) {
                     nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
                 } else {
-                    return () -> {};
+                    Object finalNmsRecipe0 = nmsRecipe;
+                    return () -> registerNMSSmithingRecipe(finalNmsRecipe0);
                 }
                 Object finalNmsRecipe = nmsRecipe;
                 return () -> registerNMSSmithingRecipe(finalNmsRecipe);

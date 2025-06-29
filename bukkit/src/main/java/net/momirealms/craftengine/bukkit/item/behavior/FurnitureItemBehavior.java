@@ -158,7 +158,6 @@ public class FurnitureItemBehavior extends ItemBehavior {
 
         if (!player.isCreativeMode()) {
             item.count(item.count() - 1);
-            item.load();
         }
 
         context.getLevel().playBlockSound(finalPlacePosition, customFurniture.settings().sounds().placeSound());

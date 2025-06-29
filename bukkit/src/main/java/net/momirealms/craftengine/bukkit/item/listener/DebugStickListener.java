@@ -96,7 +96,6 @@ public class DebugStickListener implements Listener {
                             currentProperty = getRelative(properties, currentProperty, player.isSecondaryUseActive());
                             data.put(blockId, currentProperty.name());
                             wrapped.setTag(data, "craftengine:debug_stick_state");
-                            wrapped.load();
                             Object systemChatPacket = NetworkReflections.constructor$ClientboundSystemChatPacket.newInstance(
                                     ComponentUtils.adventureToMinecraft(Component.translatable("item.minecraft.debug_stick.select")
                                             .arguments(

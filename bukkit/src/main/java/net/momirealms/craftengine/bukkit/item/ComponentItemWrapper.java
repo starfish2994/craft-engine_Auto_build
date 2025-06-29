@@ -154,11 +154,6 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
     }
 
     @Override
-    public ItemStack load() {
-        return this.item;
-    }
-
-    @Override
     public Object getLiteralObject() {
         return this.handle;
     }

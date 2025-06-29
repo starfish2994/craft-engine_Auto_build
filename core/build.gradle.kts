@@ -87,7 +87,6 @@ tasks {
         archiveFileName = "craft-engine-core-${rootProject.properties["project_version"]}.jar"
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("dev.dejvokep", "net.momirealms.craftengine.libraries")
-        relocate("com.saicone.rtag", "net.momirealms.craftengine.libraries.rtag")
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")

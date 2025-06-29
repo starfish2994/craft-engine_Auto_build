@@ -1,10 +1,5 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
-import com.saicone.rtag.RtagItem;
-import com.saicone.rtag.item.ItemObject;
-import com.saicone.rtag.tag.TagBase;
-import com.saicone.rtag.tag.TagCompound;
-import com.saicone.rtag.tag.TagList;
 import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
@@ -32,7 +27,7 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
 
     @Override
     protected LegacyItemWrapper wrapInternal(ItemStack item) {
-        return new LegacyItemWrapper(new RtagItem(item));
+        return new LegacyItemWrapper(item);
     }
 
     @Override
@@ -212,38 +207,6 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
         item.setTag(tags, "StoredEnchantments");
     }
 
-    @Override
-    protected void addEnchantment(LegacyItemWrapper item, Enchantment enchantment) {
-        Object enchantments = item.getExactTag("Enchantments");
-        if (enchantments != null) {
-            for (Object enchant : TagList.getValue(enchantments)) {
-                if (TagBase.getValue(TagCompound.get(enchant, "id")).equals(enchant.toString())) {
-                    TagCompound.set(enchant, "lvl", TagBase.newTag(enchantment.level()));
-                    return;
-                }
-            }
-            item.add(Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level()), "Enchantments");
-        } else {
-            item.setTag(List.of(Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level())), "Enchantments");
-        }
-    }
-
-    @Override
-    protected void addStoredEnchantment(LegacyItemWrapper item, Enchantment enchantment) {
-        Object enchantments = item.getExactTag("StoredEnchantments");
-        if (enchantments != null) {
-            for (Object enchant : TagList.getValue(enchantments)) {
-                if (TagBase.getValue(TagCompound.get(enchant, "id")).equals(enchant.toString())) {
-                    TagCompound.set(enchant, "lvl", TagBase.newTag(enchantment.level()));
-                    return;
-                }
-            }
-            item.add(Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level()), "StoredEnchantments");
-        } else {
-            item.setTag(List.of(Map.of("id", enchantment.id().toString(), "lvl", (short) enchantment.level())), "StoredEnchantments");
-        }
-    }
-
     @SuppressWarnings("deprecation")
     @Override
     protected Optional<Enchantment> getEnchantment(LegacyItemWrapper item, Key key) {
@@ -307,33 +270,33 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
 
     @Override
     protected LegacyItemWrapper mergeCopy(LegacyItemWrapper item1, LegacyItemWrapper item2) {
-        Object itemStack = ItemObject.copy(item2.getLiteralObject());
-        FastNMS.INSTANCE.method$ItemStack$setTag(itemStack, TagCompound.clone(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item1.getLiteralObject())));
-        // one more step than vanilla
-        TagCompound.merge(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(itemStack), FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item2.getLiteralObject()), true, true);
-        return new LegacyItemWrapper(new RtagItem(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(itemStack)));
+        Object copied = FastNMS.INSTANCE.constructor$ItemStack(FastNMS.INSTANCE.method$ItemStack$getItem(item2.getLiteralObject()), item2.count());
+        Object copiedTag = FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(copied);
+        FastNMS.INSTANCE.method$CompoundTag$merge(copiedTag, FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item1.getLiteralObject()));
+        FastNMS.INSTANCE.method$CompoundTag$merge(copiedTag, FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item2.getLiteralObject()));
+        return new LegacyItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(copied));
     }
 
     @Override
     protected void merge(LegacyItemWrapper item1, LegacyItemWrapper item2) {
-        // load previous changes on nms items
-        item1.load();
-        TagCompound.merge(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item1.getLiteralObject()), FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item2.getLiteralObject()), true, true);
-        // update wrapped item
-        item1.update();
+        Object item1Tag = FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item1.getLiteralObject());
+        Object item2Tag = FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item2.getLiteralObject());
+        FastNMS.INSTANCE.method$CompoundTag$merge(item1Tag, item2Tag);
     }
 
     @Override
     protected LegacyItemWrapper transmuteCopy(LegacyItemWrapper item, Key newItem, int amount) {
-        Object newItemStack = FastNMS.INSTANCE.constructor$ItemStack(FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(newItem)), amount);
-        FastNMS.INSTANCE.method$ItemStack$setTag(newItemStack, TagCompound.clone(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject())));
-        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(newItemStack)));
+        Object copied = FastNMS.INSTANCE.constructor$ItemStack(FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(newItem)), amount);
+        Object copiedTag = FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(copied);
+        Object thisTag = FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject());
+        FastNMS.INSTANCE.method$CompoundTag$merge(copiedTag, thisTag);
+        return new LegacyItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(copied));
     }
 
     @Override
     protected LegacyItemWrapper unsafeTransmuteCopy(LegacyItemWrapper item, Object newItem, int amount) {
         Object newItemStack = FastNMS.INSTANCE.constructor$ItemStack(newItem, amount);
-        FastNMS.INSTANCE.method$ItemStack$setTag(newItemStack, TagCompound.clone(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject())));
-        return new LegacyItemWrapper(new RtagItem(ItemObject.asCraftMirror(newItemStack)));
+        FastNMS.INSTANCE.method$ItemStack$setTag(newItemStack, FastNMS.INSTANCE.method$CompoundTag$copy(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject())));
+        return new LegacyItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(newItemStack));
     }
 }

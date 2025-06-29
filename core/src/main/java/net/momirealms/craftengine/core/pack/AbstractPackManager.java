@@ -6,7 +6,6 @@ import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
@@ -564,7 +563,7 @@ public abstract class AbstractPackManager implements PackManager {
                         } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> config = castToMap(configSection0, false);
-                                if (Config.debug() && (boolean) config.getOrDefault("debug", false)) {
+                                if ((boolean) config.getOrDefault("debug", false)) {
                                     this.plugin.logger().info(GsonHelper.get().toJson(this.plugin.templateManager().applyTemplates(id, config)));
                                 }
                                 if ((boolean) config.getOrDefault("enable", true)) {

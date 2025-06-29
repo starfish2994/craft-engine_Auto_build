@@ -83,7 +83,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         try {
             Item<ItemStack> wrapped = wrap(itemStack);
             if (wrapped == null) return Optional.empty();
-            return this.networkItemHandler.s2c(wrapped, player).map(Item::load);
+            return this.networkItemHandler.s2c(wrapped, player).map(Item::getItem);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle s2c items.", e);
@@ -96,7 +96,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         try {
             Item<ItemStack> wrapped = wrap(itemStack);
             if (wrapped == null) return Optional.empty();
-            return this.networkItemHandler.c2s(wrapped).map(Item::load);
+            return this.networkItemHandler.c2s(wrapped).map(Item::getItem);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle c2s items.", e);

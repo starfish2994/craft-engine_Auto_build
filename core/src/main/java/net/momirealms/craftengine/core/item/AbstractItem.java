@@ -277,20 +277,8 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
-    public Item<I> addEnchantment(Enchantment enchantment) {
-        this.factory.addEnchantment(this.item, enchantment);
-        return this;
-    }
-
-    @Override
     public Item<I> setStoredEnchantments(List<Enchantment> enchantments) {
         this.factory.storedEnchantments(this.item, enchantments);
-        return this;
-    }
-
-    @Override
-    public Item<I> addStoredEnchantment(Enchantment enchantment) {
-        this.factory.addStoredEnchantment(this.item, enchantment);
         return this;
     }
 
@@ -395,11 +383,6 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public I getItem() {
         return this.factory.getItem(this.item);
-    }
-
-    @Override
-    public I load() {
-        return this.factory.load(this.item);
     }
 
     @SuppressWarnings({"unchecked"})

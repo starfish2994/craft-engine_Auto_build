@@ -63,7 +63,6 @@ public class BukkitFurnitureElement extends AbstractFurnitureElement {
         } else {
             if (color != null) {
                 item.dyedColor(color);
-                item.load();
             }
         }
         ItemDisplayEntityData.DisplayedItem.addEntityDataIfNotDefaultValue(item.getLiteralObject(), cachedValues);

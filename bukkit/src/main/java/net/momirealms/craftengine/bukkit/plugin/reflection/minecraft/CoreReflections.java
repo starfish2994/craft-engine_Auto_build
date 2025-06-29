@@ -3560,4 +3560,11 @@ public final class CoreReflections {
                     "world.level.block.state.properties.BlockStateProperties"
             )
     );
+
+    public static final Class<?> clazz$CompoundTag = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "nbt.NBTTagCompound",
+                    "nbt.CompoundTag"
+            )
+    );
 }

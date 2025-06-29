@@ -643,7 +643,7 @@ public class RecipeEventListener implements Listener {
             }
             afterPenalty = calculateIncreasedRepairCost(afterPenalty);
             wrappedFirst.repairCost(afterPenalty);
-            event.setResult(wrappedFirst.load());
+            event.setResult(wrappedFirst.getItem());
         }
     }
 
@@ -757,7 +757,7 @@ public class RecipeEventListener implements Listener {
                 int remainingDurability = totalMaxDamage - totalDamage;
                 int newItemDamage = Math.max(0, newItem.maxDamage() - remainingDurability);
                 newItem.damage(newItemDamage);
-                inventory.setResult(newItem.load());
+                inventory.setResult(newItem.getItem());
             } else if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
                 ItemStack[] itemStacks = inventory.getMatrix();
                 for (ItemStack itemStack : itemStacks) {
