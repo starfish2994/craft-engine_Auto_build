@@ -111,7 +111,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
             } catch (IllegalArgumentException e) {
                 throw new LocalizedResourceConfigException("warning.config.vanilla_loot.invalid_type", type, EnumUtils.toString(VanillaLoot.Type.values()));
             }
-            boolean override = (boolean) section.getOrDefault("override", false);
+            boolean override = ResourceConfigUtils.getAsBoolean(section.getOrDefault("override", false), "override");
             List<String> targets = MiscUtils.getAsStringList(section.getOrDefault("target", List.of()));
             LootTable<?> lootTable = LootTable.fromMap(MiscUtils.castToMap(section.get("loot"), false));
             switch (typeEnum) {

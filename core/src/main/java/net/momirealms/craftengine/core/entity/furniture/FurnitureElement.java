@@ -28,7 +28,7 @@ public interface FurnitureElement {
 
     Vector3f position();
 
-    void initPackets(int entityId, @NotNull WorldPosition position, @NotNull Quaternionf conjugated, @Nullable Integer dyedColor, Consumer<Object> packets);
+    void initPackets(Furniture furniture, int entityId, @NotNull Quaternionf conjugated, Consumer<Object> packets);
 
     interface Builder {
 

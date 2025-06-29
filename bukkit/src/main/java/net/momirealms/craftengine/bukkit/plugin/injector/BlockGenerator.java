@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.injector;
 
+import com.google.common.collect.ImmutableList;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.ClassFileVersion;
 import net.bytebuddy.description.modifier.Visibility;
@@ -17,7 +18,11 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.util.NoteBlockChainUpdateUtils;
-import net.momirealms.craftengine.core.block.*;
+import net.momirealms.craftengine.core.block.BlockBehavior;
+import net.momirealms.craftengine.core.block.BlockKeys;
+import net.momirealms.craftengine.core.block.BlockShape;
+import net.momirealms.craftengine.core.block.DelegatingBlock;
+import net.momirealms.craftengine.core.block.behavior.EmptyBlockBehavior;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.Key;
@@ -30,6 +35,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public final class BlockGenerator {
     private static final BukkitBlockShape STONE_SHAPE =
@@ -53,16 +59,14 @@ public final class BlockGenerator {
                 .defineField("isClientSideNoteBlock", boolean.class, Visibility.PUBLIC)
                 .defineField("isClientSideTripwire", boolean.class, Visibility.PUBLIC)
                 // should always implement this interface
+                .implement(DelegatingBlock.class)
                 .implement(CoreReflections.clazz$Fallable)
                 .implement(CoreReflections.clazz$BonemealableBlock)
                 .implement(CoreReflections.clazz$SimpleWaterloggedBlock)
                 // internal interfaces
-                .implement(BehaviorHolder.class)
-                .implement(ShapeHolder.class)
-                .implement(ChainUpdateBlockIndicator.class)
-                .method(ElementMatchers.named("getBehaviorHolder"))
+                .method(ElementMatchers.named("behaviorDelegate"))
                 .intercept(FieldAccessor.ofField("behaviorHolder"))
-                .method(ElementMatchers.named("getShapeHolder"))
+                .method(ElementMatchers.named("shapeDelegate"))
                 .intercept(FieldAccessor.ofField("shapeHolder"))
                 .method(ElementMatchers.named("isNoteBlock"))
                 .intercept(FieldAccessor.ofField("isClientSideNoteBlock"))
@@ -201,6 +205,12 @@ public final class BlockGenerator {
         field$CraftEngineBlock$shape.set(newBlockInstance, shapeHolder);
         field$CraftEngineBlock$isNoteBlock.set(newBlockInstance, replacedBlock.equals(BlockKeys.NOTE_BLOCK));
         field$CraftEngineBlock$isTripwire.set(newBlockInstance, replacedBlock.equals(BlockKeys.TRIPWIRE));
+
+        Object stateDefinitionBuilder = CoreReflections.constructor$StateDefinition$Builder.newInstance(newBlockInstance);
+        Object stateDefinition = CoreReflections.method$StateDefinition$Builder$create.invoke(stateDefinitionBuilder,
+                (Function<Object, Object>) FastNMS.INSTANCE::method$Block$defaultState, BlockStateGenerator.instance$StateDefinition$Factory);
+        CoreReflections.field$Block$StateDefinition.set(newBlockInstance, stateDefinition);
+        CoreReflections.field$Block$defaultBlockState.set(newBlockInstance, ((ImmutableList<?>) CoreReflections.field$StateDefinition$states.get(stateDefinition)).getFirst());
         return newBlockInstance;
     }
 
@@ -210,10 +220,11 @@ public final class BlockGenerator {
         public static final int directionIndex = VersionHelper.isOrAbove1_21_2() ? 4 : 1;
         public static final int posIndex = VersionHelper.isOrAbove1_21_2() ? 3 : 4;
 
+        @SuppressWarnings("deprecation")
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
-            ChainUpdateBlockIndicator indicator = (ChainUpdateBlockIndicator) thisObj;
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
+            DelegatingBlock indicator = (DelegatingBlock) thisObj;
             // todo chain updater
             if (indicator.isNoteBlock()) {
                 if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
@@ -254,7 +265,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
+            ObjectHolder<BlockShape> holder = ((DelegatingBlock) thisObj).shapeDelegate();
             try {
                 return holder.value().getShape(thisObj, args);
             } catch (Exception e) {
@@ -269,7 +280,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
+            ObjectHolder<BlockShape> holder = ((DelegatingBlock) thisObj).shapeDelegate();
             try {
                 return holder.value().getCollisionShape(thisObj, args);
             } catch (Exception e) {
@@ -284,7 +295,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockShape> holder = ((ShapeHolder) thisObj).getShapeHolder();
+            ObjectHolder<BlockShape> holder = ((DelegatingBlock) thisObj).shapeDelegate();
             try {
                 return holder.value().getSupportShape(thisObj, args);
             } catch (Exception e) {
@@ -299,7 +310,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().isPathFindable(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -314,7 +325,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().mirror(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -329,7 +340,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().rotate(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -344,7 +355,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().randomTick(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -358,7 +369,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().tick(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -372,7 +383,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().onPlace(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -386,7 +397,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().onLand(thisObj, args);
             } catch (Exception e) {
@@ -400,7 +411,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().onBrokenAfterFall(thisObj, args);
             } catch (Exception e) {
@@ -414,7 +425,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().canSurvive(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -429,7 +440,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().isBoneMealSuccess(thisObj, args);
             } catch (Exception e) {
@@ -444,7 +455,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().isValidBoneMealTarget(thisObj, args);
             } catch (Exception e) {
@@ -459,7 +470,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().performBoneMeal(thisObj, args);
             } catch (Exception e) {
@@ -473,7 +484,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().neighborChanged(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -487,7 +498,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().onExplosionHit(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -501,7 +512,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().pickupBlock(thisObj, args, () -> CoreReflections.instance$ItemStack$EMPTY);
             } catch (Exception e) {
@@ -516,7 +527,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().placeLiquid(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -531,7 +542,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().canPlaceLiquid(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -546,7 +557,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public int intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().getDirectSignal(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -561,7 +572,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public int intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().getSignal(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -576,7 +587,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public boolean intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 return holder.value().isSignalSource(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -591,7 +602,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().affectNeighborsAfterRemoval(thisObj, args, superMethod);
             } catch (Exception e) {
@@ -605,7 +616,7 @@ public final class BlockGenerator {
 
         @RuntimeType
         public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((BehaviorHolder) thisObj).getBehaviorHolder();
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().entityInside(thisObj, args, superMethod);
             } catch (Exception e) {

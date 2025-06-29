@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class VersionHelper {
+    public static final MinecraftVersion MINECRAFT_VERSION;
     private static final int version;
     private static final int majorVersion;
     private static final int minorVersion;
@@ -36,6 +37,9 @@ public class VersionHelper {
             }
             JsonObject json = GsonHelper.parseJsonToJsonObject(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
             String versionString = json.getAsJsonPrimitive("id").getAsString();
+
+            MINECRAFT_VERSION = new MinecraftVersion(versionString);
+
             String[] split = versionString.split("\\.");
             int major = Integer.parseInt(split[1]);
             int minor = split.length == 3 ? Integer.parseInt(split[2].split("-", 2)[0]) : 0;

@@ -27,4 +27,5 @@ public final class ComponentKeys {
     public static final Key DYED_COLOR = Key.of("minecraft", "dyed_color");
     public static final Key DEATH_PROTECTION = Key.of("minecraft", "death_protection");
     public static final Key FOOD = Key.of("minecraft", "food");
+    public static final Key FIREWORK_EXPLOSION = Key.of("minecraft", "firework_explosion");
 }

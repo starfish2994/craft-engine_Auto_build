@@ -2,8 +2,6 @@ package net.momirealms.craftengine.bukkit.entity.projectile;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
@@ -11,25 +9,24 @@ import net.momirealms.craftengine.bukkit.plugin.scheduler.impl.FoliaTask;
 import net.momirealms.craftengine.bukkit.util.ParticleUtils;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
-import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
-import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -120,41 +117,6 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 new ProjectileInjectTask(projectile, !projectileItem.getItemMeta().hasEnchant(Enchantment.LOYALTY));
             }
         });
-    }
-
-    @EventHandler
-    public void onPlayerConsume(PlayerItemConsumeEvent event) {
-        ProjectileType type = getCustomProjectileType(event.getItem());
-        if (type == ProjectileType.TRIDENT) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
-        ItemStack item = event.getItem();
-        ProjectileType type = getCustomProjectileType(item);
-        if (type == null) return;
-        int ticksHeldFor = event.getTicksHeldFor();
-        Player player = event.getPlayer();
-        if (type == ProjectileType.TRIDENT) {
-            if (ticksHeldFor < 10) return;
-            Object nmsItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(item);
-            Object nmsServerLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(player.getWorld());
-            Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(player);
-            TridentRelease.releaseUsing(nmsItemStack, nmsServerLevel, nmsEntity);
-        }
-    }
-
-    @Nullable
-    private ProjectileType getCustomProjectileType(ItemStack item) {
-        Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(item);
-        Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
-        if (optionalCustomItem.isEmpty()) return null;
-        CustomItem<ItemStack> customItem = optionalCustomItem.get();
-        ProjectileMeta meta = customItem.settings().projectileMeta();
-        if (meta == null) return null;
-        return meta.type();
     }
 
     public class ProjectileInjectTask implements Runnable {

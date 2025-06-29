@@ -6,22 +6,25 @@ import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.block.implementation.Section;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
-import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionConditional;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
-import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.pack.misc.Equipment;
+import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.ModernItemModel;
+import net.momirealms.craftengine.core.pack.model.RangeDispatchItemModel;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
+import net.momirealms.craftengine.core.pack.model.rangedisptach.CustomModelDataRangeDispatchProperty;
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
+import net.momirealms.craftengine.core.pack.obfuscation.ResourcePackGenerationException;
+import net.momirealms.craftengine.core.pack.revision.Revision;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -54,11 +57,12 @@ import java.util.function.Predicate;
 
 import static net.momirealms.craftengine.core.util.MiscUtils.castToMap;
 
+@SuppressWarnings("DuplicatedCode")
 public abstract class AbstractPackManager implements PackManager {
     public static final Map<Key, JsonObject> PRESET_MODERN_MODELS_ITEM = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_LEGACY_MODELS_ITEM = new HashMap<>();
     public static final Map<Key, JsonObject> PRESET_MODELS_BLOCK = new HashMap<>();
-    public static final Map<Key, JsonObject> PRESET_ITEMS = new HashMap<>();
+    public static final Map<Key, ModernItemModel> PRESET_ITEMS = new HashMap<>();
     public static final Set<Key> VANILLA_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_MODELS = new HashSet<>();
     private static final byte[] EMPTY_IMAGE;
@@ -78,6 +82,7 @@ public abstract class AbstractPackManager implements PackManager {
     private final BiConsumer<Path, Path> eventDispatcher;
     private final Map<String, Pack> loadedPacks = new HashMap<>();
     private final Map<String, ConfigParser> sectionParsers = new HashMap<>();
+    private final JsonObject vanillaAtlas;
     private Map<Path, CachedConfigFile> cachedConfigFiles = Collections.emptyMap();
     private Map<Path, CachedAssetFile> cachedAssetFiles = Collections.emptyMap();
     protected BiConsumer<Path, Path> zipGenerator;
@@ -97,13 +102,18 @@ public abstract class AbstractPackManager implements PackManager {
             this.plugin.logger().warn("Failed to create default configs folder", e);
         }
         this.initInternalData();
+        try (InputStream inputStream = plugin.resourceStream("internal/atlases/blocks.json")) {
+            this.vanillaAtlas = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read internal/atlases/blocks.json", e);
+        }
     }
 
     private void initInternalData() {
         loadInternalData("internal/models/item/legacy/_all.json", PRESET_LEGACY_MODELS_ITEM::put);
         loadInternalData("internal/models/item/_all.json", PRESET_MODERN_MODELS_ITEM::put);
         loadInternalData("internal/models/block/_all.json", PRESET_MODELS_BLOCK::put);
-        loadInternalData("internal/items/_all.json", PRESET_ITEMS::put);
+        loadModernItemModel("internal/items/_all.json", PRESET_ITEMS::put);
 
         loadInternalList("textures", "block/", VANILLA_TEXTURES::add);
         loadInternalList("textures", "item/", VANILLA_TEXTURES::add);
@@ -119,6 +129,21 @@ public abstract class AbstractPackManager implements PackManager {
         VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
         for (int i = 0; i < 256; i++) {
             VANILLA_TEXTURES.add(Key.of("minecraft", "font/unicode_page_" + String.format("%02x", i)));
+        }
+    }
+
+    private void loadModernItemModel(String path, BiConsumer<Key, ModernItemModel> callback) {
+        try (InputStream inputStream = this.plugin.resourceStream(path)) {
+            if (inputStream != null) {
+                JsonObject allModelsItems = JsonParser.parseReader(new InputStreamReader(inputStream)).getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : allModelsItems.entrySet()) {
+                    if (entry.getValue() instanceof JsonObject modelJson) {
+                        callback.accept(Key.of(entry.getKey()), ModernItemModel.fromJson(modelJson));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to load " + path, e);
         }
     }
 
@@ -222,6 +247,8 @@ public abstract class AbstractPackManager implements PackManager {
                    try {
                        Object magicObject = magicConstructor.newInstance(p1, p2);
                        magicMethod.invoke(magicObject);
+                   } catch (ResourcePackGenerationException e) {
+                       this.plugin.logger().warn("Failed to generate resource pack: " + e.getMessage());
                    } catch (Exception e) {
                        this.plugin.logger().warn("Failed to generate zip files\n" + new StringWriter(){{e.printStackTrace(new PrintWriter(this));}}.toString().replaceAll("\\.[Il]{2,}", "").replaceAll("/[Il]{2,}", ""));
                    }
@@ -311,11 +338,9 @@ public abstract class AbstractPackManager implements PackManager {
         // internal
         plugin.saveResource("resources/remove_shulker_head/resourcepack/pack.mcmeta");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/shaders/core/rendertype_entity_solid.fsh");
-        plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_assets/minecraft/shaders/core/rendertype_entity_solid.fsh");
+        plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_remove_shulker_head_overlay/minecraft/shaders/core/rendertype_entity_solid.fsh");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/textures/entity/shulker/shulker_white.png");
         plugin.saveResource("resources/remove_shulker_head/pack.yml");
-        // internal
-        plugin.saveResource("resources/internal/resourcepack/assets/minecraft/models/block/default_chorus_plant.json");
         plugin.saveResource("resources/internal/pack.yml");
         // i18n
         plugin.saveResource("resources/internal/configuration/i18n.yml");
@@ -538,7 +563,7 @@ public abstract class AbstractPackManager implements PackManager {
                         } else {
                             if (configEntry.getValue() instanceof Map<?, ?> configSection0) {
                                 Map<String, Object> config = castToMap(configSection0, false);
-                                if (Config.debug() && (boolean) config.getOrDefault("debug", false)) {
+                                if ((boolean) config.getOrDefault("debug", false)) {
                                     this.plugin.logger().info(GsonHelper.get().toJson(this.plugin.templateManager().applyTemplates(id, config)));
                                 }
                                 if ((boolean) config.getOrDefault("enable", true)) {
@@ -602,19 +627,21 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
 
+            HashSet<Revision> revisions = new HashSet<>();
             this.generateFonts(generatedPackPath);
             this.generateItemModels(generatedPackPath, this.plugin.itemManager());
             this.generateItemModels(generatedPackPath, this.plugin.blockManager());
             this.generateBlockOverrides(generatedPackPath);
             this.generateLegacyItemOverrides(generatedPackPath);
-            this.generateModernItemOverrides(generatedPackPath);
+            this.generateModernItemOverrides(generatedPackPath, revisions::add);
             this.generateModernItemModels1_21_2(generatedPackPath);
-            this.generateModernItemModels1_21_4(generatedPackPath);
+            this.generateModernItemModels1_21_4(generatedPackPath, revisions::add);
             this.generateOverrideSounds(generatedPackPath);
             this.generateCustomSounds(generatedPackPath);
             this.generateClientLang(generatedPackPath);
             this.generateEquipments(generatedPackPath);
             this.generateParticle(generatedPackPath);
+            this.generatePackMetadata(generatedPackPath.resolve("pack.mcmeta"), revisions);
             if (Config.excludeShaders()) {
                 this.removeAllShaders(generatedPackPath);
             }
@@ -632,6 +659,57 @@ public abstract class AbstractPackManager implements PackManager {
             this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
             this.eventDispatcher.accept(generatedPackPath, finalPath);
         }
+    }
+
+    private void generatePackMetadata(Path path, Set<Revision> revisions) throws IOException {
+        JsonObject rawMeta;
+        boolean changed = false;
+        if (!Files.exists(path)) {
+            rawMeta = new JsonObject();
+            changed = true;
+        } else {
+            rawMeta = GsonHelper.readJsonFile(path).getAsJsonObject();
+        }
+        if (!rawMeta.has("pack")) {
+            JsonObject pack = new JsonObject();
+            rawMeta.add("pack", pack);
+            pack.addProperty("pack_format", Config.packMinVersion().packFormat());
+            JsonObject supportedFormats = new JsonObject();
+            supportedFormats.addProperty("min_inclusive", Config.packMinVersion().packFormat());
+            supportedFormats.addProperty("max_inclusive", Config.packMaxVersion().packFormat());
+            pack.add("supported_formats", supportedFormats);
+            changed = true;
+        }
+        if (revisions.isEmpty()) {
+            if (changed) {
+                GsonHelper.writeJsonFile(rawMeta, path);
+            }
+            return;
+        }
+        JsonObject overlays;
+        if (rawMeta.has("overlays")) {
+            overlays = rawMeta.get("overlays").getAsJsonObject();
+        } else {
+            overlays = new JsonObject();
+            rawMeta.add("overlays", overlays);
+        }
+        JsonArray entries;
+        if (overlays.has("entries")) {
+            entries = overlays.get("entries").getAsJsonArray();
+        } else {
+            entries = new JsonArray();
+            overlays.add("entries", entries);
+        }
+        for (Revision revision : revisions) {
+            JsonObject entry = new JsonObject();
+            JsonObject formats = new JsonObject();
+            entry.add("formats", formats);
+            formats.addProperty("min_inclusive", revision.minPackVersion());
+            formats.addProperty("max_inclusive", revision.maxPackVersion());
+            entry.addProperty("directory", Config.createOverlayFolderName(revision.versionString()));
+            entries.add(entry);
+        }
+        GsonHelper.writeJsonFile(rawMeta, path);
     }
 
     private void removeAllShaders(Path path) {
@@ -652,6 +730,61 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
+    private void processAtlas(JsonObject atlasJsonObject, BiConsumer<String, String> directory, Consumer<Key> unstitch, Consumer<Key> included) {
+        JsonArray sources = atlasJsonObject.getAsJsonArray("sources");
+        if (sources != null) {
+            for (JsonElement source : sources) {
+                if (!(source instanceof JsonObject sourceJson)) continue;
+                String type = Optional.ofNullable(sourceJson.get("type")).map(JsonElement::getAsString).orElse(null);
+                if (type == null) continue;
+                switch (type) {
+                    case "directory", "minecraft:directory" -> {
+                        JsonElement source0 = sourceJson.get("source");
+                        JsonElement prefix = sourceJson.get("prefix");
+                        if (prefix == null || source0 == null) continue;
+                        directory.accept(prefix.getAsString(), source0.getAsString() + "/");
+                    }
+                    case "single", "minecraft:single" -> {
+                        JsonElement resource = sourceJson.get("resource");
+                        if (resource == null) continue;
+                        included.accept(Key.of(resource.getAsString()));
+                    }
+                    case "unstitch", "minecraft:unstitch" -> {
+                        JsonElement resource = sourceJson.get("resource");
+                        if (resource == null) continue;
+                        included.accept(Key.of(resource.getAsString()));
+                        JsonArray regions = sourceJson.getAsJsonArray("regions");
+                        if (regions != null) {
+                            for (JsonElement region : regions) {
+                                if (!(region instanceof JsonObject regionJson)) continue;
+                                JsonElement sprite = regionJson.get("sprite");
+                                if (sprite == null) continue;
+                                unstitch.accept(Key.of(sprite.getAsString()));
+                            }
+                        }
+                    }
+                    case "filter", "minecraft:filter" -> {
+                        // todo filter
+                    }
+                    case "paletted_permutations", "minecraft:paletted_permutations" -> {
+                        JsonArray textures = sourceJson.getAsJsonArray("textures");
+                        if (textures == null) continue;
+                        JsonObject permutationsJson = sourceJson.getAsJsonObject("permutations");
+                        if (permutationsJson == null) continue;
+                        String separator = sourceJson.has("separator") ? sourceJson.get("separator").getAsString() : "_";
+                        List<String> permutations = new ArrayList<>(permutationsJson.keySet());
+                        for (JsonElement texture : textures) {
+                            if (!(texture instanceof JsonPrimitive texturePath)) continue;
+                            for (String permutation : permutations) {
+                                included.accept(Key.of(texturePath.getAsString() + separator + permutation));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @SuppressWarnings("DuplicatedCode")
     private void validateResourcePack(Path path) {
         List<Path> rootPaths;
@@ -665,6 +798,10 @@ public abstract class AbstractPackManager implements PackManager {
         Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
         Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
         Multimap<Key, Key> imageToModels = ArrayListMultimap.create(); // 图片到模型的映射
+        Set<Key> texturesInAtlas = new HashSet<>();
+        Set<Key> unstitchTextures = new HashSet<>();
+        Map<String, String> directoryMapper = new HashMap<>();
+        processAtlas(this.vanillaAtlas, directoryMapper::put, unstitchTextures::add, texturesInAtlas::add);
 
         for (Path rootPath : rootPaths) {
             Path assetsPath = rootPath.resolve("assets");
@@ -678,6 +815,16 @@ public abstract class AbstractPackManager implements PackManager {
                 return;
             }
             for (Path namespacePath : namespaces) {
+                Path atlasesFile = namespacePath.resolve("atlases").resolve("blocks.json");
+                if (Files.exists(atlasesFile)) {
+                    try {
+                        JsonObject atlasJsonObject = GsonHelper.readJsonFile(atlasesFile).getAsJsonObject();
+                        processAtlas(atlasJsonObject, directoryMapper::put, unstitchTextures::add, texturesInAtlas::add);
+                    } catch (IOException | JsonParseException e) {
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", atlasesFile.toAbsolutePath().toString());
+                    }
+                }
+
                 Path fontPath = namespacePath.resolve("font");
                 if (Files.isDirectory(fontPath)) {
                     try {
@@ -822,16 +969,37 @@ public abstract class AbstractPackManager implements PackManager {
             TranslationManager.instance().log("warning.config.resource_pack.generation.missing_block_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
         }
 
+        boolean enableObf = Config.enableObfuscation() && Config.enableRandomResourceLocation();
         label: for (Map.Entry<Key, Collection<Key>> entry : imageToModels.asMap().entrySet()) {
             Key key = entry.getKey();
             if (VANILLA_TEXTURES.contains(key)) continue;
-            String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
-            for (Path rootPath : rootPaths) {
-                if (Files.exists(rootPath.resolve(imagePath))) {
-                    continue label;
+            // 已经拆散的贴图，直接包含
+            if (unstitchTextures.contains(key)) continue;
+            // 直接在single中被指定的贴图，只检测是否存在
+            if (enableObf || texturesInAtlas.contains(key)) {
+                String imagePath = "assets/" + key.namespace() + "/textures/" + key.value() + ".png";
+                for (Path rootPath : rootPaths) {
+                    if (Files.exists(rootPath.resolve(imagePath))) {
+                        continue label;
+                    }
                 }
+                TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+            } else {
+                for (Map.Entry<String, String> directorySource : directoryMapper.entrySet()) {
+                    String prefix = directorySource.getKey();
+                    if (key.value().startsWith(prefix)) {
+                        String imagePath = "assets/" + key.namespace() + "/textures/" + directorySource.getValue() + key.value().substring(prefix.length()) + ".png";
+                        for (Path rootPath : rootPaths) {
+                            if (Files.exists(rootPath.resolve(imagePath))) {
+                                continue label;
+                            }
+                        }
+                        TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
+                        continue label;
+                    }
+                }
+                TranslationManager.instance().log("warning.config.resource_pack.generation.texture_not_in_atlas", key.toString());
             }
-            TranslationManager.instance().log("warning.config.resource_pack.generation.missing_model_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
         }
     }
 
@@ -945,7 +1113,7 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateParticle(Path generatedPackPath) {
         if (!Config.removeTintedLeavesParticle()) return;
-        if (Config.packMaxVersion() < 21.49f) return;
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_5)) return;
         JsonObject particleJson = new JsonObject();
         JsonArray textures = new JsonArray();
         textures.add("empty");
@@ -977,14 +1145,14 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateEquipments(Path generatedPackPath) {
-        for (EquipmentGeneration generator : this.plugin.itemManager().equipmentsToGenerate()) {
-            EquipmentData equipmentData = generator.modernData();
-            if (equipmentData != null && Config.packMaxVersion() >= 21.4f) {
+        for (Map.Entry<Key, Equipment> entry : this.plugin.itemManager().equipmentsToGenerate().entrySet()) {
+            Key assetId = entry.getKey();
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
-                        .resolve(equipmentData.assetId().namespace())
+                        .resolve(assetId.namespace())
                         .resolve("equipment")
-                        .resolve(equipmentData.assetId().value() + ".json");
+                        .resolve(assetId.value() + ".json");
 
                 JsonObject equipmentJson = null;
                 if (Files.exists(equipmentPath)) {
@@ -996,9 +1164,9 @@ public abstract class AbstractPackManager implements PackManager {
                     }
                 }
                 if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
                 } else {
-                    equipmentJson = generator.get();
+                    equipmentJson = entry.getValue().get();
                 }
                 try {
                     Files.createDirectories(equipmentPath.getParent());
@@ -1012,13 +1180,13 @@ public abstract class AbstractPackManager implements PackManager {
                     this.plugin.logger().severe("Error writing equipment file", e);
                 }
             }
-            if (equipmentData != null && Config.packMaxVersion() >= 21.2f && Config.packMinVersion() < 21.4f) {
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
                 Path equipmentPath = generatedPackPath
                         .resolve("assets")
-                        .resolve(equipmentData.assetId().namespace())
+                        .resolve(assetId.namespace())
                         .resolve("models")
                         .resolve("equipment")
-                        .resolve(equipmentData.assetId().value() + ".json");
+                        .resolve(assetId.value() + ".json");
 
                 JsonObject equipmentJson = null;
                 if (Files.exists(equipmentPath)) {
@@ -1030,9 +1198,9 @@ public abstract class AbstractPackManager implements PackManager {
                     }
                 }
                 if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, generator.get());
+                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
                 } else {
-                    equipmentJson = generator.get();
+                    equipmentJson = entry.getValue().get();
                 }
                 try {
                     Files.createDirectories(equipmentPath.getParent());
@@ -1193,9 +1361,6 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateBlockOverrides(Path generatedPackPath) {
-        Path blockStatesFile = this.plugin.dataFolderPath().resolve("blockstates.yml");
-        if (!Files.exists(blockStatesFile)) this.plugin.saveResource("blockstates.yml");
-        YamlDocument preset = Config.instance().loadYamlData(blockStatesFile);
         for (Map.Entry<Key, Map<String, JsonElement>> entry : plugin.blockManager().blockOverrides().entrySet()) {
             Key key = entry.getKey();
             Path overridedBlockPath = generatedPackPath
@@ -1203,16 +1368,25 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve(key.namespace())
                     .resolve("blockstates")
                     .resolve(key.value() + ".json");
-            JsonObject stateJson = new JsonObject();
-            JsonObject variants = new JsonObject();
-            stateJson.add("variants", variants);
-            Section presetSection = preset.getSection(key.toString());
-            if (presetSection != null) {
-                for (Map.Entry<String, Object> presetEntry : presetSection.getStringRouteMappedValues(false).entrySet()) {
-                    if (presetEntry.getValue() instanceof Section section) {
-                        variants.add(presetEntry.getKey(), YamlUtils.sectionToJson(section));
+            JsonObject stateJson;
+            if (Files.exists(overridedBlockPath)) {
+                try {
+                    stateJson = GsonHelper.readJsonFile(overridedBlockPath).getAsJsonObject();
+                    if (!stateJson.has("variants")) {
+                        stateJson = new JsonObject();
                     }
+                } catch (IOException e) {
+                    stateJson = new JsonObject();
                 }
+            } else {
+                stateJson = new JsonObject();
+            }
+            JsonObject variants;
+            if (!stateJson.has("variants")) {
+                variants = new JsonObject();
+                stateJson.add("variants", variants);
+            } else {
+                variants = stateJson.get("variants").getAsJsonObject();
             }
             for (Map.Entry<String, JsonElement> resourcePathEntry : entry.getValue().entrySet()) {
                 variants.add(resourcePathEntry.getKey(), resourcePathEntry.getValue());
@@ -1257,8 +1431,8 @@ public abstract class AbstractPackManager implements PackManager {
     }
 
     private void generateModernItemModels1_21_2(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.19f) return;
-        if (Config.packMinVersion() > 21.39f) return;
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_2)) return;
+        if (Config.packMinVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) return;
 
         // 此段代码生成1.21.2专用的item model文件，情况非常复杂！
         for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().modernItemModels1_21_2().entrySet()) {
@@ -1323,8 +1497,8 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void generateModernItemModels1_21_4(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.39f) return;
+    private void generateModernItemModels1_21_4(Path generatedPackPath, Consumer<Revision> callback) {
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, ModernItemModel> entry : this.plugin.itemManager().modernItemModels1_21_4().entrySet()) {
             Key key = entry.getKey();
             Path itemPath = generatedPackPath
@@ -1347,25 +1521,43 @@ public abstract class AbstractPackManager implements PackManager {
                 this.plugin.logger().severe("Error creating " + itemPath.toAbsolutePath(), e);
                 continue;
             }
-            JsonObject model = new JsonObject();
             ModernItemModel modernItemModel = entry.getValue();
-            model.add("model", modernItemModel.itemModel().get());
-            if (!modernItemModel.handAnimationOnSwap()) {
-                model.addProperty("hand_animation_on_swap", false);
-            }
-            if (modernItemModel.oversizedInGui()) {
-                model.addProperty("oversized_in_gui", true);
-            }
             try (BufferedWriter writer = Files.newBufferedWriter(itemPath)) {
-                GsonHelper.get().toJson(model, writer);
+                GsonHelper.get().toJson(modernItemModel.toJson(Config.packMinVersion()), writer);
             } catch (IOException e) {
                 this.plugin.logger().warn("Failed to save item model for " + key, e);
+            }
+
+            List<Revision> revisions = modernItemModel.revisions();
+            if (!revisions.isEmpty()) {
+                for (Revision revision : revisions) {
+                    if (revision.matches(Config.packMinVersion(), Config.packMaxVersion())) {
+                        Path overlayItemPath = generatedPackPath
+                                .resolve(Config.createOverlayFolderName(revision.versionString()))
+                                .resolve("assets")
+                                .resolve(key.namespace())
+                                .resolve("items")
+                                .resolve(key.value() + ".json");
+                        try {
+                            Files.createDirectories(overlayItemPath.getParent());
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error creating " + overlayItemPath.toAbsolutePath(), e);
+                            continue;
+                        }
+                        try (BufferedWriter writer = Files.newBufferedWriter(overlayItemPath)) {
+                            GsonHelper.get().toJson(modernItemModel.toJson(revision.minVersion()), writer);
+                            callback.accept(revision);
+                        } catch (IOException e) {
+                            this.plugin.logger().warn("Failed to save item model for " + key, e);
+                        }
+                    }
+                }
             }
         }
     }
 
-    private void generateModernItemOverrides(Path generatedPackPath) {
-        if (Config.packMaxVersion() < 21.39f) return;
+    private void generateModernItemOverrides(Path generatedPackPath, Consumer<Revision> callback) {
+        if (Config.packMaxVersion().isBelow(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, TreeMap<Integer, ModernItemModel>> entry : this.plugin.itemManager().modernItemOverrides().entrySet()) {
             Key vanillaItemModel = entry.getKey();
             Path overridedItemPath = generatedPackPath
@@ -1374,10 +1566,10 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve("items")
                     .resolve(vanillaItemModel.value() + ".json");
 
-            JsonObject originalItemModel;
+            ModernItemModel originalItemModel;
             if (Files.exists(overridedItemPath)) {
                 try {
-                    originalItemModel = GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject();
+                    originalItemModel = ModernItemModel.fromJson(GsonHelper.readJsonFile(overridedItemPath).getAsJsonObject());
                 } catch (IOException e) {
                     this.plugin.logger().warn("Failed to load existing item model (modern)", e);
                     continue;
@@ -1390,24 +1582,13 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
 
-            boolean handAnimationOnSwap = Optional.ofNullable(originalItemModel.get("hand_animation_on_swap")).map(JsonElement::getAsBoolean).orElse(true);
-            boolean oversizedInGui = Optional.ofNullable(originalItemModel.get("oversized_in_gui")).map(JsonElement::getAsBoolean).orElse(false);
-            JsonObject fallbackModel = originalItemModel.get("model").getAsJsonObject();
-            JsonObject newJson = new JsonObject();
-            JsonObject model = new JsonObject();
-            newJson.add("model", model);
-            model.addProperty("type", "minecraft:range_dispatch");
-            model.addProperty("property", "minecraft:custom_model_data");
-            // 将原有的json读成fallback
-            model.add("fallback", fallbackModel);
-            JsonArray entries = new JsonArray();
-            model.add("entries", entries);
+            boolean handAnimationOnSwap = originalItemModel.handAnimationOnSwap();
+            boolean oversizedInGui = originalItemModel.oversizedInGui();
+
+            Map<Float, ItemModel> entries = new HashMap<>();
             for (Map.Entry<Integer, ModernItemModel> modelWithDataEntry : entry.getValue().entrySet()) {
-                JsonObject entryObject = new JsonObject();
                 ModernItemModel modernItemModel = modelWithDataEntry.getValue();
-                entryObject.addProperty("threshold", modelWithDataEntry.getKey());
-                entryObject.add("model", modernItemModel.itemModel().get());
-                entries.add(entryObject);
+                entries.put(modelWithDataEntry.getKey().floatValue(), modernItemModel.itemModel());
                 if (modernItemModel.handAnimationOnSwap()) {
                     handAnimationOnSwap = true;
                 }
@@ -1415,28 +1596,58 @@ public abstract class AbstractPackManager implements PackManager {
                     oversizedInGui = true;
                 }
             }
-            if (!handAnimationOnSwap) {
-                newJson.addProperty("hand_animation_on_swap", false);
-            }
-            if (oversizedInGui) {
-                newJson.addProperty("oversized_in_gui", true);
-            }
+
+            RangeDispatchItemModel rangeDispatch = new RangeDispatchItemModel(
+                new CustomModelDataRangeDispatchProperty(0),
+                1f,
+                    originalItemModel.itemModel(),
+                    entries
+            );
+
+            ModernItemModel newItemModel = new ModernItemModel(rangeDispatch, handAnimationOnSwap, oversizedInGui);
             try {
                 Files.createDirectories(overridedItemPath.getParent());
             } catch (IOException e) {
                 this.plugin.logger().severe("Error creating " + overridedItemPath.toAbsolutePath(), e);
                 continue;
             }
+
             try (BufferedWriter writer = Files.newBufferedWriter(overridedItemPath)) {
-                GsonHelper.get().toJson(newJson, writer);
+                GsonHelper.get().toJson(newItemModel.toJson(Config.packMinVersion()), writer);
             } catch (IOException e) {
                 this.plugin.logger().warn("Failed to save item model for " + vanillaItemModel, e);
+            }
+
+            List<Revision> revisions = newItemModel.revisions();
+            if (!revisions.isEmpty()) {
+                for (Revision revision : revisions) {
+                    if (revision.matches(Config.packMinVersion(), Config.packMaxVersion())) {
+                        Path overlayItemPath = generatedPackPath
+                                .resolve(Config.createOverlayFolderName(revision.versionString()))
+                                .resolve("assets")
+                                .resolve(vanillaItemModel.namespace())
+                                .resolve("items")
+                                .resolve(vanillaItemModel.value() + ".json");
+                        try {
+                            Files.createDirectories(overlayItemPath.getParent());
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error creating " + overlayItemPath.toAbsolutePath(), e);
+                            continue;
+                        }
+                        try (BufferedWriter writer = Files.newBufferedWriter(overlayItemPath)) {
+                            GsonHelper.get().toJson(newItemModel.toJson(revision.minVersion()), writer);
+                            callback.accept(revision);
+                        } catch (IOException e) {
+                            this.plugin.logger().warn("Failed to save item model for " + vanillaItemModel, e);
+                        }
+                    }
+                }
             }
         }
     }
 
     private void generateLegacyItemOverrides(Path generatedPackPath) {
-        if (Config.packMinVersion() > 21.39f) return;
+        if (Config.packMinVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) return;
         for (Map.Entry<Key, TreeSet<LegacyOverridesModel>> entry : this.plugin.itemManager().legacyItemOverrides().entrySet()) {
             Key vanillaLegacyModel = entry.getKey();
             Path overridedItemPath = generatedPackPath

@@ -1,10 +1,10 @@
 package net.momirealms.craftengine.core.plugin.config.template;
 
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.SNBTReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,8 @@ public interface TemplateManager extends Manageable {
                 this.placeholder = placeholderContent.substring(0, separatorIndex);
                 String defaultValueString = placeholderContent.substring(separatorIndex + 2);
                 try {
-                    this.defaultValue = CraftEngine.instance().platform().nbt2Java(defaultValueString);
+                    // TODO 改进报错检测
+                    this.defaultValue = new SNBTReader(defaultValueString).deserializeAsJava();
                 } catch (LocalizedResourceConfigException e) {
                     e.appendTailArgument(this.placeholder);
                     throw e;

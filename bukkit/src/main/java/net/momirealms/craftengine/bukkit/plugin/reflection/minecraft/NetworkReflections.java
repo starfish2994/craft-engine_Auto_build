@@ -99,7 +99,6 @@ public final class NetworkReflections {
             )
     );
 
-
     public static final Field field$ClientboundBossEventPacket$AddOperation$name = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$ClientboundBossEventPacket$AddOperation, 0)
     );
@@ -396,7 +395,6 @@ public final class NetworkReflections {
     public static final Field field$ClientboundLevelChunkWithLightPacket$chunkData = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$ClientboundLevelChunkWithLightPacket, clazz$ClientboundLevelChunkPacketData, 0)
     );
-
 
     public static final Field field$ClientboundLevelChunkWithLightPacket$x = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$ClientboundLevelChunkWithLightPacket, int.class, 0)
@@ -1484,4 +1482,19 @@ public final class NetworkReflections {
         }
     }
 
+    public static final Class<?> clazz$StreamCodec = BukkitReflectionUtils.findReobfOrMojmapClass(
+            "network.codec.StreamCodec",
+            "network.codec.StreamCodec"
+    );
+
+    public static final Object instance$ParticleTypes$STREAM_CODEC;
+
+    static {
+        try {
+            instance$ParticleTypes$STREAM_CODEC = !VersionHelper.isOrAbove1_20_5() ? null :
+                    ReflectionUtils.getDeclaredField(CoreReflections.clazz$ParticleTypes, clazz$StreamCodec, 0).get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize ParticleTypes$STREAM_CODEC", e);
+        }
+    }
 }

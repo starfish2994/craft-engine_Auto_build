@@ -1,5 +1,7 @@
-package net.momirealms.craftengine.core.block;
+package net.momirealms.craftengine.core.block.parser;
 
+import net.momirealms.craftengine.core.block.CustomBlock;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -13,7 +15,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class BlockStateParser {
+public final class BlockStateParser {
     private static final char START = '[';
     private static final char EQUAL = '=';
     private static final char SEPARATOR = ',';

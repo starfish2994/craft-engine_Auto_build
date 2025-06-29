@@ -90,8 +90,7 @@ public class AlistHost implements ResourcePackHost {
 
             CraftEngine.instance().logger().info("[Alist] Loaded cached resource pack metadata");
         } catch (Exception e) {
-            CraftEngine.instance().logger().warn(
-                    "[Alist] Failed to load cache from disk: " + e.getMessage());
+            CraftEngine.instance().logger().warn("[Alist] Failed to load cache " + cachePath, e);
         }
     }
 
@@ -291,7 +290,7 @@ public class AlistHost implements ResourcePackHost {
 
         @Override
         public ResourcePackHost create(Map<String, Object> arguments) {
-            boolean useEnv = (boolean) arguments.getOrDefault("use-environment-variables", false);
+            boolean useEnv = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("use-environment-variables", false), "use-environment-variables");
             String apiUrl = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("api-url"), () -> new LocalizedException("warning.config.host.alist.missing_api_url"));
             String userName = useEnv ? System.getenv("CE_ALIST_USERNAME") : Optional.ofNullable(arguments.get("username")).map(String::valueOf).orElse(null);
             if (userName == null || userName.isEmpty()) {
@@ -305,7 +304,7 @@ public class AlistHost implements ResourcePackHost {
             String otpCode = Optional.ofNullable(arguments.get("otp-code")).map(String::valueOf).orElse(null);
             Duration jwtTokenExpiration = Duration.ofHours((int) arguments.getOrDefault("jwt-token-expiration", 48));
             String uploadPath = ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("upload-path"), () -> new LocalizedException("warning.config.host.alist.missing_upload_path"));
-            boolean disableUpload = (boolean) arguments.getOrDefault("disable-upload", false);
+            boolean disableUpload = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("disable-upload", false), "disable-upload");
             ProxySelector proxy = getProxySelector(MiscUtils.castToMap(arguments.get("proxy"), true));
             return new AlistHost(apiUrl, userName, password, filePassword, otpCode, jwtTokenExpiration, uploadPath, disableUpload, proxy);
         }

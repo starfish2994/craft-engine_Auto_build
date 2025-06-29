@@ -21,7 +21,7 @@ dependencies {
     implementation("net.momirealms:sparrow-nbt-codec:${rootProject.properties["sparrow_nbt_version"]}")
     implementation("net.momirealms:sparrow-nbt-legacy-codec:${rootProject.properties["sparrow_nbt_version"]}")
     // S3
-    implementation("net.momirealms:craft-engine-s3:0.1")
+    implementation("net.momirealms:craft-engine-s3:0.2")
     // Util
     compileOnly("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     // Adventure
@@ -87,7 +87,6 @@ tasks {
         archiveFileName = "craft-engine-core-${rootProject.properties["project_version"]}.jar"
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("dev.dejvokep", "net.momirealms.craftengine.libraries")
-        relocate("com.saicone.rtag", "net.momirealms.craftengine.libraries.rtag")
         relocate("org.yaml.snakeyaml", "net.momirealms.craftengine.libraries.snakeyaml")
         relocate("net.kyori", "net.momirealms.craftengine.libraries")
         relocate("org.ahocorasick", "net.momirealms.craftengine.libraries.ahocorasick")

@@ -83,7 +83,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         try {
             Item<ItemStack> wrapped = wrap(itemStack);
             if (wrapped == null) return Optional.empty();
-            return this.networkItemHandler.s2c(wrapped, player).map(Item::load);
+            return this.networkItemHandler.s2c(wrapped, player).map(Item::getItem);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle s2c items.", e);
@@ -96,7 +96,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         try {
             Item<ItemStack> wrapped = wrap(itemStack);
             if (wrapped == null) return Optional.empty();
-            return this.networkItemHandler.c2s(wrapped).map(Item::load);
+            return this.networkItemHandler.c2s(wrapped).map(Item::getItem);
         } catch (Throwable e) {
             if (Config.debug()) {
                 this.plugin.logger().warn("Failed to handle c2s items.", e);
@@ -215,14 +215,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @SuppressWarnings("unchecked")
     private void registerAllVanillaItems() {
         try {
-            for (NamespacedKey item : FastNMS.INSTANCE.getAllVanillaItems()) {
-                if (item.getNamespace().equals("minecraft")) {
-                    Key id = KeyUtils.namespacedKey2Key(item);
-                    VANILLA_ITEMS.add(id);
-                    Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
+            for (Object item : (Iterable<?>) MBuiltInRegistries.ITEM) {
+                Object resourceLocation = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, item);
+                Key itemKey = KeyUtils.resourceLocationToKey(resourceLocation);
+                if (itemKey.namespace().equals("minecraft")) {
+                    VANILLA_ITEMS.add(itemKey);
+                    Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(itemKey)
                             .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
-                                    .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
-                    Object resourceLocation = KeyUtils.toResourceLocation(id.namespace(), id.value());
+                                    .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), itemKey), itemKey));
                     Object mcHolder = ((Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.ITEM, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.ITEM, resourceLocation))).get();
                     Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
                     for (Object tag : tags) {
