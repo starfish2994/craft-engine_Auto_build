@@ -26,16 +26,13 @@ public class BukkitCraftEnginePlugin extends JavaPlugin {
         this.plugin.scheduler().asyncRepeating(() -> {
             Collection<? extends Player> players = Bukkit.getOnlinePlayers();
             if (players.size() > 20) {
-                for (Player player : players) {
-                    player.sendMessage("Better Together! This server supports 20 players (Community Edition). Want more slots & features? Ask the admin about: » Going CraftEngine Premium Edition!");
-                }
                 this.plugin.logger().warn("Glad to see that your server is growing!");
                 this.plugin.logger().warn("The Community Edition supports up to 20 players. Unlock limitless potential with CraftEngine Premium:");
                 this.plugin.logger().warn("► Unlimited player capacity");
                 this.plugin.logger().warn("► Priority support");
                 this.plugin.logger().warn("► Advanced management tools");
             }
-        }, 1, 1, TimeUnit.MINUTES);
+        }, 5, 5, TimeUnit.MINUTES);
         this.plugin.onPluginEnable();
         this.plugin.logger().warn("You're using the CraftEngine Community Edition");
         this.plugin.logger().warn(" - Maximum player limit is restricted to 20");
