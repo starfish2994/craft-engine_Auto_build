@@ -5,7 +5,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.core.item.ItemFactory;
 import net.momirealms.craftengine.core.item.ItemWrapper;
-import net.momirealms.craftengine.core.item.JukeboxPlayable;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;

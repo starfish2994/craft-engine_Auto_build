@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
-import net.momirealms.craftengine.core.item.JukeboxPlayable;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.GsonHelper;

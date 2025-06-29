@@ -2,6 +2,8 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
+import net.momirealms.craftengine.core.item.data.Enchantment;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.modifier.*;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.item.setting.ItemEquipment;

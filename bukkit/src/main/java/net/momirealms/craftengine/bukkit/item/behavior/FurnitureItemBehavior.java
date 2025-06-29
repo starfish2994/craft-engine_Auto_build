@@ -135,6 +135,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
                         .item(item.copyWithCount(1))
                         .anchorType(anchorType)
                         .dyedColor(item.dyedColor().orElse(null))
+                        .fireworkExplosionColors(item.fireworkExplosion().map(explosion -> explosion.colors().toIntArray()).orElse(null))
                         .build(), false);
 
         FurniturePlaceEvent placeEvent = new FurniturePlaceEvent(bukkitPlayer, bukkitFurniture, furnitureLocation, context.getHand());

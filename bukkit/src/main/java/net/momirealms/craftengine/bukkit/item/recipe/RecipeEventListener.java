@@ -758,7 +758,7 @@ public class RecipeEventListener implements Listener {
                 int newItemDamage = Math.max(0, newItem.maxDamage() - remainingDurability);
                 newItem.damage(newItemDamage);
                 inventory.setResult(newItem.getItem());
-            } else if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
+            } else if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe) || CoreReflections.clazz$FireworkStarFadeRecipe.isInstance(mcRecipe)) {
                 ItemStack[] itemStacks = inventory.getMatrix();
                 for (ItemStack itemStack : itemStacks) {
                     if (itemStack == null) continue;

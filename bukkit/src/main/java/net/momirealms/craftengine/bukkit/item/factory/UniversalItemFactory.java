@@ -1,11 +1,13 @@
 package net.momirealms.craftengine.bukkit.item.factory;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.core.item.Enchantment;
-import net.momirealms.craftengine.core.item.Trim;
+import net.momirealms.craftengine.core.item.data.Enchantment;
+import net.momirealms.craftengine.core.item.data.FireworkExplosion;
+import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
@@ -258,6 +260,38 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
         }
         item.setTag(trim.material(), "Trim", "material");
         item.setTag(trim.pattern(), "Trim", "pattern");
+    }
+
+    @Override
+    protected Optional<FireworkExplosion> fireworkExplosion(LegacyItemWrapper item) {
+        Map<String, Object> explosionObj = item.getJavaTag("Explosion");
+        if (explosionObj == null) return Optional.empty();
+        IntArrayList colors = (IntArrayList) explosionObj.get("Colors");
+        IntArrayList fadeColors = (IntArrayList) explosionObj.get("FadeColors");
+        return Optional.of(
+                new FireworkExplosion(
+                    FireworkExplosion.Shape.byId((Integer) explosionObj.getOrDefault("Type", 0)),
+                        colors == null ? new IntArrayList() : new IntArrayList(colors),
+                        fadeColors == null ? new IntArrayList() : new IntArrayList(fadeColors),
+                        (boolean) explosionObj.getOrDefault("Trail", false),
+                        (boolean) explosionObj.getOrDefault("Flicker", false)
+                )
+        );
+    }
+
+    @Override
+    protected void fireworkExplosion(LegacyItemWrapper item, FireworkExplosion explosion) {
+        if (explosion == null) {
+            item.remove("Explosion");
+        } else {
+            item.setTag(Map.of(
+                    "Type", explosion.shape().id(),
+                    "Colors", explosion.colors(),
+                    "FadeColors", explosion.fadeColors(),
+                    "Trail", explosion.hasTrail(),
+                    "Flicker", explosion.hasTwinkle()
+            ), "Explosion");
+        }
     }
 
     @Override

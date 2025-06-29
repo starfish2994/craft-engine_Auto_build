@@ -2257,6 +2257,27 @@ public final class CoreReflections {
             )
     );
 
+    public static final Class<?> clazz$FireworkRocketRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworks",
+                    "world.item.crafting.FireworkRocketRecipe"
+            )
+    );
+
+    public static final Class<?> clazz$FireworkStarRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworksStar",
+                    "world.item.crafting.FireworkStarRecipe"
+            )
+    );
+
+    public static final Class<?> clazz$FireworkStarFadeRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworksFade",
+                    "world.item.crafting.FireworkStarFadeRecipe"
+            )
+    );
+
     public static final Class<?> clazz$AnvilMenu = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.inventory.ContainerAnvil",

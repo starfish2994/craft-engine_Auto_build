@@ -3,6 +3,10 @@ package net.momirealms.craftengine.core.item;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.item.data.Enchantment;
+import net.momirealms.craftengine.core.item.data.FireworkExplosion;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
+import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.sparrow.nbt.Tag;
@@ -105,6 +109,17 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public Optional<Integer> dyedColor() {
         return this.factory.dyedColor(this.item);
+    }
+
+    @Override
+    public Item<I> fireworkExplosion(FireworkExplosion explosion) {
+        this.factory.fireworkExplosion(this.item, explosion);
+        return this;
+    }
+
+    @Override
+    public Optional<FireworkExplosion> fireworkExplosion() {
+        return this.factory.fireworkExplosion(this.item);
     }
 
     @SuppressWarnings("unchecked")
