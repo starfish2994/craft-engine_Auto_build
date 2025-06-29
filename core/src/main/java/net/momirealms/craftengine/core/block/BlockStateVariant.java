@@ -1,11 +1,11 @@
 package net.momirealms.craftengine.core.block;
 
-public class VariantState {
+public class BlockStateVariant {
     private final String appearance;
     private final BlockSettings settings;
     private final int internalId;
 
-    public VariantState(String appearance, BlockSettings settings, int internalId) {
+    public BlockStateVariant(String appearance, BlockSettings settings, int internalId) {
         this.appearance = appearance;
         this.settings = settings;
         this.internalId = internalId;

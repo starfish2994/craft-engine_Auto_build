@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslationArgument;
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
@@ -994,7 +995,7 @@ public class PacketConsumers {
             float zDist = buf.readFloat();
             float maxSpeed = buf.readFloat();
             int count = buf.readInt();
-            Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
+            Object option = FastNMS.INSTANCE.method$StreamCodec$decode(NetworkReflections.instance$ParticleTypes$STREAM_CODEC, buf);
             if (option == null) return;
             if (!CoreReflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
@@ -1016,7 +1017,7 @@ public class PacketConsumers {
             buf.writeFloat(zDist);
             buf.writeFloat(maxSpeed);
             buf.writeInt(count);
-            FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
+            FastNMS.INSTANCE.method$StreamCodec$encode(NetworkReflections.instance$ParticleTypes$STREAM_CODEC, buf, remappedOption);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
         }
@@ -1034,7 +1035,7 @@ public class PacketConsumers {
             float zDist = buf.readFloat();
             float maxSpeed = buf.readFloat();
             int count = buf.readInt();
-            Object option = FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$decode(buf);
+            Object option = FastNMS.INSTANCE.method$StreamCodec$decode(NetworkReflections.instance$ParticleTypes$STREAM_CODEC, buf);
             if (option == null) return;
             if (!CoreReflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
@@ -1055,7 +1056,7 @@ public class PacketConsumers {
             buf.writeFloat(zDist);
             buf.writeFloat(maxSpeed);
             buf.writeInt(count);
-            FastNMS.INSTANCE.method$ParticleTypes$STREAM_CODEC$encode(buf, remappedOption);
+            FastNMS.INSTANCE.method$StreamCodec$encode(NetworkReflections.instance$ParticleTypes$STREAM_CODEC, buf, remappedOption);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelParticlesPacket", e);
         }
@@ -1316,7 +1317,7 @@ public class PacketConsumers {
         if (result == null) return;
         Block hitBlock = result.getHitBlock();
         if (hitBlock == null) return;
-        ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockState(BlockStateUtils.blockDataToId(hitBlock.getBlockData()));
+        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(hitBlock);
         // not a custom block
         if (state == null || state.isEmpty()) return;
         Key itemId = state.settings().itemId();
@@ -1550,7 +1551,7 @@ public class PacketConsumers {
                     if (EventUtils.fireAndCheckCancel(preBreakEvent))
                         return;
 
-                    if (!BukkitCraftEngine.instance().antiGrief().canBreak(platformPlayer, location))
+                    if (!BukkitCraftEngine.instance().antiGriefProvider().canBreak(platformPlayer, location))
                         return;
 
                     FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(serverPlayer.platformPlayer(), furniture);
@@ -1646,11 +1647,13 @@ public class PacketConsumers {
                                 LocationUtils.toBlockPos(hitResult.blockPos())
                         );
                     } else {
-                        furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
-                            if (furniture.tryOccupySeat(seatPos)) {
-                                furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
-                            }
-                        });
+                        if (!serverPlayer.isSecondaryUseActive()) {
+                            furniture.findFirstAvailableSeat(entityId).ifPresent(seatPos -> {
+                                if (furniture.tryOccupySeat(seatPos)) {
+                                    furniture.spawnSeatEntityForPlayer(serverPlayer, seatPos);
+                                }
+                            });
+                        }
                     }
                 };
             } else if (actionType == 0) {
@@ -1722,7 +1725,7 @@ public class PacketConsumers {
                 Optional<Object> optionalSound = FastNMS.INSTANCE.method$IdMap$byId(MBuiltInRegistries.SOUND_EVENT, id - 1);
                 if (optionalSound.isEmpty()) return;
                 Object soundEvent = optionalSound.get();
-                Key soundId = Key.of(FastNMS.INSTANCE.method$SoundEvent$location(soundEvent));
+                Key soundId = KeyUtils.resourceLocationToKey(FastNMS.INSTANCE.method$SoundEvent$location(soundEvent));
                 int source = buf.readVarInt();
                 int x = buf.readInt();
                 int y = buf.readInt();

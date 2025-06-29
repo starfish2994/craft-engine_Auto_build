@@ -2,6 +2,10 @@ package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.item.data.Enchantment;
+import net.momirealms.craftengine.core.item.data.FireworkExplosion;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
+import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
@@ -56,8 +60,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void removeComponent(W item, Object type);
 
     protected abstract void resetComponent(W item, Object type);
-
-    protected abstract I load(W item);
 
     protected abstract I getItem(W item);
 
@@ -139,10 +141,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract void storedEnchantments(W item, List<Enchantment> enchantments);
 
-    protected abstract void addEnchantment(W item, Enchantment enchantment);
-
-    protected abstract void addStoredEnchantment(W item, Enchantment enchantment);
-
     protected abstract Optional<Enchantment> getEnchantment(W item, Key key);
 
     protected abstract void itemFlags(W item, List<String> flags);
@@ -186,6 +184,10 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract void equippable(W item, EquipmentData data);
 
     protected abstract Optional<EquipmentData> equippable(W item);
+
+    protected abstract void fireworkExplosion(W item, FireworkExplosion explosion);
+
+    protected abstract Optional<FireworkExplosion> fireworkExplosion(W item);
 
     protected abstract byte[] toByteArray(W item);
 

@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -492,6 +493,13 @@ public final class CoreReflections {
                 }
                 return it;
             }).orElseThrow()
+    );
+
+    public static final Class<?> clazz$ParticleTypes = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "core.particles.Particles",
+                    "core.particles.ParticleTypes"
+            )
     );
 
     public static final Class<?> clazz$MappedRegistry = requireNonNull(
@@ -1152,6 +1160,28 @@ public final class CoreReflections {
             )
     );
 
+    public static final Class<?> clazz$StateDefinition$Builder = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.BlockStateList$a",
+                    "world.level.block.state.StateDefinition$Builder"
+            )
+    );
+
+    public static final Class<?> clazz$StateDefinition$Factory = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.BlockStateList$b",
+                    "world.level.block.state.StateDefinition$Factory"
+            )
+    );
+
+    public static final Constructor<?> constructor$StateDefinition$Builder = requireNonNull(
+            ReflectionUtils.getTheOnlyConstructor(clazz$StateDefinition$Builder)
+    );
+
+    public static final Method method$StateDefinition$Builder$create = requireNonNull(
+            ReflectionUtils.getMethod(clazz$StateDefinition$Builder, clazz$StateDefinition, Function.class, clazz$StateDefinition$Factory)
+    );
+
     public static final Field field$Block$StateDefinition = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$Block, clazz$StateDefinition, 0)
     );
@@ -1289,7 +1319,6 @@ public final class CoreReflections {
     public static final Field field$BlockStateBase$replaceable = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, boolean.class, 8)
     );
-
 
     public static final Field field$BlockStateBase$lightEmission = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockStateBase, int.class, 0)
@@ -1572,8 +1601,8 @@ public final class CoreReflections {
         }
     }
 
-    public static final Method method$Block$defaultBlockState = requireNonNull(
-            ReflectionUtils.getMethod(clazz$Block, clazz$BlockState)
+    public static final Field field$Block$defaultBlockState = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$Block, clazz$BlockState, 0)
     );
 
     public static final Method method$Entity$getOnPos = requireNonNull(
@@ -1661,10 +1690,6 @@ public final class CoreReflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$Entity, double.class, 2)
     );
 
-    public static final Method method$BlockStateBase$hasTag = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, boolean.class, clazz$TagKey)
-    );
-
     public static final Method method$Level$removeBlock = requireNonNull(
             ReflectionUtils.getMethod(clazz$Level, boolean.class, clazz$BlockPos, boolean.class)
     );
@@ -1690,6 +1715,10 @@ public final class CoreReflections {
             )
     );
 
+    public static final Field field$Property$name = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$Property, String.class, 0)
+    );
+
     public static final Field field$LeavesBlock$DISTANCE = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$LeavesBlock, clazz$IntegerProperty, 0)
     );
@@ -1702,6 +1731,9 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"getValue", "c"}, clazz$Property)
     );
 
+    public static final Method method$StateHolder$setValue = requireNonNull(
+            ReflectionUtils.getMethod(clazz$StateHolder, Object.class, new String[] {"setValue", VersionHelper.isOrAbove1_21_2() ? "b" : "a"}, clazz$Property, Comparable.class)
+    );
 
     public static final Method method$Block$updateFromNeighbourShapes = requireNonNull(
             ReflectionUtils.getStaticMethod(clazz$Block, clazz$BlockState, clazz$BlockState, clazz$LevelAccessor, clazz$BlockPos)
@@ -2117,6 +2149,10 @@ public final class CoreReflections {
             ReflectionUtils.getMethod(clazz$ConfiguredFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, clazz$BlockPos)
     );
 
+    public static final Method method$PlacedFeature$place = requireNonNull(
+            ReflectionUtils.getMethod(clazz$PlacedFeature, boolean.class, clazz$WorldGenLevel, clazz$ChunkGenerator, clazz$RandomSource, clazz$BlockPos)
+    );
+
     public static final Class<?> clazz$BonemealableBlock = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.level.block.IBlockFragilePlantElement",
@@ -2218,6 +2254,27 @@ public final class CoreReflections {
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.item.crafting.RecipeArmorDye",
                     "world.item.crafting.ArmorDyeRecipe"
+            )
+    );
+
+    public static final Class<?> clazz$FireworkRocketRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworks",
+                    "world.item.crafting.FireworkRocketRecipe"
+            )
+    );
+
+    public static final Class<?> clazz$FireworkStarRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworksStar",
+                    "world.item.crafting.FireworkStarRecipe"
+            )
+    );
+
+    public static final Class<?> clazz$FireworkStarFadeRecipe = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.crafting.RecipeFireworksFade",
+                    "world.item.crafting.FireworkStarFadeRecipe"
             )
     );
 
@@ -2460,10 +2517,6 @@ public final class CoreReflections {
 
     public static final Field field$BlockInWorld$state = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$BlockInWorld, clazz$BlockState, 0)
-    );
-
-    public static final Method method$BlockStateBase$getBlock = requireNonNull(
-            ReflectionUtils.getMethod(clazz$BlockStateBase, clazz$Block)
     );
 
     public static final Method method$BlockBehaviour$getDescriptionId = requireNonNull(
@@ -3503,4 +3556,36 @@ public final class CoreReflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static final Class<?> clazz$LootParams$Builder = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.storage.loot.LootParams$a",
+                    "world.level.storage.loot.LootParams$Builder"
+            )
+    );
+
+    public static final Method method$BlockStateBase$getDrops = requireNonNull(
+            ReflectionUtils.getMethod(clazz$BlockStateBase, List.class, clazz$LootParams$Builder)
+    );
+
+    public static final Class<?> clazz$LootContextParams = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.storage.loot.parameters.LootContextParameters",
+                    "world.level.storage.loot.parameters.LootContextParams"
+            )
+    );
+
+    public static final Class<?> clazz$BlockStateProperties = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.state.properties.BlockProperties",
+                    "world.level.block.state.properties.BlockStateProperties"
+            )
+    );
+
+    public static final Class<?> clazz$CompoundTag = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "nbt.NBTTagCompound",
+                    "nbt.CompoundTag"
+            )
+    );
 }

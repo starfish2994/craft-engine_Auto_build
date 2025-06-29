@@ -2,12 +2,15 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
+import net.momirealms.craftengine.core.item.data.Enchantment;
+import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.modifier.*;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
+import net.momirealms.craftengine.core.item.setting.ItemEquipment;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
-import net.momirealms.craftengine.core.pack.misc.EquipmentGeneration;
+import net.momirealms.craftengine.core.pack.misc.Equipment;
 import net.momirealms.craftengine.core.pack.model.*;
 import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenerator;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
@@ -50,7 +53,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2;
     protected final Map<Key, TreeSet<LegacyOverridesModel>> legacyOverrides;
     protected final Map<Key, TreeMap<Integer, ModernItemModel>> modernOverrides;
-    protected final Set<EquipmentGeneration> equipmentsToGenerate;
+    protected final Map<Key, Equipment> equipmentsToGenerate;
     // Cached command suggestions
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
     protected final List<Suggestion> cachedTotemSuggestions = new ArrayList<>();
@@ -65,7 +68,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.cmdConflictChecker = new HashMap<>();
         this.modernItemModels1_21_4 = new HashMap<>();
         this.modernItemModels1_21_2 = new HashMap<>();
-        this.equipmentsToGenerate = new HashSet<>();
+        this.equipmentsToGenerate = new HashMap<>();
     }
 
     @Override
@@ -151,14 +154,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             this.customItemTags.computeIfAbsent(tag, k -> new ArrayList<>()).add(customItem.idHolder());
         }
         // equipment generation
-        EquipmentGeneration equipment = customItem.settings().equipment();
+        ItemEquipment equipment = customItem.settings().equipment();
         if (equipment != null) {
-            EquipmentData modern = equipment.modernData();
-            // 1.21.2+
-            if (modern != null) {
-                this.equipmentsToGenerate.add(equipment);
-            }
-            // TODO 1.20
+            EquipmentData data = equipment.data();
+            Equipment equipmentJson = this.equipmentsToGenerate.computeIfAbsent(data.assetId(), k -> new Equipment());
+            equipmentJson.addAll(equipment);
         }
         return true;
     }
@@ -250,8 +250,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Collection<EquipmentGeneration> equipmentsToGenerate() {
-        return Collections.unmodifiableCollection(this.equipmentsToGenerate);
+    public Map<Key, Equipment> equipmentsToGenerate() {
+        return Collections.unmodifiableMap(this.equipmentsToGenerate);
     }
 
     @Override
@@ -263,15 +263,13 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
-        private static final float VERSION_1_21_2 = 21.2f;
-        private static final float VERSION_1_21_4 = 21.4f;
 
         private boolean isModernFormatRequired() {
-            return Config.packMaxVersion() >= VERSION_1_21_4;
+            return Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4);
         }
 
         private boolean needsLegacyCompatibility() {
-            return Config.packMinVersion() < VERSION_1_21_4;
+            return Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4);
         }
 
         @Override
@@ -414,8 +412,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
                     map.put(customModelData, new ModernItemModel(
                             modernModel,
-                            (boolean) section.getOrDefault("oversized-in-gui", true),
-                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("oversized-in-gui", true), "oversized-in-gui"),
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("hand-animation-on-swap", true), "hand-animation-on-swap")
                     ));
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
@@ -429,11 +427,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 if (isModernFormatRequired() && modernModel != null) {
                     AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, new ModernItemModel(
                             modernModel,
-                            (boolean) section.getOrDefault("oversized-in-gui", true),
-                            (boolean) section.getOrDefault("hand-animation-on-swap", true)
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("oversized-in-gui", true), "oversized-in-gui"),
+                            ResourceConfigUtils.getAsBoolean(section.getOrDefault("hand-animation-on-swap", true), "hand-animation-on-swap")
                     ));
                 }
-                if (Config.packMaxVersion() >= VERSION_1_21_2 && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
+                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
                     TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.modernItemModels1_21_2.computeIfAbsent(itemModelKey, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
@@ -529,7 +527,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                Map<String, Object> data = MiscUtils.castToMap(obj, false);
                 int nutrition = ResourceConfigUtils.getAsInt(data.get("nutrition"), "nutrition");
                 float saturation = ResourceConfigUtils.getAsFloat(data.get("saturation"), "saturation");
-                return new FoodModifier<>(nutrition, saturation, (boolean) data.getOrDefault("can-always-eat", false));
+                return new FoodModifier<>(nutrition, saturation, ResourceConfigUtils.getAsBoolean(data.getOrDefault("can-always-eat", false), "can-always-eat"));
             }, "food");
         }
         if (VersionHelper.isOrAbove1_21()) {

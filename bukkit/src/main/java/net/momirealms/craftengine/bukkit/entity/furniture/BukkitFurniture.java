@@ -89,11 +89,10 @@ public class BukkitFurniture implements Furniture {
         List<Object> minimizedPackets = new ArrayList<>();
         List<Collider> colliders = new ArrayList<>();
         WorldPosition position = position();
-        Integer dyedColor = this.extraData.dyedColor().orElse(null);
         for (FurnitureElement element : placement.elements()) {
             int entityId = CoreReflections.instance$Entity$ENTITY_COUNTER.incrementAndGet();
             fakeEntityIds.add(entityId);
-            element.initPackets(entityId, position, conjugated, dyedColor, packet -> {
+            element.initPackets(this, entityId, conjugated, packet -> {
                 packets.add(packet);
                 if (this.minimized) minimizedPackets.add(packet);
             });

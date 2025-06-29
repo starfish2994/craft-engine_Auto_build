@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.modifier;
 
 import net.momirealms.craftengine.core.item.*;
+import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;

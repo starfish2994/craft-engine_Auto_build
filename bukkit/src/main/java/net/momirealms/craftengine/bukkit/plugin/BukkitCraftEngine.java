@@ -108,6 +108,7 @@ public class BukkitCraftEngine extends CraftEngine {
         if (super.blockManager != null) return;
         try {
             BlockGenerator.init();
+            BlockStateGenerator.init();
             super.blockManager = new BukkitBlockManager(this);
         } catch (Exception e) {
             throw new InjectionException("Error injecting blocks", e);
@@ -365,7 +366,7 @@ public class BukkitCraftEngine extends CraftEngine {
         );
     }
 
-    public AntiGriefLib antiGrief() {
+    public AntiGriefLib antiGriefProvider() {
         if (this.antiGrief == null) {
             this.antiGrief = AntiGriefLib.builder(this.javaPlugin)
                     .ignoreOP(true)

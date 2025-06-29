@@ -1,13 +1,13 @@
-package net.momirealms.craftengine.core.block;
+package net.momirealms.craftengine.core.block.parser;
 
+import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.util.StringReader;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BlockNbtParser {
-
+public final class BlockNbtParser {
     private BlockNbtParser() {}
 
     @Nullable
