@@ -940,7 +940,7 @@ public abstract class AbstractPackManager implements PackManager {
         // 验证物品模型是否存在，验证的同时去收集贴图
         label: for (Map.Entry<Key, Collection<Key>> entry : modelToItems.asMap().entrySet()) {
             Key modelResourceLocation = entry.getKey();
-            boolean alreadyChecked = collectedModels.add(modelResourceLocation);
+            boolean alreadyChecked = !collectedModels.add(modelResourceLocation);
             if (alreadyChecked || VANILLA_MODELS.contains(modelResourceLocation)) continue;
             String modelPath = "assets/" + modelResourceLocation.namespace() + "/models/" + modelResourceLocation.value() + ".json";
             for (Path rootPath : rootPaths) {
@@ -962,9 +962,10 @@ public abstract class AbstractPackManager implements PackManager {
 
         // 验证方块模型是否存在，验证的同时去收集贴图
         label: for (Map.Entry<Key, Collection<String>> entry : modelToBlocks.asMap().entrySet()) {
-            Key key = entry.getKey();
-            String modelPath = "assets/" + key.namespace() + "/models/" + key.value() + ".json";
-            if (VANILLA_MODELS.contains(key)) continue;
+            Key modelResourceLocation = entry.getKey();
+            boolean alreadyChecked = !collectedModels.add(modelResourceLocation);
+            if (alreadyChecked || VANILLA_MODELS.contains(modelResourceLocation)) continue;
+            String modelPath = "assets/" + modelResourceLocation.namespace() + "/models/" + modelResourceLocation.value() + ".json";
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(modelJsonPath)) {
@@ -975,7 +976,7 @@ public abstract class AbstractPackManager implements PackManager {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                         continue;
                     }
-                    verifyParentModelAndCollectTextures(key, jsonObject, rootPaths, imageToModels, collectedModels);
+                    verifyParentModelAndCollectTextures(modelResourceLocation, jsonObject, rootPaths, imageToModels, collectedModels);
                     continue label;
                 }
             }
