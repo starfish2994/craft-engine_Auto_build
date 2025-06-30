@@ -115,17 +115,10 @@ public abstract class AbstractPackManager implements PackManager {
         loadInternalData("internal/models/block/_all.json", PRESET_MODELS_BLOCK::put);
         loadModernItemModel("internal/items/_all.json", PRESET_ITEMS::put);
 
-        loadInternalList("textures", "block/", VANILLA_TEXTURES::add);
-        loadInternalList("textures", "item/", VANILLA_TEXTURES::add);
-        loadInternalList("textures", "font/", VANILLA_TEXTURES::add);
-        for (String trimItem : TRIM_ITEMS) {
-            for (String trimColorPalette : TRIM_COLOR_PALETTES) {
-                VANILLA_TEXTURES.add(Key.of("minecraft", "trims/items/" + trimItem + "_" + trimColorPalette));
-            }
-        }
-
         loadInternalList("models", "block/", VANILLA_MODELS::add);
         loadInternalList("models", "item/", VANILLA_MODELS::add);
+
+        loadInternalList("textures", "", VANILLA_TEXTURES::add);
         VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
         for (int i = 0; i < 256; i++) {
             VANILLA_TEXTURES.add(Key.of("minecraft", "font/unicode_page_" + String.format("%02x", i)));
@@ -605,7 +598,7 @@ public abstract class AbstractPackManager implements PackManager {
     @Override
     public void generateResourcePack() throws IOException {
         this.plugin.logger().info("Generating resource pack...");
-        long start = System.currentTimeMillis();
+        long time1 = System.currentTimeMillis();
 
         // get the target location
         try (FileSystem fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())) {
@@ -645,9 +638,13 @@ public abstract class AbstractPackManager implements PackManager {
             if (Config.excludeShaders()) {
                 this.removeAllShaders(generatedPackPath);
             }
+            long time2 = System.currentTimeMillis();
+            this.plugin.logger().info("Generated resource pack in " + (time2 - time1) + "ms");
             if (Config.validateResourcePack()) {
                 this.validateResourcePack(generatedPackPath);
             }
+            long time3 = System.currentTimeMillis();
+            this.plugin.logger().info("Validated resource pack in " + (time3 - time2) + "ms");
             Path finalPath = resourcePackPath();
             Files.createDirectories(finalPath.getParent());
             try {
@@ -655,8 +652,8 @@ public abstract class AbstractPackManager implements PackManager {
             } catch (Exception e) {
                 this.plugin.logger().severe("Error zipping resource pack", e);
             }
-            long end = System.currentTimeMillis();
-            this.plugin.logger().info("Finished generating resource pack in " + (end - start) + "ms");
+            long time4 = System.currentTimeMillis();
+            this.plugin.logger().info("Created resource pack zip file in " + (time4 - time3) + "ms");
             this.eventDispatcher.accept(generatedPackPath, finalPath);
         }
     }
