@@ -672,7 +672,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 List<String> cases = entry.getKey().fallbackOrMapPrimary(List::of);
                 for (String caseValue : cases) {
                     Number legacyValue = predicate.toLegacyValue(caseValue);
-                    if (predicate instanceof TrimMaterialSelectProperty property && property.isArmor(materialId)) {
+                    if (predicate instanceof TrimMaterialSelectProperty) {
                         if (legacyValue.floatValue() > 1f) {
                             continue;
                         }
@@ -713,7 +713,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                             materialId,
                             customModelData
                     );
-                } else if (predicate instanceof TrimMaterialSelectProperty property && property.isArmor(materialId)) {
+                } else if (predicate instanceof TrimMaterialSelectProperty) {
                     processModelRecursively(
                             model.fallBack(),
                             mergePredicates(
