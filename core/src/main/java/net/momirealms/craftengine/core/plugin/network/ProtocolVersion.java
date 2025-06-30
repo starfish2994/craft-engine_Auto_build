@@ -15,7 +15,8 @@ public enum ProtocolVersion {
     V1_21_3(768, "1.21.3"),
     V1_21_4(769, "1.21.4"),
     V1_21_5(770, "1.21.5"),
-    V1_21_6(771, "1.21.6");
+    V1_21_6(771, "1.21.6"),
+    V1_21_7(772, "1.21.7");
 
     private final int id;
     private final String name;

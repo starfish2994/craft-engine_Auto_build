@@ -55,6 +55,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
@@ -68,7 +69,7 @@ public class BukkitServerPlayer extends Player {
     private ConnectionState decoderState;
     private ConnectionState encoderState;
     private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
-    private boolean sentResourcePack = !Config.sendPackOnJoin();
+    private final AtomicInteger remainingConfigurationStagePacks = new AtomicInteger(0);
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -108,6 +109,7 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
     // cooldown data
     private CooldownData cooldownData;
+    private UUID serverSideRealPackUUID;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
@@ -874,6 +876,11 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    public boolean isResourcePackLoading(UUID uuid) {
+        return this.resourcePackUUID.contains(uuid);
+    }
+
+    @Override
     public ProtocolVersion protocolVersion() {
         return this.protocolVersion;
     }
@@ -884,13 +891,18 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public boolean sentResourcePack() {
-        return this.sentResourcePack;
+    public AtomicInteger remainingConfigurationStagePacks() {
+        return this.remainingConfigurationStagePacks;
     }
 
     @Override
-    public void setSentResourcePack(boolean sentResourcePack) {
-        this.sentResourcePack = sentResourcePack;
+    public void setServerSideRealPackUUID(UUID uuid) {
+        this.serverSideRealPackUUID = uuid;
+    }
+
+    @Override
+    public UUID getServerSideRealPackUUID() {
+        return this.serverSideRealPackUUID;
     }
 
     @Override

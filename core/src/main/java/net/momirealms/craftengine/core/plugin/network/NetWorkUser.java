@@ -9,6 +9,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface NetWorkUser {
     boolean isOnline();
@@ -61,7 +62,11 @@ public interface NetWorkUser {
 
     void setProtocolVersion(int protocolVersion);
 
-    boolean sentResourcePack();
+    void setServerSideRealPackUUID(UUID uuid);
 
-    void setSentResourcePack(boolean sentResourcePack);
+    UUID getServerSideRealPackUUID();
+
+    boolean isResourcePackLoading(UUID uuid);
+
+    AtomicInteger remainingConfigurationStagePacks();
 }

@@ -1315,7 +1315,6 @@ public final class NetworkReflections {
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$pagesGetter;
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$titleGetter;
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$slotGetter;
-    public static final MethodHandle methodHandle$ServerboundResourcePackPacket$actionGetter;
     public static final MethodHandle methodHandle$ClientboundEntityEventPacket$entityIdGetter;
     public static final MethodHandle methodHandle$ClientboundEntityEventPacket$eventIdGetter;
     public static final MethodHandle methodHandle$ClientIntentionPacket$protocolVersionGetter;
@@ -1384,10 +1383,6 @@ public final class NetworkReflections {
             methodHandle$ServerboundEditBookPacket$slotGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$slot)
                             .asType(MethodType.methodType(int.class, Object.class))
-            );
-            methodHandle$ServerboundResourcePackPacket$actionGetter = requireNonNull(
-                    ReflectionUtils.unreflectGetter(field$ServerboundResourcePackPacket$action)
-                            .asType(MethodType.methodType(Object.class, Object.class))
             );
             methodHandle$ClientboundEntityEventPacket$entityIdGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$entityId)

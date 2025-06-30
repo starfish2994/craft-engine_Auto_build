@@ -2288,7 +2288,6 @@ public class PacketConsumers {
             if (!url.equals(BukkitPackManager.FAKE_URL)) {
                 return;
             }
-
             event.setCancelled(true);
             UUID packUUID = FastNMS.INSTANCE.field$ClientboundResourcePackPushPacket$uuid(packet);
             ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
@@ -2302,6 +2301,8 @@ public class PacketConsumers {
                     user.sendPacket(newPacket, true);
                     user.addResourcePackUUID(data.uuid());
                 }
+                user.remainingConfigurationStagePacks().set(dataList.size());
+                user.setServerSideRealPackUUID(packUUID);
             }).exceptionally(throwable -> {
                 CraftEngine.instance().logger().warn("Failed to handle ClientboundResourcePackPushPacket", throwable);
                 user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(packUUID));
@@ -2334,19 +2335,38 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
         try {
-            if (user.sentResourcePack() || !Config.sendPackOnJoin() || !Config.kickOnDeclined()) return;
-            Object action = NetworkReflections.methodHandle$ServerboundResourcePackPacket$actionGetter.invokeExact(packet);
+            if (!Config.sendPackOnJoin()) return;
+            Object action = FastNMS.INSTANCE.field$ServerboundResourcePackPacket$action(packet);
             if (action == null) return;
-            if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED
-                    || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
-                Object kickPacket = NetworkReflections.constructor$ClientboundDisconnectPacket.newInstance(
-                        ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
-                user.sendPacket(kickPacket, true);
-                user.nettyChannel().disconnect();
-                return;
+            if (VersionHelper.isOrAbove1_20_3()) {
+                UUID uuid = FastNMS.INSTANCE.field$ServerboundResourcePackPacket$id(packet);
+                if (!user.isResourcePackLoading(uuid)) {
+                    // 不是CraftEngine发送的资源包,不管
+                    return;
+                }
             }
-            if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED) {
-                user.setSentResourcePack(true);
+            // 检查是否是拒绝或失败
+            if (Config.kickOnDeclined()) {
+                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED
+                        || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
+                    Object kickPacket = NetworkReflections.constructor$ClientboundDisconnectPacket.newInstance(
+                            ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
+                    user.sendPacket(kickPacket, true);
+                    user.nettyChannel().disconnect();
+                    return;
+                }
+            }
+            // 将对于1.20.3+，适当时间转义为正确的uuid
+            if (VersionHelper.isOrAbove1_20_3()) {
+                UUID realUUID = user.getServerSideRealPackUUID();
+                if (realUUID != null && action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED) {
+                    int remaining = user.remainingConfigurationStagePacks().decrementAndGet();
+                    if (remaining == 0) {
+                        event.setCancelled(true);
+                        user.simulatePacket(FastNMS.INSTANCE.constructor$ServerboundResourcePackPacket$SUCCESSFULLY_LOADED(realUUID));
+                        user.setServerSideRealPackUUID(null);
+                    }
+                }
             }
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket", e);
