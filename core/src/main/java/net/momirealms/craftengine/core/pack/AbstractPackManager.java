@@ -776,7 +776,7 @@ public abstract class AbstractPackManager implements PackManager {
                         for (JsonElement texture : textures) {
                             if (!(texture instanceof JsonPrimitive texturePath)) continue;
                             for (String permutation : permutations) {
-                                included.accept(Key.of(texturePath.getAsString() + separator + permutation));
+                                unstitch.accept(Key.of(texturePath.getAsString() + separator + permutation));
                             }
                         }
                     }
@@ -787,9 +787,11 @@ public abstract class AbstractPackManager implements PackManager {
 
     @SuppressWarnings("DuplicatedCode")
     private void validateResourcePack(Path path) {
-        List<Path> rootPaths;
+
+        long time1 = System.currentTimeMillis();
+        Path[] rootPaths;
         try {
-            rootPaths = FileUtils.collectOverlays(path);
+            rootPaths = FileUtils.collectOverlays(path).toArray(new Path[0]);
         } catch (IOException e) {
             plugin.logger().warn("Failed to collect overlays for " + path.toAbsolutePath(), e);
             return;
@@ -797,7 +799,9 @@ public abstract class AbstractPackManager implements PackManager {
         Multimap<Key, Key> imageToFonts = ArrayListMultimap.create(); // 图片到字体的映射
         Multimap<Key, Key> modelToItems = ArrayListMultimap.create(); // 模型到物品的映射
         Multimap<Key, String> modelToBlocks = ArrayListMultimap.create(); // 模型到方块的映射
-        Multimap<Key, Key> imageToModels = ArrayListMultimap.create(); // 图片到模型的映射
+        Multimap<Key, Key> imageToModels = ArrayListMultimap.create(); // 纹理到模型的映射
+        Set<Key> collectedModels = new HashSet<>();
+
         Set<Key> texturesInAtlas = new HashSet<>();
         Set<Key> unstitchTextures = new HashSet<>();
         Map<String, String> directoryMapper = new HashMap<>();
@@ -915,6 +919,7 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
+        // 验证font的贴图是否存在
         label: for (Map.Entry<Key, Collection<Key>> entry : imageToFonts.asMap().entrySet()) {
             Key key = entry.getKey();
             if (VANILLA_TEXTURES.contains(key)) continue;
@@ -928,9 +933,10 @@ public abstract class AbstractPackManager implements PackManager {
         }
 
         label: for (Map.Entry<Key, Collection<Key>> entry : modelToItems.asMap().entrySet()) {
-            Key key = entry.getKey();
-            String modelPath = "assets/" + key.namespace() + "/models/" + key.value() + ".json";
-            if (VANILLA_MODELS.contains(key)) continue;
+            Key modelResourceLocation = entry.getKey();
+            boolean alreadyChecked = collectedModels.add(modelResourceLocation);
+            if (alreadyChecked || VANILLA_MODELS.contains(modelResourceLocation)) continue;
+            String modelPath = "assets/" + modelResourceLocation.namespace() + "/models/" + modelResourceLocation.value() + ".json";
             for (Path rootPath : rootPaths) {
                 Path modelJsonPath = rootPath.resolve(modelPath);
                 if (Files.exists(rootPath.resolve(modelPath))) {
@@ -941,12 +947,13 @@ public abstract class AbstractPackManager implements PackManager {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                         continue;
                     }
-                    collectModels(key, jsonObject, rootPaths, imageToModels);
+                    collectModels(modelResourceLocation, jsonObject, rootPaths, imageToModels, collectedModels);
                     continue label;
                 }
             }
             TranslationManager.instance().log("warning.config.resource_pack.generation.missing_item_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
         }
+
 
         label: for (Map.Entry<Key, Collection<String>> entry : modelToBlocks.asMap().entrySet()) {
             Key key = entry.getKey();
@@ -962,7 +969,7 @@ public abstract class AbstractPackManager implements PackManager {
                         TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                         continue;
                     }
-                    collectModels(key, jsonObject, rootPaths, imageToModels);
+                    collectModels(key, jsonObject, rootPaths, imageToModels, collectedModels);
                     continue label;
                 }
             }
@@ -1003,10 +1010,10 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void collectModels(Key model, JsonObject modelJson, List<Path> rootPaths, Multimap<Key, Key> imageToModels) {
-        if (modelJson.has("parent")) {
-            Key parentResourceLocation = Key.from(modelJson.get("parent").getAsString());
-            if (!VANILLA_MODELS.contains(parentResourceLocation)) {
+    private void collectModels(Key sourceModelLocation, JsonObject sourceModelJson, Path[] rootPaths, Multimap<Key, Key> imageToModels, Set<Key> collected) {
+        if (sourceModelJson.has("parent")) {
+            Key parentResourceLocation = Key.from(sourceModelJson.get("parent").getAsString());
+            if (collected.add(parentResourceLocation) && !VANILLA_MODELS.contains(parentResourceLocation)) {
                 String parentModelPath = "assets/" + parentResourceLocation.namespace() + "/models/" + parentResourceLocation.value() + ".json";
                 label: {
                     for (Path rootPath : rootPaths) {
@@ -1019,21 +1026,21 @@ public abstract class AbstractPackManager implements PackManager {
                                 TranslationManager.instance().log("warning.config.resource_pack.generation.malformatted_json", modelJsonPath.toAbsolutePath().toString());
                                 break label;
                             }
-                            collectModels(parentResourceLocation, jsonObject, rootPaths, imageToModels);
+                            collectModels(parentResourceLocation, jsonObject, rootPaths, imageToModels, collected);
                             break label;
                         }
                     }
-                    TranslationManager.instance().log("warning.config.resource_pack.generation.missing_parent_model", model.asString(), parentModelPath);
+                    TranslationManager.instance().log("warning.config.resource_pack.generation.missing_parent_model", sourceModelLocation.asString(), parentModelPath);
                 }
             }
         }
-        if (modelJson.has("textures")) {
-            JsonObject textures = modelJson.get("textures").getAsJsonObject();
+        if (sourceModelJson.has("textures")) {
+            JsonObject textures = sourceModelJson.get("textures").getAsJsonObject();
             for (Map.Entry<String, JsonElement> entry : textures.entrySet()) {
                 String value = entry.getValue().getAsString();
                 if (value.charAt(0) == '#') continue;
                 Key textureResourceLocation = Key.from(value);
-                imageToModels.put(textureResourceLocation, model);
+                imageToModels.put(textureResourceLocation, sourceModelLocation);
             }
         }
     }

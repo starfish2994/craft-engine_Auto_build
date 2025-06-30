@@ -20,7 +20,10 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemWrapper> {
 
