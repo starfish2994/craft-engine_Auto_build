@@ -67,6 +67,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -1323,9 +1324,12 @@ public class PacketConsumers {
         Key itemId = state.settings().itemId();
         // no item available
         if (itemId == null) return;
-        BlockData data = BlockStateUtils.fromBlockData(state.vanillaBlockState().handle());
-        // compare item
-        if (data == null || !data.getMaterial().equals(item.getType())) return;
+        Object vanillaBlock = FastNMS.INSTANCE.method$BlockState$getBlock(state.vanillaBlockState().handle());
+        Object vanillaBlockItem = FastNMS.INSTANCE.method$Block$asItem(vanillaBlock);
+        if (vanillaBlockItem == null) return;
+        Key addItemId = KeyUtils.namespacedKey2Key(item.getType().getKey());
+        Key blockItemId = KeyUtils.resourceLocationToKey(FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, vanillaBlockItem));
+        if (!addItemId.equals(blockItemId)) return;
         ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, player);
         if (ItemUtils.isEmpty(itemStack)) {
             CraftEngine.instance().logger().warn("Item: " + itemId + " is not a valid item");
