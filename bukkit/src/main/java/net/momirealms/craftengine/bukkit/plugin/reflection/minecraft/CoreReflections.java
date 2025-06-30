@@ -1328,6 +1328,10 @@ public final class CoreReflections {
     public static final Field field$BlockStateBase$lightBlock =
             ReflectionUtils.getInstanceDeclaredField(clazz$BlockStateBase, int.class, 1);
 
+    // 1.20-1.21.1
+    public static final Field field$BlockStateBase$opacityIfCached =
+            ReflectionUtils.getInstanceDeclaredField(clazz$BlockStateBase, int.class, 1);
+
     public static final Class<?> clazz$AABB = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.phys.AxisAlignedBB",
