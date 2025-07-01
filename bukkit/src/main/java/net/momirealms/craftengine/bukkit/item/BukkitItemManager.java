@@ -223,7 +223,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                     Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(itemKey)
                             .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
                                     .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), itemKey), itemKey));
-                    Object mcHolder = ((Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(MBuiltInRegistries.ITEM, CoreReflections.method$ResourceKey$create.invoke(null, MRegistries.ITEM, resourceLocation))).get();
+                    Object mcHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, resourceLocation)).get();
                     Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
                     for (Object tag : tags) {
                         Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());

@@ -289,11 +289,11 @@ public final class CoreReflections {
             )).getInterfaces()[0]
     );
 
-    public static final Method method$RegistryAccess$registryOrThrow = requireNonNull(
-            ReflectionUtils.getMethod(
-                    clazz$RegistryAccess, clazz$Registry, clazz$ResourceKey
-            )
-    );
+//    public static final Method method$RegistryAccess$registryOrThrow = requireNonNull(
+//            ReflectionUtils.getMethod(
+//                    clazz$RegistryAccess, clazz$Registry, clazz$ResourceKey
+//            )
+//    );
 
     public static final Method method$Registry$register = requireNonNull(
             ReflectionUtils.getStaticMethod(
@@ -328,58 +328,52 @@ public final class CoreReflections {
             )
     );
 
-    public static final Method method$Registry$getKey = requireNonNull(
-            ReflectionUtils.getMethod(clazz$Registry, clazz$ResourceLocation, Object.class)
-    );
+//    public static final Method method$Registry$getKey = requireNonNull(
+//            ReflectionUtils.getMethod(clazz$Registry, clazz$ResourceLocation, Object.class)
+//    );
 
-    public static final Method method$Registry$get = requireNonNull(
-            ReflectionUtils.getMethods(
-                    clazz$Registry, Object.class, clazz$ResourceLocation
-            ).stream().filter(m -> m.getReturnType() != Optional.class).findAny().orElse(null)
-    );
-
-    // use ResourceLocation
-    public static final Method method$Registry$getHolder0;
-    // use ResourceKey
-    public static final Method method$Registry$getHolder1;
-
-    static {
-        List<Method> methods = ReflectionUtils.getMethods(clazz$Registry, Optional.class, clazz$ResourceLocation);
-        Method theMethod1 = null;
-        for (Method method : methods) {
-            Type returnType = method.getGenericReturnType();
-            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceLocation) {
-                if (returnType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    if (actualTypeArguments.length == 1) {
-                        if (actualTypeArguments[0] instanceof ParameterizedType) {
-                            theMethod1 = method;
-                        }
-                    }
-                }
-            }
-        }
-        method$Registry$getHolder0 = theMethod1;
-    }
-
-    static {
-        List<Method> methods = ReflectionUtils.getMethods(clazz$Registry, Optional.class, clazz$ResourceKey);
-        Method theMethod1 = null;
-        for (Method method : methods) {
-            Type returnType = method.getGenericReturnType();
-            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceKey) {
-                if (returnType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    if (actualTypeArguments.length == 1) {
-                        if (actualTypeArguments[0] instanceof ParameterizedType) {
-                            theMethod1 = method;
-                        }
-                    }
-                }
-            }
-        }
-        method$Registry$getHolder1 = theMethod1;
-    }
+//    // use ResourceLocation
+//    public static final Method method$Registry$getHolder0;
+//    // use ResourceKey
+//    public static final Method method$Registry$getHolder1;
+//
+//    static {
+//        List<Method> methods = ReflectionUtils.getMethods(clazz$Registry, Optional.class, clazz$ResourceLocation);
+//        Method theMethod1 = null;
+//        for (Method method : methods) {
+//            Type returnType = method.getGenericReturnType();
+//            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceLocation) {
+//                if (returnType instanceof ParameterizedType parameterizedType) {
+//                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+//                    if (actualTypeArguments.length == 1) {
+//                        if (actualTypeArguments[0] instanceof ParameterizedType) {
+//                            theMethod1 = method;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        method$Registry$getHolder0 = theMethod1;
+//    }
+//
+//    static {
+//        List<Method> methods = ReflectionUtils.getMethods(clazz$Registry, Optional.class, clazz$ResourceKey);
+//        Method theMethod1 = null;
+//        for (Method method : methods) {
+//            Type returnType = method.getGenericReturnType();
+//            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == clazz$ResourceKey) {
+//                if (returnType instanceof ParameterizedType parameterizedType) {
+//                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+//                    if (actualTypeArguments.length == 1) {
+//                        if (actualTypeArguments[0] instanceof ParameterizedType) {
+//                            theMethod1 = method;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        method$Registry$getHolder1 = theMethod1;
+//    }
 
     public static final Class<?> clazz$BlockPos = requireNonNull(
             BukkitReflectionUtils.findReobfOrMojmapClass(
@@ -3591,5 +3585,16 @@ public final class CoreReflections {
                     "nbt.NBTTagCompound",
                     "nbt.CompoundTag"
             )
+    );
+
+    public static final Class<?> clazz$TrimPattern = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.equipment.trim.TrimPattern",
+                    "world.item.equipment.trim.TrimPattern"
+            )
+    );
+
+    public static final Constructor<?> constructor$TrimPattern = requireNonNull(
+            ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Holder, clazz$Component)
     );
 }

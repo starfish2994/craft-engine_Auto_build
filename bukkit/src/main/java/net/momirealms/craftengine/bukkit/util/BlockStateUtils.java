@@ -62,7 +62,7 @@ public class BlockStateUtils {
     @SuppressWarnings("unchecked")
     public static List<Object> getAllVanillaBlockStates(Key block) {
         try {
-            Object blockIns = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(block));
+            Object blockIns = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(block));
             Object definition = CoreReflections.field$Block$StateDefinition.get(blockIns);
             return (List<Object>) CoreReflections.field$StateDefinition$states.get(definition);
         } catch (Exception e) {

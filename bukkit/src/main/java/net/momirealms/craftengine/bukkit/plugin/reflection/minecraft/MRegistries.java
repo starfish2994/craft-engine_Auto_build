@@ -23,6 +23,7 @@ public final class MRegistries {
     public static final Object DIMENSION_TYPE;
     public static final Object CONFIGURED_FEATURE;
     public static final Object PLACED_FEATURE;
+    public static final Object TRIM_PATTERN;
     @Nullable // 1.21+
     public static final Object JUKEBOX_SONG;
     @Nullable // 1.21+
@@ -46,6 +47,7 @@ public final class MRegistries {
             Object registries$PlacedFeature  = null;
             Object registries$JukeboxSong  = null;
             Object registries$Recipe  = null;
+            Object registries$TrimPattern  = null;
             for (Field field : fields) {
                 Type fieldType = field.getGenericType();
                 if (fieldType instanceof ParameterizedType paramType) {
@@ -87,6 +89,8 @@ public final class MRegistries {
                                     registries$JukeboxSong = field.get(null);
                                 } else if (type == CoreReflections.clazz$PlacedFeature) {
                                     registries$PlacedFeature = field.get(null);
+                                } else if (type == CoreReflections.clazz$TrimPattern) {
+                                    registries$TrimPattern = field.get(null);
                                 }
                             }
                         }
@@ -106,6 +110,7 @@ public final class MRegistries {
             RECIPE_TYPE = requireNonNull(registries$RecipeType);
             CONFIGURED_FEATURE = requireNonNull(registries$ConfiguredFeature);
             PLACED_FEATURE = requireNonNull(registries$PlacedFeature);
+            TRIM_PATTERN = requireNonNull(registries$TrimPattern);
             JUKEBOX_SONG = registries$JukeboxSong;
             RECIPE = registries$Recipe;
         } catch (ReflectiveOperationException e) {

@@ -305,13 +305,21 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (!Config.enableRecipeSystem()) return;
         super.unload();
         if (VersionHelper.isOrAbove1_21_2()) {
-            this.plugin.scheduler().executeSync(() -> {
+            if (Bukkit.getServer().isStopping()) {
                 try {
                     CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
                 } catch (ReflectiveOperationException e) {
                     this.plugin.logger().warn("Failed to unregister recipes", e);
                 }
-            });
+            } else {
+                this.plugin.scheduler().executeSync(() -> {
+                    try {
+                        CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
+                    } catch (ReflectiveOperationException e) {
+                        this.plugin.logger().warn("Failed to unregister recipes", e);
+                    }
+                });
+            }
         }
     }
 

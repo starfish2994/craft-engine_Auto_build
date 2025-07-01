@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.sound.JukeboxSong;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,20 +31,22 @@ public class BukkitSoundManager extends AbstractSoundManager {
     protected void registerSongs(Map<Key, JukeboxSong> songs) {
         if (songs.isEmpty()) return;
         try {
-            Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);;
+            // 获取 JUKEBOX_SONG 注册表
+            Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);
             unfreezeRegistry(registry);
             for (Map.Entry<Key, JukeboxSong> entry : songs.entrySet()) {
                 Key id = entry.getKey();
                 JukeboxSong jukeboxSong = entry.getValue();
                 Object resourceLocation = KeyUtils.toResourceLocation(id);
                 Object soundId = KeyUtils.toResourceLocation(jukeboxSong.sound());
-                Object song = CoreReflections.method$Registry$get.invoke(registry, resourceLocation);
+                // 检查之前有没有注册过了
+                Object song = FastNMS.INSTANCE.method$Registry$getValue(registry, resourceLocation);
 
                 Object soundEvent = VersionHelper.isOrAbove1_21_2() ?
                         CoreReflections.constructor$SoundEvent.newInstance(soundId, Optional.of(jukeboxSong.range())) :
                         CoreReflections.constructor$SoundEvent.newInstance(soundId, jukeboxSong.range(), false);
                 Object soundHolder = CoreReflections.method$Holder$direct.invoke(null, soundEvent);
-
+                // 只有没注册才注册，否则会报错
                 if (song == null) {
                     song = CoreReflections.constructor$JukeboxSong.newInstance(soundHolder, ComponentUtils.adventureToMinecraft(jukeboxSong.description()), jukeboxSong.lengthInSeconds(), jukeboxSong.comparatorOutput());
                     Object holder = CoreReflections.method$Registry$registerForHolder.invoke(null, registry, resourceLocation, song);

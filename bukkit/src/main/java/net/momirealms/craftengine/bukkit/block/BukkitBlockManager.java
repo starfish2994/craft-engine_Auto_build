@@ -500,13 +500,9 @@ public final class BukkitBlockManager extends AbstractBlockManager {
                 Object clientBoundTags = settings.get("client-bound-tags");
                 if (clientBoundTags instanceof List<?> list) {
                     List<String> clientSideTags = MiscUtils.getAsStringList(list).stream().filter(ResourceLocation::isValid).toList();
-                    try {
-                        Object nmsBlock = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(id));
-                        FastNMS.INSTANCE.method$IdMap$getId(MBuiltInRegistries.BLOCK, nmsBlock).ifPresent(i ->
-                                BukkitBlockManager.this.clientBoundTags.put(i, clientSideTags));
-                    } catch (ReflectiveOperationException e) {
-                        BukkitBlockManager.this.plugin.logger().warn("Unable to get block " + id, e);
-                    }
+                    Object nmsBlock = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(id));
+                    FastNMS.INSTANCE.method$IdMap$getId(MBuiltInRegistries.BLOCK, nmsBlock).ifPresent(i ->
+                            BukkitBlockManager.this.clientBoundTags.put(i, clientSideTags));
                 }
             }
         }
@@ -657,7 +653,7 @@ public final class BukkitBlockManager extends AbstractBlockManager {
     private void recordVanillaNoteBlocks() {
         try {
             Object resourceLocation = KeyUtils.toResourceLocation(BlockKeys.NOTE_BLOCK);
-            Object block = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
+            Object block = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, resourceLocation);
             Object stateDefinition = CoreReflections.field$Block$StateDefinition.get(block);
             @SuppressWarnings("unchecked")
             ImmutableList<Object> states = (ImmutableList<Object>) CoreReflections.field$StateDefinition$states.get(stateDefinition);
@@ -841,8 +837,8 @@ public final class BukkitBlockManager extends AbstractBlockManager {
         return FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath(key.namespace(), key.value());
     }
 
-    private Object getBlockFromRegistry(Object resourceLocation) throws Exception {
-        return CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, resourceLocation);
+    private Object getBlockFromRegistry(Object resourceLocation) {
+        return FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, resourceLocation);
     }
 
     private Key createRealBlockKey(Key replacedBlock, int index) {

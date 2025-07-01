@@ -11,8 +11,6 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Player extends AbstractEntity implements NetWorkUser {
     private static final Key TYPE = Key.of("minecraft:player");

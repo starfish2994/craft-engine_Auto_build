@@ -25,7 +25,7 @@ public class TrimModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
-        item.trim(new Trim(this.material, this.pattern));
+        item.trim(new Trim(this.pattern, this.material));
         return item;
     }
 

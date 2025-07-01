@@ -79,10 +79,9 @@ public class SaplingBlockBehavior extends BukkitBlockBehavior {
     }
 
     private void generateTree(Object world, Object blockPos, Object blockState, Object randomSource) throws Exception {
-        Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.CONFIGURED_FEATURE);
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.CONFIGURED_FEATURE);
         if (registry == null) return;
-        @SuppressWarnings("unchecked")
-        Optional<Object> holder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(registry, FeatureUtils.createConfiguredFeatureKey(treeFeature()));
+        Optional<Object> holder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(registry, FeatureUtils.createConfiguredFeatureKey(treeFeature()));
         if (holder.isEmpty()) {
             CraftEngine.instance().logger().warn("Configured feature not found: " + treeFeature());
             return;
