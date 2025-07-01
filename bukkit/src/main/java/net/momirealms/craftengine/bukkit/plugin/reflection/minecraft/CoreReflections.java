@@ -3595,6 +3595,10 @@ public final class CoreReflections {
     );
 
     public static final Constructor<?> constructor$TrimPattern = requireNonNull(
+            VersionHelper.isOrAbove1_21_5() ?
+            ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Component, boolean.class) :
+            VersionHelper.isOrAbove1_20_2() ?
+            ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Holder, clazz$Component, boolean.class) :
             ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Holder, clazz$Component)
     );
 }

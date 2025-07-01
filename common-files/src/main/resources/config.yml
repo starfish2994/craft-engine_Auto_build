@@ -138,9 +138,16 @@ resource-pack:
       resolution:
         type: merge_atlas
 
-item:
-  # Add a <!i> tag on item name and lore
-  non-italic-tag: false
+equipment:
+  # The sacrificed-vanilla-armor argument determines which vanilla armor gets completely removed (loses all its trims)
+  # when you create new armor using trim types, freeing up a slot for your custom armor.
+  sacrificed-vanilla-armor:
+    type: chainmail
+    # CraftEngine repurposes a vanilla armor's texture slot for custom armor trims.
+    # To preserve the original look, it uses trim configurations to reconstruct the default appearance.
+    asset-id: minecraft:chainmail
+    humanoid: minecraft:trims/entity/humanoid/chainmail
+    humanoid-leggings: minecraft:trims/entity/humanoid_leggings/chainmail
 
 block:
   # Enables the sound system, which prevents the client from hearing some non-custom block sounds and improves the client experience.

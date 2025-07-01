@@ -12,7 +12,7 @@ public final class MAttributeHolders {
 
     private static Object getById(String id) {
         Object rl = FastNMS.INSTANCE.method$ResourceLocation$fromNamespaceAndPath("minecraft", id);
-        return FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ATTRIBUTE, rl);
+        return FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(MBuiltInRegistries.ATTRIBUTE, rl);
     }
 
     static {

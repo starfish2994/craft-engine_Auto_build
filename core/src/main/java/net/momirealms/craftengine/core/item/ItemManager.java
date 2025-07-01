@@ -21,7 +21,7 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     void registerDataType(Function<Object, ItemDataModifier<T>> factory, String... alias);
 
-    ConfigParser parser();
+    ConfigParser[] parsers();
 
     Map<Key, TreeSet<LegacyOverridesModel>> legacyItemOverrides();
 

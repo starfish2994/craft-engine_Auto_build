@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.properties.PropertyFactory;
 import net.momirealms.craftengine.core.entity.furniture.HitBoxFactory;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
+import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
 import net.momirealms.craftengine.core.loot.LootContext;
@@ -68,5 +69,6 @@ public class Registries {
     public static final ResourceKey<Registry<ResourcePackHostFactory>> RESOURCE_PACK_HOST_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("resource_pack_host_factory"));
     public static final ResourceKey<Registry<FunctionFactory<PlayerOptionalContext>>> EVENT_FUNCTION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_function_factory"));
     public static final ResourceKey<Registry<ConditionFactory<PlayerOptionalContext>>> EVENT_CONDITION_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("event_condition_factory"));
-    public static final ResourceKey<Registry<PlayerSelectorFactory<?>>> PLAYER_SELECTOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_selector"));
+    public static final ResourceKey<Registry<PlayerSelectorFactory<?>>> PLAYER_SELECTOR_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("player_selector_factory"));
+    public static final ResourceKey<Registry<EquipmentFactory>> EQUIPMENT_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("equipment_factory"));
 }

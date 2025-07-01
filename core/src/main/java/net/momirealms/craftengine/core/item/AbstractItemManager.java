@@ -22,6 +22,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
 import net.momirealms.craftengine.core.plugin.context.text.TextProvider;
 import net.momirealms.craftengine.core.plugin.context.text.TextProviders;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -44,6 +45,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected static final Map<Key, List<Holder<Key>>> VANILLA_ITEM_TAGS = new HashMap<>();
 
     private final ItemParser itemParser;
+    private final EquipmentParser equipmentParser;
     protected final Map<String, ExternalItemProvider<I>> externalItemProviders = new HashMap<>();
     protected final Map<String, Function<Object, ItemDataModifier<I>>> dataFunctions = new HashMap<>();
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
@@ -61,6 +63,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected AbstractItemManager(CraftEngine plugin) {
         super(plugin);
         this.itemParser = new ItemParser();
+        this.equipmentParser = new EquipmentParser();
         this.registerFunctions();
         this.legacyOverrides = new HashMap<>();
         this.modernOverrides = new HashMap<>();
@@ -74,7 +77,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     @Override
     public void registerDataType(Function<Object, ItemDataModifier<I>> factory, String... alias) {
         for (String a : alias) {
-            dataFunctions.put(a, factory);
+            this.dataFunctions.put(a, factory);
         }
     }
 
@@ -87,11 +90,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected void applyDataFunctions(Map<String, Object> dataSection, Consumer<ItemDataModifier<I>> consumer) {
         if (dataSection != null) {
             for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
-                Optional.ofNullable(dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
+                Optional.ofNullable(this.dataFunctions.get(dataEntry.getKey())).ifPresent(function -> {
                     try {
                         consumer.accept(function.apply(dataEntry.getValue()));
                     } catch (IllegalArgumentException e) {
-                        plugin.logger().warn("Invalid data format", e);
+                        this.plugin.logger().warn("Invalid data format", e);
                     }
                 });
             }
@@ -99,8 +102,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public ConfigParser parser() {
-        return this.itemParser;
+    public ConfigParser[] parsers() {
+        return new ConfigParser[]{this.itemParser, this.equipmentParser};
     }
 
     @Override
@@ -261,6 +264,26 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material, Key clientBoundMaterial);
 
+    public class EquipmentParser implements ConfigParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"equipments", "equipment"};
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.EQUIPMENT;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+
+
+        }
+    }
+
     public class ItemParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"items", "item"};
 
@@ -312,7 +335,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // To get at least one model provider
             // Sets some basic model info
             if (customModelData > 0) {
-                itemBuilder.dataModifier(new CustomModelDataModifier<>(customModelData));
+                itemBuilder.clientBoundDataModifier(new CustomModelDataModifier<>(customModelData));
             }
             // Requires the item to have model before apply item-model
             else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isOrAbove1_21_2()) {
@@ -320,7 +343,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 // customize or use the id
                 itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
                 if (ResourceLocation.isValid(itemModelKey.toString())) {
-                    itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
+                    itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
                 } else {
                     itemModelKey = null;
                 }
@@ -328,7 +351,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             if (hasItemModelSection && VersionHelper.isOrAbove1_21_2()) {
                 itemModelKey = Key.from(section.get("item-model").toString());
-                itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
+                itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
             }
 
             // Get item data
@@ -449,14 +472,14 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         }, "external");
         registerDataType((obj) -> {
             String name = obj.toString();
-            return new CustomNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
+            return new CustomNameModifier<>(name);
         }, "custom-name");
         registerDataType((obj) -> {
             String name = obj.toString();
-            return new ItemNameModifier<>(Config.nonItalic() ? "<!i>" + name : name);
+            return new ItemNameModifier<>(name);
         }, "item-name", "display-name");
         registerDataType((obj) -> {
-            List<String> lore = MiscUtils.getAsStringList(obj).stream().map(it -> "<!i>" + it).toList();
+            List<String> lore = MiscUtils.getAsStringList(obj);
             return new LoreModifier<>(lore);
         }, "lore", "display-lore", "description");
         registerDataType((obj) -> {

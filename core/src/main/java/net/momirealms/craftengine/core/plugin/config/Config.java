@@ -123,8 +123,6 @@ public class Config {
     protected boolean recipe$disable_vanilla_recipes$all;
     protected Set<Key> recipe$disable_vanilla_recipes$list;
 
-    protected boolean item$non_italic_tag;
-
     protected boolean image$illegal_characters_filter$command;
     protected boolean image$illegal_characters_filter$chat;
     protected boolean image$illegal_characters_filter$anvil;
@@ -283,9 +281,6 @@ public class Config {
             this.plugin.logger().warn("Failed to load resource-pack.duplicated-files-handler", e);
             resource_pack$duplicated_files_handler = List.of();
         }
-
-        // item
-        item$non_italic_tag = config.getBoolean("item.non-italic-tag", false);
 
         // performance
         performance$max_note_block_chain_update_limit = config.getInt("performance.max-note-block-chain-update-limit", 64);
@@ -454,10 +449,6 @@ public class Config {
 
     public static Set<Key> disabledVanillaRecipes() {
         return instance.recipe$disable_vanilla_recipes$list;
-    }
-
-    public static boolean nonItalic() {
-        return instance.item$non_italic_tag;
     }
 
     public static boolean restoreVanillaBlocks() {

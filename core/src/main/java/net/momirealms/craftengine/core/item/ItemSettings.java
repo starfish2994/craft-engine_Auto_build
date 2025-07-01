@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.entity.Billboard;
 import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
+import net.momirealms.craftengine.core.item.equipment.ComponentBasedEquipment;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
@@ -300,13 +301,8 @@ public class ItemSettings {
             registerFactory("equippable", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 EquipmentData data = EquipmentData.fromMap(args);
-                ItemEquipment itemEquipment = new ItemEquipment(data);
-                for (Map.Entry<String, Object> entry : args.entrySet()) {
-                    EquipmentLayerType layerType = EquipmentLayerType.byId(entry.getKey());
-                    if (layerType != null) {
-                        itemEquipment.addLayer(layerType, ItemEquipment.Layer.fromConfig(entry.getValue()));
-                    }
-                }
+                ComponentBasedEquipment componentBasedEquipment = ComponentBasedEquipment.FACTORY.create(data.assetId(), args);
+                ItemEquipment itemEquipment = new ItemEquipment(data, componentBasedEquipment);
                 return settings -> settings.equipment(itemEquipment);
             }));
             registerFactory("can-place", (value -> {
