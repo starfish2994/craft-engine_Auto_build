@@ -1,29 +1,33 @@
 package net.momirealms.craftengine.core.item.setting;
 
-import net.momirealms.craftengine.core.item.equipment.ComponentBasedEquipment;
-import net.momirealms.craftengine.core.pack.misc.EquipmentLayerType;
-
-import java.util.EnumMap;
-import java.util.List;
+import net.momirealms.craftengine.core.item.equipment.Equipment;
+import net.momirealms.craftengine.core.util.Tristate;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ItemEquipment {
-    private final EquipmentData data;
-    private final ComponentBasedEquipment equipment;
+    private final Tristate clientBoundModel;
+    private final Equipment equipment;
+    private final EquipmentData equipmentData;
 
-    public ItemEquipment(EquipmentData data, ComponentBasedEquipment equipment) {
-        this.data = data;
+    public ItemEquipment(Tristate clientBoundModel, @Nullable EquipmentData equipmentData, Equipment equipment) {
+        this.clientBoundModel = clientBoundModel;
         this.equipment = equipment;
+        this.equipmentData = equipmentData;
     }
 
-    public void addLayer(EquipmentLayerType layerType, List<ComponentBasedEquipment.Layer> layer) {
-        this.equipment.addLayer(layerType, layer);
+    @NotNull
+    public Equipment equipment() {
+        return this.equipment;
     }
 
-    public EnumMap<EquipmentLayerType, List<ComponentBasedEquipment.Layer>> layers() {
-        return this.equipment.layers();
+    @Nullable
+    public EquipmentData equipmentData() {
+        return this.equipmentData;
     }
 
-    public EquipmentData data() {
-        return data;
+    @NotNull
+    public Tristate clientBoundModel() {
+        return clientBoundModel;
     }
 }

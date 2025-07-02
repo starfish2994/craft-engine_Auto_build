@@ -5,11 +5,13 @@ import net.momirealms.craftengine.core.entity.ItemDisplayContext;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileType;
 import net.momirealms.craftengine.core.item.equipment.ComponentBasedEquipment;
+import net.momirealms.craftengine.core.item.equipment.Equipment;
 import net.momirealms.craftengine.core.item.modifier.EquippableModifier;
 import net.momirealms.craftengine.core.item.modifier.FoodModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.item.setting.*;
-import net.momirealms.craftengine.core.pack.misc.EquipmentLayerType;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.sound.SoundData;
 import net.momirealms.craftengine.core.util.*;
@@ -23,8 +25,6 @@ import java.util.stream.Collectors;
 public class ItemSettings {
     int fuelTime;
     Set<Key> tags = Set.of();
-    @Nullable
-    ItemEquipment equipment;
     boolean canRepair = true;
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
@@ -38,16 +38,34 @@ public class ItemSettings {
     List<DamageSource> invulnerable = List.of();
     boolean canEnchant = true;
     float compostProbability= 0.5f;
+    @Nullable
+    ItemEquipment equipment;
 
     private ItemSettings() {}
 
     public <I> List<ItemDataModifier<I>> modifiers() {
         ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
-        if (VersionHelper.isOrAbove1_21_2() && this.equipment != null) {
-            modifiers.add(new EquippableModifier<>(this.equipment.data()));
+        if (this.equipment != null) {
+            EquipmentData data = this.equipment.equipmentData();
+            if (data != null) {
+                modifiers.add(new EquippableModifier<>(data));
+            }
+            if (!this.equipment.clientBoundModel().asBoolean(Config.globalClientboundModel())) {
+                modifiers.add(this.equipment.equipment().modifier());
+            }
         }
         if (VersionHelper.isOrAbove1_20_5() && this.foodData != null) {
             modifiers.add(new FoodModifier<>(this.foodData.nutrition(), this.foodData.saturation(), false));
+        }
+        return modifiers;
+    }
+
+    public <I> List<ItemDataModifier<I>> clientBoundModifiers() {
+        ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
+        if (this.equipment != null) {
+            if (this.equipment.clientBoundModel().asBoolean(Config.globalClientboundModel())) {
+                modifiers.add(this.equipment.equipment().modifier());
+            }
         }
         return modifiers;
     }
@@ -302,8 +320,23 @@ public class ItemSettings {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 EquipmentData data = EquipmentData.fromMap(args);
                 ComponentBasedEquipment componentBasedEquipment = ComponentBasedEquipment.FACTORY.create(data.assetId(), args);
-                ItemEquipment itemEquipment = new ItemEquipment(data, componentBasedEquipment);
+                ItemEquipment itemEquipment = new ItemEquipment(Tristate.FALSE, data, componentBasedEquipment);
                 return settings -> settings.equipment(itemEquipment);
+            }));
+            registerFactory("equipment", (value -> {
+                Map<String, Object> args = MiscUtils.castToMap(value, false);
+                Tristate clientBoundModel = Tristate.of((Boolean) args.get("client-bound-model"));
+                Key assetId = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(args.get("asset-id"), "warning.config.item.settings.equipment.missing_asset_id"));
+                Optional<Equipment> optionalEquipment = CraftEngine.instance().itemManager().getEquipment(assetId);
+                if (optionalEquipment.isEmpty()) {
+                    throw new LocalizedResourceConfigException("warning.config.item.settings.equipment.invalid_asset_id");
+                }
+                if (VersionHelper.isOrAbove1_21_2() && args.containsKey("slot")) {
+                    EquipmentData data = EquipmentData.fromMap(args);
+                    return settings -> settings.equipment(new ItemEquipment(clientBoundModel, data, optionalEquipment.get()));
+                } else {
+                    return settings -> settings.equipment(new ItemEquipment(clientBoundModel, null, optionalEquipment.get()));
+                }
             }));
             registerFactory("can-place", (value -> {
                 boolean bool = ResourceConfigUtils.getAsBoolean(value, "can-place");
@@ -311,7 +344,7 @@ public class ItemSettings {
             }));
             registerFactory("projectile", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
-                Key customTridentItemId = Key.of(Objects.requireNonNull(args.get("item"), "'item should not be null'").toString());
+                Key customTridentItemId = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(args.get("item"), "warning.config.item.settings.projectile.missing_item"));
                 ItemDisplayContext displayType = ItemDisplayContext.valueOf(args.getOrDefault("display-transform", "NONE").toString().toUpperCase(Locale.ENGLISH));
                 Billboard billboard = Billboard.valueOf(args.getOrDefault("billboard", "FIXED").toString().toUpperCase(Locale.ENGLISH));
                 Vector3f translation = MiscUtils.getAsVector3f(args.getOrDefault("translation", "0"), "translation");

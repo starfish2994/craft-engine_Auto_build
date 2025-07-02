@@ -3588,11 +3588,36 @@ public final class CoreReflections {
     );
 
     public static final Class<?> clazz$TrimPattern = requireNonNull(
+            VersionHelper.isOrAbove1_21_2() ?
             BukkitReflectionUtils.findReobfOrMojmapClass(
                     "world.item.equipment.trim.TrimPattern",
                     "world.item.equipment.trim.TrimPattern"
+            ) :
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.armortrim.TrimPattern",
+                    "world.item.armortrim.TrimPattern"
             )
     );
+
+    public static final Class<?> clazz$TrimMaterial = requireNonNull(
+            VersionHelper.isOrAbove1_21_2() ?
+                    BukkitReflectionUtils.findReobfOrMojmapClass(
+                            "world.item.equipment.trim.TrimMaterial",
+                            "world.item.equipment.trim.TrimMaterial"
+                    ) :
+                    BukkitReflectionUtils.findReobfOrMojmapClass(
+                            "world.item.armortrim.TrimMaterial",
+                            "world.item.armortrim.TrimMaterial"
+                    )
+    );
+
+    public static final Class<?> clazz$MaterialAssetGroup = BukkitReflectionUtils.findReobfOrMojmapClass(
+            "world.item.equipment.trim.MaterialAssetGroup",
+            "world.item.equipment.trim.MaterialAssetGroup"
+    );
+
+    public static final Method method$MaterialAssetGroup$create = Optional.ofNullable(clazz$MaterialAssetGroup)
+            .map(it -> ReflectionUtils.getStaticMethod(it, it, String.class)).orElse(null);
 
     public static final Constructor<?> constructor$TrimPattern = requireNonNull(
             VersionHelper.isOrAbove1_21_5() ?
@@ -3600,5 +3625,13 @@ public final class CoreReflections {
             VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Holder, clazz$Component, boolean.class) :
             ReflectionUtils.getConstructor(clazz$TrimPattern, clazz$ResourceLocation, clazz$Holder, clazz$Component)
+    );
+
+    public static final Constructor<?> constructor$TrimMaterial = requireNonNull(
+            VersionHelper.isOrAbove1_21_5() ?
+            ReflectionUtils.getConstructor(clazz$TrimMaterial, clazz$MaterialAssetGroup, clazz$Component) :
+            VersionHelper.isOrAbove1_21_4() ?
+            ReflectionUtils.getConstructor(clazz$TrimMaterial, String.class, clazz$Holder, Map.class, clazz$Component) :
+            ReflectionUtils.getConstructor(clazz$TrimMaterial, String.class, clazz$Holder, float.class, Map.class, clazz$Component)
     );
 }

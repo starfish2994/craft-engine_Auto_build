@@ -138,6 +138,10 @@ resource-pack:
       resolution:
         type: merge_atlas
 
+item:
+  # Make custom-model-data and item-model clientside by default
+  client-bound-model: false
+
 equipment:
   # The sacrificed-vanilla-armor argument determines which vanilla armor gets completely removed (loses all its trims)
   # when you create new armor using trim types, freeing up a slot for your custom armor.

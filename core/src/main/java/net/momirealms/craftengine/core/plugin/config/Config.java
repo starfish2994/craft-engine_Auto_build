@@ -143,6 +143,13 @@ public class Config {
     protected boolean image$intercept_packets$set_score;
     protected boolean image$intercept_packets$item;
 
+    protected boolean item$client_bound_model;
+
+    protected String equipment$sacrificed_vanilla_armor$type;
+    protected Key equipment$sacrificed_vanilla_armor$asset_id;
+    protected Key equipment$sacrificed_vanilla_armor$humanoid;
+    protected Key equipment$sacrificed_vanilla_armor$humanoid_leggings;
+
     protected boolean emoji$chat;
     protected boolean emoji$book;
     protected boolean emoji$anvil;
@@ -320,6 +327,15 @@ public class Config {
         furniture$handle_invalid_furniture_on_chunk_load$mapping = builder.build();
         furniture$hide_base_entity = config.getBoolean("furniture.hide-base-entity", true);
         furniture$collision_entity_type = ColliderType.valueOf(config.getString("furniture.collision-entity-type", "interaction").toUpperCase(Locale.ENGLISH));
+
+        // equipment
+        equipment$sacrificed_vanilla_armor$type = config.getString("equipment.sacrificed-vanilla-armor.type", "chainmail");
+        equipment$sacrificed_vanilla_armor$asset_id = Key.of(config.getString("equipment.sacrificed-vanilla-armor.asset-id", "minecraft:chainmail"));
+        equipment$sacrificed_vanilla_armor$humanoid = Key.of(config.getString("equipment.sacrificed-vanilla-armor.humanoid"));
+        equipment$sacrificed_vanilla_armor$humanoid_leggings = Key.of(config.getString("equipment.sacrificed-vanilla-armor.humanoid-leggings"));
+
+        // item
+        item$client_bound_model = config.getBoolean("item.client-bound-model", false);
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -737,6 +753,26 @@ public class Config {
 
     public static String createOverlayFolderName(String version) {
         return instance.resource_pack$overlay_format.replace("{version}", version);
+    }
+
+    public static Key sacrificedAssetId() {
+        return instance.equipment$sacrificed_vanilla_armor$asset_id;
+    }
+
+    public static Key sacrificedHumanoid() {
+        return instance.equipment$sacrificed_vanilla_armor$humanoid;
+    }
+
+    public static Key sacrificedHumanoidLeggings() {
+        return instance.equipment$sacrificed_vanilla_armor$humanoid_leggings;
+    }
+
+    public static String sacrificedVanillaArmorType() {
+        return instance.equipment$sacrificed_vanilla_armor$type;
+    }
+
+    public static boolean globalClientboundModel() {
+        return instance.item$client_bound_model;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

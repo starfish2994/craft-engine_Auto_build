@@ -9,6 +9,7 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,8 +45,9 @@ public class EquipmentData {
     public static EquipmentData fromMap(@NotNull final Map<String, Object> data) {
         String slot = (String) data.get("slot");
         if (slot == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.settings.equippable.missing_slot");
+            throw new IllegalArgumentException("slot cannot be null");
         }
+        // todo 重新写判断，不应该支持手部
         EquipmentSlot slotEnum = EquipmentSlot.valueOf(slot.toUpperCase(Locale.ENGLISH));
         EquipmentData.Builder builder = EquipmentData.builder().slot(slotEnum);
         if (data.containsKey("asset-id")) {

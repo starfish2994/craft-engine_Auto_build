@@ -30,10 +30,10 @@ public class BukkitSoundManager extends AbstractSoundManager {
     @Override
     protected void registerSongs(Map<Key, JukeboxSong> songs) {
         if (songs.isEmpty()) return;
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);
         try {
             // 获取 JUKEBOX_SONG 注册表
-            Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);
-            unfreezeRegistry(registry);
+            CoreReflections.field$MappedRegistry$frozen.set(registry, false);
             for (Map.Entry<Key, JukeboxSong> entry : songs.entrySet()) {
                 Key id = entry.getKey();
                 JukeboxSong jukeboxSong = entry.getValue();
@@ -54,17 +54,12 @@ public class BukkitSoundManager extends AbstractSoundManager {
                     CoreReflections.field$Holder$Reference$tags.set(holder, Set.of());
                 }
             }
-            freezeRegistry(registry);
         } catch (Exception e) {
-            plugin.logger().warn("Failed to register jukebox songs.", e);
+            this.plugin.logger().warn("Failed to register jukebox songs.", e);
+        } finally {
+            try {
+                CoreReflections.field$MappedRegistry$frozen.set(registry, true);
+            } catch (ReflectiveOperationException ignored) {}
         }
-    }
-
-    private void unfreezeRegistry(Object registry) throws IllegalAccessException {
-        CoreReflections.field$MappedRegistry$frozen.set(registry, false);
-    }
-
-    private void freezeRegistry(Object registry) throws IllegalAccessException {
-        CoreReflections.field$MappedRegistry$frozen.set(registry, true);
     }
 }

@@ -11,11 +11,14 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
+import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
+import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
@@ -33,9 +36,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
@@ -50,6 +51,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final DebugStickListener debugStickListener;
     private final ArmorEventListener armorEventListener;
     private final NetworkItemHandler<ItemStack> networkItemHandler;
+    private final Object bedrockItemHolder;
+    private boolean registeredTrimMaterial;
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
@@ -61,6 +64,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.armorEventListener = new ArmorEventListener();
         this.networkItemHandler = VersionHelper.isOrAbove1_20_5() ? new ModernNetworkItemHandler() : new LegacyNetworkItemHandler();
         this.registerAllVanillaItems();
+        this.bedrockItemHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, KeyUtils.toResourceLocation(Key.of("minecraft:bedrock")))).get();;
     }
 
     @Override
@@ -132,6 +136,78 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         HandlerList.unregisterAll(this.itemEventListener);
         HandlerList.unregisterAll(this.debugStickListener);
         HandlerList.unregisterAll(this.armorEventListener);
+    }
+
+    @Override
+    protected void registerArmorTrimPattern(Collection<TrimBasedEquipment> equipments) {
+        if (equipments.isEmpty()) return;
+        this.registerCustomTrimMaterial();
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_PATTERN);
+        try {
+            CoreReflections.field$MappedRegistry$frozen.set(registry, false);
+            for (TrimBasedEquipment equipment : equipments) {
+                Object resourceLocation = KeyUtils.toResourceLocation(equipment.assetId());
+                Object previous = FastNMS.INSTANCE.method$Registry$getValue(registry, resourceLocation);
+                if (previous == null) {
+                    Object trimPattern = createTrimPattern(equipment.assetId());
+                    Object holder = CoreReflections.method$Registry$registerForHolder.invoke(null, registry, resourceLocation, trimPattern);
+                    CoreReflections.method$Holder$Reference$bindValue.invoke(holder, trimPattern);
+                    CoreReflections.field$Holder$Reference$tags.set(holder, Set.of());
+                }
+            }
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to register armor trim pattern.", e);
+        } finally {
+            try {
+                CoreReflections.field$MappedRegistry$frozen.set(registry, true);
+            } catch (ReflectiveOperationException ignored) {
+            }
+        }
+    }
+
+    private void registerCustomTrimMaterial() {
+        if (this.registeredTrimMaterial) return;
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_MATERIAL);
+        Object resourceLocation = KeyUtils.toResourceLocation(Key.of("minecraft", AbstractPackManager.TRIM_MATERIAL));
+        Object previous = FastNMS.INSTANCE.method$Registry$getValue(registry, resourceLocation);
+        if (previous == null) {
+            try {
+                CoreReflections.field$MappedRegistry$frozen.set(registry, false);
+                Object trimMaterial = createTrimMaterial();
+                Object holder = CoreReflections.method$Registry$registerForHolder.invoke(null, registry, resourceLocation, trimMaterial);
+                CoreReflections.method$Holder$Reference$bindValue.invoke(holder, trimMaterial);
+                CoreReflections.field$Holder$Reference$tags.set(holder, Set.of());
+            } catch (Exception e) {
+                this.plugin.logger().warn("Failed to register trim material.", e);
+            } finally {
+                try {
+                    CoreReflections.field$MappedRegistry$frozen.set(registry, true);
+                } catch (ReflectiveOperationException ignored) {
+                }
+            }
+        }
+        this.registeredTrimMaterial = true;
+    }
+
+    private Object createTrimPattern(Key key) throws ReflectiveOperationException {
+        if (VersionHelper.isOrAbove1_21_5()) {
+            return CoreReflections.constructor$TrimPattern.newInstance(KeyUtils.toResourceLocation(key), CoreReflections.instance$Component$empty, false);
+        } else if (VersionHelper.isOrAbove1_20_2()) {
+            return CoreReflections.constructor$TrimPattern.newInstance(KeyUtils.toResourceLocation(key), this.bedrockItemHolder, CoreReflections.instance$Component$empty, false);
+        } else {
+            return CoreReflections.constructor$TrimPattern.newInstance(KeyUtils.toResourceLocation(key), this.bedrockItemHolder, CoreReflections.instance$Component$empty);
+        }
+    }
+
+    private Object createTrimMaterial() throws ReflectiveOperationException {
+        if (VersionHelper.isOrAbove1_21_5()) {
+            Object assetGroup = CoreReflections.method$MaterialAssetGroup$create.invoke(null, "custom");
+            return CoreReflections.constructor$TrimMaterial.newInstance(assetGroup, CoreReflections.instance$Component$empty);
+        } else if (VersionHelper.isOrAbove1_21_4()) {
+            return CoreReflections.constructor$TrimMaterial.newInstance("custom", this.bedrockItemHolder, Map.of(), CoreReflections.instance$Component$empty);
+        } else {
+            return CoreReflections.constructor$TrimMaterial.newInstance("custom", this.bedrockItemHolder, 1_000_000.0f, Map.of(), CoreReflections.instance$Component$empty);
+        }
     }
 
     @SuppressWarnings("deprecation")

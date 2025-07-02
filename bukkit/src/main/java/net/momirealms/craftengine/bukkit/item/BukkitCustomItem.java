@@ -149,6 +149,7 @@ public class BukkitCustomItem extends AbstractCustomItem<ItemStack> {
         @Override
         public CustomItem<ItemStack> build() {
             this.modifiers.addAll(this.settings.modifiers());
+            this.clientBoundModifiers.addAll(this.settings.clientBoundModifiers());
             return new BukkitCustomItem(this.id, this.item, this.clientBoundItem, this.itemKey, this.clientBoundItemKey, List.copyOf(this.behaviors),
                     List.copyOf(this.modifiers), List.copyOf(this.clientBoundModifiers), this.settings, this.events);
         }

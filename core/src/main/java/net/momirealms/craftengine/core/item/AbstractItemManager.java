@@ -4,13 +4,14 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
+import net.momirealms.craftengine.core.item.equipment.Equipment;
+import net.momirealms.craftengine.core.item.equipment.Equipments;
+import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
 import net.momirealms.craftengine.core.item.modifier.*;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
-import net.momirealms.craftengine.core.item.setting.ItemEquipment;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
-import net.momirealms.craftengine.core.pack.misc.Equipment;
 import net.momirealms.craftengine.core.pack.model.*;
 import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenerator;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
@@ -22,7 +23,6 @@ import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
 import net.momirealms.craftengine.core.plugin.context.text.TextProvider;
 import net.momirealms.craftengine.core.plugin.context.text.TextProviders;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -49,13 +49,13 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     protected final Map<String, ExternalItemProvider<I>> externalItemProviders = new HashMap<>();
     protected final Map<String, Function<Object, ItemDataModifier<I>>> dataFunctions = new HashMap<>();
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
-    protected final Map<Key, List<Holder<Key>>> customItemTags;
-    protected final Map<Key, Map<Integer, Key>> cmdConflictChecker;
-    protected final Map<Key, ModernItemModel> modernItemModels1_21_4;
-    protected final Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2;
-    protected final Map<Key, TreeSet<LegacyOverridesModel>> legacyOverrides;
-    protected final Map<Key, TreeMap<Integer, ModernItemModel>> modernOverrides;
-    protected final Map<Key, Equipment> equipmentsToGenerate;
+    protected final Map<Key, List<Holder<Key>>> customItemTags = new HashMap<>();
+    protected final Map<Key, Map<Integer, Key>> cmdConflictChecker = new HashMap<>();
+    protected final Map<Key, ModernItemModel> modernItemModels1_21_4 = new HashMap<>();
+    protected final Map<Key, TreeSet<LegacyOverridesModel>> modernItemModels1_21_2 = new HashMap<>();
+    protected final Map<Key, TreeSet<LegacyOverridesModel>> legacyOverrides = new HashMap<>();
+    protected final Map<Key, TreeMap<Integer, ModernItemModel>> modernOverrides = new HashMap<>();
+    protected final Map<Key, Equipment> equipments = new HashMap<>();
     // Cached command suggestions
     protected final List<Suggestion> cachedSuggestions = new ArrayList<>();
     protected final List<Suggestion> cachedTotemSuggestions = new ArrayList<>();
@@ -65,13 +65,6 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.itemParser = new ItemParser();
         this.equipmentParser = new EquipmentParser();
         this.registerFunctions();
-        this.legacyOverrides = new HashMap<>();
-        this.modernOverrides = new HashMap<>();
-        this.customItemTags = new HashMap<>();
-        this.cmdConflictChecker = new HashMap<>();
-        this.modernItemModels1_21_4 = new HashMap<>();
-        this.modernItemModels1_21_2 = new HashMap<>();
-        this.equipmentsToGenerate = new HashMap<>();
     }
 
     @Override
@@ -127,10 +120,20 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         this.legacyOverrides.clear();
         this.modernOverrides.clear();
         this.customItemTags.clear();
-        this.equipmentsToGenerate.clear();
+        this.equipments.clear();
         this.cmdConflictChecker.clear();
         this.modernItemModels1_21_4.clear();
         this.modernItemModels1_21_2.clear();
+    }
+
+    @Override
+    public Map<Key, Equipment> equipments() {
+        return Collections.unmodifiableMap(this.equipments);
+    }
+
+    @Override
+    public Optional<Equipment> getEquipment(Key key) {
+        return Optional.ofNullable(this.equipments.get(key));
     }
 
     @Override
@@ -155,13 +158,6 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         Set<Key> tags = customItem.settings().tags();
         for (Key tag : tags) {
             this.customItemTags.computeIfAbsent(tag, k -> new ArrayList<>()).add(customItem.idHolder());
-        }
-        // equipment generation
-        ItemEquipment equipment = customItem.settings().equipment();
-        if (equipment != null) {
-            EquipmentData data = equipment.data();
-            Equipment equipmentJson = this.equipmentsToGenerate.computeIfAbsent(data.assetId(), k -> new Equipment());
-            equipmentJson.addAll(equipment);
         }
         return true;
     }
@@ -253,16 +249,13 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public Map<Key, Equipment> equipmentsToGenerate() {
-        return Collections.unmodifiableMap(this.equipmentsToGenerate);
-    }
-
-    @Override
     public boolean isVanillaItem(Key item) {
         return VANILLA_ITEMS.contains(item);
     }
 
     protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material, Key clientBoundMaterial);
+
+    protected abstract void registerArmorTrimPattern(Collection<TrimBasedEquipment> equipments);
 
     public class EquipmentParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"equipments", "equipment"};
@@ -279,8 +272,21 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
         @Override
         public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (AbstractItemManager.this.equipments.containsKey(id)) {
+                throw new LocalizedResourceConfigException("warning.config.equipment.duplicate");
+            }
+            Equipment equipment = Equipments.fromMap(id, section);
+            AbstractItemManager.this.equipments.put(id, equipment);
+        }
 
-
+        @Override
+        public void postProcess() {
+            registerArmorTrimPattern(
+                    AbstractItemManager.this.equipments.values().stream()
+                            .filter(TrimBasedEquipment.class::isInstance)
+                            .map(TrimBasedEquipment.class::cast)
+                            .toList()
+            );
         }
     }
 
@@ -320,6 +326,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             Key material = Key.from(isVanillaItem ? id.value() : ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material").toLowerCase(Locale.ENGLISH));
             Key clientBoundMaterial = section.containsKey("client-bound-material") ? Key.from(section.get("client-bound-material").toString().toLowerCase(Locale.ENGLISH)) : material;
             int customModelData = ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
+            boolean clientBoundModel = section.containsKey("client-bound-model") ? ResourceConfigUtils.getAsBoolean(section.get("client-bound-data"), "client-bound-data") : Config.globalClientboundModel();
             if (customModelData < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.invalid_custom_model_data", String.valueOf(customModelData));
             }
@@ -335,7 +342,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // To get at least one model provider
             // Sets some basic model info
             if (customModelData > 0) {
-                itemBuilder.clientBoundDataModifier(new CustomModelDataModifier<>(customModelData));
+                if (clientBoundModel) {
+                    itemBuilder.clientBoundDataModifier(new CustomModelDataModifier<>(customModelData));
+                } else {
+                    itemBuilder.dataModifier(new CustomModelDataModifier<>(customModelData));
+                }
             }
             // Requires the item to have model before apply item-model
             else if (!hasItemModelSection && section.containsKey("model") && VersionHelper.isOrAbove1_21_2()) {
@@ -343,7 +354,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 // customize or use the id
                 itemModelKey = Key.from(section.getOrDefault("item-model", id.toString()).toString());
                 if (ResourceLocation.isValid(itemModelKey.toString())) {
-                    itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
+                    if (clientBoundModel) {
+                        itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
+                    } else {
+                        itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
+                    }
                 } else {
                     itemModelKey = null;
                 }
@@ -351,7 +366,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
             if (hasItemModelSection && VersionHelper.isOrAbove1_21_2()) {
                 itemModelKey = Key.from(section.get("item-model").toString());
-                itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
+                if (clientBoundModel) {
+                    itemBuilder.clientBoundDataModifier(new ItemModelModifier<>(itemModelKey));
+                } else {
+                    itemBuilder.dataModifier(new ItemModelModifier<>(itemModelKey));
+                }
             }
 
             // Get item data

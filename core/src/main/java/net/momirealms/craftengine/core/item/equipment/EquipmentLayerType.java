@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.pack.misc;
+package net.momirealms.craftengine.core.item.equipment;
 
 import java.util.HashMap;
 import java.util.Map;

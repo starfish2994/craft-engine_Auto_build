@@ -151,6 +151,8 @@ public abstract class CraftEngine implements Plugin {
                 } catch (Exception e) {
                     this.logger().warn("Failed to load resources folder", e);
                 }
+                // register trims
+                this.itemManager.delayedLoad();
                 // init suggestions and packet mapper
                 this.blockManager.delayedLoad();
                 // handle some special client lang for instance block_name

@@ -9,12 +9,14 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
+import net.momirealms.craftengine.core.item.equipment.ComponentBasedEquipment;
+import net.momirealms.craftengine.core.item.equipment.Equipment;
+import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
 import net.momirealms.craftengine.core.pack.conflict.PathContext;
 import net.momirealms.craftengine.core.pack.conflict.resolution.ResolutionConditional;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.host.impl.NoneHost;
-import net.momirealms.craftengine.core.pack.misc.Equipment;
 import net.momirealms.craftengine.core.pack.model.ItemModel;
 import net.momirealms.craftengine.core.pack.model.LegacyOverridesModel;
 import net.momirealms.craftengine.core.pack.model.ModernItemModel;
@@ -25,6 +27,7 @@ import net.momirealms.craftengine.core.pack.model.rangedisptach.CustomModelDataR
 import net.momirealms.craftengine.core.pack.obfuscation.ObfA;
 import net.momirealms.craftengine.core.pack.obfuscation.ResourcePackGenerationException;
 import net.momirealms.craftengine.core.pack.revision.Revision;
+import net.momirealms.craftengine.core.pack.revision.Revisions;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
@@ -65,9 +68,8 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Map<Key, ModernItemModel> PRESET_ITEMS = new HashMap<>();
     public static final Set<Key> VANILLA_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_MODELS = new HashSet<>();
+    public static final String TRIM_MATERIAL = "custom";
     private static final byte[] EMPTY_IMAGE;
-    private static final String[] TRIM_ITEMS = {"boots_trim","chestplate_trim","helmet_trim","leggings_trim"};
-    private static final String[] TRIM_COLOR_PALETTES = {"amethyst","copper","diamond","diamond_darker","emerald","gold","gold_darker","iron","iron_darker","lapis","netherite","netherite_darker","quartz","redstone","resin","trim_palette"};
     static {
         var stream = new ByteArrayOutputStream();
         try {
@@ -545,6 +547,7 @@ public abstract class AbstractPackManager implements PackManager {
             ConfigParser parser = entry.getKey();
             if (!predicate.test(parser)) continue;
             long t1 = System.nanoTime();
+            parser.preProcess();
             for (CachedConfigSection cached : entry.getValue()) {
                 for (Map.Entry<String, Object> configEntry : cached.config().entrySet()) {
                     String key = configEntry.getKey();
@@ -578,6 +581,7 @@ public abstract class AbstractPackManager implements PackManager {
                     }
                 }
             }
+            parser.postProcess();
             long t2 = System.nanoTime();
             this.plugin.logger().info("Loaded " + parser.sectionId()[0] + " in " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
         }
@@ -632,7 +636,7 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateOverrideSounds(generatedPackPath);
             this.generateCustomSounds(generatedPackPath);
             this.generateClientLang(generatedPackPath);
-            this.generateEquipments(generatedPackPath);
+            this.generateEquipments(generatedPackPath, revisions::add);
             this.generateParticle(generatedPackPath);
             this.generatePackMetadata(generatedPackPath.resolve("pack.mcmeta"), revisions);
             if (Config.excludeShaders()) {
@@ -1161,74 +1165,315 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
-    private void generateEquipments(Path generatedPackPath) {
-        for (Map.Entry<Key, Equipment> entry : this.plugin.itemManager().equipmentsToGenerate().entrySet()) {
-            Key assetId = entry.getKey();
-            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
-                Path equipmentPath = generatedPackPath
-                        .resolve("assets")
-                        .resolve(assetId.namespace())
-                        .resolve("equipment")
-                        .resolve(assetId.value() + ".json");
+    private void generateEquipments(Path generatedPackPath, Consumer<Revision> callback) {
+        // asset id + 是否有上身 + 是否有腿
+        List<Tuple<Key, Boolean, Boolean>> collectedTrims = new ArrayList<>();
 
-                JsonObject equipmentJson = null;
-                if (Files.exists(equipmentPath)) {
-                    try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
-                        equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+        // 为trim类型提供的两个兼容性值
+        boolean needLegacyCompatibility = Config.packMinVersion().isBelow(MinecraftVersions.V1_21_2);
+        boolean needModernCompatibility = Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2);
+
+        for (Equipment equipment : this.plugin.itemManager().equipments().values()) {
+            if (equipment instanceof ComponentBasedEquipment componentBasedEquipment) {
+                // 现代的盔甲生成
+                Key assetId = componentBasedEquipment.assetId();
+                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
+                    Path equipmentPath = generatedPackPath
+                            .resolve("assets")
+                            .resolve(assetId.namespace())
+                            .resolve("equipment")
+                            .resolve(assetId.value() + ".json");
+
+                    JsonObject equipmentJson = null;
+                    if (Files.exists(equipmentPath)) {
+                        try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                            equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                        } catch (IOException e) {
+                            plugin.logger().warn("Failed to load existing sounds.json", e);
+                            return;
+                        }
+                    }
+                    if (equipmentJson != null) {
+                        equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
+                    } else {
+                        equipmentJson = componentBasedEquipment.get();
+                    }
+                    try {
+                        Files.createDirectories(equipmentPath.getParent());
                     } catch (IOException e) {
-                        plugin.logger().warn("Failed to load existing sounds.json", e);
+                        plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
                         return;
                     }
+                    try {
+                        GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+                    } catch (IOException e) {
+                        this.plugin.logger().severe("Error writing equipment file", e);
+                    }
                 }
-                if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
-                } else {
-                    equipmentJson = entry.getValue().get();
+                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
+                    Path equipmentPath = generatedPackPath
+                            .resolve("assets")
+                            .resolve(assetId.namespace())
+                            .resolve("models")
+                            .resolve("equipment")
+                            .resolve(assetId.value() + ".json");
+
+                    JsonObject equipmentJson = null;
+                    if (Files.exists(equipmentPath)) {
+                        try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                            equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                        } catch (IOException e) {
+                            plugin.logger().warn("Failed to load existing sounds.json", e);
+                            return;
+                        }
+                    }
+                    if (equipmentJson != null) {
+                        equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
+                    } else {
+                        equipmentJson = componentBasedEquipment.get();
+                    }
+                    try {
+                        Files.createDirectories(equipmentPath.getParent());
+                    } catch (IOException e) {
+                        plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                        return;
+                    }
+                    try {
+                        GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+                    } catch (IOException e) {
+                        this.plugin.logger().severe("Error writing equipment file", e);
+                    }
                 }
+            } else if (equipment instanceof TrimBasedEquipment trimBasedEquipment) {
+                Key assetId = trimBasedEquipment.assetId();
+                Key humanoidResourceLocation = trimBasedEquipment.humanoid();
+                boolean hasLayer1 = humanoidResourceLocation != null;
+                Key humanoidLeggingsResourceLocation = trimBasedEquipment.humanoidLeggings();
+                boolean hasLayer2 = humanoidLeggingsResourceLocation != null;
+
+                if (hasLayer1) {
+                    Path texture = generatedPackPath
+                            .resolve("assets")
+                            .resolve(humanoidResourceLocation.namespace())
+                            .resolve("textures")
+                            .resolve(humanoidResourceLocation.value() + ".png");
+                    if (!Files.exists(texture) || !Files.isRegularFile(texture)) {
+                        // todo 说话
+                        continue;
+                    }
+                    boolean shouldPreserve = false;
+                    if (needLegacyCompatibility) {
+                        Path legacyTarget = generatedPackPath
+                                .resolve("assets")
+                                .resolve(assetId.namespace())
+                                .resolve("textures")
+                                .resolve("trims")
+                                .resolve("models")
+                                .resolve("armor")
+                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
+                        if (!legacyTarget.equals(texture)) {
+                            try {
+                                Files.createDirectories(legacyTarget.getParent());
+                                Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
+                            }
+                        } else {
+                            shouldPreserve = true;
+                        }
+                    }
+                    if (needModernCompatibility) {
+                        Path modernTarget = generatedPackPath
+                                .resolve("assets")
+                                .resolve(assetId.namespace())
+                                .resolve("textures")
+                                .resolve("trims")
+                                .resolve("entity")
+                                .resolve("humanoid")
+                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
+                        if (!modernTarget.equals(texture)) {
+                            try {
+                                Files.createDirectories(modernTarget.getParent());
+                                Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
+                            }
+                        } else {
+                            shouldPreserve = true;
+                        }
+                    }
+                    if (!shouldPreserve) {
+                        try {
+                            Files.delete(texture);
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
+                        }
+                    }
+                }
+                if (hasLayer2) {
+                    Path texture = generatedPackPath
+                            .resolve("assets")
+                            .resolve(humanoidLeggingsResourceLocation.namespace())
+                            .resolve("textures")
+                            .resolve(humanoidLeggingsResourceLocation.value() + ".png");
+                    if (!Files.exists(texture) && !Files.isRegularFile(texture)) {
+                        // todo 说话
+                        continue;
+                    }
+                    boolean shouldPreserve = false;
+                    if (needLegacyCompatibility) {
+                        Path legacyTarget = generatedPackPath
+                                .resolve("assets")
+                                .resolve(assetId.namespace())
+                                .resolve("textures")
+                                .resolve("trims")
+                                .resolve("models")
+                                .resolve("armor")
+                                .resolve(assetId.value() + "_leggings_" + TRIM_MATERIAL + ".png");
+                        if (!legacyTarget.equals(texture)) {
+                            try {
+                                Files.createDirectories(legacyTarget.getParent());
+                                Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
+                            }
+                        } else {
+                            shouldPreserve = true;
+                        }
+                    }
+                    if (needModernCompatibility) {
+                        Path modernTarget = generatedPackPath
+                                .resolve("assets")
+                                .resolve(assetId.namespace())
+                                .resolve("textures")
+                                .resolve("trims")
+                                .resolve("entity")
+                                .resolve("humanoid_leggings")
+                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
+                        if (!modernTarget.equals(texture)) {
+                            try {
+                                Files.createDirectories(modernTarget.getParent());
+                                Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException e) {
+                                this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
+                            }
+                        } else {
+                            shouldPreserve = true;
+                        }
+                    }
+                    if (!shouldPreserve) {
+                        try {
+                            Files.delete(texture);
+                        } catch (IOException e) {
+                            this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
+                        }
+                    }
+                }
+                collectedTrims.add(Tuple.of(assetId, hasLayer1, hasLayer2));
+            }
+        }
+
+        if (!collectedTrims.isEmpty()) {
+            // 获取基础atlas路径
+            Path atlasPath = generatedPackPath
+                    .resolve("assets")
+                    .resolve("minecraft")
+                    .resolve("atlases")
+                    .resolve("armor_trims.json");
+            // 读取先前sources内容
+            JsonArray previousAtlasSources = null;
+            if (Files.exists(atlasPath) && Files.isRegularFile(atlasPath)) {
                 try {
-                    Files.createDirectories(equipmentPath.getParent());
-                } catch (IOException e) {
-                    plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
-                    return;
-                }
-                try {
-                    GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
-                } catch (IOException e) {
-                    this.plugin.logger().severe("Error writing equipment file", e);
+                    previousAtlasSources = GsonHelper.readJsonFile(atlasPath).getAsJsonObject().getAsJsonArray("sources");
+                } catch (Exception ignored) {
                 }
             }
-            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
-                Path equipmentPath = generatedPackPath
-                        .resolve("assets")
-                        .resolve(assetId.namespace())
-                        .resolve("models")
-                        .resolve("equipment")
-                        .resolve(assetId.value() + ".json");
-
-                JsonObject equipmentJson = null;
-                if (Files.exists(equipmentPath)) {
-                    try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
-                        equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
-                    } catch (IOException e) {
-                        plugin.logger().warn("Failed to load existing sounds.json", e);
-                        return;
+            // 准备新版本atlas
+            JsonObject modernTrimAtlasJson = null;
+            if (needModernCompatibility) {
+                modernTrimAtlasJson = new JsonObject();
+                JsonArray sourcesArray = new JsonArray();
+                modernTrimAtlasJson.add("sources", sourcesArray);
+                for (Tuple<Key, Boolean, Boolean> tuple : collectedTrims) {
+                    if (tuple.mid()) {
+                        JsonObject single1 = new JsonObject();
+                        single1.addProperty("type", "single");
+                        single1.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        sourcesArray.add(single1);
+                    }
+                    if (tuple.right()) {
+                        JsonObject single2 = new JsonObject();
+                        single2.addProperty("type", "single");
+                        single2.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid_leggings/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        sourcesArray.add(single2);
                     }
                 }
-                if (equipmentJson != null) {
-                    equipmentJson = GsonHelper.deepMerge(equipmentJson, entry.getValue().get());
-                } else {
-                    equipmentJson = entry.getValue().get();
+                if (previousAtlasSources != null) {
+                    sourcesArray.addAll(previousAtlasSources);
                 }
+            }
+            // 准备旧版本atlas
+            JsonObject legacyTrimAtlasJson = null;
+            if (needLegacyCompatibility) {
+                legacyTrimAtlasJson = new JsonObject();
+                JsonArray sourcesArray = new JsonArray();
+                legacyTrimAtlasJson.add("sources", sourcesArray);
+                for (Tuple<Key, Boolean, Boolean> tuple : collectedTrims) {
+                    if (tuple.mid()) {
+                        JsonObject single1 = new JsonObject();
+                        single1.addProperty("type", "single");
+                        single1.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        sourcesArray.add(single1);
+                    }
+                    if (tuple.right()) {
+                        JsonObject single2 = new JsonObject();
+                        single2.addProperty("type", "single");
+                        single2.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_leggings_" + TRIM_MATERIAL);
+                        sourcesArray.add(single2);
+                    }
+                }
+                if (previousAtlasSources != null) {
+                    sourcesArray.addAll(previousAtlasSources);
+                }
+            }
+            // 创建atlas文件夹
+            try {
+                Files.createDirectories(atlasPath.getParent());
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error creating " + atlasPath.toAbsolutePath(), e);
+                return;
+            }
+            // 写入atlas文件
+            try (BufferedWriter writer = Files.newBufferedWriter(atlasPath)) {
+                JsonObject selected = needLegacyCompatibility ? legacyTrimAtlasJson : modernTrimAtlasJson;
+                // 优先写入旧版
+                GsonHelper.get().toJson(selected, writer);
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error writing " + atlasPath.toAbsolutePath(), e);
+            }
+            // 既要又要，那么需要overlay
+            if (needLegacyCompatibility && needModernCompatibility) {
+                Revision revision = Revisions.SINCE_1_21_2;
+                callback.accept(revision);
+                Path overlayAtlasPath = generatedPackPath
+                        .resolve(Config.createOverlayFolderName(revision.versionString()))
+                        .resolve("assets")
+                        .resolve("minecraft")
+                        .resolve("atlases")
+                        .resolve("armor_trims.json");
+                // 创建atlas文件夹
                 try {
-                    Files.createDirectories(equipmentPath.getParent());
+                    Files.createDirectories(overlayAtlasPath.getParent());
                 } catch (IOException e) {
-                    plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                    this.plugin.logger().severe("Error creating " + overlayAtlasPath.toAbsolutePath(), e);
                     return;
                 }
-                try {
-                    GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+                // 写入atlas文件
+                try (BufferedWriter writer = Files.newBufferedWriter(overlayAtlasPath)) {
+                    GsonHelper.get().toJson(modernTrimAtlasJson, writer);
+                    callback.accept(revision);
                 } catch (IOException e) {
-                    this.plugin.logger().severe("Error writing equipment file", e);
+                    this.plugin.logger().severe("Error writing " + overlayAtlasPath.toAbsolutePath(), e);
                 }
             }
         }

@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.core.item.equipment;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.momirealms.craftengine.core.pack.misc.EquipmentLayerType;
+import net.momirealms.craftengine.core.item.modifier.EquippableAssetIdModifier;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
@@ -14,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class ComponentBasedEquipment extends AbstractEquipment {
+public class ComponentBasedEquipment extends AbstractEquipment implements Supplier<JsonObject> {
     public static final Factory FACTORY = new Factory();
     private final EnumMap<EquipmentLayerType, List<Layer>> layers;
 
@@ -24,8 +26,13 @@ public class ComponentBasedEquipment extends AbstractEquipment {
     }
 
     @Override
-    public Key renderingMethod() {
+    public Key type() {
         return Equipments.COMPONENT;
+    }
+
+    @Override
+    public <I> ItemDataModifier<I> modifier() {
+        return new EquippableAssetIdModifier<>(this.assetId);
     }
 
     public EnumMap<EquipmentLayerType, List<Layer>> layers() {
@@ -34,6 +41,28 @@ public class ComponentBasedEquipment extends AbstractEquipment {
 
     public void addLayer(EquipmentLayerType layerType, List<Layer> layer) {
         this.layers.put(layerType, layer);
+    }
+
+    @Override
+    public JsonObject get() {
+        JsonObject jsonObject = new JsonObject();
+        JsonObject layersJson = new JsonObject();
+        jsonObject.add("layers", layersJson);
+        for (Map.Entry<EquipmentLayerType, List<ComponentBasedEquipment.Layer>> entry : layers.entrySet()) {
+            EquipmentLayerType type = entry.getKey();
+            List<ComponentBasedEquipment.Layer> layerList = entry.getValue();
+            setLayers(layersJson, layerList, type.id());
+        }
+        return jsonObject;
+    }
+
+    private void setLayers(JsonObject layersJson, List<ComponentBasedEquipment.Layer> layers, String key) {
+        if (layers == null || layers.isEmpty()) return;
+        JsonArray layersArray = new JsonArray();
+        for (ComponentBasedEquipment.Layer layer : layers) {
+            layersArray.add(layer.get());
+        }
+        layersJson.add(key, layersArray);
     }
 
     public static class Factory implements EquipmentFactory {
