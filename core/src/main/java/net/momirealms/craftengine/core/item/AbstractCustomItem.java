@@ -51,7 +51,6 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
         this.modifierMap = modifierMapBuilder.build();
         ImmutableMap.Builder<String, ItemDataModifier<I>> clientSideModifierMapBuilder = ImmutableMap.builder();
         this.clientBoundModifierMap = clientSideModifierMapBuilder.build();
-
     }
 
     @Override

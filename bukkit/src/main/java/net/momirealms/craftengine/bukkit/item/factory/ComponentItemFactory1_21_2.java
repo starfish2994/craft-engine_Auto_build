@@ -3,16 +3,13 @@ package net.momirealms.craftengine.bukkit.item.factory;
 import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
-import net.momirealms.craftengine.core.item.equipment.Equipments;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
-import net.momirealms.sparrow.nbt.CompoundTag;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ComponentItemFactory1_21_2 extends ComponentItemFactory1_21 {

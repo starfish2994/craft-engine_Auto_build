@@ -255,7 +255,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     protected abstract CustomItem.Builder<I> createPlatformItemBuilder(Holder<Key> id, Key material, Key clientBoundMaterial);
 
-    protected abstract void registerArmorTrimPattern(Collection<TrimBasedEquipment> equipments);
+    protected abstract void registerArmorTrimPattern(Collection<Key> equipments);
 
     public class EquipmentParser implements ConfigParser {
         public static final String[] CONFIG_SECTION_NAME = new String[] {"equipments", "equipment"};
@@ -281,12 +281,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
         @Override
         public void postProcess() {
-            registerArmorTrimPattern(
-                    AbstractItemManager.this.equipments.values().stream()
-                            .filter(TrimBasedEquipment.class::isInstance)
-                            .map(TrimBasedEquipment.class::cast)
-                            .toList()
-            );
+            List<Key> trims = AbstractItemManager.this.equipments.values().stream()
+                    .filter(TrimBasedEquipment.class::isInstance)
+                    .map(Equipment::assetId)
+                    .toList();
+            registerArmorTrimPattern(trims);
         }
     }
 

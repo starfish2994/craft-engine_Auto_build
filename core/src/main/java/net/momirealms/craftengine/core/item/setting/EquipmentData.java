@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item.setting;
 
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -9,7 +8,6 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 

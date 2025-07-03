@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.gson.*;
-import dev.dejvokep.boostedyaml.YamlDocument;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.Font;
@@ -68,16 +67,20 @@ public abstract class AbstractPackManager implements PackManager {
     public static final Map<Key, ModernItemModel> PRESET_ITEMS = new HashMap<>();
     public static final Set<Key> VANILLA_TEXTURES = new HashSet<>();
     public static final Set<Key> VANILLA_MODELS = new HashSet<>();
-    public static final String TRIM_MATERIAL = "custom";
+    public static final String NEW_TRIM_MATERIAL = "custom";
+    public static final Set<String> ALLOWED_VANILLA_EQUIPMENT = Set.of("chainmail", "diamond", "gold", "iron", "netherite");
     private static final byte[] EMPTY_IMAGE;
+    private static final byte[] EMPTY_EQUIPMENT_IMAGE;
     static {
-        var stream = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream);
+        try (ByteArrayOutputStream stream1 = new ByteArrayOutputStream();
+             ByteArrayOutputStream stream2 = new ByteArrayOutputStream()) {
+            ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), "png", stream1);
+            EMPTY_IMAGE = stream1.toByteArray();
+            ImageIO.write(new BufferedImage(64, 32, BufferedImage.TYPE_INT_ARGB), "png", stream2);
+            EMPTY_EQUIPMENT_IMAGE = stream2.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create empty images.", e);
         }
-        EMPTY_IMAGE = stream.toByteArray();
     }
 
     private final CraftEngine plugin;
@@ -312,12 +315,17 @@ public abstract class AbstractPackManager implements PackManager {
                     String author = null;
                     boolean enable = true;
                     if (Files.exists(metaFile) && Files.isRegularFile(metaFile)) {
-                        YamlDocument metaYML = Config.instance().loadYamlData(metaFile);
-                        enable = metaYML.getBoolean("enable", true);
-                        namespace = metaYML.getString("namespace", namespace);
-                        description = metaYML.getString("description");
-                        version = metaYML.getString("version");
-                        author = metaYML.getString("author");
+                        Yaml yaml = new Yaml(new StringKeyConstructor(path, new LoaderOptions()));
+                        try (InputStream is = Files.newInputStream(metaFile)) {
+                            Map<String, Object> data = yaml.load(is);
+                            enable = ResourceConfigUtils.getAsBoolean(data.getOrDefault("enable", true), "enable");
+                            namespace = data.getOrDefault("namespace", namespace).toString();
+                            description = Optional.ofNullable(data.get("description")).map(String::valueOf).orElse(null);
+                            version = Optional.ofNullable(data.get("version")).map(String::valueOf).orElse(null);
+                            author = Optional.ofNullable(data.get("author")).map(String::valueOf).orElse(null);
+                        } catch (IOException e) {
+                            this.plugin.logger().warn("Failed to load " + metaFile, e);
+                        }
                     }
                     Pack pack = new Pack(path, new PackMeta(author, description, version, namespace), enable);
                     this.loadedPacks.put(path.getFileName().toString(), pack);
@@ -336,6 +344,10 @@ public abstract class AbstractPackManager implements PackManager {
         plugin.saveResource("resources/remove_shulker_head/resourcepack/1_20_5_remove_shulker_head_overlay/minecraft/shaders/core/rendertype_entity_solid.fsh");
         plugin.saveResource("resources/remove_shulker_head/resourcepack/assets/minecraft/textures/entity/shulker/shulker_white.png");
         plugin.saveResource("resources/remove_shulker_head/pack.yml");
+        plugin.saveResource("resources/legacy_armor/resourcepack/assets/minecraft/textures/trims/entity/humanoid/chainmail.png");
+        plugin.saveResource("resources/legacy_armor/resourcepack/assets/minecraft/textures/trims/entity/humanoid_leggings/chainmail.png");
+        plugin.saveResource("resources/legacy_armor/configuration/chainmail.yml");
+        plugin.saveResource("resources/legacy_armor/pack.yml");
         plugin.saveResource("resources/internal/pack.yml");
         // i18n
         plugin.saveResource("resources/internal/configuration/i18n.yml");
@@ -1246,130 +1258,10 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             } else if (equipment instanceof TrimBasedEquipment trimBasedEquipment) {
                 Key assetId = trimBasedEquipment.assetId();
-                Key humanoidResourceLocation = trimBasedEquipment.humanoid();
-                boolean hasLayer1 = humanoidResourceLocation != null;
-                Key humanoidLeggingsResourceLocation = trimBasedEquipment.humanoidLeggings();
-                boolean hasLayer2 = humanoidLeggingsResourceLocation != null;
-
-                if (hasLayer1) {
-                    Path texture = generatedPackPath
-                            .resolve("assets")
-                            .resolve(humanoidResourceLocation.namespace())
-                            .resolve("textures")
-                            .resolve(humanoidResourceLocation.value() + ".png");
-                    if (!Files.exists(texture) || !Files.isRegularFile(texture)) {
-                        // todo 说话
-                        continue;
-                    }
-                    boolean shouldPreserve = false;
-                    if (needLegacyCompatibility) {
-                        Path legacyTarget = generatedPackPath
-                                .resolve("assets")
-                                .resolve(assetId.namespace())
-                                .resolve("textures")
-                                .resolve("trims")
-                                .resolve("models")
-                                .resolve("armor")
-                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
-                        if (!legacyTarget.equals(texture)) {
-                            try {
-                                Files.createDirectories(legacyTarget.getParent());
-                                Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
-                            }
-                        } else {
-                            shouldPreserve = true;
-                        }
-                    }
-                    if (needModernCompatibility) {
-                        Path modernTarget = generatedPackPath
-                                .resolve("assets")
-                                .resolve(assetId.namespace())
-                                .resolve("textures")
-                                .resolve("trims")
-                                .resolve("entity")
-                                .resolve("humanoid")
-                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
-                        if (!modernTarget.equals(texture)) {
-                            try {
-                                Files.createDirectories(modernTarget.getParent());
-                                Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
-                            }
-                        } else {
-                            shouldPreserve = true;
-                        }
-                    }
-                    if (!shouldPreserve) {
-                        try {
-                            Files.delete(texture);
-                        } catch (IOException e) {
-                            this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
-                        }
-                    }
+                Pair<Boolean, Boolean> result = processTrimBasedEquipment(trimBasedEquipment, generatedPackPath);
+                if (result != null) {
+                    collectedTrims.add(Tuple.of(assetId, result.left(), result.right()));
                 }
-                if (hasLayer2) {
-                    Path texture = generatedPackPath
-                            .resolve("assets")
-                            .resolve(humanoidLeggingsResourceLocation.namespace())
-                            .resolve("textures")
-                            .resolve(humanoidLeggingsResourceLocation.value() + ".png");
-                    if (!Files.exists(texture) && !Files.isRegularFile(texture)) {
-                        // todo 说话
-                        continue;
-                    }
-                    boolean shouldPreserve = false;
-                    if (needLegacyCompatibility) {
-                        Path legacyTarget = generatedPackPath
-                                .resolve("assets")
-                                .resolve(assetId.namespace())
-                                .resolve("textures")
-                                .resolve("trims")
-                                .resolve("models")
-                                .resolve("armor")
-                                .resolve(assetId.value() + "_leggings_" + TRIM_MATERIAL + ".png");
-                        if (!legacyTarget.equals(texture)) {
-                            try {
-                                Files.createDirectories(legacyTarget.getParent());
-                                Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
-                            }
-                        } else {
-                            shouldPreserve = true;
-                        }
-                    }
-                    if (needModernCompatibility) {
-                        Path modernTarget = generatedPackPath
-                                .resolve("assets")
-                                .resolve(assetId.namespace())
-                                .resolve("textures")
-                                .resolve("trims")
-                                .resolve("entity")
-                                .resolve("humanoid_leggings")
-                                .resolve(assetId.value() + "_" + TRIM_MATERIAL + ".png");
-                        if (!modernTarget.equals(texture)) {
-                            try {
-                                Files.createDirectories(modernTarget.getParent());
-                                Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
-                            }
-                        } else {
-                            shouldPreserve = true;
-                        }
-                    }
-                    if (!shouldPreserve) {
-                        try {
-                            Files.delete(texture);
-                        } catch (IOException e) {
-                            this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
-                        }
-                    }
-                }
-                collectedTrims.add(Tuple.of(assetId, hasLayer1, hasLayer2));
             }
         }
 
@@ -1388,7 +1280,7 @@ public abstract class AbstractPackManager implements PackManager {
                 } catch (Exception ignored) {
                 }
             }
-            // 准备新版本atlas
+            // 准备新版本atlas和覆盖纹理
             JsonObject modernTrimAtlasJson = null;
             if (needModernCompatibility) {
                 modernTrimAtlasJson = new JsonObject();
@@ -1398,21 +1290,51 @@ public abstract class AbstractPackManager implements PackManager {
                     if (tuple.mid()) {
                         JsonObject single1 = new JsonObject();
                         single1.addProperty("type", "single");
-                        single1.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        single1.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid/" + tuple.left().value() + "_" + NEW_TRIM_MATERIAL);
                         sourcesArray.add(single1);
                     }
                     if (tuple.right()) {
                         JsonObject single2 = new JsonObject();
                         single2.addProperty("type", "single");
-                        single2.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid_leggings/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        single2.addProperty("resource", tuple.left().namespace() + ":trims/entity/humanoid_leggings/" + tuple.left().value() + "_" + NEW_TRIM_MATERIAL);
                         sourcesArray.add(single2);
                     }
                 }
                 if (previousAtlasSources != null) {
                     sourcesArray.addAll(previousAtlasSources);
                 }
+                Path vanillaArmorPath1 = generatedPackPath
+                        .resolve("assets")
+                        .resolve("minecraft")
+                        .resolve("textures")
+                        .resolve("entity")
+                        .resolve("equipment")
+                        .resolve("humanoid")
+                        .resolve(Config.sacrificedVanillaArmorType() + ".png");
+                Path vanillaArmorPath2 = generatedPackPath
+                        .resolve("assets")
+                        .resolve("minecraft")
+                        .resolve("textures")
+                        .resolve("entity")
+                        .resolve("equipment")
+                        .resolve("humanoid_leggings")
+                        .resolve(Config.sacrificedVanillaArmorType() + ".png");
+                try {
+                    Files.createDirectories(vanillaArmorPath1.getParent());
+                    Files.createDirectories(vanillaArmorPath2.getParent());
+                    Files.write(vanillaArmorPath1, EMPTY_EQUIPMENT_IMAGE);
+                    Files.write(vanillaArmorPath2, EMPTY_EQUIPMENT_IMAGE);
+                } catch (IOException e) {
+                    this.plugin.logger().warn("Failed to write empty vanilla armor texture file", e);
+                }
             }
-            // 准备旧版本atlas
+
+            // 修复被干碎的原版盔甲
+            Key vanillaFixTrimType = Key.of("minecraft", Config.sacrificedVanillaArmorType());
+            collectedTrims.add(Tuple.of(vanillaFixTrimType, true, true));
+            processTrimBasedEquipment(new TrimBasedEquipment(vanillaFixTrimType, Config.sacrificedHumanoid(), Config.sacrificedHumanoidLeggings()), generatedPackPath);
+
+            // 准备旧版本atlas和覆盖纹理
             JsonObject legacyTrimAtlasJson = null;
             if (needLegacyCompatibility) {
                 legacyTrimAtlasJson = new JsonObject();
@@ -1422,18 +1344,39 @@ public abstract class AbstractPackManager implements PackManager {
                     if (tuple.mid()) {
                         JsonObject single1 = new JsonObject();
                         single1.addProperty("type", "single");
-                        single1.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_" + TRIM_MATERIAL);
+                        single1.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_" + NEW_TRIM_MATERIAL);
                         sourcesArray.add(single1);
                     }
                     if (tuple.right()) {
                         JsonObject single2 = new JsonObject();
                         single2.addProperty("type", "single");
-                        single2.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_leggings_" + TRIM_MATERIAL);
+                        single2.addProperty("resource", tuple.left().namespace() + ":trims/models/armor/" + tuple.left().value() + "_leggings_" + NEW_TRIM_MATERIAL);
                         sourcesArray.add(single2);
                     }
                 }
                 if (previousAtlasSources != null) {
                     sourcesArray.addAll(previousAtlasSources);
+                }
+                Path vanillaArmorPath1 = generatedPackPath
+                        .resolve("assets")
+                        .resolve("minecraft")
+                        .resolve("textures")
+                        .resolve("models")
+                        .resolve("armor")
+                        .resolve(Config.sacrificedVanillaArmorType() + "_layer_1.png");
+                Path vanillaArmorPath2 = generatedPackPath
+                        .resolve("assets")
+                        .resolve("minecraft")
+                        .resolve("textures")
+                        .resolve("models")
+                        .resolve("armor")
+                        .resolve(Config.sacrificedVanillaArmorType() + "_layer_2.png");
+                try {
+                    Files.createDirectories(vanillaArmorPath1.getParent());
+                    Files.write(vanillaArmorPath1, EMPTY_EQUIPMENT_IMAGE);
+                    Files.write(vanillaArmorPath2, EMPTY_EQUIPMENT_IMAGE);
+                } catch (IOException e) {
+                    this.plugin.logger().warn("Failed to write empty vanilla armor texture file", e);
                 }
             }
             // 创建atlas文件夹
@@ -1477,6 +1420,137 @@ public abstract class AbstractPackManager implements PackManager {
                 }
             }
         }
+    }
+
+    @Nullable
+    private Pair<Boolean, Boolean> processTrimBasedEquipment(TrimBasedEquipment trimBasedEquipment, Path generatedPackPath) {
+        Key assetId = trimBasedEquipment.assetId();
+
+        Key humanoidResourceLocation = trimBasedEquipment.humanoid();
+        boolean hasLayer1 = humanoidResourceLocation != null;
+        Key humanoidLeggingsResourceLocation = trimBasedEquipment.humanoidLeggings();
+        boolean hasLayer2 = humanoidLeggingsResourceLocation != null;
+
+        if (hasLayer1) {
+            Path texture = generatedPackPath
+                    .resolve("assets")
+                    .resolve(humanoidResourceLocation.namespace())
+                    .resolve("textures")
+                    .resolve(humanoidResourceLocation.value() + ".png");
+            if (!Files.exists(texture) || !Files.isRegularFile(texture)) {
+                // todo 说话
+                return null;
+            }
+            boolean shouldPreserve = false;
+            if (Config.packMinVersion().isBelow(MinecraftVersions.V1_21_2)) {
+                Path legacyTarget = generatedPackPath
+                        .resolve("assets")
+                        .resolve(assetId.namespace())
+                        .resolve("textures")
+                        .resolve("trims")
+                        .resolve("models")
+                        .resolve("armor")
+                        .resolve(assetId.value() + "_" + NEW_TRIM_MATERIAL + ".png");
+                if (!legacyTarget.equals(texture)) {
+                    try {
+                        Files.createDirectories(legacyTarget.getParent());
+                        Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
+                    }
+                } else {
+                    shouldPreserve = true;
+                }
+            }
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2)) {
+                Path modernTarget = generatedPackPath
+                        .resolve("assets")
+                        .resolve(assetId.namespace())
+                        .resolve("textures")
+                        .resolve("trims")
+                        .resolve("entity")
+                        .resolve("humanoid")
+                        .resolve(assetId.value() + "_" + NEW_TRIM_MATERIAL + ".png");
+                if (!modernTarget.equals(texture)) {
+                    try {
+                        Files.createDirectories(modernTarget.getParent());
+                        Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
+                    }
+                } else {
+                    shouldPreserve = true;
+                }
+            }
+            if (!shouldPreserve) {
+                try {
+                    Files.delete(texture);
+                } catch (IOException e) {
+                    this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
+                }
+            }
+        }
+        if (hasLayer2) {
+            Path texture = generatedPackPath
+                    .resolve("assets")
+                    .resolve(humanoidLeggingsResourceLocation.namespace())
+                    .resolve("textures")
+                    .resolve(humanoidLeggingsResourceLocation.value() + ".png");
+            if (!Files.exists(texture) && !Files.isRegularFile(texture)) {
+                // todo 说话
+                return null;
+            }
+            boolean shouldPreserve = false;
+            if (Config.packMinVersion().isBelow(MinecraftVersions.V1_21_2)) {
+                Path legacyTarget = generatedPackPath
+                        .resolve("assets")
+                        .resolve(assetId.namespace())
+                        .resolve("textures")
+                        .resolve("trims")
+                        .resolve("models")
+                        .resolve("armor")
+                        .resolve(assetId.value() + "_leggings_" + NEW_TRIM_MATERIAL + ".png");
+                if (!legacyTarget.equals(texture)) {
+                    try {
+                        Files.createDirectories(legacyTarget.getParent());
+                        Files.copy(texture, legacyTarget, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + legacyTarget, e);
+                    }
+                } else {
+                    shouldPreserve = true;
+                }
+            }
+            if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2)) {
+                Path modernTarget = generatedPackPath
+                        .resolve("assets")
+                        .resolve(assetId.namespace())
+                        .resolve("textures")
+                        .resolve("trims")
+                        .resolve("entity")
+                        .resolve("humanoid_leggings")
+                        .resolve(assetId.value() + "_" + NEW_TRIM_MATERIAL + ".png");
+                if (!modernTarget.equals(texture)) {
+                    try {
+                        Files.createDirectories(modernTarget.getParent());
+                        Files.copy(texture, modernTarget, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        this.plugin.logger().severe("Error writing armor texture file from " + texture + " to " + modernTarget, e);
+                    }
+                } else {
+                    shouldPreserve = true;
+                }
+            }
+            if (!shouldPreserve) {
+                try {
+                    Files.delete(texture);
+                } catch (IOException e) {
+                    this.plugin.logger().severe("Error deleting armor texture file from " + texture, e);
+                }
+            }
+        }
+
+        return Pair.of(hasLayer1, hasLayer2);
     }
 
     private void generateClientLang(Path generatedPackPath) {

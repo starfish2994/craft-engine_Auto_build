@@ -37,7 +37,7 @@ public class TrimBasedEquipment extends AbstractEquipment {
 
     @Override
     public <I> ItemDataModifier<I> modifier() {
-        return new TrimModifier<>(AbstractPackManager.TRIM_MATERIAL, this.assetId.toString());
+        return new TrimModifier<>(AbstractPackManager.NEW_TRIM_MATERIAL, this.assetId.toString());
     }
 
     public static class Factory implements EquipmentFactory {

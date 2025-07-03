@@ -270,7 +270,6 @@ items#topaz_gears:
   default:topaz_helmet:
     template:
       - default:armor/topaz
-      - default:model/armor_trim
     arguments:
       part: helmet
       slot: head
@@ -278,7 +277,6 @@ items#topaz_gears:
   default:topaz_chestplate:
     template:
       - default:armor/topaz
-      - default:model/armor_trim
     arguments:
       part: chestplate
       slot: chest
@@ -286,7 +284,6 @@ items#topaz_gears:
   default:topaz_leggings:
     template:
       - default:armor/topaz
-      - default:model/armor_trim
     arguments:
       part: leggings
       slot: legs
@@ -294,7 +291,6 @@ items#topaz_gears:
   default:topaz_boots:
     template:
       - default:armor/topaz
-      - default:model/armor_trim
     arguments:
       part: boots
       slot: feet
@@ -311,8 +307,8 @@ templates:
         - default:topaz_tools
       equipment:
         asset-id: default:topaz
-        properties:
-          slot: ${slot}
+    model:
+      template: default:model/armor_trim
 equipments#topaz:
   default:topaz:
     type:
