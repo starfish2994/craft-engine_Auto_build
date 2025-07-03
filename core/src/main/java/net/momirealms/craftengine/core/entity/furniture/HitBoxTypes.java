@@ -1,5 +1,8 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
+import java.util.Map;
+import java.util.Optional;
+
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -8,14 +11,12 @@ import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
-import java.util.Map;
-import java.util.Optional;
-
 public class HitBoxTypes {
     public static final Key INTERACTION = Key.of("minecraft:interaction");
     public static final Key SHULKER = Key.of("minecraft:shulker");
     public static final Key HAPPY_GHAST = Key.of("minecraft:happy_ghast");
     public static final Key CUSTOM = Key.of("minecraft:custom");
+    public static final Key BLOCKSTATE = Key.of("minecraft:blockstate");
 
     public static void register(Key key, HitBoxFactory factory) {
         Holder.Reference<HitBoxFactory> holder = ((WritableRegistry<HitBoxFactory>) BuiltInRegistries.HITBOX_FACTORY)
