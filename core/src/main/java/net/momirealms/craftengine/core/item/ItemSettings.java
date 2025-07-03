@@ -333,8 +333,16 @@ public class ItemSettings {
                     throw new LocalizedResourceConfigException("warning.config.item.settings.equipment.invalid_asset_id");
                 }
                 if (VersionHelper.isOrAbove1_21_2() && args.containsKey("slot")) {
-                    EquipmentData data = EquipmentData.fromMap(args);
-                    return settings -> settings.equipment(new ItemEquipment(clientBoundModel, data, optionalEquipment.get()));
+                    if (optionalEquipment.get() instanceof ComponentBasedEquipment) {
+                        EquipmentData data = EquipmentData.fromMap(args);
+                        return settings -> settings.equipment(new ItemEquipment(clientBoundModel, data, optionalEquipment.get()));
+                    } else {
+                        // trim based
+                        Map<String, Object> copiedArgs = new HashMap<>(args);
+                        copiedArgs.put("asset-id", Config.sacrificedVanillaArmorType());
+                        EquipmentData data = EquipmentData.fromMap(copiedArgs);
+                        return settings -> settings.equipment(new ItemEquipment(clientBoundModel, data, optionalEquipment.get()));
+                    }
                 } else {
                     return settings -> settings.equipment(new ItemEquipment(clientBoundModel, null, optionalEquipment.get()));
                 }
