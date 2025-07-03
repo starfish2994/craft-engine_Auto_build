@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("DuplicatedCode")
-public class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
+public final class LegacyNetworkItemHandler implements NetworkItemHandler<ItemStack> {
 
     @Override
     public Optional<Item<ItemStack>> c2s(Item<ItemStack> wrapped) {

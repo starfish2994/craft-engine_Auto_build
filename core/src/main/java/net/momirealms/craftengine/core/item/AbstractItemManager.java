@@ -4,9 +4,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
-import net.momirealms.craftengine.core.item.equipment.Equipment;
-import net.momirealms.craftengine.core.item.equipment.Equipments;
-import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
+import net.momirealms.craftengine.core.item.equipment.*;
 import net.momirealms.craftengine.core.item.modifier.*;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
@@ -286,6 +284,17 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     .map(Equipment::assetId)
                     .toList();
             registerArmorTrimPattern(trims);
+        }
+    }
+
+    public void addOrMergeEquipment(ComponentBasedEquipment equipment) {
+        Equipment previous = this.equipments.get(equipment.assetId());
+        if (previous instanceof ComponentBasedEquipment another) {
+            for (Map.Entry<EquipmentLayerType, List<ComponentBasedEquipment.Layer>> entry : equipment.layers().entrySet()) {
+                another.addLayer(entry.getKey(), entry.getValue());
+            }
+        } else {
+            this.equipments.put(equipment.assetId(), equipment);
         }
     }
 

@@ -320,6 +320,7 @@ public class ItemSettings {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
                 EquipmentData data = EquipmentData.fromMap(args);
                 ComponentBasedEquipment componentBasedEquipment = ComponentBasedEquipment.FACTORY.create(data.assetId(), args);
+                ((AbstractItemManager<?>) CraftEngine.instance().itemManager()).addOrMergeEquipment(componentBasedEquipment);
                 ItemEquipment itemEquipment = new ItemEquipment(Tristate.FALSE, data, componentBasedEquipment);
                 return settings -> settings.equipment(itemEquipment);
             }));

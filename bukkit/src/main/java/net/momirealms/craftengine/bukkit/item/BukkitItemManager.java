@@ -1,5 +1,9 @@
 package net.momirealms.craftengine.bukkit.item;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.momirealms.craftengine.bukkit.item.behavior.AxeItemBehavior;
 import net.momirealms.craftengine.bukkit.item.behavior.FlintAndSteelItemBehavior;
 import net.momirealms.craftengine.bukkit.item.factory.BukkitItemFactory;
@@ -23,6 +27,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
+import net.momirealms.craftengine.core.util.GsonHelper;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -34,6 +39,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
@@ -143,7 +151,9 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     protected void registerArmorTrimPattern(Collection<Key> equipments) {
         if (equipments.isEmpty()) return;
         this.lastRegisteredPatterns = new HashSet<>(equipments);
-        this.lastRegisteredPatterns.add(Config.sacrificedAssetId());
+        // 可能还没加载
+        if (Config.sacrificedAssetId() != null)
+            this.lastRegisteredPatterns.add(Config.sacrificedAssetId());
         Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_PATTERN);
         try {
             CoreReflections.field$MappedRegistry$frozen.set(registry, false);
@@ -168,9 +178,50 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     private void persistLastRegisteredPatterns() {
+        Path persistTrimPatternPath = this.plugin.dataFolderPath()
+                .resolve("cache")
+                .resolve("trim_patterns.json");
+        try {
+            Files.createDirectories(persistTrimPatternPath.getParent());
+            JsonObject json = new JsonObject();
+            JsonArray jsonElements = new JsonArray();
+            for (Key key : this.lastRegisteredPatterns) {
+                jsonElements.add(new JsonPrimitive(key.toString()));
+            }
+            json.add("patterns", jsonElements);
+            if (jsonElements.isEmpty()) {
+                if (Files.exists(persistTrimPatternPath)) {
+                    Files.delete(persistTrimPatternPath);
+                }
+            } else {
+                GsonHelper.writeJsonFile(json, persistTrimPatternPath);
+            }
+        } catch (IOException e) {
+            this.plugin.logger().warn("Failed to persist registered trim patterns.", e);
+        }
     }
 
+    // 需要持久化存储上一次注册的新trim类型，如果注册晚了，加载世界可能导致一些物品损坏
     private void loadLastRegisteredPatterns() {
+        Path persistTrimPatternPath = this.plugin.dataFolderPath()
+                .resolve("cache")
+                .resolve("trim_patterns.json");
+        if (Files.exists(persistTrimPatternPath) && Files.isRegularFile(persistTrimPatternPath)) {
+            try {
+                JsonObject cache = GsonHelper.readJsonFile(persistTrimPatternPath).getAsJsonObject();
+                JsonArray patterns = cache.getAsJsonArray("patterns");
+                Set<Key> trims = new HashSet<>();
+                for (JsonElement element : patterns) {
+                    if (element instanceof JsonPrimitive primitive) {
+                        trims.add(Key.of(primitive.getAsString()));
+                    }
+                }
+                this.registerArmorTrimPattern(trims);
+                this.lastRegisteredPatterns = trims;
+            } catch (IOException e) {
+                this.plugin.logger().warn("Failed to load registered trim patterns.", e);
+            }
+        }
     }
 
     private void registerCustomTrimMaterial() {

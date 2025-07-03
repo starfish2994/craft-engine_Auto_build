@@ -15,12 +15,14 @@ import net.momirealms.craftengine.bukkit.util.ComponentUtils;
 import net.momirealms.craftengine.bukkit.util.ItemUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.core.item.*;
+import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
 import net.momirealms.craftengine.core.item.recipe.*;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
+import net.momirealms.craftengine.core.item.setting.ItemEquipment;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -930,6 +932,24 @@ public class RecipeEventListener implements Listener {
             CoreReflections.field$ResultContainer$recipeUsed.set(resultInventory, holderOrRecipe);
         } catch (ReflectiveOperationException e) {
             plugin.logger().warn("Failed to correct used recipe", e);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSmithingTrim(PrepareSmithingEvent event) {
+        SmithingInventory inventory = event.getInventory();
+        if (!(inventory.getRecipe() instanceof SmithingTrimRecipe)) return;
+        ItemStack equipment = inventory.getInputEquipment();
+        if (equipment == null) return;
+        Item<ItemStack> wrappedEquipment = this.itemManager.wrap(equipment);
+        Optional<CustomItem<ItemStack>> optionalCustomItem = wrappedEquipment.getCustomItem();
+        if (optionalCustomItem.isEmpty()) return;
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        ItemEquipment itemEquipmentSettings = customItem.settings().equipment();
+        if (itemEquipmentSettings == null) return;
+        // 不允许trim类型的盔甲再次被使用trim
+        if (itemEquipmentSettings.equipment() instanceof TrimBasedEquipment) {
+            event.setResult(null);
         }
     }
 

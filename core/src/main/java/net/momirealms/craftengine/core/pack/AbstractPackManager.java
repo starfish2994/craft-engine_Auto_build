@@ -1188,74 +1188,7 @@ public abstract class AbstractPackManager implements PackManager {
         for (Equipment equipment : this.plugin.itemManager().equipments().values()) {
             if (equipment instanceof ComponentBasedEquipment componentBasedEquipment) {
                 // 现代的盔甲生成
-                Key assetId = componentBasedEquipment.assetId();
-                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
-                    Path equipmentPath = generatedPackPath
-                            .resolve("assets")
-                            .resolve(assetId.namespace())
-                            .resolve("equipment")
-                            .resolve(assetId.value() + ".json");
-
-                    JsonObject equipmentJson = null;
-                    if (Files.exists(equipmentPath)) {
-                        try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
-                            equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
-                        } catch (IOException e) {
-                            plugin.logger().warn("Failed to load existing sounds.json", e);
-                            return;
-                        }
-                    }
-                    if (equipmentJson != null) {
-                        equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
-                    } else {
-                        equipmentJson = componentBasedEquipment.get();
-                    }
-                    try {
-                        Files.createDirectories(equipmentPath.getParent());
-                    } catch (IOException e) {
-                        plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
-                        return;
-                    }
-                    try {
-                        GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
-                    } catch (IOException e) {
-                        this.plugin.logger().severe("Error writing equipment file", e);
-                    }
-                }
-                if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
-                    Path equipmentPath = generatedPackPath
-                            .resolve("assets")
-                            .resolve(assetId.namespace())
-                            .resolve("models")
-                            .resolve("equipment")
-                            .resolve(assetId.value() + ".json");
-
-                    JsonObject equipmentJson = null;
-                    if (Files.exists(equipmentPath)) {
-                        try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
-                            equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
-                        } catch (IOException e) {
-                            plugin.logger().warn("Failed to load existing sounds.json", e);
-                            return;
-                        }
-                    }
-                    if (equipmentJson != null) {
-                        equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
-                    } else {
-                        equipmentJson = componentBasedEquipment.get();
-                    }
-                    try {
-                        Files.createDirectories(equipmentPath.getParent());
-                    } catch (IOException e) {
-                        plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
-                        return;
-                    }
-                    try {
-                        GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
-                    } catch (IOException e) {
-                        this.plugin.logger().severe("Error writing equipment file", e);
-                    }
-                }
+                processComponentBasedEquipment(componentBasedEquipment, generatedPackPath);
             } else if (equipment instanceof TrimBasedEquipment trimBasedEquipment) {
                 Key assetId = trimBasedEquipment.assetId();
                 Pair<Boolean, Boolean> result = processTrimBasedEquipment(trimBasedEquipment, generatedPackPath);
@@ -1423,6 +1356,77 @@ public abstract class AbstractPackManager implements PackManager {
         }
     }
 
+    private void processComponentBasedEquipment(ComponentBasedEquipment componentBasedEquipment, Path generatedPackPath) {
+        Key assetId = componentBasedEquipment.assetId();
+        if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_4)) {
+            Path equipmentPath = generatedPackPath
+                    .resolve("assets")
+                    .resolve(assetId.namespace())
+                    .resolve("equipment")
+                    .resolve(assetId.value() + ".json");
+
+            JsonObject equipmentJson = null;
+            if (Files.exists(equipmentPath)) {
+                try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                    equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                } catch (IOException e) {
+                    plugin.logger().warn("Failed to load existing sounds.json", e);
+                    return;
+                }
+            }
+            if (equipmentJson != null) {
+                equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
+            } else {
+                equipmentJson = componentBasedEquipment.get();
+            }
+            try {
+                Files.createDirectories(equipmentPath.getParent());
+            } catch (IOException e) {
+                plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                return;
+            }
+            try {
+                GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error writing equipment file", e);
+            }
+        }
+        if (Config.packMaxVersion().isAtOrAbove(MinecraftVersions.V1_21_2) && Config.packMinVersion().isBelow(MinecraftVersions.V1_21_4)) {
+            Path equipmentPath = generatedPackPath
+                    .resolve("assets")
+                    .resolve(assetId.namespace())
+                    .resolve("models")
+                    .resolve("equipment")
+                    .resolve(assetId.value() + ".json");
+
+            JsonObject equipmentJson = null;
+            if (Files.exists(equipmentPath)) {
+                try (BufferedReader reader = Files.newBufferedReader(equipmentPath)) {
+                    equipmentJson = JsonParser.parseReader(reader).getAsJsonObject();
+                } catch (IOException e) {
+                    plugin.logger().warn("Failed to load existing sounds.json", e);
+                    return;
+                }
+            }
+            if (equipmentJson != null) {
+                equipmentJson = GsonHelper.deepMerge(equipmentJson, componentBasedEquipment.get());
+            } else {
+                equipmentJson = componentBasedEquipment.get();
+            }
+            try {
+                Files.createDirectories(equipmentPath.getParent());
+            } catch (IOException e) {
+                plugin.logger().severe("Error creating " + equipmentPath.toAbsolutePath());
+                return;
+            }
+            try {
+                GsonHelper.writeJsonFile(equipmentJson, equipmentPath);
+            } catch (IOException e) {
+                this.plugin.logger().severe("Error writing equipment file", e);
+            }
+        }
+    }
+
     @Nullable
     private Pair<Boolean, Boolean> processTrimBasedEquipment(TrimBasedEquipment trimBasedEquipment, Path generatedPackPath) {
         Key assetId = trimBasedEquipment.assetId();
@@ -1439,7 +1443,7 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve("textures")
                     .resolve(humanoidResourceLocation.value() + ".png");
             if (!Files.exists(texture) || !Files.isRegularFile(texture)) {
-                // todo 说话
+                TranslationManager.instance().log("warning.config.resource_pack.generation.missing_equipment_texture", assetId.asString(), texture.toString());
                 return null;
             }
             boolean shouldPreserve = false;
@@ -1498,7 +1502,7 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve("textures")
                     .resolve(humanoidLeggingsResourceLocation.value() + ".png");
             if (!Files.exists(texture) && !Files.isRegularFile(texture)) {
-                // todo 说话
+                TranslationManager.instance().log("warning.config.resource_pack.generation.missing_equipment_texture", assetId.asString(), texture.toString());
                 return null;
             }
             boolean shouldPreserve = false;
