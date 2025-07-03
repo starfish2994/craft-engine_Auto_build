@@ -548,6 +548,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             return new TrimModifier<>(material, pattern);
         }, "trim");
         registerDataType((obj) -> {
+            List<Key> components = MiscUtils.getAsStringList(obj).stream().map(Key::of).toList();
+            return new HideTooltipModifier<>(components);
+        }, "hide-tooltip", "hide-flags");
+        registerDataType((obj) -> {
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             Map<String, TextProvider> arguments = new HashMap<>();
             for (Map.Entry<String, Object> entry : data.entrySet()) {

@@ -1280,6 +1280,12 @@ public abstract class AbstractPackManager implements PackManager {
                 } catch (Exception ignored) {
                 }
             }
+
+            // 修复被干碎的原版盔甲
+            Key vanillaFixTrimType = Key.of("minecraft", Config.sacrificedVanillaArmorType());
+            collectedTrims.add(Tuple.of(vanillaFixTrimType, true, true));
+            processTrimBasedEquipment(new TrimBasedEquipment(vanillaFixTrimType, Config.sacrificedHumanoid(), Config.sacrificedHumanoidLeggings()), generatedPackPath);
+
             // 准备新版本atlas和覆盖纹理
             JsonObject modernTrimAtlasJson = null;
             if (needModernCompatibility) {
@@ -1328,11 +1334,6 @@ public abstract class AbstractPackManager implements PackManager {
                     this.plugin.logger().warn("Failed to write empty vanilla armor texture file", e);
                 }
             }
-
-            // 修复被干碎的原版盔甲
-            Key vanillaFixTrimType = Key.of("minecraft", Config.sacrificedVanillaArmorType());
-            collectedTrims.add(Tuple.of(vanillaFixTrimType, true, true));
-            processTrimBasedEquipment(new TrimBasedEquipment(vanillaFixTrimType, Config.sacrificedHumanoid(), Config.sacrificedHumanoidLeggings()), generatedPackPath);
 
             // 准备旧版本atlas和覆盖纹理
             JsonObject legacyTrimAtlasJson = null;

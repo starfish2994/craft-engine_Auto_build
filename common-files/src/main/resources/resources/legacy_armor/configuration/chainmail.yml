@@ -5,18 +5,26 @@ items:
       trim:
         pattern: chainmail
         material: custom
+      hide-tooltip:
+        - trim
   minecraft:chainmail_chestplate:
     client-bound-data:
       trim:
         pattern: chainmail
         material: custom
+      hide-tooltip:
+        - trim
   minecraft:chainmail_leggings:
     client-bound-data:
       trim:
         pattern: chainmail
         material: custom
+      hide-tooltip:
+        - trim
   minecraft:chainmail_boots:
     client-bound-data:
       trim:
         pattern: chainmail
         material: custom
+      hide-tooltip:
+        - trim

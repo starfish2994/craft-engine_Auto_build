@@ -51,7 +51,7 @@ public class ItemSettings {
                 modifiers.add(new EquippableModifier<>(data));
             }
             if (!this.equipment.clientBoundModel().asBoolean(Config.globalClientboundModel())) {
-                modifiers.add(this.equipment.equipment().modifier());
+                modifiers.addAll(this.equipment.equipment().modifiers());
             }
         }
         if (VersionHelper.isOrAbove1_20_5() && this.foodData != null) {
@@ -64,7 +64,7 @@ public class ItemSettings {
         ArrayList<ItemDataModifier<I>> modifiers = new ArrayList<>();
         if (this.equipment != null) {
             if (this.equipment.clientBoundModel().asBoolean(Config.globalClientboundModel())) {
-                modifiers.add(this.equipment.equipment().modifier());
+                modifiers.addAll(this.equipment.equipment().modifiers());
             }
         }
         return modifiers;

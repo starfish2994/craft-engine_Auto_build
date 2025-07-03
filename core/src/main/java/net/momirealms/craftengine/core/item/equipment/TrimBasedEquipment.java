@@ -1,11 +1,14 @@
 package net.momirealms.craftengine.core.item.equipment;
 
+import net.momirealms.craftengine.core.item.ComponentKeys;
+import net.momirealms.craftengine.core.item.modifier.HideTooltipModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.item.modifier.TrimModifier;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,8 +39,11 @@ public class TrimBasedEquipment extends AbstractEquipment {
     }
 
     @Override
-    public <I> ItemDataModifier<I> modifier() {
-        return new TrimModifier<>(AbstractPackManager.NEW_TRIM_MATERIAL, this.assetId.toString());
+    public <I> List<ItemDataModifier<I>> modifiers() {
+        return List.of(
+                new TrimModifier<>(AbstractPackManager.NEW_TRIM_MATERIAL, this.assetId.toString()),
+                new HideTooltipModifier<>(List.of(ComponentKeys.TRIM))
+        );
     }
 
     public static class Factory implements EquipmentFactory {

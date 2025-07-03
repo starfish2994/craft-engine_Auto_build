@@ -31,8 +31,8 @@ public class ComponentBasedEquipment extends AbstractEquipment implements Suppli
     }
 
     @Override
-    public <I> ItemDataModifier<I> modifier() {
-        return new EquippableAssetIdModifier<>(this.assetId);
+    public <I> List<ItemDataModifier<I>> modifiers() {
+        return List.of(new EquippableAssetIdModifier<>(this.assetId));
     }
 
     public EnumMap<EquipmentLayerType, List<Layer>> layers() {
