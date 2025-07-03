@@ -11,6 +11,5 @@ public class BukkitHitBoxTypes extends HitBoxTypes {
         register(SHULKER, ShulkerHitBox.FACTORY);
         register(HAPPY_GHAST, HappyGhastHitBox.FACTORY);
         register(CUSTOM, CustomHitBox.FACTORY);
-        register(BLOCKSTATE, BlockStateHitBox.FACTORY);
     }
 }

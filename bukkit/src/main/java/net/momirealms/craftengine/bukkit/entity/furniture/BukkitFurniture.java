@@ -208,12 +208,6 @@ public class BukkitFurniture implements Furniture {
         if (!isValid()) {
             return;
         }
-        // Clean up BlockStateHitBoxes before destroying the furniture
-        for (HitBox hitBox : this.hitBoxes.values()) {
-            if (hitBox instanceof net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BlockStateHitBox) {
-                ((net.momirealms.craftengine.bukkit.entity.furniture.hitbox.BlockStateHitBox) hitBox).removePlacedBlock();
-            }
-        }
         this.baseEntity().remove();
         for (Collider entity : this.colliderEntities) {
             if (entity != null)
