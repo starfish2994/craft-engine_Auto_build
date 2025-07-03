@@ -138,7 +138,7 @@ resource-pack:
 
 item:
   # Make custom-model-data and item-model clientside by default
-  client-bound-model: true
+  client-bound-model: false
 
 equipment:
   # The sacrificed-vanilla-armor argument determines which vanilla armor gets completely removed (loses all its trims)

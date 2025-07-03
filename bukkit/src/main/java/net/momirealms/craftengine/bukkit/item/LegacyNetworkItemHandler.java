@@ -87,6 +87,8 @@ public final class LegacyNetworkItemHandler implements NetworkItemHandler<ItemSt
                 }
                 for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
                     modifier.prepareNetworkItem(wrapped, context, tag);
+                }
+                for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
                     modifier.apply(wrapped, context);
                 }
                 if (Config.interceptItem()) {

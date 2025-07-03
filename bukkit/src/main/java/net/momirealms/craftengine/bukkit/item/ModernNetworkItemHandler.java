@@ -90,6 +90,8 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
                 CompoundTag tag = new CompoundTag();
                 for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
                     modifier.prepareNetworkItem(wrapped, context, tag);
+                }
+                for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
                     modifier.apply(wrapped, context);
                 }
                 if (Config.interceptItem()) {
