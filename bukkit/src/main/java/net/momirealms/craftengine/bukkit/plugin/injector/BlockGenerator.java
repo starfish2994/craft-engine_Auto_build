@@ -148,7 +148,7 @@ public final class BlockGenerator {
                 // onExplosionHit 1.21+
                 .method(ElementMatchers.returns(void.class)
                         .and(ElementMatchers.takesArgument(0, CoreReflections.clazz$BlockState))
-                        .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$ServerLevel))
+                        .and(ElementMatchers.takesArgument(1, VersionHelper.isOrAbove1_21_2() ? CoreReflections.clazz$ServerLevel : CoreReflections.clazz$Level))
                         .and(ElementMatchers.takesArgument(2, CoreReflections.clazz$BlockPos))
                         .and(ElementMatchers.takesArgument(3, CoreReflections.clazz$Explosion))
                         .and(ElementMatchers.takesArgument(4, BiConsumer.class))
@@ -501,6 +501,7 @@ public final class BlockGenerator {
             ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().onExplosionHit(thisObj, args, superMethod);
+                superMethod.call();
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run onExplosionHit", e);
             }

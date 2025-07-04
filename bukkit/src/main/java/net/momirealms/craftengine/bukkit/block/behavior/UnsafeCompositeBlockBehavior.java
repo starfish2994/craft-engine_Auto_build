@@ -188,7 +188,7 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
     }
 
     @Override
-    public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) {
+    public void onExplosionHit(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         for (AbstractBlockBehavior behavior : this.behaviors) {
             behavior.onExplosionHit(thisBlock, args, superMethod);
         }
