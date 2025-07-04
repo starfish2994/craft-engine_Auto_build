@@ -1253,9 +1253,6 @@ public class PacketConsumers {
             player.setConnectionState(ConnectionState.PLAY);
             Object dimensionKey;
             if (!VersionHelper.isOrAbove1_20_2()) {
-                if (BukkitNetworkManager.hasViaVersion()) {
-                    user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(player.uuid()));
-                }
                 dimensionKey = NetworkReflections.methodHandle$ClientboundLoginPacket$dimensionGetter.invokeExact(packet);
             } else {
                 Object commonInfo = NetworkReflections.methodHandle$ClientboundLoginPacket$commonPlayerSpawnInfoGetter.invokeExact(packet);
@@ -1280,7 +1277,7 @@ public class PacketConsumers {
     // When the hotbar is full, the latest creative mode inventory can only be accessed when the player opens the inventory screen. Currently, it is not worth further handling this issue.
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> SET_CREATIVE_SLOT = (user, event, packet) -> {
         try {
-            if (user.protocolVersion().isVersionNewerThan(ProtocolVersion.V1_21_4)) return;
+            if (VersionHelper.isOrAbove1_21_4()) return;
             if (!user.isOnline()) return;
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             if (VersionHelper.isFolia()) {
@@ -2321,26 +2318,6 @@ public class PacketConsumers {
         }
     };
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> HANDSHAKE_C2S = (user, event, packet) -> {
-        try {
-            if (BukkitNetworkManager.hasViaVersion()) return;
-            int protocolVersion = (int) NetworkReflections.methodHandle$ClientIntentionPacket$protocolVersionGetter.invokeExact(packet);
-            user.setProtocolVersion(protocolVersion);
-        } catch (Throwable e) {
-            CraftEngine.instance().logger().warn("Failed to handle ClientIntentionPacket", e);
-        }
-    };
-
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LOGIN_ACKNOWLEDGED = (user, event, packet) -> {
-        try {
-            if (BukkitNetworkManager.hasViaVersion()) {
-                user.setProtocolVersion(CraftEngine.instance().compatibilityManager().getPlayerProtocolVersion(user.uuid()));
-            }
-        } catch (Exception e) {
-            CraftEngine.instance().logger().warn("Failed to handle ServerboundLoginAcknowledgedPacket", e);
-        }
-    };
-
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
         try {
             if (!Config.sendPackOnJoin()) return;
@@ -2353,10 +2330,20 @@ public class PacketConsumers {
                     return;
                 }
             }
-            // 检查是否是拒绝或失败
+            // 检查是否是拒绝
             if (Config.kickOnDeclined()) {
-                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED
-                        || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD) {
+                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED) {
+                    Object kickPacket = NetworkReflections.constructor$ClientboundDisconnectPacket.newInstance(
+                            ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
+                    user.sendPacket(kickPacket, true);
+                    user.nettyChannel().disconnect();
+                    return;
+                }
+            }
+            // 检查是否失败
+            if (Config.kickOnFailedApply()) {
+                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD
+                        || (VersionHelper.isOrAbove1_20_3() && action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$INVALID_URL)) {
                     Object kickPacket = NetworkReflections.constructor$ClientboundDisconnectPacket.newInstance(
                             ComponentUtils.adventureToMinecraft(Component.translatable("multiplayer.requiredTexturePrompt.disconnect")));
                     user.sendPacket(kickPacket, true);

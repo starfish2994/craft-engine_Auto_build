@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
-import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -117,8 +116,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         // set up mod channel
         this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL, this);
         this.plugin.javaPlugin().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL);
-        // 配置via频道
-        this.plugin.javaPlugin().getServer().getMessenger().registerIncomingPluginChannel(this.plugin.javaPlugin(), VIA_CHANNEL, this);
         // Inject server channel
         try {
             Object server = CoreReflections.method$MinecraftServer$getServer.invoke(null);
@@ -153,8 +150,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, NetworkReflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, NetworkReflections.clazz$ServerboundCustomPayloadPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, NetworkReflections.clazz$ClientboundResourcePackPushPacket);
-        registerNMSPacketConsumer(PacketConsumers.HANDSHAKE_C2S, NetworkReflections.clazz$ClientIntentionPacket);
-        registerNMSPacketConsumer(PacketConsumers.LOGIN_ACKNOWLEDGED, NetworkReflections.clazz$ServerboundLoginAcknowledgedPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, NetworkReflections.clazz$ServerboundResourcePackPacket);
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, NetworkReflections.clazz$ClientboundEntityEventPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$PosRot);
@@ -242,14 +237,6 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (channel.equals(VIA_CHANNEL)) {
-            BukkitServerPlayer user = this.plugin.adapt(player);
-            if (user != null) {
-                JsonObject payload = GsonHelper.get().fromJson(new String(message), JsonObject.class);
-                int version = payload.get("version").getAsInt();
-                user.setProtocolVersion(version);
-            }
-        }
     }
 
     @Override

@@ -87,6 +87,7 @@ public class Config {
     protected String resource_pack$overlay_format;
 
     protected boolean resource_pack$delivery$kick_if_declined;
+    protected boolean resource_pack$delivery$kick_if_failed_to_apply;
     protected boolean resource_pack$delivery$send_on_join;
     protected boolean resource_pack$delivery$resend_on_upload;
     protected boolean resource_pack$delivery$auto_upload;
@@ -247,6 +248,7 @@ public class Config {
         resource_pack$delivery$send_on_join = config.getBoolean("resource-pack.delivery.send-on-join", true);
         resource_pack$delivery$resend_on_upload = config.getBoolean("resource-pack.delivery.resend-on-upload", true);
         resource_pack$delivery$kick_if_declined = config.getBoolean("resource-pack.delivery.kick-if-declined", true);
+        resource_pack$delivery$kick_if_failed_to_apply = config.getBoolean("resource-pack.delivery.kick-if-failed-to-apply", true);
         resource_pack$delivery$auto_upload = config.getBoolean("resource-pack.delivery.auto-upload", true);
         resource_pack$delivery$file_to_upload = resolvePath(config.getString("resource-pack.delivery.file-to-upload", "./generated/resource_pack.zip"));
         resource_pack$send$prompt = AdventureHelper.miniMessage().deserialize(config.getString("resource-pack.delivery.prompt", "<yellow>To fully experience our server, please accept our custom resource pack.</yellow>"));
@@ -499,6 +501,10 @@ public class Config {
 
     public static boolean kickOnDeclined() {
         return instance.resource_pack$delivery$kick_if_declined;
+    }
+
+    public static boolean kickOnFailedApply() {
+        return instance.resource_pack$delivery$kick_if_failed_to_apply;
     }
 
     public static Component resourcePackPrompt() {

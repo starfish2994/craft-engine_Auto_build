@@ -58,10 +58,6 @@ public interface NetWorkUser {
 
     void addResourcePackUUID(UUID uuid);
 
-    ProtocolVersion protocolVersion();
-
-    void setProtocolVersion(int protocolVersion);
-
     void setServerSideRealPackUUID(UUID uuid);
 
     UUID getServerSideRealPackUUID();

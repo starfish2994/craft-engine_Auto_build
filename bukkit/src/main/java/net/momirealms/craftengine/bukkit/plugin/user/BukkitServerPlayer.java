@@ -29,7 +29,6 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.CooldownData;
 import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
-import net.momirealms.craftengine.core.plugin.network.ProtocolVersion;
 import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
@@ -59,8 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
-    // handshake
-    private ProtocolVersion protocolVersion = ProtocolVersion.UNKNOWN;
+
     // connection state
     private final Channel channel;
     private ChannelHandler connection;
@@ -878,16 +876,6 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isResourcePackLoading(UUID uuid) {
         return this.resourcePackUUID.contains(uuid);
-    }
-
-    @Override
-    public ProtocolVersion protocolVersion() {
-        return this.protocolVersion;
-    }
-
-    @Override
-    public void setProtocolVersion(int protocolVersion) {
-        this.protocolVersion = ProtocolVersion.getById(protocolVersion);
     }
 
     @Override
