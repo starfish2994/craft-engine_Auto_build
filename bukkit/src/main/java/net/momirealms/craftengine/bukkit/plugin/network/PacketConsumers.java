@@ -2095,7 +2095,13 @@ public class PacketConsumers {
             int stateId = buf.readVarInt();
             int slot = buf.readShort();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
-            ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            ItemStack itemStack;
+            try {
+                itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
+            } catch (Exception e) {
+                // 其他插件干的，比如某ty*****er，不要赖到ce头上
+                return;
+            }
             BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
