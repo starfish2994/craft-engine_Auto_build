@@ -178,7 +178,7 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
 
     @Override
     public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(thisBlock);
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(args[0]);
         if (optionalCustomState.isEmpty()) return false;
         BlockStateWrapper vanillaState = optionalCustomState.get().vanillaBlockState();
         if (vanillaState == null) return false;
