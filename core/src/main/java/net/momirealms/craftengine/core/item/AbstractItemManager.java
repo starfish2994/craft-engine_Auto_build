@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.item.data.Enchantment;
@@ -532,6 +533,38 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new TagsModifier<>(data);
             }, "tags", "tag", "nbt");
         }
+        registerDataType((object -> {
+            MutableInt mutableInt = new MutableInt(0);
+            List<AttributeModifier> attributeModifiers = ResourceConfigUtils.parseConfigAsList(object, (map) -> {
+                String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.item.data.attribute_modifiers.missing_type");
+                Key nativeType = AttributeModifiersModifier.getNativeAttributeName(Key.of(type));
+                AttributeModifier.Slot slot = AttributeModifier.Slot.valueOf(map.getOrDefault("slot", "any").toString().toUpperCase(Locale.ENGLISH));
+                Key id = Optional.ofNullable(map.get("id")).map(String::valueOf).map(Key::of).orElseGet(() -> {
+                    mutableInt.add(1);
+                    return Key.of("craftengine", "modifier_" + mutableInt.intValue());
+                });
+                double amount = ResourceConfigUtils.getAsDouble(
+                        ResourceConfigUtils.requireNonNullOrThrow(map.get("amount"), "warning.config.item.data.attribute_modifiers.missing_amount"), "amount"
+                );
+                AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(
+                        ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("operation"), "warning.config.item.data.attribute_modifiers.missing_operation").toUpperCase(Locale.ENGLISH)
+                );
+                AttributeModifier.Display display = null;
+                if (VersionHelper.isOrAbove1_21_6() && map.containsKey("display")) {
+                    Map<String, Object> displayMap = MiscUtils.castToMap(map.get("display"), false);
+                    AttributeModifier.Display.Type displayType = AttributeModifier.Display.Type.valueOf(ResourceConfigUtils.requireNonEmptyStringOrThrow(displayMap.get("type"), "warning.config.item.data.attribute_modifiers.display.missing_type").toUpperCase(Locale.ENGLISH));
+                    if (displayType == AttributeModifier.Display.Type.OVERRIDE) {
+                        String miniMessageValue = ResourceConfigUtils.requireNonEmptyStringOrThrow(displayMap.get("value"), "warning.config.item.data.attribute_modifiers.display.missing_value");
+                        display = new AttributeModifier.Display(displayType, miniMessageValue);
+                    } else {
+                        display = new AttributeModifier.Display(displayType, null);
+                    }
+                }
+                return new AttributeModifier(nativeType.value(), slot, id,
+                        amount, operation, display);
+            });
+            return new AttributeModifiersModifier<>(attributeModifiers);
+        }), "attributes", "attribute-modifiers", "attribute-modifier");
         registerDataType((obj) -> {
             boolean value = TypeUtils.checkType(obj, Boolean.class);
             return new UnbreakableModifier<>(value);

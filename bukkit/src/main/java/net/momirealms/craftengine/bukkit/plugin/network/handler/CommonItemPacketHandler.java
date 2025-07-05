@@ -12,10 +12,8 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class CommonItemPacketHandler implements EntityPacketHandler {
     public static final CommonItemPacketHandler INSTANCE = new CommonItemPacketHandler();

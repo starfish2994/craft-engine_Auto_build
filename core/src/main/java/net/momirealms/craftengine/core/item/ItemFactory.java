@@ -53,7 +53,9 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract JsonElement getJsonComponent(W item, Object type);
 
-    protected abstract Tag getNBTComponent(W item, Object type);
+    protected abstract Tag getSparrowNBTComponent(W item, Object type);
+
+    protected abstract Object getNBTComponent(W item, Object type);
 
     protected abstract boolean hasComponent(W item, Object type);
 

@@ -72,8 +72,18 @@ public class ComponentItemWrapper implements ItemWrapper<ItemStack> {
         return getComponentInternal(type, MRegistryOps.NBT);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Optional<Tag> getSparrowNBTComponent(Object type) {
-        return getComponentInternal(type, MRegistryOps.SPARROW_NBT);
+        Object componentType = ensureDataComponentType(type);
+        Codec codec = FastNMS.INSTANCE.method$DataComponentType$codec(componentType);
+        try {
+            Object componentData = FastNMS.INSTANCE.method$ItemStack$getComponent(getLiteralObject(), componentType);
+            if (componentData == null) return Optional.empty();
+            DataResult<Tag> result = codec.encodeStart(MRegistryOps.SPARROW_NBT, componentData);
+            return result.result().map(Tag::copy);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot read component " + type.toString(), t);
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

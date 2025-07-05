@@ -154,7 +154,9 @@ public interface Item<I> {
 
     JsonElement getJsonComponent(Object type);
 
-    Tag getNBTComponent(Object type);
+    Tag getSparrowNBTComponent(Object type);
+
+    Object getNBTComponent(Object type);
 
     void setComponent(Object type, Object value);
 

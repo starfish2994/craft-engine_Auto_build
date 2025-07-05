@@ -227,7 +227,12 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
-    protected Tag getNBTComponent(ComponentItemWrapper item, Object type) {
+    public Object getNBTComponent(ComponentItemWrapper item, Object type) {
+        return item.getNBTComponent(type).orElse(null);
+    }
+
+    @Override
+    protected Tag getSparrowNBTComponent(ComponentItemWrapper item, Object type) {
         return item.getSparrowNBTComponent(type).orElse(null);
     }
 
