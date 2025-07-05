@@ -54,7 +54,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class BukkitServerPlayer extends Player {
     private final BukkitCraftEngine plugin;
@@ -66,8 +65,8 @@ public class BukkitServerPlayer extends Player {
     private UUID uuid;
     private ConnectionState decoderState;
     private ConnectionState encoderState;
+    private boolean shouldProcessFinishConfiguration = true;
     private final Set<UUID> resourcePackUUID = Collections.synchronizedSet(new HashSet<>());
-    private final AtomicInteger remainingConfigurationStagePacks = new AtomicInteger(0);
     // some references
     private Reference<org.bukkit.entity.Player> playerRef;
     private Reference<Object> serverPlayerRef;
@@ -107,7 +106,6 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
     // cooldown data
     private CooldownData cooldownData;
-    private UUID serverSideRealPackUUID;
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
@@ -879,18 +877,13 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public AtomicInteger remainingConfigurationStagePacks() {
-        return this.remainingConfigurationStagePacks;
+    public void setShouldProcessFinishConfiguration(boolean shouldProcess) {
+        this.shouldProcessFinishConfiguration = shouldProcess;
     }
 
     @Override
-    public void setServerSideRealPackUUID(UUID uuid) {
-        this.serverSideRealPackUUID = uuid;
-    }
-
-    @Override
-    public UUID getServerSideRealPackUUID() {
-        return this.serverSideRealPackUUID;
+    public boolean shouldProcessFinishConfiguration() {
+        return this.shouldProcessFinishConfiguration;
     }
 
     @Override

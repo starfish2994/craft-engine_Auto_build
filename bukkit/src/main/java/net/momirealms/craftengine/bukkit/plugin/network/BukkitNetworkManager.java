@@ -149,13 +149,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.SIGN_UPDATE, NetworkReflections.clazz$ServerboundSignUpdatePacket);
         registerNMSPacketConsumer(PacketConsumers.EDIT_BOOK, NetworkReflections.clazz$ServerboundEditBookPacket);
         registerNMSPacketConsumer(PacketConsumers.CUSTOM_PAYLOAD, NetworkReflections.clazz$ServerboundCustomPayloadPacket);
-        registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_PUSH, NetworkReflections.clazz$ClientboundResourcePackPushPacket);
         registerNMSPacketConsumer(PacketConsumers.RESOURCE_PACK_RESPONSE, NetworkReflections.clazz$ServerboundResourcePackPacket);
         registerNMSPacketConsumer(PacketConsumers.ENTITY_EVENT, NetworkReflections.clazz$ClientboundEntityEventPacket);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_AND_ROTATE_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$PosRot);
         registerNMSPacketConsumer(PacketConsumers.MOVE_POS_ENTITY, NetworkReflections.clazz$ClientboundMoveEntityPacket$Pos);
         registerNMSPacketConsumer(PacketConsumers.ROTATE_HEAD, NetworkReflections.clazz$ClientboundRotateHeadPacket);
         registerNMSPacketConsumer(PacketConsumers.SET_ENTITY_MOTION, NetworkReflections.clazz$ClientboundSetEntityMotionPacket);
+        registerNMSPacketConsumer(PacketConsumers.FINISH_CONFIGURATION, NetworkReflections.clazz$ClientboundFinishConfigurationPacket);
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());
