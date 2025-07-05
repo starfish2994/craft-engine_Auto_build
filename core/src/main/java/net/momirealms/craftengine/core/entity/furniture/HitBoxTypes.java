@@ -1,8 +1,5 @@
 package net.momirealms.craftengine.core.entity.furniture;
 
-import java.util.Map;
-import java.util.Optional;
-
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -10,6 +7,9 @@ import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class HitBoxTypes {
     public static final Key INTERACTION = Key.of("minecraft:interaction");

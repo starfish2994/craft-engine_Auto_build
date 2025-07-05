@@ -1,32 +1,5 @@
 package net.momirealms.craftengine.bukkit.entity.furniture;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Vector;
-
-import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemDisplay;
-import org.bukkit.entity.Player;
-import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.momirealms.craftengine.bukkit.entity.BukkitEntity;
@@ -35,16 +8,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyAttributeUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
-import net.momirealms.craftengine.core.entity.furniture.AnchorType;
-import net.momirealms.craftengine.core.entity.furniture.Collider;
-import net.momirealms.craftengine.core.entity.furniture.CustomFurniture;
-import net.momirealms.craftengine.core.entity.furniture.ExternalModel;
-import net.momirealms.craftengine.core.entity.furniture.Furniture;
-import net.momirealms.craftengine.core.entity.furniture.FurnitureElement;
-import net.momirealms.craftengine.core.entity.furniture.FurnitureExtraData;
-import net.momirealms.craftengine.core.entity.furniture.FurnitureManager;
-import net.momirealms.craftengine.core.entity.furniture.HitBox;
-import net.momirealms.craftengine.core.entity.furniture.Seat;
+import net.momirealms.craftengine.core.entity.furniture.*;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.ArrayUtils;
 import net.momirealms.craftengine.core.util.Key;
@@ -52,6 +16,18 @@ import net.momirealms.craftengine.core.util.QuaternionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.WorldPosition;
 import net.momirealms.craftengine.core.world.collision.AABB;
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.*;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 public class BukkitFurniture implements Furniture {
     private final Key id;
@@ -161,6 +137,7 @@ public class BukkitFurniture implements Furniture {
     @NotNull
     public Object spawnPacket(Player player) {
         // TODO hasPermission might be slow, can we use a faster way in the future?
+        // TODO Make it based on conditions. So we can dynamically control which furniture should be sent to the player
         if (!this.minimized || player.hasPermission(FurnitureManager.FURNITURE_ADMIN_NODE)) {
             return this.cachedSpawnPacket;
         } else {
