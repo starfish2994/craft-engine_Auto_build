@@ -9,6 +9,7 @@ import io.netty.channel.ChannelFuture;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
@@ -3634,4 +3635,133 @@ public final class CoreReflections {
             ReflectionUtils.getConstructor(clazz$TrimMaterial, String.class, clazz$Holder, Map.class, clazz$Component) :
             ReflectionUtils.getConstructor(clazz$TrimMaterial, String.class, clazz$Holder, float.class, Map.class, clazz$Component)
     );
+
+    public static final Class<?> clazz$ServerConfigurationPacketListenerImpl = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.network.ServerConfigurationPacketListenerImpl")
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Field field$ServerConfigurationPacketListenerImpl$configurationTasks = Optional.ofNullable(clazz$ServerConfigurationPacketListenerImpl)
+            .map(it -> ReflectionUtils.getDeclaredField(it, Queue.class, 0))
+            .orElse(null);
+
+    public static final MethodHandle methodHandle$ServerConfigurationPacketListenerImpl$configurationTasksGetter;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) {
+                methodHandle$ServerConfigurationPacketListenerImpl$configurationTasksGetter =
+                        ReflectionUtils.unreflectGetter(field$ServerConfigurationPacketListenerImpl$configurationTasks)
+                                .asType(MethodType.methodType(Queue.class, Object.class));
+            } else {
+                methodHandle$ServerConfigurationPacketListenerImpl$configurationTasksGetter = null;
+            }
+        } catch (IllegalAccessException e) {
+            throw new ReflectionInitException("Failed to initialize reflection", e);
+        }
+    }
+
+    public static final Class<?> clazz$JoinWorldTask = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.network.config.JoinWorldTask")
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Constructor<?> constructor$JoinWorldTask = Optional.ofNullable(clazz$JoinWorldTask)
+            .map(ReflectionUtils::getTheOnlyConstructor)
+            .orElse(null);
+
+    public static final Class<?> clazz$ConfigurationTask$Type = MiscUtils.requireNonNullIf(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "server.network.ConfigurationTask$a",
+                    "server.network.ConfigurationTask$Type"
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Field field$JoinWorldTask$TYPE = Optional.ofNullable(clazz$JoinWorldTask)
+            .map(it -> ReflectionUtils.getDeclaredField(it, clazz$ConfigurationTask$Type, 0))
+            .orElse(null);
+
+    public static final Class<?> clazz$ServerResourcePackConfigurationTask = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("server.network.config.ServerResourcePackConfigurationTask")
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Field field$ServerResourcePackConfigurationTask$TYPE = Optional.ofNullable(clazz$ServerResourcePackConfigurationTask)
+            .map(it -> ReflectionUtils.getDeclaredField(it, clazz$ConfigurationTask$Type, 0))
+            .orElse(null);
+
+    public static final Object instance$JoinWorldTask;
+    public static final Object instance$JoinWorldTask$TYPE;
+    public static final Object instance$ServerResourcePackConfigurationTask$TYPE;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) {
+                instance$JoinWorldTask = constructor$JoinWorldTask.newInstance();
+                instance$JoinWorldTask$TYPE = field$JoinWorldTask$TYPE.get(null);
+                instance$ServerResourcePackConfigurationTask$TYPE = field$ServerResourcePackConfigurationTask$TYPE.get(null);
+            } else {
+                instance$JoinWorldTask = null;
+                instance$JoinWorldTask$TYPE = null;
+                instance$ServerResourcePackConfigurationTask$TYPE = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize reflection", e);
+        }
+    }
+
+    // 注释的这些说不定以后调试有用
+    // public static final Class<?> clazz$ConfigurationTask = MiscUtils.requireNonNullIf(
+    //         ReflectionUtils.getClazz(
+    //                 BukkitReflectionUtils.assembleMCClass("server.network.ConfigurationTask")
+    //         ),
+    //         VersionHelper.isOrAbove1_20_2()
+    // );
+    //
+    // public static final Field field$ServerConfigurationPacketListenerImpl$currentTask = MiscUtils.requireNonNullIf(
+    //         ReflectionUtils.getDeclaredField(clazz$ServerConfigurationPacketListenerImpl, clazz$ConfigurationTask, 0),
+    //         VersionHelper.isOrAbove1_20_2()
+    // );
+
+    // 1.20.2+
+    public static final Method method$ServerConfigurationPacketListenerImpl$finishCurrentTask = Optional.ofNullable(clazz$ServerConfigurationPacketListenerImpl)
+            .map(it -> ReflectionUtils.getDeclaredMethod(it, void.class, clazz$ConfigurationTask$Type))
+            .orElse( null);
+
+    public static final Field field$ServerCommonPacketListenerImpl$closed = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getDeclaredField(clazz$ServerCommonPacketListenerImpl, boolean.class, VersionHelper.isOrAbove1_21_6() ? 1 : 2),
+            VersionHelper.isOrAbove1_20_5()
+    );
+
+    public static final MethodHandle methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask;
+    public static final MethodHandle methodHandle$ServerCommonPacketListenerImpl$closedSetter;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) {
+                methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask =
+                        ReflectionUtils.unreflectMethod(method$ServerConfigurationPacketListenerImpl$finishCurrentTask)
+                                .asType(MethodType.methodType(void.class, Object.class, Object.class));
+                methodHandle$ServerCommonPacketListenerImpl$closedSetter =
+                        ReflectionUtils.unreflectSetter(field$ServerCommonPacketListenerImpl$closed)
+                                .asType(MethodType.methodType(void.class, Object.class, boolean.class));
+            } else {
+                methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask = null;
+                methodHandle$ServerCommonPacketListenerImpl$closedSetter = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize reflection", e);
+        }
+    }
 }
