@@ -7,6 +7,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MItems;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.MirrorUtils;
 import net.momirealms.craftengine.bukkit.util.RotationUtils;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.AbstractBlockBehavior;
@@ -177,6 +178,10 @@ public class BukkitBlockBehavior extends AbstractBlockBehavior {
 
     @Override
     public boolean isPathFindable(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        return args[isPathFindable$type] == CoreReflections.instance$PathComputationType$AIR && !FastNMS.INSTANCE.field$BlockBehavior$hasCollision(BlockStateUtils.getBlockOwner(args[0])) || super.isPathFindable(thisBlock, args, superMethod);
+        Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(thisBlock);
+        if (optionalCustomState.isEmpty()) return false;
+        BlockStateWrapper vanillaState = optionalCustomState.get().vanillaBlockState();
+        if (vanillaState == null) return false;
+        return FastNMS.INSTANCE.method$BlockStateBase$isPathFindable(vanillaState.handle(), VersionHelper.isOrAbove1_20_5() ? null : args[1], VersionHelper.isOrAbove1_20_5() ? null : args[2], args[isPathFindable$type]);
     }
 }
