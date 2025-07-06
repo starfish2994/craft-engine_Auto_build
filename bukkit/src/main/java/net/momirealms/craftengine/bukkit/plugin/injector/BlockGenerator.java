@@ -638,7 +638,7 @@ public final class BlockGenerator {
             try {
                 return holder.value().playerWillDestroy(thisObj, args, superMethod);
             } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run entityInside", e);
+                CraftEngine.instance().logger().severe("Failed to run playerWillDestroy", e);
                 return superMethod.call();
             }
         }
@@ -653,7 +653,7 @@ public final class BlockGenerator {
             try {
                 holder.value().playerWillDestroy(thisObj, args, superMethod);
             } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run entityInside", e);
+                CraftEngine.instance().logger().severe("Failed to run playerWillDestroy", e);
             }
         }
     }
