@@ -250,13 +250,8 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public boolean canInstabuild() {
-        try {
-            Object abilities = CoreReflections.field$Player$abilities.get(serverPlayer());
-            return (boolean) CoreReflections.field$Abilities$instabuild.get(abilities);
-        } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to get canInstabuild for " + name(), e);
-            return false;
-        }
+        Object abilities = FastNMS.INSTANCE.field$Player$abilities(serverPlayer());
+        return FastNMS.INSTANCE.field$Abilities$instabuild(abilities);
     }
 
     @Override

@@ -177,7 +177,10 @@ public final class BlockGenerator {
                 .intercept(MethodDelegation.to(GetDirectSignalInterceptor.INSTANCE))
                 // isSignalSource
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isSignalSource))
-                .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE));
+                .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE))
+                // playerWillDestroy
+                .method(ElementMatchers.is(CoreReflections.method$Block$playerWillDestroy))
+                .intercept(MethodDelegation.to(PlayerWillDestroyInterceptor.INSTANCE));
         if (CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval != null) {
             builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
                     .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
@@ -622,6 +625,21 @@ public final class BlockGenerator {
                 holder.value().entityInside(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run entityInside", e);
+            }
+        }
+    }
+
+    public static class PlayerWillDestroyInterceptor {
+        public static final PlayerWillDestroyInterceptor INSTANCE = new PlayerWillDestroyInterceptor();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
+            try {
+                return holder.value().playerWillDestroy(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run playerWillDestroy", e);
+                return superMethod.call();
             }
         }
     }
