@@ -22,7 +22,7 @@ public class AttributeModifiersModifier<I> implements ItemDataModifier<I> {
     public static final Map<Key, Key> CONVERTOR = new HashMap<>();
 
     static {
-        if (VersionHelper.isOrAbove1_20_2()) {
+        if (VersionHelper.isOrAbove1_21_2()) {
             CONVERTOR.put(Attributes1_21.BURNING_TIME, Attributes.BURNING_TIME);
             CONVERTOR.put(Attributes1_21.ARMOR, Attributes.ARMOR);
             CONVERTOR.put(Attributes1_21.ARMOR_TOUGHNESS, Attributes.ARMOR_TOUGHNESS);
@@ -111,7 +111,7 @@ public class AttributeModifiersModifier<I> implements ItemDataModifier<I> {
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
         if (VersionHelper.isOrAbove1_21_5()) {
-            ListTag modifiers = (ListTag) Optional.ofNullable(item.getSparrowNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS)).orElseGet(ListTag::new);
+            ListTag modifiers = new ListTag();
             for (AttributeModifier modifier : this.modifiers) {
                 CompoundTag modifierTag = new CompoundTag();
                 modifierTag.putString("type", modifier.type());
@@ -134,11 +134,8 @@ public class AttributeModifiersModifier<I> implements ItemDataModifier<I> {
             item.setNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, modifiers);
         } else if (VersionHelper.isOrAbove1_20_5()) {
             CompoundTag compoundTag = (CompoundTag) Optional.ofNullable(item.getSparrowNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS)).orElseGet(CompoundTag::new);
-            ListTag modifiers = compoundTag.getList("modifiers");
-            if (modifiers == null) {
-                modifiers = new ListTag();
-                compoundTag.put("modifiers", modifiers);
-            }
+            ListTag modifiers = new ListTag();
+            compoundTag.put("modifiers", modifiers);
             for (AttributeModifier modifier : this.modifiers) {
                 CompoundTag modifierTag = new CompoundTag();
                 modifierTag.putString("type", modifier.type());
@@ -155,7 +152,7 @@ public class AttributeModifiersModifier<I> implements ItemDataModifier<I> {
             }
             item.setNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, compoundTag);
         } else {
-            ListTag listTag = (ListTag) Optional.ofNullable(item.getNBTTag("AttributeModifiers")).orElseGet(ListTag::new);
+            ListTag listTag = new ListTag();
             for (AttributeModifier modifier : this.modifiers) {
                 CompoundTag modifierTag = new CompoundTag();
                 modifierTag.putString("AttributeName", modifier.type());
