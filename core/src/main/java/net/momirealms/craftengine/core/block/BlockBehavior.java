@@ -138,6 +138,11 @@ public abstract class BlockBehavior {
         return false;
     }
 
+    // Level level, BlockPos pos, BlockState state, Player player
+    public Object playerWillDestroy(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        return superMethod.call();
+    }
+
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         return state;
     }

@@ -121,6 +121,6 @@ public class BukkitWorld implements World {
 
     @Override
     public void levelEvent(int id, BlockPos pos, int data) {
-        FastNMS.INSTANCE.method$Level$levelEvent(serverWorld(), id, LocationUtils.toBlockPos(pos), data);
+        FastNMS.INSTANCE.method$LevelAccessor$levelEvent(serverWorld(), id, LocationUtils.toBlockPos(pos), data);
     }
 }

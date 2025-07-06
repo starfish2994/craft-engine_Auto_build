@@ -1824,6 +1824,7 @@ public final class CoreReflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 2)
     );
 
+    @Deprecated
     public static final Field field$Abilities$instabuild = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 3)
     );
@@ -1832,6 +1833,7 @@ public final class CoreReflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 4)
     );
 
+    @Deprecated
     public static final Field field$Player$abilities = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(clazz$Player, clazz$Abilities, 0)
     );
@@ -3764,4 +3766,12 @@ public final class CoreReflections {
             throw new ReflectionInitException("Failed to initialize reflection", e);
         }
     }
+
+    public static final Method method$Block$playerWillDestroy = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$Block,
+                    VersionHelper.isOrAbove1_20_3() ? clazz$BlockState : void.class,
+                    clazz$Level, clazz$BlockPos, clazz$BlockState, clazz$Player
+            )
+    );
 }

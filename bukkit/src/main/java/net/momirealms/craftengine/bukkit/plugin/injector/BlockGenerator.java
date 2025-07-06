@@ -177,7 +177,9 @@ public final class BlockGenerator {
                 .intercept(MethodDelegation.to(GetDirectSignalInterceptor.INSTANCE))
                 // isSignalSource
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isSignalSource))
-                .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE));
+                .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE))
+                .method(ElementMatchers.is(CoreReflections.method$Block$playerWillDestroy))
+                .intercept(MethodDelegation.to(VersionHelper.isOrAbove1_21_2() ? PlayerWillDestroyInterceptor1_20_3.INSTANCE : PlayerWillDestroyInterceptor1_20.INSTANCE));
         if (CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval != null) {
             builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
                     .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
@@ -620,6 +622,35 @@ public final class BlockGenerator {
             ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             try {
                 holder.value().entityInside(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run entityInside", e);
+            }
+        }
+    }
+
+    public static class PlayerWillDestroyInterceptor1_20_3 {
+        public static final PlayerWillDestroyInterceptor1_20_3 INSTANCE = new PlayerWillDestroyInterceptor1_20_3();
+
+        @RuntimeType
+        public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
+            try {
+                return holder.value().playerWillDestroy(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run entityInside", e);
+                return superMethod.call();
+            }
+        }
+    }
+
+    public static class PlayerWillDestroyInterceptor1_20 {
+        public static final PlayerWillDestroyInterceptor1_20 INSTANCE = new PlayerWillDestroyInterceptor1_20();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
+            try {
+                holder.value().playerWillDestroy(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run entityInside", e);
             }
