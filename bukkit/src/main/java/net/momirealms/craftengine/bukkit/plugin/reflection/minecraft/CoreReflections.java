@@ -1824,18 +1824,8 @@ public final class CoreReflections {
             ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 2)
     );
 
-    @Deprecated
-    public static final Field field$Abilities$instabuild = requireNonNull(
-            ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 3)
-    );
-
     public static final Field field$Abilities$mayBuild = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(clazz$Abilities, boolean.class, 4)
-    );
-
-    @Deprecated
-    public static final Field field$Player$abilities = requireNonNull(
-            ReflectionUtils.getInstanceDeclaredField(clazz$Player, clazz$Abilities, 0)
     );
 
     public static final Class<?> clazz$FlowingFluid = requireNonNull(

@@ -135,7 +135,7 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         org.bukkit.entity.Player bukkitPlayer = FastNMS.INSTANCE.method$ServerPlayer$getBukkitEntity(player);
         BukkitServerPlayer cePlayer = BukkitCraftEngine.instance().adapt(bukkitPlayer);
         Item<ItemStack> item = cePlayer.getItemInHand(InteractionHand.MAIN_HAND);
-        if (preventsBlockDrops(cePlayer) || !BlockStateUtils.isCorrectTool(blockState, item)) {
+        if (cePlayer.canInstabuild() || !BlockStateUtils.isCorrectTool(blockState, item)) {
             preventDropFromBottomPart(level, pos, blockState, player);
         }
         return superMethod.call();
@@ -153,10 +153,6 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, MBlocks.AIR$defaultState, UpdateOption.builder().updateSuppressDrops().updateClients().updateNeighbors().build().flags());
             FastNMS.INSTANCE.method$LevelAccessor$levelEvent(level, player, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, belowState.customBlockState().registryId());
         }
-    }
-
-    private boolean preventsBlockDrops(BukkitServerPlayer cePlayer) {
-        return VersionHelper.isOrAbove1_21_5() ? cePlayer.canInstabuild() : cePlayer.isCreativeMode();
     }
 
     @Override
