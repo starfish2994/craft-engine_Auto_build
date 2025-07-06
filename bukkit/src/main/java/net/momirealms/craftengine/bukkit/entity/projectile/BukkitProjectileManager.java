@@ -164,8 +164,13 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.cachedServerEntity = serverEntity;
             }
 
-            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity) || !this.checkInGround) {
+            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
                 updateProjectileUpdateInterval(1);
+            } else if (!this.checkInGround) {
+                updateProjectileUpdateInterval(1);
+                if (FastNMS.INSTANCE.field$Entity$wasTouchingWater(nmsEntity)) {
+                    this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
+                }
             } else {
                 boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
                 if (canSpawnParticle(nmsEntity, inGround)) {
