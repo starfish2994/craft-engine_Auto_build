@@ -180,7 +180,7 @@ public final class BlockGenerator {
                 .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE))
                 // playerWillDestroy
                 .method(ElementMatchers.is(CoreReflections.method$Block$playerWillDestroy))
-                .intercept(MethodDelegation.to(VersionHelper.isOrAbove1_20_3() ? PlayerWillDestroyInterceptor1_20_3.INSTANCE : PlayerWillDestroyInterceptor1_20.INSTANCE));
+                .intercept(MethodDelegation.to(PlayerWillDestroyInterceptor.INSTANCE));
         if (CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval != null) {
             builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
                     .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
@@ -629,8 +629,8 @@ public final class BlockGenerator {
         }
     }
 
-    public static class PlayerWillDestroyInterceptor1_20_3 {
-        public static final PlayerWillDestroyInterceptor1_20_3 INSTANCE = new PlayerWillDestroyInterceptor1_20_3();
+    public static class PlayerWillDestroyInterceptor {
+        public static final PlayerWillDestroyInterceptor INSTANCE = new PlayerWillDestroyInterceptor();
 
         @RuntimeType
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) throws Exception {
@@ -640,20 +640,6 @@ public final class BlockGenerator {
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run playerWillDestroy", e);
                 return superMethod.call();
-            }
-        }
-    }
-
-    public static class PlayerWillDestroyInterceptor1_20 {
-        public static final PlayerWillDestroyInterceptor1_20 INSTANCE = new PlayerWillDestroyInterceptor1_20();
-
-        @RuntimeType
-        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
-            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
-            try {
-                holder.value().playerWillDestroy(thisObj, args, superMethod);
-            } catch (Exception e) {
-                CraftEngine.instance().logger().severe("Failed to run playerWillDestroy", e);
             }
         }
     }
