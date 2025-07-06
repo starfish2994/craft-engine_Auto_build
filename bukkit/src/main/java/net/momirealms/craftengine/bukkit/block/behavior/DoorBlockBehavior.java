@@ -37,6 +37,7 @@ import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
@@ -133,8 +134,8 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
         if (blockState == null || blockState.isEmpty()) return superMethod.call();
         org.bukkit.entity.Player bukkitPlayer = FastNMS.INSTANCE.method$ServerPlayer$getBukkitEntity(player);
         BukkitServerPlayer cePlayer = BukkitCraftEngine.instance().adapt(bukkitPlayer);
-        Item<?> item = cePlayer.getItemInHand(InteractionHand.MAIN_HAND);
-        if (preventsBlockDrops(cePlayer) || !hasCorrectToolForDrops(blockState, item)) {
+        Item<ItemStack> item = cePlayer.getItemInHand(InteractionHand.MAIN_HAND);
+        if (preventsBlockDrops(cePlayer) || !BlockStateUtils.isCorrectTool(blockState, item)) {
             preventDropFromBottomPart(level, pos, blockState, player);
         }
         return superMethod.call();
@@ -152,13 +153,6 @@ public class DoorBlockBehavior extends AbstractCanSurviveBlockBehavior {
             FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, MBlocks.AIR$defaultState, UpdateOption.builder().updateSuppressDrops().updateClients().updateNeighbors().build().flags());
             FastNMS.INSTANCE.method$LevelAccessor$levelEvent(level, player, WorldEvents.BLOCK_BREAK_EFFECT, blockPos, belowState.customBlockState().registryId());
         }
-    }
-
-    private boolean hasCorrectToolForDrops(ImmutableBlockState state, @Nullable Item<?> item) {
-        if (item == null) return !state.settings().requireCorrectTool();
-        return !state.settings().requireCorrectTool()
-                || state.settings().isCorrectTool(item.id())
-                || (state.settings().respectToolComponent() && FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(item.getLiteralObject(), state));
     }
 
     private boolean preventsBlockDrops(BukkitServerPlayer cePlayer) {
