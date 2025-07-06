@@ -179,7 +179,7 @@ public final class BlockGenerator {
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$isSignalSource))
                 .intercept(MethodDelegation.to(IsSignalSourceInterceptor.INSTANCE))
                 .method(ElementMatchers.is(CoreReflections.method$Block$playerWillDestroy))
-                .intercept(MethodDelegation.to(VersionHelper.isOrAbove1_21_2() ? PlayerWillDestroyInterceptor1_20_3.INSTANCE : PlayerWillDestroyInterceptor1_20.INSTANCE));
+                .intercept(MethodDelegation.to(VersionHelper.isOrAbove1_20_3() ? PlayerWillDestroyInterceptor1_20_3.INSTANCE : PlayerWillDestroyInterceptor1_20.INSTANCE));
         if (CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval != null) {
             builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
                     .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
