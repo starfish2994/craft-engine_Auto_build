@@ -455,7 +455,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 }
             }
 
-            boolean isVanillaItemModel = itemModelKey != null && AbstractPackManager.PRESET_MODERN_MODELS_ITEM.containsKey(itemModelKey);
+            boolean isVanillaItemModel = itemModelKey != null && AbstractPackManager.PRESET_ITEMS.containsKey(itemModelKey);
 
             // use custom model data
             if (customModelData != 0) {
