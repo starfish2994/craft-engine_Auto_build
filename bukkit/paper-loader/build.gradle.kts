@@ -76,7 +76,6 @@ paper {
         // external models
         register("ModelEngine") { required = false }
         register("BetterModel") { required = false }
-        register("FreeMinecraftModels") { required = false }
 
         // external items
         register("NeigeItems") { required = false }

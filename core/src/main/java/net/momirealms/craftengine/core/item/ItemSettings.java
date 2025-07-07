@@ -38,6 +38,7 @@ public class ItemSettings {
     List<DamageSource> invulnerable = List.of();
     boolean canEnchant = true;
     float compostProbability= 0.5f;
+    boolean respectRepairableComponent = false;
     @Nullable
     ItemEquipment equipment;
 
@@ -97,6 +98,7 @@ public class ItemSettings {
         newSettings.invulnerable = settings.invulnerable;
         newSettings.canEnchant = settings.canEnchant;
         newSettings.compostProbability = settings.compostProbability;
+        newSettings.respectRepairableComponent = settings.respectRepairableComponent;
         return newSettings;
     }
 
@@ -146,6 +148,10 @@ public class ItemSettings {
 
     public List<AnvilRepairItem> repairItems() {
         return anvilRepairItems;
+    }
+
+    public boolean respectRepairableComponent() {
+        return respectRepairableComponent;
     }
 
     @Nullable
@@ -253,6 +259,11 @@ public class ItemSettings {
 
     public ItemSettings helmet(Helmet helmet) {
         this.helmet = helmet;
+        return this;
+    }
+
+    public ItemSettings respectRepairableComponent(boolean respectRepairableComponent) {
+        this.respectRepairableComponent = respectRepairableComponent;
         return this;
     }
 
@@ -374,6 +385,10 @@ public class ItemSettings {
             registerFactory("dyeable", (value -> {
                 boolean bool = ResourceConfigUtils.getAsBoolean(value, "dyeable");
                 return settings -> settings.dyeable(bool);
+            }));
+            registerFactory("respect-repairable-component", (value -> {
+                boolean bool = ResourceConfigUtils.getAsBoolean(value, "respect-repairable-component");
+                return settings -> settings.respectRepairableComponent(bool);
             }));
             registerFactory("food", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
