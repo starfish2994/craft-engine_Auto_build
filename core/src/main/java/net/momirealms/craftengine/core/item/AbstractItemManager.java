@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.equipment.*;
 import net.momirealms.craftengine.core.item.modifier.*;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
+import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
@@ -406,6 +407,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 AbstractItemManager.this.plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
             }
 
+            // 不处理原版物品的模型
+            if (isVanillaItem) {
+                return;
+            }
+
             // model part, can be null
             // but if it exists, either custom model data or item model should be configured
             Map<String, Object> modelSection = MiscUtils.castToMap(section.get("model"), true);
@@ -449,18 +455,21 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 }
             }
 
+            boolean isVanillaItemModel = itemModelKey != null && AbstractPackManager.PRESET_MODERN_MODELS_ITEM.containsKey(itemModelKey);
+
             // use custom model data
             if (customModelData != 0) {
                 // use custom model data
-                // check conflict
-                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(clientBoundMaterial, k -> new HashMap<>());
+                // 其实这很奇怪，因为1.21.2以下并不支持item model，但是如果强行配置，那么不阻拦
+                Key finalBaseModel = isVanillaItemModel ? itemModelKey : clientBoundMaterial;
+                Map<Integer, Key> conflict = AbstractItemManager.this.cmdConflictChecker.computeIfAbsent(finalBaseModel, k -> new HashMap<>());
                 if (conflict.containsKey(customModelData)) {
                     throw new LocalizedResourceConfigException("warning.config.item.custom_model_data_conflict", String.valueOf(customModelData), conflict.get(customModelData).toString());
                 }
                 conflict.put(customModelData, id);
                 // Parse models
                 if (isModernFormatRequired() && modernModel != null) {
-                    TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeMap<>());
+                    TreeMap<Integer, ModernItemModel> map = AbstractItemManager.this.modernOverrides.computeIfAbsent(finalBaseModel, k -> new TreeMap<>());
                     map.put(customModelData, new ModernItemModel(
                             modernModel,
                             ResourceConfigUtils.getAsBoolean(section.getOrDefault("oversized-in-gui", true), "oversized-in-gui"),
@@ -468,13 +477,15 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                     ));
                 }
                 if (needsLegacyCompatibility() && legacyOverridesModels != null && !legacyOverridesModels.isEmpty()) {
-                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(clientBoundMaterial, k -> new TreeSet<>());
+                    TreeSet<LegacyOverridesModel> lom = AbstractItemManager.this.legacyOverrides.computeIfAbsent(finalBaseModel, k -> new TreeSet<>());
                     lom.addAll(legacyOverridesModels);
                 }
+            } else if (isVanillaItemModel) {
+                throw new IllegalArgumentException("You are not allowed to use vanilla 'item-model' without specifying a 'custom-model-data'.");
             }
 
-            // use item model
-            if (itemModelKey != null) {
+            // use item model, but not a vanilla model
+            if (itemModelKey != null && !isVanillaItemModel) {
                 if (isModernFormatRequired() && modernModel != null) {
                     AbstractItemManager.this.modernItemModels1_21_4.put(itemModelKey, new ModernItemModel(
                             modernModel,
