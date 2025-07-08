@@ -44,10 +44,14 @@ public class Config {
     private long size;
 
     protected boolean firstTime = true;
-    protected boolean debug;
     protected boolean checkUpdate;
     protected boolean metrics;
     protected boolean filterConfigurationPhaseDisconnect;
+
+    protected boolean debug$common;
+    protected boolean debug$packet;
+    protected boolean debug$item;
+    protected boolean debug$furniture;
 
     protected boolean resource_pack$remove_tinted_leaves_particle;
     protected boolean resource_pack$generate_mod_assets;
@@ -231,11 +235,16 @@ public class Config {
         plugin.translationManager().forcedLocale(TranslationManager.parseLocale(config.getString("forced-locale", "")));
 
         // basics
-        debug = config.getBoolean("debug", false);
         metrics = config.getBoolean("metrics", false);
         checkUpdate = config.getBoolean("update-checker", false);
         filterConfigurationPhaseDisconnect = config.getBoolean("filter-configuration-phase-disconnect", false);
         DisconnectLogFilter.instance().setEnable(filterConfigurationPhaseDisconnect);
+
+        // debug
+        debug$common = config.getBoolean("debug.common", false);
+        debug$packet = config.getBoolean("debug.packet", false);
+        debug$item = config.getBoolean("debug.item", false);
+        debug$furniture = config.getBoolean("debug.furniture", false);
 
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
@@ -401,8 +410,20 @@ public class Config {
         return instance.configVersion;
     }
 
-    public static boolean debug() {
-        return instance.debug;
+    public static boolean debugCommon() {
+        return instance.debug$common;
+    }
+
+    public static boolean debugPacket() {
+        return instance.debug$packet;
+    }
+
+    public static boolean debugItem() {
+        return instance.debug$item;
+    }
+
+    public static boolean debugFurniture() {
+        return instance.debug$furniture;
     }
 
     public static boolean checkUpdate() {

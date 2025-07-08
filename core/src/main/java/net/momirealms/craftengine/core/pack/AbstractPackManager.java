@@ -587,7 +587,6 @@ public abstract class AbstractPackManager implements PackManager {
                             exception.setId(cached.prefix() + "." + key);
                         }
                         TranslationManager.instance().log(e.node(), e.arguments());
-                        this.plugin.debug(e::node);
                     } catch (Exception e) {
                         this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help. Additional info: " + GsonHelper.get().toJson(configEntry.getValue()), e);
                     }
@@ -800,7 +799,6 @@ public abstract class AbstractPackManager implements PackManager {
 
     @SuppressWarnings("DuplicatedCode")
     private void validateResourcePack(Path path) {
-        long time1 = System.currentTimeMillis();
         Path[] rootPaths;
         try {
             rootPaths = FileUtils.collectOverlays(path).toArray(new Path[0]);
@@ -931,9 +929,6 @@ public abstract class AbstractPackManager implements PackManager {
             }
         }
 
-        long time2 = System.currentTimeMillis();
-        this.plugin.debug(() -> "Took " + (time2 - time1) + "ms collecting assets");
-
         // 验证font的贴图是否存在
         label: for (Map.Entry<Key, Collection<Key>> entry : imageToFonts.asMap().entrySet()) {
             Key key = entry.getKey();
@@ -946,9 +941,6 @@ public abstract class AbstractPackManager implements PackManager {
             }
             TranslationManager.instance().log("warning.config.resource_pack.generation.missing_font_texture", entry.getValue().stream().distinct().toList().toString(), imagePath);
         }
-
-        long time3 = System.currentTimeMillis();
-        this.plugin.debug(() -> "Took " + (time3 - time2) + "ms verifying font textures");
 
         // 验证物品模型是否存在，验证的同时去收集贴图
         label: for (Map.Entry<Key, Collection<Key>> entry : modelToItems.asMap().entrySet()) {
@@ -996,9 +988,6 @@ public abstract class AbstractPackManager implements PackManager {
             TranslationManager.instance().log("warning.config.resource_pack.generation.missing_block_model", entry.getValue().stream().distinct().toList().toString(), modelPath);
         }
 
-        long time4 = System.currentTimeMillis();
-        this.plugin.debug(() -> "Took " + (time4 - time3) + "ms verifying models and their parents");
-
         // 验证贴图是否存在
         boolean enableObf = Config.enableObfuscation() && Config.enableRandomResourceLocation();
         label: for (Map.Entry<Key, Collection<Key>> entry : imageToModels.asMap().entrySet()) {
@@ -1031,9 +1020,6 @@ public abstract class AbstractPackManager implements PackManager {
                 TranslationManager.instance().log("warning.config.resource_pack.generation.texture_not_in_atlas", key.toString());
             }
         }
-
-        long time5 = System.currentTimeMillis();
-        this.plugin.debug(() -> "Took " + (time5 - time4) + "ms verifying model textures");
     }
 
     private void verifyParentModelAndCollectTextures(Key sourceModelLocation, JsonObject sourceModelJson, Path[] rootPaths, Multimap<Key, Key> imageToModels, Set<Key> collected) {

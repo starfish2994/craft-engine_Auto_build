@@ -200,7 +200,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
             this.resetUserArray();
             if (VersionHelper.isFolia()) {
                 player.getScheduler().runAtFixedRate(plugin.javaPlugin(), (t) -> user.tick(),
-                        () -> plugin.debug(() -> "Player " + player.getName() + "'s entity scheduler is retired"), 1, 1);
+                        () -> {}, 1, 1);
             }
         }
     }

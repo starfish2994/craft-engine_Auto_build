@@ -1,7 +1,5 @@
 # Do not modify this value
 config-version: '${config_version}'
-# Enables or disables debug mode
-debug: false
 # Enables or disables metrics collection via BStats
 metrics: true
 # Enables automatic update checks
@@ -408,3 +406,10 @@ chunk-system:
   # server's CraftEngine internal data. Enabling this option will synchronize the data when the chunk is loaded.
   # (This option only slightly impacts performance, which has been fully optimized, so you don't need to worry too much.)
   sync-custom-blocks-on-chunk-load: false
+
+# Enables or disables debug mode
+debug:
+  common: false
+  packet: false
+  furniture: false
+  item: false

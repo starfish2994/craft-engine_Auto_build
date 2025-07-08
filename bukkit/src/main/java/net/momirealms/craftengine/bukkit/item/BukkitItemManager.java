@@ -24,6 +24,7 @@ import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
@@ -97,9 +98,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             if (wrapped == null) return Optional.empty();
             return this.networkItemHandler.s2c(wrapped, player).map(Item::getItem);
         } catch (Throwable e) {
-            if (Config.debug()) {
-                this.plugin.logger().warn("Failed to handle s2c items.", e);
-            }
+            Debugger.ITEM.warn(() -> "Failed to handle s2c items.", e);
             return Optional.empty();
         }
     }
@@ -110,9 +109,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             if (wrapped == null) return Optional.empty();
             return this.networkItemHandler.c2s(wrapped).map(Item::getItem);
         } catch (Throwable e) {
-            if (Config.debug()) {
-                this.plugin.logger().warn("Failed to handle c2s items.", e);
-            }
+            Debugger.COMMON.warn(() -> "Failed to handle c2s items.", e);
             return Optional.empty();
         }
     }

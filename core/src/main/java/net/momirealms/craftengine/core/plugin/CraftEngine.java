@@ -40,12 +40,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public abstract class CraftEngine implements Plugin {
     private static CraftEngine instance;
     protected PluginLogger logger;
-    protected Consumer<Supplier<String>> debugger = (s) -> {};
     protected Config config;
     protected Platform platform;
     protected ClassPathAppender classPathAppender;
@@ -123,8 +121,6 @@ public abstract class CraftEngine implements Plugin {
                 long time1 = System.currentTimeMillis();
                 // firstly reload main config
                 this.config.load();
-                // reset debugger
-                this.debugger = Config.debug() ? (s) -> logger.info("[Debug] " + s.get()) : (s) -> {};
                 // now we reload the translations
                 this.translationManager.reload();
                 // clear the outdated cache by reloading the managers
@@ -340,11 +336,6 @@ public abstract class CraftEngine implements Plugin {
     @Override
     public PluginLogger logger() {
         return logger;
-    }
-
-    @Override
-    public void debug(Supplier<String> message) {
-        debugger.accept(message);
     }
 
     @Override
