@@ -2406,11 +2406,6 @@ public class PacketConsumers {
                 CoreReflections.methodHandle$ServerCommonPacketListenerImpl$closedSetter.invokeExact(packetListener, false);
             }
 
-            // 重新获取已验证的uuid
-            GameProfile gameProfile = (GameProfile) CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$gameProfileGetter.invokeExact(packetListener);
-            user.setName(gameProfile.getName());
-            user.setUUID(gameProfile.getId());
-
             ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
             host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
                 if (dataList.isEmpty()) {
@@ -2436,6 +2431,17 @@ public class PacketConsumers {
             });
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LOGIN_FINISHED = (user, event, packet) -> {
+        try {
+            GameProfile gameProfile = FastNMS.INSTANCE.field$ClientboundLoginFinishedPacket$gameProfile(packet);
+            user.setName(gameProfile.getName());
+            user.setUUID(gameProfile.getId());
+            System.out.println("Login finished: " + user.name() + " " + user.uuid());
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundLoginFinishedPacket", e);
         }
     };
 }

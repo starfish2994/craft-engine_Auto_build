@@ -2,7 +2,6 @@ package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
-import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
@@ -3765,24 +3764,4 @@ public final class CoreReflections {
                     clazz$Level, clazz$BlockPos, clazz$BlockState, clazz$Player
             )
     );
-
-    public static final Field field$ServerConfigurationPacketListenerImpl$gameProfile = Optional.ofNullable(clazz$ServerConfigurationPacketListenerImpl)
-            .map(it -> ReflectionUtils.getDeclaredField(it, GameProfile.class, 0))
-            .orElse(null);
-
-    public static final MethodHandle methodHandle$ServerConfigurationPacketListenerImpl$gameProfileGetter;
-
-    static {
-        try {
-            if (VersionHelper.isOrAbove1_20_2()) {
-                methodHandle$ServerConfigurationPacketListenerImpl$gameProfileGetter =
-                        ReflectionUtils.unreflectGetter(field$ServerConfigurationPacketListenerImpl$gameProfile)
-                                .asType(MethodType.methodType(GameProfile.class, Object.class));
-            } else {
-                methodHandle$ServerConfigurationPacketListenerImpl$gameProfileGetter = null;
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new ReflectionInitException("Failed to initialize reflection", e);
-        }
-    }
 }
