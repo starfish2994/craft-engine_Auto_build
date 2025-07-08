@@ -63,6 +63,8 @@ dependencies {
     compileOnly("com.google.jimfs:jimfs:${rootProject.properties["jimfs_version"]}")
     // Brigadier
     compileOnly("com.mojang:brigadier:${rootProject.properties["mojang_brigadier_version"]}")
+    // authlib
+    compileOnly("com.mojang:authlib:${rootProject.properties["authlib_version"]}")
 }
 
 java {

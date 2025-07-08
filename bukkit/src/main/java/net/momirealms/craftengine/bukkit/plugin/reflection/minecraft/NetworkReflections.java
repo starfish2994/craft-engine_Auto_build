@@ -1554,4 +1554,11 @@ public final class NetworkReflections {
             throw new ReflectionInitException("Failed to initialize ServerCommonPacketListener$handleResourcePackResponse", e);
         }
     }
+
+    public static final Class<?> clazz$ClientboundLoginFinishedPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.login.PacketLoginOutSuccess",
+                    List.of("network.protocol.login.ClientboundLoginFinishedPacket", "network.protocol.login.ClientboundGameProfilePacket")
+            )
+    );
 }

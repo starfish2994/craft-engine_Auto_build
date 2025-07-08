@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -2434,6 +2435,16 @@ public class PacketConsumers {
             });
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> LOGIN_FINISHED = (user, event, packet) -> {
+        try {
+            GameProfile gameProfile = FastNMS.INSTANCE.field$ClientboundLoginFinishedPacket$gameProfile(packet);
+            user.setName(gameProfile.getName());
+            user.setUUID(gameProfile.getId());
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundLoginFinishedPacket", e);
         }
     };
 }
