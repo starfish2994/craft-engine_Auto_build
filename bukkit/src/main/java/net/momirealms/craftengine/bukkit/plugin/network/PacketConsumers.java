@@ -2441,8 +2441,8 @@ public class PacketConsumers {
                     user.addResourcePackUUID(data.uuid());
                 }
                 FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
-            }).exceptionally(throwable -> {
-                CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", throwable);
+            }).exceptionally(t -> {
+                CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", t);
                 FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
                 return null;
             });

@@ -140,6 +140,8 @@ resource-pack:
 item:
   # Make custom-model-data and item-model clientside by default
   client-bound-model: false
+  # Add a <!i> tag on custom name and lore
+  non-italic-tag: false
 
 equipment:
   # The sacrificed-vanilla-armor argument determines which vanilla armor gets completely removed (loses all its trims)

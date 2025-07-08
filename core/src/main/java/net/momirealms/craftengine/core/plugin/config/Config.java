@@ -146,6 +146,7 @@ public class Config {
     protected boolean image$intercept_packets$item;
 
     protected boolean item$client_bound_model;
+    protected boolean item$non_italic_tag;
 
     protected String equipment$sacrificed_vanilla_armor$type;
     protected Key equipment$sacrificed_vanilla_armor$asset_id;
@@ -344,6 +345,7 @@ public class Config {
 
         // item
         item$client_bound_model = config.getBoolean("item.client-bound-model", false);
+        item$non_italic_tag = config.getBoolean("item.non-italic-tag", false);
 
         // block
         block$sound_system$enable = config.getBoolean("block.sound-system.enable", true);
@@ -745,6 +747,10 @@ public class Config {
 
     public static boolean enableChunkCache() {
         return instance.chunk_system$cache_system;
+    }
+
+    public static boolean addNonItalicTag() {
+        return instance.item$non_italic_tag;
     }
 
     public static boolean fastInjection() {

@@ -4,6 +4,7 @@ import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -13,7 +14,15 @@ public class CustomNameModifier<I> implements ItemDataModifier<I> {
     private final String argument;
 
     public CustomNameModifier(String argument) {
-        this.argument = argument;
+        if (Config.addNonItalicTag()) {
+            if (argument.startsWith("<!i>")) {
+                this.argument = argument;
+            } else {
+                this.argument  = "<!i>" + argument;
+            }
+        } else {
+            this.argument = argument;
+        }
     }
 
     @Override

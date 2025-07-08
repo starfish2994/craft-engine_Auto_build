@@ -509,14 +509,21 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin);
             return new ExternalModifier<>(id, Objects.requireNonNull(provider, "Item provider " + plugin + " not found"));
         }, "external");
-        registerDataType((obj) -> {
-            String name = obj.toString();
-            return new CustomNameModifier<>(name);
-        }, "custom-name");
-        registerDataType((obj) -> {
-            String name = obj.toString();
-            return new ItemNameModifier<>(name);
-        }, "item-name", "display-name");
+        if (VersionHelper.isOrAbove1_20_5()) {
+            registerDataType((obj) -> {
+                String name = obj.toString();
+                return new CustomNameModifier<>(name);
+            }, "custom-name");
+            registerDataType((obj) -> {
+                String name = obj.toString();
+                return new ItemNameModifier<>(name);
+            }, "item-name", "display-name");
+        } else {
+            registerDataType((obj) -> {
+                String name = obj.toString();
+                return new CustomNameModifier<>(name);
+            }, "custom-name", "item-name", "display-name");
+        }
         registerDataType((obj) -> {
             List<String> lore = MiscUtils.getAsStringList(obj);
             return new LoreModifier<>(lore);
