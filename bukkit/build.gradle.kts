@@ -58,6 +58,8 @@ dependencies {
     compileOnly("org.bstats:bstats-bukkit:${rootProject.properties["bstats_version"]}")
     // Aho-Corasick java implementation
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
+    // authlib
+    compileOnly("com.mojang:authlib:${rootProject.properties["authlib_version"]}")
 }
 
 java {

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -2404,6 +2405,11 @@ public class PacketConsumers {
                 // 1.20.5+开始会检查是否结束需要重新设置回去，不然不会发keepAlive包
                 CoreReflections.methodHandle$ServerCommonPacketListenerImpl$closedSetter.invokeExact(packetListener, false);
             }
+
+            // 重新获取已验证的uuid
+            GameProfile gameProfile = (GameProfile) CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$gameProfileGetter.invokeExact(packetListener);
+            user.setName(gameProfile.getName());
+            user.setUUID(gameProfile.getId());
 
             ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
             host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
