@@ -2439,7 +2439,6 @@ public class PacketConsumers {
             GameProfile gameProfile = FastNMS.INSTANCE.field$ClientboundLoginFinishedPacket$gameProfile(packet);
             user.setName(gameProfile.getName());
             user.setUUID(gameProfile.getId());
-            System.out.println("Login finished: " + user.name() + " " + user.uuid());
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLoginFinishedPacket", e);
         }
