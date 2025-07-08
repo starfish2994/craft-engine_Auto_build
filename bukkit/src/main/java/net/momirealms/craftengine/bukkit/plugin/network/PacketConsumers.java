@@ -2318,7 +2318,17 @@ public class PacketConsumers {
                 Object packetListener = FastNMS.INSTANCE.method$Connection$getPacketListener(user.connection());
                 if (!CoreReflections.clazz$ServerConfigurationPacketListenerImpl.isInstance(packetListener)) return;
                 // 根据要求需要运行在主线程上
-                CraftEngine.instance().scheduler().executeSync(() -> ResourcePackUtils.handleResourcePackResponse(packetListener, packet, action));
+                CraftEngine.instance().scheduler().executeSync(() -> {
+                    try {
+                        NetworkReflections.methodHandle$ServerCommonPacketListener$handleResourcePackResponse.invokeExact(packetListener, packet);
+                        if (action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED
+                                && action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED) {
+                            CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$ServerResourcePackConfigurationTask$TYPE);
+                        }
+                    } catch (Throwable e) {
+                        CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket for " + user.name(), e);
+                    }
+                });
             }
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket", e);
@@ -2401,7 +2411,12 @@ public class PacketConsumers {
 
             user.setShouldProcessFinishConfiguration(false); // 防止loop
             event.setCancelled(true);
-            ResourcePackUtils.finishCurrentTask(packetListener, CoreReflections.instance$JoinWorldTask$TYPE);
+            try {
+                CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$JoinWorldTask$TYPE);
+            } catch (Throwable e) {
+                CraftEngine.instance().logger().warn("Failed to finish current task for " + user.name(), e);
+            }
+
             if (VersionHelper.isOrAbove1_20_5()) {
                 // 1.20.5+开始会检查是否结束需要重新设置回去，不然不会发keepAlive包
                 CoreReflections.methodHandle$ServerCommonPacketListenerImpl$closedSetter.invokeExact(packetListener, false);
@@ -2422,9 +2437,7 @@ public class PacketConsumers {
                     return;
                 }
                 for (ResourcePackDownloadData data : dataList) {
-                    configurationTasks.add(FastNMS.INSTANCE.constructor$ServerResourcePackConfigurationTask(
-                            ResourcePackUtils.createServerResourcePackInfo(data.uuid(), data.url(), data.sha1()))
-                    );
+                    configurationTasks.add(FastNMS.INSTANCE.constructor$ServerResourcePackConfigurationTask(ResourcePackUtils.createServerResourcePackInfo(data.uuid(), data.url(), data.sha1())));
                     user.addResourcePackUUID(data.uuid());
                 }
                 FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);

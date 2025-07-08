@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
+import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.display.SlotDisplay;
 import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
 import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
@@ -70,6 +72,8 @@ public class BuiltInRegistries {
     public static final Registry<ConditionFactory<PlayerOptionalContext>> EVENT_CONDITION_FACTORY = createRegistry(Registries.EVENT_CONDITION_FACTORY);
     public static final Registry<PlayerSelectorFactory<?>> PLAYER_SELECTOR_FACTORY = createRegistry(Registries.PLAYER_SELECTOR_FACTORY);
     public static final Registry<EquipmentFactory> EQUIPMENT_FACTORY = createRegistry(Registries.EQUIPMENT_FACTORY);
+    public static final Registry<SlotDisplay> SLOT_DISPLAY = createRegistry(Registries.SLOT_DISPLAY);
+    public static final Registry<RecipeDisplay.Type> RECIPE_DISPLAY_TYPE = createRegistry(Registries.RECIPE_DISPLAY_TYPE);
 
     private static <T> Registry<T> createRegistry(ResourceKey<? extends Registry<T>> key) {
         return new MappedRegistry<>(key);
