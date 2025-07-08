@@ -29,17 +29,6 @@ public final class ResourcePackUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    public static Queue<Object> getConfigurationTasks(Object packetListener) {
-        try {
-            return (Queue<Object>) CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$configurationTasksGetter.invokeExact(packetListener);
-        } catch (Throwable e) {
-            CraftEngine.instance().logger().warn("Failed to get configuration tasks", e);
-            return null;
-        }
-    }
-
     public static void handleResourcePackResponse(Object packetListener, Object packet, Object action) {
         try {
             NetworkReflections.methodHandle$ServerCommonPacketListener$handleResourcePackResponse.invokeExact(packetListener, packet);

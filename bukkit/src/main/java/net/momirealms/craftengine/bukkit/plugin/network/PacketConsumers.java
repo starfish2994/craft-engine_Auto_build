@@ -2389,6 +2389,7 @@ public class PacketConsumers {
         }
     };
 
+    @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> FINISH_CONFIGURATION = (user, event, packet) -> {
         try {
             if (!VersionHelper.isOrAbove1_20_2() || !user.shouldProcessFinishConfiguration() || !Config.sendPackOnJoin()) return;
@@ -2411,8 +2412,11 @@ public class PacketConsumers {
                     FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
                     return;
                 }
-                Queue<Object> configurationTasks = ResourcePackUtils.getConfigurationTasks(packetListener);
-                if (configurationTasks == null) { // 以防万一获取失败
+                Queue<Object> configurationTasks;
+                try {
+                    configurationTasks = (Queue<Object>) CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$configurationTasksGetter.invokeExact(packetListener);
+                } catch (Throwable e) {
+                    CraftEngine.instance().logger().warn("Failed to get configuration tasks for player " + user.name(), e);
                     FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
                     return;
                 }
