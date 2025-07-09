@@ -19,7 +19,16 @@ public class WithRemainderSlotDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(6);
         this.input.write(buf);
         this.remainder.write(buf);
+    }
+
+    @Override
+    public String toString() {
+        return "WithRemainderSlotDisplay{" +
+                "input=" + input +
+                ", remainder=" + remainder +
+                '}';
     }
 }

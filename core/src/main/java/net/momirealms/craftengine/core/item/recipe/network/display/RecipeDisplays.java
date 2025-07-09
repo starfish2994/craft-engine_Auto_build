@@ -18,7 +18,7 @@ public final class RecipeDisplays {
         register(CRAFTING_SHAPELESS, new RecipeDisplay.Type(ShapelessCraftingRecipeDisplay::read));
         register(CRAFTING_SHAPED, new RecipeDisplay.Type(ShapedCraftingRecipeDisplay::read));
         register(FURNACE, new RecipeDisplay.Type(FurnaceRecipeDisplay::read));
-        register(STONECUTTER, new RecipeDisplay.Type(SmithingRecipeDisplay::read));
+        register(STONECUTTER, new RecipeDisplay.Type(StonecutterRecipeDisplay::read));
         register(SMITHING, new RecipeDisplay.Type(SmithingRecipeDisplay::read));
     }
 

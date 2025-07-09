@@ -413,6 +413,33 @@ public class FriendlyByteBuf extends ByteBuf {
         });
     }
 
+    public Either<List<Integer>, Key> readHolderSet() {
+        int id = this.readVarInt();
+        if (id == 0) {
+            return Either.right(readKey());
+        } else {
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < id - 1; ++i) {
+                list.add(readVarInt());
+            }
+            return Either.left(list);
+        }
+    }
+
+    public void writeHolderSet(Either<List<Integer>, Key> holderSet) {
+        holderSet.ifLeft(
+            ints -> {
+                writeVarInt(ints.size() + 1);
+                for (Integer anInt : ints) {
+                    writeVarInt(anInt);
+                }
+            }
+        ).ifRight(key -> {
+            writeVarInt(0);
+            writeKey(key);
+        });
+    }
+
     public FriendlyByteBuf writeVarLong(long value) {
         while ((value & -128L) != 0L) {
             this.writeByte((int) (value & 127L) | 128);

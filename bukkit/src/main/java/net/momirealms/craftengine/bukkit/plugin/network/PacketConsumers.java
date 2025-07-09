@@ -42,6 +42,9 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.item.recipe.network.RecipeBookDisplayEntry;
+import net.momirealms.craftengine.core.item.recipe.network.RecipeBookEntry;
+import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -2475,6 +2478,42 @@ public class PacketConsumers {
             user.setUUID(gameProfile.getId());
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLoginFinishedPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> ADD_RECIPE_BOOK = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            List<RecipeBookEntry> entries = buf.readCollection(ArrayList::new, byteBuf -> {
+                RecipeBookEntry entry = RecipeBookEntry.read(byteBuf);
+                entry.applyClientboundData((BukkitServerPlayer) user);
+                return entry;
+            });
+            boolean replace = buf.readBoolean();
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeCollection(entries, ((byteBuf, recipeBookEntry) -> recipeBookEntry.write(byteBuf)));
+            buf.writeBoolean(replace);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundRecipeBookAddPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> PLACE_GHOST_RECIPE = (user, event) -> {
+        try {
+            if (!VersionHelper.isOrAbove1_21_2()) return;
+            FriendlyByteBuf buf = event.getBuffer();
+            int containerId = buf.readContainerId();
+            RecipeDisplay display = RecipeDisplay.read(buf);
+            display.applyClientboundData((BukkitServerPlayer) user);
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeContainerId(containerId);
+            display.write(buf);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundPlaceGhostRecipePacket", e);
         }
     };
 }

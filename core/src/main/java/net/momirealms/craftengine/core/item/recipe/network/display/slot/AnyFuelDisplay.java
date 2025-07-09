@@ -11,5 +11,11 @@ public class AnyFuelDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(1);
+    }
+
+    @Override
+    public String toString() {
+        return "AnyFuelDisplay{}";
     }
 }

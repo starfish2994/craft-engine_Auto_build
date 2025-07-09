@@ -173,6 +173,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.TEAM_1_20_3 : PacketConsumers.TEAM_1_20, this.packetIds.clientboundSetPlayerTeamPacket());
         registerS2CByteBufPacketConsumer(VersionHelper.isOrAbove1_20_3() ? PacketConsumers.SET_OBJECTIVE_1_20_3 : PacketConsumers.SET_OBJECTIVE_1_20, this.packetIds.clientboundSetObjectivePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SET_SCORE_1_20_3, VersionHelper.isOrAbove1_20_3() ? this.packetIds.clientboundSetScorePacket() : -1);
+        registerS2CByteBufPacketConsumer(PacketConsumers.ADD_RECIPE_BOOK, this.packetIds.clientboundRecipeBookAddPacket());
+        registerS2CByteBufPacketConsumer(PacketConsumers.PLACE_GHOST_RECIPE, this.packetIds.clientboundPlaceGhostRecipePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.REMOVE_ENTITY, this.packetIds.clientboundRemoveEntitiesPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.ADD_ENTITY, this.packetIds.clientboundAddEntityPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SOUND, this.packetIds.clientboundSoundPacket());

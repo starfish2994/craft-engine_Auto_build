@@ -1,28 +1,46 @@
 package net.momirealms.craftengine.core.item.recipe.network.display.slot;
 
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 
 public class ItemStackSlotDisplay implements SlotDisplay {
-    private final Item<?> item;
+    private Item<Object> item;
 
-    public ItemStackSlotDisplay(Item<?> item) {
+    public ItemStackSlotDisplay(Item<Object> item) {
         this.item = item;
     }
 
     public static ItemStackSlotDisplay read(FriendlyByteBuf buf) {
-        Item<?> itemStack = CraftEngine.instance().itemManager().decode(buf);
+        Item<Object> itemStack = CraftEngine.instance().itemManager().decode(buf);
         return new ItemStackSlotDisplay(itemStack);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void write(FriendlyByteBuf buf) {
-        CraftEngine.instance().itemManager().encode(buf, (Item<Object>) this.item);
+        buf.writeVarInt(3);
+        CraftEngine.instance().itemManager().encode(buf, this.item);
+    }
+
+    @Override
+    public void applyClientboundData(Player player) {
+        System.out.println("gai ni ma");
+        this.item = CraftEngine.instance().itemManager().s2c(this.item, player);
     }
 
     public Item<?> item() {
-        return item;
+        return this.item;
+    }
+
+    public void setItem(Item<Object> item) {
+        this.item = item;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemStackSlotDisplay{" +
+                "item=" + this.item.getLiteralObject() +
+                '}';
     }
 }

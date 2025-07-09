@@ -16,6 +16,14 @@ public class TagSlotDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(4);
         buf.writeKey(this.tag);
+    }
+
+    @Override
+    public String toString() {
+        return "TagSlotDisplay{" +
+                "tag=" + tag +
+                '}';
     }
 }

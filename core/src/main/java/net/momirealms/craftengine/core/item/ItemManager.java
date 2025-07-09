@@ -97,4 +97,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
     Item<T> decode(FriendlyByteBuf byteBuf);
 
     void encode(FriendlyByteBuf byteBuf, Item<T> item);
+
+    Item<T> s2c(Item<T> item, Player player);
+
+    Item<T> c2s(Item<T> item);
 }

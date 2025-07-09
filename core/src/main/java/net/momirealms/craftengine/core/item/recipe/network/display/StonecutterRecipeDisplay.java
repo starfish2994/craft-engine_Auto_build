@@ -1,28 +1,40 @@
 package net.momirealms.craftengine.core.item.recipe.network.display;
 
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplay;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+public record StonecutterRecipeDisplay(SlotDisplay input, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
 
-public record SmithingRecipeDisplay(SlotDisplay template, SlotDisplay base, SlotDisplay addition, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
-
-    public static SmithingRecipeDisplay read(FriendlyByteBuf buffer) {
-        SlotDisplay template = SlotDisplay.read(buffer);
-        SlotDisplay base = SlotDisplay.read(buffer);
-        SlotDisplay addition = SlotDisplay.read(buffer);
+    public static StonecutterRecipeDisplay read(FriendlyByteBuf buffer) {
+        SlotDisplay input = SlotDisplay.read(buffer);
         SlotDisplay result = SlotDisplay.read(buffer);
         SlotDisplay craftingStation = SlotDisplay.read(buffer);
-        return new SmithingRecipeDisplay(template, base, addition, result, craftingStation);
+        return new StonecutterRecipeDisplay(input, result, craftingStation);
+    }
+
+    @Override
+    public void applyClientboundData(Player player) {
+        this.input.applyClientboundData(player);
+        this.result.applyClientboundData(player);
+        this.craftingStation.applyClientboundData(player);
     }
 
     @Override
     public void write(FriendlyByteBuf buf) {
-        this.template.write(buf);
-        this.base.write(buf);
-        this.addition.write(buf);
+        buf.writeVarInt(3);
+        this.input.write(buf);
         this.result.write(buf);
         this.craftingStation.write(buf);
+    }
+
+    @Override
+    public @NotNull String toString() {
+        return "StonecutterRecipeDisplay{" +
+                "craftingStation=" + craftingStation +
+                ", input=" + input +
+                ", result=" + result +
+                '}';
     }
 }

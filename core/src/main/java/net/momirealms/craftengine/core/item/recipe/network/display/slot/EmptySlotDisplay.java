@@ -11,5 +11,11 @@ public class EmptySlotDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(0);
+    }
+
+    @Override
+    public String toString() {
+        return "EmptySlotDisplay{}";
     }
 }

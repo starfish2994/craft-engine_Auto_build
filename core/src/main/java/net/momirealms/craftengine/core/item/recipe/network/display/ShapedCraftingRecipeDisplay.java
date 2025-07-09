@@ -1,9 +1,9 @@
 package net.momirealms.craftengine.core.item.recipe.network.display;
 
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplay;
-import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplays;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +20,32 @@ public record ShapedCraftingRecipeDisplay(int width, int height, List<SlotDispla
     }
 
     @Override
+    public void applyClientboundData(Player player) {
+        for (SlotDisplay ingredient : this.ingredients) {
+            ingredient.applyClientboundData(player);
+        }
+        this.result.applyClientboundData(player);
+        this.craftingStation.applyClientboundData(player);
+    }
+
+    @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(1);
         buf.writeVarInt(this.width);
         buf.writeVarInt(this.height);
         buf.writeCollection(this.ingredients, (byteBuf, slotDisplay) -> slotDisplay.write(buf));
         this.result.write(buf);
         this.craftingStation.write(buf);
+    }
+
+    @Override
+    public @NotNull String toString() {
+        return "ShapedCraftingRecipeDisplay{" +
+                "craftingStation=" + craftingStation +
+                ", width=" + width +
+                ", height=" + height +
+                ", ingredients=" + ingredients +
+                ", result=" + result +
+                '}';
     }
 }

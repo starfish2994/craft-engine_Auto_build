@@ -100,6 +100,21 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return instance;
     }
 
+    @Override
+    public Item<ItemStack> s2c(Item<ItemStack> item, Player player) {
+        return this.networkItemHandler.s2c(item, player).map(it -> {
+            System.out.println("有变化");
+            System.out.println(item.getItem());
+            System.out.println(it.getItem());
+            return it;
+        }).orElse(item);
+    }
+
+    @Override
+    public Item<ItemStack> c2s(Item<ItemStack> item) {
+        return this.networkItemHandler.c2s(item).orElse(item);
+    }
+
     public Optional<ItemStack> s2c(ItemStack itemStack, Player player) {
         try {
             Item<ItemStack> wrapped = wrap(itemStack);

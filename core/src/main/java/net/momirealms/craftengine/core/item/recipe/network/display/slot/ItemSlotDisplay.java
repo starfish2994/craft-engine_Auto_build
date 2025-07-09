@@ -16,10 +16,18 @@ public class ItemSlotDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(2);
         buf.writeVarInt(this.item);
     }
 
     public int item() {
         return item;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemSlotDisplay{" +
+                "item=" + item +
+                '}';
     }
 }

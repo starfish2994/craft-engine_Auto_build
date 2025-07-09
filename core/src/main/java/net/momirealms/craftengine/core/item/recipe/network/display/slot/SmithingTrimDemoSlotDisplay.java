@@ -6,6 +6,7 @@ import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
+import org.jetbrains.annotations.NotNull;
 
 public class SmithingTrimDemoSlotDisplay implements SlotDisplay {
     private final SlotDisplay base;
@@ -46,6 +47,7 @@ public class SmithingTrimDemoSlotDisplay implements SlotDisplay {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(5);
         this.base.write(buf);
         this.material.write(buf);
         if (VersionHelper.isOrAbove1_21_5()) {
@@ -59,6 +61,25 @@ public class SmithingTrimDemoSlotDisplay implements SlotDisplay {
         }
     }
 
+    @Override
+    public String toString() {
+        return "SmithingTrimDemoSlotDisplay{" +
+                "base=" + base +
+                ", material=" + material +
+                ", trimPattern=" + trimPattern +
+                ", either=" + either +
+                '}';
+    }
+
     public record TrimPattern(Key assetId, Component description, boolean decal) {
+
+        @Override
+        public @NotNull String toString() {
+            return "TrimPattern{" +
+                    "assetId=" + assetId +
+                    ", description=" + description +
+                    ", decal=" + decal +
+                    '}';
+        }
     }
 }
