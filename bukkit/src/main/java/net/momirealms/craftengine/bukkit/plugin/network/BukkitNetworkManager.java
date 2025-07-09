@@ -43,8 +43,8 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     private static BukkitNetworkManager instance;
     private static final Map<Class<?>, TriConsumer<NetWorkUser, NMSPacketEvent, Object>> NMS_PACKET_HANDLERS = new HashMap<>();
     // only for game stage for the moment
-    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] S2C_BYTE_BUFFER_PACKET_HANDLERS;
-    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] C2S_BYTE_BUFFER_PACKET_HANDLERS;
+    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS;
+    private static BiConsumer<NetWorkUser, ByteBufPacketEvent>[] C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS;
 
     private static void registerNMSPacketConsumer(final TriConsumer<NetWorkUser, NMSPacketEvent, Object> function, @Nullable Class<?> packet) {
         if (packet == null) return;
@@ -53,18 +53,18 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     private static void registerS2CByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
         if (id == -1) return;
-        if (id < 0 || id >= S2C_BYTE_BUFFER_PACKET_HANDLERS.length) {
+        if (id < 0 || id >= S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS.length) {
             throw new IllegalArgumentException("Invalid packet id: " + id);
         }
-        S2C_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
+        S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
     private static void registerC2SByteBufPacketConsumer(final BiConsumer<NetWorkUser, ByteBufPacketEvent> function, int id) {
         if (id == -1) return;
-        if (id < 0 || id >= C2S_BYTE_BUFFER_PACKET_HANDLERS.length) {
+        if (id < 0 || id >= C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS.length) {
             throw new IllegalArgumentException("Invalid packet id: " + id);
         }
-        C2S_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
+        C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS[id] = function;
     }
 
     private final BiConsumer<ChannelHandler, Object> packetConsumer;
@@ -92,10 +92,10 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     @SuppressWarnings("unchecked")
     public BukkitNetworkManager(BukkitCraftEngine plugin) {
         instance = this;
-        S2C_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxS2CPacketId()];
-        C2S_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.maxC2SPacketId()];
-        Arrays.fill(S2C_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
-        Arrays.fill(C2S_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
+        S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.s2cGamePackets()];
+        C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS = new BiConsumer[PacketIdFinder.c2sGamePackets()];
+        Arrays.fill(S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
+        Arrays.fill(C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS, Handlers.DO_NOTHING);
         hasModelEngine = Bukkit.getPluginManager().getPlugin("ModelEngine") != null;
         hasViaVersion = Bukkit.getPluginManager().getPlugin("ViaVersion") != null;
         this.plugin = plugin;
@@ -665,13 +665,13 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
 
     protected void handleS2CByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(S2C_BYTE_BUFFER_PACKET_HANDLERS[packetID])
+        Optional.ofNullable(S2C_GAME_BYTE_BUFFER_PACKET_HANDLERS[packetID])
                 .ifPresent(function -> function.accept(user, event));
     }
 
     protected void handleC2SByteBufPacket(NetWorkUser user, ByteBufPacketEvent event) {
         int packetID = event.packetID();
-        Optional.ofNullable(C2S_BYTE_BUFFER_PACKET_HANDLERS[packetID])
+        Optional.ofNullable(C2S_GAME_BYTE_BUFFER_PACKET_HANDLERS[packetID])
                 .ifPresent(function -> function.accept(user, event));
     }
 

@@ -1561,4 +1561,9 @@ public final class NetworkReflections {
                     List.of("network.protocol.login.ClientboundLoginFinishedPacket", "network.protocol.login.ClientboundGameProfilePacket")
             )
     );
+
+    public static final Class<?> clazz$ClientboundRecipeBookAddPacket = MiscUtils.requireNonNullIf(BukkitReflectionUtils.findReobfOrMojmapClass(
+            "network.protocol.game.ClientboundRecipeBookAddPacket",
+            "network.protocol.game.ClientboundRecipeBookAddPacket"
+    ), VersionHelper.isOrAbove1_21_2());
 }
