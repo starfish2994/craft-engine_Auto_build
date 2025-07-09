@@ -42,7 +42,6 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
-import net.momirealms.craftengine.core.item.recipe.network.RecipeBookDisplayEntry;
 import net.momirealms.craftengine.core.item.recipe.network.RecipeBookEntry;
 import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;

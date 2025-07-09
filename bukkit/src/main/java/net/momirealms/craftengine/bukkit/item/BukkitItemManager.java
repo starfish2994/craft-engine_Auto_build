@@ -102,12 +102,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Item<ItemStack> s2c(Item<ItemStack> item, Player player) {
-        return this.networkItemHandler.s2c(item, player).map(it -> {
-            System.out.println("有变化");
-            System.out.println(item.getItem());
-            System.out.println(it.getItem());
-            return it;
-        }).orElse(item);
+        return this.networkItemHandler.s2c(item, player).orElse(item);
     }
 
     @Override

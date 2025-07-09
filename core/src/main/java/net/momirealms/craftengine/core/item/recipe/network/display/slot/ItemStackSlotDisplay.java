@@ -25,7 +25,6 @@ public class ItemStackSlotDisplay implements SlotDisplay {
 
     @Override
     public void applyClientboundData(Player player) {
-        System.out.println("gai ni ma");
         this.item = CraftEngine.instance().itemManager().s2c(this.item, player);
     }
 
