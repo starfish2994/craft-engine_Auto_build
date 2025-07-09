@@ -590,7 +590,7 @@ public class RecipeEventListener implements Listener {
         String renameText;
         int maxRepairCost;
         //int previousCost;
-        if (VersionHelper.isOrAbove1_21_2()) {
+        if (VersionHelper.isOrAbove1_21()) {
             AnvilView anvilView = event.getView();
             renameText = anvilView.getRenameText();
             maxRepairCost = anvilView.getMaximumRepairCost();
@@ -688,7 +688,7 @@ public class RecipeEventListener implements Listener {
         wrappedFirst.getCustomItem().ifPresent(item -> {
             if (!item.settings().renameable()) {
                 String renameText;
-                if (VersionHelper.isOrAbove1_21_2()) {
+                if (VersionHelper.isOrAbove1_21()) {
                     AnvilView anvilView = event.getView();
                     renameText = anvilView.getRenameText();
                 } else {
