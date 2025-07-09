@@ -413,3 +413,4 @@ debug:
   packet: false
   furniture: false
   item: false
+  resource-pack: false

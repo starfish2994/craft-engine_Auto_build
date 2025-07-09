@@ -52,6 +52,7 @@ public class Config {
     protected boolean debug$packet;
     protected boolean debug$item;
     protected boolean debug$furniture;
+    protected boolean debug$resource_pack;
 
     protected boolean resource_pack$remove_tinted_leaves_particle;
     protected boolean resource_pack$generate_mod_assets;
@@ -245,6 +246,7 @@ public class Config {
         debug$packet = config.getBoolean("debug.packet", false);
         debug$item = config.getBoolean("debug.item", false);
         debug$furniture = config.getBoolean("debug.furniture", false);
+        debug$resource_pack = config.getBoolean("debug.resource-pack", false);
 
         // resource pack
         resource_pack$override_uniform_font = config.getBoolean("resource-pack.override-uniform-font", false);
@@ -424,6 +426,10 @@ public class Config {
 
     public static boolean debugFurniture() {
         return instance.debug$furniture;
+    }
+
+    public static boolean debugResourcePack() {
+        return instance.debug$resource_pack;
     }
 
     public static boolean checkUpdate() {

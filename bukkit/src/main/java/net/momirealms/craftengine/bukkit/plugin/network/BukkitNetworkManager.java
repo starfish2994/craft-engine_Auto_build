@@ -18,6 +18,7 @@ import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.context.CooldownData;
+import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
@@ -641,6 +642,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
     }
 
     private void onNMSPacketReceive(NetWorkUser user, NMSPacketEvent event, Object packet) {
+        Debugger.PACKET.debug(() -> "[C->S]" + packet.getClass());
         handleNMSPacket(user, event, packet);
     }
 
@@ -651,6 +653,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
                 onNMSPacketSend(player, event, p);
             }
         } else {
+            Debugger.PACKET.debug(() -> "[S->C]" + packet.getClass());
             handleNMSPacket(player, event, packet);
         }
     }

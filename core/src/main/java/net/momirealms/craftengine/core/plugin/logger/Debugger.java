@@ -9,6 +9,7 @@ public enum Debugger {
     COMMON(Config::debugCommon),
     PACKET(Config::debugPacket),
     FURNITURE(Config::debugFurniture),
+    RESOURCE_PACK(Config::debugFurniture),
     ITEM(Config::debugItem);
 
     private final Supplier<Boolean> condition;

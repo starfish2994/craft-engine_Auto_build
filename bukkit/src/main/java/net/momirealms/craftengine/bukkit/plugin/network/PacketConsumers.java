@@ -50,6 +50,7 @@ import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.BlockHitResult;
@@ -2287,7 +2288,6 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
         try {
-            if (!Config.sendPackOnJoin()) return;
             Object action = FastNMS.INSTANCE.field$ServerboundResourcePackPacket$action(packet);
             if (action == null) return;
             if (VersionHelper.isOrAbove1_20_3()) {
@@ -2304,6 +2304,7 @@ public class PacketConsumers {
                     return;
                 }
             }
+
             // 检查是否失败
             if (Config.kickOnFailedApply()) {
                 if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$FAILED_DOWNLOAD
@@ -2312,21 +2313,23 @@ public class PacketConsumers {
                     return;
                 }
             }
-            // 绕过paper1.21.7新增的校验
-            if (VersionHelper.isOrAbove1_21_7() && VersionHelper.isPaper()) {
+
+            boolean isTerminal = action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED;
+            if (isTerminal) {
                 event.setCancelled(true);
                 Object packetListener = FastNMS.INSTANCE.method$Connection$getPacketListener(user.connection());
                 if (!CoreReflections.clazz$ServerConfigurationPacketListenerImpl.isInstance(packetListener)) return;
-                // 根据要求需要运行在主线程上
+                // 主线程上处理这个包
                 CraftEngine.instance().scheduler().executeSync(() -> {
                     try {
+                        // 当客户端发出多次成功包的时候，finish会报错，我们忽略他
                         NetworkReflections.methodHandle$ServerCommonPacketListener$handleResourcePackResponse.invokeExact(packetListener, packet);
                         if (action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED
                                 && action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED) {
                             CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$ServerResourcePackConfigurationTask$TYPE);
                         }
                     } catch (Throwable e) {
-                        CraftEngine.instance().logger().warn("Failed to handle ServerboundResourcePackPacket for " + user.name(), e);
+                        Debugger.RESOURCE_PACK.warn(() -> "Cannot finish current task", e);
                     }
                 });
             }
@@ -2400,16 +2403,26 @@ public class PacketConsumers {
         }
     };
 
+    // 这个包是由 JoinWorldTask 发出的，客户端收到后会返回 ServerboundFinishConfigurationPacket
     @SuppressWarnings("unchecked")
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> FINISH_CONFIGURATION = (user, event, packet) -> {
         try {
-            if (!VersionHelper.isOrAbove1_20_2() || !user.shouldProcessFinishConfiguration() || !Config.sendPackOnJoin()) return;
+            if (!VersionHelper.isOrAbove1_20_2() || !Config.sendPackOnJoin()) {
+                // 防止后期调试进配置阶段造成问题
+                user.setShouldProcessFinishConfiguration(false);
+                return;
+            }
+
+            if (!user.shouldProcessFinishConfiguration()) return;
             Object packetListener = FastNMS.INSTANCE.method$Connection$getPacketListener(user.connection());
             if (!CoreReflections.clazz$ServerConfigurationPacketListenerImpl.isInstance(packetListener)) {
                 return;
             }
 
-            user.setShouldProcessFinishConfiguration(false); // 防止loop
+            // 防止后续加入的JoinWorldTask再次处理
+            user.setShouldProcessFinishConfiguration(false);
+
+            // 取消 ClientboundFinishConfigurationPacket，让客户端发呆，并结束掉当前的进入世界任务
             event.setCancelled(true);
             try {
                 CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$JoinWorldTask$TYPE);
@@ -2422,8 +2435,14 @@ public class PacketConsumers {
                 CoreReflections.methodHandle$ServerCommonPacketListenerImpl$closedSetter.invokeExact(packetListener, false);
             }
 
+            // 请求资源包
             ResourcePackHost host = CraftEngine.instance().packManager().resourcePackHost();
-            host.requestResourcePackDownloadLink(user.uuid()).thenAccept(dataList -> {
+            host.requestResourcePackDownloadLink(user.uuid()).whenComplete((dataList, t) -> {
+                if (t != null) {
+                    CraftEngine.instance().logger().warn("Failed to get pack data for player " + user.name(), t);
+                    FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
+                    return;
+                }
                 if (dataList.isEmpty()) {
                     FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
                     return;
@@ -2436,15 +2455,13 @@ public class PacketConsumers {
                     FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
                     return;
                 }
+                // 向配置阶段连接的任务重加入资源包的任务
                 for (ResourcePackDownloadData data : dataList) {
                     configurationTasks.add(FastNMS.INSTANCE.constructor$ServerResourcePackConfigurationTask(ResourcePackUtils.createServerResourcePackInfo(data.uuid(), data.url(), data.sha1())));
                     user.addResourcePackUUID(data.uuid());
                 }
+                // 最后再加入一个 JoinWorldTask 并开始资源包任务
                 FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
-            }).exceptionally(t -> {
-                CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", t);
-                FastNMS.INSTANCE.method$ServerConfigurationPacketListenerImpl$returnToWorld(packetListener);
-                return null;
             });
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundFinishConfigurationPacket", e);
