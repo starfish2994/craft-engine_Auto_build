@@ -28,10 +28,7 @@ import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
-import net.momirealms.craftengine.core.util.GsonHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.ResourceKey;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -81,6 +78,17 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         Bukkit.getPluginManager().registerEvents(this.itemEventListener, this.plugin.javaPlugin());
         Bukkit.getPluginManager().registerEvents(this.debugStickListener, this.plugin.javaPlugin());
         Bukkit.getPluginManager().registerEvents(this.armorEventListener, this.plugin.javaPlugin());
+    }
+
+    @Override
+    public Item<ItemStack> decode(FriendlyByteBuf byteBuf) {
+        Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(byteBuf);
+        return this.wrap(FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf));
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf byteBuf, Item<ItemStack> item) {
+        FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(FastNMS.INSTANCE.constructor$FriendlyByteBuf(byteBuf), item.getItem());
     }
 
     @Override

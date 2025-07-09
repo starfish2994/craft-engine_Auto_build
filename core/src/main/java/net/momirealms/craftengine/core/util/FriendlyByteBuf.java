@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.util;
 
 import com.google.common.collect.Maps;
+import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
@@ -394,6 +395,22 @@ public class FriendlyByteBuf extends ByteBuf {
         }
         this.writeByte(value & 127);
         return this;
+    }
+
+    public <T> Either<Integer, T> readHolder(Reader<T> reader) {
+        int id = this.readVarInt();
+        if (id == 0) {
+            return Either.right(reader.apply(this));
+        } else {
+            return Either.left(id - 1);
+        }
+    }
+
+    public <T> void writeHolder(Either<Integer, T> holder, Writer<T> writer) {
+        holder.ifLeft(i -> writeVarInt(i + 1)).ifRight(t -> {
+            writeVarInt(0);
+            writer.accept(this, t);
+        });
     }
 
     public FriendlyByteBuf writeVarLong(long value) {

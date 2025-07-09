@@ -1,28 +1,22 @@
 package net.momirealms.craftengine.core.item.recipe.network.display;
 
 import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplay;
-import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplays;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record ShapedCraftingRecipeDisplay(int width, int height, List<SlotDisplay> ingredients, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
+public record ShapelessCraftingRecipeDisplay(List<SlotDisplay> ingredients, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
 
-    public static ShapedCraftingRecipeDisplay read(FriendlyByteBuf buffer) {
-        int width = buffer.readVarInt();
-        int height = buffer.readVarInt();
+    public static ShapelessCraftingRecipeDisplay read(FriendlyByteBuf buffer) {
         List<SlotDisplay> ingredients = buffer.readCollection(ArrayList::new, SlotDisplay::read);
         SlotDisplay result = SlotDisplay.read(buffer);
         SlotDisplay craftingStation = SlotDisplay.read(buffer);
-        return new ShapedCraftingRecipeDisplay(width, height, ingredients, result, craftingStation);
+        return new ShapelessCraftingRecipeDisplay(ingredients, result, craftingStation);
     }
 
     @Override
     public void write(FriendlyByteBuf buf) {
-        buf.writeVarInt(this.width);
-        buf.writeVarInt(this.height);
         buf.writeCollection(this.ingredients, (byteBuf, slotDisplay) -> slotDisplay.write(buf));
         this.result.write(buf);
         this.craftingStation.write(buf);

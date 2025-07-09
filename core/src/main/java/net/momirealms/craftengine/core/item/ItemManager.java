@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.pack.model.generation.ModelGenerator;
 import net.momirealms.craftengine.core.plugin.Manageable;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.registry.Holder;
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.jetbrains.annotations.Nullable;
@@ -92,4 +93,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
     Collection<Suggestion> cachedTotemSuggestions();
 
     boolean isVanillaItem(Key item);
+
+    Item<T> decode(FriendlyByteBuf byteBuf);
+
+    void encode(FriendlyByteBuf byteBuf, Item<T> item);
 }
