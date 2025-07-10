@@ -43,8 +43,10 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
     @Nullable
     T buildItemStack(Key id, @Nullable Player player);
 
+    @Nullable
     Item<T> createCustomWrappedItem(Key id, @Nullable Player player);
 
+    @Nullable
     Item<T> createWrappedItem(Key id, @Nullable Player player);
 
     @NotNull

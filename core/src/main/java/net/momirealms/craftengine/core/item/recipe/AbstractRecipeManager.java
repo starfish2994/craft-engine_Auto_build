@@ -173,6 +173,8 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
                 markAsCustomRecipe(id);
                 registerInternalRecipe(id, recipe);
                 registerPlatformRecipe(id, recipe);
+            } catch (LocalizedResourceConfigException e) {
+                throw e;
             } catch (Exception e) {
                 CraftEngine.instance().logger().warn("Failed to register custom recipe " + id, e);
             }

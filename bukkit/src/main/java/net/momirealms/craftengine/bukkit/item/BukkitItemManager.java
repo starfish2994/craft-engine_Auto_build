@@ -298,7 +298,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public ItemStack buildItemStack(Key id, @Nullable Player player) {
-        return Optional.ofNullable(buildCustomItemStack(id, player)).orElseGet(() -> createVanillaItemStack(id));
+        ItemStack customItem = buildCustomItemStack(id, player);
+        if (customItem != null) {
+            return customItem;
+        }
+        return createVanillaItemStack(id);
     }
 
     @Override
@@ -306,24 +310,29 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return Optional.ofNullable(customItems.get(id)).map(it -> it.buildItem(player)).orElse(null);
     }
 
+    @Override
+    public Item<ItemStack> createWrappedItem(Key id, @Nullable Player player) {
+        CustomItem<ItemStack> customItem = this.customItems.get(id);
+        if (customItem != null) {
+            return customItem.buildItem(player);
+        }
+        ItemStack itemStack = this.createVanillaItemStack(id);
+        if (itemStack != null) {
+            return wrap(itemStack);
+        }
+        return null;
+    }
+
     private ItemStack createVanillaItemStack(Key id) {
         NamespacedKey key = NamespacedKey.fromString(id.toString());
         if (key == null) {
-            return this.emptyStack;
+            return null;
         }
         Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
         if (item == null) {
-            return this.emptyStack;
+            return null;
         }
         return FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(item, 1));
-    }
-
-    @Override
-    public Item<ItemStack> createWrappedItem(Key id, @Nullable Player player) {
-        return Optional.ofNullable(this.customItems.get(id)).map(it -> it.buildItem(player)).orElseGet(() -> {
-            ItemStack itemStack = createVanillaItemStack(id);
-            return wrap(itemStack);
-        });
     }
 
     @Override

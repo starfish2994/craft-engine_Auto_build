@@ -157,7 +157,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
 
         List<ItemWithAction> iconList = this.categoryOnMainPage.stream().map(it -> {
             Item<?> item = this.plugin.itemManager().createWrappedItem(it.icon(), player);
-            if (item == null) {
+            if (ItemUtils.isEmpty(item)) {
                 this.plugin.logger().warn("Can't not find item " + it.icon() + " for category icon");
                 return null;
             }
@@ -242,7 +242,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 Category subCategory = this.byId.get(Key.of(subCategoryId));
                 if (subCategory == null) return null;
                 Item<?> item = this.plugin.itemManager().createWrappedItem(subCategory.icon(), player);
-                if (item == null) {
+                if (ItemUtils.isEmpty(item)) {
                     if (!subCategory.icon().equals(ItemKeys.AIR)) {
                         item = this.plugin.itemManager().createWrappedItem(ItemKeys.BARRIER, player);
                         item.customNameJson(AdventureHelper.componentToJson(AdventureHelper.miniMessage().deserialize(subCategory.displayName(), ItemBuildContext.EMPTY.tagResolvers())));
@@ -261,7 +261,7 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 Key itemId = Key.of(it);
                 Item<?> item = this.plugin.itemManager().createWrappedItem(itemId, player);
                 boolean canGoFurther;
-                if (item == null) {
+                if (ItemUtils.isEmpty(item)) {
                     if (!itemId.equals(ItemKeys.AIR)) {
                         item = this.plugin.itemManager().createWrappedItem(ItemKeys.BARRIER, player);
                         item.customNameJson(AdventureHelper.componentToJson(Component.text(it).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE).color(NamedTextColor.RED)));
@@ -498,7 +498,6 @@ public class ItemBrowserManagerImpl implements ItemBrowserManager {
                 openRecipePage(player, parentGui, recipes, index - 1, depth, canOpenNoRecipePage);
             }
         }));
-
 
         List<Item<?>> templates = new ArrayList<>();
         Optional.ofNullable(recipe.template()).ifPresent(it -> {
