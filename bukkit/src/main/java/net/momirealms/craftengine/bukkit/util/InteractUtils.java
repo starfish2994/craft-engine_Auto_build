@@ -79,16 +79,14 @@ public class InteractUtils {
         });
         registerInteraction(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            UniqueKey uniqueKey = UniqueKey.create(item.id());
             return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
-                    uniqueKey, item.getItem()
+                    item.recipeIngredientId(), item.getItem()
             ))) != null;
         });
         registerInteraction(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            UniqueKey uniqueKey = UniqueKey.create(item.id());
             return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
-                    uniqueKey, item.getItem()
+                    item.recipeIngredientId(), item.getItem()
             ))) != null;
         });
         registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);

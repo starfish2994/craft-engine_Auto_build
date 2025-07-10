@@ -134,9 +134,7 @@ public class RecipeInjector {
             );
 
             Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack));
             CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
             if (ceRecipe == null) {
                 return Optional.empty();
@@ -182,9 +180,7 @@ public class RecipeInjector {
             }
 
             Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack));
             CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
             if (ceRecipe == null) {
                 return Optional.empty();
@@ -225,9 +221,7 @@ public class RecipeInjector {
 
             ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.field$SingleRecipeInput$item(args[0]));
             Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack));
             CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
             if (ceRecipe == null) {
                 return Optional.empty();
@@ -272,9 +266,7 @@ public class RecipeInjector {
             // 获取唯一内存地址id
             ItemStack itemStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.field$SingleRecipeInput$item(args[0]));
             Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack));
             CustomCookingRecipe<ItemStack> ceRecipe = (CustomCookingRecipe<ItemStack>) recipeManager.recipeByInput(injectedCacheCheck.customRecipeType(), input, injectedCacheCheck.lastCustomRecipe());
             // 这个ce配方并不存在，那么应该返回空
             if (ceRecipe == null) {

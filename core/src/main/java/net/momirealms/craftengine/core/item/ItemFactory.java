@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.UniqueKey;
 import net.momirealms.sparrow.nbt.Tag;
 
 import java.util.List;
@@ -204,4 +205,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract W unsafeTransmuteCopy(W item, Object newItem, int count);
 
     protected abstract boolean isEmpty(W item);
+
+    protected abstract UniqueKey recipeIngredientID(W item);
 }

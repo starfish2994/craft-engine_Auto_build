@@ -49,7 +49,7 @@ import java.util.Optional;
 
 @SuppressWarnings("DuplicatedCode")
 public class RecipeEventListener implements Listener {
-    private static final OptimizedIDItem<ItemStack> EMPTY = new OptimizedIDItem<>(null, null);
+    public static final OptimizedIDItem<ItemStack> EMPTY = new OptimizedIDItem<>(null, null);
     private final ItemManager<ItemStack> itemManager;
     private final BukkitRecipeManager recipeManager;
     private final BukkitCraftEngine plugin;
@@ -74,10 +74,7 @@ public class RecipeEventListener implements Listener {
                 ItemStack item = event.getCurrentItem();
                 if (ItemStackUtils.isEmpty(item)) return;
                 if (ItemStackUtils.isEmpty(fuelStack)) {
-                    Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(item);
-                    UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-
-                    SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, item));
+                    SingleItemInput<ItemStack> input = new SingleItemInput<>(getOptimizedIDItem(item));
                     Key recipeType;
                     if (furnaceInventory.getType() == InventoryType.FURNACE) {
                         recipeType = RecipeTypes.SMELTING;
@@ -354,9 +351,7 @@ public class RecipeEventListener implements Listener {
             if (optionalMCRecipe.isEmpty()) {
                 return;
             }
-            Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(getOptimizedIDItem(itemStack));
             CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
             if (ceRecipe == null) {
                 event.setCancelled(true);
@@ -381,9 +376,7 @@ public class RecipeEventListener implements Listener {
         }
 
         ItemStack itemStack = event.getSource();
-        Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-        UniqueKey itemId = UniqueKey.create(wrappedItem.id());
-        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(itemId, itemStack));
+        SingleItemInput<ItemStack> input = new SingleItemInput<>(getOptimizedIDItem(itemStack));
         CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setTotalCookTime(Integer.MAX_VALUE);
@@ -411,9 +404,7 @@ public class RecipeEventListener implements Listener {
         }
 
         ItemStack itemStack = event.getSource();
-        Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-        UniqueKey itemId = UniqueKey.create(wrappedItem.id());
-        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(itemId, itemStack));
+        SingleItemInput<ItemStack> input = new SingleItemInput<>(getOptimizedIDItem(itemStack));
         CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setCancelled(true);
@@ -820,7 +811,7 @@ public class RecipeEventListener implements Listener {
             if (ItemStackUtils.isEmpty(usedItem)) continue;
             if (usedItem.getAmount() != 1) continue;
             Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(usedItem);
-            if (wrapped == null) continue;
+            if (ItemUtils.isEmpty(wrapped)) continue;
             Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
             if (optionalCustomItem.isPresent()) {
                 CustomItem<ItemStack> customItem = optionalCustomItem.get();
@@ -871,13 +862,7 @@ public class RecipeEventListener implements Listener {
 
         List<OptimizedIDItem<ItemStack>> optimizedIDItems = new ArrayList<>();
         for (ItemStack itemStack : ingredients) {
-            if (ItemStackUtils.isEmpty(itemStack)) {
-                optimizedIDItems.add(EMPTY);
-            } else {
-                Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-                UniqueKey itemUniqueId = UniqueKey.create(wrappedItem.id());
-                optimizedIDItems.add(new OptimizedIDItem<>(itemUniqueId, itemStack));
-            }
+            optimizedIDItems.add(getOptimizedIDItem(itemStack));
         }
 
         CraftingInput<ItemStack> input;
@@ -1016,7 +1001,7 @@ public class RecipeEventListener implements Listener {
             return EMPTY;
         } else {
             Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-            return new OptimizedIDItem<>(UniqueKey.create(wrappedItem.id()), itemStack);
+            return new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack);
         }
     }
 }

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CrafterEventListener implements Listener {
-    private static final OptimizedIDItem<ItemStack> EMPTY = new OptimizedIDItem<>(null, null);
     private final ItemManager<ItemStack> itemManager;
     private final BukkitRecipeManager recipeManager;
     private final BukkitCraftEngine plugin;
@@ -57,11 +56,10 @@ public class CrafterEventListener implements Listener {
         List<OptimizedIDItem<ItemStack>> optimizedIDItems = new ArrayList<>();
         for (ItemStack itemStack : ingredients) {
             if (ItemStackUtils.isEmpty(itemStack)) {
-                optimizedIDItems.add(EMPTY);
+                optimizedIDItems.add(RecipeEventListener.EMPTY);
             } else {
                 Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-                UniqueKey uniqueId = UniqueKey.create(wrappedItem.id());
-                optimizedIDItems.add(new OptimizedIDItem<>(uniqueId, itemStack));
+                optimizedIDItems.add(new OptimizedIDItem<>(wrappedItem.recipeIngredientId(), itemStack));
             }
         }
 
