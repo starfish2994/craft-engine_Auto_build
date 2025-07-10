@@ -324,10 +324,6 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     private ItemStack createVanillaItemStack(Key id) {
-        NamespacedKey key = NamespacedKey.fromString(id.toString());
-        if (key == null) {
-            return null;
-        }
         Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
         if (item == null) {
             return null;
