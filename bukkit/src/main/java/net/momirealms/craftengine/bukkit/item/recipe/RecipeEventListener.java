@@ -25,12 +25,7 @@ import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
 import net.momirealms.craftengine.core.item.setting.ItemEquipment;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.Pair;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Campfire;
@@ -42,6 +37,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.view.AnvilView;
@@ -79,10 +75,9 @@ public class RecipeEventListener implements Listener {
                 if (ItemStackUtils.isEmpty(item)) return;
                 if (ItemStackUtils.isEmpty(fuelStack)) {
                     Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(item);
-                    Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                    if (idHolder.isEmpty()) return;
+                    UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
 
-                    SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), item));
+                    SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, item));
                     Key recipeType;
                     if (furnaceInventory.getType() == InventoryType.FURNACE) {
                         recipeType = RecipeTypes.SMELTING;
@@ -92,7 +87,7 @@ public class RecipeEventListener implements Listener {
                         recipeType = RecipeTypes.SMOKING;
                     }
 
-                    Recipe<ItemStack> ceRecipe = recipeManager.recipeByInput(recipeType, input);
+                    Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(recipeType, input);
                     // The item is an ingredient, we should never consider it as fuel firstly
                     if (ceRecipe != null) return;
 
@@ -360,11 +355,8 @@ public class RecipeEventListener implements Listener {
                 return;
             }
             Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-            if (idHolder.isEmpty()) {
-                return;
-            }
-            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+            UniqueKey uniqueKey = UniqueKey.create(wrappedItem.id());
+            SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(uniqueKey, itemStack));
             CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
             if (ceRecipe == null) {
                 event.setCancelled(true);
@@ -390,13 +382,8 @@ public class RecipeEventListener implements Listener {
 
         ItemStack itemStack = event.getSource();
         Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-        Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-        if (idHolder.isEmpty()) {
-            event.setTotalCookTime(Integer.MAX_VALUE);
-            return;
-        }
-
-        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+        UniqueKey itemId = UniqueKey.create(wrappedItem.id());
+        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(itemId, itemStack));
         CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setTotalCookTime(Integer.MAX_VALUE);
@@ -425,13 +412,8 @@ public class RecipeEventListener implements Listener {
 
         ItemStack itemStack = event.getSource();
         Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(itemStack);
-        Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-        if (idHolder.isEmpty()) {
-            event.setCancelled(true);
-            return;
-        }
-
-        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(idHolder.get(), itemStack));
+        UniqueKey itemId = UniqueKey.create(wrappedItem.id());
+        SingleItemInput<ItemStack> input = new SingleItemInput<>(new OptimizedIDItem<>(itemId, itemStack));
         CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setCancelled(true);
@@ -893,14 +875,8 @@ public class RecipeEventListener implements Listener {
                 optimizedIDItems.add(EMPTY);
             } else {
                 Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    // an invalid item is used in recipe, we disallow it
-                    inventory.setResult(null);
-                    return;
-                } else {
-                    optimizedIDItems.add(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                }
+                UniqueKey itemUniqueId = UniqueKey.create(wrappedItem.id());
+                optimizedIDItems.add(new OptimizedIDItem<>(itemUniqueId, itemStack));
             }
         }
 
@@ -1040,8 +1016,7 @@ public class RecipeEventListener implements Listener {
             return EMPTY;
         } else {
             Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-            Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-            return idHolder.map(keyReference -> new OptimizedIDItem<>(keyReference, itemStack)).orElse(EMPTY);
+            return new OptimizedIDItem<>(UniqueKey.create(wrappedItem.id()), itemStack);
         }
     }
 }

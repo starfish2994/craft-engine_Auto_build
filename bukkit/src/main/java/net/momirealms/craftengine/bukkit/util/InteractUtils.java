@@ -9,11 +9,10 @@ import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.QuadFunction;
+import net.momirealms.craftengine.core.util.UniqueKey;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.block.data.BlockData;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
@@ -81,17 +79,17 @@ public class InteractUtils {
         });
         registerInteraction(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
-                    keyReference, item.getItem()
-            ))) != null).isPresent();
+            UniqueKey uniqueKey = UniqueKey.create(item.id());
+            return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+                    uniqueKey, item.getItem()
+            ))) != null;
         });
         registerInteraction(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            Optional<Holder.Reference<Key>> optional = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(item.id());
-            return optional.filter(keyReference -> BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
-                    keyReference, item.getItem()
-            ))) != null).isPresent();
+            UniqueKey uniqueKey = UniqueKey.create(item.id());
+            return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new OptimizedIDItem<>(
+                    uniqueKey, item.getItem()
+            ))) != null;
         });
         registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.HOPPER, (player, item, blockState, result) -> true);

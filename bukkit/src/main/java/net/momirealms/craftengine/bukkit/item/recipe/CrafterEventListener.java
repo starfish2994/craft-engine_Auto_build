@@ -10,9 +10,8 @@ import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.UniqueKey;
 import org.bukkit.block.Crafter;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,7 +22,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class CrafterEventListener implements Listener {
     private static final OptimizedIDItem<ItemStack> EMPTY = new OptimizedIDItem<>(null, null);
@@ -62,14 +60,8 @@ public class CrafterEventListener implements Listener {
                 optimizedIDItems.add(EMPTY);
             } else {
                 Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
-                Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
-                if (idHolder.isEmpty()) {
-                    // an invalid item is used in recipe, we disallow it
-                    event.setCancelled(true);
-                    return;
-                } else {
-                    optimizedIDItems.add(new OptimizedIDItem<>(idHolder.get(), itemStack));
-                }
+                UniqueKey uniqueId = UniqueKey.create(wrappedItem.id());
+                optimizedIDItems.add(new OptimizedIDItem<>(uniqueId, itemStack));
             }
         }
 

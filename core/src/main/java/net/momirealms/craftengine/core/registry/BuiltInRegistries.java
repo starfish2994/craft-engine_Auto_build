@@ -36,12 +36,10 @@ import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectorFactory;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 public class BuiltInRegistries {
     public static final Registry<CustomBlock> BLOCK = createDynamicBoundRegistry(Registries.BLOCK);
-    public static final Registry<Key> OPTIMIZED_ITEM_ID = createConstantBoundRegistry(Registries.OPTIMIZED_ITEM_ID);
     public static final Registry<BlockBehaviorFactory> BLOCK_BEHAVIOR_FACTORY = createConstantBoundRegistry(Registries.BLOCK_BEHAVIOR_FACTORY);
     public static final Registry<ItemBehaviorFactory> ITEM_BEHAVIOR_FACTORY = createConstantBoundRegistry(Registries.ITEM_BEHAVIOR_FACTORY);
     public static final Registry<PropertyFactory> PROPERTY_FACTORY = createConstantBoundRegistry(Registries.PROPERTY_FACTORY);

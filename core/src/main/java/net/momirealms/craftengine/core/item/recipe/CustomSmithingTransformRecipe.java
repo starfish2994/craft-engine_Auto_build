@@ -7,7 +7,6 @@ import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
@@ -145,13 +144,12 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         }
 
         private Ingredient<A> toIngredient(List<String> items) {
-            Set<Holder<Key>> holders = new HashSet<>();
+            Set<UniqueKey> holders = new HashSet<>();
             for (String item : items) {
                 if (item.charAt(0) == '#') {
                     holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
                 } else {
-                    holders.add(BuiltInRegistries.OPTIMIZED_ITEM_ID.get(Key.of(item)).orElseThrow(
-                            () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_item", item)));
+                    holders.add(UniqueKey.create(Key.of(item)));
                 }
             }
             return holders.isEmpty() ? null : Ingredient.of(holders);

@@ -26,9 +26,6 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.logger.Debugger;
-import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
-import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -349,7 +346,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(Holder<Key> id, Key materialId, Key clientBoundMaterialId) {
+    protected CustomItem.Builder<ItemStack> createPlatformItemBuilder(UniqueKey id, Key materialId, Key clientBoundMaterialId) {
         Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(materialId));
         Object clientBoundItem = materialId == clientBoundMaterialId ? item : FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(clientBoundMaterialId));
         if (item == null) {
@@ -372,14 +369,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 Key itemKey = KeyUtils.resourceLocationToKey(resourceLocation);
                 if (itemKey.namespace().equals("minecraft")) {
                     VANILLA_ITEMS.add(itemKey);
-                    Holder.Reference<Key> holder =  BuiltInRegistries.OPTIMIZED_ITEM_ID.get(itemKey)
-                            .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
-                                    .register(ResourceKey.create(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), itemKey), itemKey));
+                    UniqueKey uniqueKey = UniqueKey.create(itemKey);
                     Object mcHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, resourceLocation)).get();
                     Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
                     for (Object tag : tags) {
                         Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());
-                        VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(holder);
+                        VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(uniqueKey);
                     }
                 }
             }
