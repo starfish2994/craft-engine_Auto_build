@@ -63,4 +63,6 @@ public interface PacketIds {
     int serverboundSetCreativeModeSlotPacket();
 
     int serverboundInteractPacket();
+
+    int clientboundUpdateRecipesPacket();
 }

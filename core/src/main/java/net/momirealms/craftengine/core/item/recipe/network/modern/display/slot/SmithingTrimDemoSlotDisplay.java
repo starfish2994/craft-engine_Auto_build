@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network.display.slot;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display.slot;
 
 import com.mojang.datafixers.util.Either;
 import net.kyori.adventure.text.Component;

@@ -12,7 +12,7 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRecipeTypes;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
-import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.LegacyInventoryUtils;
 import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.item.equipment.TrimBasedEquipment;
@@ -76,8 +76,8 @@ public class RecipeEventListener implements Listener {
         if (clickedInventory == player.getInventory()) {
             if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
                 ItemStack item = event.getCurrentItem();
-                if (ItemUtils.isEmpty(item)) return;
-                if (fuelStack == null || fuelStack.getType() == Material.AIR) {
+                if (ItemStackUtils.isEmpty(item)) return;
+                if (ItemStackUtils.isEmpty(fuelStack)) {
                     Item<ItemStack> wrappedItem = BukkitItemManager.instance().wrap(item);
                     Optional<Holder.Reference<Key>> idHolder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(wrappedItem.id());
                     if (idHolder.isEmpty()) return;
@@ -98,10 +98,10 @@ public class RecipeEventListener implements Listener {
 
                     int fuelTime = this.itemManager.fuelTime(item);
                     if (fuelTime == 0) {
-                        if (ItemUtils.isCustomItem(item) && item.getType().isFuel()) {
+                        if (ItemStackUtils.isCustomItem(item) && item.getType().isFuel()) {
                             event.setCancelled(true);
                             ItemStack smelting = furnaceInventory.getSmelting();
-                            if (ItemUtils.isEmpty(smelting)) {
+                            if (ItemStackUtils.isEmpty(smelting)) {
                                 furnaceInventory.setSmelting(item.clone());
                                 item.setAmount(0);
                             } else if (smelting.isSimilar(item)) {
@@ -162,11 +162,11 @@ public class RecipeEventListener implements Listener {
                     } else {
                         item = player.getInventory().getItem(hotBarSlot);
                     }
-                    if (item == null) return;
+                    if (ItemStackUtils.isEmpty(item)) return;
                     int fuelTime = this.plugin.itemManager().fuelTime(item);
                     // only handle custom items
                     if (fuelTime == 0) {
-                        if (ItemUtils.isCustomItem(item) && item.getType().isFuel()) {
+                        if (ItemStackUtils.isCustomItem(item) && item.getType().isFuel()) {
                             event.setCancelled(true);
                         }
                         return;
@@ -189,11 +189,11 @@ public class RecipeEventListener implements Listener {
                 case LEFT, RIGHT -> {
                     ItemStack itemOnCursor = event.getCursor();
                     // pick item
-                    if (ItemUtils.isEmpty(itemOnCursor)) return;
+                    if (ItemStackUtils.isEmpty(itemOnCursor)) return;
                     int fuelTime = this.plugin.itemManager().fuelTime(itemOnCursor);
                     // only handle custom items
                     if (fuelTime == 0) {
-                        if (ItemUtils.isCustomItem(itemOnCursor) && itemOnCursor.getType().isFuel()) {
+                        if (ItemStackUtils.isCustomItem(itemOnCursor) && itemOnCursor.getType().isFuel()) {
                             event.setCancelled(true);
                         }
                         return;
@@ -346,7 +346,7 @@ public class RecipeEventListener implements Listener {
         }
 
         ItemStack itemStack = event.getItem();
-        if (ItemUtils.isEmpty(itemStack)) return;
+        if (ItemStackUtils.isEmpty(itemStack)) return;
         try {
             @SuppressWarnings("unchecked")
             Optional<Object> optionalMCRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(
@@ -446,7 +446,7 @@ public class RecipeEventListener implements Listener {
     public void onPrepareResult(PrepareResultEvent event) {
 //        if (!ConfigManager.enableRecipeSystem()) return;
         if (event.getInventory() instanceof CartographyInventory cartographyInventory) {
-            if (ItemUtils.hasCustomItem(cartographyInventory.getStorageContents())) {
+            if (ItemStackUtils.hasCustomItem(cartographyInventory.getStorageContents())) {
                 event.setResult(new ItemStack(Material.AIR));
             }
         }
@@ -523,7 +523,7 @@ public class RecipeEventListener implements Listener {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
         ItemStack second = inventory.getSecondItem();
-        if (first == null || second == null) return;
+        if (ItemStackUtils.isEmpty(first) || ItemStackUtils.isEmpty(second)) return;
 
         Item<ItemStack> wrappedSecond = BukkitItemManager.instance().wrap(second);
         // 如果材料不是自定义的，那么忽略
@@ -678,7 +678,7 @@ public class RecipeEventListener implements Listener {
     private void processRename(PrepareAnvilEvent event) {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
-        if (ItemUtils.isEmpty(first)) {
+        if (ItemStackUtils.isEmpty(first)) {
             return;
         }
         if (event.getResult() == null) {
@@ -721,7 +721,7 @@ public class RecipeEventListener implements Listener {
         if (!(recipe instanceof ComplexRecipe complexRecipe))
             return;
         CraftingInventory inventory = event.getInventory();
-        boolean hasCustomItem = ItemUtils.hasCustomItem(inventory.getMatrix());
+        boolean hasCustomItem = ItemStackUtils.hasCustomItem(inventory.getMatrix());
         if (!hasCustomItem) {
             return;
         }
@@ -835,7 +835,7 @@ public class RecipeEventListener implements Listener {
         boolean hasReplacement = false;
         for (int i = 0; i < usedItems.length; i++) {
             ItemStack usedItem = usedItems[i];
-            if (ItemUtils.isEmpty(usedItem)) continue;
+            if (ItemStackUtils.isEmpty(usedItem)) continue;
             if (usedItem.getAmount() != 1) continue;
             Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(usedItem);
             if (wrapped == null) continue;
@@ -889,7 +889,7 @@ public class RecipeEventListener implements Listener {
 
         List<OptimizedIDItem<ItemStack>> optimizedIDItems = new ArrayList<>();
         for (ItemStack itemStack : ingredients) {
-            if (ItemUtils.isEmpty(itemStack)) {
+            if (ItemStackUtils.isEmpty(itemStack)) {
                 optimizedIDItems.add(EMPTY);
             } else {
                 Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);
@@ -964,7 +964,7 @@ public class RecipeEventListener implements Listener {
         SmithingInventory inventory = event.getInventory();
         if (!(inventory.getRecipe() instanceof SmithingTrimRecipe)) return;
         ItemStack equipment = inventory.getInputEquipment();
-        if (equipment == null) return;
+        if (ItemStackUtils.isEmpty(equipment)) return;
         Item<ItemStack> wrappedEquipment = this.itemManager.wrap(equipment);
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrappedEquipment.getCustomItem();
         if (optionalCustomItem.isEmpty()) return;
@@ -1036,7 +1036,7 @@ public class RecipeEventListener implements Listener {
     }
 
     private OptimizedIDItem<ItemStack> getOptimizedIDItem(@Nullable ItemStack itemStack) {
-        if (ItemUtils.isEmpty(itemStack)) {
+        if (ItemStackUtils.isEmpty(itemStack)) {
             return EMPTY;
         } else {
             Item<ItemStack> wrappedItem = this.itemManager.wrap(itemStack);

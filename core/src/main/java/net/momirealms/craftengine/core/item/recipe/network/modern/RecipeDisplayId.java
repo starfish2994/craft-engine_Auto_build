@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network;
+package net.momirealms.craftengine.core.item.recipe.network.modern;
 
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;

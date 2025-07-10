@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.momirealms.craftengine.bukkit.item.ComponentItemWrapper;
 import net.momirealms.craftengine.bukkit.item.ComponentTypes;
+import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
@@ -29,6 +30,11 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
 
     public ComponentItemFactory1_20_5(CraftEngine plugin) {
         super(plugin);
+    }
+
+    @Override
+    protected boolean isEmpty(ComponentItemWrapper item) {
+        return item.getItem().isEmpty();
     }
 
     @Override

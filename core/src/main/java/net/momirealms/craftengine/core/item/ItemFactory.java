@@ -202,4 +202,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract W transmuteCopy(W item, Key newItem, int amount);
 
     protected abstract W unsafeTransmuteCopy(W item, Object newItem, int count);
+
+    protected abstract boolean isEmpty(W item);
 }

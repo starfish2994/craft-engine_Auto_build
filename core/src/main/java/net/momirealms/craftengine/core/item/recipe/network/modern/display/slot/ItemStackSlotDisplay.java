@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network.display.slot;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display.slot;
 
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;

@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -48,20 +49,34 @@ public class FriendlyByteBuf extends ByteBuf {
 
     public <T, C extends Collection<T>> C readCollection(IntFunction<C> collectionFactory, Reader<T> reader) {
         int i = this.readVarInt();
-        C c0 = (C)(collectionFactory.apply(i));
-
+        C collection = collectionFactory.apply(i);
         for(int j = 0; j < i; ++j) {
-            c0.add(reader.apply(this));
+            collection.add(reader.apply(this));
         }
-
-        return c0;
+        return collection;
     }
 
     public <T> void writeCollection(Collection<T> collection, Writer<T> writer) {
         this.writeVarInt(collection.size());
+        for (T t : collection) {
+            writer.accept(this, t);
+        }
+    }
 
-        for (T t0 : collection) {
-            writer.accept(this, t0);
+    @SuppressWarnings("unchecked")
+    public <T> T[] readArray(Reader<T> reader, Class<T> type) {
+        int i = this.readVarInt();
+        T[] array = (T[]) Array.newInstance(type, i);
+        for(int j = 0; j < i; ++j) {
+            array[j] = reader.apply(this);
+        }
+        return array;
+    }
+
+    public <T> void writeArray(T[] array, Writer<T> writer) {
+        this.writeVarInt(array.length);
+        for(T t : array) {
+            writer.accept(this, t);
         }
     }
 

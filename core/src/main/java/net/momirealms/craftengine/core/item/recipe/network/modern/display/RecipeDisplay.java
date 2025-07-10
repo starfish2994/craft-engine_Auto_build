@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network.display;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display;
 
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;

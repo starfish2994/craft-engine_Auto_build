@@ -20,6 +20,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bell;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -292,7 +293,7 @@ public class InteractUtils {
         }
     }
 
-    public static boolean isInteractable(Player player, BlockData state, BlockHitResult hit, Item<ItemStack> item) {
+    public static boolean isInteractable(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
         Key blockType = BlockStateUtils.getBlockOwnerIdFromData(state);
         if (INTERACTIONS.containsKey(blockType)) {
             return INTERACTIONS.get(blockType).apply(player, item, state, hit);
@@ -301,7 +302,7 @@ public class InteractUtils {
         }
     }
 
-    public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, Item<ItemStack> item) {
+    public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
         if (item == null) return false;
         Key blockType = BlockStateUtils.getBlockOwnerIdFromData(state);
         if (WILL_CONSUME.containsKey(blockType)) {

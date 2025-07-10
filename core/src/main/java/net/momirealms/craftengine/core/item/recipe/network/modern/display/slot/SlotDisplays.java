@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network.display.slot;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display.slot;
 
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 public final class SlotDisplays {
+    private SlotDisplays() {}
+
     public static final Key EMPTY = Key.of("empty");
     public static final Key ANY_FUEL = Key.of("any_fuel");
     public static final Key ITEM = Key.of("item");

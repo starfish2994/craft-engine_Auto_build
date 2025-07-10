@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network.display;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display;
 
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
 import net.momirealms.craftengine.core.registry.Holder;
@@ -8,6 +8,8 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 public final class RecipeDisplays {
+    private RecipeDisplays() {}
+
     public static final Key CRAFTING_SHAPELESS = Key.of("crafting_shapeless");
     public static final Key CRAFTING_SHAPED = Key.of("crafting_shaped");
     public static final Key FURNACE = Key.of("furnace");

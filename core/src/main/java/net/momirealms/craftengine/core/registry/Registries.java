@@ -8,8 +8,9 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
-import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
-import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipe;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
 import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
 import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
@@ -75,4 +76,5 @@ public class Registries {
     public static final ResourceKey<Registry<EquipmentFactory>> EQUIPMENT_FACTORY = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("equipment_factory"));
     public static final ResourceKey<Registry<SlotDisplay.Type>> SLOT_DISPLAY_TYPE = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("slot_display_type"));
     public static final ResourceKey<Registry<RecipeDisplay.Type>> RECIPE_DISPLAY_TYPE = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_display_type"));
+    public static final ResourceKey<Registry<LegacyRecipe.Type>> LEGACY_RECIPE_TYPE = new ResourceKey<>(ROOT_REGISTRY, Key.withDefaultNamespace("legacy_recipe_type"));
 }

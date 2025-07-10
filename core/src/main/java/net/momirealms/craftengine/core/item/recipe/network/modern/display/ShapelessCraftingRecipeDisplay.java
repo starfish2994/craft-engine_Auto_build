@@ -1,7 +1,7 @@
-package net.momirealms.craftengine.core.item.recipe.network.display;
+package net.momirealms.craftengine.core.item.recipe.network.modern.display;
 
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.item.recipe.network.display.slot.SlotDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 

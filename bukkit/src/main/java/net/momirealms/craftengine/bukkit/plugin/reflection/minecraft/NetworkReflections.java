@@ -1573,4 +1573,11 @@ public final class NetworkReflections {
                     "network.protocol.game.ClientboundPlaceGhostRecipePacket"
             )
     );
+
+    public static final Class<?> clazz$ClientboundUpdateRecipesPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutRecipeUpdate",
+                    "network.protocol.game.ClientboundUpdateRecipesPacket"
+            )
+    );
 }

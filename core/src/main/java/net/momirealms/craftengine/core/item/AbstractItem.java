@@ -24,6 +24,11 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     }
 
     @Override
+    public boolean isEmpty() {
+        return this.factory.isEmpty(this.item);
+    }
+
+    @Override
     public Item<I> itemModel(String data) {
         this.factory.itemModel(this.item, data);
         return this;

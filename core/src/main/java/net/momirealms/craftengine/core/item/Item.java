@@ -24,6 +24,8 @@ import java.util.Optional;
  */
 public interface Item<I> {
 
+    boolean isEmpty();
+
     Optional<CustomItem<I>> getCustomItem();
 
     Optional<List<ItemBehavior>> getItemBehavior();

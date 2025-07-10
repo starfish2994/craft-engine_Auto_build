@@ -14,8 +14,9 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MItems;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
-import net.momirealms.craftengine.bukkit.util.ItemUtils;
+import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
@@ -35,6 +36,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -56,6 +58,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final ArmorEventListener armorEventListener;
     private final NetworkItemHandler<ItemStack> networkItemHandler;
     private final Object bedrockItemHolder;
+    private final Item<ItemStack> empty;
+    private final ItemStack emptyStack;
     private Set<Key> lastRegisteredPatterns = Set.of();
 
     public BukkitItemManager(BukkitCraftEngine plugin) {
@@ -71,6 +75,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.bedrockItemHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, KeyUtils.toResourceLocation(Key.of("minecraft:bedrock")))).get();;
         this.registerCustomTrimMaterial();
         this.loadLastRegisteredPatterns();
+        this.empty = this.wrap(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.instance$ItemStack$EMPTY));
+        this.emptyStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(MItems.AIR, 1));
     }
 
     @Override
@@ -143,7 +149,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public int fuelTime(ItemStack itemStack) {
-        if (ItemUtils.isEmpty(itemStack)) return 0;
+        if (ItemStackUtils.isEmpty(itemStack)) return 0;
         Optional<CustomItem<ItemStack>> customItem = wrap(itemStack).getCustomItem();
         return customItem.map(it -> it.settings().fuelTime()).orElse(0);
     }
@@ -290,7 +296,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public ItemStack buildCustomItemStack(Key id, Player player) {
-        return Optional.ofNullable(customItems.get(id)).map(it -> it.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), 1)).orElse(null);
+        return Optional.ofNullable(this.customItems.get(id)).map(it -> it.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), 1)).orElse(null);
     }
 
     @Override
@@ -306,13 +312,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private ItemStack createVanillaItemStack(Key id) {
         NamespacedKey key = NamespacedKey.fromString(id.toString());
         if (key == null) {
-            this.plugin.logger().warn(id + " is not a valid namespaced key");
-            return new ItemStack(Material.AIR);
+            return this.emptyStack;
         }
         Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
         if (item == null) {
-            this.plugin.logger().warn(id + " is not a valid material");
-            return new ItemStack(Material.AIR);
+            return this.emptyStack;
         }
         return FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(item, 1));
     }
@@ -326,8 +330,8 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     }
 
     @Override
-    public Item<ItemStack> wrap(ItemStack itemStack) {
-        if (ItemUtils.isEmpty(itemStack)) return null;
+    public @NotNull Item<ItemStack> wrap(ItemStack itemStack) {
+        if (itemStack == null) return this.empty;
         return this.factory.wrap(itemStack);
     }
 

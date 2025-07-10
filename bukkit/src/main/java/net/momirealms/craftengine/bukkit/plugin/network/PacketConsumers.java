@@ -42,8 +42,8 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
-import net.momirealms.craftengine.core.item.recipe.network.RecipeBookEntry;
-import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.modern.RecipeBookEntry;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
 import net.momirealms.craftengine.core.pack.host.ResourcePackHost;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -1306,7 +1306,7 @@ public class PacketConsumers {
         int slot = VersionHelper.isOrAbove1_20_5() ? (short) NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet) : (int) NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$slotNumGetter.invokeExact(packet);
         if (slot < 36 || slot > 44) return;
         ItemStack item = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(NetworkReflections.methodHandle$ServerboundSetCreativeModeSlotPacket$itemStackGetter.invokeExact(packet));
-        if (ItemUtils.isEmpty(item)) return;
+        if (ItemStackUtils.isEmpty(item)) return;
         if (slot - 36 != bukkitPlayer.getInventory().getHeldItemSlot()) {
             return;
         }
@@ -1329,7 +1329,7 @@ public class PacketConsumers {
         Key blockItemId = KeyUtils.resourceLocationToKey(FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, vanillaBlockItem));
         if (!addItemId.equals(blockItemId)) return;
         ItemStack itemStack = BukkitCraftEngine.instance().itemManager().buildCustomItemStack(itemId, player);
-        if (ItemUtils.isEmpty(itemStack)) {
+        if (ItemStackUtils.isEmpty(itemStack)) {
             CraftEngine.instance().logger().warn("Item: " + itemId + " is not a valid item");
             return;
         }
@@ -1338,7 +1338,7 @@ public class PacketConsumers {
         int emptySlot = -1;
         for (int i = 0; i < 9 + 27; i++) {
             ItemStack invItem = inventory.getItem(i);
-            if (ItemUtils.isEmpty(invItem)) {
+            if (ItemStackUtils.isEmpty(invItem)) {
                 if (emptySlot == -1 && i < 9) emptySlot = i;
                 continue;
             }
@@ -1361,7 +1361,7 @@ public class PacketConsumers {
             }
         } else {
             if (item.getAmount() == 1) {
-                if (ItemUtils.isEmpty(inventory.getItem(slot - 36))) {
+                if (ItemStackUtils.isEmpty(inventory.getItem(slot - 36))) {
                     BukkitCraftEngine.instance().scheduler().sync().runDelayed(() -> inventory.setItem(slot - 36, itemStack));
                     return;
                 }
@@ -2125,11 +2125,11 @@ public class PacketConsumers {
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
             if (VersionHelper.isOrAbove1_21_5()) {
                 Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
-                if (wrapped != null && wrapped.isCustomItem()) {
+                if (!wrapped.isEmpty() && wrapped.isCustomItem()) {
                     Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
                     if (containerMenu != null) {
                         ItemStack carried = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu));
-                        if (ItemUtils.isEmpty(carried)) {
+                        if (ItemStackUtils.isEmpty(carried)) {
                             event.setChanged(true);
                             buf.clear();
                             buf.writeVarInt(event.packetID());
@@ -2513,6 +2513,15 @@ public class PacketConsumers {
             display.write(buf);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundPlaceGhostRecipePacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> UPDATE_RECIPES = (user, event) -> {
+        try {
+            if (VersionHelper.isOrAbove1_21_2()) return;
+            FriendlyByteBuf buf = event.getBuffer();
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateRecipesPacket", e);
         }
     };
 }

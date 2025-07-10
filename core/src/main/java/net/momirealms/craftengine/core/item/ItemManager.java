@@ -13,6 +13,7 @@ import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 import org.incendo.cloud.suggestion.Suggestion;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -36,14 +37,17 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     Collection<Key> vanillaItems();
 
+    @Nullable
     T buildCustomItemStack(Key id, @Nullable Player player);
 
+    @Nullable
     T buildItemStack(Key id, @Nullable Player player);
 
     Item<T> createCustomWrappedItem(Key id, @Nullable Player player);
 
     Item<T> createWrappedItem(Key id, @Nullable Player player);
 
+    @NotNull
     Item<T> wrap(T itemStack);
 
     Item<T> fromByteArray(byte[] bytes);

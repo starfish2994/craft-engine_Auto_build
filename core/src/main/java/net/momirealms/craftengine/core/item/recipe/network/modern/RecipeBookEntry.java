@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.network;
+package net.momirealms.craftengine.core.item.recipe.network.modern;
 
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;

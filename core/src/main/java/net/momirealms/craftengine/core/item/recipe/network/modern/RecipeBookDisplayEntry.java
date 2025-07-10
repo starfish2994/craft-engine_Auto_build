@@ -1,8 +1,8 @@
-package net.momirealms.craftengine.core.item.recipe.network;
+package net.momirealms.craftengine.core.item.recipe.network.modern;
 
 import com.mojang.datafixers.util.Either;
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.item.recipe.network.display.RecipeDisplay;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
