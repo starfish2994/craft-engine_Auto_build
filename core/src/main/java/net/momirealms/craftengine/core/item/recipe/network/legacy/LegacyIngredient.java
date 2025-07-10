@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item.recipe.network.legacy;
 
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
@@ -18,6 +19,10 @@ public class LegacyIngredient {
         return items;
     }
 
+    public void write(FriendlyByteBuf buf) {
+        buf.writeArray(this.items, (byteBuf, item) -> CraftEngine.instance().itemManager().encode(byteBuf, item));
+    }
+
     @SuppressWarnings("unchecked")
     public static LegacyIngredient read(FriendlyByteBuf buf) {
         Item<Object>[] items = buf.readArray(byteBuf -> CraftEngine.instance().itemManager().decode(byteBuf), Item.class);
@@ -25,9 +30,10 @@ public class LegacyIngredient {
     }
 
     public void applyClientboundData(Player player) {
-        for (int i = 0; i < items.length; i++) {
-            Item<Object> item = items[i];
-            this.items[i] = CraftEngine.instance().itemManager().s2c(item, player);
+        ItemManager<Object> manager = CraftEngine.instance().itemManager();
+        for (int i = 0; i < this.items.length; i++) {
+            Item<Object> item = this.items[i];
+            this.items[i] = manager.s2c(item, player);
         }
     }
 }

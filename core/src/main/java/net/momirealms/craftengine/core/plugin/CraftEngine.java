@@ -7,8 +7,9 @@ import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.font.FontManager;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.RecipeManager;
-import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplays;
-import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplays;
+import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplayTypes;
+import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplayTypes;
 import net.momirealms.craftengine.core.loot.VanillaLootManager;
 import net.momirealms.craftengine.core.pack.PackManager;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
@@ -95,8 +96,9 @@ public abstract class CraftEngine implements Plugin {
     }
 
     protected void onPluginLoad() {
-        RecipeDisplays.register();
-        SlotDisplays.register();
+        RecipeDisplayTypes.register();
+        SlotDisplayTypes.register();
+        LegacyRecipeTypes.register();
         ((Logger) LogManager.getRootLogger()).addFilter(new LogFilter());
         ((Logger) LogManager.getRootLogger()).addFilter(new DisconnectLogFilter());
     }

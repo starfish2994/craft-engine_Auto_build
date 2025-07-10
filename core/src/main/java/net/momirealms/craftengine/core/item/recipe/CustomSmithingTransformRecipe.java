@@ -193,9 +193,8 @@ public class CustomSmithingTransformRecipe<T> implements Recipe<T> {
         }
 
         public static void register(Key key, ItemDataProcessor.ProcessorFactory factory) {
-            Holder.Reference<ItemDataProcessor.ProcessorFactory> holder = ((WritableRegistry<ItemDataProcessor.ProcessorFactory>) BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY)
-                    .registerForHolder(new ResourceKey<>(Registries.SMITHING_RESULT_PROCESSOR_FACTORY.location(), key));
-            holder.bindValue(factory);
+            ((WritableRegistry<ItemDataProcessor.ProcessorFactory>) BuiltInRegistries.SMITHING_RESULT_PROCESSOR_FACTORY)
+                    .register(ResourceKey.create(Registries.SMITHING_RESULT_PROCESSOR_FACTORY.location(), key), factory);
         }
     }
 

@@ -1,14 +1,13 @@
 package net.momirealms.craftengine.core.item.recipe.network.modern.display.slot;
 
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
-public final class SlotDisplays {
-    private SlotDisplays() {}
+public final class SlotDisplayTypes {
+    private SlotDisplayTypes() {}
 
     public static final Key EMPTY = Key.of("empty");
     public static final Key ANY_FUEL = Key.of("any_fuel");
@@ -31,8 +30,7 @@ public final class SlotDisplays {
     }
 
     public static void register(Key key, SlotDisplay.Type type) {
-        Holder.Reference<SlotDisplay.Type> holder = ((WritableRegistry<SlotDisplay.Type>) BuiltInRegistries.SLOT_DISPLAY_TYPE)
-                .registerForHolder(new ResourceKey<>(Registries.SLOT_DISPLAY_TYPE.location(), key));
-        holder.bindValue(type);
+        ((WritableRegistry<SlotDisplay.Type>) BuiltInRegistries.SLOT_DISPLAY_TYPE)
+                .register(ResourceKey.create(Registries.SLOT_DISPLAY_TYPE.location(), key), type);
     }
 }

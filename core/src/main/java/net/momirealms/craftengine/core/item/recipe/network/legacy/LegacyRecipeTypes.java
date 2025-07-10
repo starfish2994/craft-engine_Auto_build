@@ -1,6 +1,10 @@
 package net.momirealms.craftengine.core.item.recipe.network.legacy;
 
+import net.momirealms.craftengine.core.registry.BuiltInRegistries;
+import net.momirealms.craftengine.core.registry.Registries;
+import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.ResourceKey;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Obsolete
@@ -31,4 +35,34 @@ public final class LegacyRecipeTypes {
     public static final Key SMITHING_TRIM = Key.of("smithing_trim");
     public static final Key DECORATED_POT_RECIPE = Key.of("crafting_decorated_pot");
 
+    public static void register() {
+        register(SHAPED_RECIPE, new LegacyRecipe.Type(LegacyShapedRecipe::read));
+        register(SHAPELESS_RECIPE, new LegacyRecipe.Type(LegacyShapelessRecipe::read));
+        register(ARMOR_DYE, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(BOOK_CLONING, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(MAP_CLONING, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(MAP_EXTENDING, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(FIREWORK_ROCKET, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(FIREWORK_STAR, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(FIREWORK_STAR_FADE, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(TIPPED_ARROW, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(BANNER_DUPLICATE, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(SHIELD_DECORATION, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(SHULKER_BOX_COLORING, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(SUSPICIOUS_STEW, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(REPAIR_ITEM, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+        register(SMELTING_RECIPE, new LegacyRecipe.Type(LegacyCookingRecipe::read));
+        register(BLASTING_RECIPE, new LegacyRecipe.Type(LegacyCookingRecipe::read));
+        register(SMOKING_RECIPE, new LegacyRecipe.Type(LegacyCookingRecipe::read));
+        register(CAMPFIRE_COOKING_RECIPE, new LegacyRecipe.Type(LegacyCookingRecipe::read));
+        register(STONECUTTER, new LegacyRecipe.Type(LegacyStoneCuttingRecipe::read));
+        register(SMITHING_TRANSFORM, new LegacyRecipe.Type(LegacySmithingTransformRecipe::read));
+        register(SMITHING_TRIM, new LegacyRecipe.Type(LegacySmithingTrimRecipe::read));
+        register(DECORATED_POT_RECIPE, new LegacyRecipe.Type(LegacyCustomRecipe::read));
+    }
+
+    public static void register(Key key, LegacyRecipe.Type type) {
+        ((WritableRegistry<LegacyRecipe.Type>) BuiltInRegistries.LEGACY_RECIPE_TYPE)
+                .register(ResourceKey.create(Registries.LEGACY_RECIPE_TYPE.location(), key), type);
+    }
 }

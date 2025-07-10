@@ -1,14 +1,13 @@
 package net.momirealms.craftengine.core.item.recipe.network.modern.display;
 
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.Registries;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
-public final class RecipeDisplays {
-    private RecipeDisplays() {}
+public final class RecipeDisplayTypes {
+    private RecipeDisplayTypes() {}
 
     public static final Key CRAFTING_SHAPELESS = Key.of("crafting_shapeless");
     public static final Key CRAFTING_SHAPED = Key.of("crafting_shaped");
@@ -25,8 +24,6 @@ public final class RecipeDisplays {
     }
 
     public static void register(Key key, RecipeDisplay.Type type) {
-        Holder.Reference<RecipeDisplay.Type> holder = ((WritableRegistry<RecipeDisplay.Type>) BuiltInRegistries.RECIPE_DISPLAY_TYPE)
-                .registerForHolder(new ResourceKey<>(Registries.RECIPE_DISPLAY_TYPE.location(), key));
-        holder.bindValue(type);
+        ((WritableRegistry<RecipeDisplay.Type>) BuiltInRegistries.RECIPE_DISPLAY_TYPE).register(ResourceKey.create(Registries.RECIPE_DISPLAY_TYPE.location(), key), type);
     }
 }

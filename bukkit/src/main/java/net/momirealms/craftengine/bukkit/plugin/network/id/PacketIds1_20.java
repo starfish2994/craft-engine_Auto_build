@@ -152,16 +152,16 @@ public class PacketIds1_20 implements PacketIds {
 
     @Override
     public int clientboundRecipeBookAddPacket() {
-        return PacketIdFinder.serverboundByClazz(NetworkReflections.clazz$ClientboundRecipeBookAddPacket);
+        return PacketIdFinder.clientboundByClazz(NetworkReflections.clazz$ClientboundRecipeBookAddPacket);
     }
 
     @Override
     public int clientboundPlaceGhostRecipePacket() {
-        return PacketIdFinder.serverboundByClazz(NetworkReflections.clazz$ClientboundPlaceGhostRecipePacket);
+        return PacketIdFinder.clientboundByClazz(NetworkReflections.clazz$ClientboundPlaceGhostRecipePacket);
     }
 
     @Override
     public int clientboundUpdateRecipesPacket() {
-        return PacketIdFinder.serverboundByClazz(NetworkReflections.clazz$ClientboundUpdateRecipesPacket);
+        return PacketIdFinder.clientboundByClazz(NetworkReflections.clazz$ClientboundUpdateRecipesPacket);
     }
 }

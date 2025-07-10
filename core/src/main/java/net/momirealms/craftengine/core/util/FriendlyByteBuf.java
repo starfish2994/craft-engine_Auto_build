@@ -365,6 +365,10 @@ public class FriendlyByteBuf extends ByteBuf {
         return registry.getValue(id);
     }
 
+    public <T> void writeById(Registry<T> registry, T value) {
+        this.writeVarInt(registry.getId(value));
+    }
+
     public int readVarInt() {
         int value = 0;
         int shift = 0;

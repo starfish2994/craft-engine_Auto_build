@@ -330,7 +330,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             // register for recipes
             Holder.Reference<Key> holder = BuiltInRegistries.OPTIMIZED_ITEM_ID.get(id)
                     .orElseGet(() -> ((WritableRegistry<Key>) BuiltInRegistries.OPTIMIZED_ITEM_ID)
-                            .register(new ResourceKey<>(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
+                            .register(ResourceKey.create(BuiltInRegistries.OPTIMIZED_ITEM_ID.key().location(), id), id));
 
             boolean isVanillaItem = isVanillaItem(id);
             Key material = Key.from(isVanillaItem ? id.value() : ResourceConfigUtils.requireNonEmptyStringOrThrow(section.get("material"), "warning.config.item.missing_material").toLowerCase(Locale.ENGLISH));

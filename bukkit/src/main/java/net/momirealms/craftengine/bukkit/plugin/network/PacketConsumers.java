@@ -42,6 +42,7 @@ import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
+import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipeHolder;
 import net.momirealms.craftengine.core.item.recipe.network.modern.RecipeBookEntry;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.pack.host.ResourcePackDownloadData;
@@ -2317,7 +2318,7 @@ public class PacketConsumers {
             }
 
             boolean isTerminal = action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED;
-            if (isTerminal) {
+            if (isTerminal && VersionHelper.isOrAbove1_20_2()) {
                 event.setCancelled(true);
                 Object packetListener = FastNMS.INSTANCE.method$Connection$getPacketListener(user.connection());
                 if (!CoreReflections.clazz$ServerConfigurationPacketListenerImpl.isInstance(packetListener)) return;
@@ -2520,6 +2521,15 @@ public class PacketConsumers {
         try {
             if (VersionHelper.isOrAbove1_21_2()) return;
             FriendlyByteBuf buf = event.getBuffer();
+            List<LegacyRecipeHolder> holders = buf.readCollection(ArrayList::new, byteBuf -> {
+                LegacyRecipeHolder holder = LegacyRecipeHolder.read(byteBuf);
+                holder.recipe().applyClientboundData((BukkitServerPlayer) user);
+                return holder;
+            });
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+            buf.writeCollection(holders, ((byteBuf, recipeHolder) -> recipeHolder.write(byteBuf)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateRecipesPacket", e);
         }
