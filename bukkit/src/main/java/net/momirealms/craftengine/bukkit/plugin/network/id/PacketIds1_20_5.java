@@ -150,6 +150,11 @@ public class PacketIds1_20_5 implements PacketIds {
     }
 
     @Override
+    public int clientboundUpdateAdvancementsPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:update_advancements");
+    }
+
+    @Override
     public int serverboundContainerClickPacket() {
         return PacketIdFinder.serverboundByName("minecraft:container_click");
     }

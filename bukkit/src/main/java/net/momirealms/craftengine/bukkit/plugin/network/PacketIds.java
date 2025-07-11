@@ -58,6 +58,8 @@ public interface PacketIds {
 
     int clientboundPlaceGhostRecipePacket();
 
+    int clientboundUpdateAdvancementsPacket();
+
     int serverboundContainerClickPacket();
 
     int serverboundSetCreativeModeSlotPacket();

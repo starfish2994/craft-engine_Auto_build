@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.plugin.network;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
@@ -34,6 +35,8 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityType
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
 import net.momirealms.craftengine.bukkit.util.*;
+import net.momirealms.craftengine.core.advancement.network.AdvancementHolder;
+import net.momirealms.craftengine.core.advancement.network.AdvancementProgress;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.font.FontManager;
@@ -2532,6 +2535,39 @@ public class PacketConsumers {
             buf.writeCollection(holders, ((byteBuf, recipeHolder) -> recipeHolder.write(byteBuf)));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateRecipesPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> UPDATE_ADVANCEMENTS = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            boolean reset = buf.readBoolean();
+            List<AdvancementHolder> added = buf.readCollection(ArrayList::new, byteBuf -> {
+                AdvancementHolder holder = AdvancementHolder.read(byteBuf);
+                holder.applyClientboundData((BukkitServerPlayer) user);
+                return holder;
+            });
+            Set<Key> removed = buf.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readKey);
+            Map<Key, AdvancementProgress> progress = buf.readMap(FriendlyByteBuf::readKey, AdvancementProgress::read);
+
+            boolean showAdvancement = false;
+            if (VersionHelper.isOrAbove1_21_5()) {
+                showAdvancement = buf.readBoolean();
+            }
+
+            event.setChanged(true);
+            buf.clear();
+            buf.writeVarInt(event.packetID());
+
+            buf.writeBoolean(reset);
+            buf.writeCollection(added, (byteBuf, advancementHolder) -> advancementHolder.write(byteBuf));
+            buf.writeCollection(removed, FriendlyByteBuf::writeKey);
+            buf.writeMap(progress, FriendlyByteBuf::writeKey, (byteBuf, advancementProgress) -> advancementProgress.write(byteBuf));
+            if (VersionHelper.isOrAbove1_21_5()) {
+                buf.writeBoolean(showAdvancement);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateAdvancementsPacket", e);
         }
     };
 }

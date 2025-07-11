@@ -11,6 +11,7 @@ import io.netty.handler.codec.EncoderException;
 import io.netty.util.ByteProcessor;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.registry.Registry;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.sparrow.nbt.NBT;
@@ -29,6 +30,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -45,6 +47,30 @@ public class FriendlyByteBuf extends ByteBuf {
 
     public ByteBuf source() {
         return source;
+    }
+
+    public Component readComponent() {
+        if (VersionHelper.isOrAbove1_20_3()) {
+            return AdventureHelper.nbtToComponent(this.readNbt(false));
+        } else {
+            return AdventureHelper.jsonToComponent(this.readUtf());
+        }
+    }
+
+    public void writeComponent(Component component) {
+        if (VersionHelper.isOrAbove1_20_3()) {
+            this.writeNbt(AdventureHelper.componentToNbt(component), false);
+        } else {
+            this.writeUtf(AdventureHelper.componentToJson(component));
+        }
+    }
+
+    public Instant readInstant() {
+        return Instant.ofEpochMilli(this.readLong());
+    }
+
+    public void writeInstant(Instant instant) {
+        this.writeLong(instant.toEpochMilli());
     }
 
     public <T, C extends Collection<T>> C readCollection(IntFunction<C> collectionFactory, Reader<T> reader) {

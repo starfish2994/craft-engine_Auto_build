@@ -150,6 +150,7 @@ public class Config {
     protected boolean image$intercept_packets$player_info;
     protected boolean image$intercept_packets$set_score;
     protected boolean image$intercept_packets$item;
+    protected boolean image$intercept_packets$advancement;
 
     protected boolean item$client_bound_model;
     protected boolean item$non_italic_tag;
@@ -393,6 +394,7 @@ public class Config {
         image$intercept_packets$player_info = config.getBoolean("image.intercept-packets.player-info", true);
         image$intercept_packets$set_score = config.getBoolean("image.intercept-packets.set-score", true);
         image$intercept_packets$item = config.getBoolean("image.intercept-packets.item", true);
+        image$intercept_packets$advancement = config.getBoolean("image.intercept-packets.advancement", true);
 
         // emoji
         emoji$chat = config.getBoolean("emoji.chat", true);
@@ -740,6 +742,10 @@ public class Config {
 
     public static boolean interceptItem() {
         return instance.image$intercept_packets$item;
+    }
+
+    public static boolean interceptAdvancement() {
+        return instance.image$intercept_packets$advancement;
     }
 
     public static boolean predictBreaking() {
