@@ -2295,7 +2295,7 @@ public class PacketConsumers {
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> RESOURCE_PACK_RESPONSE = (user, event, packet) -> {
         try {
             Object action = FastNMS.INSTANCE.field$ServerboundResourcePackPacket$action(packet);
-            if (action == null) return;
+
             if (VersionHelper.isOrAbove1_20_3()) {
                 UUID uuid = FastNMS.INSTANCE.field$ServerboundResourcePackPacket$id(packet);
                 if (!user.isResourcePackLoading(uuid)) {
@@ -2303,9 +2303,15 @@ public class PacketConsumers {
                     return;
                 }
             }
+
+            if (action == null) {
+                user.kick(Component.text("Corrupted ResourcePackResponse Packet"));
+                return;
+            }
+
             // 检查是否是拒绝
             if (Config.kickOnDeclined()) {
-                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED) {
+                if (action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DECLINED || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DISCARDED) {
                     user.kick(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
                     return;
                 }
@@ -2320,7 +2326,7 @@ public class PacketConsumers {
                 }
             }
 
-            boolean isTerminal = action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$SUCCESSFULLY_LOADED || action == NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED;
+            boolean isTerminal = action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED && action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED;
             if (isTerminal && VersionHelper.isOrAbove1_20_2()) {
                 event.setCancelled(true);
                 Object packetListener = FastNMS.INSTANCE.method$Connection$getPacketListener(user.connection());
@@ -2330,10 +2336,7 @@ public class PacketConsumers {
                     try {
                         // 当客户端发出多次成功包的时候，finish会报错，我们忽略他
                         NetworkReflections.methodHandle$ServerCommonPacketListener$handleResourcePackResponse.invokeExact(packetListener, packet);
-                        if (action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$ACCEPTED
-                                && action != NetworkReflections.instance$ServerboundResourcePackPacket$Action$DOWNLOADED) {
-                            CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$ServerResourcePackConfigurationTask$TYPE);
-                        }
+                        CoreReflections.methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask.invokeExact(packetListener, CoreReflections.instance$ServerResourcePackConfigurationTask$TYPE);
                     } catch (Throwable e) {
                         Debugger.RESOURCE_PACK.warn(() -> "Cannot finish current task", e);
                     }
