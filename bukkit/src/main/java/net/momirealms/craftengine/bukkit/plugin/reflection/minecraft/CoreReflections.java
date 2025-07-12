@@ -2290,12 +2290,24 @@ public final class CoreReflections {
 
     public static final Constructor<?> constructor$SmithingTransformRecipe = requireNonNull(
             VersionHelper.isOrAbove1_21_5()
-                    ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, clazz$Ingredient, Optional.class, clazz$TransmuteResult)
-                    : VersionHelper.isOrAbove1_21_2()
-                    ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack)
-                    : VersionHelper.isOrAbove1_20_2()
-                    ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
-                    : ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+            ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, clazz$Ingredient, Optional.class, clazz$TransmuteResult)
+            : VersionHelper.isOrAbove1_21_2()
+            ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, Optional.class, Optional.class, Optional.class, clazz$ItemStack)
+            : VersionHelper.isOrAbove1_20_2()
+            ? ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+            : ReflectionUtils.getConstructor(clazz$SmithingTransformRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$ItemStack)
+    );
+
+    public static final Class<?> clazz$SmithingTrimRecipe = requireNonNull(
+            ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("world.item.crafting.SmithingTrimRecipe"))
+    );
+
+    public static final Constructor<?> constructor$SmithingTrimRecipe = requireNonNull(
+            VersionHelper.isOrAbove1_21_5() ?
+            ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$Holder) :
+            VersionHelper.isOrAbove1_20_2() ?
+            ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient) :
+            ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient)
     );
 
     public static final Method method$RecipeManager$addRecipe = requireNonNull(
@@ -3771,4 +3783,35 @@ public final class CoreReflections {
                     "world.item.BlockItem"
             )
     );
+
+    public static final Class<?> clazz$ArmorTrim = requireNonNull(
+            ReflectionUtils.getClazz(
+                    VersionHelper.isOrAbove1_21_2() ?
+                    BukkitReflectionUtils.assembleCBClass("world.item.equipment.trim.ArmorTrim") :
+                    BukkitReflectionUtils.assembleMCClass("world.item.armortrim.ArmorTrim")
+            )
+    );
+
+    public static final Field field$ArmorTrim$CODEC = requireNonNull(
+            ReflectionUtils.getDeclaredField(clazz$ArmorTrim, Codec.class, 0)
+    );
+
+    public static final Codec<?> instance$ArmorTrim$CODEC;
+
+    static {
+        try {
+            instance$ArmorTrim$CODEC = (Codec<?>) field$ArmorTrim$CODEC.get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize ArmorTrim CODEC", e);
+        }
+    }
+
+    public static final Method method$ArmorTrim$setTrim = ReflectionUtils.getStaticMethod(
+            clazz$ArmorTrim, boolean.class, clazz$RegistryAccess, clazz$ItemStack, clazz$ArmorTrim
+    );
+
+    public static final Method method$ArmorTrim$getTrim =
+            VersionHelper.isOrAbove1_20_2() ?
+            ReflectionUtils.getStaticMethod(clazz$ArmorTrim, Optional.class, clazz$RegistryAccess, clazz$ItemStack, boolean.class) :
+            ReflectionUtils.getStaticMethod(clazz$ArmorTrim, Optional.class, clazz$RegistryAccess, clazz$ItemStack);
 }

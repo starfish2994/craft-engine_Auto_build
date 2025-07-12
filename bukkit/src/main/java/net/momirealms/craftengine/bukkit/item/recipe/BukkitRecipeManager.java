@@ -140,6 +140,27 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 return null;
             }
         });
+        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRIM, (BukkitRecipeConvertor<CustomSmithingTrimRecipe<ItemStack>>) (id, recipe) -> {
+            try {
+                Object nmsRecipe = createMinecraftSmithingTrimRecipe(recipe);
+                if (VersionHelper.isOrAbove1_21_2()) {
+                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(
+                            CraftBukkitReflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value())), nmsRecipe);
+                } else if (VersionHelper.isOrAbove1_20_2()) {
+                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
+                } else {
+                    Object finalNmsRecipe0 = nmsRecipe;
+                    return () -> registerNMSSmithingRecipe(finalNmsRecipe0);
+                }
+                Object finalNmsRecipe = nmsRecipe;
+                return () -> registerNMSSmithingRecipe(finalNmsRecipe);
+            } catch (InvalidRecipeIngredientException e) {
+                throw e;
+            } catch (Exception e) {
+                CraftEngine.instance().logger().warn("Failed to convert smithing trim recipe", e);
+                return null;
+            }
+        });
         // TODO DO NOT USE BUKKIT RECIPE AS BRIDGE IN FUTURE VERSIONS, WE SHOULD DIRECTLY CONSTRUCT THOSE NMS RECIPES
         MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SHAPED, (BukkitRecipeConvertor<CustomShapedRecipe<ItemStack>>) (id, recipe) -> {
             ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY));
@@ -439,6 +460,10 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                             VanillaSmithingTransformRecipe recipe = this.recipeReader.readSmithingTransform(jsonObject);
                             handleDataPackSmithingTransform(id, recipe, (this.delayedTasksOnMainThread::add));
                         }
+                        case "minecraft:smithing_trim" -> {
+                            VanillaSmithingTrimRecipe recipe = this.recipeReader.readSmithingTrim(jsonObject);
+                            handleDataPackSmithingTrim(id, recipe, (this.delayedTasksOnMainThread::add));
+                        }
                         case "minecraft:stonecutting" -> {
                             VanillaStoneCuttingRecipe recipe = this.recipeReader.readStoneCutting(jsonObject);
                             handleDataPackStoneCuttingRecipe(id, recipe);
@@ -637,6 +662,35 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count()),
                 true,
                 List.of()
+        );
+
+        if (hasCustomItemInTag) {
+            Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
+            callback.accept(() -> {
+                unregisterNMSRecipe(key);
+                converted.run();
+            });
+        }
+        this.registerInternalRecipe(id, ceRecipe);
+    }
+
+    private void handleDataPackSmithingTrim(Key id, VanillaSmithingTrimRecipe recipe, Consumer<Runnable> callback) {
+        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
+
+        boolean hasCustomItemInTag;
+        Set<UniqueKey> additionHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(false, recipe.addition(), additionHolders::add);
+        Set<UniqueKey> templateHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(hasCustomItemInTag, recipe.template(), templateHolders::add);
+        Set<UniqueKey> baseHolders = new HashSet<>();
+        hasCustomItemInTag = readVanillaIngredients(hasCustomItemInTag, recipe.base(), baseHolders::add);
+
+        CustomSmithingTrimRecipe<ItemStack> ceRecipe = new CustomSmithingTrimRecipe<>(
+                id,
+                Ingredient.of(baseHolders),
+                Ingredient.of(templateHolders),
+                Ingredient.of(additionHolders),
+                Optional.ofNullable(recipe.pattern()).map(Key::of).orElse(null)
         );
 
         if (hasCustomItemInTag) {
@@ -900,6 +954,37 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                     toMinecraftIngredient(recipe.base()),
                     toMinecraftIngredient(recipe.addition()),
                     FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(recipe.result(ItemBuildContext.EMPTY))
+            );
+        }
+    }
+
+    private static Object createMinecraftSmithingTrimRecipe(CustomSmithingTrimRecipe<ItemStack> recipe) throws ReflectiveOperationException {
+        if (VersionHelper.isOrAbove1_21_5()) {
+            Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_PATTERN);
+            return CoreReflections.constructor$SmithingTrimRecipe.newInstance(
+                    toMinecraftIngredient(recipe.template()),
+                    toMinecraftIngredient(recipe.base()),
+                    toMinecraftIngredient(recipe.addition()),
+                    FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(registry, KeyUtils.toResourceLocation(recipe.pattern()))
+            );
+        } else if (VersionHelper.isOrAbove1_21_2()) {
+            return CoreReflections.constructor$SmithingTrimRecipe.newInstance(
+                    toOptionalMinecraftIngredient(recipe.template()),
+                    toOptionalMinecraftIngredient(recipe.base()),
+                    toOptionalMinecraftIngredient(recipe.addition())
+            );
+        } else if (VersionHelper.isOrAbove1_20_2()) {
+            return CoreReflections.constructor$SmithingTrimRecipe.newInstance(
+                    toMinecraftIngredient(recipe.template()),
+                    toMinecraftIngredient(recipe.base()),
+                    toMinecraftIngredient(recipe.addition())
+            );
+        } else {
+            return CoreReflections.constructor$SmithingTrimRecipe.newInstance(
+                    KeyUtils.toResourceLocation(recipe.id()),
+                    toMinecraftIngredient(recipe.template()),
+                    toMinecraftIngredient(recipe.base()),
+                    toMinecraftIngredient(recipe.addition())
             );
         }
     }

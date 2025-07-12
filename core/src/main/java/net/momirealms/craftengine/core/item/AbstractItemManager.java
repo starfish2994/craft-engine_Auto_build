@@ -600,7 +600,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String material = data.get("material").toString().toLowerCase(Locale.ENGLISH);
             String pattern = data.get("pattern").toString().toLowerCase(Locale.ENGLISH);
-            return new TrimModifier<>(material, pattern);
+            return new TrimModifier<>(Key.of(material), Key.of(pattern));
         }, "trim");
         registerDataType((obj) -> {
             List<Key> components = MiscUtils.getAsStringList(obj).stream().map(Key::of).toList();

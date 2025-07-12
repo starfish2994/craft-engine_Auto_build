@@ -30,6 +30,7 @@ public class RecipeTypes {
         register(CAMPFIRE_COOKING, CustomCampfireRecipe.FACTORY);
         register(STONECUTTING, CustomStoneCuttingRecipe.FACTORY);
         register(SMITHING_TRANSFORM, CustomSmithingTransformRecipe.FACTORY);
+        register(SMITHING_TRIM, CustomSmithingTrimRecipe.FACTORY);
     }
 
     public static <T> void register(Key key, RecipeFactory<T> factory) {

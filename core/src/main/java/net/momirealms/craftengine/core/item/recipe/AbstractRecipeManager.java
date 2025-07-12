@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.item.recipe.vanilla.VanillaRecipeReader;
 import net.momirealms.craftengine.core.item.recipe.vanilla.reader.VanillaRecipeReader1_20;
 import net.momirealms.craftengine.core.item.recipe.vanilla.reader.VanillaRecipeReader1_20_5;
 import net.momirealms.craftengine.core.item.recipe.vanilla.reader.VanillaRecipeReader1_21_2;
+import net.momirealms.craftengine.core.item.recipe.vanilla.reader.VanillaRecipeReader1_21_5;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -41,7 +42,9 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     }
 
     private VanillaRecipeReader initVanillaRecipeReader() {
-        if (VersionHelper.isOrAbove1_21_2()) {
+        if (VersionHelper.isOrAbove1_21_5()) {
+            return new VanillaRecipeReader1_21_5();
+        } else if (VersionHelper.isOrAbove1_21_2()) {
             return new VanillaRecipeReader1_21_2();
         } else if (VersionHelper.isOrAbove1_20_5()) {
             return new VanillaRecipeReader1_20_5();
@@ -137,7 +140,9 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     protected void registerInternalRecipe(Key id, Recipe<T> recipe) {
         this.byType.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         this.byId.put(id, recipe);
-        this.byResult.computeIfAbsent(recipe.result().item().id(), k -> new ArrayList<>()).add(recipe);
+        if (recipe instanceof FixedResultRecipe<?> fixedResult) {
+            this.byResult.computeIfAbsent(fixedResult.result().item().id(), k -> new ArrayList<>()).add(recipe);
+        }
         HashSet<Key> usedKeys = new HashSet<>();
         for (Ingredient<T> ingredient : recipe.ingredientsInUse()) {
             for (UniqueKey holder : ingredient.items()) {
