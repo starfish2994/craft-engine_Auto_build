@@ -965,7 +965,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                     toMinecraftIngredient(recipe.template()),
                     toMinecraftIngredient(recipe.base()),
                     toMinecraftIngredient(recipe.addition()),
-                    FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(registry, KeyUtils.toResourceLocation(recipe.pattern()))
+                    FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(registry, KeyUtils.toResourceLocation(recipe.pattern())).orElseThrow(() -> new RuntimeException("Pattern " + recipe.pattern() + " doesn't exist."))
             );
         } else if (VersionHelper.isOrAbove1_21_2()) {
             return CoreReflections.constructor$SmithingTrimRecipe.newInstance(

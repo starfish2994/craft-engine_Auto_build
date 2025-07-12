@@ -2305,6 +2305,8 @@ public final class CoreReflections {
     public static final Constructor<?> constructor$SmithingTrimRecipe = requireNonNull(
             VersionHelper.isOrAbove1_21_5() ?
             ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient, clazz$Holder) :
+            VersionHelper.isOrAbove1_21_2() ?
+            ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, Optional.class, Optional.class, Optional.class) :
             VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient) :
             ReflectionUtils.getConstructor(clazz$SmithingTrimRecipe, clazz$ResourceLocation, clazz$Ingredient, clazz$Ingredient, clazz$Ingredient)
@@ -3787,7 +3789,7 @@ public final class CoreReflections {
     public static final Class<?> clazz$ArmorTrim = requireNonNull(
             ReflectionUtils.getClazz(
                     VersionHelper.isOrAbove1_21_2() ?
-                    BukkitReflectionUtils.assembleCBClass("world.item.equipment.trim.ArmorTrim") :
+                    BukkitReflectionUtils.assembleMCClass("world.item.equipment.trim.ArmorTrim") :
                     BukkitReflectionUtils.assembleMCClass("world.item.armortrim.ArmorTrim")
             )
     );

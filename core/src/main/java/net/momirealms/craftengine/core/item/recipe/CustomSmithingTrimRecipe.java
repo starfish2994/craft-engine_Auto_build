@@ -41,7 +41,7 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
     @Override
     public T assemble(RecipeInput input, ItemBuildContext context) {
         SmithingInput<T> smithingInput = (SmithingInput<T>) input;
-        Item<T> processed = (Item<T>) CraftEngine.instance().itemManager().applyTrim((Item<Object>) smithingInput.base(), (Item<Object>) smithingInput.addition(), (Item<Object>) smithingInput.template(), this.pattern);
+        Item<T> processed = (Item<T>) CraftEngine.instance().itemManager().applyTrim((Item<Object>) smithingInput.base().item(), (Item<Object>) smithingInput.addition().item(), (Item<Object>) smithingInput.template().item(), this.pattern);
         return processed.getItem();
     }
 

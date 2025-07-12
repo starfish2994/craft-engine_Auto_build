@@ -402,7 +402,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     public Item<ItemStack> applyTrim(Item<ItemStack> base, Item<ItemStack> addition, Item<ItemStack> template, Key pattern) {
         Optional<?> optionalMaterial = FastNMS.INSTANCE.method$TrimMaterials$getFromIngredient(addition.getLiteralObject());
         Optional<?> optionalPattern = VersionHelper.isOrAbove1_21_5() ?
-                FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_MATERIAL), KeyUtils.toResourceLocation(pattern)) :
+                FastNMS.INSTANCE.method$Registry$getHolderByResourceLocation(FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.TRIM_PATTERN), KeyUtils.toResourceLocation(pattern)) :
                 FastNMS.INSTANCE.method$TrimPatterns$getFromTemplate(template.getLiteralObject());
         if (optionalMaterial.isPresent() && optionalPattern.isPresent()) {
             Object armorTrim = FastNMS.INSTANCE.constructor$ArmorTrim(optionalMaterial.get(), optionalPattern.get());
@@ -427,12 +427,13 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
                 newItem.setExactComponent(ComponentKeys.TRIM, armorTrim);
             } else {
                 try {
-                    CoreReflections.method$ArmorTrim$setTrim.invoke(null, FastNMS.INSTANCE.registryAccess(), base.getLiteralObject(), armorTrim);
+                    CoreReflections.method$ArmorTrim$setTrim.invoke(null, FastNMS.INSTANCE.registryAccess(), newItem.getLiteralObject(), armorTrim);
                 } catch (ReflectiveOperationException e) {
                     this.plugin.logger().warn("Failed to set armor trim", e);
                     return this.emptyItem;
                 }
             }
+            return newItem;
         }
         return this.emptyItem;
     }
