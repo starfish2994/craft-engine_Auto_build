@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -124,6 +125,7 @@ public abstract class BlockBehavior {
     }
 
     // 1.20~1.21.4 BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston
+    @ApiStatus.Obsolete
     public void onRemove(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
     }
 
