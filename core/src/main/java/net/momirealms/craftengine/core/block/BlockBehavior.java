@@ -34,8 +34,8 @@ public abstract class BlockBehavior {
         return superMethod.call();
     }
 
-    // 1.20.1-1.21.1 Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos
-    // 1.21.2+ LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random
+    // 1.20.1-1.21.1 BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos
+    // 1.21.2+ BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random
     public Object updateShape(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         return args[0];
     }

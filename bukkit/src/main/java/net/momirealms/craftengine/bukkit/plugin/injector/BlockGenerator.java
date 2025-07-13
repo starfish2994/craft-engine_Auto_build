@@ -235,15 +235,9 @@ public final class BlockGenerator {
         public Object intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
             ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
             DelegatingBlock indicator = (DelegatingBlock) thisObj;
-            // todo chain updater
-            if (indicator.isNoteBlock()) {
-                if (CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
-                    startNoteBlockChain(args);
-                }
-            } else if (indicator.isTripwire()) {
-                if (CoreReflections.clazz$ServerLevel.isInstance(args[posIndex])) {
-
-                }
+            // todo better chain updater
+            if (indicator.isNoteBlock() && CoreReflections.clazz$ServerLevel.isInstance(args[levelIndex])) {
+                startNoteBlockChain(args);
             }
             try {
                 return holder.value().updateShape(thisObj, args, superMethod);

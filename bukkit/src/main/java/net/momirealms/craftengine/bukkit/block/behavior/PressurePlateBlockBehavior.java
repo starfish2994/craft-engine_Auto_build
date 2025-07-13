@@ -106,7 +106,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
             this.checkPressed(args[3], args[1], args[2], state, signalForState, thisBlock);
         } else {
             // todo 为什么
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(args[1], args[2], thisBlock, this.pressedTime);
+            FastNMS.INSTANCE.method$ScheduledTickAccess$scheduleBlockTick(args[1], args[2], thisBlock, this.pressedTime);
         }
     }
 
@@ -150,7 +150,7 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         }
 
         if (isActive) {
-            FastNMS.INSTANCE.method$LevelAccessor$scheduleBlockTick(level, pos, thisBlock, this.pressedTime);
+            FastNMS.INSTANCE.method$ScheduledTickAccess$scheduleBlockTick(level, pos, thisBlock, this.pressedTime);
         }
     }
 
