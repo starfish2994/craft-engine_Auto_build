@@ -123,6 +123,9 @@ public abstract class BlockBehavior {
     public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
     }
 
+    public void onRemove(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+    }
+
     // BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side
     public int getSignal(Object thisBlock, Object[] args, Callable<Object> superMethod) {
         return 0;
@@ -145,7 +148,6 @@ public abstract class BlockBehavior {
 
     // BlockState state, ServerLevel level, BlockPos pos, ItemStack stack, boolean dropExperience
     public void spawnAfterBreak(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
-        superMethod.call();
     }
 
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {

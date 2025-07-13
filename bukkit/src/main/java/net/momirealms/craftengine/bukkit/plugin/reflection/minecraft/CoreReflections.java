@@ -3822,4 +3822,12 @@ public final class CoreReflections {
                     clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$ItemStack, boolean.class
             )
     );
+
+    // 1.20~1.21.4
+    public static final Method method$BlockBehaviour$onRemove = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class
+            ),
+            !VersionHelper.isOrAbove1_21_5()
+    );
 }

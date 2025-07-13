@@ -188,6 +188,10 @@ public final class BlockGenerator {
             builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$affectNeighborsAfterRemoval))
                     .intercept(MethodDelegation.to(AffectNeighborsAfterRemovalInterceptor.INSTANCE));
         }
+        if (CoreReflections.method$BlockBehaviour$onRemove != null) {
+            builder.method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$onRemove))
+                    .intercept(MethodDelegation.to(OnRemoveInterceptor.INSTANCE));
+        }
 
         Class<?> clazz$CraftEngineBlock = builder.make().load(BlockGenerator.class.getClassLoader()).getLoaded();
         constructor$CraftEngineBlock = MethodHandles.publicLookup().in(clazz$CraftEngineBlock)
@@ -614,6 +618,20 @@ public final class BlockGenerator {
                 holder.value().affectNeighborsAfterRemoval(thisObj, args, superMethod);
             } catch (Exception e) {
                 CraftEngine.instance().logger().severe("Failed to run affectNeighborsAfterRemoval", e);
+            }
+        }
+    }
+
+    public static class OnRemoveInterceptor {
+        public static final OnRemoveInterceptor INSTANCE = new OnRemoveInterceptor();
+
+        @RuntimeType
+        public void intercept(@This Object thisObj, @AllArguments Object[] args, @SuperCall Callable<Object> superMethod) {
+            ObjectHolder<BlockBehavior> holder = ((DelegatingBlock) thisObj).behaviorDelegate();
+            try {
+                holder.value().onRemove(thisObj, args, superMethod);
+            } catch (Exception e) {
+                CraftEngine.instance().logger().severe("Failed to run onRemove", e);
             }
         }
     }
