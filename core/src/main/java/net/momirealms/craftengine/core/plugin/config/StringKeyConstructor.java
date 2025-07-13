@@ -118,7 +118,7 @@ public class StringKeyConstructor extends SafeConstructor {
 
             // 如果路径中存在一个非map的值, 这意味着
             // 当存在了 {aa: bb}, 又想要写入 {aa::bb::c: value} 时, 会触发这个警告, 然后会覆盖之前的.
-            if (existingValue != null) logWarning("key_path_conflict", keyPart, keyNode);
+            if (existingValue != null) logWarning("inconsistent_value_type", keyPart, keyNode);
 
             // 创建层级
             Map<Object, Object> newMap = new LinkedHashMap<>();

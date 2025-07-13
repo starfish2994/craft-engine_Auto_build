@@ -54,6 +54,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
         HandlerList.unregisterAll(this);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
         Entity entity = event.getEntity();
@@ -90,7 +91,7 @@ public class BukkitVanillaLootManager extends AbstractVanillaLootManager impleme
     }
 
     public class VanillaLootParser implements ConfigParser {
-        public static final String[] CONFIG_SECTION_NAME = new String[] {"vanilla-loots", "vanilla-loot", "loots", "loot"};
+        public static final String[] CONFIG_SECTION_NAME = new String[] {"vanilla-loots", "vanilla-loot", "vanilla_loots", "vanilla_loot"};
 
         @Override
         public int loadingSequence() {

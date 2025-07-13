@@ -11,6 +11,7 @@ import net.momirealms.craftengine.core.entity.projectile.ProjectileManager;
 import net.momirealms.craftengine.core.entity.projectile.ProjectileMeta;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
+import net.momirealms.craftengine.core.util.ItemUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -47,11 +48,22 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
     @Override
     public void delayedInit() {
         Bukkit.getPluginManager().registerEvents(this, this.plugin.javaPlugin());
-        for (World world : Bukkit.getWorlds()) {
-            List<Entity> entities = world.getEntities();
-            for (Entity entity : entities) {
-                if (entity instanceof Projectile projectile) {
-                    handleProjectileLoad(projectile);
+        if (VersionHelper.isFolia()) {
+            for (World world : Bukkit.getWorlds()) {
+                List<Entity> entities = world.getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof Projectile projectile) {
+                        projectile.getScheduler().run(this.plugin.javaPlugin(), (t) -> handleProjectileLoad(projectile), () -> {});
+                    }
+                }
+            }
+        } else {
+            for (World world : Bukkit.getWorlds()) {
+                List<Entity> entities = world.getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof Projectile projectile) {
+                        handleProjectileLoad(projectile);
+                    }
                 }
             }
         }
@@ -108,7 +120,7 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
             return;
         }
         Item<ItemStack> wrapped = this.plugin.itemManager().wrap(projectileItem);
-        if (wrapped == null) return;
+        if (ItemUtils.isEmpty(wrapped)) return;
         wrapped.getCustomItem().ifPresent(it -> {
             ProjectileMeta meta = it.settings().projectileMeta();
             if (meta != null) {
@@ -153,8 +165,13 @@ public class BukkitProjectileManager implements Listener, ProjectileManager {
                 this.cachedServerEntity = serverEntity;
             }
 
-            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity) || !this.checkInGround) {
+            if (!CoreReflections.clazz$AbstractArrow.isInstance(nmsEntity)) {
                 updateProjectileUpdateInterval(1);
+            } else if (!this.checkInGround) {
+                updateProjectileUpdateInterval(1);
+                if (FastNMS.INSTANCE.field$Entity$wasTouchingWater(nmsEntity)) {
+                    this.projectile.getWorld().spawnParticle(ParticleUtils.BUBBLE, this.projectile.getLocation(), 3, 0.1, 0.1, 0.1, 0);
+                }
             } else {
                 boolean inGround = FastNMS.INSTANCE.method$AbstractArrow$isInGround(nmsEntity);
                 if (canSpawnParticle(nmsEntity, inGround)) {

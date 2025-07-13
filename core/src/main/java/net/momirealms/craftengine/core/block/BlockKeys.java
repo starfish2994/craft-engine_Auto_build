@@ -107,6 +107,10 @@ public final class BlockKeys {
     public static final Key PALE_OAK_BUTTON = Key.of("minecraft:pale_oak_button");
     public static final Key MANGROVE_BUTTON = Key.of("minecraft:mangrove_button");
     public static final Key BAMBOO_BUTTON = Key.of("minecraft:bamboo_button");
+    public static final Key CRIMSON_BUTTON = Key.of("minecraft:crimson_button");
+    public static final Key WARPED_BUTTON = Key.of("minecraft:warped_button");
+    public static final Key STONE_BUTTON = Key.of("minecraft:stone_button");
+    public static final Key POLISHED_BLACKSTONE_BUTTON = Key.of("minecraft:polished_blackstone_button");
 
     public static final Key OAK_TRAPDOOR = Key.of("minecraft:oak_trapdoor");
     public static final Key SPRUCE_TRAPDOOR = Key.of("minecraft:spruce_trapdoor");

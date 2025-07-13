@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item.setting;
 
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
-import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -44,8 +43,9 @@ public class EquipmentData {
     public static EquipmentData fromMap(@NotNull final Map<String, Object> data) {
         String slot = (String) data.get("slot");
         if (slot == null) {
-            throw new LocalizedResourceConfigException("warning.config.item.settings.equippable.missing_slot");
+            throw new IllegalArgumentException("slot cannot be null");
         }
+        // todo 重新写判断，不应该支持手部
         EquipmentSlot slotEnum = EquipmentSlot.valueOf(slot.toUpperCase(Locale.ENGLISH));
         EquipmentData.Builder builder = EquipmentData.builder().slot(slotEnum);
         if (data.containsKey("asset-id")) {
@@ -130,7 +130,7 @@ public class EquipmentData {
         private boolean swappable = true;
         private boolean damageOnHurt = true;
         // 1.21.5+
-        private boolean equipOnInteract = true;
+        private boolean equipOnInteract = false;
         private Key cameraOverlay;
 
         public Builder() {}
