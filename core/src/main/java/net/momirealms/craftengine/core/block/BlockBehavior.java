@@ -143,6 +143,11 @@ public abstract class BlockBehavior {
         return superMethod.call();
     }
 
+    // BlockState state, ServerLevel level, BlockPos pos, ItemStack stack, boolean dropExperience
+    public void spawnAfterBreak(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        superMethod.call();
+    }
+
     public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
         return state;
     }

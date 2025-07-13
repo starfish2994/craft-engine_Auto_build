@@ -3816,4 +3816,10 @@ public final class CoreReflections {
             VersionHelper.isOrAbove1_20_2() ?
             ReflectionUtils.getStaticMethod(clazz$ArmorTrim, Optional.class, clazz$RegistryAccess, clazz$ItemStack, boolean.class) :
             ReflectionUtils.getStaticMethod(clazz$ArmorTrim, Optional.class, clazz$RegistryAccess, clazz$ItemStack);
+
+    public static final Method method$BlockBehaviour$spawnAfterBreak = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(
+                    clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$ItemStack, boolean.class
+            )
+    );
 }

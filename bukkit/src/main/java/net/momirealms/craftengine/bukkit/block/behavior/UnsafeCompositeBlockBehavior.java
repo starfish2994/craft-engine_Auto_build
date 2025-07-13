@@ -268,4 +268,11 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
         }
         return previous;
     }
+
+    @Override
+    public void spawnAfterBreak(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            behavior.spawnAfterBreak(thisBlock, args, superMethod);
+        }
+    }
 }
