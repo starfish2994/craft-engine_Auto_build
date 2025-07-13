@@ -133,8 +133,8 @@ public class PacketConsumers {
         ADD_ENTITY_HANDLERS[MEntityTypes.TEXT_DISPLAY$registryId] = simpleAddEntityHandler(TextDisplayPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ARMOR_STAND$registryId] = simpleAddEntityHandler(ArmorStandPacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.ITEM$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
-        ADD_ENTITY_HANDLERS[MEntityTypes.GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(CommonItemPacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.ITEM_FRAME$registryId] = simpleAddEntityHandler(ItemFramePacketHandler.INSTANCE);
+        ADD_ENTITY_HANDLERS[MEntityTypes.GLOW_ITEM_FRAME$registryId] = simpleAddEntityHandler(ItemFramePacketHandler.INSTANCE);
         ADD_ENTITY_HANDLERS[MEntityTypes.FIREBALL$registryId] = createOptionalCustomProjectileEntityHandler(true);
         ADD_ENTITY_HANDLERS[MEntityTypes.EYE_OF_ENDER$registryId] = createOptionalCustomProjectileEntityHandler(true);
         ADD_ENTITY_HANDLERS[MEntityTypes.FIREWORK_ROCKET$registryId] = createOptionalCustomProjectileEntityHandler(true);
@@ -1935,24 +1935,21 @@ public class PacketConsumers {
                 for (int i = 0; i < packedItems.size(); i++) {
                     Object packedItem = packedItems.get(i);
                     int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-                    if (entityDataId == EntityDataUtils.CUSTOM_NAME_DATA_ID) {
-                        Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
-                        if (optionalTextComponent.isPresent()) {
-                            Object textComponent = optionalTextComponent.get();
-                            String json = ComponentUtils.minecraftToJson(textComponent);
-                            Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
-                            if (!tokens.isEmpty()) {
-                                Component component = AdventureHelper.jsonToComponent(json);
-                                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                                }
-                                Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
-                                packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
-                                isChanged = true;
-                                break;
-                            }
-                        }
+                    if (entityDataId != EntityDataUtils.CUSTOM_NAME_DATA_ID) continue;
+                    Optional<Object> optionalTextComponent = (Optional<Object>) FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
+                    if (optionalTextComponent.isEmpty()) continue;
+                    Object textComponent = optionalTextComponent.get();
+                    String json = ComponentUtils.minecraftToJson(textComponent);
+                    Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
+                    if (tokens.isEmpty()) continue;
+                    Component component = AdventureHelper.jsonToComponent(json);
+                    for (Map.Entry<String, Component> token : tokens.entrySet()) {
+                        component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
                     }
+                    Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
+                    packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))));
+                    isChanged = true;
+                    break;
                 }
                 if (isChanged) {
                     event.setChanged(true);
@@ -2571,6 +2568,16 @@ public class PacketConsumers {
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateAdvancementsPacket", e);
+        }
+    };
+
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> UPDATE_TAGS = (user, event, packet) -> {
+        try {
+            Object modifiedPacket = BukkitBlockManager.instance().cachedUpdateTagsPacket();
+            if (packet.equals(modifiedPacket) || modifiedPacket == null) return;
+            event.replacePacket(modifiedPacket);
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundUpdateTagsPacket", e);
         }
     };
 }

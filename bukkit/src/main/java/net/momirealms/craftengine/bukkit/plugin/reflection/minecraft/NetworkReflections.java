@@ -1587,4 +1587,11 @@ public final class NetworkReflections {
                     "network.protocol.game.ClientboundUpdateAdvancementsPacket"
             )
     );
+
+    public static final Class<?> clazz$ClientboundUpdateTagsPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    List.of("network.protocol.common.ClientboundUpdateTagsPacket", "network.protocol.game.PacketPlayOutTags"),
+                    List.of("network.protocol.common.ClientboundUpdateTagsPacket", "network.protocol.game.ClientboundUpdateTagsPacket")
+            )
+    );
 }
