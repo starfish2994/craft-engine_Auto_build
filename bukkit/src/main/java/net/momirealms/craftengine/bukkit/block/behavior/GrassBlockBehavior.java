@@ -83,7 +83,7 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
     @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
         Item<?> item = context.getItem();
-        if (item == null || !item.vanillaId().equals(ItemKeys.BONE_MEAL) || context.getPlayer().isAdventureMode())
+        if (ItemUtils.isEmpty(item) || !item.vanillaId().equals(ItemKeys.BONE_MEAL) || context.getPlayer().isAdventureMode())
             return InteractionResult.PASS;
         BlockPos pos = context.getClickedPos();
         BukkitBlockInWorld upper = (BukkitBlockInWorld) context.getLevel().getBlockAt(pos.x(), pos.y() + 1, pos.z());
@@ -107,12 +107,11 @@ public class GrassBlockBehavior extends BukkitBlockBehavior {
         return InteractionResult.SUCCESS;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void performBoneMeal(Object thisBlock, Object[] args) throws Exception {
-        Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.PLACED_FEATURE);
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.PLACED_FEATURE);
         if (registry == null) return;
-        Optional<Object> holder = (Optional<Object>) CoreReflections.method$Registry$getHolder1.invoke(registry, FeatureUtils.createPlacedFeatureKey(boneMealFeature()));
+        Optional<Object> holder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(registry, FeatureUtils.createPlacedFeatureKey(boneMealFeature()));
         if (holder.isEmpty()) {
             CraftEngine.instance().logger().warn("Placed feature not found: " + boneMealFeature());
             return;

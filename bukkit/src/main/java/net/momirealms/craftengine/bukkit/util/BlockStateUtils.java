@@ -50,11 +50,9 @@ public class BlockStateUtils {
     public static boolean isCorrectTool(@NotNull ImmutableBlockState state, @Nullable Item<ItemStack> itemInHand) {
         BlockSettings settings = state.settings();
         if (settings.requireCorrectTool()) {
-            if (itemInHand == null) return false;
-            if (!settings.isCorrectTool(itemInHand.id()) &&
-                    (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()))) {
-                return false;
-            }
+            if (itemInHand == null || itemInHand.isEmpty()) return false;
+            return settings.isCorrectTool(itemInHand.id()) ||
+                    (settings.respectToolComponent() && FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(itemInHand.getLiteralObject(), state.customBlockState().handle()));
         }
         return true;
     }
@@ -62,7 +60,7 @@ public class BlockStateUtils {
     @SuppressWarnings("unchecked")
     public static List<Object> getAllVanillaBlockStates(Key block) {
         try {
-            Object blockIns = CoreReflections.method$Registry$get.invoke(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(block));
+            Object blockIns = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(block));
             Object definition = CoreReflections.field$Block$StateDefinition.get(blockIns);
             return (List<Object>) CoreReflections.field$StateDefinition$states.get(definition);
         } catch (Exception e) {

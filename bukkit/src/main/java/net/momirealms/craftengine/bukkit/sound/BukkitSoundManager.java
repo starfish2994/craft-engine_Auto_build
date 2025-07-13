@@ -29,21 +29,23 @@ public class BukkitSoundManager extends AbstractSoundManager {
     @Override
     protected void registerSongs(Map<Key, JukeboxSong> songs) {
         if (songs.isEmpty()) return;
+        Object registry = FastNMS.INSTANCE.method$RegistryAccess$lookupOrThrow(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);
         try {
-            Object registry = CoreReflections.method$RegistryAccess$registryOrThrow.invoke(FastNMS.INSTANCE.registryAccess(), MRegistries.JUKEBOX_SONG);;
-            unfreezeRegistry(registry);
+            // 获取 JUKEBOX_SONG 注册表
+            CoreReflections.field$MappedRegistry$frozen.set(registry, false);
             for (Map.Entry<Key, JukeboxSong> entry : songs.entrySet()) {
                 Key id = entry.getKey();
                 JukeboxSong jukeboxSong = entry.getValue();
                 Object resourceLocation = KeyUtils.toResourceLocation(id);
                 Object soundId = KeyUtils.toResourceLocation(jukeboxSong.sound());
-                Object song = CoreReflections.method$Registry$get.invoke(registry, resourceLocation);
+                // 检查之前有没有注册过了
+                Object song = FastNMS.INSTANCE.method$Registry$getValue(registry, resourceLocation);
 
                 Object soundEvent = VersionHelper.isOrAbove1_21_2() ?
                         CoreReflections.constructor$SoundEvent.newInstance(soundId, Optional.of(jukeboxSong.range())) :
                         CoreReflections.constructor$SoundEvent.newInstance(soundId, jukeboxSong.range(), false);
                 Object soundHolder = CoreReflections.method$Holder$direct.invoke(null, soundEvent);
-
+                // 只有没注册才注册，否则会报错
                 if (song == null) {
                     song = CoreReflections.constructor$JukeboxSong.newInstance(soundHolder, ComponentUtils.adventureToMinecraft(jukeboxSong.description()), jukeboxSong.lengthInSeconds(), jukeboxSong.comparatorOutput());
                     Object holder = CoreReflections.method$Registry$registerForHolder.invoke(null, registry, resourceLocation, song);
@@ -51,17 +53,12 @@ public class BukkitSoundManager extends AbstractSoundManager {
                     CoreReflections.field$Holder$Reference$tags.set(holder, Set.of());
                 }
             }
-            freezeRegistry(registry);
         } catch (Exception e) {
-            plugin.logger().warn("Failed to register jukebox songs.", e);
+            this.plugin.logger().warn("Failed to register jukebox songs.", e);
+        } finally {
+            try {
+                CoreReflections.field$MappedRegistry$frozen.set(registry, true);
+            } catch (ReflectiveOperationException ignored) {}
         }
-    }
-
-    private void unfreezeRegistry(Object registry) throws IllegalAccessException {
-        CoreReflections.field$MappedRegistry$frozen.set(registry, false);
-    }
-
-    private void freezeRegistry(Object registry) throws IllegalAccessException {
-        CoreReflections.field$MappedRegistry$frozen.set(registry, true);
     }
 }

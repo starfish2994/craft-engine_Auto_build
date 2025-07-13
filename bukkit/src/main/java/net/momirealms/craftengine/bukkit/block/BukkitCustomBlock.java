@@ -130,8 +130,8 @@ public final class BukkitCustomBlock extends AbstractCustomBlock {
                 CoreReflections.field$BlockBehaviour$explosionResistance.set(nmsBlock, settings.resistance());
                 CoreReflections.field$BlockBehaviour$soundType.set(nmsBlock, SoundUtils.toSoundType(settings.sounds()));
                 // 1.21.2以前要在init cache之前设定 isConditionallyFullOpaque
+                boolean isConditionallyFullOpaque = canOcclude & useShapeForLightOcclusion;
                 if (!VersionHelper.isOrAbove1_21_2()) {
-                    boolean isConditionallyFullOpaque = canOcclude & useShapeForLightOcclusion;
                     CoreReflections.field$BlockStateBase$isConditionallyFullOpaque.set(nmsState, isConditionallyFullOpaque);
                 }
                 // init cache
@@ -161,6 +161,9 @@ public final class BukkitCustomBlock extends AbstractCustomBlock {
                         CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.set(cache, false);
                     } else {
                         CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.set(cache, CoreReflections.field$BlockStateBase$Cache$propagatesSkylightDown.getBoolean(CoreReflections.field$BlockStateBase$cache.get(immutableBlockState.vanillaBlockState().handle())));
+                    }
+                    if (!isConditionallyFullOpaque) {
+                        CoreReflections.field$BlockStateBase$opacityIfCached.set(nmsState, blockLight);
                     }
                 }
                 // set fluid later
@@ -251,9 +254,8 @@ public final class BukkitCustomBlock extends AbstractCustomBlock {
         @Override
         public @NotNull CustomBlock build() {
             // create or get block holder
-            Holder.Reference<CustomBlock> holder = BuiltInRegistries.BLOCK.get(id).orElseGet(() ->
-                    ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).registerForHolder(new ResourceKey<>(BuiltInRegistries.BLOCK.key().location(), id)));
-            return new BukkitCustomBlock(id, holder, properties, appearances, variantMapper, settings, events, behavior, lootTable);
+            Holder.Reference<CustomBlock> holder = ((WritableRegistry<CustomBlock>) BuiltInRegistries.BLOCK).getOrRegisterForHolder(ResourceKey.create(BuiltInRegistries.BLOCK.key().location(), this.id));
+            return new BukkitCustomBlock(this.id, holder, this.properties, this.appearances, this.variantMapper, this.settings, this.events, this.behavior, this.lootTable);
         }
     }
 }

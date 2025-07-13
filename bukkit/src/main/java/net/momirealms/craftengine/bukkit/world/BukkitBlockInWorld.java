@@ -32,7 +32,7 @@ public class BukkitBlockInWorld implements BlockInWorld {
     public boolean isWaterSource(BlockPlaceContext blockPlaceContext) {
         Location location = this.block.getLocation();
         Object serverLevel = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.block.getWorld());
-        Object fluidData = FastNMS.INSTANCE.method$Level$getFluidState(serverLevel, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        Object fluidData = FastNMS.INSTANCE.method$BlockGetter$getFluidState(serverLevel, LocationUtils.toBlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
         if (fluidData == null) return false;
         return FastNMS.INSTANCE.method$FluidState$getType(fluidData) == MFluids.WATER;
     }

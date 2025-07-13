@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.reflection.minecraft;
 import io.netty.buffer.ByteBuf;
 import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.util.BukkitReflectionUtils;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
 
@@ -1315,7 +1316,6 @@ public final class NetworkReflections {
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$pagesGetter;
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$titleGetter;
     public static final MethodHandle methodHandle$ServerboundEditBookPacket$slotGetter;
-    public static final MethodHandle methodHandle$ServerboundResourcePackPacket$actionGetter;
     public static final MethodHandle methodHandle$ClientboundEntityEventPacket$entityIdGetter;
     public static final MethodHandle methodHandle$ClientboundEntityEventPacket$eventIdGetter;
     public static final MethodHandle methodHandle$ClientIntentionPacket$protocolVersionGetter;
@@ -1384,10 +1384,6 @@ public final class NetworkReflections {
             methodHandle$ServerboundEditBookPacket$slotGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ServerboundEditBookPacket$slot)
                             .asType(MethodType.methodType(int.class, Object.class))
-            );
-            methodHandle$ServerboundResourcePackPacket$actionGetter = requireNonNull(
-                    ReflectionUtils.unreflectGetter(field$ServerboundResourcePackPacket$action)
-                            .asType(MethodType.methodType(Object.class, Object.class))
             );
             methodHandle$ClientboundEntityEventPacket$entityIdGetter = requireNonNull(
                     ReflectionUtils.unreflectGetter(field$ClientboundEntityEventPacket$entityId)
@@ -1497,4 +1493,105 @@ public final class NetworkReflections {
             throw new ReflectionInitException("Failed to initialize ParticleTypes$STREAM_CODEC", e);
         }
     }
+
+    public static final Class<?> clazz$ClientboundFinishConfigurationPacket = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.configuration.ClientboundFinishConfigurationPacket")
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Constructor<?> constructor$ClientboundFinishConfigurationPacket = Optional.ofNullable(clazz$ClientboundFinishConfigurationPacket)
+            .map(ReflectionUtils::getConstructor)
+            .orElse(null);
+
+    // 1.20.5+
+    public static final Field field$ClientboundFinishConfigurationPacket$INSTANCE = Optional.ofNullable(clazz$ClientboundFinishConfigurationPacket)
+            .map(it -> ReflectionUtils.getDeclaredField(it, it, 0))
+            .orElse(null);
+
+    public static final Object instance$ClientboundFinishConfigurationPacket$INSTANCE;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) {
+                instance$ClientboundFinishConfigurationPacket$INSTANCE = VersionHelper.isOrAbove1_20_5()
+                        ? field$ClientboundFinishConfigurationPacket$INSTANCE.get(null)
+                        : constructor$ClientboundFinishConfigurationPacket.newInstance();
+            } else {
+                instance$ClientboundFinishConfigurationPacket$INSTANCE = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize ClientboundFinishConfigurationPacket$INSTANCE", e);
+        }
+    }
+
+    public static final Class<?> clazz$ServerCommonPacketListener = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerCommonPacketListener")
+            ),
+            VersionHelper.isOrAbove1_20_2()
+    );
+
+    // 1.20.2+
+    public static final Method method$ServerCommonPacketListener$handleResourcePackResponse = Optional.ofNullable(clazz$ServerCommonPacketListener)
+            .map(it -> ReflectionUtils.getMethod(it, void.class, clazz$ServerboundResourcePackPacket))
+            .orElse(null);
+
+    public static final MethodHandle methodHandle$ServerCommonPacketListener$handleResourcePackResponse;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) {
+                methodHandle$ServerCommonPacketListener$handleResourcePackResponse =
+                        ReflectionUtils.unreflectMethod(method$ServerCommonPacketListener$handleResourcePackResponse)
+                                .asType(MethodType.methodType(void.class, Object.class, Object.class));
+            } else {
+                methodHandle$ServerCommonPacketListener$handleResourcePackResponse = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize ServerCommonPacketListener$handleResourcePackResponse", e);
+        }
+    }
+
+    public static final Class<?> clazz$ClientboundLoginFinishedPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.login.PacketLoginOutSuccess",
+                    List.of("network.protocol.login.ClientboundLoginFinishedPacket", "network.protocol.login.ClientboundGameProfilePacket")
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundRecipeBookAddPacket = MiscUtils.requireNonNullIf(BukkitReflectionUtils.findReobfOrMojmapClass(
+            "network.protocol.game.ClientboundRecipeBookAddPacket",
+            "network.protocol.game.ClientboundRecipeBookAddPacket"
+    ), VersionHelper.isOrAbove1_21_2());
+
+    public static final Class<?> clazz$ClientboundPlaceGhostRecipePacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutAutoRecipe",
+                    "network.protocol.game.ClientboundPlaceGhostRecipePacket"
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundUpdateRecipesPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutRecipeUpdate",
+                    "network.protocol.game.ClientboundUpdateRecipesPacket"
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundUpdateAdvancementsPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutAdvancements",
+                    "network.protocol.game.ClientboundUpdateAdvancementsPacket"
+            )
+    );
+
+    public static final Class<?> clazz$ClientboundUpdateTagsPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    List.of("network.protocol.common.ClientboundUpdateTagsPacket", "network.protocol.game.PacketPlayOutTags"),
+                    List.of("network.protocol.common.ClientboundUpdateTagsPacket", "network.protocol.game.ClientboundUpdateTagsPacket")
+            )
+    );
 }
