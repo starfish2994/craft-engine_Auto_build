@@ -15,8 +15,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-public class CommonItemPacketHandler implements EntityPacketHandler {
-    public static final CommonItemPacketHandler INSTANCE = new CommonItemPacketHandler();
+public class ItemFramePacketHandler implements EntityPacketHandler {
+    public static final ItemFramePacketHandler INSTANCE = new ItemFramePacketHandler();
     private static long lastWarningTime = 0;
 
     @Override
@@ -28,7 +28,7 @@ public class CommonItemPacketHandler implements EntityPacketHandler {
         for (int i = 0; i < packedItems.size(); i++) {
             Object packedItem = packedItems.get(i);
             int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-            if (entityDataId != EntityDataUtils.ITEM_DATA_ID) continue;
+            if (entityDataId != EntityDataUtils.ITEM_FRAME_DATA_ID) continue;
             Object nmsItemStack = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
             if (!CoreReflections.clazz$ItemStack.isInstance(nmsItemStack)) {
                 long time = System.currentTimeMillis();
