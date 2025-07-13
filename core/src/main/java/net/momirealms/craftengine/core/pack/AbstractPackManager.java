@@ -643,10 +643,11 @@ public abstract class AbstractPackManager implements PackManager {
             this.generateItemModels(generatedPackPath, this.plugin.itemManager());
             this.generateItemModels(generatedPackPath, this.plugin.blockManager());
             this.generateBlockOverrides(generatedPackPath);
-            this.generateLegacyItemOverrides(generatedPackPath);
-            this.generateModernItemOverrides(generatedPackPath, revisions::add);
+            // 一定要先生成item-model再生成overrides
             this.generateModernItemModels1_21_2(generatedPackPath);
             this.generateModernItemModels1_21_4(generatedPackPath, revisions::add);
+            this.generateLegacyItemOverrides(generatedPackPath);
+            this.generateModernItemOverrides(generatedPackPath, revisions::add);
             this.generateOverrideSounds(generatedPackPath);
             this.generateCustomSounds(generatedPackPath);
             this.generateClientLang(generatedPackPath);
@@ -1769,12 +1770,6 @@ public abstract class AbstractPackManager implements PackManager {
             Key itemModelPath = entry.getKey();
             TreeSet<LegacyOverridesModel> legacyOverridesModels = entry.getValue();
 
-            // 检测item model合法性
-            if (PRESET_MODERN_MODELS_ITEM.containsKey(itemModelPath) || PRESET_LEGACY_MODELS_ITEM.containsKey(itemModelPath)) {
-                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict.vanilla", itemModelPath.asString());
-                continue;
-            }
-
             // 要检查目标生成路径是否已经存在模型，如果存在模型，应该只为其生成overrides
             Path itemPath = generatedPackPath
                     .resolve("assets")
@@ -1836,11 +1831,6 @@ public abstract class AbstractPackManager implements PackManager {
                     .resolve(key.namespace())
                     .resolve("items")
                     .resolve(key.value() + ".json");
-
-            if (PRESET_ITEMS.containsKey(key)) {
-                TranslationManager.instance().log("warning.config.resource_pack.item_model.conflict.vanilla", key.asString());
-                continue;
-            }
             if (Files.exists(itemPath)) {
                 TranslationManager.instance().log("warning.config.resource_pack.item_model.already_exist", key.asString(), itemPath.toAbsolutePath().toString());
                 continue;
