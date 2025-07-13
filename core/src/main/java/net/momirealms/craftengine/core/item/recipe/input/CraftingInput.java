@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CraftingInput<T> implements RecipeInput {
+public final class CraftingInput<T> implements RecipeInput {
     private final int width;
     private final int height;
     private final List<UniqueIdItem<T>> items;

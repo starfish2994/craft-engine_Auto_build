@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.papermc.paper.potion.PotionMix;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
@@ -273,6 +274,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private Object stolenFeatureFlagSet;
     // Some delayed tasks on main thread
     private final List<Runnable> delayedTasksOnMainThread = new ArrayList<>();
+    private final Map<Key, PotionMix> brewingRecipes = new HashMap<>();
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         instance = this;
@@ -324,24 +326,16 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void unload() {
         if (!Config.enableRecipeSystem()) return;
-        super.unload();
-        if (VersionHelper.isOrAbove1_21_2()) {
-            if (Bukkit.getServer().isStopping()) {
-                try {
-                    CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
-                } catch (ReflectiveOperationException e) {
-                    this.plugin.logger().warn("Failed to unregister recipes", e);
-                }
-            } else {
-                this.plugin.scheduler().executeSync(() -> {
-                    try {
-                        CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager);
-                    } catch (ReflectiveOperationException e) {
-                        this.plugin.logger().warn("Failed to unregister recipes", e);
-                    }
-                });
+        // 安排卸载任务，这些任务会在load后执行。如果没有load说明服务器已经关闭了，那就不需要管卸载了。
+        if (!Bukkit.isStopping()) {
+            for (Map.Entry<Key, Recipe<ItemStack>> entry : this.byId.entrySet()) {
+                Key id = entry.getKey();
+                if (isDataPackRecipe(id)) continue;
+                boolean isBrewingRecipe = entry.getValue() instanceof CustomBrewingRecipe<ItemStack>;
+                this.delayedTasksOnMainThread.add(() -> this.unregisterPlatformRecipe(id, isBrewingRecipe));
             }
         }
+        super.unload();
     }
 
     @Override
@@ -354,6 +348,12 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     public void disable() {
         unload();
         CE_RECIPE_2_NMS_HOLDER.clear();
+        // 不是服务器关闭造成disable，那么需要把配方卸载干净
+        if (!Bukkit.isStopping()) {
+            for (Runnable task : this.delayedTasksOnMainThread) {
+                task.run();
+            }
+        }
         HandlerList.unregisterAll(this.recipeEventListener);
         if (this.crafterEventListener != null) {
             HandlerList.unregisterAll(this.crafterEventListener);
@@ -361,21 +361,42 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     @Override
-    protected void unregisterPlatformRecipe(Key key) {
-        unregisterNMSRecipe(new NamespacedKey(key.namespace(), key.value()));
+    protected void unregisterPlatformRecipe(Key key, boolean isBrewingRecipe) {
+        if (isBrewingRecipe) {
+            Bukkit.getPotionBrewer().removePotionMix(new NamespacedKey(key.namespace(), key.value()));
+        } else {
+            unregisterNMSRecipe(new NamespacedKey(key.namespace(), key.value()));
+        }
     }
 
     @Override
     protected void registerPlatformRecipe(Key id, Recipe<ItemStack> recipe) {
-        try {
-            Runnable converted = findNMSRecipeConvertor(recipe).convert(id, recipe);
-            if (converted != null) {
-                this.delayedTasksOnMainThread.add(converted);
+        if (recipe instanceof CustomBrewingRecipe<ItemStack> brewingRecipe) {
+            PotionMix potionMix = new PotionMix(new NamespacedKey(id.namespace(), id.value()),
+                    brewingRecipe.result(ItemBuildContext.EMPTY),
+                    PotionMix.createPredicateChoice(container -> {
+                        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(container);
+                        return brewingRecipe.container().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
+                    }),
+                    PotionMix.createPredicateChoice(ingredient -> {
+                        Item<ItemStack> wrapped = this.plugin.itemManager().wrap(ingredient);
+                        return brewingRecipe.ingredient().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
+                    })
+            );
+            this.delayedTasksOnMainThread.add(() -> {
+                Bukkit.getPotionBrewer().addPotionMix(potionMix);
+            });
+        } else {
+            try {
+                Runnable converted = findNMSRecipeConvertor(recipe).convert(id, recipe);
+                if (converted != null) {
+                    this.delayedTasksOnMainThread.add(converted);
+                }
+            } catch (InvalidRecipeIngredientException e) {
+                throw new LocalizedResourceConfigException("warning.config.recipe.invalid_ingredient", e.ingredient());
+            } catch (Exception e) {
+                this.plugin.logger().warn("Failed to convert recipe " + id, e);
             }
-        } catch (InvalidRecipeIngredientException e) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_ingredient", e.ingredient());
-        } catch (Exception e) {
-            this.plugin.logger().warn("Failed to convert recipe " + id, e);
         }
     }
 
@@ -420,11 +441,11 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 //                        continue;
 //                    }
                     if (Config.disableAllVanillaRecipes()) {
-                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id));
+                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id, false));
                         continue;
                     }
                     if (hasDisabledAny && Config.disabledVanillaRecipes().contains(id)) {
-                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id));
+                        this.delayedTasksOnMainThread.add(() -> unregisterPlatformRecipe(id, false));
                         continue;
                     }
                     markAsDataPackRecipe(id);

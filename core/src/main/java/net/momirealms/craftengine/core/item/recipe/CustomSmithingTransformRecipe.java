@@ -13,7 +13,9 @@ import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -146,18 +148,6 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
                     mergeComponents,
                     ItemDataProcessors.fromMapList(processors)
             );
-        }
-
-        private Ingredient<A> toIngredient(List<String> items) {
-            Set<UniqueKey> holders = new HashSet<>();
-            for (String item : items) {
-                if (item.charAt(0) == '#') {
-                    holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
-                } else {
-                    holders.add(UniqueKey.create(Key.of(item)));
-                }
-            }
-            return holders.isEmpty() ? null : Ingredient.of(holders);
         }
     }
 

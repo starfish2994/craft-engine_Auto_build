@@ -27,7 +27,6 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     protected final Map<Key, List<Recipe<T>>> byResult = new HashMap<>();
     protected final Map<Key, List<Recipe<T>>> byIngredient = new HashMap<>();
     protected final Set<Key> dataPackRecipes = new HashSet<>();
-    protected final Set<Key> customRecipes = new HashSet<>();
     protected final RecipeParser recipeParser;
     protected boolean isReloading;
 
@@ -60,18 +59,10 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
         this.byId.clear();
         this.byResult.clear();
         this.byIngredient.clear();
-        for (Key key : this.customRecipes) {
-            unregisterPlatformRecipe(key);
-        }
-        this.customRecipes.clear();
     }
 
     protected void markAsDataPackRecipe(Key key) {
         this.dataPackRecipes.add(key);
-    }
-
-    protected void markAsCustomRecipe(Key key) {
-        this.customRecipes.add(key);
     }
 
     @Override
@@ -175,7 +166,6 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
             }
             Recipe<T> recipe = RecipeTypes.fromMap(id, section);
             try {
-                markAsCustomRecipe(id);
                 registerInternalRecipe(id, recipe);
                 registerPlatformRecipe(id, recipe);
             } catch (LocalizedResourceConfigException e) {
@@ -186,7 +176,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
         }
     }
 
-    protected abstract void unregisterPlatformRecipe(Key key);
+    protected abstract void unregisterPlatformRecipe(Key key, boolean isBrewingRecipe);
 
     protected abstract void registerPlatformRecipe(Key key, Recipe<T> recipe);
 }

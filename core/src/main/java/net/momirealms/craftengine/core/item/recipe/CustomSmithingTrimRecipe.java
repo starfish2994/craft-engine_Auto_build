@@ -6,11 +6,16 @@ import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.input.SmithingInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
-import net.momirealms.craftengine.core.util.*;
+import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.ResourceConfigUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
     public static final Factory<?> FACTORY = new Factory<>();
@@ -122,19 +127,11 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
                 throw new LocalizedResourceConfigException("warning.config.recipe.smithing_trim.missing_template_type");
             }
             Key pattern = VersionHelper.isOrAbove1_21_5() ? Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("pattern"), "warning.config.recipe.smithing_trim.missing_pattern")) : null;
-            return new CustomSmithingTrimRecipe<>(id, toIngredient(base), toIngredient(template), toIngredient(addition), pattern);
-        }
-
-        private Ingredient<A> toIngredient(List<String> items) {
-            Set<UniqueKey> holders = new HashSet<>();
-            for (String item : items) {
-                if (item.charAt(0) == '#') {
-                    holders.addAll(CraftEngine.instance().itemManager().tagToItems(Key.of(item.substring(1))));
-                } else {
-                    holders.add(UniqueKey.create(Key.of(item)));
-                }
-            }
-            return Ingredient.of(holders);
+            return new CustomSmithingTrimRecipe<>(id,
+                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(base), "warning.config.recipe.smithing_trim.missing_base"),
+                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(template), "warning.config.recipe.smithing_trim.missing_template_type"),
+                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(addition), "warning.config.recipe.smithing_trim.missing_addition"),
+                    pattern);
         }
     }
 }

@@ -211,6 +211,9 @@ public abstract class AbstractPackManager implements PackManager {
             }
             TranslationManager.instance().log(e.node(), e.arguments());
             this.resourcePackHost = NoneHost.INSTANCE;
+        } catch (Exception e) {
+            this.plugin.logger().warn("Failed to load resource pack host", e);
+            this.resourcePackHost = NoneHost.INSTANCE;
         }
     }
 

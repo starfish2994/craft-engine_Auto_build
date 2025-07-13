@@ -140,6 +140,8 @@ warning.config.recipe.smithing_trim.missing_base: "<yellow>Issue found in file <
 warning.config.recipe.smithing_trim.missing_template_type: "<yellow>Issue found in file <arg:0> - The smithing trim recipe '<arg:1>' is missing the required 'template-type' argument.</yellow>"
 warning.config.recipe.smithing_trim.missing_addition: "<yellow>Issue found in file <arg:0> - The smithing trim recipe '<arg:1>' is missing the required 'addition' argument.</yellow>"
 warning.config.recipe.smithing_trim.missing_pattern: "<yellow>Issue found in file <arg:0> - The smithing trim recipe '<arg:1>' is missing the required 'pattern' argument.</yellow>"
+warning.config.recipe.brewing.missing_container: "<yellow>Issue found in file <arg:0> - The brewing recipe '<arg:1>' is missing the required 'container' argument.</yellow>"
+warning.config.recipe.brewing.missing_ingredient: "<yellow>Issue found in file <arg:0> - The brewing recipe '<arg:1>' is missing the required 'ingredient' argument.</yellow>"
 warning.config.i18n.unknown_locale: "<yellow>Issue found in file <arg:0> - Unknown locale '<arg:1>'.</yellow>"
 warning.config.template.duplicate: "<yellow>Issue found in file <arg:0> - Duplicated template '<arg:1>'. Please check if there is the same configuration in other files.</yellow>"
 warning.config.template.invalid: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid template '<arg:2>'.</yellow>"

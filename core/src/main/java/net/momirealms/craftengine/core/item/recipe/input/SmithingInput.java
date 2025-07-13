@@ -4,7 +4,7 @@ import net.momirealms.craftengine.core.item.recipe.UniqueIdItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SmithingInput<T> implements RecipeInput {
+public final class SmithingInput<T> implements RecipeInput {
     private final UniqueIdItem<T> base;
     private final UniqueIdItem<T> template;
     private final UniqueIdItem<T> addition;
