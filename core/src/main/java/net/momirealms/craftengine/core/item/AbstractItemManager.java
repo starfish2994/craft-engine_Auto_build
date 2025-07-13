@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.core.item;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
@@ -768,35 +770,44 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     ) {
         if (model.property() instanceof LegacyModelPredicate predicate) {
             String predicateId = predicate.legacyPredicateId(materialId);
-            for (Map.Entry<Either<String, List<String>>, ItemModel> entry : model.whenMap().entrySet()) {
-                List<String> cases = entry.getKey().fallbackOrMapPrimary(List::of);
-                for (String caseValue : cases) {
-                    Number legacyValue = predicate.toLegacyValue(caseValue);
-                    if (predicate instanceof TrimMaterialSelectProperty) {
-                        if (legacyValue.floatValue() > 1f) {
-                            continue;
+            for (Map.Entry<Either<JsonElement, List<JsonElement>>, ItemModel> entry : model.whenMap().entrySet()) {
+                List<JsonElement> cases = entry.getKey().fallbackOrMapPrimary(List::of);
+                for (JsonElement caseValue : cases) {
+                    if (caseValue instanceof JsonPrimitive primitive) {
+                        Number legacyValue;
+                        if (primitive.isBoolean()) {
+                            legacyValue = predicate.toLegacyValue(primitive.getAsBoolean());
+                        } else if (primitive.isString()) {
+                            legacyValue = predicate.toLegacyValue(primitive.getAsString());
+                        } else {
+                            legacyValue = predicate.toLegacyValue(primitive.getAsNumber());
                         }
-                    }
-                    Map<String, Object> merged = mergePredicates(
-                            parentPredicates,
-                            predicateId,
-                            legacyValue
-                    );
-                    // Additional check for crossbow
-                    if (predicate instanceof ChargeTypeSelectProperty && materialId.equals(ItemKeys.CROSSBOW)) {
-                        merged = mergePredicates(
+                        if (predicate instanceof TrimMaterialSelectProperty) {
+                            if (legacyValue.floatValue() > 1f) {
+                                continue;
+                            }
+                        }
+                        Map<String, Object> merged = mergePredicates(
+                                parentPredicates,
+                                predicateId,
+                                legacyValue
+                        );
+                        // Additional check for crossbow
+                        if (predicate instanceof ChargeTypeSelectProperty && materialId.equals(ItemKeys.CROSSBOW)) {
+                            merged = mergePredicates(
+                                    merged,
+                                    "charged",
+                                    1
+                            );
+                        }
+                        processModelRecursively(
+                                entry.getValue(),
                                 merged,
-                                "charged",
-                                1
+                                resultList,
+                                materialId,
+                                customModelData
                         );
                     }
-                    processModelRecursively(
-                            entry.getValue(),
-                            merged,
-                            resultList,
-                            materialId,
-                            customModelData
-                    );
                 }
             }
             // Additional check for crossbow
