@@ -123,6 +123,7 @@ public abstract class BlockBehavior {
     public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
     }
 
+    // 1.20~1.21.4 BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston
     public void onRemove(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
     }
 
