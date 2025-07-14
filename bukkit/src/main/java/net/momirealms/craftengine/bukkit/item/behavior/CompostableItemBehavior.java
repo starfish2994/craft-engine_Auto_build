@@ -51,15 +51,17 @@ public class CompostableItemBehavior extends ItemBehavior {
 
         if (willRaise) {
             levelled.setLevel(currentLevel + 1);
-            EntityChangeBlockEvent event = new EntityChangeBlockEvent((Entity) context.getPlayer().platformPlayer(), block.block(), levelled);
-            if (EventUtils.fireAndCheckCancel(event)) {
-                return InteractionResult.FAIL;
+            if (context.getPlayer() != null) {
+                EntityChangeBlockEvent event = new EntityChangeBlockEvent((Entity) context.getPlayer().platformPlayer(), block.block(), levelled);
+                if (EventUtils.fireAndCheckCancel(event)) {
+                    return InteractionResult.FAIL;
+                }
             }
             block.block().setBlockData(levelled);
         }
 
         context.getLevel().levelEvent(WorldEvents.COMPOSTER_COMPOSTS, context.getClickedPos(), willRaise ? 1 : 0);
-        ((World) context.getLevel().platformWorld()).sendGameEvent((Entity) context.getPlayer().platformPlayer(), GameEvent.BLOCK_CHANGE, new Vector(block.x() + 0.5, block.y() + 0.5, block.z() + 0.5));
+        ((World) context.getLevel().platformWorld()).sendGameEvent(context.getPlayer() != null ? (Entity) context.getPlayer().platformPlayer() : null, GameEvent.BLOCK_CHANGE, new Vector(block.x() + 0.5, block.y() + 0.5, block.z() + 0.5));
         if (currentLevel + 1 == 7) {
             FastNMS.INSTANCE.method$ScheduledTickAccess$scheduleBlockTick(context.getLevel().serverWorld(), LocationUtils.toBlockPos(context.getClickedPos()), blockOwner, 20);
         }

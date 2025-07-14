@@ -80,7 +80,7 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                 }
                 BlockData vanillaBlockState = BlockStateUtils.fromBlockData(immutableBlockState.vanillaBlockState().handle());
                 // 点击的是方块上面，则只需要判断shift和可交互
-                if (direction == Direction.UP) {
+                if (player != null && direction == Direction.UP) {
                     // 客户端层面必须可交互
                     if (!InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState,
                             context.getHitResult(), (Item<ItemStack>) context.getItem())) {
@@ -106,7 +106,7 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                     }
 
                     // 客户端觉得这玩意可交互，就会忽略声音
-                    if (InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState, context.getHitResult(), (Item<ItemStack>) context.getItem())) {
+                    if (player != null && InteractUtils.isInteractable((Player) player.platformPlayer(), vanillaBlockState, context.getHitResult(), (Item<ItemStack>) context.getItem())) {
                         // 如果按住了shift，则代表尝试对侧面方块点火
                         if (player.isSecondaryUseActive()) {
                             // 如果底部不能燃烧，则燃烧点位为侧面，需要补发
@@ -119,7 +119,7 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                         }
                     } else {
                         // 如果底部方块不可燃烧才补发
-                        if (!belowCanBurn) {
+                        if (player != null && !belowCanBurn) {
                             player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
                             player.swingHand(context.getHand());
                         }
@@ -151,8 +151,10 @@ public class FlintAndSteelItemBehavior extends ItemBehavior {
                     }
                 }
             }
-            player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
-            player.swingHand(context.getHand());
+            if (player != null) {
+                player.playSound(FLINT_SOUND, firePos, SoundSource.BLOCK, 1f, RandomUtils.generateRandomFloat(0.8f, 1.2f));
+                player.swingHand(context.getHand());
+            }
         }
         return InteractionResult.PASS;
     }

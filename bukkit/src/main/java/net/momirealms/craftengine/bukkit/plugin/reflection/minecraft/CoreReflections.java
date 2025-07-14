@@ -3830,4 +3830,24 @@ public final class CoreReflections {
             ),
             !VersionHelper.isOrAbove1_21_5()
     );
+    public static final Object instance$CollisionContext$empty;
+
+    static {
+        try {
+            instance$CollisionContext$empty = requireNonNull(method$CollisionContext$empty.invoke(null));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 1.21.6+
+    public static final Method method$CollisionContext$placementContext = ReflectionUtils.getStaticMethod(
+            clazz$CollisionContext, clazz$CollisionContext, clazz$Player
+    );
+
+    public static final Constructor<?> constructor$BlockHitResult = requireNonNull(
+            ReflectionUtils.getConstructor(
+                    CoreReflections.clazz$BlockHitResult, CoreReflections.clazz$Vec3, CoreReflections.clazz$Direction, CoreReflections.clazz$BlockPos, boolean.class
+            )
+    );
 }
