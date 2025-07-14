@@ -14,7 +14,7 @@ import java.util.Optional;
 public class CustomFishingProvider implements ExternalItemProvider<ItemStack> {
     @Override
     public String plugin() {
-        return "CustomFishing";
+        return "customfishing";
     }
 
     @SuppressWarnings("UnstableApiUsage")

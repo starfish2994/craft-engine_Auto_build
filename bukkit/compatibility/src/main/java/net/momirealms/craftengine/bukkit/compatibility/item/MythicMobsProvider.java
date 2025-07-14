@@ -11,7 +11,7 @@ public class MythicMobsProvider implements ExternalItemProvider<ItemStack> {
 
     @Override
     public String plugin() {
-        return "MythicMobs";
+        return "mythicmobs";
     }
 
     @Nullable

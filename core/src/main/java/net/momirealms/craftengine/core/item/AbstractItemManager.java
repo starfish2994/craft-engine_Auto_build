@@ -105,6 +105,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     @Override
     public boolean registerExternalItemProvider(ExternalItemProvider<I> externalItemProvider) {
+        if (!ResourceLocation.isValidNamespace(externalItemProvider.plugin())) return false;
         if (this.externalItemProviders.containsKey(externalItemProvider.plugin())) return false;
         this.externalItemProviders.put(externalItemProvider.plugin(), externalItemProvider);
         return true;
@@ -510,7 +511,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String plugin = data.get("plugin").toString();
             String id = data.get("id").toString();
-            ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin);
+            ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin.toLowerCase(Locale.ENGLISH));
             return new ExternalModifier<>(id, Objects.requireNonNull(provider, "Item provider " + plugin + " not found"));
         }, "external");
         if (VersionHelper.isOrAbove1_20_5()) {

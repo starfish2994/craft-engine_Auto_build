@@ -296,6 +296,8 @@ recipe:
     # Selective recipe disabling (safer alternative to 'all: true')
     # Example: ["minecraft:wooden_sword", "minecraft:stone_hoe"]
     list: []
+  # You can use items from other plugins by adding the supported plugin names here
+  ingredient-sources: []
 
 gui:
   browser:

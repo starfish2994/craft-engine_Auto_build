@@ -15,18 +15,22 @@ public class MMOItemsProvider implements ExternalItemProvider<ItemStack> {
 
     @Override
     public String plugin() {
-        return "MMOItems";
+        return "mmoitems";
     }
 
     @Override
     public @Nullable ItemStack build(String id, ItemBuildContext context) {
         String[] split = id.split(":", 2);
+        if (split.length == 1) {
+            split = split[0].split("_", 2);
+        }
+        if (split.length == 1) return new ItemStack(Material.AIR);
         MMOItem mmoItem = MMOItems.plugin.getMMOItem(Type.get(split[0]), split[1].toUpperCase());
         return mmoItem == null ? new ItemStack(Material.AIR) : requireNonNull(mmoItem.newBuilder().build());
     }
 
     @Override
     public String id(ItemStack item) {
-        return MMOItems.getType(item) + ":" + MMOItems.getID(item);
+        return MMOItems.getType(item) + "_" + MMOItems.getID(item);
     }
 }

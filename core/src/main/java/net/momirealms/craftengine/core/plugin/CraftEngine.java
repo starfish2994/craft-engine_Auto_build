@@ -217,6 +217,7 @@ public abstract class CraftEngine implements Plugin {
             this.fontManager.delayedInit();
             this.vanillaLootManager.delayedInit();
             this.advancementManager.delayedInit();
+            this.compatibilityManager.onDelayedEnable();
             // reload the plugin
             try {
                 this.reloadPlugin(Runnable::run, Runnable::run, true);

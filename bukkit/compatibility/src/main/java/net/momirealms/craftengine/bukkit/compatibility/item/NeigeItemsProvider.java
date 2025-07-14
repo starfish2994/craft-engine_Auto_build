@@ -12,7 +12,7 @@ public class NeigeItemsProvider implements ExternalItemProvider<ItemStack> {
 
     @Override
     public String plugin() {
-        return "NeigeItems";
+        return "neigeitems";
     }
 
     @Override

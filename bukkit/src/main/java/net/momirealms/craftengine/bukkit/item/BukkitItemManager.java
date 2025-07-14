@@ -77,6 +77,21 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.emptyUniqueItem = new UniqueIdItem<>(UniqueKey.AIR, this.emptyItem);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void delayedLoad() {
+        super.delayedLoad();
+        List<ExternalItemProvider<ItemStack>> sources = new ArrayList<>();
+        for (String externalSource : Config.recipeIngredientSources()) {
+            String sourceId = externalSource.toLowerCase(Locale.ENGLISH);
+            ExternalItemProvider<ItemStack> provider = getExternalItemProvider(sourceId);
+            if (provider != null) {
+                sources.add(provider);
+            }
+        }
+        this.factory.resetRecipeIngredientSources(sources.isEmpty() ? null : sources.toArray(new ExternalItemProvider[0]));
+    }
+
     @Override
     public UniqueIdItem<ItemStack> uniqueEmptyItem() {
         return this.emptyUniqueItem;
