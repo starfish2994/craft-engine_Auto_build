@@ -371,13 +371,14 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     protected void registerPlatformRecipe(Key id, Recipe<ItemStack> recipe) {
         if (recipe instanceof CustomBrewingRecipe<ItemStack> brewingRecipe) {
+            if (!VersionHelper.isOrAbove1_20_2()) return;
             PotionMix potionMix = new PotionMix(new NamespacedKey(id.namespace(), id.value()),
                     brewingRecipe.result(ItemBuildContext.EMPTY),
-                    new PredicateChoice(container -> {
+                    PotionMix.createPredicateChoice(container -> {
                         Item<ItemStack> wrapped = this.plugin.itemManager().wrap(container);
                         return brewingRecipe.container().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
                     }),
-                    new PredicateChoice(ingredient -> {
+                    PotionMix.createPredicateChoice(ingredient -> {
                         Item<ItemStack> wrapped = this.plugin.itemManager().wrap(ingredient);
                         return brewingRecipe.ingredient().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
                     })
