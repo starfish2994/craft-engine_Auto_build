@@ -81,15 +81,15 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @Override
     public void delayedLoad() {
         super.delayedLoad();
-        List<ExternalItemProvider<ItemStack>> sources = new ArrayList<>();
+        List<ExternalItemSource<ItemStack>> sources = new ArrayList<>();
         for (String externalSource : Config.recipeIngredientSources()) {
             String sourceId = externalSource.toLowerCase(Locale.ENGLISH);
-            ExternalItemProvider<ItemStack> provider = getExternalItemProvider(sourceId);
+            ExternalItemSource<ItemStack> provider = getExternalItemSource(sourceId);
             if (provider != null) {
                 sources.add(provider);
             }
         }
-        this.factory.resetRecipeIngredientSources(sources.isEmpty() ? null : sources.toArray(new ExternalItemProvider[0]));
+        this.factory.resetRecipeIngredientSources(sources.isEmpty() ? null : sources.toArray(new ExternalItemSource[0]));
     }
 
     @Override

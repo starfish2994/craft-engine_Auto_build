@@ -45,7 +45,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
 
     private final ItemParser itemParser;
     private final EquipmentParser equipmentParser;
-    protected final Map<String, ExternalItemProvider<I>> externalItemProviders = new HashMap<>();
+    protected final Map<String, ExternalItemSource<I>> externalItemSources = new HashMap<>();
     protected final Map<String, Function<Object, ItemDataModifier<I>>> dataFunctions = new HashMap<>();
     protected final Map<Key, CustomItem<I>> customItems = new HashMap<>();
     protected final Map<Key, List<UniqueKey>> customItemTags = new HashMap<>();
@@ -99,15 +99,15 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
-    public ExternalItemProvider<I> getExternalItemProvider(String name) {
-        return this.externalItemProviders.get(name);
+    public ExternalItemSource<I> getExternalItemSource(String name) {
+        return this.externalItemSources.get(name);
     }
 
     @Override
-    public boolean registerExternalItemProvider(ExternalItemProvider<I> externalItemProvider) {
-        if (!ResourceLocation.isValidNamespace(externalItemProvider.plugin())) return false;
-        if (this.externalItemProviders.containsKey(externalItemProvider.plugin())) return false;
-        this.externalItemProviders.put(externalItemProvider.plugin(), externalItemProvider);
+    public boolean registerExternalItemSource(ExternalItemSource<I> externalItemSource) {
+        if (!ResourceLocation.isValidNamespace(externalItemSource.plugin())) return false;
+        if (this.externalItemSources.containsKey(externalItemSource.plugin())) return false;
+        this.externalItemSources.put(externalItemSource.plugin(), externalItemSource);
         return true;
     }
 
@@ -511,7 +511,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             Map<String, Object> data = MiscUtils.castToMap(obj, false);
             String plugin = data.get("plugin").toString();
             String id = data.get("id").toString();
-            ExternalItemProvider<I> provider = AbstractItemManager.this.getExternalItemProvider(plugin.toLowerCase(Locale.ENGLISH));
+            ExternalItemSource<I> provider = AbstractItemManager.this.getExternalItemSource(plugin.toLowerCase(Locale.ENGLISH));
             return new ExternalModifier<>(id, Objects.requireNonNull(provider, "Item provider " + plugin + " not found"));
         }, "external");
         if (VersionHelper.isOrAbove1_20_5()) {

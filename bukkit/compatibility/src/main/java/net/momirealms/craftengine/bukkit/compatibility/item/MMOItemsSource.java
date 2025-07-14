@@ -3,7 +3,7 @@ package net.momirealms.craftengine.bukkit.compatibility.item;
 import net.Indyuce.mmoitems.MMOItems;
 import net.Indyuce.mmoitems.api.Type;
 import net.Indyuce.mmoitems.api.item.mmoitem.MMOItem;
-import net.momirealms.craftengine.core.item.ExternalItemProvider;
+import net.momirealms.craftengine.core.item.ExternalItemSource;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-public class MMOItemsProvider implements ExternalItemProvider<ItemStack> {
+public class MMOItemsSource implements ExternalItemSource<ItemStack> {
 
     @Override
     public String plugin() {

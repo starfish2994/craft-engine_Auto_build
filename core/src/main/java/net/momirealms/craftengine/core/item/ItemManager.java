@@ -61,9 +61,9 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     Key customItemId(T itemStack);
 
-    ExternalItemProvider<T> getExternalItemProvider(String name);
+    ExternalItemSource<T> getExternalItemSource(String name);
 
-    boolean registerExternalItemProvider(ExternalItemProvider<T> externalItemProvider);
+    boolean registerExternalItemSource(ExternalItemSource<T> externalItemSource);
 
     Optional<Equipment> getEquipment(Key key);
 

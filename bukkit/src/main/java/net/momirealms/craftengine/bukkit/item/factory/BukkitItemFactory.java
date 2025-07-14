@@ -6,14 +6,13 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
-import net.momirealms.craftengine.core.item.ExternalItemProvider;
+import net.momirealms.craftengine.core.item.ExternalItemSource;
 import net.momirealms.craftengine.core.item.ItemFactory;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
-import net.momirealms.craftengine.core.util.CharacterUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.StringUtils;
 import net.momirealms.craftengine.core.util.UniqueKey;
@@ -21,13 +20,12 @@ import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extends ItemFactory<W, ItemStack> {
     private boolean hasExternalRecipeSource = false;
-    private ExternalItemProvider<ItemStack>[] recipeIngredientSources = null;
+    private ExternalItemSource<ItemStack>[] recipeIngredientSources = null;
 
     protected BukkitItemFactory(CraftEngine plugin) {
         super(plugin);
@@ -58,7 +56,7 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
         }
     }
 
-    public void resetRecipeIngredientSources(ExternalItemProvider<ItemStack>[] recipeIngredientSources) {
+    public void resetRecipeIngredientSources(ExternalItemSource<ItemStack>[] recipeIngredientSources) {
         if (recipeIngredientSources == null || recipeIngredientSources.length == 0) {
             this.recipeIngredientSources = null;
             this.hasExternalRecipeSource = false;
@@ -99,7 +97,7 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     @Override
     protected UniqueKey recipeIngredientID(W item) {
         if (this.hasExternalRecipeSource) {
-           for (ExternalItemProvider<ItemStack> source : this.recipeIngredientSources) {
+           for (ExternalItemSource<ItemStack> source : this.recipeIngredientSources) {
                String id = source.id(item.getItem());
                if (id != null) {
                    return UniqueKey.create(Key.of(source.plugin(), StringUtils.toLowerCase(id)));
