@@ -274,7 +274,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private Object stolenFeatureFlagSet;
     // Some delayed tasks on main thread
     private final List<Runnable> delayedTasksOnMainThread = new ArrayList<>();
-    private final Map<Key, PotionMix> brewingRecipes = new HashMap<>();
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         instance = this;
@@ -372,6 +371,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     protected void registerPlatformRecipe(Key id, Recipe<ItemStack> recipe) {
         if (recipe instanceof CustomBrewingRecipe<ItemStack> brewingRecipe) {
+            if (!VersionHelper.isOrAbove1_20_2()) return;
             PotionMix potionMix = new PotionMix(new NamespacedKey(id.namespace(), id.value()),
                     brewingRecipe.result(ItemBuildContext.EMPTY),
                     PotionMix.createPredicateChoice(container -> {
