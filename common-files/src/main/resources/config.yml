@@ -354,6 +354,8 @@ gui:
         title: "<white><shift:-11><image:internal:stonecutting_recipe>"
       smithing-transform:
         title: "<white><shift:-11><image:internal:smithing_transform_recipe>"
+      brewing:
+        title: "<white><shift:-11><image:internal:brewing_recipe>"
 
 performance:
   # Maximum chain update depth when fixing client visuals
