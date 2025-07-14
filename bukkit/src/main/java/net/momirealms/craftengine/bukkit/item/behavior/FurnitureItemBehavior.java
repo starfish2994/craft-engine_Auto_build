@@ -163,14 +163,14 @@ public class FurnitureItemBehavior extends ItemBehavior {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
-        if (player != null && !player.isCreativeMode()) {
-            item.count(item.count() - 1);
+        if (player != null) {
+            if (!player.canInstabuild()) {
+                item.count(item.count() - 1);
+            }
+            player.swingHand(context.getHand());
         }
 
         context.getLevel().playBlockSound(finalPlacePosition, customFurniture.settings().sounds().placeSound());
-        if (player != null) {
-            player.swingHand(context.getHand());
-        }
         return InteractionResult.SUCCESS;
     }
 

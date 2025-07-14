@@ -365,7 +365,7 @@ public class ItemEventListener implements Listener {
             Optional<List<ItemBehavior>> optionalItemBehaviors = itemInHand.getItemBehavior();
             if (optionalItemBehaviors.isPresent()) {
                 for (ItemBehavior itemBehavior : optionalItemBehaviors.get()) {
-                    InteractionResult result = itemBehavior.use(serverPlayer.world(), serverPlayer, hand, null);
+                    InteractionResult result = itemBehavior.use(serverPlayer.world(), serverPlayer, hand);
                     if (result.success()) {
                         serverPlayer.updateLastSuccessfulInteractionTick(serverPlayer.gameTicks());
                     }

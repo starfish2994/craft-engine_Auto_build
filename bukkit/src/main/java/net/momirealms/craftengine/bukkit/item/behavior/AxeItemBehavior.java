@@ -67,7 +67,7 @@ public class AxeItemBehavior extends ItemBehavior {
         Optional<StrippableBlockBehavior> behaviorOptional = customState.behavior().getAs(StrippableBlockBehavior.class);
         if (behaviorOptional.isEmpty()) return InteractionResult.PASS;
         Key stripped = behaviorOptional.get().stripped();
-        Item<ItemStack> offHandItem = player != null ? (Item<ItemStack>) player.getItemInHand(InteractionHand.OFF_HAND) : BukkitItemManager.instance().wrap(new ItemStack(Material.AIR));
+        Item<ItemStack> offHandItem = player != null ? (Item<ItemStack>) player.getItemInHand(InteractionHand.OFF_HAND) : BukkitItemManager.instance().uniqueEmptyItem().item();
         // is using a shield
         if (context.getHand() == InteractionHand.MAIN_HAND && !ItemUtils.isEmpty(offHandItem) && canBlockAttack(offHandItem) && player != null && !player.isSecondaryUseActive()) {
             return InteractionResult.PASS;

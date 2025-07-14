@@ -3841,9 +3841,9 @@ public final class CoreReflections {
     }
 
     // 1.21.6+
-    public static final Method method$CollisionContext$placementContext = ReflectionUtils.getStaticMethod(
+    public static final Method method$CollisionContext$placementContext = MiscUtils.requireNonNullIf(ReflectionUtils.getStaticMethod(
             clazz$CollisionContext, clazz$CollisionContext, clazz$Player
-    );
+    ), VersionHelper.isOrAbove1_21_6());
 
     public static final Constructor<?> constructor$BlockHitResult = requireNonNull(
             ReflectionUtils.getConstructor(

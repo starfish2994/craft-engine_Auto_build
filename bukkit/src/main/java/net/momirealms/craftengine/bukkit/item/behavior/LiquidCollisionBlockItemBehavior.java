@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
@@ -38,26 +37,14 @@ public class LiquidCollisionBlockItemBehavior extends BlockItemBehavior {
 
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
-        return use(context.getLevel(), context.getPlayer(), context.getHand(), context);
+        return use(context.getLevel(), context.getPlayer(), context.getHand());
     }
 
     @Override
-    public InteractionResult use(World world, @Nullable Player player, InteractionHand hand, @Nullable UseOnContext context) {
+    public InteractionResult use(World world, @Nullable Player player, InteractionHand hand) {
         try {
-            Object blockHitResult;
-            if (player != null) {
-                blockHitResult = CoreReflections.method$Item$getPlayerPOVHitResult.invoke(null, world.serverWorld(), player.serverPlayer(), CoreReflections.instance$ClipContext$Fluid$SOURCE_ONLY);
-            } else if (context != null) {
-                BlockPos clickedPos = context.getClickedPos();
-                blockHitResult = CoreReflections.constructor$BlockHitResult.newInstance(
-                        CoreReflections.constructor$Vec3.newInstance(clickedPos.x() + 0.5, clickedPos.y() + 0.5, clickedPos.z() + 0.5),
-                        DirectionUtils.toNMSDirection(context.getHorizontalDirection()),
-                        LocationUtils.toBlockPos(clickedPos),
-                        false
-                );
-            } else {
-                return InteractionResult.FAIL;
-            }
+            if (player == null) return InteractionResult.FAIL;
+            Object blockHitResult = CoreReflections.method$Item$getPlayerPOVHitResult.invoke(null, world.serverWorld(), player.serverPlayer(), CoreReflections.instance$ClipContext$Fluid$SOURCE_ONLY);
             Object blockPos = CoreReflections.field$BlockHitResul$blockPos.get(blockHitResult);
             BlockPos above = new BlockPos(FastNMS.INSTANCE.field$Vec3i$x(blockPos), FastNMS.INSTANCE.field$Vec3i$y(blockPos) + offsetY, FastNMS.INSTANCE.field$Vec3i$z(blockPos));
             Direction direction = Direction.values()[(int) CoreReflections.method$Direction$ordinal.invoke(CoreReflections.field$BlockHitResul$direction.get(blockHitResult))];

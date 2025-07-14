@@ -63,6 +63,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         return this.place(new BlockPlaceContext(context));
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public InteractionResult place(BlockPlaceContext context) {
         Optional<CustomBlock> optionalBlock = BukkitBlockManager.instance().blockById(this.blockId);
         if (optionalBlock.isEmpty()) {
@@ -77,8 +78,10 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         CustomBlock block = optionalBlock.get();
         BlockPos pos = context.getClickedPos();
         int maxY = context.getLevel().worldHeight().getMaxBuildHeight() - 1;
-        if (player != null && context.getClickedFace() == Direction.UP && pos.y() >= maxY) {
-            player.sendActionBar(Component.translatable("build.tooHigh").arguments(Component.text(maxY)).color(NamedTextColor.RED));
+        if (context.getClickedFace() == Direction.UP && pos.y() >= maxY) {
+            if (player != null) {
+                player.sendActionBar(Component.translatable("build.tooHigh").arguments(Component.text(maxY)).color(NamedTextColor.RED));
+            }
             return InteractionResult.FAIL;
         }
 
@@ -94,23 +97,24 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         Block againstBlock = world.getBlockAt(againstPos.x(), againstPos.y(), againstPos.z());
         org.bukkit.entity.Player bukkitPlayer = player != null ? (org.bukkit.entity.Player) player.platformPlayer() : null;
 
-        if (player != null && player.isAdventureMode()) {
-            Object againstBlockState = BlockStateUtils.blockDataToBlockState(againstBlock.getBlockData());
-            Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(againstBlockState);
-            if (optionalCustomState.isEmpty()) {
-                if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, againstBlockState)) {
-                    return InteractionResult.FAIL;
-                }
-            } else {
-                ImmutableBlockState customState = optionalCustomState.get();
-                // custom block
-                if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, Config.simplifyAdventurePlaceCheck() ? customState.vanillaBlockState().handle() : againstBlockState)) {
-                    return InteractionResult.FAIL;
+        if (player != null) {
+
+            if (player.isAdventureMode()) {
+                Object againstBlockState = BlockStateUtils.blockDataToBlockState(againstBlock.getBlockData());
+                Optional<ImmutableBlockState> optionalCustomState = BlockStateUtils.getOptionalCustomBlockState(againstBlockState);
+                if (optionalCustomState.isEmpty()) {
+                    if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, againstBlockState)) {
+                        return InteractionResult.FAIL;
+                    }
+                } else {
+                    ImmutableBlockState customState = optionalCustomState.get();
+                    // custom block
+                    if (!AdventureModeUtils.canPlace(context.getItem(), context.getLevel(), againstPos, Config.simplifyAdventurePlaceCheck() ? customState.vanillaBlockState().handle() : againstBlockState)) {
+                        return InteractionResult.FAIL;
+                    }
                 }
             }
-        }
 
-        if (player != null) {
             // trigger event
             CustomBlockAttemptPlaceEvent attemptPlaceEvent = new CustomBlockAttemptPlaceEvent(bukkitPlayer, placeLocation.clone(), blockStateToPlace,
                     DirectionUtils.toBlockFace(context.getClickedFace()), bukkitBlock, context.getHand());
@@ -123,6 +127,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         BlockState previousState = bukkitBlock.getState();
         // place custom block
         CraftEngineBlocks.place(placeLocation, blockStateToPlace, UpdateOption.UPDATE_ALL_IMMEDIATE, false);
+
         if (player != null) {
             // call bukkit event
             BlockPlaceEvent bukkitPlaceEvent = new BlockPlaceEvent(bukkitBlock, previousState, againstBlock, (ItemStack) context.getItem().getItem(), bukkitPlayer, true, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
@@ -155,16 +160,15 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
-        if (player != null && !player.isCreativeMode()) {
-            Item<?> item = context.getItem();
-            item.count(item.count() - 1);
+        if (player != null) {
+            if (!player.isCreativeMode()) {
+                Item<?> item = context.getItem();
+                item.count(item.count() - 1);
+            }
+            player.swingHand(context.getHand());
         }
 
         block.setPlacedBy(context, blockStateToPlace);
-
-        if (player != null) {
-            player.swingHand(context.getHand());
-        }
         context.getLevel().playBlockSound(position, blockStateToPlace.settings().sounds().placeSound());
         world.sendGameEvent(bukkitPlayer, GameEvent.BLOCK_PLACE, new Vector(pos.x(), pos.y(), pos.z()));
         return InteractionResult.SUCCESS;
@@ -179,6 +183,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         return true;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     protected boolean canPlace(BlockPlaceContext context, ImmutableBlockState state) {
         try {
             Player cePlayer = context.getPlayer();
@@ -194,8 +199,8 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
                 voxelShape = CoreReflections.instance$CollisionContext$empty;
             }
             Object world = FastNMS.INSTANCE.field$CraftWorld$ServerLevel((World) context.getLevel().platformWorld());
-            boolean defaultReturn = ((!this.checkStatePlacement() || (boolean) CoreReflections.method$BlockStateBase$canSurvive.invoke(blockState, world, blockPos))
-                    && (boolean) CoreReflections.method$ServerLevel$checkEntityCollision.invoke(world, blockState, player, voxelShape, blockPos, true));
+            boolean defaultReturn = ((!this.checkStatePlacement() || FastNMS.INSTANCE.method$BlockStateBase$canSurvive(blockState, world, blockPos))
+                    && (boolean) CoreReflections.method$ServerLevel$checkEntityCollision.invoke(world, blockState, player, voxelShape, blockPos, true)); // paper only
             Block block = FastNMS.INSTANCE.method$CraftBlock$at(world, blockPos);
             BlockData blockData = FastNMS.INSTANCE.method$CraftBlockData$fromData(blockState);
             BlockCanBuildEvent canBuildEvent = new BlockCanBuildEvent(
