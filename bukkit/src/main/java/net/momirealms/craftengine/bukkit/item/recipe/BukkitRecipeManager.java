@@ -274,7 +274,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private Object stolenFeatureFlagSet;
     // Some delayed tasks on main thread
     private final List<Runnable> delayedTasksOnMainThread = new ArrayList<>();
-    private final Map<Key, PotionMix> brewingRecipes = new HashMap<>();
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         instance = this;
@@ -374,11 +373,11 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (recipe instanceof CustomBrewingRecipe<ItemStack> brewingRecipe) {
             PotionMix potionMix = new PotionMix(new NamespacedKey(id.namespace(), id.value()),
                     brewingRecipe.result(ItemBuildContext.EMPTY),
-                    PotionMix.createPredicateChoice(container -> {
+                    new PredicateChoice(container -> {
                         Item<ItemStack> wrapped = this.plugin.itemManager().wrap(container);
                         return brewingRecipe.container().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
                     }),
-                    PotionMix.createPredicateChoice(ingredient -> {
+                    new PredicateChoice(ingredient -> {
                         Item<ItemStack> wrapped = this.plugin.itemManager().wrap(ingredient);
                         return brewingRecipe.ingredient().test(new UniqueIdItem<>(wrapped.recipeIngredientId(), wrapped));
                     })
