@@ -100,7 +100,7 @@ public class FurnitureItemBehavior extends ItemBehavior {
                 finalPlacePosition = new Vec3d(xz.left(), xz.right(), clickedPosition.z());
             }
         } else {
-            furnitureYaw = placement.rotationRule().apply(180 + (player != null ? player.xRot() : 0));
+            furnitureYaw = placement.rotationRule().apply(180 + (player != null ? player.yRot() : 0));
             Pair<Double, Double> xz = placement.alignmentRule().apply(Pair.of(clickedPosition.x(), clickedPosition.z()));
             finalPlacePosition = new Vec3d(xz.left(), clickedPosition.y(), xz.right());
         }
