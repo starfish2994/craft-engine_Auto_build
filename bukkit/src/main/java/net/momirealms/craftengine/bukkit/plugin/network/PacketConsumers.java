@@ -2246,13 +2246,13 @@ public class PacketConsumers {
                     int k = buf.readShort();
                     Object hashedStack = FastNMS.INSTANCE.method$StreamDecoder$decode(NetworkReflections.instance$HashedStack$STREAM_CODEC, friendlyBuf);
                     Object serverSideItemStack = FastNMS.INSTANCE.method$Container$getItem(inventory, k);
-                    Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideItemStack), ((net.momirealms.craftengine.core.entity.player.Player) user));
+                    Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideItemStack).clone(), ((net.momirealms.craftengine.core.entity.player.Player) user));
                     if (optional.isPresent()) {
                         Object clientSideItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(optional.get());
                         boolean isSync = FastNMS.INSTANCE.method$HashedStack$matches(hashedStack, clientSideItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
                         if (isSync) {
                             changed = true;
-                            hashedStack = FastNMS.INSTANCE.method$HashedStack$create(clientSideItemStack, null);
+                            hashedStack = FastNMS.INSTANCE.method$HashedStack$create(serverSideItemStack, null);
                         }
                     }
                     changedSlots.put(k, hashedStack);
@@ -2260,13 +2260,13 @@ public class PacketConsumers {
                 Object carriedHashedStack = FastNMS.INSTANCE.method$StreamDecoder$decode(NetworkReflections.instance$HashedStack$STREAM_CODEC, friendlyBuf);
                 Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(user.serverPlayer());
                 Object serverSideCarriedItemStack = FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu);
-                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideCarriedItemStack), ((net.momirealms.craftengine.core.entity.player.Player) user));
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideCarriedItemStack).clone(), ((net.momirealms.craftengine.core.entity.player.Player) user));
                 if (optional.isPresent()) {
                     Object clientSideCarriedItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(optional.get());
                     boolean isSync = FastNMS.INSTANCE.method$HashedStack$matches(carriedHashedStack, clientSideCarriedItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
                     if (isSync) {
                         changed = true;
-                        carriedHashedStack = FastNMS.INSTANCE.method$HashedStack$create(clientSideCarriedItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
+                        carriedHashedStack = FastNMS.INSTANCE.method$HashedStack$create(serverSideCarriedItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
                     }
                 }
                 if (changed) {
