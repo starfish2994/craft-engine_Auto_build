@@ -2252,7 +2252,7 @@ public class PacketConsumers {
                         boolean isSync = FastNMS.INSTANCE.method$HashedStack$matches(hashedStack, clientSideItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
                         if (isSync) {
                             changed = true;
-                            hashedStack = FastNMS.INSTANCE.method$HashedStack$create(serverSideItemStack, null);
+                            hashedStack = FastNMS.INSTANCE.method$HashedStack$create(serverSideItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
                         }
                     }
                     changedSlots.put(k, hashedStack);
