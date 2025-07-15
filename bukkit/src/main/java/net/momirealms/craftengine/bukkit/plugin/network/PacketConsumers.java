@@ -2124,23 +2124,6 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
             ItemStack itemStack = FastNMS.INSTANCE.method$FriendlyByteBuf$readItem(friendlyBuf);
-            if (VersionHelper.isOrAbove1_21_5()) {
-                Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(itemStack);
-                if (!wrapped.isEmpty() && wrapped.isCustomItem()) {
-                    Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());
-                    if (containerMenu != null) {
-                        ItemStack carried = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu));
-                        if (ItemStackUtils.isEmpty(carried)) {
-                            event.setChanged(true);
-                            buf.clear();
-                            buf.writeVarInt(event.packetID());
-                            Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
-                            FastNMS.INSTANCE.method$FriendlyByteBuf$writeItem(newFriendlyBuf, carried);
-                            return;
-                        }
-                    }
-                }
-            }
             BukkitItemManager.instance().s2c(itemStack, serverPlayer).ifPresent((newItemStack) -> {
                 event.setChanged(true);
                 buf.clear();
@@ -2247,7 +2230,64 @@ public class PacketConsumers {
 
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK_1_20 = (user, event) -> {
         try {
-            if (VersionHelper.isOrAbove1_21_5()) return; // 1.21.5+需要其他办法解决同步问题
+            if (VersionHelper.isOrAbove1_21_5()) {
+                FriendlyByteBuf buf = event.getBuffer();
+                boolean changed = false;
+                Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                Object inventory = FastNMS.INSTANCE.method$Player$getInventory(user.serverPlayer());
+                int containerId = buf.readContainerId();
+                int stateId = buf.readVarInt();
+                short slotNum = buf.readShort();
+                byte buttonNum = buf.readByte();
+                int clickType = buf.readVarInt();
+                int i = buf.readVarInt();
+                Int2ObjectMap<Object> changedSlots = new Int2ObjectOpenHashMap<>(i);
+                for (int j = 0; j < i; ++j) {
+                    int k = buf.readShort();
+                    Object hashedStack = FastNMS.INSTANCE.method$StreamDecoder$decode(NetworkReflections.instance$HashedStack$STREAM_CODEC, friendlyBuf);
+                    Object serverSideItemStack = FastNMS.INSTANCE.method$Container$getItem(inventory, k);
+                    Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideItemStack), ((net.momirealms.craftengine.core.entity.player.Player) user));
+                    if (optional.isPresent()) {
+                        Object clientSideItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(optional.get());
+                        boolean isSync = FastNMS.INSTANCE.method$HashedStack$matches(hashedStack, clientSideItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
+                        if (isSync) {
+                            changed = true;
+                            hashedStack = FastNMS.INSTANCE.method$HashedStack$create(clientSideItemStack, null);
+                        }
+                    }
+                    changedSlots.put(k, hashedStack);
+                }
+                Object carriedHashedStack = FastNMS.INSTANCE.method$StreamDecoder$decode(NetworkReflections.instance$HashedStack$STREAM_CODEC, friendlyBuf);
+                Object containerMenu = FastNMS.INSTANCE.field$Player$containerMenu(user.serverPlayer());
+                Object serverSideCarriedItemStack = FastNMS.INSTANCE.method$AbstractContainerMenu$getCarried(containerMenu);
+                Optional<ItemStack> optional = BukkitItemManager.instance().s2c(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(serverSideCarriedItemStack), ((net.momirealms.craftengine.core.entity.player.Player) user));
+                if (optional.isPresent()) {
+                    Object clientSideCarriedItemStack = FastNMS.INSTANCE.field$CraftItemStack$handle(optional.get());
+                    boolean isSync = FastNMS.INSTANCE.method$HashedStack$matches(carriedHashedStack, clientSideCarriedItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
+                    if (isSync) {
+                        changed = true;
+                        carriedHashedStack = FastNMS.INSTANCE.method$HashedStack$create(clientSideCarriedItemStack, BukkitItemManager.instance().decoratedHashOpsGenerator());
+                    }
+                }
+                if (changed) {
+                    event.setChanged(true);
+                    buf.clear();
+                    buf.writeVarInt(event.packetID());
+                    buf.writeContainerId(containerId);
+                    buf.writeVarInt(stateId);
+                    buf.writeShort(slotNum);
+                    buf.writeByte(buttonNum);
+                    buf.writeVarInt(clickType);
+                    buf.writeVarInt(changedSlots.size());
+                    Object newFriendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);
+                    changedSlots.forEach((k, v) -> {
+                        buf.writeShort(k);
+                        FastNMS.INSTANCE.method$StreamEncoder$encode(NetworkReflections.instance$HashedStack$STREAM_CODEC, newFriendlyBuf, v);
+                    });
+                    FastNMS.INSTANCE.method$StreamEncoder$encode(NetworkReflections.instance$HashedStack$STREAM_CODEC, newFriendlyBuf, carriedHashedStack);
+                }
+                return;
+            }
             FriendlyByteBuf buf = event.getBuffer();
             boolean changed = false;
             Object friendlyBuf = FastNMS.INSTANCE.constructor$FriendlyByteBuf(buf);

@@ -15,6 +15,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistryOps;
 import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     static {
@@ -56,8 +58,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     private final Object bedrockItemHolder;
     private final Item<ItemStack> emptyItem;
     private final UniqueIdItem<ItemStack> emptyUniqueItem;
+    private final Function<Object, Integer> decoratedHashOpsGenerator;
     private Set<Key> lastRegisteredPatterns = Set.of();
 
+    @SuppressWarnings("unchecked")
     public BukkitItemManager(BukkitCraftEngine plugin) {
         super(plugin);
         instance = this;
@@ -68,13 +72,14 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         this.armorEventListener = new ArmorEventListener();
         this.networkItemHandler = VersionHelper.isOrAbove1_20_5() ? new ModernNetworkItemHandler() : new LegacyNetworkItemHandler();
         this.registerAllVanillaItems();
-        this.bedrockItemHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, KeyUtils.toResourceLocation(Key.of("minecraft:bedrock")))).get();;
+        this.bedrockItemHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, KeyUtils.toResourceLocation(Key.of("minecraft:bedrock")))).get();
         this.registerCustomTrimMaterial();
         this.loadLastRegisteredPatterns();
 
         ItemStack emptyStack = FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(CoreReflections.instance$ItemStack$EMPTY);
         this.emptyItem = this.wrap(emptyStack);
         this.emptyUniqueItem = new UniqueIdItem<>(UniqueKey.AIR, this.emptyItem);
+        this.decoratedHashOpsGenerator = VersionHelper.isOrAbove1_21_5() ? (Function<Object, Integer>) FastNMS.INSTANCE.createDecoratedHashOpsGenerator(MRegistryOps.HASHCODE) : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -451,5 +456,10 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             return newItem;
         }
         return this.emptyItem;
+    }
+
+    @Nullable("在 1.21.5+ 才有")
+    public Function<Object, Integer> decoratedHashOpsGenerator() {
+        return decoratedHashOpsGenerator;
     }
 }
