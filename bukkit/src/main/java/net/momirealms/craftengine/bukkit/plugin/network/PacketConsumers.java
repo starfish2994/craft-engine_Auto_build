@@ -2228,7 +2228,7 @@ public class PacketConsumers {
         }
     };
 
-    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK_1_20 = (user, event) -> {
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CONTAINER_CLICK = (user, event) -> {
         try {
             if (VersionHelper.isOrAbove1_21_5()) {
                 FriendlyByteBuf buf = event.getBuffer();
