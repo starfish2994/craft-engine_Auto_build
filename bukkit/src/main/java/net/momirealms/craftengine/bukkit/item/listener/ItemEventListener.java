@@ -36,6 +36,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -66,6 +67,8 @@ public class ItemEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        Entity entity = event.getRightClicked();
         BukkitServerPlayer serverPlayer = this.plugin.adapt(event.getPlayer());
         if (serverPlayer == null) return;
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
@@ -75,15 +78,17 @@ public class ItemEventListener implements Listener {
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
         if (optionalCustomItem.isEmpty()) return;
 
-        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
-        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
-                .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
-                .withParameter(DirectContextParameters.EVENT, cancellable)
-                .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
-                .withParameter(DirectContextParameters.HAND, hand)
-        );
-        CustomItem<ItemStack> customItem = optionalCustomItem.get();
-        customItem.execute(context, EventTrigger.RIGHT_CLICK);
+        if (!InteractUtils.isEntityInteractable(player, entity, itemInHand)) {
+            Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
+            PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                    .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                    .withParameter(DirectContextParameters.EVENT, cancellable)
+                    .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
+                    .withParameter(DirectContextParameters.HAND, hand)
+            );
+            CustomItem<ItemStack> customItem = optionalCustomItem.get();
+            customItem.execute(context, EventTrigger.RIGHT_CLICK);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -275,10 +280,12 @@ public class ItemEventListener implements Listener {
                         .withParameter(DirectContextParameters.EVENT, dummy)
                 );
                 CustomItem<ItemStack> customItem = optionalCustomItem.get();
-                customItem.execute(context, EventTrigger.RIGHT_CLICK);
-                if (dummy.isCancelled()) {
-                    event.setCancelled(true);
-                    return;
+                if (!InteractUtils.isInteractable(player, blockData, hitResult, null)) {
+                    customItem.execute(context, EventTrigger.RIGHT_CLICK);
+                    if (dummy.isCancelled()) {
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
             }
 

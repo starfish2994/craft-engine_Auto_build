@@ -16,12 +16,14 @@ import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bell;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
@@ -88,6 +90,7 @@ public class InteractUtils {
                     item.recipeIngredientId(), item
             ))) != null;
         });
+        registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.HOPPER, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DISPENSER, (player, item, blockState, result) -> true);
@@ -267,12 +270,35 @@ public class InteractUtils {
         registerInteraction(BlockKeys.REPEATING_COMMAND_BLOCK, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.CHAIN_COMMAND_BLOCK, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.COMMAND_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.REDSTONE_ORE, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.DEEPSLATE_REDSTONE_ORE, (player, item, blockState, result) -> true);
     }
 
     static {
         registerWillConsume(BlockKeys.CACTUS, (player, item, blockState, result) ->
                 result.getDirection() == Direction.UP && item.id().equals(ItemKeys.CACTUS));
     }
+
+    private static final Set<EntityType> INTERACTABLE_ENTITIES = Set.of(
+            EntityType.ALLAY,
+            EntityType.HORSE,
+            EntityType.ZOMBIE_HORSE,
+            EntityType.SKELETON_HORSE,
+            EntityType.DONKEY,
+            EntityType.MULE,
+            EntityType.VILLAGER,
+            EntityType.WANDERING_TRADER,
+            EntityType.LLAMA,
+            EntityType.TRADER_LLAMA,
+            EntityType.CAMEL,
+            EntityType.CHEST_MINECART,
+            EntityType.FURNACE_MINECART,
+            EntityType.HOPPER_MINECART,
+            EntityType.COMMAND_BLOCK_MINECART,
+            EntityType.ITEM_FRAME,
+            EntityType.GLOW_ITEM_FRAME,
+            EntityType.HAPPY_GHAST
+    );
 
     private static void registerInteraction(Key key, QuadFunction<org.bukkit.entity.Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean> function) {
         var previous = INTERACTIONS.put(key, function);
@@ -295,6 +321,22 @@ public class InteractUtils {
         } else {
             return false;
         }
+    }
+
+    public static boolean isEntityInteractable(Player player, Entity entity, Item<ItemStack> item) {
+        boolean isSneaking = player.isSneaking();
+        if (entity.getType() == EntityType.PIGLIN &&
+                item != null &&
+                item.vanillaId().equals(Key.of("minecraft:gold_ingot"))) {
+            return true;
+        }
+        return switch (entity) {
+            case ChestBoat ignored -> true;
+            case Boat ignored -> !isSneaking;
+            case RideableMinecart ignored -> !isSneaking;
+            case Steerable steerable -> !isSneaking && steerable.hasSaddle();
+            default -> INTERACTABLE_ENTITIES.contains(entity.getType());
+        };
     }
 
     public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
