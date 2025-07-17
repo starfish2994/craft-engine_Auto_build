@@ -3,14 +3,15 @@ package net.momirealms.craftengine.bukkit.world;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.BlockInWorld;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Snow;
 
@@ -23,15 +24,19 @@ public class BukkitBlockInWorld implements BlockInWorld {
 
     @Override
     public boolean canBeReplaced(BlockPlaceContext context) {
-        ImmutableBlockState customState = CraftEngineBlocks.getCustomBlockState(this.block);
+        Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.block.getWorld());
+        Object blockPos = LocationUtils.toBlockPos(this.block.getX(), this.block.getY(), this.block.getZ());
+        Object state = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
+
+        ImmutableBlockState customState = BlockStateUtils.getOptionalCustomBlockState(state).orElse(null);
         if (customState != null && !customState.isEmpty()) {
             return customState.behavior().canBeReplaced(context, customState);
         }
-        if (this.block.getType() == Material.SNOW) {
-            Snow snow = (Snow) block.getBlockData();
+        if (BlockStateUtils.getBlockOwnerIdFromState(state).equals(ItemKeys.SNOW)) {
+            Snow snow = (Snow) BlockStateUtils.fromBlockData(state);
             return snow.getLayers() == 1;
         }
-        return this.block.isReplaceable();
+        return BlockStateUtils.isReplaceable(state);
     }
 
     @Override
