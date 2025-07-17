@@ -2,12 +2,12 @@ package net.momirealms.craftengine.bukkit.world;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.BlockInWorld;
 import net.momirealms.craftengine.core.world.World;
@@ -32,7 +32,7 @@ public class BukkitBlockInWorld implements BlockInWorld {
         if (customState != null && !customState.isEmpty()) {
             return customState.behavior().canBeReplaced(context, customState);
         }
-        if (BlockStateUtils.getBlockOwnerIdFromState(state).equals(ItemKeys.SNOW)) {
+        if (BlockStateUtils.getBlockOwner(state) == MBlocks.SNOW) {
             Snow snow = (Snow) BlockStateUtils.fromBlockData(state);
             return snow.getLayers() == 1;
         }
