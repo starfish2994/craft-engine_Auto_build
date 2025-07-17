@@ -3850,4 +3850,27 @@ public final class CoreReflections {
                     CoreReflections.clazz$BlockHitResult, CoreReflections.clazz$Vec3, CoreReflections.clazz$Direction, CoreReflections.clazz$BlockPos, boolean.class
             )
     );
+
+    public static final Class<?> clazz$HashOps = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("util.HashOps")),
+            VersionHelper.isOrAbove1_21_5()
+    );
+
+    public static final Field field$HashOps$CRC32C_INSTANCE = Optional.ofNullable(clazz$HashOps)
+            .map(it -> ReflectionUtils.getDeclaredField(it, it, 0))
+            .orElse(null);
+
+    public static final Object instance$HashOps$CRC32C_INSTANCE;
+
+    static {
+        try {
+            if (VersionHelper.isOrAbove1_21_5()) {
+                instance$HashOps$CRC32C_INSTANCE = field$HashOps$CRC32C_INSTANCE.get(null);
+            } else {
+                instance$HashOps$CRC32C_INSTANCE = null;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize HashOps", e);
+        }
+    }
 }

@@ -27,7 +27,8 @@ public interface RecipeFactory<T> {
         return new CustomRecipeResult(
                 CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(
                         () -> new LocalizedResourceConfigException("warning.config.recipe.invalid_result", id)),
-                count
+                count,
+                null
         );
     }
 
