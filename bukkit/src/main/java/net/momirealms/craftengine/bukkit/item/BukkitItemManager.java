@@ -458,7 +458,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
         return this.emptyItem;
     }
 
-    @Nullable("在 1.21.5+ 才有")
+    @Nullable // 1.21.5+
     public Function<Object, Integer> decoratedHashOpsGenerator() {
         return decoratedHashOpsGenerator;
     }

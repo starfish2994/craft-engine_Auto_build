@@ -23,7 +23,7 @@ public final class MRegistryOps {
     public static final DynamicOps<Tag> SPARROW_NBT;
     public static final DynamicOps<Object> JAVA;
     public static final DynamicOps<JsonElement> JSON;
-    public static final @Nullable("仅在 1.21.5+ 有") DynamicOps<HashCode> HASHCODE;
+    public static final @Nullable DynamicOps<HashCode> HASHCODE; // 1.21.5+
 
     // 1.20.5+
     public static final Class<?> clazz$JavaOps = ReflectionUtils.getClazz("com.mojang.serialization.JavaOps");
