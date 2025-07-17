@@ -29,8 +29,6 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.util.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Registry;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -165,11 +163,11 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Optional<BuildableItem<ItemStack>> getVanillaItem(Key key) {
-        Material material = Registry.MATERIAL.get(KeyUtils.toNamespacedKey(key));
-        if (material == null) {
+        ItemStack vanilla = createVanillaItemStack(key);
+        if (vanilla == null) {
             return Optional.empty();
         }
-        return Optional.of(new CloneableConstantItem(key, new ItemStack(material)));
+        return Optional.of(new CloneableConstantItem(key, this.wrap(vanilla)));
     }
 
     @Override

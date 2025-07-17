@@ -561,7 +561,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         }
         CustomStoneCuttingRecipe<ItemStack> ceRecipe = new CustomStoneCuttingRecipe<>(
                 id, recipe.group(), Ingredient.of(holders),
-                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), BukkitItemManager.instance().wrap(result)), recipe.result().count(), null)
         );
         this.registerInternalRecipe(id, ceRecipe);
     }
@@ -590,7 +590,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         }
         CustomShapelessRecipe<ItemStack> ceRecipe = new CustomShapelessRecipe<>(
                 id, recipe.category(), recipe.group(), ingredientList,
-                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), BukkitItemManager.instance().wrap(result)), recipe.result().count(), null)
         );
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
@@ -627,7 +627,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         CustomShapedRecipe<ItemStack> ceRecipe = new CustomShapedRecipe<>(
                 id, recipe.category(), recipe.group(),
                 new CustomShapedRecipe.Pattern<>(recipe.pattern(), ingredients),
-                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), BukkitItemManager.instance().wrap(result)), recipe.result().count(), null)
         );
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
@@ -651,7 +651,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 id, recipe.category(), recipe.group(),
                 Ingredient.of(holders),
                 recipe.cookingTime(), recipe.experience(),
-                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count())
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), BukkitItemManager.instance().wrap(result)), recipe.result().count(), null)
         );
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
@@ -680,7 +680,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 baseHolders.isEmpty() ? null : Ingredient.of(baseHolders),
                 templateHolders.isEmpty() ? null : Ingredient.of(templateHolders),
                 additionHolders.isEmpty() ? null : Ingredient.of(additionHolders),
-                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), result), recipe.result().count()),
+                new CustomRecipeResult<>(new CloneableConstantItem(recipe.result().isCustom() ? Key.of("!internal:custom") : Key.of(recipe.result().id()), BukkitItemManager.instance().wrap(result)), recipe.result().count(), null),
                 true,
                 List.of()
         );
