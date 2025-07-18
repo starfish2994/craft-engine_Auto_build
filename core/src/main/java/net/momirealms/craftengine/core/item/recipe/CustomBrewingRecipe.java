@@ -48,11 +48,6 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @Override
-    public T assemble(RecipeInput input, ItemBuildContext context) {
-        return this.result(context);
-    }
-
-    @Override
     public List<Ingredient<T>> ingredientsInUse() {
         List<Ingredient<T>> ingredients = new ArrayList<>();
         ingredients.add(this.container);

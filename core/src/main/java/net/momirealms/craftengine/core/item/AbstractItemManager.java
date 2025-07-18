@@ -94,6 +94,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
     }
 
     @Override
+    public Function<Object, ItemDataModifier<I>> getDataType(String key) {
+        return this.dataFunctions.get(key);
+    }
+
+    @Override
     public ConfigParser[] parsers() {
         return new ConfigParser[]{this.itemParser, this.equipmentParser};
     }

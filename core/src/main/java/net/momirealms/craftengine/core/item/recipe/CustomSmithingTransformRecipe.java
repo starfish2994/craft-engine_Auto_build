@@ -154,6 +154,7 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     public static class ItemDataProcessors {
         public static final Key KEEP_COMPONENTS = Key.of("craftengine:keep_components");
         public static final Key KEEP_TAGS = Key.of("craftengine:keep_tags");
+        public static final Key APPLY_DATA = Key.of("craftengine:apply_data");
 
         static {
             if (VersionHelper.isOrAbove1_20_5()) {

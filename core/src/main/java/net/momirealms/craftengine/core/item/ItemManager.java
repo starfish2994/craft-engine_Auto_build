@@ -24,6 +24,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
 
     void registerDataType(Function<Object, ItemDataModifier<T>> factory, String... alias);
 
+    Function<Object, ItemDataModifier<T>> getDataType(String key);
+
     Map<Key, Equipment> equipments();
 
     ConfigParser[] parsers();
