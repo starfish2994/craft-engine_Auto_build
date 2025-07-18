@@ -338,20 +338,22 @@ public class InteractUtils {
     }
 
     public static boolean isEntityInteractable(Player player, Entity entity, Item<ItemStack> item) {
-        boolean isSneaking = player.isSneaking();
         if (EntityUtils.isPiglinWithGoldIngot(entity, item)) {
             return true;
         }
-        if (EntityUtils.isHappyGhastRideable(entity) && !isSneaking) {
-            return true;
+        if (!player.isSneaking()) {
+            if (EntityUtils.isHappyGhastRideable(entity)) {
+                return true;
+            }
+            return switch (entity) {
+                case Boat ignored -> true;
+                case RideableMinecart ignored -> true;
+                case Steerable steerable -> steerable.hasSaddle();
+                default -> INTERACTABLE_ENTITIES.contains(entity.getType());
+            };
         }
-        return switch (entity) {
-            case ChestBoat ignored -> true;
-            case Boat ignored -> !isSneaking;
-            case RideableMinecart ignored -> !isSneaking;
-            case Steerable steerable -> !isSneaking && steerable.hasSaddle();
-            default -> INTERACTABLE_ENTITIES.contains(entity.getType());
-        };
+        return entity instanceof ChestBoat
+                || INTERACTABLE_ENTITIES.contains(entity.getType());
     }
 
     public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
