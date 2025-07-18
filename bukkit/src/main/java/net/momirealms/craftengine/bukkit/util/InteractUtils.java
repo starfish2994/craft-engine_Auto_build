@@ -94,7 +94,6 @@ public class InteractUtils {
         });
         registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> {
             Direction direction = result.getDirection();
-            if (player.isSneaking()) return false;
             if (blockState instanceof ChiseledBookshelf chiseledBookshelf) {
                 Direction facing = DirectionUtils.toDirection(chiseledBookshelf.getFacing());
                 return facing == direction;
@@ -311,11 +310,7 @@ public class InteractUtils {
             EntityType.GLOW_ITEM_FRAME
         ));
         if (VersionHelper.isOrAbove1_21_6()) {
-            try {
-                Field happyGhastField = EntityType.class.getField("HAPPY_GHAST");
-                EntityType happyGhast = (EntityType) happyGhastField.get(null);
-                set.add(happyGhast);
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {}
+            set.add(EntityType.valueOf("HAPPY_GHAST"));
         }
         return Collections.unmodifiableSet(set);
     }

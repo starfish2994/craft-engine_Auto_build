@@ -279,7 +279,7 @@ public class ItemEventListener implements Listener {
                         .withParameter(DirectContextParameters.EVENT, dummy)
                 );
                 CustomItem<ItemStack> customItem = optionalCustomItem.get();
-                if (!InteractUtils.isInteractable(player, blockData, hitResult, itemInHand) && !player.isSneaking()) {
+                if (!(InteractUtils.isInteractable(player, blockData, hitResult, itemInHand) && !player.isSneaking())) {
                     customItem.execute(context, EventTrigger.RIGHT_CLICK);
                 }
                 if (dummy.isCancelled()) {
