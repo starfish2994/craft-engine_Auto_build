@@ -34,6 +34,8 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.ChiseledBookshelf;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.entity.Entity;
@@ -53,10 +55,7 @@ import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class ItemEventListener implements Listener {
     private final BukkitCraftEngine plugin;
@@ -280,12 +279,12 @@ public class ItemEventListener implements Listener {
                         .withParameter(DirectContextParameters.EVENT, dummy)
                 );
                 CustomItem<ItemStack> customItem = optionalCustomItem.get();
-                if (!InteractUtils.isInteractable(player, blockData, hitResult, null)) {
+                if (!InteractUtils.isInteractable(player, blockData, hitResult, itemInHand) && !player.isSneaking()) {
                     customItem.execute(context, EventTrigger.RIGHT_CLICK);
-                    if (dummy.isCancelled()) {
-                        event.setCancelled(true);
-                        return;
-                    }
+                }
+                if (dummy.isCancelled()) {
+                    event.setCancelled(true);
+                    return;
                 }
             }
 

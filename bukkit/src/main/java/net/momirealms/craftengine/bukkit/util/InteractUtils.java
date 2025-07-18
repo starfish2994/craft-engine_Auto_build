@@ -12,23 +12,25 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.QuadFunction;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bell;
+import org.bukkit.block.data.type.ChiseledBookshelf;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> WILL_CONSUME = new HashMap<>();
     private static final Key NOTE_BLOCK_TOP_INSTRUMENTS = Key.of("minecraft:noteblock_top_instruments");
+    private static final Set<EntityType> INTERACTABLE_ENTITIES = createInteractableEntities();
 
     private InteractUtils() {}
 
@@ -90,7 +92,15 @@ public class InteractUtils {
                     item.recipeIngredientId(), item
             ))) != null;
         });
-        registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> {
+            Direction direction = result.getDirection();
+            if (player.isSneaking()) return false;
+            if (blockState instanceof ChiseledBookshelf chiseledBookshelf) {
+                Direction facing = DirectionUtils.toDirection(chiseledBookshelf.getFacing());
+                return facing == direction;
+            }
+            return false;
+        });
         registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.HOPPER, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DISPENSER, (player, item, blockState, result) -> true);
@@ -279,7 +289,9 @@ public class InteractUtils {
                 result.getDirection() == Direction.UP && item.id().equals(ItemKeys.CACTUS));
     }
 
-    private static final Set<EntityType> INTERACTABLE_ENTITIES = Set.of(
+    private static Set<EntityType> createInteractableEntities() {
+        Set<EntityType> set = EnumSet.noneOf(EntityType.class);
+        set.addAll(Set.of(
             EntityType.ALLAY,
             EntityType.HORSE,
             EntityType.ZOMBIE_HORSE,
@@ -296,9 +308,17 @@ public class InteractUtils {
             EntityType.HOPPER_MINECART,
             EntityType.COMMAND_BLOCK_MINECART,
             EntityType.ITEM_FRAME,
-            EntityType.GLOW_ITEM_FRAME,
-            EntityType.HAPPY_GHAST
-    );
+            EntityType.GLOW_ITEM_FRAME
+        ));
+        if (VersionHelper.isOrAbove1_21_6()) {
+            try {
+                Field happyGhastField = EntityType.class.getField("HAPPY_GHAST");
+                EntityType happyGhast = (EntityType) happyGhastField.get(null);
+                set.add(happyGhast);
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {}
+        }
+        return Collections.unmodifiableSet(set);
+    }
 
     private static void registerInteraction(Key key, QuadFunction<org.bukkit.entity.Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean> function) {
         var previous = INTERACTIONS.put(key, function);
@@ -325,9 +345,10 @@ public class InteractUtils {
 
     public static boolean isEntityInteractable(Player player, Entity entity, Item<ItemStack> item) {
         boolean isSneaking = player.isSneaking();
-        if (entity.getType() == EntityType.PIGLIN &&
-                item != null &&
-                item.vanillaId().equals(Key.of("minecraft:gold_ingot"))) {
+        if (EntityUtils.isPiglinWithGoldIngot(entity, item)) {
+            return true;
+        }
+        if (EntityUtils.isHappyGhastRideable(entity) && !isSneaking) {
             return true;
         }
         return switch (entity) {
