@@ -77,18 +77,17 @@ public class ItemEventListener implements Listener {
         if (ItemUtils.isEmpty(itemInHand)) return;
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
         if (optionalCustomItem.isEmpty()) return;
+        if (InteractUtils.isEntityInteractable(player, entity, itemInHand)) return;
 
-        if (!InteractUtils.isEntityInteractable(player, entity, itemInHand)) {
-            Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
-            PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
-                    .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
-                    .withParameter(DirectContextParameters.EVENT, cancellable)
-                    .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
-                    .withParameter(DirectContextParameters.HAND, hand)
-            );
-            CustomItem<ItemStack> customItem = optionalCustomItem.get();
-            customItem.execute(context, EventTrigger.RIGHT_CLICK);
-        }
+        Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
+        PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                .withParameter(DirectContextParameters.EVENT, cancellable)
+                .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(event.getRightClicked().getLocation()))
+                .withParameter(DirectContextParameters.HAND, hand)
+        );
+        CustomItem<ItemStack> customItem = optionalCustomItem.get();
+        customItem.execute(context, EventTrigger.RIGHT_CLICK);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
