@@ -3873,4 +3873,27 @@ public final class CoreReflections {
             throw new ReflectionInitException("Failed to initialize HashOps", e);
         }
     }
+
+    public static final Class<?> clazz$SnowLayerBlock = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.block.BlockSnow",
+                    "world.level.block.SnowLayerBlock"
+            )
+    );
+
+    public static final Field field$SnowLayerBlock$LAYERS = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$SnowLayerBlock, clazz$IntegerProperty, 0
+            )
+    );
+
+    public static final Object instance$SnowLayerBlock$LAYERS;
+
+    static {
+        try {
+            instance$SnowLayerBlock$LAYERS = field$SnowLayerBlock$LAYERS.get(null);
+        } catch (IllegalAccessException e) {
+            throw new ReflectionInitException("Failed to initialize SnowLayerBlock$LAYERS", e);
+        }
+    }
 }
