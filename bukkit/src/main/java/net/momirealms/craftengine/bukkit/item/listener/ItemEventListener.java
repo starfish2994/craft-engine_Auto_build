@@ -69,7 +69,7 @@ public class ItemEventListener implements Listener {
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
-        BukkitServerPlayer serverPlayer = this.plugin.adapt(event.getPlayer());
+        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
         if (serverPlayer == null) return;
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
