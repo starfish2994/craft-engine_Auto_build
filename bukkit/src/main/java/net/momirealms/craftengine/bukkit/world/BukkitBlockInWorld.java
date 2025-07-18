@@ -2,6 +2,7 @@ package net.momirealms.craftengine.bukkit.world;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -13,7 +14,6 @@ import net.momirealms.craftengine.core.world.BlockInWorld;
 import net.momirealms.craftengine.core.world.World;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.type.Snow;
 
 public class BukkitBlockInWorld implements BlockInWorld {
     private final Block block;
@@ -24,17 +24,13 @@ public class BukkitBlockInWorld implements BlockInWorld {
 
     @Override
     public boolean canBeReplaced(BlockPlaceContext context) {
-        Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(this.block.getWorld());
-        Object blockPos = LocationUtils.toBlockPos(this.block.getX(), this.block.getY(), this.block.getZ());
-        Object state = FastNMS.INSTANCE.method$BlockGetter$getBlockState(worldServer, blockPos);
-
+        Object state = BlockStateUtils.getBlockState(this.block);
         ImmutableBlockState customState = BlockStateUtils.getOptionalCustomBlockState(state).orElse(null);
         if (customState != null && !customState.isEmpty()) {
             return customState.behavior().canBeReplaced(context, customState);
         }
         if (BlockStateUtils.getBlockOwner(state) == MBlocks.SNOW) {
-            Snow snow = (Snow) BlockStateUtils.fromBlockData(state);
-            return snow.getLayers() == 1;
+            return (int) FastNMS.INSTANCE.method$StateHolder$getValue(state, CoreReflections.instance$SnowLayerBlock$LAYERS) == 1;
         }
         return BlockStateUtils.isReplaceable(state);
     }
