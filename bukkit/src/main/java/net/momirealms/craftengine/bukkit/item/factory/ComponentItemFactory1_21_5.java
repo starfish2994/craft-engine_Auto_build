@@ -90,11 +90,7 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
         if (lore == null || lore.isEmpty()) {
             item.resetComponent(ComponentTypes.LORE);
         } else {
-            List<Tag> loreTags = new ArrayList<>();
-            for (Component component : lore) {
-                loreTags.add(AdventureHelper.componentToTag(component));
-            }
-            item.setSparrowNBTComponent(ComponentTypes.LORE, new ListTag(loreTags));
+            item.setSparrowNBTComponent(ComponentTypes.LORE, new ListTag(lore.stream().map(AdventureHelper::split).flatMap(List::stream).map(AdventureHelper::componentToTag).toList()));
         }
     }
 

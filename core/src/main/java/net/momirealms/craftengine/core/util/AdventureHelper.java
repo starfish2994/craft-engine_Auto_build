@@ -1,11 +1,17 @@
 package net.momirealms.craftengine.core.util;
 
 import com.google.gson.JsonElement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -29,6 +35,7 @@ public class AdventureHelper {
     private final MiniMessage miniMessageCustom;
     private final GsonComponentSerializer gsonComponentSerializer;
     private final NBTComponentSerializer nbtComponentSerializer;
+    private static final TextReplacementConfig REPLACE_LF = TextReplacementConfig.builder().matchLiteral("\n").replacement(Component.newline()).build();
 
     private AdventureHelper() {
         this.miniMessage = MiniMessage.builder().build();
@@ -207,6 +214,24 @@ public class AdventureHelper {
 
     public static Component tagToComponent(Tag tag) {
         return getNBT().deserialize(tag);
+    }
+
+    public static List<Component> split(Component component) {
+        List<Component> result = new ArrayList<>(1);
+        Component line = Component.empty();
+        for (Iterator<Component> it = component.replaceText(REPLACE_LF).iterator(ComponentIteratorType.DEPTH_FIRST); it.hasNext(); ) {
+            Component child = it.next().children(Collections.emptyList());
+            if (Component.EQUALS.test(child, Component.newline())) {
+                result.add(line);
+                line = Component.empty();
+            } else {
+                line = line.append(child);
+            }
+        }
+        if (Component.IS_NOT_EMPTY.test(line)) {
+            result.add(line);
+        }
+        return result;
     }
 
     /**

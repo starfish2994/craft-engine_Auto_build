@@ -16,7 +16,6 @@ import net.momirealms.sparrow.nbt.Tag;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected final CraftEngine plugin;
@@ -112,7 +111,7 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected void loreComponent(W item, List<Component> component) {
         if (component != null && !component.isEmpty()) {
-            loreJson(item, component.stream().map(AdventureHelper::componentToJson).collect(Collectors.toList()));
+            loreJson(item, component.stream().map(AdventureHelper::split).flatMap(List::stream).map(AdventureHelper::componentToJson).toList());
         } else {
             loreJson(item, null);
         }
