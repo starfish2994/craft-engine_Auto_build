@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
@@ -111,7 +112,7 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected void loreComponent(W item, List<Component> component) {
         if (component != null && !component.isEmpty()) {
-            loreJson(item, component.stream().map(AdventureHelper::split).flatMap(List::stream).map(AdventureHelper::componentToJson).toList());
+            loreJson(item, component.stream().map(AdventureHelper::componentToJson).collect(Collectors.toList()));
         } else {
             loreJson(item, null);
         }

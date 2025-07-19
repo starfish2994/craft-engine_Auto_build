@@ -1,35 +1,25 @@
 package net.momirealms.craftengine.core.item.modifier;
 
+import java.util.ArrayList;
+import java.util.stream.Stream;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
-import net.momirealms.craftengine.core.plugin.config.Config;
-import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LoreModifier<I> implements ItemDataModifier<I> {
-    private final List<String> argument;
+    private final List<LoreModification> argument;
 
-    public LoreModifier(List<String> argument) {
-        if (Config.addNonItalicTag()) {
-            List<String> processed = new ArrayList<>(argument.size());
-            for (String arg : argument) {
-                if (arg.startsWith("<!i>")) {
-                    processed.add(arg);
-                } else {
-                    processed.add("<!i>" + arg);
-                }
-            }
-            this.argument = processed;
-        } else {
-            this.argument = argument;
-        }
+    public LoreModifier(List<LoreModification> argument) {
+        argument = new ArrayList<>(argument);
+        argument.sort(null);
+        this.argument = List.copyOf(argument);
     }
 
     @Override
@@ -39,7 +29,7 @@ public class LoreModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
-        item.loreComponent(this.argument.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
+        item.loreComponent(argument.stream().reduce(Stream.<Component>empty(), (stream, modification) -> modification.apply(stream, context), Stream::concat).toList());
         return item;
     }
 

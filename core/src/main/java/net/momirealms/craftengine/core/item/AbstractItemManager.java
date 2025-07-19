@@ -534,15 +534,26 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new CustomNameModifier<>(name);
             }, "custom-name", "item-name", "display-name");
         }
+        Function<Object, List<LoreModification>> loreModificationListParser = (obj) -> {
+            if (obj instanceof List<?> list) {
+                List<LoreModification> modifications = new ArrayList<>(list.size());
+                for (Object entry : list) {
+                    if (entry instanceof Map<?, ?> map) {
+                        modifications.add(new LoreModification(ResourceConfigUtils.getAsEnumOrDefault(map.get("action").toString().toUpperCase(Locale.ROOT), LoreModification.Action.class, LoreModification.Action.SET), ResourceConfigUtils.getAsInt(map.get("priority"), "priority"), ResourceConfigUtils.getAsBoolean(map.get("split-lines"), "split-lines"), MiscUtils.getAsStringList(map.get("content"))));
+                    } else {
+                        modifications.add(new LoreModification(List.of(entry.toString())));
+                    }
+                }
+                return modifications;
+            }
+            return Collections.emptyList();
+        };
+        registerDataType((obj) -> new LoreModifier<>(loreModificationListParser.apply(obj)), "lore", "display-lore", "description");
         registerDataType((obj) -> {
-            List<String> lore = MiscUtils.getAsStringList(obj);
-            return new LoreModifier<>(lore);
-        }, "lore", "display-lore", "description");
-        registerDataType((obj) -> {
-            Map<String, List<String>> dynamicLore = new LinkedHashMap<>();
+            Map<String, List<LoreModification>> dynamicLore = new LinkedHashMap<>();
             if (obj instanceof Map<?, ?> map) {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    dynamicLore.put(entry.getKey().toString(), MiscUtils.getAsStringList(entry.getValue()));
+                    dynamicLore.put(entry.getKey().toString(), loreModificationListParser.apply(entry.getValue()));
                 }
             }
             return new DynamicLoreModifier<>(dynamicLore);

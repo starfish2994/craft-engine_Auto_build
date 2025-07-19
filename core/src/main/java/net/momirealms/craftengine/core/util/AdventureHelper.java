@@ -216,7 +216,7 @@ public class AdventureHelper {
         return getNBT().deserialize(tag);
     }
 
-    public static List<Component> split(Component component) {
+    public static List<Component> splitLines(Component component) {
         List<Component> result = new ArrayList<>(1);
         Component line = Component.empty();
         for (Iterator<Component> it = component.replaceText(REPLACE_LF).iterator(ComponentIteratorType.DEPTH_FIRST); it.hasNext(); ) {
