@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
-import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
@@ -17,6 +16,7 @@ import net.momirealms.sparrow.nbt.Tag;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected final CraftEngine plugin;
