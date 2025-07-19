@@ -1884,7 +1884,7 @@ public class PacketConsumers {
 
     public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
         try {
-            if (!VersionHelper.isOrAbove1_20_5()) return;
+            if (!VersionHelper.isOrAbove1_20_2()) return;
             Object payload = NetworkReflections.methodHandle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
             if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
                 Payload discardedPayload = DiscardedPayload.from(payload);
@@ -1905,7 +1905,6 @@ public class PacketConsumers {
                     }
                     user.setClientModState(true);
                 } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
-                    if (!VersionHelper.isOrAbove1_20_2()) return;
                     if (dataType.as(Boolean.class).decode(buf)) {
                         FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
                         dataType.writeType(bufPayload);
