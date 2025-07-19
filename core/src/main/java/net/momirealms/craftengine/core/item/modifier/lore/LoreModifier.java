@@ -39,16 +39,17 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
 
     static <I> LoreModifier<I> createLoreModifier(Object arg) {
         List<Object> rawLoreData = MiscUtils.getAsList(arg, Object.class);
-        List<String> lore = new ArrayList<>();
+        String[] rawLore = new String[rawLoreData.size()];
         label_all_string_check: {
-            for (Object o : rawLoreData) {
+            for (int i = 0; i < rawLore.length; i++) {
+                Object o = rawLoreData.get(i);
                 if (o instanceof Map<?,?>) {
                     break label_all_string_check;
                 } else {
-                    lore.add(String.valueOf(o));
+                    rawLore[i] = o.toString();
                 }
             }
-            return new SingleLoreModifier<>(new LoreModification(LoreModification.Operation.APPEND, false, lore.toArray(new String[0])));
+            return new SingleLoreModifier<>(new LoreModification(LoreModification.Operation.APPEND, false, rawLore));
         }
 
         List<LoreModificationHolder> modifications = new ArrayList<>(rawLoreData.size() + 1);
