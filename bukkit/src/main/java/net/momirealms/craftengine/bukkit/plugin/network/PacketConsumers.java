@@ -105,7 +105,7 @@ public class PacketConsumers {
             byte yHeadRot = buf.readByte();
             int data = buf.readVarInt();
             // Falling blocks
-            int remapped = remap(data);
+            int remapped = user.clientModEnabled() ? remapMOD(data) : remap(data);
             if (remapped != data) {
                 int xa = buf.readShort();
                 int ya = buf.readShort();
@@ -428,7 +428,7 @@ public class PacketConsumers {
             if (user.clientModEnabled() && !BlockStateUtils.isVanillaBlock(before)) {
                 return;
             }
-            int state = remap(before);
+            int state = user.clientModEnabled() ? remapMOD(before) : remap(before);
             if (state == before) {
                 return;
             }
@@ -450,7 +450,7 @@ public class PacketConsumers {
             BlockPos blockPos = buf.readBlockPos();
             int state = buf.readInt();
             boolean global = buf.readBoolean();
-            int newState = remap(state);
+            int newState = user.clientModEnabled() ? remapMOD(state) : remap(state);
             if (newState == state) {
                 return;
             }
@@ -1006,7 +1006,7 @@ public class PacketConsumers {
             if (!CoreReflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
             int id = BlockStateUtils.blockStateToId(blockState);
-            int remapped = remap(id);
+            int remapped = user.clientModEnabled() ? remapMOD(id) : remap(id);
             if (remapped == id) return;
             Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
             Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
@@ -1046,7 +1046,7 @@ public class PacketConsumers {
             if (!CoreReflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
             int id = BlockStateUtils.blockStateToId(blockState);
-            int remapped = remap(id);
+            int remapped = user.clientModEnabled() ? remapMOD(id) : remap(id);
             if (remapped == id) return;
             Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
             Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
@@ -1086,7 +1086,7 @@ public class PacketConsumers {
             if (!CoreReflections.clazz$BlockParticleOption.isInstance(option)) return;
             Object blockState = FastNMS.INSTANCE.field$BlockParticleOption$blockState(option);
             int id = BlockStateUtils.blockStateToId(blockState);
-            int remapped = remap(id);
+            int remapped = user.clientModEnabled() ? remapMOD(id) : remap(id);
             if (remapped == id) return;
             Object type = FastNMS.INSTANCE.method$BlockParticleOption$getType(option);
             Object remappedOption = FastNMS.INSTANCE.constructor$BlockParticleOption(type, BlockStateUtils.idToBlockState(remapped));
