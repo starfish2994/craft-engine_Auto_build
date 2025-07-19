@@ -304,6 +304,9 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void sendCustomPayload(Key channel, byte[] data) {
+        if (!VersionHelper.isOrAbove1_20_2()) {
+            throw new UnsupportedOperationException("Cannot send custom payload to " + name() + " because the server is running a version below 1.20.2");
+        }
         try {
             Object channelKey = KeyUtils.toResourceLocation(channel);
             Object dataPayload;
