@@ -5,10 +5,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,12 +17,12 @@ public final class ResourceConfigUtils {
         return raw != null ? function.apply(raw) : defaultValue;
     }
 
-    public static <E extends Enum<E>> E getAsEnumOrDefault(Object o, Class<E> clazz, E defaultValue) {
+    public static <E extends Enum<E>> E getAsEnum(Object o, Class<E> clazz, E defaultValue) {
         if (o == null) {
             return defaultValue;
         }
         try {
-            return Enum.valueOf(clazz, o.toString());
+            return Enum.valueOf(clazz, o.toString().toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             return defaultValue;
         }

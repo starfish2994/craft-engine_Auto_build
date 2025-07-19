@@ -1,10 +1,6 @@
 package net.momirealms.craftengine.core.util;
 
 import com.google.gson.JsonElement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -21,7 +17,7 @@ import net.momirealms.sparrow.nbt.Tag;
 import net.momirealms.sparrow.nbt.adventure.NBTComponentSerializer;
 import net.momirealms.sparrow.nbt.adventure.NBTSerializerOptions;
 
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 

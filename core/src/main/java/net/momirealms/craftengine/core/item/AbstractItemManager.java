@@ -9,6 +9,8 @@ import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.equipment.*;
 import net.momirealms.craftengine.core.item.modifier.*;
+import net.momirealms.craftengine.core.item.modifier.lore.DynamicLoreModifier;
+import net.momirealms.craftengine.core.item.modifier.lore.LoreModifier;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
@@ -534,26 +536,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new CustomNameModifier<>(name);
             }, "custom-name", "item-name", "display-name");
         }
-        Function<Object, List<LoreModification>> loreModificationListParser = (obj) -> {
-            if (obj instanceof List<?> list) {
-                List<LoreModification> modifications = new ArrayList<>(list.size());
-                for (Object entry : list) {
-                    if (entry instanceof Map<?, ?> map) {
-                        modifications.add(new LoreModification(ResourceConfigUtils.getAsEnumOrDefault(map.get("action").toString().toUpperCase(Locale.ROOT), LoreModification.Action.class, LoreModification.Action.SET), ResourceConfigUtils.getAsInt(map.get("priority"), "priority"), ResourceConfigUtils.getAsBoolean(map.get("split-lines"), "split-lines"), MiscUtils.getAsStringList(map.get("content"))));
-                    } else {
-                        modifications.add(new LoreModification(List.of(entry.toString())));
-                    }
-                }
-                return modifications;
-            }
-            return Collections.emptyList();
-        };
-        registerDataType((obj) -> new LoreModifier<>(loreModificationListParser.apply(obj)), "lore", "display-lore", "description");
+        registerDataType(LoreModifier::createLoreModifier, "lore", "display-lore", "description");
         registerDataType((obj) -> {
-            Map<String, List<LoreModification>> dynamicLore = new LinkedHashMap<>();
+            Map<String, LoreModifier<I>> dynamicLore = new LinkedHashMap<>();
             if (obj instanceof Map<?, ?> map) {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    dynamicLore.put(entry.getKey().toString(), loreModificationListParser.apply(entry.getValue()));
+                    dynamicLore.put(entry.getKey().toString(), LoreModifier.createLoreModifier(entry.getValue()));
                 }
             }
             return new DynamicLoreModifier<>(dynamicLore);
