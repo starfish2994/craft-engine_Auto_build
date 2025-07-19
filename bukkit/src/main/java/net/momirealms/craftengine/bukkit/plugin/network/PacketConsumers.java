@@ -29,6 +29,7 @@ import net.momirealms.craftengine.bukkit.plugin.network.handler.*;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.NetWorkDataTypes;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.Payload;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.UnknownPayload;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MEntityTypes;
@@ -1886,31 +1887,37 @@ public class PacketConsumers {
         try {
             if (!VersionHelper.isOrAbove1_20_2()) return;
             Object payload = NetworkReflections.methodHandle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
+            System.out.println(payload.getClass());
+            Payload clientPayload;
             if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
-                Payload discardedPayload = DiscardedPayload.from(payload);
-                if (discardedPayload == null || !discardedPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
+                clientPayload = DiscardedPayload.from(payload);
+            } else if (!VersionHelper.isOrAbove1_20_5() && NetworkReflections.clazz$UnknownPayload.isInstance(payload)) {
+                clientPayload = UnknownPayload.from(payload);
+            } else {
+                return;
+            }
+            if (clientPayload == null || !clientPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
+                return;
+            FriendlyByteBuf buf = clientPayload.toBuffer();
+            NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
+            if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
+                int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
+                int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
+                if (clientBlockRegistrySize != serverBlockRegistrySize) {
+                    user.kick(Component.translatable(
+                            "disconnect.craftengine.block_registry_mismatch",
+                            TranslationArgument.numeric(clientBlockRegistrySize),
+                            TranslationArgument.numeric(serverBlockRegistrySize)
+                    ));
                     return;
-                FriendlyByteBuf buf = discardedPayload.toBuffer();
-                NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
-                if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
-                    int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
-                    int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
-                    if (clientBlockRegistrySize != serverBlockRegistrySize) {
-                        user.kick(Component.translatable(
-                                "disconnect.craftengine.block_registry_mismatch",
-                                TranslationArgument.numeric(clientBlockRegistrySize),
-                                TranslationArgument.numeric(serverBlockRegistrySize)
-                        ));
-                        return;
-                    }
-                    user.setClientModState(true);
-                } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
-                    if (dataType.as(Boolean.class).decode(buf)) {
-                        FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
-                        dataType.writeType(bufPayload);
-                        dataType.as(Boolean.class).encode(bufPayload, true);
-                        user.sendCustomPayload(NetworkManager.MOD_CHANNEL_KEY, bufPayload.array());
-                    }
+                }
+                user.setClientModState(true);
+            } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
+                if (dataType.as(Boolean.class).decode(buf)) {
+                    FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
+                    dataType.writeType(bufPayload);
+                    dataType.as(Boolean.class).encode(bufPayload, true);
+                    user.sendCustomPayload(NetworkManager.MOD_CHANNEL_KEY, bufPayload.array());
                 }
             }
         } catch (Throwable e) {
