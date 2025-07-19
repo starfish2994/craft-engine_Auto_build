@@ -307,7 +307,9 @@ public class BukkitServerPlayer extends Player {
         try {
             Object channelKey = KeyUtils.toResourceLocation(channel);
             Object dataPayload;
-            if (DiscardedPayload.useNewMethod) {
+            if (NetworkReflections.clazz$UnknownPayload != null) {
+                dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+            } else if (DiscardedPayload.useNewMethod) {
                 dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, data);
             } else {
                 dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));

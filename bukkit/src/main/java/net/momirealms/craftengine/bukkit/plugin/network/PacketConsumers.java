@@ -1887,7 +1887,6 @@ public class PacketConsumers {
         try {
             if (!VersionHelper.isOrAbove1_20_2()) return;
             Object payload = NetworkReflections.methodHandle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
-            System.out.println(payload.getClass());
             Payload clientPayload;
             if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
                 clientPayload = DiscardedPayload.from(payload);
