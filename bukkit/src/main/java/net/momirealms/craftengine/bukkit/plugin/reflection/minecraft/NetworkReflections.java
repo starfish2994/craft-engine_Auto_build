@@ -1250,7 +1250,7 @@ public final class NetworkReflections {
     public static final Constructor<?> constructor$ClientboundCustomPayloadPacket = requireNonNull(
             VersionHelper.isOrAbove1_20_2()
                     ? ReflectionUtils.getConstructor(clazz$ClientboundCustomPayloadPacket, clazz$CustomPacketPayload)
-                    : ReflectionUtils.getConstructor(clazz$ClientboundCustomPayloadPacket, 0)
+                    : ReflectionUtils.getConstructor(clazz$ClientboundCustomPayloadPacket, CoreReflections.clazz$ResourceLocation, CoreReflections.clazz$FriendlyByteBuf)
     );
 
     // 1.20.2+

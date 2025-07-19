@@ -304,20 +304,22 @@ public class BukkitServerPlayer extends Player {
 
     @Override
     public void sendCustomPayload(Key channel, byte[] data) {
-        if (!VersionHelper.isOrAbove1_20_2()) {
-            throw new UnsupportedOperationException("Cannot send custom payload to " + name() + " because the server is running a version below 1.20.2");
-        }
         try {
             Object channelKey = KeyUtils.toResourceLocation(channel);
-            Object dataPayload;
-            if (NetworkReflections.clazz$UnknownPayload != null) {
-                dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
-            } else if (DiscardedPayload.useNewMethod) {
-                dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+            Object responsePacket;
+            if (VersionHelper.isOrAbove1_20_2()) {
+                Object dataPayload;
+                if (NetworkReflections.clazz$UnknownPayload != null) {
+                    dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+                } else if (DiscardedPayload.useNewMethod) {
+                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+                } else {
+                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+                }
+                responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
             } else {
-                dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+                responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(channelKey, FastNMS.INSTANCE.constructor$FriendlyByteBuf(Unpooled.wrappedBuffer(data)));
             }
-            Object responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
             this.sendPacket(responsePacket, true);
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to send custom payload to " + name(), e);
