@@ -1898,9 +1898,9 @@ public class PacketConsumers {
             if (clientPayload == null || !clientPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
                 return;
             FriendlyByteBuf buf = clientPayload.toBuffer();
-            NetWorkDataTypes<?> dataType = NetWorkDataTypes.readType(buf);
+            NetWorkDataTypes dataType = buf.readEnumConstant(NetWorkDataTypes.class);
             if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
-                int clientBlockRegistrySize = dataType.as(Integer.class).decode(buf);
+                int clientBlockRegistrySize = dataType.decode(buf);
                 int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
                 if (clientBlockRegistrySize != serverBlockRegistrySize) {
                     user.kick(Component.translatable(
@@ -1912,10 +1912,10 @@ public class PacketConsumers {
                 }
                 user.setClientModState(true);
             } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
-                if (dataType.as(Boolean.class).decode(buf)) {
+                if (dataType.decode(buf)) {
                     FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
-                    dataType.writeType(bufPayload);
-                    dataType.as(Boolean.class).encode(bufPayload, true);
+                    bufPayload.writeEnumConstant(dataType);
+                    dataType.encode(bufPayload, true);
                     user.sendCustomPayload(NetworkManager.MOD_CHANNEL_KEY, bufPayload.array());
                 }
             }
