@@ -20,6 +20,17 @@ public final class ResourceConfigUtils {
         return raw != null ? function.apply(raw) : defaultValue;
     }
 
+    public static <E extends Enum<E>> E getAsEnumOrDefault(Object o, Class<E> clazz, E defaultValue) {
+        if (o == null) {
+            return defaultValue;
+        }
+        try {
+            return Enum.valueOf(clazz, o.toString());
+        } catch (IllegalArgumentException e) {
+            return defaultValue;
+        }
+    }
+
     public static <T> T requireNonNullOrThrow(T obj, String node) {
         if (obj == null)
             throw new LocalizedResourceConfigException(node);

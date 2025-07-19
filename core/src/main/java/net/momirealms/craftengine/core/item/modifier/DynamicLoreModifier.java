@@ -1,10 +1,11 @@
 package net.momirealms.craftengine.core.item.modifier;
 
+import java.util.stream.Stream;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
-import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
@@ -16,15 +17,15 @@ import java.util.Optional;
 
 public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     public static final String CONTEXT_TAG_KEY = "craftengine:display_context";
-    private final Map<String, List<String>> displayContexts;
+    private final Map<String, List<LoreModification>> displayContexts;
     private final String defaultContext;
 
-    public DynamicLoreModifier(Map<String, List<String>> displayContexts) {
+    public DynamicLoreModifier(Map<String, List<LoreModification>> displayContexts) {
         this.defaultContext = displayContexts.keySet().iterator().next();
         this.displayContexts = displayContexts;
     }
 
-    public Map<String, List<String>> displayContexts() {
+    public Map<String, List<LoreModification>> displayContexts() {
         return Collections.unmodifiableMap(this.displayContexts);
     }
 
@@ -36,11 +37,11 @@ public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
         String displayContext = Optional.ofNullable(item.getJavaTag(CONTEXT_TAG_KEY)).orElse(this.defaultContext).toString();
-        List<String> lore = this.displayContexts.get(displayContext);
+        List<LoreModification> lore = this.displayContexts.get(displayContext);
         if (lore == null) {
             lore = this.displayContexts.get(this.defaultContext);
         }
-        item.loreComponent(lore.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
+        item.loreComponent(lore.stream().reduce(Stream.<Component>empty(), (stream, modification) -> modification.apply(stream, context), Stream::concat).toList());
         return item;
     }
 
