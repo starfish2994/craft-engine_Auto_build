@@ -35,5 +35,5 @@ public interface CompatibilityManager {
 
     int getPlayerProtocolVersion(UUID uuid);
 
-    void skillExecute(String skill, float power, Player player);
+    void executeMMSkill(String skill, float power, Player player);
 }

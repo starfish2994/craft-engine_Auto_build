@@ -1,9 +1,12 @@
 package net.momirealms.craftengine.bukkit.compatibility.worldedit;
 
+import com.fastasyncworldedit.bukkit.FaweBukkitWorld;
 import com.fastasyncworldedit.bukkit.adapter.CachedBukkitAdapter;
 import com.fastasyncworldedit.bukkit.adapter.FaweAdapter;
+import com.fastasyncworldedit.bukkit.adapter.NMSAdapter;
 import com.fastasyncworldedit.core.configuration.Settings;
 import com.fastasyncworldedit.core.extent.processor.ExtentBatchProcessorHolder;
+import com.fastasyncworldedit.core.math.IntPair;
 import com.fastasyncworldedit.core.util.ExtentTraverser;
 import com.fastasyncworldedit.core.util.ProcessorTraverser;
 import com.sk89q.worldedit.EditSession;
@@ -24,6 +27,7 @@ import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.WorldStorageInjector;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.EmptyBlock;
@@ -41,6 +45,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Objects.requireNonNull;
 
@@ -89,12 +95,14 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         if (levelChunk != null) {
             Object[] sections = FastNMS.INSTANCE.method$ChunkAccess$getSections(levelChunk);
             CESection[] ceSections = ceChunk.sections();
-            for (int i = 0; i < ceSections.length; i++) {
-                CESection ceSection = ceSections[i];
-                Object section = sections[i];
-                int finalI = i;
-                WorldStorageInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
-                        (injected) -> sections[finalI] = injected);
+            synchronized (sections) {
+                for (int i = 0; i < ceSections.length; i++) {
+                    CESection ceSection = ceSections[i];
+                    Object section = sections[i];
+                    int finalI = i;
+                    WorldStorageInjector.injectLevelChunkSection(section, ceSection, ceChunk, new SectionPos(pos.x, ceChunk.sectionY(i), pos.z),
+                            (injected) -> sections[finalI] = injected);
+                }
             }
         }
     }
@@ -174,18 +182,18 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
 
     @Override
     public @Nullable Operation commit() {
-        Operation operation = super.commit();
         saveAllChunks();
+        Operation operation = super.commit();
         List<ChunkPos> chunks = new ArrayList<>(this.brokenChunks);
         this.brokenChunks.clear();
-        Object worldServer = this.ceWorld.world().serverWorld();
-        Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
-        for (ChunkPos chunk : chunks) {
-            CEChunk loaded = this.ceWorld.getChunkAtIfLoaded(chunk.longKey());
-            // only inject loaded chunks
-            if (loaded == null) continue;
-            injectLevelChunk(chunkSource, loaded);
-        }
+            Object worldServer = this.ceWorld.world().serverWorld();
+            Object chunkSource = FastNMS.INSTANCE.method$ServerLevel$getChunkSource(worldServer);
+            for (ChunkPos chunk : chunks) {
+                CEChunk loaded = this.ceWorld.getChunkAtIfLoaded(chunk.longKey());
+                // only inject loaded chunks
+                if (loaded == null) continue;
+                injectLevelChunk(chunkSource, loaded);
+            }
         return operation;
     }
 

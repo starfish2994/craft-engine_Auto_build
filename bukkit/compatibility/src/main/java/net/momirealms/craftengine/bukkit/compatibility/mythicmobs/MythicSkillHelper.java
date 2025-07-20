@@ -10,7 +10,7 @@ import org.bukkit.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SkillHelper {
+public final class MythicSkillHelper {
 
     public static void execute(String skill, float power, Player player) {
         org.bukkit.entity.Player casterPlayer = (org.bukkit.entity.Player) player.platformPlayer();
@@ -22,8 +22,6 @@ public class SkillHelper {
             targets.add(target);
             locations = List.of(target.getLocation());
         }
-        try (MythicBukkit mm = MythicBukkit.inst()) {
-            mm.getAPIHelper().castSkill(casterPlayer, skill, casterPlayer, location, targets, locations, power);
-        }
+        MythicBukkit.inst().getAPIHelper().castSkill(casterPlayer, skill, casterPlayer, location, targets, locations, power);
     }
 }

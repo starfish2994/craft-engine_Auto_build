@@ -23,7 +23,7 @@ public class MythicMobsSkillFunction<CTX extends Context> extends AbstractCondit
     @Override
     protected void runInternal(CTX ctx) {
         ctx.getOptionalParameter(DirectContextParameters.PLAYER).ifPresent(it -> {
-            CraftEngine.instance().compatibilityManager().skillExecute(this.skill, this.power, it);
+            CraftEngine.instance().compatibilityManager().executeMMSkill(this.skill, this.power, it);
         });
     }
 
