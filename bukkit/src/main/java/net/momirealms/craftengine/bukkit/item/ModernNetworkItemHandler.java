@@ -60,6 +60,7 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
 
     @Override
     public Optional<Item<ItemStack>> s2c(Item<ItemStack> wrapped, Player player) {
+        Item<ItemStack> original = wrapped;
         Optional<CustomItem<ItemStack>> optionalCustomItem = wrapped.getCustomItem();
         if (optionalCustomItem.isEmpty()) {
             if (!Config.interceptItem()) return Optional.empty();
@@ -89,7 +90,7 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
                 }
                 CompoundTag tag = new CompoundTag();
                 for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
-                    modifier.prepareNetworkItem(wrapped, context, tag);
+                    modifier.prepareNetworkItem(original, context, tag);
                 }
                 for (ItemDataModifier<ItemStack> modifier : customItem.clientBoundDataModifiers()) {
                     modifier.apply(wrapped, context);
