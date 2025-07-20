@@ -84,8 +84,6 @@ resource-pack:
         ip: "localhost"
         port: 8163
         protocol: "http"
-        # The optional URL must be complete and include a trailing slash / at the end.
-        #url: "http://localhost:8163/"
         deny-non-minecraft-request: true
         one-time-token: true
         rate-limit:
@@ -380,9 +378,9 @@ chunk-system:
   # Settings for injection
   injection:
     # Requires a restart to apply
-    # SECTION: Inject the LevelChunkSection (Faster & Experimental) since 0.0.53
+    # SECTION: Inject the LevelChunkSection
     # PALETTE: Inject the PalettedContainer
-    target: PALETTE
+    target: SECTION
     # Enables faster injection method
     # Note: May not work with certain server forks that alter chunk class structure (In most cases it won't conflict)
     use-fast-method: false

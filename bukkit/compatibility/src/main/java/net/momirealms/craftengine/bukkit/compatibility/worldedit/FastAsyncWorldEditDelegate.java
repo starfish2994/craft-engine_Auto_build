@@ -45,8 +45,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Objects.requireNonNull;
 
@@ -222,11 +220,12 @@ public class FastAsyncWorldEditDelegate extends AbstractDelegateExtent {
         try {
             CEChunk ceChunk = Optional.ofNullable(this.ceWorld.getChunkAtIfLoaded(chunkX, chunkZ))
                     .orElse(this.ceWorld.worldDataStorage().readChunkAt(this.ceWorld, new ChunkPos(chunkX, chunkZ)));
+            CESection ceSection = ceChunk.sectionById(SectionPos.blockToSectionCoord(blockY));
             ImmutableBlockState immutableBlockState = BukkitBlockManager.instance().getImmutableBlockState(newStateId);
             if (immutableBlockState == null) {
-                ceChunk.setBlockState(blockX, blockY, blockZ, EmptyBlock.STATE);
+                ceSection.setBlockState(blockX & 15, blockY & 15, blockZ & 15, EmptyBlock.STATE);
             } else {
-                ceChunk.setBlockState(blockX, blockY, blockZ, immutableBlockState);
+                ceSection.setBlockState(blockX & 15, blockY & 15, blockZ & 15, immutableBlockState);
             }
             this.chunksToSave.add(ceChunk);
         } catch (IOException e) {
