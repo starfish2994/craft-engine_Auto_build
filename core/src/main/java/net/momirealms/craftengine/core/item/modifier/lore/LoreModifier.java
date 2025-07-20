@@ -105,10 +105,7 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
 
         @Override
         public Item<I> apply(Item<I> item, ItemBuildContext context) {
-            Stream<Component> start = Stream.empty();
-            this.modification1.apply(start, context);
-            this.modification2.apply(start, context);
-            item.loreComponent(start.toList());
+            item.loreComponent(this.modification2.apply(this.modification1.apply(Stream.empty(), context), context).toList());
             return item;
         }
     }
