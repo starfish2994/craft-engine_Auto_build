@@ -77,7 +77,7 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
                 if (appliers.isEmpty()) {
                     this.applier = new DummyApplier<>();
                 } else if (appliers.size() == 1) {
-                    this.applier = new SemiModernApplier<>(components.getFirst());
+                    this.applier = appliers.getFirst();
                 } else {
                     this.applier = new CompoundApplier<>(appliers);
                 }
