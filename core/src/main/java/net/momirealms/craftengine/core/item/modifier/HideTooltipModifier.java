@@ -62,15 +62,25 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
         } else if (VersionHelper.isOrAbove1_20_5()) {
             if (components.isEmpty()) {
                 this.applier = new DummyApplier<>();
-            } else if (components.size() == 1 && COMPONENTS.contains(components.getFirst())) {
-                this.applier = new SemiModernApplier<>(components.getFirst());
+            } else if (components.size() == 1) {
+                if (COMPONENTS.contains(components.getFirst())) {
+                    this.applier = new SemiModernApplier<>(components.getFirst());
+                } else {
+                    this.applier = new DummyApplier<>();
+                }
             } else {
                 List<Applier<I>> appliers = new ArrayList<>();
                 for (Key key : components) {
                     if (!COMPONENTS.contains(key)) continue;
                     appliers.add(new SemiModernApplier<>(key));
                 }
-                this.applier = new CompoundApplier<>(appliers);
+                if (appliers.isEmpty()) {
+                    this.applier = new DummyApplier<>();
+                } else if (appliers.size() == 1) {
+                    this.applier = new SemiModernApplier<>(components.getFirst());
+                } else {
+                    this.applier = new CompoundApplier<>(appliers);
+                }
             }
         } else {
             this.applier = new LegacyApplier<>(components);
