@@ -20,6 +20,17 @@ import java.util.stream.Stream;
 
 public class HideTooltipModifier<I> implements ItemDataModifier<I> {
     public static final Map<Key, Integer> TO_LEGACY;
+    public static final List<Key> COMPONENTS = List.of(
+            ComponentKeys.UNBREAKABLE,
+            ComponentKeys.ENCHANTMENTS,
+            ComponentKeys.STORED_ENCHANTMENTS,
+            ComponentKeys.CAN_PLACE_ON,
+            ComponentKeys.CAN_BREAK,
+            ComponentKeys.ATTRIBUTE_MODIFIERS,
+            ComponentKeys.DYED_COLOR,
+            ComponentKeys.TRIM,
+            ComponentKeys.JUKEBOX_PLAYABLE
+    );
     static {
         ImmutableMap.Builder<Key, Integer> builder = ImmutableMap.builder();
         builder.put(ComponentKeys.ENCHANTMENTS, 1);
@@ -51,11 +62,12 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
         } else if (VersionHelper.isOrAbove1_20_5()) {
             if (components.isEmpty()) {
                 this.applier = new DummyApplier<>();
-            } else if (components.size() == 1) {
+            } else if (components.size() == 1 && COMPONENTS.contains(components.getFirst())) {
                 this.applier = new SemiModernApplier<>(components.getFirst());
             } else {
                 List<Applier<I>> appliers = new ArrayList<>();
                 for (Key key : components) {
+                    if (!COMPONENTS.contains(key)) continue;
                     appliers.add(new SemiModernApplier<>(key));
                 }
                 this.applier = new CompoundApplier<>(appliers);
@@ -132,10 +144,6 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
         public void apply(Item<I> item) {
             Tag previous = item.getSparrowNBTComponent(this.component);
             if (previous instanceof CompoundTag compoundTag) {
-                compoundTag.putBoolean("show_in_tooltip", false);
-                item.setNBTComponent(this.component, compoundTag);
-            } else {
-                CompoundTag compoundTag = new CompoundTag();
                 compoundTag.putBoolean("show_in_tooltip", false);
                 item.setNBTComponent(this.component, compoundTag);
             }
