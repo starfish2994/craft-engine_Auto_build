@@ -1,31 +1,29 @@
-package net.momirealms.craftengine.core.item.modifier;
+package net.momirealms.craftengine.core.item.modifier.lore;
 
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
-import net.momirealms.craftengine.core.util.AdventureHelper;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
+public final class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     public static final String CONTEXT_TAG_KEY = "craftengine:display_context";
-    private final Map<String, List<String>> displayContexts;
-    private final String defaultContext;
+    private final Map<String, LoreModifier<I>> displayContexts;
+    private final LoreModifier<I> defaultModifier;
 
-    public DynamicLoreModifier(Map<String, List<String>> displayContexts) {
-        this.defaultContext = displayContexts.keySet().iterator().next();
+    public DynamicLoreModifier(Map<String, LoreModifier<I>> displayContexts) {
         this.displayContexts = displayContexts;
+        this.defaultModifier = displayContexts.values().iterator().next();
     }
 
-    public Map<String, List<String>> displayContexts() {
-        return Collections.unmodifiableMap(this.displayContexts);
+    public Map<String, LoreModifier<I>> displayContexts() {
+        return displayContexts;
     }
 
     @Override
@@ -35,13 +33,12 @@ public class DynamicLoreModifier<I> implements ItemDataModifier<I> {
 
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
-        String displayContext = Optional.ofNullable(item.getJavaTag(CONTEXT_TAG_KEY)).orElse(this.defaultContext).toString();
-        List<String> lore = this.displayContexts.get(displayContext);
+        String displayContext = Optional.ofNullable(item.getJavaTag(CONTEXT_TAG_KEY)).orElse(this.defaultModifier).toString();
+        LoreModifier<I> lore = this.displayContexts.get(displayContext);
         if (lore == null) {
-            lore = this.displayContexts.get(this.defaultContext);
+            lore = this.defaultModifier;
         }
-        item.loreComponent(lore.stream().map(it -> AdventureHelper.miniMessage().deserialize(it, context.tagResolvers())).toList());
-        return item;
+        return lore.apply(item, context);
     }
 
     @Override

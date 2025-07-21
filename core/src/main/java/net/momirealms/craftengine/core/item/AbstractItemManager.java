@@ -9,11 +9,14 @@ import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.equipment.*;
 import net.momirealms.craftengine.core.item.modifier.*;
+import net.momirealms.craftengine.core.item.modifier.lore.DynamicLoreModifier;
+import net.momirealms.craftengine.core.item.modifier.lore.LoreModifier;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.pack.AbstractPackManager;
 import net.momirealms.craftengine.core.pack.LoadingSequence;
 import net.momirealms.craftengine.core.pack.Pack;
 import net.momirealms.craftengine.core.pack.ResourceLocation;
+import net.momirealms.craftengine.core.pack.host.ResourcePackHosts;
 import net.momirealms.craftengine.core.pack.model.*;
 import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenerator;
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
@@ -534,15 +537,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 return new CustomNameModifier<>(name);
             }, "custom-name", "item-name", "display-name");
         }
+        registerDataType(LoreModifier::createLoreModifier, "lore", "display-lore", "description");
         registerDataType((obj) -> {
-            List<String> lore = MiscUtils.getAsStringList(obj);
-            return new LoreModifier<>(lore);
-        }, "lore", "display-lore", "description");
-        registerDataType((obj) -> {
-            Map<String, List<String>> dynamicLore = new LinkedHashMap<>();
+            Map<String, LoreModifier<I>> dynamicLore = new LinkedHashMap<>();
             if (obj instanceof Map<?, ?> map) {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
-                    dynamicLore.put(entry.getKey().toString(), MiscUtils.getAsStringList(entry.getValue()));
+                    dynamicLore.put(entry.getKey().toString(), LoreModifier.createLoreModifier(entry.getValue()));
                 }
             }
             return new DynamicLoreModifier<>(dynamicLore);
