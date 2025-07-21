@@ -1,7 +1,9 @@
 package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.block.BlockKeys;
+import net.momirealms.craftengine.core.entity.EntityKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
@@ -29,7 +31,7 @@ public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> WILL_CONSUME = new HashMap<>();
     private static final Key NOTE_BLOCK_TOP_INSTRUMENTS = Key.of("minecraft:noteblock_top_instruments");
-    private static final Set<EntityType> INTERACTABLE_ENTITIES = createInteractableEntities();
+    private static final Set<Key> INTERACTABLE_ENTITIES = new HashSet<>();
 
     private InteractUtils() {}
 
@@ -92,12 +94,8 @@ public class InteractUtils {
             ))) != null;
         });
         registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> {
-            Direction direction = result.getDirection();
-            if (blockState instanceof ChiseledBookshelf chiseledBookshelf) {
-                Direction facing = DirectionUtils.toDirection(chiseledBookshelf.getFacing());
-                return facing == direction;
-            }
-            return false;
+            if (!(blockState instanceof ChiseledBookshelf chiseledBookshelf)) return false;
+            return DirectionUtils.toDirection(chiseledBookshelf.getFacing()) == result.getDirection();
         });
         registerInteraction(BlockKeys.DECORATED_POT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.HOPPER, (player, item, blockState, result) -> true);
@@ -287,31 +285,35 @@ public class InteractUtils {
                 result.getDirection() == Direction.UP && item.id().equals(ItemKeys.CACTUS));
     }
 
-    private static Set<EntityType> createInteractableEntities() {
-        Set<EntityType> set = EnumSet.noneOf(EntityType.class);
-        set.addAll(Set.of(
-            EntityType.ALLAY,
-            EntityType.HORSE,
-            EntityType.ZOMBIE_HORSE,
-            EntityType.SKELETON_HORSE,
-            EntityType.DONKEY,
-            EntityType.MULE,
-            EntityType.VILLAGER,
-            EntityType.WANDERING_TRADER,
-            EntityType.LLAMA,
-            EntityType.TRADER_LLAMA,
-            EntityType.CAMEL,
-            EntityType.CHEST_MINECART,
-            EntityType.FURNACE_MINECART,
-            EntityType.HOPPER_MINECART,
-            EntityType.COMMAND_BLOCK_MINECART,
-            EntityType.ITEM_FRAME,
-            EntityType.GLOW_ITEM_FRAME
-        ));
-        if (VersionHelper.isOrAbove1_21_6()) {
-            set.add(EntityType.valueOf("HAPPY_GHAST"));
+    static {
+        registerInteractableEntity(EntityKeys.ALLAY);
+        registerInteractableEntity(EntityKeys.HORSE);
+        registerInteractableEntity(EntityKeys.ZOMBIE_HORSE);
+        registerInteractableEntity(EntityKeys.SKELETON_HORSE);
+        registerInteractableEntity(EntityKeys.DONKEY);
+        registerInteractableEntity(EntityKeys.MULE);
+        registerInteractableEntity(EntityKeys.VILLAGER);
+        registerInteractableEntity(EntityKeys.WANDERING_TRADER);
+        registerInteractableEntity(EntityKeys.LLAMA);
+        registerInteractableEntity(EntityKeys.TRADER_LLAMA);
+        registerInteractableEntity(EntityKeys.CAMEL);
+        registerInteractableEntity(EntityKeys.ITEM_FRAME);
+        registerInteractableEntity(EntityKeys.GLOW_ITEM_FRAME);
+        registerInteractableEntity(EntityKeys.INTERACTION);
+        if (VersionHelper.isOrAbove1_20_5()) {
+            registerInteractableEntity(EntityKeys.CHEST_MINECART);
+            registerInteractableEntity(EntityKeys.FURNACE_MINECART);
+            registerInteractableEntity(EntityKeys.HOPPER_MINECART);
+            registerInteractableEntity(EntityKeys.COMMAND_BLOCK_MINECART);
+        } else {
+            registerInteractableEntity(EntityKeys.MINECART_CHEST);
+            registerInteractableEntity(EntityKeys.MINECART_FURNACE);
+            registerInteractableEntity(EntityKeys.MINECART_HOPPER);
+            registerInteractableEntity(EntityKeys.MINECART_COMMAND);
         }
-        return Collections.unmodifiableSet(set);
+        if (VersionHelper.isOrAbove1_21_6()) {
+            registerInteractableEntity(EntityKeys.HAPPY_GHAST);
+        }
     }
 
     private static void registerInteraction(Key key, QuadFunction<org.bukkit.entity.Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean> function) {
@@ -328,6 +330,13 @@ public class InteractUtils {
         }
     }
 
+    private static void registerInteractableEntity(Key key) {
+        var previous = INTERACTABLE_ENTITIES.add(key);
+        if (!previous) {
+            CraftEngine.instance().logger().warn("Duplicated interaction check: " + key);
+        }
+    }
+
     public static boolean isInteractable(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
         Key blockType = BlockStateUtils.getBlockOwnerIdFromData(state);
         if (INTERACTIONS.containsKey(blockType)) {
@@ -338,22 +347,17 @@ public class InteractUtils {
     }
 
     public static boolean isEntityInteractable(Player player, Entity entity, Item<ItemStack> item) {
-        if (EntityUtils.isPiglinWithGoldIngot(entity, item)) {
-            return true;
-        }
+//      Object entityType = FastNMS.INSTANCE.method$CraftEntityType$toNMSEntityType(entity.getType());
+        Key entityType = Key.of(String.valueOf(entity.getType()));
+        if (EntityUtils.isPetOwner(player, entity)) return true;
+        if (EntityUtils.isPiglinWithGoldIngot(entity, item)) return true;
         if (!player.isSneaking()) {
-            if (EntityUtils.isHappyGhastRideable(entity)) {
-                return true;
-            }
-            return switch (entity) {
-                case Boat ignored -> true;
-                case RideableMinecart ignored -> true;
-                case Steerable steerable -> steerable.hasSaddle();
-                default -> INTERACTABLE_ENTITIES.contains(entity.getType());
-            };
+            if (EntityUtils.isHappyGhastRideable(entity)) return true;
+            if (entity instanceof Boat) return true;
+            if (entity instanceof RideableMinecart) return true;
+            if (entity instanceof Steerable steerable && steerable.hasSaddle()) return true;
         }
-        return entity instanceof ChestBoat
-                || INTERACTABLE_ENTITIES.contains(entity.getType());
+        return entity instanceof ChestBoat || INTERACTABLE_ENTITIES.contains(entityType);
     }
 
     public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
@@ -365,7 +369,7 @@ public class InteractUtils {
             return false;
         }
     }
-    
+
     private static boolean canEat(Player player, boolean ignoreHunger) {
         return ignoreHunger || player.isInvulnerable() || player.getFoodLevel() < 20;
     }
