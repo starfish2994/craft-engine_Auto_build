@@ -19,16 +19,43 @@ public class EntityKeys {
     public static final Key ITEM_FRAME = Key.of("minecraft:ITEM_FRAME");
     public static final Key GLOW_ITEM_FRAME = Key.of("minecraft:GLOW_ITEM_FRAME");
     public static final Key INTERACTION = Key.of("minecraft:INTERACTION");
-    // ≥1.20.5
+
+    public static final Key ACACIA_BOAT = Key.of("minecraft:ACACIA_BOAT");
+    public static final Key BAMBOO_BOAT = Key.of("minecraft:BAMBOO_BOAT");
+    public static final Key BIRCH_BOAT = Key.of("minecraft:BIRCH_BOAT");
+    public static final Key CHERRY_BOAT = Key.of("minecraft:CHERRY_BOAT");
+    public static final Key DARK_OAK_BOAT = Key.of("minecraft:DARK_OAK_BOAT");
+    public static final Key JUNGLE_BOAT = Key.of("minecraft:JUNGLE_BOAT");
+    public static final Key MANGROVE_BOAT = Key.of("minecraft:MANGROVE_BOAT");
+    public static final Key OAK_BOAT = Key.of("minecraft:OAK_BOAT");
+    public static final Key SPRUCE_BOAT = Key.of("minecraft:SPRUCE_BOAT");
+    public static final Key MINECART = Key.of("minecraft:MINECART");
+
+    public static final Key ACACIA_CHEST_BOAT = Key.of("minecraft:ACACIA_CHEST_BOAT");
+    public static final Key BAMBOO_CHEST_BOAT = Key.of("minecraft:BAMBOO_CHEST_BOAT");
+    public static final Key BIRCH_CHEST_BOAT = Key.of("minecraft:BIRCH_CHEST_BOAT");
+    public static final Key CHERRY_CHEST_BOAT = Key.of("minecraft:CHERRY_CHEST_BOAT");
+    public static final Key DARK_OAK_CHEST_BOAT = Key.of("minecraft:DARK_OAK_CHEST_BOAT");
+    public static final Key JUNGLE_CHEST_BOAT = Key.of("minecraft:JUNGLE_CHEST_BOAT");
+    public static final Key MANGROVE_CHEST_BOAT = Key.of("minecraft:MANGROVE_CHEST_BOAT");
+    public static final Key OAK_CHEST_BOAT = Key.of("minecraft:OAK_CHEST_BOAT");
+    public static final Key SPRUCE_CHEST_BOAT = Key.of("minecraft:SPRUCE_CHEST_BOAT");
     public static final Key CHEST_MINECART = Key.of("minecraft:CHEST_MINECART");
     public static final Key FURNACE_MINECART = Key.of("minecraft:FURNACE_MINECART");
     public static final Key HOPPER_MINECART = Key.of("minecraft:HOPPER_MINECART");
     public static final Key COMMAND_BLOCK_MINECART = Key.of("minecraft:COMMAND_BLOCK_MINECART");
-    // ＜1.20.5
+    //＜1.20.5
     public static final Key MINECART_CHEST = Key.of("minecraft:MINECART_CHEST");
     public static final Key MINECART_FURNACE = Key.of("minecraft:MINECART_FURNACE");
     public static final Key MINECART_HOPPER = Key.of("minecraft:MINECART_HOPPER");
     public static final Key MINECART_COMMAND = Key.of("minecraft:MINECART_COMMAND");
-    // ≥1.21.6
+
+    public static final Key PIG = Key.of("minecraft:PIG");
+    public static final Key STRIDER = Key.of("minecraft:STRIDER");
+
+    public static final Key WOLF = Key.of("minecraft:WOLF");
+    public static final Key CAT = Key.of("minecraft:CAT");
+    public static final Key PARROT = Key.of("minecraft:PARROT");
+
     public static final Key HAPPY_GHAST = Key.of("minecraft:HAPPY_GHAST");
 }

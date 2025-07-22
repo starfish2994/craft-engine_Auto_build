@@ -14,14 +14,13 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.QuadFunction;
-import net.momirealms.craftengine.core.util.VersionHelper;
+import net.momirealms.craftengine.core.util.TriFunction;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bell;
 import org.bukkit.block.data.type.ChiseledBookshelf;
 import org.bukkit.entity.*;
-import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +30,7 @@ public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> WILL_CONSUME = new HashMap<>();
     private static final Key NOTE_BLOCK_TOP_INSTRUMENTS = Key.of("minecraft:noteblock_top_instruments");
-    private static final Set<Key> INTERACTABLE_ENTITIES = new HashSet<>();
+    private static final Map<Key, TriFunction<Player, Entity, @Nullable Item<ItemStack>, Boolean>> ENTITY_INTERACTIONS = new HashMap<>();
 
     private InteractUtils() {}
 
@@ -286,34 +285,63 @@ public class InteractUtils {
     }
 
     static {
-        registerInteractableEntity(EntityKeys.ALLAY);
-        registerInteractableEntity(EntityKeys.HORSE);
-        registerInteractableEntity(EntityKeys.ZOMBIE_HORSE);
-        registerInteractableEntity(EntityKeys.SKELETON_HORSE);
-        registerInteractableEntity(EntityKeys.DONKEY);
-        registerInteractableEntity(EntityKeys.MULE);
-        registerInteractableEntity(EntityKeys.VILLAGER);
-        registerInteractableEntity(EntityKeys.WANDERING_TRADER);
-        registerInteractableEntity(EntityKeys.LLAMA);
-        registerInteractableEntity(EntityKeys.TRADER_LLAMA);
-        registerInteractableEntity(EntityKeys.CAMEL);
-        registerInteractableEntity(EntityKeys.ITEM_FRAME);
-        registerInteractableEntity(EntityKeys.GLOW_ITEM_FRAME);
-        registerInteractableEntity(EntityKeys.INTERACTION);
-        if (VersionHelper.isOrAbove1_20_5()) {
-            registerInteractableEntity(EntityKeys.CHEST_MINECART);
-            registerInteractableEntity(EntityKeys.FURNACE_MINECART);
-            registerInteractableEntity(EntityKeys.HOPPER_MINECART);
-            registerInteractableEntity(EntityKeys.COMMAND_BLOCK_MINECART);
-        } else {
-            registerInteractableEntity(EntityKeys.MINECART_CHEST);
-            registerInteractableEntity(EntityKeys.MINECART_FURNACE);
-            registerInteractableEntity(EntityKeys.MINECART_HOPPER);
-            registerInteractableEntity(EntityKeys.MINECART_COMMAND);
-        }
-        if (VersionHelper.isOrAbove1_21_6()) {
-            registerInteractableEntity(EntityKeys.HAPPY_GHAST);
-        }
+        // 忽视潜行的交互实体
+        registerEntityInteraction(EntityKeys.ALLAY, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.HORSE, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.ZOMBIE_HORSE, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.SKELETON_HORSE, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.DONKEY, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.MULE, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.VILLAGER, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.WANDERING_TRADER, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.LLAMA, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.TRADER_LLAMA, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.CAMEL, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.ITEM_FRAME, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.GLOW_ITEM_FRAME, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.INTERACTION, (player, entity, item) -> true);
+        // 潜行时不可交互
+        registerEntityInteraction(EntityKeys.ACACIA_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.BAMBOO_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.BIRCH_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.CHERRY_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.DARK_OAK_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.JUNGLE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.MANGROVE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.OAK_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.SPRUCE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.MINECART, (player, entity, item) -> !player.isSneaking());
+        // 始终可交互的箱子类船车
+        registerEntityInteraction(EntityKeys.ACACIA_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.BAMBOO_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.BIRCH_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.CHERRY_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.DARK_OAK_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.JUNGLE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.MANGROVE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.OAK_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.SPRUCE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.CHEST_MINECART, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.FURNACE_MINECART, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.HOPPER_MINECART, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.COMMAND_BLOCK_MINECART, (player, entity, item) -> true);
+        //＜1.20.5
+        registerEntityInteraction(EntityKeys.MINECART_CHEST, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.MINECART_HOPPER, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.MINECART_FURNACE, (player, entity, item) -> true);
+        registerEntityInteraction(EntityKeys.MINECART_COMMAND, (player, entity, item) -> true);
+        // 有鞍 + 非潜行可交互（如猪、炽足兽）
+        registerEntityInteraction(EntityKeys.PIG, (player, entity, item) ->
+                entity instanceof Steerable steerable && steerable.hasSaddle() && !player.isSneaking());
+        registerEntityInteraction(EntityKeys.STRIDER, (player, entity, item) ->
+                entity instanceof Steerable steerable && steerable.hasSaddle() && !player.isSneaking());
+        // 是宠物，且主人是玩家（忽视潜行）
+        registerEntityInteraction(EntityKeys.WOLF, (player, entity, item) -> EntityUtils.isPetOwner(player, entity));
+        registerEntityInteraction(EntityKeys.CAT, (player, entity, item) -> EntityUtils.isPetOwner(player, entity));
+        registerEntityInteraction(EntityKeys.PARROT, (player, entity, item) -> EntityUtils.isPetOwner(player, entity));
+        // 快乐恶魂（装备挽具、受潜行影响）
+        registerEntityInteraction(EntityKeys.HAPPY_GHAST, (player, entity, item) ->
+                EntityUtils.isHappyGhastRideable(entity) && !player.isSneaking());
     }
 
     private static void registerInteraction(Key key, QuadFunction<org.bukkit.entity.Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean> function) {
@@ -330,10 +358,10 @@ public class InteractUtils {
         }
     }
 
-    private static void registerInteractableEntity(Key key) {
-        var previous = INTERACTABLE_ENTITIES.add(key);
-        if (!previous) {
-            CraftEngine.instance().logger().warn("Duplicated interaction check: " + key);
+    private static void registerEntityInteraction(Key key, TriFunction<Player, Entity, @Nullable Item<ItemStack>, Boolean> function) {
+        var previous = ENTITY_INTERACTIONS.put(key, function);
+        if (previous != null) {
+            CraftEngine.instance().logger().warn("Duplicated entity interaction check: " + key);
         }
     }
 
@@ -346,18 +374,10 @@ public class InteractUtils {
         }
     }
 
-    public static boolean isEntityInteractable(Player player, Entity entity, Item<ItemStack> item) {
-//      Object entityType = FastNMS.INSTANCE.method$CraftEntityType$toNMSEntityType(entity.getType());
-        Key entityType = Key.of(String.valueOf(entity.getType()));
-        if (EntityUtils.isPetOwner(player, entity)) return true;
-        if (EntityUtils.isPiglinWithGoldIngot(entity, item)) return true;
-        if (!player.isSneaking()) {
-            if (EntityUtils.isHappyGhastRideable(entity)) return true;
-            if (entity instanceof Boat) return true;
-            if (entity instanceof RideableMinecart) return true;
-            if (entity instanceof Steerable steerable && steerable.hasSaddle()) return true;
-        }
-        return entity instanceof ChestBoat || INTERACTABLE_ENTITIES.contains(entityType);
+    public static boolean isEntityInteractable(Player player, Entity entity, @Nullable Item<ItemStack> item) {
+        Key key = Key.of(String.valueOf(entity.getType()));
+        TriFunction<Player, Entity, Item<ItemStack>, Boolean> func = ENTITY_INTERACTIONS.get(key);
+        return func != null && func.apply(player, entity, item);
     }
 
     public static boolean willConsume(Player player, BlockData state, BlockHitResult hit, @Nullable Item<ItemStack> item) {
