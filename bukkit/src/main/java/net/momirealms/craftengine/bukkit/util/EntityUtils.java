@@ -40,8 +40,7 @@ public class EntityUtils {
     }
 
     public static boolean isPetOwner(Player player, Entity entity) {
-        if (!(entity instanceof Sittable sittable)) return false;
-        return sittable instanceof Tameable tameable
+        return entity instanceof Tameable tameable
                 && tameable.isTamed()
                 && tameable.getOwnerUniqueId() == player.getUniqueId();
     }
