@@ -27,8 +27,8 @@ import java.util.*;
 public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> WILL_CONSUME = new HashMap<>();
-    private static final Key NOTE_BLOCK_TOP_INSTRUMENTS = Key.of("minecraft:noteblock_top_instruments");
     private static final Map<Key, TriFunction<Player, Entity, @Nullable Item<ItemStack>, Boolean>> ENTITY_INTERACTIONS = new HashMap<>();
+    private static final Key NOTE_BLOCK_TOP_INSTRUMENTS = Key.of("minecraft:noteblock_top_instruments");
 
     private InteractUtils() {}
 
@@ -283,7 +283,7 @@ public class InteractUtils {
     }
 
     static {
-        // 有鞍 + 非潜行可交互（如猪、炽足兽）
+        registerEntityInteraction(EntityKeys.PIGLIN, (player, entity, item) -> item != null && item.vanillaId().equals(ItemKeys.GOLD_INGOT));
         registerEntityInteraction(EntityKeys.PIG, (player, entity, item) -> hasSaddle(player, entity) && !player.isSneaking());
         registerEntityInteraction(EntityKeys.STRIDER, (player, entity, item) -> hasSaddle(player, entity) && !player.isSneaking());
         registerEntityInteraction(EntityKeys.WOLF, (player, entity, item) -> isPetOwner(player, entity));
@@ -301,8 +301,8 @@ public class InteractUtils {
         registerEntityInteraction(EntityKeys.MINECART, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityKeys.HAPPY_GHAST, (player, entity, item) -> {
             if (!VersionHelper.isOrAbove1_21_6()) return false;
-            if (entity instanceof LivingEntity living && entity.getType() == EntityType.HAPPY_GHAST) {
-                ItemStack bodyItem = living.getEquipment().getItem(EquipmentSlot.BODY);
+            if (entity instanceof HappyGhast happyGhast) {
+                ItemStack bodyItem = happyGhast.getEquipment().getItem(EquipmentSlot.BODY);
                 Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(bodyItem);
                 return wrapped.is(Key.of("harnesses"));
             }
@@ -397,6 +397,6 @@ public class InteractUtils {
     }
 
     public static boolean isPetOwner(Player player, Entity entity) {
-        return entity instanceof Tameable tameable && tameable.isTamed() && tameable.getOwnerUniqueId() == player.getUniqueId();
+        return entity instanceof Tameable tameable && tameable.isTamed() && player.getUniqueId().equals(tameable.getOwnerUniqueId());
     }
 }
