@@ -383,7 +383,7 @@ chunk-system:
     target: SECTION
     # Enables faster injection method
     # Note: May not work with certain server forks that alter chunk class structure (In most cases it won't conflict)
-    use-fast-method: false
+    use-fast-method: true
   # Auto-convert custom blocks -> vanilla blocks when unloading chunks
   #
   # - When ENABLED (true):
