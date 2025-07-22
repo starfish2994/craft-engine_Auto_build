@@ -1,18 +1,13 @@
 package net.momirealms.craftengine.bukkit.util;
 
-import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Consumer;
 
@@ -37,21 +32,5 @@ public class EntityUtils {
         } else {
             return LegacyEntityUtils.spawnEntity(world, loc, type, function);
         }
-    }
-
-    public static boolean isPetOwner(Player player, Entity entity) {
-        return entity instanceof Tameable tameable
-                && tameable.isTamed()
-                && tameable.getOwnerUniqueId() == player.getUniqueId();
-    }
-
-    public static boolean isHappyGhastRideable(Entity entity) {
-        if (!VersionHelper.isOrAbove1_21_6()) return false;
-        if (entity instanceof LivingEntity living && entity.getType() == EntityType.HAPPY_GHAST) {
-            ItemStack bodyItem = living.getEquipment().getItem(EquipmentSlot.BODY);
-            Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(bodyItem);
-            return wrapped.is(Key.of("harnesses"));
-        }
-        return false;
     }
 }
