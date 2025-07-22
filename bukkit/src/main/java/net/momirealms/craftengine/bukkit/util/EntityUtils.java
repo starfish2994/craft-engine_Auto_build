@@ -46,12 +46,6 @@ public class EntityUtils {
                 && tameable.getOwnerUniqueId() == player.getUniqueId();
     }
 
-    public static boolean isPiglinWithGoldIngot(Entity entity, Item<ItemStack> item) {
-        return entity.getType() == EntityType.PIGLIN &&
-                item != null &&
-                item.vanillaId().equals(Key.of("minecraft:gold_ingot"));
-    }
-
     public static boolean isHappyGhastRideable(Entity entity) {
         if (!VersionHelper.isOrAbove1_21_6()) return false;
         if (entity instanceof LivingEntity living && entity.getType() == EntityType.HAPPY_GHAST) {
