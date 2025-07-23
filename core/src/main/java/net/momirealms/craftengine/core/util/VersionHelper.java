@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class VersionHelper {
+    public static final boolean PREMIUM = true;
     public static final MinecraftVersion MINECRAFT_VERSION;
     private static final int version;
     private static final int majorVersion;
