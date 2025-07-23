@@ -187,6 +187,7 @@ warning.config.item.behavior.invalid_type: "<yellow>Issue found in file <arg:0> 
 warning.config.item.behavior.block.missing_block: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the required 'block' argument for 'block_item' behavior.</yellow>"
 warning.config.item.behavior.furniture.missing_furniture: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the required 'furniture' argument for 'furniture_item' behavior.</yellow>"
 warning.config.item.behavior.liquid_collision.missing_block: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the required 'block' argument for 'liquid_collision_block_item' behavior.</yellow>"
+warning.config.item.behavior.double_high.missing_block: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the required 'block' argument for 'double_high_block_item' behavior.</yellow>"
 warning.config.item.legacy_model.missing_path: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the require 'path' argument for legacy-model.</yellow>"
 warning.config.item.legacy_model.overrides.missing_path: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the require 'path' argument for legacy-model overrides.</yellow>"
 warning.config.item.legacy_model.overrides.missing_predicate: "<yellow>Issue found in file <arg:0> - The item '<arg:1>' is missing the require 'predicate' argument for legacy-model overrides.</yellow>"

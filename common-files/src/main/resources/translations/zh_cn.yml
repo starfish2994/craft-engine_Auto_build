@@ -185,6 +185,7 @@ warning.config.item.behavior.invalid_type: "<yellow>在文件 <arg:0> 发现问�
 warning.config.item.behavior.block.missing_block: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 的 'block_item' 行为缺少必需的 'block' 参数</yellow>"
 warning.config.item.behavior.furniture.missing_furniture: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 的 'furniture_item' 行为缺少必需的 'furniture' 参数</yellow>"
 warning.config.item.behavior.liquid_collision.missing_block: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 的 'liquid_collision_block_item' 行为缺少必需的 'block' 参数</yellow>"
+warning.config.item.behavior.double_high.missing_block: "<yellow>在文件 <arg:0> 发现问题 - 物品 '<arg:1>' 的 'double_high_block_item' 行为缺少必需的 'block' 参数</yellow>"
 warning.config.item.legacy_model.missing_path: "<yellow>在文件 <arg:0> 中发现问题 - 物品 '<arg:1>' 的旧版模型(legacy-model)缺少必需的 'path' 参数</yellow>"
 warning.config.item.legacy_model.overrides.missing_path: "<yellow>在文件 <arg:0> 中发现问题 - 物品 '<arg:1>' 的旧版模型覆写规则(overrides)缺少必需的 'path' 参数</yellow>"
 warning.config.item.legacy_model.overrides.missing_predicate: "<yellow>在文件 <arg:0> 中发现问题 - 物品 '<arg:1>' 的旧版模型覆写规则(overrides)缺少必需的 'predicate' 参数</yellow>"
