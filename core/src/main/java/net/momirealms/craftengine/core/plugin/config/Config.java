@@ -20,10 +20,7 @@ import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MinecraftVersion;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.InjectionTarget;
 import net.momirealms.craftengine.core.world.chunk.storage.CompressionMethod;
 
@@ -830,6 +827,10 @@ public class Config {
 
     public static List<String> recipeIngredientSources() {
         return instance.recipe$ingredient_sources;
+    }
+
+    public void setObf(boolean enable) {
+        this.resource_pack$protection$obfuscation$enable = enable;
     }
 
     public YamlDocument loadOrCreateYamlData(String fileName) {

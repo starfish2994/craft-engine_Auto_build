@@ -667,6 +667,10 @@ public abstract class AbstractPackManager implements PackManager {
             this.plugin.logger().info("Validated resource pack in " + (time3 - time2) + "ms");
             Path finalPath = resourcePackPath();
             Files.createDirectories(finalPath.getParent());
+            if (!VersionHelper.PREMIUM) {
+                Config.instance().setObf(false);
+                this.plugin.logger().warn("Resource pack obfuscation requires Premium Edition.");
+            }
             try {
                 this.zipGenerator.accept(generatedPackPath, finalPath);
             } catch (Exception e) {
@@ -1551,15 +1555,24 @@ public abstract class AbstractPackManager implements PackManager {
 
     private void generateClientLang(Path generatedPackPath) {
         for (Map.Entry<String, I18NData> entry : this.plugin.translationManager().clientLangData().entrySet()) {
-            JsonObject json = new JsonObject();
-            for (Map.Entry<String, String> pair : entry.getValue().translations.entrySet()) {
-                json.addProperty(pair.getKey(), pair.getValue());
-            }
             Path langPath = generatedPackPath
                     .resolve("assets")
                     .resolve("minecraft")
                     .resolve("lang")
                     .resolve(entry.getKey() + ".json");
+            JsonObject json;
+            if (Files.exists(langPath)) {
+                try {
+                    json = GsonHelper.readJsonFile(langPath).getAsJsonObject();
+                } catch (Exception e) {
+                    json = new JsonObject();
+                }
+            } else {
+                json = new JsonObject();
+            }
+            for (Map.Entry<String, String> pair : entry.getValue().translations.entrySet()) {
+                json.addProperty(pair.getKey(), pair.getValue());
+            }
             try {
                 Files.createDirectories(langPath.getParent());
             } catch (IOException e) {

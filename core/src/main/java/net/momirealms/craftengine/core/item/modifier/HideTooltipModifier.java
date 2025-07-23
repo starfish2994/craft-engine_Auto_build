@@ -88,7 +88,7 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
     }
 
     public List<Key> components() {
-        return components;
+        return this.components;
     }
 
     @Override
