@@ -459,6 +459,7 @@ public class ItemEventListener implements Listener {
         }
     }
 
+    // 禁止附魔
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEnchant(PrepareItemEnchantEvent event) {
         ItemStack itemToEnchant = event.getItem();
@@ -471,6 +472,7 @@ public class ItemEventListener implements Listener {
         }
     }
 
+    // 自定义堆肥改了
     @EventHandler(ignoreCancelled = true)
     public void onCompost(CompostItemEvent event) {
         ItemStack itemToCompost = event.getItem();
@@ -480,6 +482,7 @@ public class ItemEventListener implements Listener {
         event.setWillRaiseLevel(RandomUtils.generateRandomFloat(0, 1) < optionalCustomItem.get().settings().compostProbability());
     }
 
+    // 用于附魔台纠正
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getInventory() instanceof EnchantingInventory inventory)) return;

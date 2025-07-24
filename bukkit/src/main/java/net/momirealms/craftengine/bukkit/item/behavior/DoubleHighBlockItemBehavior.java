@@ -30,7 +30,7 @@ public class DoubleHighBlockItemBehavior extends BlockItemBehavior {
         Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ());
         UpdateOption option = UpdateOption.builder().updateNeighbors().updateClients().updateImmediate().updateKnownShape().build();
         Object fluidData = FastNMS.INSTANCE.method$BlockGetter$getFluidState(level, blockPos);
-        Object stateToPlace = fluidData == MFluids.WATER$defaultState ? MFluids.WATER$defaultState : MBlocks.AIR$defaultState;
+        Object stateToPlace = fluidData == MFluids.WATER$defaultState ? MBlocks.WATER$defaultState : MBlocks.AIR$defaultState;
         FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, stateToPlace, option.flags());
         return super.placeBlock(location, blockState);
     }
