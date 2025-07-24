@@ -126,7 +126,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
         // it's just world + pos
         BlockState previousState = bukkitBlock.getState();
         // place custom block
-        CraftEngineBlocks.place(placeLocation, blockStateToPlace, UpdateOption.UPDATE_ALL_IMMEDIATE, false);
+        placeBlock(placeLocation, blockStateToPlace);
 
         if (player != null) {
             // call bukkit event
@@ -213,6 +213,10 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
             CraftEngine.instance().logger().warn("Failed to check canPlace", e);
             return false;
         }
+    }
+
+    protected boolean placeBlock(Location location, ImmutableBlockState blockState) {
+        return CraftEngineBlocks.place(location, blockState, UpdateOption.UPDATE_ALL_IMMEDIATE, false);
     }
 
     @Override
