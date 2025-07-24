@@ -5,6 +5,29 @@ import net.momirealms.craftengine.core.util.Key;
 public class EntityKeys {
     private EntityKeys() {}
 
+    public static final Key BEE = Key.of("minecraft:BEE");
+    public static final Key FOX = Key.of("minecraft:FOX");
+    public static final Key FROG = Key.of("minecraft:FROG");
+    public static final Key PANDA = Key.of("minecraft:PANDA");
+    public static final Key SHEEP = Key.of("minecraft:SHEEP");
+    public static final Key BOGGED = Key.of("minecraft:BOGGED");
+    public static final Key SNOW_GOLEM = Key.of("minecraft:SNOW_GOLEM");
+    public static final Key HOGLIN = Key.of("minecraft:HOGLIN");
+    public static final Key OCELOT = Key.of("minecraft:OCELOT");
+    public static final Key RABBIT = Key.of("minecraft:RABBIT");
+    public static final Key TURTLE = Key.of("minecraft:TURTLE");
+    public static final Key AXOLOTL = Key.of("minecraft:AXOLOTL");
+    public static final Key CHICKEN = Key.of("minecraft:CHICKEN");
+    public static final Key SNIFFER = Key.of("minecraft:SNIFFER");
+    public static final Key ARMADILLO = Key.of("minecraft:ARMADILLO");
+    public static final Key COD = Key.of("minecraft:COD");
+    public static final Key SALMON = Key.of("minecraft:SALMON");
+    public static final Key TROPICAL_FISH = Key.of("minecraft:TROPICAL_FISH");
+    public static final Key PUFFERFISH = Key.of("minecraft:PUFFERFISH");
+    public static final Key TADPOLE = Key.of("minecraft:TADPOLE");
+    public static final Key COW = Key.of("minecraft:COW");
+    public static final Key MOOSHROOM = Key.of("minecraft:MOOSHROOM");
+    public static final Key GOAT = Key.of("minecraft:GOAT");
     public static final Key PIG = Key.of("minecraft:PIG");
     public static final Key STRIDER = Key.of("minecraft:STRIDER");
     public static final Key WOLF = Key.of("minecraft:WOLF");
@@ -22,6 +45,7 @@ public class EntityKeys {
     public static final Key MINECART = Key.of("minecraft:MINECART");
     public static final Key HAPPY_GHAST = Key.of("minecraft:HAPPY_GHAST");
     public static final Key PIGLIN = Key.of("minecraft:PIGLIN");
+    public static final Key CREEPER = Key.of("minecraft:CREEPER");
     public static final Key ALLAY = Key.of("minecraft:ALLAY");
     public static final Key HORSE = Key.of("minecraft:HORSE");
     public static final Key ZOMBIE_HORSE = Key.of("minecraft:ZOMBIE_HORSE");

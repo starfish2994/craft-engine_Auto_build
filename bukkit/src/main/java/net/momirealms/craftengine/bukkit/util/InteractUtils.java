@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.util;
 
+import io.papermc.paper.entity.Shearable;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
 import net.momirealms.craftengine.core.block.BlockKeys;
@@ -52,6 +53,9 @@ public class InteractUtils {
         registerInteraction(BlockKeys.GREEN_CANDLE_CAKE, (player, item, blockState, result) -> !canEat(player, false));
         registerInteraction(BlockKeys.RED_CANDLE_CAKE, (player, item, blockState, result) -> !canEat(player, false));
         registerInteraction(BlockKeys.BLACK_CANDLE_CAKE, (player, item, blockState, result) -> !canEat(player, false));
+        registerInteraction(BlockKeys.BEE_NEST, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.SHEARS) || item.vanillaId().equals(ItemKeys.GLASS_BOTTLE));
+        registerInteraction(BlockKeys.BEEHIVE, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.SHEARS) || item.vanillaId().equals(ItemKeys.GLASS_BOTTLE));
+        registerInteraction(BlockKeys.POWDER_SNOW, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.BUCKET));
         registerInteraction(BlockKeys.BELL, (player, item, blockState, result) -> {
             Direction direction = result.getDirection();
             BlockPos pos = result.getBlockPos();
@@ -270,9 +274,14 @@ public class InteractUtils {
         registerInteraction(BlockKeys.RED_BED, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.BLACK_BED, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DRAGON_EGG, (player, item, blockState, result) -> true);
-        registerInteraction(BlockKeys.REPEATING_COMMAND_BLOCK, (player, item, blockState, result) -> true);
-        registerInteraction(BlockKeys.CHAIN_COMMAND_BLOCK, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.COMMAND_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.CHAIN_COMMAND_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.REPEATING_COMMAND_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.JIGSAW, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.STRUCTURE_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.TEST_INSTANCE_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.TEST_BLOCK, (player, item, blockState, result) -> true);
+        registerInteraction(BlockKeys.LIGHT, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.REDSTONE_ORE, (player, item, blockState, result) -> true);
         registerInteraction(BlockKeys.DEEPSLATE_REDSTONE_ORE, (player, item, blockState, result) -> true);
     }
@@ -283,12 +292,53 @@ public class InteractUtils {
     }
 
     static {
-        registerEntityInteraction(EntityKeys.PIGLIN, (player, entity, item) -> item != null && item.vanillaId().equals(ItemKeys.GOLD_INGOT));
-        registerEntityInteraction(EntityKeys.PIG, (player, entity, item) -> hasSaddle(player, entity) && !player.isSneaking());
-        registerEntityInteraction(EntityKeys.STRIDER, (player, entity, item) -> hasSaddle(player, entity) && !player.isSneaking());
-        registerEntityInteraction(EntityKeys.WOLF, (player, entity, item) -> isPetOwner(player, entity));
-        registerEntityInteraction(EntityKeys.CAT, (player, entity, item) -> isPetOwner(player, entity));
-        registerEntityInteraction(EntityKeys.PARROT, (player, entity, item) -> isPetOwner(player, entity));
+        registerEntityInteraction(EntityKeys.BEE, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.FOX, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.FROG, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.PANDA, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.HOGLIN, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.OCELOT, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.RABBIT, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.TURTLE, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.CHICKEN, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.SNIFFER, (player, entity, item) -> canFeed(entity, item));
+        registerEntityInteraction(EntityKeys.AXOLOTL, (player, entity, item) ->
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET)));
+        registerEntityInteraction(EntityKeys.COD, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET));
+        registerEntityInteraction(EntityKeys.SALMON, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET));
+        registerEntityInteraction(EntityKeys.TROPICAL_FISH, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET));
+        registerEntityInteraction(EntityKeys.PUFFERFISH, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET));
+        registerEntityInteraction(EntityKeys.TADPOLE, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.WATER_BUCKET));
+        registerEntityInteraction(EntityKeys.SNOW_GOLEM, (player, entity, item) -> shearable(entity, item));
+        registerEntityInteraction(EntityKeys.SHEEP, (player, entity, item) -> canFeed(entity, item) || shearable(entity, item));
+        registerEntityInteraction(EntityKeys.BOGGED, (player, entity, item) -> canFeed(entity, item) || shearable(entity, item));
+        registerEntityInteraction(EntityKeys.MOOSHROOM, (player, entity, item) ->
+                canFeed(entity, item) || shearable(entity, item) || (item != null && (item.vanillaId().equals(ItemKeys.BUCKET) || item.vanillaId().equals(ItemKeys.BOWL))));
+        registerEntityInteraction(EntityKeys.COW, (player, entity, item) ->
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.BUCKET)));
+        registerEntityInteraction(EntityKeys.GOAT, (player, entity, item) ->
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.BUCKET)));
+        registerEntityInteraction(EntityKeys.CREEPER, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.FLINT_AND_STEEL));
+        registerEntityInteraction(EntityKeys.PIGLIN, (player, entity, item) ->
+                item != null && item.vanillaId().equals(ItemKeys.GOLD_INGOT));
+        registerEntityInteraction(EntityKeys.ARMADILLO, (player, entity, item) ->
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.BRUSH)));
+        registerEntityInteraction(EntityKeys.ZOMBIE_HORSE, (player, entity, item) ->
+                entity instanceof Tameable tameable && tameable.isTamed());
+        registerEntityInteraction(EntityKeys.SKELETON_HORSE, (player, entity, item) ->
+                entity instanceof Tameable tameable && tameable.isTamed());
+        registerEntityInteraction(EntityKeys.PIG, (player, entity, item) ->
+                canFeed(entity, item) || (hasSaddle(player, entity) && !player.isSneaking()));
+        registerEntityInteraction(EntityKeys.STRIDER, (player, entity, item) ->
+                canFeed(entity, item) || (hasSaddle(player, entity) && !player.isSneaking()));
+        registerEntityInteraction(EntityKeys.WOLF, (player, entity, item) -> canFeed(entity, item) || isPetOwner(player, entity));
+        registerEntityInteraction(EntityKeys.CAT, (player, entity, item) -> canFeed(entity, item) || isPetOwner(player, entity));
         registerEntityInteraction(EntityKeys.ACACIA_BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityKeys.BAMBOO_BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityKeys.BIRCH_BOAT, (player, entity, item) -> !player.isSneaking());
@@ -299,19 +349,21 @@ public class InteractUtils {
         registerEntityInteraction(EntityKeys.OAK_BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityKeys.SPRUCE_BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityKeys.MINECART, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityKeys.PARROT, (player, entity, item) -> {
+            if (item != null && item.is(Key.of("parrot_poisonous_food"))) return true;
+            return canFeed(entity, item) || isPetOwner(player, entity);
+        });
         registerEntityInteraction(EntityKeys.HAPPY_GHAST, (player, entity, item) -> {
             if (!VersionHelper.isOrAbove1_21_6()) return false;
-            if (entity instanceof HappyGhast happyGhast) {
+            if (entity instanceof HappyGhast happyGhast && !player.isSneaking()) {
                 ItemStack bodyItem = happyGhast.getEquipment().getItem(EquipmentSlot.BODY);
-                Item<ItemStack> wrapped = BukkitItemManager.instance().wrap(bodyItem);
-                return wrapped.is(Key.of("harnesses"));
+                Item<ItemStack> wrap = BukkitItemManager.instance().wrap(bodyItem);
+                return wrap.is(Key.of("harnesses"));
             }
-            return false;
+            return canFeed(entity, item);
         });
         registerEntityInteraction(EntityKeys.ALLAY, (player, entity, item) -> true);
         registerEntityInteraction(EntityKeys.HORSE, (player, entity, item) -> true);
-        registerEntityInteraction(EntityKeys.ZOMBIE_HORSE, (player, entity, item) -> true);
-        registerEntityInteraction(EntityKeys.SKELETON_HORSE, (player, entity, item) -> true);
         registerEntityInteraction(EntityKeys.DONKEY, (player, entity, item) -> true);
         registerEntityInteraction(EntityKeys.MULE, (player, entity, item) -> true);
         registerEntityInteraction(EntityKeys.VILLAGER, (player, entity, item) -> true);
@@ -392,11 +444,19 @@ public class InteractUtils {
         return ignoreHunger || player.isInvulnerable() || player.getFoodLevel() < 20;
     }
 
-    public static boolean hasSaddle(Player player, Entity entity) {
+    private static boolean canFeed(Entity entity, Item<ItemStack> item) {
+        return entity instanceof Animals animals && item.is(Key.of(animals.getType().toString().toLowerCase() + "_food"));
+    }
+
+    private static boolean hasSaddle(Player player, Entity entity) {
         return entity instanceof Steerable steerable && steerable.hasSaddle() && !player.isSneaking();
     }
 
-    public static boolean isPetOwner(Player player, Entity entity) {
+    private static boolean shearable(Entity entity, Item<ItemStack> item) {
+        return entity instanceof Shearable shearable && item.vanillaId().equals(ItemKeys.SHEARS) && shearable.readyToBeSheared();
+    }
+
+    private static boolean isPetOwner(Player player, Entity entity) {
         return entity instanceof Tameable tameable && tameable.isTamed() && player.getUniqueId().equals(tameable.getOwnerUniqueId());
     }
 }

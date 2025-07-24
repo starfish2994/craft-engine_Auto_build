@@ -26,6 +26,7 @@ public class ItemKeys {
     public static final Key TROPICAL_FISH_BUCKET = Key.of("minecraft:tropical_fish_bucket");
     public static final Key PUFFERFISH_BUCKET = Key.of("minecraft:pufferfish_bucket");
     public static final Key AXOLOTL_BUCKET = Key.of("minecraft:axolotl_bucket");
+    public static final Key LAVA_BUCKET = Key.of("minecraft:lava_bucket");
     public static final Key BUCKET = Key.of("minecraft:bucket");
     public static final Key BONE_MEAL = Key.of("minecraft:bone_meal");
     public static final Key ENCHANTED_BOOK = Key.of("minecraft:enchanted_book");
@@ -34,6 +35,10 @@ public class ItemKeys {
     public static final Key CACTUS = Key.of("minecraft:cactus");
     public static final Key REDSTONE = Key.of("minecraft:redstone");
     public static final Key GOLD_INGOT = Key.of("minecraft:gold_ingot");
+    public static final Key SHEARS = Key.of("minecraft:shears");
+    public static final Key BRUSH = Key.of("minecraft:brush");
+    public static final Key BOWL = Key.of("minecraft:bowl");
+    public static final Key GLASS_BOTTLE = Key.of("minecraft:glass_bottle");
 
     public static final Key[] AXES = new Key[] {
             WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE
