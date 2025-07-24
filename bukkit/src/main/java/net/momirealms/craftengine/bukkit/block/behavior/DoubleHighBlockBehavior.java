@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 
-public class DoubleBlockBehavior extends BukkitBlockBehavior {
+public class DoubleHighBlockBehavior extends BukkitBlockBehavior {
     public static final Factory FACTORY = new Factory();
     private final Property<DoubleBlockHalf> halfProperty;
 
-    public DoubleBlockBehavior(CustomBlock customBlock, Property<DoubleBlockHalf> halfProperty) {
+    public DoubleHighBlockBehavior(CustomBlock customBlock, Property<DoubleBlockHalf> halfProperty) {
         super(customBlock);
         this.halfProperty = halfProperty;
     }
@@ -84,7 +84,7 @@ public class DoubleBlockBehavior extends BukkitBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             Property<DoubleBlockHalf> half = (Property<DoubleBlockHalf>) ResourceConfigUtils.requireNonNullOrThrow(block.getProperty("half"), "warning.config.block.behavior.double.missing_half");
-            return new DoubleBlockBehavior(block, half);
+            return new DoubleHighBlockBehavior(block, half);
         }
     }
 }
