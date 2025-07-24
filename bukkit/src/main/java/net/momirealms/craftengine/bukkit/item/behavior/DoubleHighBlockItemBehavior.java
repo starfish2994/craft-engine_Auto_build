@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.item.behavior;
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.UpdateOption;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
@@ -12,7 +13,6 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.bukkit.Location;
-import org.bukkit.Material;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -26,16 +26,12 @@ public class DoubleHighBlockItemBehavior extends BlockItemBehavior {
 
     @Override
     protected boolean placeBlock(Location location, ImmutableBlockState blockState) {
-        Object worldServer = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld());
+        Object level = FastNMS.INSTANCE.field$CraftWorld$ServerLevel(location.getWorld());
         Object blockPos = FastNMS.INSTANCE.constructor$BlockPos(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ());
         UpdateOption option = UpdateOption.builder().updateNeighbors().updateClients().updateImmediate().updateKnownShape().build();
-        Object stateToPlace;
-        if (location.getWorld().getBlockAt(location.getBlockX(), location.getBlockY() + 1, location.getBlockZ()).getType() == Material.WATER) {
-            stateToPlace = MBlocks.WATER$defaultState;
-        } else {
-            stateToPlace = MBlocks.AIR$defaultState;
-        }
-        FastNMS.INSTANCE.method$LevelWriter$setBlock(worldServer, blockPos, stateToPlace, option.flags());
+        Object fluidData = FastNMS.INSTANCE.method$BlockGetter$getFluidState(level, blockPos);
+        Object stateToPlace = fluidData == MFluids.WATER$defaultState ? MFluids.WATER$defaultState : MBlocks.AIR$defaultState;
+        FastNMS.INSTANCE.method$LevelWriter$setBlock(level, blockPos, stateToPlace, option.flags());
         return super.placeBlock(location, blockState);
     }
 
