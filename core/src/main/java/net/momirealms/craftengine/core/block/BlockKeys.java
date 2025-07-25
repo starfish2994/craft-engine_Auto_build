@@ -47,6 +47,7 @@ public final class BlockKeys {
     public static final Key TEST_BLOCK = Key.of("minecraft:test_block");
     public static final Key LIGHT = Key.of("minecraft:light");
     public static final Key DECORATED_POT = Key.of("minecraft:decorated_pot");
+    public static final Key FLOWER_POT = Key.of("minecraft:flower_pot");
     public static final Key CHISELED_BOOKSHELF = Key.of("minecraft:chiseled_bookshelf");
     public static final Key REDSTONE_ORE = Key.of("minecraft:redstone_ore");
     public static final Key DEEPSLATE_REDSTONE_ORE = Key.of("minecraft:deepslate_redstone_ore");
@@ -57,6 +58,8 @@ public final class BlockKeys {
     public static final Key CAULDRON = Key.of("minecraft:cauldron");
     public static final Key WATER_CAULDRON = Key.of("minecraft:water_cauldron");
     public static final Key LAVA_CAULDRON = Key.of("minecraft:lava_cauldron");
+    public static final Key RESPAWN_ANCHOR = Key.of("minecraft:respawn_anchor");
+    public static final Key LODESTONE = Key.of("minecraft:lodestone");
 
     public static final Key CAKE = Key.of("minecraft:cake");
     public static final Key CANDLE_CAKE = Key.of("minecraft:candle_cake");

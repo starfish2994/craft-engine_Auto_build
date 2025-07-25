@@ -2,8 +2,8 @@ package net.momirealms.craftengine.core.entity;
 
 import net.momirealms.craftengine.core.util.Key;
 
-public class EntityKeys {
-    private EntityKeys() {}
+public class EntityTypeKeys {
+    private EntityTypeKeys() {}
 
     public static final Key BEE = Key.of("minecraft:BEE");
     public static final Key FOX = Key.of("minecraft:FOX");

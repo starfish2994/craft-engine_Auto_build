@@ -38,7 +38,10 @@ public class ItemKeys {
     public static final Key SHEARS = Key.of("minecraft:shears");
     public static final Key BRUSH = Key.of("minecraft:brush");
     public static final Key BOWL = Key.of("minecraft:bowl");
+    public static final Key COMPASS = Key.of("minecraft:compass");
     public static final Key GLASS_BOTTLE = Key.of("minecraft:glass_bottle");
+    public static final Key LIGHT = Key.of("minecraft:light");
+    public static final Key GLOWSTONE = Key.of("minecraft:glowstone");
 
     public static final Key[] AXES = new Key[] {
             WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE
