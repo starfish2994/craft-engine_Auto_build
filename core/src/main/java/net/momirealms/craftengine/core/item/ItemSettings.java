@@ -325,7 +325,13 @@ public class ItemSettings {
             }));
             registerFactory("tags", (value -> {
                 List<String> tags = MiscUtils.getAsStringList(value);
-                return settings -> settings.tags(tags.stream().map(Key::of).collect(Collectors.toSet()));
+                return settings -> settings.tags(tags.stream().map(it -> {
+                    if (it.charAt(0) == '#') {
+                        return Key.of(it.substring(1));
+                    } else {
+                        return Key.of(it);
+                    }
+                }).collect(Collectors.toSet()));
             }));
             registerFactory("equippable", (value -> {
                 Map<String, Object> args = MiscUtils.castToMap(value, false);
