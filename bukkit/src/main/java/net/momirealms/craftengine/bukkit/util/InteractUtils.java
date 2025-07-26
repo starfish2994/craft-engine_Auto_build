@@ -392,31 +392,32 @@ public class InteractUtils {
         registerEntityInteraction(EntityTypeKeys.SKELETON_HORSE, (player, entity, item) ->
                 entity instanceof Tameable tameable && tameable.isTamed());
         registerEntityInteraction(EntityTypeKeys.PIG, (player, entity, item) ->
-                canFeed(entity, item) || (hasSaddle(player, entity) && !player.isSneaking()));
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.SADDLE) && !hasSaddle(player, entity)) || (hasSaddle(player, entity) && !player.isSneaking()));
         registerEntityInteraction(EntityTypeKeys.STRIDER, (player, entity, item) ->
-                canFeed(entity, item) || (hasSaddle(player, entity) && !player.isSneaking()));
+                canFeed(entity, item) || (item != null && item.vanillaId().equals(ItemKeys.SADDLE) && !hasSaddle(player, entity)) || (hasSaddle(player, entity) && !player.isSneaking()));
         registerEntityInteraction(EntityTypeKeys.WOLF, (player, entity, item) -> canFeed(entity, item) || isPetOwner(player, entity));
         registerEntityInteraction(EntityTypeKeys.CAT, (player, entity, item) -> canFeed(entity, item) || isPetOwner(player, entity));
-        registerEntityInteraction(EntityTypeKeys.ACACIA_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.BAMBOO_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.BIRCH_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.CHERRY_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.DARK_OAK_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.JUNGLE_BOAT, (player, entity, item) -> !player.isSneaking());
-        registerEntityInteraction(EntityTypeKeys.MANGROVE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.OAK_BOAT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.SPRUCE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.BIRCH_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.JUNGLE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.ACACIA_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.DARK_OAK_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.MANGROVE_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.CHERRY_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.PALE_OAK_BOAT, (player, entity, item) -> !player.isSneaking());
+        registerEntityInteraction(EntityTypeKeys.BAMBOO_RAFT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.MINECART, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.PARROT, (player, entity, item) -> {
             if (item != null && item.is(Key.of("parrot_poisonous_food"))) return true;
             return canFeed(entity, item) || isPetOwner(player, entity);
         });
         registerEntityInteraction(EntityTypeKeys.HAPPY_GHAST, (player, entity, item) -> {
-            if (!VersionHelper.isOrAbove1_21_6()) return false;
+            if (item != null && item.vanillaId().equals(ItemKeys.HARNESS)) return true;
             if (entity instanceof HappyGhast happyGhast && !player.isSneaking()) {
                 ItemStack bodyItem = happyGhast.getEquipment().getItem(EquipmentSlot.BODY);
-                Item<ItemStack> wrap = BukkitItemManager.instance().wrap(bodyItem);
-                return wrap.is(Key.of("harnesses"));
+                return BukkitItemManager.instance().wrap(bodyItem).is(Key.of("harnesses"));
             }
             return canFeed(entity, item);
         });
@@ -432,24 +433,21 @@ public class InteractUtils {
         registerEntityInteraction(EntityTypeKeys.ITEM_FRAME, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.GLOW_ITEM_FRAME, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.INTERACTION, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.ACACIA_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.BAMBOO_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.BIRCH_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.CHERRY_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.DARK_OAK_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.JUNGLE_CHEST_BOAT, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.MANGROVE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.CHEST_BOAT, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.OAK_CHEST_BOAT, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.SPRUCE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.BIRCH_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.JUNGLE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.ACACIA_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.DARK_OAK_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.MANGROVE_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.CHERRY_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.PALE_OAK_CHEST_BOAT, (player, entity, item) -> true);
+        registerEntityInteraction(EntityTypeKeys.BAMBOO_CHEST_RAFT, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.CHEST_MINECART, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.FURNACE_MINECART, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.HOPPER_MINECART, (player, entity, item) -> true);
         registerEntityInteraction(EntityTypeKeys.COMMAND_BLOCK_MINECART, (player, entity, item) -> true);
-        //＜1.20.5
-        registerEntityInteraction(EntityTypeKeys.MINECART_CHEST, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.MINECART_HOPPER, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.MINECART_FURNACE, (player, entity, item) -> true);
-        registerEntityInteraction(EntityTypeKeys.MINECART_COMMAND, (player, entity, item) -> true);
     }
 
     private static void registerInteraction(Key key, QuadFunction<org.bukkit.entity.Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean> function) {
