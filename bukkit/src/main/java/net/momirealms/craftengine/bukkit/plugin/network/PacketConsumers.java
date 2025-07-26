@@ -1602,6 +1602,10 @@ public class PacketConsumers {
                 }
 
                 mainThreadTask = () -> {
+                    if (!furniture.isValid()) {
+                        return;
+                    }
+
                     FurnitureInteractEvent interactEvent = new FurnitureInteractEvent(serverPlayer.platformPlayer(), furniture, hand, interactionPoint);
                     if (EventUtils.fireAndCheckCancel(interactEvent)) {
                         return;
