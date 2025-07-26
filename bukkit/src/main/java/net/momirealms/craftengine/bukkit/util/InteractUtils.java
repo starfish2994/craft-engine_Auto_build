@@ -4,8 +4,6 @@ import io.papermc.paper.entity.Shearable;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
-import net.momirealms.craftengine.bukkit.nms.FastNMS;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.core.block.BlockKeys;
 import net.momirealms.craftengine.core.entity.EntityTypeKeys;
 import net.momirealms.craftengine.core.item.Item;
@@ -485,10 +483,7 @@ public class InteractUtils {
     }
 
     public static boolean isEntityInteractable(Player player, Entity entity, @Nullable Item<ItemStack> item) {
-        Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(entity);
-        Object entityType = FastNMS.INSTANCE.method$Entity$getType(nmsEntity);
-        Object id = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ENTITY_TYPE, entityType);
-        TriFunction<Player, Entity, Item<ItemStack>, Boolean> func = ENTITY_INTERACTIONS.get(KeyUtils.resourceLocationToKey(id));
+        TriFunction<Player, Entity, Item<ItemStack>, Boolean> func = ENTITY_INTERACTIONS.get(EntityUtils.getEntityType(entity));
         return func != null && func.apply(player, entity, item);
     }
 
@@ -507,7 +502,7 @@ public class InteractUtils {
     }
 
     private static boolean canFeed(Entity entity, Item<ItemStack> item) {
-        return entity instanceof Animals animals && item.is(Key.of(animals.getType().toString().toLowerCase() + "_food"));
+        return entity instanceof Animals && item.is(Key.of(EntityUtils.getEntityType(entity).value() + "_food"));
     }
 
     private static boolean hasSaddle(Player player, Entity entity) {

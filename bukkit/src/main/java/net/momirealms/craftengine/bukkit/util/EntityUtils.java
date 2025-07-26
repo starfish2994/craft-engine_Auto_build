@@ -2,6 +2,8 @@ package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.bukkit.Location;
@@ -34,5 +36,12 @@ public class EntityUtils {
         } else {
             return LegacyEntityUtils.spawnEntity(world, loc, type, function);
         }
+    }
+
+    public static Key getEntityType(Entity entity) {
+        Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(entity);
+        Object entityType = FastNMS.INSTANCE.method$Entity$getType(nmsEntity);
+        Object id = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ENTITY_TYPE, entityType);
+        return KeyUtils.resourceLocationToKey(id);
     }
 }
