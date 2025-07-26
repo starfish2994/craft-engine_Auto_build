@@ -1,10 +1,12 @@
 package net.momirealms.craftengine.core.item.modifier;
 
+import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.TypeUtils;
+import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 
@@ -40,12 +42,21 @@ public class TagsModifier<I> implements ItemDataModifier<I> {
     // TODO NOT PERFECT
     @Override
     public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
-        for (Map.Entry<String, Object> entry : this.arguments.entrySet()) {
-            Tag previous = item.getTag(entry.getKey());
+        if (VersionHelper.isOrAbove1_20_5()) {
+            Tag previous = item.getSparrowNBTComponent(ComponentKeys.CUSTOM_DATA);
             if (previous != null) {
-                networkData.put(entry.getKey(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                networkData.put(ComponentKeys.CUSTOM_DATA.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
             } else {
-                networkData.put(entry.getKey(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                networkData.put(ComponentKeys.CUSTOM_DATA.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+            }
+        } else {
+            for (Map.Entry<String, Object> entry : this.arguments.entrySet()) {
+                Tag previous = item.getTag(entry.getKey());
+                if (previous != null) {
+                    networkData.put(entry.getKey(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
+                } else {
+                    networkData.put(entry.getKey(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+                }
             }
         }
         return item;
