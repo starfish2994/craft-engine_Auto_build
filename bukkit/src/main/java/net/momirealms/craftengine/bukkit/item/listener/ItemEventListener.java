@@ -77,6 +77,7 @@ public class ItemEventListener implements Listener {
         if (ItemUtils.isEmpty(itemInHand)) return;
         Optional<CustomItem<ItemStack>> optionalCustomItem = itemInHand.getCustomItem();
         if (optionalCustomItem.isEmpty()) return;
+        // 如果目标实体与手中物品可以产生交互，那么忽略
         if (InteractUtils.isEntityInteractable(player, entity, itemInHand)) return;
 
         Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
@@ -267,27 +268,7 @@ public class ItemEventListener implements Listener {
                 }
             }
 
-            // execute item right click functions
-            if (hasCustomItem) {
-                Cancellable dummy = Cancellable.dummy();
-                PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
-                        .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
-                        .withOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
-                        .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
-                        .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
-                        .withParameter(DirectContextParameters.HAND, hand)
-                        .withParameter(DirectContextParameters.EVENT, dummy)
-                );
-                CustomItem<ItemStack> customItem = optionalCustomItem.get();
-                if (!(InteractUtils.isInteractable(player, blockData, hitResult, itemInHand) && !player.isSneaking())) {
-                    customItem.execute(context, EventTrigger.RIGHT_CLICK);
-                }
-                if (dummy.isCancelled()) {
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-
+            // 优先检查物品行为，再执行自定义事件
             // 检查其他的物品行为，物品行为理论只在交互时处理
             Optional<List<ItemBehavior>> optionalItemBehaviors = itemInHand.getItemBehavior();
             // 物品类型是否包含自定义物品行为，行为不一定来自于自定义物品，部分原版物品也包含了新的行为
@@ -315,8 +296,31 @@ public class ItemEventListener implements Listener {
                     }
                 }
             }
+
+            // 执行物品右键事件
+            if (hasCustomItem) {
+                // 要求服务端侧这个方块不可交互，或玩家处于潜行状态
+                if (serverPlayer.isSecondaryUseActive() || !InteractUtils.isInteractable(player, blockData, hitResult, itemInHand)) {
+                    Cancellable dummy = Cancellable.dummy();
+                    PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()
+                            .withParameter(DirectContextParameters.BLOCK, new BukkitBlockInWorld(block))
+                            .withOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE, immutableBlockState)
+                            .withOptionalParameter(DirectContextParameters.ITEM_IN_HAND, itemInHand)
+                            .withParameter(DirectContextParameters.POSITION, LocationUtils.toWorldPosition(block.getLocation()))
+                            .withParameter(DirectContextParameters.HAND, hand)
+                            .withParameter(DirectContextParameters.EVENT, dummy)
+                    );
+                    CustomItem<ItemStack> customItem = optionalCustomItem.get();
+                    customItem.execute(context, EventTrigger.RIGHT_CLICK);
+                    if (dummy.isCancelled()) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
         }
 
+        // 执行物品左键事件
         if (hasCustomItem && action == Action.LEFT_CLICK_BLOCK) {
             Cancellable dummy = Cancellable.dummy();
             PlayerOptionalContext context = PlayerOptionalContext.of(serverPlayer, ContextHolder.builder()

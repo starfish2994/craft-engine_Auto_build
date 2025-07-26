@@ -4,6 +4,8 @@ import io.papermc.paper.entity.Shearable;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.behavior.BlockItemBehavior;
 import net.momirealms.craftengine.bukkit.item.recipe.BukkitRecipeManager;
+import net.momirealms.craftengine.bukkit.nms.FastNMS;
+import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.core.block.BlockKeys;
 import net.momirealms.craftengine.core.entity.EntityTypeKeys;
 import net.momirealms.craftengine.core.item.Item;
@@ -28,7 +30,10 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class InteractUtils {
     private static final Map<Key, QuadFunction<Player, Item<ItemStack>, BlockData, BlockHitResult, Boolean>> INTERACTIONS = new HashMap<>();
@@ -67,11 +72,15 @@ public class InteractUtils {
         registerInteraction(BlockKeys.TEST_BLOCK, (player, item, blockState, result) -> player.isOp() && player.getGameMode() == GameMode.CREATIVE);
         registerInteraction(BlockKeys.LIGHT, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.LIGHT));
         registerInteraction(BlockKeys.LODESTONE, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.COMPASS));
-        registerInteraction(BlockKeys.BEE_NEST, (player, item, blockState, result) -> Set.of(ItemKeys.SHEARS, ItemKeys.GLASS_BOTTLE).contains(item.vanillaId()));
-        registerInteraction(BlockKeys.BEEHIVE, (player, item, blockState, result) -> Set.of(ItemKeys.SHEARS, ItemKeys.GLASS_BOTTLE).contains(item.vanillaId()));
+        registerInteraction(BlockKeys.BEE_NEST, (player, item, blockState, result) -> {
+            Key id = item.vanillaId();
+            return ItemKeys.SHEARS.equals(id) || ItemKeys.GLASS_BOTTLE.equals(id);
+        });
+        registerInteraction(BlockKeys.BEEHIVE, (player, item, blockState, result) -> {
+            Key id = item.vanillaId();
+            return ItemKeys.SHEARS.equals(id) || ItemKeys.GLASS_BOTTLE.equals(id);
+        });
         registerInteraction(BlockKeys.POWDER_SNOW, (player, item, blockState, result) -> item.vanillaId().equals(ItemKeys.BUCKET));
-        registerWillConsume(BlockKeys.CAULDRON, (player, item, blockState, result) -> Set.of(ItemKeys.WATER_BUCKET, ItemKeys.LAVA_BUCKET).contains(item.vanillaId()));
-        registerWillConsume(BlockKeys.LAVA_CAULDRON, (player, item, blockState, result) -> Set.of(ItemKeys.BUCKET, ItemKeys.WATER_BUCKET, ItemKeys.LAVA_BUCKET).contains(item.vanillaId()));
         registerInteraction(BlockKeys.REDSTONE_ORE, (player, item, blockState, result) -> {
             Optional<List<ItemBehavior>> behaviors = item.getItemBehavior();
             if (behaviors.isPresent()) {
@@ -90,11 +99,7 @@ public class InteractUtils {
             }
             return true;
         });
-        registerWillConsume(BlockKeys.WATER_CAULDRON, (player, item, blockState, result) -> {
-            if (blockState instanceof Levelled levelled && levelled.getLevel() == levelled.getMaximumLevel())
-                return item.vanillaId().equals(ItemKeys.BUCKET);
-            return Set.of(ItemKeys.GLASS_BOTTLE, ItemKeys.WATER_BUCKET, ItemKeys.LAVA_BUCKET).contains(item.vanillaId());
-        });
+
         registerInteraction(BlockKeys.BELL, (player, item, blockState, result) -> {
             Direction direction = result.getDirection();
             BlockPos pos = result.getBlockPos();
@@ -327,6 +332,20 @@ public class InteractUtils {
     static {
         registerWillConsume(BlockKeys.CACTUS, (player, item, blockState, result) ->
                 result.getDirection() == Direction.UP && item.id().equals(ItemKeys.CACTUS));
+        registerWillConsume(BlockKeys.CAULDRON, (player, item, blockState, result) -> {
+            Key id = item.vanillaId();
+            return ItemKeys.WATER_BUCKET.equals(id) || ItemKeys.LAVA_BUCKET.equals(id);
+        });
+        registerWillConsume(BlockKeys.LAVA_CAULDRON, (player, item, blockState, result) -> {
+            Key id = item.vanillaId();
+            return ItemKeys.BUCKET.equals(id) || ItemKeys.LAVA_BUCKET.equals(id) || ItemKeys.WATER_BUCKET.equals(id);
+        });
+        registerWillConsume(BlockKeys.WATER_CAULDRON, (player, item, blockState, result) -> {
+            if (blockState instanceof Levelled levelled && levelled.getLevel() == levelled.getMaximumLevel())
+                return item.vanillaId().equals(ItemKeys.BUCKET);
+            Key id = item.vanillaId();
+            return ItemKeys.GLASS_BOTTLE.equals(id) || ItemKeys.WATER_BUCKET.equals(id) || ItemKeys.LAVA_BUCKET.equals(id);
+        });
     }
 
     static {
@@ -466,8 +485,10 @@ public class InteractUtils {
     }
 
     public static boolean isEntityInteractable(Player player, Entity entity, @Nullable Item<ItemStack> item) {
-        Key key = Key.of(String.valueOf(entity.getType()));
-        TriFunction<Player, Entity, Item<ItemStack>, Boolean> func = ENTITY_INTERACTIONS.get(key);
+        Object nmsEntity = FastNMS.INSTANCE.method$CraftEntity$getHandle(entity);
+        Object entityType = FastNMS.INSTANCE.method$Entity$getType(nmsEntity);
+        Object id = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ENTITY_TYPE, entityType);
+        TriFunction<Player, Entity, Item<ItemStack>, Boolean> func = ENTITY_INTERACTIONS.get(KeyUtils.resourceLocationToKey(id));
         return func != null && func.apply(player, entity, item);
     }
 

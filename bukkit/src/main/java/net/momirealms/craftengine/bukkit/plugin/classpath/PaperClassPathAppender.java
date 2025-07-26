@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.classpath;
 import net.momirealms.craftengine.core.plugin.classpath.ClassPathAppender;
 import net.momirealms.craftengine.core.plugin.classpath.URLClassLoaderAccess;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
+import org.bukkit.Bukkit;
 
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -20,18 +21,20 @@ public class PaperClassPathAppender implements ClassPathAppender {
     private final URLClassLoaderAccess classLoaderAccess;
 
     public PaperClassPathAppender(ClassLoader classLoader) {
-        try {
-            if (clazz$PaperPluginClassLoader != null && clazz$PaperPluginClassLoader.isInstance(classLoader)) {
-                URLClassLoader libraryClassLoader = (URLClassLoader) field$PaperPluginClassLoader$libraryLoader.get(classLoader);
-                this.classLoaderAccess = URLClassLoaderAccess.create(libraryClassLoader);
-            } else if (classLoader instanceof URLClassLoader) {
-                this.classLoaderAccess = URLClassLoaderAccess.create((URLClassLoader) classLoader);
-            } else {
-                throw new IllegalStateException("ClassLoader is not instance of URLClassLoader");
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to instantiate PaperPluginClassLoader", e);
-        }
+        // 25/7/26 往Bukkit类加载器里硬灌，就能保证库也被其他插件使用了
+        this.classLoaderAccess = URLClassLoaderAccess.create((URLClassLoader) Bukkit.class.getClassLoader());
+//        try {
+//            if (clazz$PaperPluginClassLoader != null && clazz$PaperPluginClassLoader.isInstance(classLoader)) {
+//                URLClassLoader libraryClassLoader = (URLClassLoader) field$PaperPluginClassLoader$libraryLoader.get(classLoader);
+//                this.classLoaderAccess = URLClassLoaderAccess.create(libraryClassLoader);
+//            } else if (classLoader instanceof URLClassLoader) {
+//                this.classLoaderAccess = URLClassLoaderAccess.create((URLClassLoader) classLoader);
+//            } else {
+//                throw new IllegalStateException("ClassLoader is not instance of URLClassLoader");
+//            }
+//        } catch (ReflectiveOperationException e) {
+//            throw new RuntimeException("Failed to instantiate PaperPluginClassLoader", e);
+//        }
     }
 
     @Override
