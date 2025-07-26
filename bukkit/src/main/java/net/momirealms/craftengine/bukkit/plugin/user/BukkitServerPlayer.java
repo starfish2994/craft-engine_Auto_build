@@ -76,6 +76,9 @@ public class BukkitServerPlayer extends Player {
     private Key clientSideDimension;
     // check main hand/offhand interaction
     private int lastSuccessfulInteraction;
+    // to prevent duplicated events
+    private int lastInteractEntityWithMainHand;
+    private int lastInteractEntityWithOffHand;
     // re-sync attribute timely to prevent some bugs
     private long lastAttributeSyncTime;
     // for breaking blocks
@@ -232,6 +235,24 @@ public class BukkitServerPlayer extends Player {
     @Override
     public int lastSuccessfulInteractionTick() {
         return this.lastSuccessfulInteraction;
+    }
+
+    @Override
+    public void updateLastInteractEntityTick(@NotNull InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            this.lastInteractEntityWithMainHand = gameTicks();
+        } else {
+            this.lastInteractEntityWithOffHand = gameTicks();
+        }
+    }
+
+    @Override
+    public boolean lastInteractEntityCheck(@NotNull InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return gameTicks() == this.lastInteractEntityWithMainHand;
+        } else {
+            return gameTicks() == this.lastInteractEntityWithOffHand;
+        }
     }
 
     @Override

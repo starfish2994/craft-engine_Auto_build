@@ -71,7 +71,11 @@ public class ItemEventListener implements Listener {
         Entity entity = event.getRightClicked();
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
         if (serverPlayer == null) return;
+
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        // prevent duplicated interact air events
+        serverPlayer.updateLastInteractEntityTick(hand);
+
         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
 
         if (ItemUtils.isEmpty(itemInHand)) return;
@@ -350,11 +354,16 @@ public class ItemEventListener implements Listener {
             return;
         // Gets the item in hand
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        // prevents duplicated events
+        if (serverPlayer.lastInteractEntityCheck(hand)) {
+            return;
+        }
+
         Item<ItemStack> itemInHand = serverPlayer.getItemInHand(hand);
         // should never be null
         if (ItemUtils.isEmpty(itemInHand)) return;
 
-        // todo 真的需要这个吗
+        // TODO 有必要存在吗？
         if (cancelEventIfHasInteraction(event, serverPlayer, hand)) {
             return;
         }
