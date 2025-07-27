@@ -1627,7 +1627,7 @@ public class PacketConsumers {
                     }
 
                     // 必须从网络包层面处理，否则无法获取交互的具体实体
-                    if (serverPlayer.isSecondaryUseActive() && itemInHand != null) {
+                    if (serverPlayer.isSecondaryUseActive() && !itemInHand.isEmpty()) {
                         // try placing another furniture above it
                         AABB hitBox = furniture.aabbByEntityId(entityId);
                         if (hitBox == null) return;
