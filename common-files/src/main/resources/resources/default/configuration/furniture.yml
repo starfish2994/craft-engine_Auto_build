@@ -187,7 +187,7 @@ furniture#flower_basket:
       ground:
         rules:
           rotation: FOUR
-          alignment: CENTER
+          alignment: ANY
         elements:
           - item: default:flower_basket_ground
             display-transform: NONE
@@ -206,7 +206,7 @@ furniture#flower_basket:
       wall:
         rules:
           rotation: FOUR
-          alignment: CENTER
+          alignment: ANY
         elements:
           - item: default:flower_basket_wall
             display-transform: NONE
@@ -233,7 +233,7 @@ furniture#flower_basket:
       ceiling:
         rules:
           rotation: FOUR
-          alignment: CENTER
+          alignment: ANY
         elements:
           - item: default:flower_basket_ceiling
             display-transform: NONE
