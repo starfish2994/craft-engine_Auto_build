@@ -3746,7 +3746,7 @@ public final class CoreReflections {
             .orElse( null);
 
     public static final Field field$ServerCommonPacketListenerImpl$closed = MiscUtils.requireNonNullIf(
-            ReflectionUtils.getDeclaredField(clazz$ServerCommonPacketListenerImpl, boolean.class, VersionHelper.isOrAbove1_21_6() ? 1 : 2),
+            ReflectionUtils.getDeclaredField(clazz$ServerCommonPacketListenerImpl, "closed", "n"),
             VersionHelper.isOrAbove1_20_5()
     );
 
