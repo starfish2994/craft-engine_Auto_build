@@ -150,24 +150,18 @@ items#flower_basket:
   default:flower_basket_ground:
     material: nether_brick
     custom-model-data: 2004
-    data:
-      item-name: <!i><i18n:item.flower_basket>
     model:
       type: minecraft:model
       path: minecraft:item/custom/flower_basket_ground
   default:flower_basket_wall:
     material: nether_brick
     custom-model-data: 2005
-    data:
-      item-name: <!i><i18n:item.flower_basket>
     model:
       type: minecraft:model
       path: minecraft:item/custom/flower_basket_wall
   default:flower_basket_ceiling:
     material: nether_brick
     custom-model-data: 2006
-    data:
-      item-name: <!i><i18n:item.flower_basket>
     model:
       type: minecraft:model
       path: minecraft:item/custom/flower_basket_ceiling
@@ -186,7 +180,7 @@ furniture#flower_basket:
     placement:
       ground:
         rules:
-          rotation: FOUR
+          rotation: ANY
           alignment: ANY
         elements:
           - item: default:flower_basket_ground
@@ -200,12 +194,11 @@ furniture#flower_basket:
             can-be-hit-by-projectile: true
             blocks-building: true
             position: 0,0,0
-            width: 0.9
-            height: 0.75
+            width: 0.7
+            height: 0.5
             interactive: true
       wall:
         rules:
-          rotation: FOUR
           alignment: ANY
         elements:
           - item: default:flower_basket_wall
@@ -232,7 +225,7 @@ furniture#flower_basket:
             interactive: true
       ceiling:
         rules:
-          rotation: FOUR
+          rotation: ANY
           alignment: ANY
         elements:
           - item: default:flower_basket_ceiling
@@ -245,7 +238,7 @@ furniture#flower_basket:
             can-use-item-on: true
             can-be-hit-by-projectile: true
             blocks-building: true
-            position: 0,-0.9,0
-            width: 0.85
-            height: 0.9
+            position: 0,-0.7,0
+            width: 0.7
+            height: 0.7
             interactive: true
