@@ -151,6 +151,6 @@ public class ComponentItemFactory1_21_5 extends ComponentItemFactory1_21_4 {
             }
             modifiers.add(modifierTag);
         }
-        item.setNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, modifiers);
+        item.setSparrowNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, modifiers);
     }
 }

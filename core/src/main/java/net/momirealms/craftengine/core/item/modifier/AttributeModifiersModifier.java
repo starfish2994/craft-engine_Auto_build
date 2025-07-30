@@ -7,6 +7,8 @@ import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemDataModifierFactory;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProvider;
+import net.momirealms.craftengine.core.plugin.context.number.NumberProviders;
 import net.momirealms.craftengine.core.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,13 +88,13 @@ public class AttributeModifiersModifier<I> implements SimpleNetworkItemDataModif
         return CONVERTOR.getOrDefault(attributeName, attributeName);
     }
 
-    private final List<AttributeModifier> modifiers;
+    private final List<PreModifier> modifiers;
 
-    public AttributeModifiersModifier(List<AttributeModifier> modifiers) {
+    public AttributeModifiersModifier(List<PreModifier> modifiers) {
         this.modifiers = modifiers;
     }
 
-    public List<AttributeModifier> modifiers() {
+    public List<PreModifier> modifiers() {
         return this.modifiers;
     }
 
@@ -103,7 +105,7 @@ public class AttributeModifiersModifier<I> implements SimpleNetworkItemDataModif
 
     @Override
     public Item<I> apply(Item<I> item, ItemBuildContext context) {
-        return item.attributeModifiers(this.modifiers);
+        return item.attributeModifiers(this.modifiers.stream().map(it -> it.toAttributeModifier(context)).toList());
     }
 
     @Override
@@ -121,12 +123,40 @@ public class AttributeModifiersModifier<I> implements SimpleNetworkItemDataModif
         return "AttributeModifiers";
     }
 
+    public record PreModifier(String type,
+                              AttributeModifier.Slot slot,
+                              Key id,
+                              NumberProvider amount,
+                              AttributeModifier.Operation operation,
+                              AttributeModifiersModifier.PreModifier.@Nullable PreDisplay display) {
+
+        public PreModifier(String type, AttributeModifier.Slot slot, Key id, NumberProvider amount, AttributeModifier.Operation operation, @Nullable PreDisplay display) {
+            this.amount = amount;
+            this.type = type;
+            this.slot = slot;
+            this.id = id;
+            this.operation = operation;
+            this.display = display;
+        }
+
+        public AttributeModifier toAttributeModifier(ItemBuildContext context) {
+            return new AttributeModifier(type, slot, id, amount.getDouble(context), operation, display == null ? null : display.toDisplay(context));
+        }
+
+        public record PreDisplay(AttributeModifier.Display.Type type, String value) {
+
+            public AttributeModifier.Display toDisplay(ItemBuildContext context) {
+                return new AttributeModifier.Display(type, AdventureHelper.miniMessage().deserialize(value, context.tagResolvers()));
+            }
+        }
+    }
+
     public static class Factory<I> implements ItemDataModifierFactory<I> {
 
         @Override
         public ItemDataModifier<I> create(Object arg) {
             MutableInt mutableInt = new MutableInt(0);
-            List<AttributeModifier> attributeModifiers = ResourceConfigUtils.parseConfigAsList(arg, (map) -> {
+            List<PreModifier> attributeModifiers = ResourceConfigUtils.parseConfigAsList(arg, (map) -> {
                 String type = ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("type"), "warning.config.item.data.attribute_modifiers.missing_type");
                 Key nativeType = AttributeModifiersModifier.getNativeAttributeName(Key.of(type));
                 AttributeModifier.Slot slot = AttributeModifier.Slot.valueOf(map.getOrDefault("slot", "any").toString().toUpperCase(Locale.ENGLISH));
@@ -134,24 +164,22 @@ public class AttributeModifiersModifier<I> implements SimpleNetworkItemDataModif
                     mutableInt.add(1);
                     return Key.of("craftengine", "modifier_" + mutableInt.intValue());
                 });
-                double amount = ResourceConfigUtils.getAsDouble(
-                        ResourceConfigUtils.requireNonNullOrThrow(map.get("amount"), "warning.config.item.data.attribute_modifiers.missing_amount"), "amount"
-                );
+                NumberProvider amount = NumberProviders.fromObject(ResourceConfigUtils.requireNonNullOrThrow(map.get("amount"), "warning.config.item.data.attribute_modifiers.missing_amount"));
                 AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(
                         ResourceConfigUtils.requireNonEmptyStringOrThrow(map.get("operation"), "warning.config.item.data.attribute_modifiers.missing_operation").toUpperCase(Locale.ENGLISH)
                 );
-                AttributeModifier.Display display = null;
+                PreModifier.PreDisplay display = null;
                 if (VersionHelper.isOrAbove1_21_6() && map.containsKey("display")) {
                     Map<String, Object> displayMap = MiscUtils.castToMap(map.get("display"), false);
                     AttributeModifier.Display.Type displayType = AttributeModifier.Display.Type.valueOf(ResourceConfigUtils.requireNonEmptyStringOrThrow(displayMap.get("type"), "warning.config.item.data.attribute_modifiers.display.missing_type").toUpperCase(Locale.ENGLISH));
                     if (displayType == AttributeModifier.Display.Type.OVERRIDE) {
                         String miniMessageValue = ResourceConfigUtils.requireNonEmptyStringOrThrow(displayMap.get("value"), "warning.config.item.data.attribute_modifiers.display.missing_value");
-                        display = new AttributeModifier.Display(displayType, AdventureHelper.miniMessage().deserialize(miniMessageValue));
+                        display = new PreModifier.PreDisplay(displayType, miniMessageValue);
                     } else {
-                        display = new AttributeModifier.Display(displayType, null);
+                        display = new PreModifier.PreDisplay(displayType, null);
                     }
                 }
-                return new AttributeModifier(nativeType.value(), slot, id,
+                return new PreModifier(nativeType.value(), slot, id,
                         amount, operation, display);
             });
             return new AttributeModifiersModifier<>(attributeModifiers);

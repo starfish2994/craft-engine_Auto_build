@@ -606,6 +606,6 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
             modifierTag.putString("operation", modifier.operation().id());
             modifiers.add(modifierTag);
         }
-        item.setNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, compoundTag);
+        item.setSparrowNBTComponent(ComponentKeys.ATTRIBUTE_MODIFIERS, compoundTag);
     }
 }
