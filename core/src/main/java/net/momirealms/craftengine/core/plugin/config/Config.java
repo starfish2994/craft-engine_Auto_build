@@ -20,10 +20,7 @@ import net.momirealms.craftengine.core.plugin.PluginProperties;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.plugin.logger.filter.DisconnectLogFilter;
-import net.momirealms.craftengine.core.util.AdventureHelper;
-import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.MinecraftVersion;
-import net.momirealms.craftengine.core.util.MiscUtils;
+import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.InjectionTarget;
 import net.momirealms.craftengine.core.world.chunk.storage.CompressionMethod;
 
@@ -408,6 +405,9 @@ public class Config {
     private static MinecraftVersion getVersion(String version) {
         if (version.equalsIgnoreCase("LATEST")) {
             return new MinecraftVersion(PluginProperties.getValue("latest-version"));
+        }
+        if (version.equalsIgnoreCase("SERVER")) {
+            return VersionHelper.MINECRAFT_VERSION;
         }
         return MinecraftVersion.parse(version);
     }

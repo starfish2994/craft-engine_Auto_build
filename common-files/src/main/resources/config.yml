@@ -57,8 +57,12 @@ resource-pack:
     enable: true
   # Define the name of the overlay folders
   overlay-format: "ce_overlay_{version}"
+  # Allowed values:
+  # - 1.20.1, 1.21, 1.21.8, etc.
+  # - LATEST: the latest client version
+  # - SERVER: the current server version
   supported-version:
-    min: "1.20"
+    min: SERVER
     max: LATEST
   # Remove 1.21.5+ tinted_leaves particles
   remove-tinted-leaves-particle: true
