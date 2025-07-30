@@ -3,16 +3,18 @@ package net.momirealms.craftengine.core.item.modifier.lore;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.item.ItemDataModifierFactory;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
-import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.sparrow.nbt.CompoundTag;
-import net.momirealms.sparrow.nbt.Tag;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifiers;
+import net.momirealms.craftengine.core.item.modifier.SimpleNetworkItemDataModifier;
+import net.momirealms.craftengine.core.util.Key;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class DynamicLoreModifier<I> implements ItemDataModifier<I> {
+public final class DynamicLoreModifier<I> implements SimpleNetworkItemDataModifier<I> {
+    public static final Factory<?> FACTORY = new Factory<>();
     public static final String CONTEXT_TAG_KEY = "craftengine:display_context";
     private final Map<String, LoreModifier<I>> displayContexts;
     private final LoreModifier<I> defaultModifier;
@@ -27,8 +29,8 @@ public final class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public String name() {
-        return "dynamic-lore";
+    public Key type() {
+        return ItemDataModifiers.DYNAMIC_LORE;
     }
 
     @Override
@@ -42,22 +44,30 @@ public final class DynamicLoreModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
-        if (VersionHelper.isOrAbove1_20_5()) {
-            Tag previous = item.getSparrowNBTComponent(ComponentKeys.LORE);
-            if (previous != null) {
-                networkData.put(ComponentKeys.LORE.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
-            } else {
-                networkData.put(ComponentKeys.LORE.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+    public Key componentType(Item<I> item, ItemBuildContext context) {
+        return ComponentKeys.LORE;
+    }
+
+    @Override
+    public Object[] nbtPath(Item<I> item, ItemBuildContext context) {
+        return new Object[]{"display", "Lore"};
+    }
+
+    @Override
+    public String nbtPathString(Item<I> item, ItemBuildContext context) {
+        return "display.Lore";
+    }
+
+    public static class Factory<I> implements ItemDataModifierFactory<I> {
+        @Override
+        public ItemDataModifier<I> create(Object arg) {
+            Map<String, LoreModifier<I>> dynamicLore = new LinkedHashMap<>();
+            if (arg instanceof Map<?, ?> map) {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    dynamicLore.put(entry.getKey().toString(), LoreModifier.createLoreModifier(entry.getValue()));
+                }
             }
-        } else {
-            Tag previous = item.getTag("display", "Lore");
-            if (previous != null) {
-                networkData.put("display.Lore", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
-            } else {
-                networkData.put("display.Lore", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
-            }
+            return new DynamicLoreModifier<>(dynamicLore);
         }
-        return item;
     }
 }

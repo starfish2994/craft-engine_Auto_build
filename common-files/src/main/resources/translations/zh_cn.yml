@@ -72,6 +72,7 @@ warning.config.type.boolean: "<yellow>在文件 <arg:0> 发现问题 - 无法加
 warning.config.type.double: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为双精度类型 (选项 '<arg:3>')</yellow>"
 warning.config.type.quaternionf: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为四元数类型 (选项 '<arg:3>')</yellow>"
 warning.config.type.vector3f: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为三维向量类型 (选项 '<arg:3>')</yellow>"
+warning.config.type.map: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无法将 '<arg:2>' 转换为映射类型 (选项 '<arg:3>')</yellow>"
 warning.config.type.snbt.invalid_syntax: "<yellow>在文件 <arg:0> 发现问题 - 无法加载 '<arg:1>': 无效的 SNBT 语法 '<arg:2>'.</yellow>"
 warning.config.number.missing_type: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少数字类型所需的 'type' 参数</yellow>"
 warning.config.number.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 使用了无效的数字类型 '<arg:2>'</yellow>"

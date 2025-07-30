@@ -591,11 +591,7 @@ public abstract class AbstractPackManager implements PackManager {
                             }
                         }
                     } catch (LocalizedException e) {
-                        if (e instanceof LocalizedResourceConfigException exception) {
-                            exception.setPath(cached.filePath());
-                            exception.setId(cached.prefix() + "." + key);
-                        }
-                        TranslationManager.instance().log(e.node(), e.arguments());
+                        printWarningRecursively(e, cached.filePath(), cached.prefix() + "." + key);
                     } catch (Exception e) {
                         this.plugin.logger().warn("Unexpected error loading file " + cached.filePath() + " - '" + parser.sectionId()[0] + "." + key + "'. Please find the cause according to the stacktrace or seek developer help. Additional info: " + GsonHelper.get().toJson(configEntry.getValue()), e);
                     }
@@ -605,6 +601,19 @@ public abstract class AbstractPackManager implements PackManager {
             long t2 = System.nanoTime();
             this.plugin.logger().info("Loaded " + parser.sectionId()[0] + " in " + String.format("%.2f", ((t2 - t1) / 1_000_000.0)) + " ms");
         }
+    }
+
+    private void printWarningRecursively(LocalizedException e, Path path, String prefix) {
+        for (Throwable t : e.getSuppressed()) {
+            if (t instanceof LocalizedException suppressed) {
+                printWarningRecursively(suppressed, path, prefix);
+            }
+        }
+        if (e instanceof LocalizedResourceConfigException exception) {
+            exception.setPath(path);
+            exception.setId(prefix);
+        }
+        TranslationManager.instance().log(e.node(), e.arguments());
     }
 
     private void processConfigEntry(Map.Entry<String, Object> entry, Path path, Pack pack, BiConsumer<ConfigParser, CachedConfigSection> callback) {

@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
@@ -118,6 +119,8 @@ public interface Item<I> {
     Optional<List<String>> loreJson();
 
     Optional<List<Component>> loreComponent();
+
+    Item<I> attributeModifiers(List<AttributeModifier> modifiers);
 
     Optional<JukeboxPlayable> jukeboxSong();
 

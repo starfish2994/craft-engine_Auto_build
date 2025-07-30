@@ -5,6 +5,7 @@ import net.momirealms.craftengine.bukkit.item.LegacyItemWrapper;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
 import net.momirealms.craftengine.core.item.data.Trim;
@@ -13,6 +14,9 @@ import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
+import net.momirealms.craftengine.core.util.UUIDUtils;
+import net.momirealms.sparrow.nbt.CompoundTag;
+import net.momirealms.sparrow.nbt.ListTag;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -343,5 +347,21 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
         Object newItemStack = FastNMS.INSTANCE.constructor$ItemStack(newItem, amount);
         FastNMS.INSTANCE.method$ItemStack$setTag(newItemStack, FastNMS.INSTANCE.method$CompoundTag$copy(FastNMS.INSTANCE.field$ItemStack$getOrCreateTag(item.getLiteralObject())));
         return new LegacyItemWrapper(FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(newItemStack));
+    }
+
+    @Override
+    protected void attributeModifiers(LegacyItemWrapper item, List<AttributeModifier> modifiers) {
+        ListTag listTag = new ListTag();
+        for (AttributeModifier modifier : modifiers) {
+            CompoundTag modifierTag = new CompoundTag();
+            modifierTag.putString("AttributeName", modifier.type());
+            modifierTag.putString("Name", modifier.id().toString());
+            modifierTag.putString("Slot", modifier.slot().name().toLowerCase(Locale.ENGLISH));
+            modifierTag.putInt("Operation", modifier.operation().ordinal());
+            modifierTag.putDouble("Amount", modifier.amount());
+            modifierTag.putIntArray("UUID", UUIDUtils.uuidToIntArray(UUID.nameUUIDFromBytes(modifier.id().toString().getBytes(StandardCharsets.UTF_8))));
+            listTag.add(modifierTag);
+        }
+        item.setTag(listTag, "AttributeModifiers");
     }
 }

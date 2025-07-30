@@ -4,37 +4,51 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.item.ItemDataModifierFactory;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
+import net.momirealms.craftengine.core.item.modifier.ItemDataModifiers;
+import net.momirealms.craftengine.core.item.modifier.SimpleNetworkItemDataModifier;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.util.VersionHelper;
-import net.momirealms.sparrow.nbt.CompoundTag;
-import net.momirealms.sparrow.nbt.Tag;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Stream;
 
-public sealed interface LoreModifier<I> extends ItemDataModifier<I>
+public sealed interface LoreModifier<I> extends SimpleNetworkItemDataModifier<I>
         permits LoreModifier.EmptyLoreModifier, LoreModifier.CompositeLoreModifier, LoreModifier.DoubleLoreModifier, LoreModifier.SingleLoreModifier {
+    Factory<?> FACTORY = new Factory<>();
 
     @Override
-    default String name() {
-        return "lore";
+    default Key type() {
+        return ItemDataModifiers.LORE;
     }
 
     @Override
-    default Item<I> prepareNetworkItem(Item<I> item, ItemBuildContext context, CompoundTag networkData) {
-        if (VersionHelper.isOrAbove1_20_5()) {
-            Tag previous = item.getSparrowNBTComponent(ComponentKeys.LORE);
-            if (previous != null) networkData.put(ComponentKeys.LORE.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
-            else networkData.put(ComponentKeys.LORE.asString(), NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
-        } else {
-            Tag previous = item.getTag("display", "Lore");
-            if (previous != null) networkData.put("display.Lore", NetworkItemHandler.pack(NetworkItemHandler.Operation.ADD, previous));
-            else networkData.put("display.Lore", NetworkItemHandler.pack(NetworkItemHandler.Operation.REMOVE));
+    @Nullable
+    default Key componentType(Item<I> item, ItemBuildContext context) {
+        return ComponentKeys.LORE;
+    }
+
+    @Override
+    @Nullable
+    default Object[] nbtPath(Item<I> item, ItemBuildContext context) {
+        return new Object[]{"display", "Lore"};
+    }
+
+    @Override
+    default String nbtPathString(Item<I> item, ItemBuildContext context) {
+        return "display.Lore";
+    }
+
+    List<LoreModification> lore();
+
+    class Factory<I> implements ItemDataModifierFactory<I> {
+        @Override
+        public ItemDataModifier<I> create(Object arg) {
+            return createLoreModifier(arg);
         }
-        return item;
     }
 
     static <I> LoreModifier<I> createLoreModifier(Object arg) {
@@ -78,6 +92,11 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
         public Item<I> apply(Item<I> item, ItemBuildContext context) {
             return item;
         }
+
+        @Override
+        public List<LoreModification> lore() {
+            return List.of();
+        }
     }
 
     non-sealed class SingleLoreModifier<I> implements LoreModifier<I> {
@@ -91,6 +110,11 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
         public Item<I> apply(Item<I> item, ItemBuildContext context) {
             item.loreComponent(this.modification.parseAsList(context));
             return item;
+        }
+
+        @Override
+        public List<LoreModification> lore() {
+            return List.of(modification);
         }
     }
 
@@ -108,6 +132,11 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
             item.loreComponent(this.modification2.apply(this.modification1.apply(Stream.empty(), context), context).toList());
             return item;
         }
+
+        @Override
+        public List<LoreModification> lore() {
+            return List.of(modification1, modification2);
+        }
     }
 
     non-sealed class CompositeLoreModifier<I> implements LoreModifier<I> {
@@ -121,6 +150,11 @@ public sealed interface LoreModifier<I> extends ItemDataModifier<I>
         public Item<I> apply(Item<I> item, ItemBuildContext context) {
             item.loreComponent(Arrays.stream(this.modifications).reduce(Stream.<Component>empty(), (stream, modification) -> modification.apply(stream, context), Stream::concat).toList());
             return item;
+        }
+
+        @Override
+        public List<LoreModification> lore() {
+            return Arrays.asList(modifications);
         }
     }
 }

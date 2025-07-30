@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
@@ -251,6 +252,12 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     @Override
     public Optional<List<Component>> loreComponent() {
         return this.factory.loreComponent(this.item);
+    }
+
+    @Override
+    public Item<I> attributeModifiers(List<AttributeModifier> modifiers) {
+        this.factory.attributeModifiers(this.item, modifiers);
+        return this;
     }
 
     @Override

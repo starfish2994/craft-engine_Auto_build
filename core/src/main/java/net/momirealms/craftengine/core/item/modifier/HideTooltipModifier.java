@@ -1,10 +1,7 @@
 package net.momirealms.craftengine.core.item.modifier;
 
 import com.google.common.collect.ImmutableMap;
-import net.momirealms.craftengine.core.item.ComponentKeys;
-import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
-import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.item.*;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -19,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class HideTooltipModifier<I> implements ItemDataModifier<I> {
+    public static final Factory<?> FACTORY = new Factory<>();
     public static final Map<Key, Integer> TO_LEGACY;
     public static final List<Key> COMPONENTS = List.of(
             ComponentKeys.UNBREAKABLE,
@@ -127,8 +125,8 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
     }
 
     @Override
-    public String name() {
-        return "hide-tooltip";
+    public Key type() {
+        return ItemDataModifiers.HIDE_TOOLTIP;
     }
 
     public interface Applier<I> {
@@ -231,6 +229,15 @@ public class HideTooltipModifier<I> implements ItemDataModifier<I> {
                     item.setJavaComponent(ComponentKeys.TOOLTIP_DISPLAY, newData);
                 }
             }
+        }
+    }
+
+    public static class Factory<I> implements ItemDataModifierFactory<I> {
+
+        @Override
+        public ItemDataModifier<I> create(Object arg) {
+            List<Key> components = MiscUtils.getAsStringList(arg).stream().map(Key::of).toList();
+            return new HideTooltipModifier<>(components);
         }
     }
 }

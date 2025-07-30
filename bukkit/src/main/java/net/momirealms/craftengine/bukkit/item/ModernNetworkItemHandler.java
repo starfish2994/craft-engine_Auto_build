@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.*;
-import net.momirealms.craftengine.core.item.modifier.ArgumentModifier;
+import net.momirealms.craftengine.core.item.modifier.ArgumentsModifier;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -77,7 +77,7 @@ public final class ModernNetworkItemHandler implements NetworkItemHandler<ItemSt
                 return new OtherItem(wrapped, hasDifferentMaterial).process();
             } else {
                 CompoundTag customData = Optional.ofNullable(wrapped.getSparrowNBTComponent(ComponentTypes.CUSTOM_DATA)).map(CompoundTag.class::cast).orElse(new CompoundTag());
-                CompoundTag arguments = customData.getCompound(ArgumentModifier.ARGUMENTS_TAG);
+                CompoundTag arguments = customData.getCompound(ArgumentsModifier.ARGUMENTS_TAG);
                 ItemBuildContext context;
                 if (arguments == null) {
                     context = ItemBuildContext.of(player);

@@ -204,4 +204,12 @@ public final class ResourceConfigUtils {
             }
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> getAsMap(Object obj, String option) {
+        if (obj instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        throw new LocalizedResourceConfigException("warning.config.type.map", String.valueOf(obj), option);
+    }
 }

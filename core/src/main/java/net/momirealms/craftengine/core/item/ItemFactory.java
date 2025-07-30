@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
@@ -215,4 +216,6 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract boolean isDyeItem(W item);
 
     protected abstract Optional<Color> dyeColor(W item);
+
+    protected abstract void attributeModifiers(W item, List<AttributeModifier> modifiers);
 }
