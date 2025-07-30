@@ -548,10 +548,10 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
         }, "dynamic-lore");
         registerDataType((obj) -> {
             if (obj instanceof Integer integer) {
-                return new DyedColorModifier<>(integer);
+                return new DyedColorModifier<>(Color.fromDecimal(integer));
             } else {
                 Vector3f vector3f = MiscUtils.getAsVector3f(obj, "dyed-color");
-                return new DyedColorModifier<>(0 << 24 /*不可省略*/ | MCUtils.fastFloor(vector3f.x) << 16 | MCUtils.fastFloor(vector3f.y) << 8 | MCUtils.fastFloor(vector3f.z));
+                return new DyedColorModifier<>(Color.fromVector3f(vector3f));
             }
         }, "dyed-color");
         registerDataType((obj) -> {

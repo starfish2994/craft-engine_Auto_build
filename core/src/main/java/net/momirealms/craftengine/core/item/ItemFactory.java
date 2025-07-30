@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.AdventureHelper;
+import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.UniqueKey;
 import net.momirealms.sparrow.nbt.Tag;
@@ -135,9 +136,9 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract void damage(W item, Integer damage);
 
-    protected abstract Optional<Integer> dyedColor(W item);
+    protected abstract Optional<Color> dyedColor(W item);
 
-    protected abstract void dyedColor(W item, Integer color);
+    protected abstract void dyedColor(W item, Color color);
 
     protected abstract int maxDamage(W item);
 
@@ -210,4 +211,8 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
     protected abstract boolean isEmpty(W item);
 
     protected abstract UniqueKey recipeIngredientID(W item);
+
+    protected abstract boolean isDyeItem(W item);
+
+    protected abstract Optional<Color> dyeColor(W item);
 }

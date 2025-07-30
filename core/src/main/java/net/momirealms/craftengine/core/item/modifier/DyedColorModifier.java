@@ -4,14 +4,15 @@ import net.momirealms.craftengine.core.item.ComponentKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.NetworkItemHandler;
+import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.sparrow.nbt.CompoundTag;
 import net.momirealms.sparrow.nbt.Tag;
 
 public class DyedColorModifier<I> implements ItemDataModifier<I> {
-    private final int color;
+    private final Color color;
 
-    public DyedColorModifier(int color) {
+    public DyedColorModifier(Color color) {
         this.color = color;
     }
 

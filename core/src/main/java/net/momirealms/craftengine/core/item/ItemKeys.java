@@ -2,7 +2,7 @@ package net.momirealms.craftengine.core.item;
 
 import net.momirealms.craftengine.core.util.Key;
 
-public class ItemKeys {
+public final class ItemKeys {
     public static final Key AIR = Key.of("minecraft:air");
     public static final Key FLINT_AND_STEEL = Key.of("minecraft:flint_and_steel");
     public static final Key STONE = Key.of("minecraft:stone");
@@ -44,6 +44,22 @@ public class ItemKeys {
     public static final Key GLOWSTONE = Key.of("minecraft:glowstone");
     public static final Key SADDLE = Key.of("minecraft:saddle");
     public static final Key HARNESS = Key.of("minecraft:harness");
+    public static final Key WHITE_DYE = Key.of("minecraft:white_dye");
+    public static final Key ORANGE_DYE = Key.of("minecraft:orange_dye");
+    public static final Key MAGENTA_DYE = Key.of("minecraft:magenta_dye");
+    public static final Key LIGHT_BLUE_DYE = Key.of("minecraft:light_blue_dye");
+    public static final Key YELLOW_DYE = Key.of("minecraft:yellow_dye");
+    public static final Key LIME_DYE = Key.of("minecraft:lime_dye");
+    public static final Key PINK_DYE = Key.of("minecraft:pink_dye");
+    public static final Key GRAY_DYE = Key.of("minecraft:gray_dye");
+    public static final Key LIGHT_GRAY_DYE = Key.of("minecraft:light_gray_dye");
+    public static final Key CYAN_DYE = Key.of("minecraft:cyan_dye");
+    public static final Key PURPLE_DYE = Key.of("minecraft:purple_dye");
+    public static final Key BLUE_DYE = Key.of("minecraft:blue_dye");
+    public static final Key BROWN_DYE = Key.of("minecraft:brown_dye");
+    public static final Key GREEN_DYE = Key.of("minecraft:green_dye");
+    public static final Key RED_DYE = Key.of("minecraft:red_dye");
+    public static final Key BLACK_DYE = Key.of("minecraft:black_dye");
 
     public static final Key[] AXES = new Key[] {
             WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE

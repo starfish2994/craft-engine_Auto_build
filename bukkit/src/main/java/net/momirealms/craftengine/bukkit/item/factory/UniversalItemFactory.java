@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.item.data.FireworkExplosion;
 import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.modifier.IdModifier;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.SkullUtils;
 import net.momirealms.sparrow.nbt.Tag;
@@ -169,17 +170,17 @@ public class UniversalItemFactory extends BukkitItemFactory<LegacyItemWrapper> {
     }
 
     @Override
-    protected Optional<Integer> dyedColor(LegacyItemWrapper item) {
+    protected Optional<Color> dyedColor(LegacyItemWrapper item) {
         if (!item.hasTag("display", "color")) return Optional.empty();
-        return Optional.of(item.getJavaTag("display", "color"));
+        return Optional.of(Color.fromDecimal(item.getJavaTag("display", "color")));
     }
 
     @Override
-    protected void dyedColor(LegacyItemWrapper item, Integer color) {
+    protected void dyedColor(LegacyItemWrapper item, Color color) {
         if (color == null) {
             item.remove("display", "color");
         } else {
-            item.setTag(color, "display", "color");
+            item.setTag(color.color(), "display", "color");
         }
     }
 

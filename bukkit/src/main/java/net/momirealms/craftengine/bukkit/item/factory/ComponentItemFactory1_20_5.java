@@ -14,6 +14,7 @@ import net.momirealms.craftengine.core.item.data.Enchantment;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
 import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.sparrow.nbt.CompoundTag;
@@ -386,23 +387,23 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
-    protected Optional<Integer> dyedColor(ComponentItemWrapper item) {
+    protected Optional<Color> dyedColor(ComponentItemWrapper item) {
         if (!item.hasComponent(ComponentTypes.DYED_COLOR)) return Optional.empty();
         Object javaObj = getJavaComponent(item, ComponentTypes.DYED_COLOR);
         if (javaObj instanceof Integer integer) {
-            return Optional.of(integer);
+            return Optional.of(Color.fromDecimal(integer));
         } else if (javaObj instanceof Map<?, ?> map) {
-            return Optional.of((int) map.get("rgb"));
+            return Optional.of(Color.fromDecimal((int) map.get("rgb")));
         }
         return Optional.empty();
     }
 
     @Override
-    protected void dyedColor(ComponentItemWrapper item, Integer color) {
+    protected void dyedColor(ComponentItemWrapper item, Color color) {
         if (color == null) {
             item.resetComponent(ComponentTypes.DYED_COLOR);
         } else {
-            item.setJavaComponent(ComponentTypes.DYED_COLOR, color);
+            item.setJavaComponent(ComponentTypes.DYED_COLOR, color.color());
         }
     }
 

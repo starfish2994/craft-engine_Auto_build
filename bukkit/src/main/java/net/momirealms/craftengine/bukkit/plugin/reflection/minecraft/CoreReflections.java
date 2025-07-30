@@ -3896,4 +3896,11 @@ public final class CoreReflections {
             throw new ReflectionInitException("Failed to initialize SnowLayerBlock$LAYERS", e);
         }
     }
+
+    public static final Class<?> clazz$DyeItem = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.item.ItemDye",
+                    "world.item.DyeItem"
+            )
+    );
 }

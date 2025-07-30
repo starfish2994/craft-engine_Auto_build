@@ -9,6 +9,7 @@ import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.data.Trim;
 import net.momirealms.craftengine.core.item.modifier.ItemDataModifier;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
+import net.momirealms.craftengine.core.util.Color;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.UniqueKey;
 import net.momirealms.sparrow.nbt.Tag;
@@ -69,9 +70,10 @@ public interface Item<I> {
 
     int maxDamage();
 
-    Item<I> dyedColor(Integer data);
+    // todo 考虑部分版本的show in tooltip保留
+    Item<I> dyedColor(Color data);
 
-    Optional<Integer> dyedColor();
+    Optional<Color> dyedColor();
 
     Item<I> fireworkExplosion(FireworkExplosion explosion);
 
@@ -208,4 +210,8 @@ public interface Item<I> {
     }
 
     byte[] toByteArray();
+
+    boolean isDyeItem();
+
+    Optional<Color> dyeColor();
 }
