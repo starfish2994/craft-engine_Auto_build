@@ -21,12 +21,16 @@ import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenera
 import net.momirealms.craftengine.core.pack.model.generation.ModelGeneration;
 import net.momirealms.craftengine.core.pack.model.select.ChargeTypeSelectProperty;
 import net.momirealms.craftengine.core.pack.model.select.TrimMaterialSelectProperty;
+import net.momirealms.craftengine.core.pack.obfuscation.ResourcePackGenerationException;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigParser;
+import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.context.event.EventFunctions;
+import net.momirealms.craftengine.core.plugin.context.event.EventTrigger;
 import net.momirealms.craftengine.core.plugin.context.text.TextProvider;
 import net.momirealms.craftengine.core.plugin.context.text.TextProviders;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedException;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.plugin.locale.TranslationManager;
 import net.momirealms.craftengine.core.util.*;
@@ -334,6 +338,8 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
                 throw new LocalizedResourceConfigException("warning.config.item.duplicate");
             }
 
+            ExceptionCollector<LocalizedResourceConfigException> collector = new ExceptionCollector<>();
+
             UniqueKey uniqueId = UniqueKey.create(id);
             // 判断是不是原版物品
             boolean isVanillaItem = isVanillaItem(id);
@@ -381,21 +387,43 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             }
 
             // 应用物品数据
-            applyDataFunctions(MiscUtils.castToMap(section.get("data"), true), itemBuilder::dataModifier);
-            applyDataFunctions(MiscUtils.castToMap(section.get("client-bound-data"), true), itemBuilder::clientBoundDataModifier);
-
+            try {
+                applyDataFunctions(MiscUtils.castToMap(section.get("data"), true), itemBuilder::dataModifier);
+            } catch (LocalizedResourceConfigException e) {
+                collector.add(e);
+            }
+           try {
+               applyDataFunctions(MiscUtils.castToMap(section.get("client-bound-data"), true), itemBuilder::clientBoundDataModifier);
+           } catch (LocalizedResourceConfigException e) {
+               collector.add(e);
+           }
             // 如果不是原版物品，那么加入ce的标识符
             if (!isVanillaItem)
                 itemBuilder.dataModifier(new IdModifier<>(id));
 
+            Map<EventTrigger, List<net.momirealms.craftengine.core.plugin.context.function.Function<PlayerOptionalContext>>> eventTriggerListMap;
+            try {
+                eventTriggerListMap = EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event"));
+            } catch (LocalizedResourceConfigException e) {
+                collector.add(e);
+                eventTriggerListMap = Map.of();
+            }
+
+            ItemSettings settings;
+            try {
+                settings = Optional.ofNullable(ResourceConfigUtils.get(section, "settings"))
+                        .map(map -> ItemSettings.fromMap(MiscUtils.castToMap(map, true)))
+                        .map(it -> isVanillaItem ? it.canPlaceRelatedVanillaBlock(true) : it)
+                        .orElse(ItemSettings.of().canPlaceRelatedVanillaBlock(isVanillaItem));
+            } catch (LocalizedResourceConfigException e) {
+                collector.add(e);
+                settings = ItemSettings.of().canPlaceRelatedVanillaBlock(isVanillaItem);
+            }
             // 构建自定义物品
             CustomItem<I> customItem = itemBuilder
                     .behaviors(ItemBehaviors.fromObj(pack, path, id, ResourceConfigUtils.get(section, "behavior", "behaviors")))
-                    .settings(Optional.ofNullable(ResourceConfigUtils.get(section, "settings"))
-                            .map(map -> ItemSettings.fromMap(MiscUtils.castToMap(map, true)))
-                            .map(it -> isVanillaItem ? it.canPlaceRelatedVanillaBlock(true) : it)
-                            .orElse(ItemSettings.of().canPlaceRelatedVanillaBlock(isVanillaItem)))
-                    .events(EventFunctions.parseEvents(ResourceConfigUtils.get(section, "events", "event")))
+                    .settings(settings)
+                    .events(eventTriggerListMap)
                     .build();
             // 添加到缓存
             addCustomItem(customItem);
@@ -404,6 +432,9 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             if (section.containsKey("category")) {
                 AbstractItemManager.this.plugin.itemBrowserManager().addExternalCategoryMember(id, MiscUtils.getAsStringList(section.get("category")).stream().map(Key::of).toList());
             }
+
+            // 抛出异常
+            collector.throwIfPresent();
 
             // 模型配置区域，如果这里被配置了，那么用户必须要配置custom-model-data或item-model
             Map<String, Object> modelSection = MiscUtils.castToMap(section.get("model"), true);
