@@ -481,14 +481,4 @@ public class AbstractItem<W extends ItemWrapper<I>, I> implements Item<I> {
     public void shrink(int amount) {
         this.item.shrink(amount);
     }
-
-    @Override
-    public boolean isDyeItem() {
-        return this.factory.isDyeItem(this.item);
-    }
-
-    @Override
-    public Optional<Color> dyeColor() {
-        return this.factory.dyeColor(this.item);
-    }
 }

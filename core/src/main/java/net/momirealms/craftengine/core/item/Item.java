@@ -214,7 +214,33 @@ public interface Item<I> {
 
     byte[] toByteArray();
 
-    boolean isDyeItem();
-
-    Optional<Color> dyeColor();
+    default Item<I> applyDyedColors(List<Color> colors) {
+        int totalRed = 0;
+        int totalGreen = 0;
+        int totalBlue = 0;
+        int totalMaxComponent = 0;
+        int colorCount = 0;
+        Optional<Color> existingColor = dyedColor();
+        existingColor.ifPresent(colors::add);
+        for (Color color : colors) {
+            int dyeRed = color.r();
+            int dyeGreen = color.g();
+            int dyeBlue = color.b();
+            totalMaxComponent += Math.max(dyeRed, Math.max(dyeGreen, dyeBlue));
+            totalRed += dyeRed;
+            totalGreen += dyeGreen;
+            totalBlue += dyeBlue;
+            ++colorCount;
+        }
+        int avgRed = totalRed / colorCount;
+        int avgGreen = totalGreen / colorCount;
+        int avgBlue = totalBlue / colorCount;
+        float avgMaxComponent = (float) totalMaxComponent / (float)colorCount;
+        float currentMaxComponent = (float) Math.max(avgRed, Math.max(avgGreen, avgBlue));
+        avgRed = (int) ((float) avgRed * avgMaxComponent / currentMaxComponent);
+        avgGreen = (int) ((float) avgGreen * avgMaxComponent / currentMaxComponent);
+        avgBlue = (int) ((float) avgBlue * avgMaxComponent / currentMaxComponent);
+        Color finalColor = new Color(0, avgRed, avgGreen, avgBlue);
+        return dyedColor(finalColor);
+    }
 }

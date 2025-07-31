@@ -342,7 +342,7 @@ public class RecipeEventListener implements Listener {
         try {
             @SuppressWarnings("unchecked")
             Optional<Object> optionalMCRecipe = FastNMS.INSTANCE.method$RecipeManager$getRecipeFor(
-                    BukkitRecipeManager.nmsRecipeManager(),
+                    BukkitRecipeManager.minecraftRecipeManager(),
                     MRecipeTypes.CAMPFIRE_COOKING,
                     CoreReflections.constructor$SingleRecipeInput.newInstance(FastNMS.INSTANCE.method$CraftItemStack$asNMSCopy(itemStack)),
                     FastNMS.INSTANCE.field$CraftWorld$ServerLevel(event.getPlayer().getWorld()),
@@ -699,7 +699,11 @@ public class RecipeEventListener implements Listener {
         }
 
         try {
+            // TODO 全部改注入
             Object mcRecipe = CraftBukkitReflections.field$CraftComplexRecipe$recipe.get(complexRecipe);
+            if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
+                return;
+            }
 
             // Repair recipe
             if (CoreReflections.clazz$RepairItemRecipe.isInstance(mcRecipe)) {
@@ -745,8 +749,6 @@ public class RecipeEventListener implements Listener {
                 int newItemDamage = Math.max(0, newItem.maxDamage() - remainingDurability);
                 newItem.damage(newItemDamage);
                 inventory.setResult(newItem.getItem());
-            } else if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
-                handlePossibleDyeRecipe(event, false);
             } else if (CoreReflections.clazz$FireworkStarFadeRecipe.isInstance(mcRecipe)) {
                 ItemStack[] itemStacks = inventory.getMatrix();
                 for (ItemStack itemStack : itemStacks) {
@@ -823,29 +825,6 @@ public class RecipeEventListener implements Listener {
             player.getScheduler().run(this.plugin.javaPlugin(), (t) -> delayedTask.run(), () -> {});
         } else {
             this.plugin.scheduler().sync().runDelayed(delayedTask);
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onDyeRecipe(PrepareItemCraftEvent event) {
-        org.bukkit.inventory.Recipe recipe = event.getRecipe();
-        if (recipe != null) {
-            return;
-        }
-        handlePossibleDyeRecipe(event, true);
-    }
-
-    private void handlePossibleDyeRecipe(PrepareItemCraftEvent event, boolean correct) {
-        // dye recipe
-        CraftingInventory inventory = event.getInventory();
-        CraftingInput<ItemStack> input = getCraftingInput(inventory);
-        if (input == null) return;
-        if (BukkitRecipeManager.DYE_RECIPE.matches(input)) {
-            Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
-            event.getInventory().setResult(BukkitRecipeManager.DYE_RECIPE.assemble(input, ItemBuildContext.of(this.plugin.adapt(player))));
-            if (correct) {
-                correctCraftingRecipeUsed(inventory, BukkitRecipeManager.DYE_RECIPE);
-            }
         }
     }
 

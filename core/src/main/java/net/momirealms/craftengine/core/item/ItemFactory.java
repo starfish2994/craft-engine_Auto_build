@@ -213,9 +213,5 @@ public abstract class ItemFactory<W extends ItemWrapper<I>, I> {
 
     protected abstract UniqueKey recipeIngredientID(W item);
 
-    protected abstract boolean isDyeItem(W item);
-
-    protected abstract Optional<Color> dyeColor(W item);
-
     protected abstract void attributeModifiers(W item, List<AttributeModifier> modifiers);
 }

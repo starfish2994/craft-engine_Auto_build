@@ -9,6 +9,8 @@ import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.item.CloneableConstantItem;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.plugin.injector.RecipeInjector;
+import net.momirealms.craftengine.bukkit.plugin.reflection.ReflectionInitException;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MRegistries;
@@ -36,25 +38,70 @@ import java.io.Reader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private static BukkitRecipeManager instance;
 
+    // TODO 需要重构整个 recipe manager
+
+    private static final Object MINECRAFT_RECIPE_MANAGER;
+    private static final Object MINECRAFT_RECIPE_MAP;
+
+    static {
+        try {
+            MINECRAFT_RECIPE_MANAGER = CoreReflections.method$MinecraftServer$getRecipeManager.invoke(CoreReflections.method$MinecraftServer$getServer.invoke(null));
+            MINECRAFT_RECIPE_MAP = VersionHelper.isOrAbove1_21_2() ? CoreReflections.field$RecipeManager$recipes.get(MINECRAFT_RECIPE_MANAGER) : null;
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to initialize recipe manager", e);
+        }
+    }
+
+    private static final Consumer<Key> MINECRAFT_RECIPE_REMOVER = VersionHelper.isOrAbove1_21_2() ?
+            (id -> {
+                Object resourceKey = toRecipeResourceKey(id);
+                FastNMS.INSTANCE.method$RecipeMap$removeRecipe(MINECRAFT_RECIPE_MAP, resourceKey);
+            }) :
+            (id -> {
+                Object resourceLocation = KeyUtils.toResourceLocation(id);
+                FastNMS.INSTANCE.method$RecipeManager$removeRecipe(MINECRAFT_RECIPE_MANAGER, resourceLocation);
+            });
+    private static final BiConsumer<Key, Object> MINECRAFT_RECIPE_ADDER =
+            VersionHelper.isOrAbove1_21_2() ?
+            (id, recipe) -> {
+                Object resourceKey = toRecipeResourceKey(id);
+                Object recipeHolder = FastNMS.INSTANCE.constructor$RecipeHolder(resourceKey, recipe);
+                FastNMS.INSTANCE.method$RecipeManager$addRecipe(MINECRAFT_RECIPE_MANAGER, recipeHolder);
+            } :
+            VersionHelper.isOrAbove1_20_2() ?
+            (id, recipe) -> {
+                Object resourceLocation = KeyUtils.toResourceLocation(id);
+                Object recipeHolder = FastNMS.INSTANCE.constructor$RecipeHolder(resourceLocation, recipe);
+                FastNMS.INSTANCE.method$RecipeManager$addRecipe(MINECRAFT_RECIPE_MANAGER, recipeHolder);
+            } :
+            (id, recipe) -> {
+                FastNMS.INSTANCE.method$RecipeManager$addRecipe(MINECRAFT_RECIPE_MANAGER, recipe);
+            };
+
+    static {
+        try {
+            Key dyeRecipeId = Key.from("armor_dye");
+            MINECRAFT_RECIPE_REMOVER.accept(dyeRecipeId);
+            MINECRAFT_RECIPE_ADDER.accept(dyeRecipeId, RecipeInjector.createCustomDyeRecipe());
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to inject dye recipes", e);
+        }
+    }
+
+    private static final List<Object> injectedIngredients = new ArrayList<>();
     // 将自定义配方转为“广义”配方，接受更加宽容的输入
     // 部分过程借助bukkit完成，部分直接通过nms方法注册
     private static final Map<Key, BukkitRecipeConvertor<? extends Recipe<ItemStack>>> MIXED_RECIPE_CONVERTORS = new HashMap<>();
-    private static final List<Object> injectedIngredients = new ArrayList<>();
-    private static final IdentityHashMap<Recipe<ItemStack>, Object> CE_RECIPE_2_NMS_HOLDER = new IdentityHashMap<>();
-    public static final CustomDyeRecipe<ItemStack> DYE_RECIPE = new CustomDyeRecipe<>();
-    private static Object nmsRecipeManager;
+    private static final IdentityHashMap<Recipe<ItemStack>, Object> MINECRAFT_RECIPE_HOLDER_BY_RECIPE = new IdentityHashMap<>();
 
-    private static void registerNMSSmithingRecipe(Object recipe) {
-        try {
-            CoreReflections.method$RecipeManager$addRecipe.invoke(nmsRecipeManager(), recipe);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            CraftEngine.instance().logger().warn("Failed to register smithing recipe", e);
-        }
+    public static Object toRecipeResourceKey(Key id) {
+        return FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.RECIPE, KeyUtils.toResourceLocation(id));
     }
 
     private static void registerBukkitShapedRecipe(Object recipe) {
@@ -124,17 +171,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRANSFORM, (BukkitRecipeConvertor<CustomSmithingTransformRecipe<ItemStack>>) (id, recipe) -> {
             try {
                 Object nmsRecipe = createMinecraftSmithingTransformRecipe(recipe);
-                if (VersionHelper.isOrAbove1_21_2()) {
-                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(
-                            CraftBukkitReflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value())), nmsRecipe);
-                } else if (VersionHelper.isOrAbove1_20_2()) {
-                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
-                } else {
-                    Object finalNmsRecipe0 = nmsRecipe;
-                    return () -> registerNMSSmithingRecipe(finalNmsRecipe0);
-                }
-                Object finalNmsRecipe = nmsRecipe;
-                return () -> registerNMSSmithingRecipe(finalNmsRecipe);
+                return () -> MINECRAFT_RECIPE_ADDER.accept(id, nmsRecipe);
             } catch (InvalidRecipeIngredientException e) {
                 throw e;
             } catch (Exception e) {
@@ -145,17 +182,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRIM, (BukkitRecipeConvertor<CustomSmithingTrimRecipe<ItemStack>>) (id, recipe) -> {
             try {
                 Object nmsRecipe = createMinecraftSmithingTrimRecipe(recipe);
-                if (VersionHelper.isOrAbove1_21_2()) {
-                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(
-                            CraftBukkitReflections.method$CraftRecipe$toMinecraft.invoke(null, new NamespacedKey(id.namespace(), id.value())), nmsRecipe);
-                } else if (VersionHelper.isOrAbove1_20_2()) {
-                    nmsRecipe = CoreReflections.constructor$RecipeHolder.newInstance(KeyUtils.toResourceLocation(id), nmsRecipe);
-                } else {
-                    Object finalNmsRecipe0 = nmsRecipe;
-                    return () -> registerNMSSmithingRecipe(finalNmsRecipe0);
-                }
-                Object finalNmsRecipe = nmsRecipe;
-                return () -> registerNMSSmithingRecipe(finalNmsRecipe);
+                return () -> MINECRAFT_RECIPE_ADDER.accept(id, nmsRecipe);
             } catch (InvalidRecipeIngredientException e) {
                 throw e;
             } catch (Exception e) {
@@ -281,20 +308,15 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         this.plugin = plugin;
         this.recipeEventListener = new RecipeEventListener(plugin, this, plugin.itemManager());
         this.crafterEventListener = VersionHelper.isOrAbove1_21() ? new CrafterEventListener(plugin, this, plugin.itemManager()) : null;
-        try {
-            nmsRecipeManager = CoreReflections.method$MinecraftServer$getRecipeManager.invoke(CoreReflections.method$MinecraftServer$getServer.invoke(null));
-        } catch (ReflectiveOperationException e) {
-            plugin.logger().warn("Failed to get minecraft recipe manager", e);
-        }
     }
 
     public Object nmsRecipeHolderByRecipe(Recipe<ItemStack> recipe) {
         if (super.isReloading) return null;
-        return CE_RECIPE_2_NMS_HOLDER.get(recipe);
+        return MINECRAFT_RECIPE_HOLDER_BY_RECIPE.get(recipe);
     }
 
-    public static Object nmsRecipeManager() {
-        return nmsRecipeManager;
+    public static Object minecraftRecipeManager() {
+        return MINECRAFT_RECIPE_MANAGER;
     }
 
     public static BukkitRecipeManager instance() {
@@ -315,8 +337,8 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         super.isReloading = true;
         if (VersionHelper.isOrAbove1_21_2()) {
             try {
-                this.stolenFeatureFlagSet = CoreReflections.field$RecipeManager$featureflagset.get(nmsRecipeManager);
-                CoreReflections.field$RecipeManager$featureflagset.set(nmsRecipeManager, null);
+                this.stolenFeatureFlagSet = CoreReflections.field$RecipeManager$featureflagset.get(MINECRAFT_RECIPE_MANAGER);
+                CoreReflections.field$RecipeManager$featureflagset.set(MINECRAFT_RECIPE_MANAGER, null);
             } catch (ReflectiveOperationException e) {
                 this.plugin.logger().warn("Failed to steal featureflagset", e);
             }
@@ -347,7 +369,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void disable() {
         unload();
-        CE_RECIPE_2_NMS_HOLDER.clear();
+        MINECRAFT_RECIPE_HOLDER_BY_RECIPE.clear();
         // 不是服务器关闭造成disable，那么需要把配方卸载干净
         if (!Bukkit.isStopping()) {
             for (Runnable task : this.delayedTasksOnMainThread) {
@@ -365,7 +387,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (isBrewingRecipe) {
             Bukkit.getPotionBrewer().removePotionMix(new NamespacedKey(key.namespace(), key.value()));
         } else {
-            unregisterNMSRecipe(new NamespacedKey(key.namespace(), key.value()));
+            MINECRAFT_RECIPE_REMOVER.accept(key);
         }
     }
 
@@ -404,19 +426,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @SuppressWarnings("unchecked")
     private <T extends Recipe<ItemStack>> BukkitRecipeConvertor<T> findNMSRecipeConvertor(T recipe) {
         return (BukkitRecipeConvertor<T>) MIXED_RECIPE_CONVERTORS.get(recipe.type());
-    }
-
-    private void unregisterNMSRecipe(NamespacedKey key) {
-        try {
-            if (VersionHelper.isOrAbove1_21_2()) {
-                Object recipeMap = CoreReflections.field$RecipeManager$recipes.get(nmsRecipeManager);
-                CoreReflections.method$RecipeMap$removeRecipe.invoke(recipeMap, CraftBukkitReflections.method$CraftRecipe$toMinecraft.invoke(null, key));
-            } else {
-                Bukkit.removeRecipe(key);
-            }
-        } catch (ReflectiveOperationException e) {
-            CraftEngine.instance().logger().warn("Failed to unregister nms recipes", e);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -501,6 +510,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     @Override
     public void runDelayedSyncTasks() {
         if (!Config.enableRecipeSystem()) return;
+
         try {
             // run delayed tasks
             for (Runnable r : this.delayedTasksOnMainThread) {
@@ -510,13 +520,13 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             // give flags back on 1.21.2+
             if (VersionHelper.isOrAbove1_21_2() && this.stolenFeatureFlagSet != null) {
-                CoreReflections.field$RecipeManager$featureflagset.set(nmsRecipeManager(), this.stolenFeatureFlagSet);
+                CoreReflections.field$RecipeManager$featureflagset.set(minecraftRecipeManager(), this.stolenFeatureFlagSet);
                 this.stolenFeatureFlagSet = null;
             }
 
             // refresh recipes
             if (VersionHelper.isOrAbove1_21_2()) {
-                CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(nmsRecipeManager());
+                CoreReflections.method$RecipeManager$finalizeRecipeLoading.invoke(minecraftRecipeManager());
             }
 
             // send to players
@@ -536,13 +546,12 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             // clear cache
             injectedIngredients.clear();
 
-            CE_RECIPE_2_NMS_HOLDER.clear();
+            MINECRAFT_RECIPE_HOLDER_BY_RECIPE.clear();
             // create mappings
             for (Map.Entry<Key, Recipe<ItemStack>> entry : this.byId.entrySet()) {
                 Optional<Object> nmsRecipe = getOptionalNMSRecipe(entry.getKey());
-                nmsRecipe.ifPresent(o -> CE_RECIPE_2_NMS_HOLDER.put(entry.getValue(), o));
+                nmsRecipe.ifPresent(o -> MINECRAFT_RECIPE_HOLDER_BY_RECIPE.put(entry.getValue(), o));
             }
-            CE_RECIPE_2_NMS_HOLDER.put(DYE_RECIPE, getOptionalNMSRecipe(CustomDyeRecipe.ID).orElseThrow(() -> new IllegalStateException("DyeRecipe not found")));
             super.isReloading = false;
         } catch (Exception e) {
             this.plugin.logger().warn("Failed to run delayed recipe tasks", e);
@@ -568,7 +577,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     private void handleDataPackShapelessRecipe(Key id, VanillaShapelessRecipe recipe, Consumer<Runnable> callback) {
-        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
         ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag = false;
         List<Ingredient<ItemStack>> ingredientList = new ArrayList<>();
@@ -596,7 +604,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
             callback.accept(() -> {
-                unregisterNMSRecipe(key);
+                MINECRAFT_RECIPE_REMOVER.accept(id);
                 converted.run();
             });
         }
@@ -604,7 +612,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     private void handleDataPackShapedRecipe(Key id, VanillaShapedRecipe recipe, Consumer<Runnable> callback) {
-        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
         ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag = false;
         Map<Character, Ingredient<ItemStack>> ingredients = new HashMap<>();
@@ -633,7 +640,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
             callback.accept(() -> {
-                unregisterNMSRecipe(key);
+                MINECRAFT_RECIPE_REMOVER.accept(id);
                 converted.run();
             });
         }
@@ -644,7 +651,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                                              VanillaCookingRecipe recipe,
                                              HeptaFunction<Key, CookingRecipeCategory, String, Ingredient<ItemStack>, Integer, Float, CustomRecipeResult<ItemStack>, CustomCookingRecipe<ItemStack>> constructor2,
                                              Consumer<Runnable> callback) {
-        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
         ItemStack result = createDataPackResultStack(recipe.result());
         Set<UniqueKey> holders = new HashSet<>();
         boolean hasCustomItemInTag = readVanillaIngredients(false, recipe.ingredient(), holders::add);
@@ -657,7 +663,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
             callback.accept(() -> {
-                unregisterNMSRecipe(key);
+                MINECRAFT_RECIPE_REMOVER.accept(id);
                 converted.run();
             });
         }
@@ -665,7 +671,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     private void handleDataPackSmithingTransform(Key id, VanillaSmithingTransformRecipe recipe, Consumer<Runnable> callback) {
-        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
         ItemStack result = createDataPackResultStack(recipe.result());
         boolean hasCustomItemInTag;
 
@@ -689,7 +694,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
             callback.accept(() -> {
-                unregisterNMSRecipe(key);
+                MINECRAFT_RECIPE_REMOVER.accept(id);
                 converted.run();
             });
         }
@@ -697,8 +702,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     private void handleDataPackSmithingTrim(Key id, VanillaSmithingTrimRecipe recipe, Consumer<Runnable> callback) {
-        NamespacedKey key = new NamespacedKey(id.namespace(), id.value());
-
         boolean hasCustomItemInTag;
         Set<UniqueKey> additionHolders = new HashSet<>();
         hasCustomItemInTag = readVanillaIngredients(false, recipe.addition(), additionHolders::add);
@@ -718,7 +721,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (hasCustomItemInTag) {
             Runnable converted = findNMSRecipeConvertor(ceRecipe).convert(id, ceRecipe);
             callback.accept(() -> {
-                unregisterNMSRecipe(key);
+                MINECRAFT_RECIPE_REMOVER.accept(id);
                 converted.run();
             });
         }
@@ -883,12 +886,12 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         if (VersionHelper.isOrAbove1_21_2()) {
             Object resourceKey = FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.RECIPE, KeyUtils.toResourceLocation(id));
             @SuppressWarnings("unchecked")
-            Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceKey);
+            Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(MINECRAFT_RECIPE_MANAGER, resourceKey);
             return optional;
         } else {
             Object resourceLocation = KeyUtils.toResourceLocation(id);
             @SuppressWarnings("unchecked")
-            Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(nmsRecipeManager, resourceLocation);
+            Optional<Object> optional = (Optional<Object>) CoreReflections.method$RecipeManager$byKey.invoke(MINECRAFT_RECIPE_MANAGER, resourceLocation);
             return optional;
         }
     }
