@@ -468,7 +468,7 @@ public class ItemEventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof org.bukkit.entity.Item item) {
-            Optional.ofNullable(this.plugin.itemManager().wrap(item.getItemStack()))
+            Optional.of(this.plugin.itemManager().wrap(item.getItemStack()))
                     .flatMap(Item::getCustomItem)
                     .ifPresent(it -> {
                         if (it.settings().invulnerable().contains(DamageCauseUtils.fromBukkit(event.getCause()))) {

@@ -60,6 +60,7 @@ public final class ItemKeys {
     public static final Key GREEN_DYE = Key.of("minecraft:green_dye");
     public static final Key RED_DYE = Key.of("minecraft:red_dye");
     public static final Key BLACK_DYE = Key.of("minecraft:black_dye");
+    public static final Key FIREWORK_STAR = Key.of("minecraft:firework_star");
 
     public static final Key[] AXES = new Key[] {
             WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE

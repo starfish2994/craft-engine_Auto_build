@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class ItemSettings {
     int fuelTime;
     Set<Key> tags = Set.of();
-    boolean canRepair = true;
+    Tristate canRepair = Tristate.UNDEFINED;
     List<AnvilRepairItem> anvilRepairItems = List.of();
     boolean renameable = true;
     boolean canPlaceRelatedVanillaBlock = false;
@@ -43,6 +43,8 @@ public class ItemSettings {
     ItemEquipment equipment;
     @Nullable
     Color dyeColor;
+    @Nullable
+    Color fireworkColor;
 
     private ItemSettings() {}
 
@@ -102,6 +104,7 @@ public class ItemSettings {
         newSettings.compostProbability = settings.compostProbability;
         newSettings.respectRepairableComponent = settings.respectRepairableComponent;
         newSettings.dyeColor = settings.dyeColor;
+        newSettings.fireworkColor = settings.fireworkColor;
         return newSettings;
     }
 
@@ -125,7 +128,7 @@ public class ItemSettings {
         return canPlaceRelatedVanillaBlock;
     }
 
-    public boolean canRepair() {
+    public Tristate canRepair() {
         return canRepair;
     }
 
@@ -184,7 +187,12 @@ public class ItemSettings {
 
     @Nullable
     public Color dyeColor() {
-        return dyeColor;
+        return this.dyeColor;
+    }
+
+    @Nullable
+    public Color fireworkColor() {
+        return this.fireworkColor;
     }
 
     public List<DamageSource> invulnerable() {
@@ -193,6 +201,11 @@ public class ItemSettings {
 
     public float compostProbability() {
         return compostProbability;
+    }
+
+    public ItemSettings fireworkColor(Color color) {
+        this.fireworkColor = color;
+        return this;
     }
 
     public ItemSettings dyeColor(Color color) {
@@ -220,7 +233,7 @@ public class ItemSettings {
         return this;
     }
 
-    public ItemSettings canRepair(boolean canRepair) {
+    public ItemSettings canRepair(Tristate canRepair) {
         this.canRepair = canRepair;
         return this;
     }
@@ -303,7 +316,7 @@ public class ItemSettings {
         static {
             registerFactory("repairable", (value -> {
                 boolean bool = ResourceConfigUtils.getAsBoolean(value, "repairable");
-                return settings -> settings.canRepair(bool);
+                return settings -> settings.canRepair(bool ? Tristate.TRUE : Tristate.FALSE);
             }));
             registerFactory("enchantable", (value -> {
                 boolean bool = ResourceConfigUtils.getAsBoolean(value, "enchantable");
@@ -414,6 +427,13 @@ public class ItemSettings {
                     return settings -> settings.dyeColor(Color.fromDecimal(i));
                 } else {
                     return settings -> settings.dyeColor(Color.fromVector3f(MiscUtils.getAsVector3f(value, "dye-color")));
+                }
+            }));
+            registerFactory("firework-color", (value -> {
+                if (value instanceof Integer i) {
+                    return settings -> settings.fireworkColor(Color.fromDecimal(i));
+                } else {
+                    return settings -> settings.fireworkColor(Color.fromVector3f(MiscUtils.getAsVector3f(value, "firework-color")));
                 }
             }));
             registerFactory("food", (value -> {

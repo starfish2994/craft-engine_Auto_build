@@ -481,7 +481,7 @@ public class RecipeEventListener implements Listener {
 
         // 如果禁止在铁砧使用两个相同物品修复
         firstCustom.ifPresent(it -> {
-            if (!it.settings().canRepair()) {
+            if (it.settings().canRepair() == Tristate.FALSE) {
                 event.setResult(null);
             }
         });
@@ -522,7 +522,7 @@ public class RecipeEventListener implements Listener {
         Key firstId = wrappedFirst.id();
         Optional<CustomItem<ItemStack>> optionalCustomTool = wrappedFirst.getCustomItem();
         // 物品无法被修复
-        if (optionalCustomTool.isPresent() && !optionalCustomTool.get().settings().canRepair()) {
+        if (optionalCustomTool.isPresent() && optionalCustomTool.get().settings().canRepair() == Tristate.FALSE) {
             return;
         }
 
@@ -679,93 +679,52 @@ public class RecipeEventListener implements Listener {
     }
 
     // only handle repair items for the moment
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onSpecialRecipe(PrepareItemCraftEvent event) {
-//        if (!ConfigManager.enableRecipeSystem()) return;
         org.bukkit.inventory.Recipe recipe = event.getRecipe();
-        if (recipe == null)
-            return;
         if (!(recipe instanceof ComplexRecipe complexRecipe))
             return;
         CraftingInventory inventory = event.getInventory();
+        ItemStack result = inventory.getResult();
+        if (ItemStackUtils.isEmpty(result))
+            return;
         boolean hasCustomItem = ItemStackUtils.hasCustomItem(inventory.getMatrix());
-        if (!hasCustomItem) {
+        if (!hasCustomItem)
             return;
-        }
-
         if (!CraftBukkitReflections.clazz$CraftComplexRecipe.isInstance(complexRecipe)) {
-            inventory.setResult(null);
             return;
         }
-
         try {
-            // TODO 全部改注入
             Object mcRecipe = CraftBukkitReflections.field$CraftComplexRecipe$recipe.get(complexRecipe);
-            if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe)) {
+            if (CoreReflections.clazz$ArmorDyeRecipe.isInstance(mcRecipe) || CoreReflections.clazz$FireworkStarFadeRecipe.isInstance(mcRecipe)) {
                 return;
             }
-
-            // Repair recipe
+            // 处理修复配方，在此处理才能使用玩家参数构建物品
             if (CoreReflections.clazz$RepairItemRecipe.isInstance(mcRecipe)) {
-                // repair item
-                ItemStack[] itemStacks = inventory.getMatrix();
-                Pair<ItemStack, ItemStack> onlyTwoItems = getTheOnlyTwoItem(itemStacks);
-                if (onlyTwoItems.left() == null || onlyTwoItems.right() == null) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                Item<ItemStack> left = plugin.itemManager().wrap(onlyTwoItems.left());
-                Item<ItemStack> right = plugin.itemManager().wrap(onlyTwoItems.right());
-                if (!left.id().equals(right.id())) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                int totalDamage = right.damage().orElse(0) + left.damage().orElse(0);
-                int totalMaxDamage = left.maxDamage() + right.maxDamage();
-                // should be impossible, but take care
-                if (totalDamage >= totalMaxDamage) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
-
-                Optional<CustomItem<ItemStack>> customItemOptional = plugin.itemManager().getCustomItem(left.id());
+                Pair<ItemStack, ItemStack> theOnlyTwoItem = getTheOnlyTwoItem(inventory.getMatrix());
+                if (theOnlyTwoItem == null) return;
+                Item<ItemStack> first = BukkitItemManager.instance().wrap(theOnlyTwoItem.left());
+                Item<ItemStack> right = BukkitItemManager.instance().wrap(theOnlyTwoItem.right());
+                int max = Math.max(first.maxDamage(), right.maxDamage());
+                int durability1 = first.maxDamage() - first.damage().orElse(0);
+                int durability2 = right.maxDamage() - right.damage().orElse(0);
+                int finalDurability = durability1 + durability2 + max * 5 / 100;
+                Optional<CustomItem<ItemStack>> customItemOptional = plugin.itemManager().getCustomItem(first.id());
                 if (customItemOptional.isEmpty()) {
                     inventory.setResult(null);
                     return;
                 }
-
-                CustomItem<ItemStack> customItem = customItemOptional.get();
-                if (!customItem.settings().canRepair()) {
-                    inventory.setResult(null);
-                    return;
-                }
-
-                Item<ItemStack> newItem = customItem.buildItem(ItemBuildContext.of(plugin.adapt(player)));
-                int remainingDurability = totalMaxDamage - totalDamage;
-                int newItemDamage = Math.max(0, newItem.maxDamage() - remainingDurability);
-                newItem.damage(newItemDamage);
+                Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
+                Item<ItemStack> newItem = customItemOptional.get().buildItem(plugin.adapt(player));
+                newItem.maxDamage(max);
+                newItem.damage(Math.max(max - finalDurability, 0));
                 inventory.setResult(newItem.getItem());
-            } else if (CoreReflections.clazz$FireworkStarFadeRecipe.isInstance(mcRecipe)) {
-                ItemStack[] itemStacks = inventory.getMatrix();
-                for (ItemStack itemStack : itemStacks) {
-                    if (itemStack == null) continue;
-                    Item<ItemStack> item = plugin.itemManager().wrap(itemStack);
-                    Optional<CustomItem<ItemStack>> optionalCustomItem = item.getCustomItem();
-                    if (optionalCustomItem.isPresent() && optionalCustomItem.get().settings().dyeable() == Tristate.FALSE) {
-                        inventory.setResult(null);
-                        return;
-                    }
-                }
-            } else {
-                inventory.setResult(null);
                 return;
             }
+            // 其他配方不允许使用自定义物品
+            inventory.setResult(null);
         } catch (Exception e) {
-            this.plugin.logger().warn("Failed to handle minecraft custom recipe", e);
+            this.plugin.logger().warn("Failed to handle custom recipe", e);
         }
     }
 
@@ -776,7 +735,10 @@ public class RecipeEventListener implements Listener {
             if (itemStack == null) continue;
             if (first == null) {
                 first = itemStack;
-            } else if (second == null) {
+            } else {
+                if (second != null) {
+                    return null;
+                }
                 second = itemStack;
             }
         }

@@ -88,9 +88,15 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         try {
             Key dyeRecipeId = Key.from("armor_dye");
             MINECRAFT_RECIPE_REMOVER.accept(dyeRecipeId);
-            MINECRAFT_RECIPE_ADDER.accept(dyeRecipeId, RecipeInjector.createCustomDyeRecipe());
+            MINECRAFT_RECIPE_ADDER.accept(dyeRecipeId, RecipeInjector.createCustomDyeRecipe(dyeRecipeId));
+            Key repairRecipeId = Key.from("repair_item");
+            MINECRAFT_RECIPE_REMOVER.accept(repairRecipeId);
+            MINECRAFT_RECIPE_ADDER.accept(repairRecipeId, RecipeInjector.createRepairItemRecipe(repairRecipeId));
+            Key fireworkStarFadeRecipeId = Key.from("firework_star_fade");
+            MINECRAFT_RECIPE_REMOVER.accept(fireworkStarFadeRecipeId);
+            MINECRAFT_RECIPE_ADDER.accept(fireworkStarFadeRecipeId, RecipeInjector.createFireworkStarFadeRecipe(fireworkStarFadeRecipeId));
         } catch (ReflectiveOperationException e) {
-            throw new ReflectionInitException("Failed to inject dye recipes", e);
+            throw new ReflectionInitException("Failed to inject special recipes", e);
         }
     }
 
