@@ -56,8 +56,13 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.BREWING;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.BREWING;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.BREWING;
     }
 
     @NotNull

@@ -22,7 +22,7 @@ import java.util.*;
 
 public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     protected final VanillaRecipeReader recipeReader;
-    protected final Map<Key, List<Recipe<T>>> byType = new HashMap<>();
+    protected final Map<RecipeType, List<Recipe<T>>> byType = new HashMap<>();
     protected final Map<Key, Recipe<T>> byId = new HashMap<>();
     protected final Map<Key, List<Recipe<T>>> byResult = new HashMap<>();
     protected final Map<Key, List<Recipe<T>>> byIngredient = new HashMap<>();
@@ -84,7 +84,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
     }
 
     @Override
-    public List<Recipe<T>> recipesByType(Key type) {
+    public List<Recipe<T>> recipesByType(RecipeType type) {
         if (this.isReloading) return List.of();
         return this.byType.getOrDefault(type, List.of());
     }
@@ -103,7 +103,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
 
     @Nullable
     @Override
-    public Recipe<T> recipeByInput(Key type, RecipeInput input) {
+    public Recipe<T> recipeByInput(RecipeType type, RecipeInput input) {
         if (this.isReloading) return null;
         List<Recipe<T>> recipes = this.byType.get(type);
         if (recipes == null) return null;
@@ -117,7 +117,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
 
     @Nullable
     @Override
-    public Recipe<T> recipeByInput(Key type, RecipeInput input, Key lastRecipe) {
+    public Recipe<T> recipeByInput(RecipeType type, RecipeInput input, Key lastRecipe) {
         if (this.isReloading) return null;
         if (lastRecipe != null) {
             Recipe<T> last = this.byId.get(lastRecipe);
@@ -164,7 +164,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
             if (AbstractRecipeManager.this.byId.containsKey(id)) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.duplicate", path, id);
             }
-            Recipe<T> recipe = RecipeTypes.fromMap(id, section);
+            Recipe<T> recipe = RecipeSerializers.fromMap(id, section);
             try {
                 registerInternalRecipe(id, recipe);
                 registerPlatformRecipe(id, recipe);

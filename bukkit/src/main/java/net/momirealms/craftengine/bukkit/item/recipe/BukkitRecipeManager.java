@@ -174,7 +174,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     }
 
     static {
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRANSFORM, (BukkitRecipeConvertor<CustomSmithingTransformRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SMITHING_TRANSFORM, (BukkitRecipeConvertor<CustomSmithingTransformRecipe<ItemStack>>) (id, recipe) -> {
             try {
                 Object nmsRecipe = createMinecraftSmithingTransformRecipe(recipe);
                 return () -> MINECRAFT_RECIPE_ADDER.accept(id, nmsRecipe);
@@ -185,7 +185,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 return null;
             }
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMITHING_TRIM, (BukkitRecipeConvertor<CustomSmithingTrimRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SMITHING_TRIM, (BukkitRecipeConvertor<CustomSmithingTrimRecipe<ItemStack>>) (id, recipe) -> {
             try {
                 Object nmsRecipe = createMinecraftSmithingTrimRecipe(recipe);
                 return () -> MINECRAFT_RECIPE_ADDER.accept(id, nmsRecipe);
@@ -197,7 +197,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             }
         });
         // TODO DO NOT USE BUKKIT RECIPE AS BRIDGE IN FUTURE VERSIONS, WE SHOULD DIRECTLY CONSTRUCT THOSE NMS RECIPES
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SHAPED, (BukkitRecipeConvertor<CustomShapedRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SHAPED, (BukkitRecipeConvertor<CustomShapedRecipe<ItemStack>>) (id, recipe) -> {
             ShapedRecipe shapedRecipe = new ShapedRecipe(new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY));
             if (recipe.group() != null) shapedRecipe.setGroup(Objects.requireNonNull(recipe.group()));
             if (recipe.category() != null) shapedRecipe.setCategory(CraftingBookCategory.valueOf(Objects.requireNonNull(recipe.category()).name()));
@@ -210,7 +210,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectShapedRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SHAPELESS, (BukkitRecipeConvertor<CustomShapelessRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SHAPELESS, (BukkitRecipeConvertor<CustomShapelessRecipe<ItemStack>>) (id, recipe) -> {
             ShapelessRecipe shapelessRecipe = new ShapelessRecipe(new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY));
             if (recipe.group() != null) shapelessRecipe.setGroup(Objects.requireNonNull(recipe.group()));
             if (recipe.category() != null) shapelessRecipe.setCategory(CraftingBookCategory.valueOf(Objects.requireNonNull(recipe.category()).name()));
@@ -222,7 +222,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectShapelessRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMELTING, (BukkitRecipeConvertor<CustomSmeltingRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SMELTING, (BukkitRecipeConvertor<CustomSmeltingRecipe<ItemStack>>) (id, recipe) -> {
             FurnaceRecipe furnaceRecipe = new FurnaceRecipe(
                     new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY),
                     ingredientToBukkitRecipeChoice(recipe.ingredient()),
@@ -235,7 +235,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectCookingRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.SMOKING, (BukkitRecipeConvertor<CustomSmokingRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.SMOKING, (BukkitRecipeConvertor<CustomSmokingRecipe<ItemStack>>) (id, recipe) -> {
             SmokingRecipe smokingRecipe = new SmokingRecipe(
                     new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY),
                     ingredientToBukkitRecipeChoice(recipe.ingredient()),
@@ -248,7 +248,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectCookingRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.BLASTING, (BukkitRecipeConvertor<CustomBlastingRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.BLASTING, (BukkitRecipeConvertor<CustomBlastingRecipe<ItemStack>>) (id, recipe) -> {
             BlastingRecipe blastingRecipe = new BlastingRecipe(
                     new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY),
                     ingredientToBukkitRecipeChoice(recipe.ingredient()),
@@ -261,7 +261,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectCookingRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.CAMPFIRE_COOKING, (BukkitRecipeConvertor<CustomCampfireRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.CAMPFIRE_COOKING, (BukkitRecipeConvertor<CustomCampfireRecipe<ItemStack>>) (id, recipe) -> {
             CampfireRecipe campfireRecipe = new CampfireRecipe(
                     new NamespacedKey(id.namespace(), id.value()), recipe.result(ItemBuildContext.EMPTY),
                     ingredientToBukkitRecipeChoice(recipe.ingredient()),
@@ -274,7 +274,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 injectCookingRecipe(id, recipe);
             };
         });
-        MIXED_RECIPE_CONVERTORS.put(RecipeTypes.STONECUTTING, (BukkitRecipeConvertor<CustomStoneCuttingRecipe<ItemStack>>) (id, recipe) -> {
+        MIXED_RECIPE_CONVERTORS.put(RecipeSerializers.STONECUTTING, (BukkitRecipeConvertor<CustomStoneCuttingRecipe<ItemStack>>) (id, recipe) -> {
             List<ItemStack> itemStacks = new ArrayList<>();
             for (UniqueKey item : recipe.ingredient().items()) {
                 itemStacks.add(BukkitItemManager.instance().buildItemStack(item.key(), null));
@@ -304,10 +304,10 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
     private final BukkitCraftEngine plugin;
     private final RecipeEventListener recipeEventListener;
     private final CrafterEventListener crafterEventListener;
-    // To optimize recipes loading, will return the flag later
-    private Object stolenFeatureFlagSet;
     // Some delayed tasks on main thread
     private final List<Runnable> delayedTasksOnMainThread = new ArrayList<>();
+    // To optimize recipes loading, will return the flag later
+    private Object stolenFeatureFlagSet;
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         instance = this;
@@ -431,7 +431,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     @SuppressWarnings("unchecked")
     private <T extends Recipe<ItemStack>> BukkitRecipeConvertor<T> findNMSRecipeConvertor(T recipe) {
-        return (BukkitRecipeConvertor<T>) MIXED_RECIPE_CONVERTORS.get(recipe.type());
+        return (BukkitRecipeConvertor<T>) MIXED_RECIPE_CONVERTORS.get(recipe.serializerType());
     }
 
     @SuppressWarnings("unchecked")

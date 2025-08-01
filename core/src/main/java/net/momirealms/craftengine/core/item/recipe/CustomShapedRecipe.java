@@ -38,8 +38,8 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.SHAPED;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.SHAPED;
     }
 
     public Pattern<T> pattern() {

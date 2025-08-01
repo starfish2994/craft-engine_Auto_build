@@ -80,8 +80,13 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.SMITHING_TRIM;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.SMITHING_TRIM;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.SMITHING;
     }
 
     @Override

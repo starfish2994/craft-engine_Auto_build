@@ -16,7 +16,9 @@ public interface Recipe<T> {
     List<Ingredient<T>> ingredientsInUse();
 
     @NotNull
-    Key type();
+    Key serializerType();
+
+    RecipeType type();
 
     Key id();
 }

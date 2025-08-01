@@ -9,7 +9,7 @@ import net.momirealms.craftengine.core.entity.EntityTypeKeys;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
-import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.RecipeType;
 import net.momirealms.craftengine.core.item.recipe.UniqueIdItem;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
@@ -129,13 +129,13 @@ public class InteractUtils {
         });
         registerInteraction(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
+            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
                     item.recipeIngredientId(), item
             ))) != null;
         });
         registerInteraction(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            return BukkitRecipeManager.instance().recipeByInput(RecipeTypes.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
+            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
                     item.recipeIngredientId(), item
             ))) != null;
         });

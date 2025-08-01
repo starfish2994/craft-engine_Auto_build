@@ -31,8 +31,13 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.STONECUTTING;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.STONECUTTING;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.STONECUTTING;
     }
 
     public Ingredient<T> ingredient() {

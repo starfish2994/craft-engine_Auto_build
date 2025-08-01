@@ -47,8 +47,8 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.SHAPELESS;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.SHAPELESS;
     }
 
     public static class Factory<A> extends AbstractRecipeFactory<A> {

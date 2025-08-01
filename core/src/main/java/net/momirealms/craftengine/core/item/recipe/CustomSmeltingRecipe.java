@@ -16,8 +16,13 @@ public class CustomSmeltingRecipe<T> extends CustomCookingRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.SMELTING;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.SMELTING;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.SMELTING;
     }
 
     public static class Factory<A> extends AbstractRecipeFactory<A> {

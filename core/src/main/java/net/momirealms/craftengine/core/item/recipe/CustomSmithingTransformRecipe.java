@@ -78,8 +78,13 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.SMITHING_TRANSFORM;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.SMITHING_TRANSFORM;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.SMITHING;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
-import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.RecipeSerializers;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +23,7 @@ public class VanillaSmithingTrimRecipe implements VanillaRecipe {
 
     @Override
     public Key type() {
-        return RecipeTypes.SMITHING_TRIM;
+        return RecipeSerializers.SMITHING_TRIM;
     }
 
     public List<String> base() {

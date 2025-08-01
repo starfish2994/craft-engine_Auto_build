@@ -16,8 +16,13 @@ public class CustomCampfireRecipe<T> extends CustomCookingRecipe<T> {
     }
 
     @Override
-    public @NotNull Key type() {
-        return RecipeTypes.CAMPFIRE_COOKING;
+    public @NotNull Key serializerType() {
+        return RecipeSerializers.CAMPFIRE_COOKING;
+    }
+
+    @Override
+    public RecipeType type() {
+        return RecipeType.CAMPFIRE_COOKING;
     }
 
     public static class Factory<A> extends AbstractRecipeFactory<A> {

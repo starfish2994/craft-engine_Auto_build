@@ -10,7 +10,7 @@ import net.momirealms.craftengine.core.util.ResourceKey;
 
 import java.util.Map;
 
-public class RecipeTypes {
+public final class RecipeSerializers {
     public static final Key SHAPED = Key.of("minecraft:shaped");
     public static final Key SHAPELESS = Key.of("minecraft:shapeless");
     public static final Key SMELTING = Key.of("minecraft:smelting");
@@ -21,7 +21,6 @@ public class RecipeTypes {
     public static final Key SMITHING_TRANSFORM = Key.of("minecraft:smithing_transform");
     public static final Key SMITHING_TRIM = Key.of("minecraft:smithing_trim");
     public static final Key BREWING = Key.of("minecraft:brewing");
-    public static final Key SPECIAL = Key.of("minecraft:special");
 
     static {
         register(SHAPED, CustomShapedRecipe.FACTORY);

@@ -6,7 +6,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemManager;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
-import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.RecipeType;
 import net.momirealms.craftengine.core.item.recipe.UniqueIdItem;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.plugin.config.Config;
@@ -71,12 +71,7 @@ public class CrafterEventListener implements Listener {
             return;
         }
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPELESS, input);
-        if (ceRecipe != null) {
-            event.setResult(ceRecipe.assemble(input, ItemBuildContext.EMPTY));
-            return;
-        }
-        ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPED, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeType.CRAFTING, input);
         if (ceRecipe != null) {
             event.setResult(ceRecipe.assemble(input, ItemBuildContext.EMPTY));
             return;

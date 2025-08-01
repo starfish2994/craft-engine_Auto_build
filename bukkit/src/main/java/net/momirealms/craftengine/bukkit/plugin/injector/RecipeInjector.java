@@ -29,7 +29,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.data.FireworkExplosion;
 import net.momirealms.craftengine.core.item.recipe.CustomCookingRecipe;
-import net.momirealms.craftengine.core.item.recipe.RecipeTypes;
+import net.momirealms.craftengine.core.item.recipe.RecipeType;
 import net.momirealms.craftengine.core.item.recipe.UniqueIdItem;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
 import net.momirealms.craftengine.core.util.*;
@@ -61,7 +61,7 @@ public class RecipeInjector {
                 .defineField("recipeType", Object.class, Visibility.PUBLIC)
                 .method(ElementMatchers.named("recipeType"))
                 .intercept(FieldAccessor.ofField("recipeType"))
-                .defineField("customRecipeType", Key.class, Visibility.PUBLIC)
+                .defineField("customRecipeType", RecipeType.class, Visibility.PUBLIC)
                 .method(ElementMatchers.named("customRecipeType"))
                 .intercept(FieldAccessor.ofField("customRecipeType"))
                 .defineField("lastRecipe", Object.class, Visibility.PUBLIC)
@@ -158,13 +158,13 @@ public class RecipeInjector {
             Object recipeType = FastNMS.INSTANCE.field$AbstractFurnaceBlockEntity$recipeType(entity);
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
             if (recipeType == MRecipeTypes.SMELTING) {
-                injectedChecker.customRecipeType(RecipeTypes.SMELTING);
+                injectedChecker.customRecipeType(RecipeType.SMELTING);
                 injectedChecker.recipeType(MRecipeTypes.SMELTING);
             } else if (recipeType == MRecipeTypes.BLASTING) {
-                injectedChecker.customRecipeType(RecipeTypes.BLASTING);
+                injectedChecker.customRecipeType(RecipeType.BLASTING);
                 injectedChecker.recipeType(MRecipeTypes.BLASTING);
             } else if (recipeType == MRecipeTypes.SMOKING) {
-                injectedChecker.customRecipeType(RecipeTypes.SMOKING);
+                injectedChecker.customRecipeType(RecipeType.SMOKING);
                 injectedChecker.recipeType(MRecipeTypes.SMOKING);
             } else {
                 throw new IllegalStateException("RecipeType " + recipeType + " not supported");
@@ -174,7 +174,7 @@ public class RecipeInjector {
             Object quickCheck = CoreReflections.field$CampfireBlockEntity$quickCheck.get(entity);
             if (clazz$InjectedCacheChecker.isInstance(quickCheck)) return; // already injected
             InjectedCacheCheck injectedChecker = (InjectedCacheCheck) ReflectionUtils.UNSAFE.allocateInstance(clazz$InjectedCacheChecker);
-            injectedChecker.customRecipeType(RecipeTypes.CAMPFIRE_COOKING);
+            injectedChecker.customRecipeType(RecipeType.CAMPFIRE_COOKING);
             injectedChecker.recipeType(MRecipeTypes.CAMPFIRE_COOKING);
             CoreReflections.field$CampfireBlockEntity$quickCheck.set(entity, injectedChecker);
         }

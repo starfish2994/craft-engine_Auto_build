@@ -75,13 +75,13 @@ public class RecipeEventListener implements Listener {
                 if (ItemStackUtils.isEmpty(item)) return;
                 if (ItemStackUtils.isEmpty(fuelStack)) {
                     SingleItemInput<ItemStack> input = new SingleItemInput<>(getUniqueIdItem(item));
-                    Key recipeType;
+                    RecipeType recipeType;
                     if (furnaceInventory.getType() == InventoryType.FURNACE) {
-                        recipeType = RecipeTypes.SMELTING;
+                        recipeType = RecipeType.SMELTING;
                     } else if (furnaceInventory.getType() == InventoryType.BLAST_FURNACE) {
-                        recipeType = RecipeTypes.BLASTING;
+                        recipeType = RecipeType.BLASTING;
                     } else {
-                        recipeType = RecipeTypes.SMOKING;
+                        recipeType = RecipeType.SMOKING;
                     }
 
                     Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(recipeType, input);
@@ -352,7 +352,7 @@ public class RecipeEventListener implements Listener {
                 return;
             }
             SingleItemInput<ItemStack> input = new SingleItemInput<>(getUniqueIdItem(itemStack));
-            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
+            CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeType.CAMPFIRE_COOKING, input);
             if (ceRecipe == null) {
                 event.setCancelled(true);
             }
@@ -377,7 +377,7 @@ public class RecipeEventListener implements Listener {
 
         ItemStack itemStack = event.getSource();
         SingleItemInput<ItemStack> input = new SingleItemInput<>(getUniqueIdItem(itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeType.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setTotalCookTime(Integer.MAX_VALUE);
             return;
@@ -405,7 +405,7 @@ public class RecipeEventListener implements Listener {
 
         ItemStack itemStack = event.getSource();
         SingleItemInput<ItemStack> input = new SingleItemInput<>(getUniqueIdItem(itemStack));
-        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeTypes.CAMPFIRE_COOKING, input);
+        CustomCampfireRecipe<ItemStack> ceRecipe = (CustomCampfireRecipe<ItemStack>) this.recipeManager.recipeByInput(RecipeType.CAMPFIRE_COOKING, input);
         if (ceRecipe == null) {
             event.setCancelled(true);
             return;
@@ -815,18 +815,8 @@ public class RecipeEventListener implements Listener {
 
         Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
         BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
-        Key lastRecipe = serverPlayer.lastUsedRecipe();
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPELESS, input, lastRecipe);
-        if (ceRecipe != null) {
-            inventory.setResult(ceRecipe.assemble(input, new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
-            serverPlayer.setLastUsedRecipe(ceRecipe.id());
-            if (!ceRecipe.id().equals(recipeId)) {
-                correctCraftingRecipeUsed(inventory, ceRecipe);
-            }
-            return;
-        }
-        ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SHAPED, input, lastRecipe);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeType.CRAFTING, input, recipeId);
         if (ceRecipe != null) {
             inventory.setResult(ceRecipe.assemble(input, new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
             serverPlayer.setLastUsedRecipe(ceRecipe.id());
@@ -902,7 +892,7 @@ public class RecipeEventListener implements Listener {
                 getUniqueIdItem(inventory.getInputMineral())
         );
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SMITHING_TRIM, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeType.SMITHING, input, recipeId);
         if (ceRecipe == null) {
             event.setResult(null);
             return;
@@ -940,7 +930,7 @@ public class RecipeEventListener implements Listener {
                 getUniqueIdItem(addition)
         );
 
-        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeTypes.SMITHING_TRANSFORM, input);
+        Recipe<ItemStack> ceRecipe = this.recipeManager.recipeByInput(RecipeType.SMITHING, input, recipeId);
         if (ceRecipe == null) {
             event.setResult(null);
             return;
