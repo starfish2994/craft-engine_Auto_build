@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.ExternalItemSource;
 import net.momirealms.craftengine.core.item.ItemFactory;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
@@ -84,14 +85,14 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     @Override
     protected Key vanillaId(W item) {
         Object i = FastNMS.INSTANCE.method$ItemStack$getItem(item.getLiteralObject());
-        if (i == null) return null;
+        if (i == null) return ItemKeys.AIR;
         return KeyUtils.resourceLocationToKey(FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, i));
     }
 
     @Override
     protected Key id(W item) {
         if (FastNMS.INSTANCE.method$ItemStack$isEmpty(item.getLiteralObject())) {
-            return null;
+            return ItemKeys.AIR;
         }
         return customId(item).orElse(vanillaId(item));
     }
@@ -118,13 +119,11 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     }
 
     @Override
-    protected boolean is(W item, Key itemTag) {
+    protected boolean hasItemTag(W item, Key itemTag) {
         Object literalObject = item.getLiteralObject();
         Object tag = ItemTags.getOrCreate(itemTag);
         return FastNMS.INSTANCE.method$ItemStack$is(literalObject, tag);
     }
-
-
 
     @Override
     protected void setJavaComponent(W item, Object type, Object value) {

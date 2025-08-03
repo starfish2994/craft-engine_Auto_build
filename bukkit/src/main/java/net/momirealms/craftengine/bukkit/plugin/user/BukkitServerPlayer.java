@@ -638,7 +638,7 @@ public class BukkitServerPlayer extends Player {
                     if (canInstabuild() && (itemMaterial == Material.DEBUG_STICK
                             || itemMaterial == Material.TRIDENT
                             || (VersionHelper.isOrAbove1_20_5() && itemMaterial == MaterialUtils.MACE)
-                            || item.is(ItemTags.SWORDS))) {
+                            || item.hasItemTag(ItemTags.SWORDS))) {
                         return;
                     }
                 }

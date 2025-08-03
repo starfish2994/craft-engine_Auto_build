@@ -345,7 +345,7 @@ public class RecipeInjector {
 
     private static final Predicate<Item<ItemStack>> IS_DYEABLE =
             VersionHelper.isOrAbove1_20_5() ?
-                    (item -> item.is(ItemTags.DYEABLE)) :
+                    (item -> item.hasItemTag(ItemTags.DYEABLE)) :
                     (item -> {
                        Object itemLike = FastNMS.INSTANCE.method$ItemStack$getItem(item.getLiteralObject());
                        return CoreReflections.clazz$DyeableLeatherItem.isInstance(itemLike);

@@ -368,7 +368,7 @@ public class RecipeEventListener implements Listener {
                         repairItem = item;
                         break;
                     }
-                    if (wrappedFirst.is(tag)) {
+                    if (wrappedFirst.hasItemTag(tag)) {
                         repairItem = item;
                         break;
                     }

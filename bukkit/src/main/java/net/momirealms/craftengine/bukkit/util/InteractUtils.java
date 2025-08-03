@@ -45,7 +45,7 @@ public class InteractUtils {
     private InteractUtils() {}
 
     static {
-        registerInteraction(BlockKeys.NOTE_BLOCK, (player, item, blockState, result) -> result.getDirection() != Direction.UP || !item.is(NOTE_BLOCK_TOP_INSTRUMENTS));
+        registerInteraction(BlockKeys.NOTE_BLOCK, (player, item, blockState, result) -> result.getDirection() != Direction.UP || !item.hasItemTag(NOTE_BLOCK_TOP_INSTRUMENTS));
         registerInteraction(BlockKeys.CAKE, (player, item, blockState, result) -> !canEat(player, false));
         registerInteraction(BlockKeys.CANDLE_CAKE, (player, item, blockState, result) -> !canEat(player, false));
         registerInteraction(BlockKeys.WHITE_CANDLE_CAKE, (player, item, blockState, result) -> !canEat(player, false));
@@ -409,14 +409,14 @@ public class InteractUtils {
         registerEntityInteraction(EntityTypeKeys.BAMBOO_RAFT, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.MINECART, (player, entity, item) -> !player.isSneaking());
         registerEntityInteraction(EntityTypeKeys.PARROT, (player, entity, item) -> {
-            if (item != null && item.is(Key.of("parrot_poisonous_food"))) return true;
+            if (item != null && item.hasItemTag(Key.of("parrot_poisonous_food"))) return true;
             return canFeed(entity, item) || isPetOwner(player, entity);
         });
         registerEntityInteraction(EntityTypeKeys.HAPPY_GHAST, (player, entity, item) -> {
             if (item != null && item.vanillaId().equals(ItemKeys.HARNESS)) return true;
             if (entity instanceof HappyGhast happyGhast && !player.isSneaking()) {
                 ItemStack bodyItem = happyGhast.getEquipment().getItem(EquipmentSlot.BODY);
-                return BukkitItemManager.instance().wrap(bodyItem).is(Key.of("harnesses"));
+                return BukkitItemManager.instance().wrap(bodyItem).hasItemTag(Key.of("harnesses"));
             }
             return canFeed(entity, item);
         });
@@ -499,7 +499,7 @@ public class InteractUtils {
     }
 
     private static boolean canFeed(Entity entity, Item<ItemStack> item) {
-        return entity instanceof Animals && item.is(Key.of(EntityUtils.getEntityType(entity).value() + "_food"));
+        return entity instanceof Animals && item.hasItemTag(Key.of(EntityUtils.getEntityType(entity).value() + "_food"));
     }
 
     private static boolean hasSaddle(Player player, Entity entity) {
