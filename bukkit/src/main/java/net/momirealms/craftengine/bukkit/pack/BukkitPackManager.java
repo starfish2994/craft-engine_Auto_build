@@ -60,28 +60,12 @@ public class BukkitPackManager extends AbstractPackManager implements Listener {
     @Override
     public void unload() {
         super.unload();
-        if (ReloadCommand.RELOAD_PACK_FLAG) {
-            if (VersionHelper.isOrAbove1_20_2()) {
-                this.resetServerSettings();
-            }
-        }
     }
 
     @Override
     public void disable() {
         super.disable();
         HandlerList.unregisterAll(this);
-        this.resetServerSettings();
-    }
-
-    public void resetServerSettings() {
-        try {
-            Object settings = CoreReflections.field$DedicatedServer$settings.get(CoreReflections.method$MinecraftServer$getServer.invoke(null));
-            Object properties = CoreReflections.field$DedicatedServerSettings$properties.get(settings);
-            CoreReflections.field$DedicatedServerProperties$serverResourcePackInfo.set(properties, Optional.empty());
-        } catch (Exception e) {
-            this.plugin.logger().warn("Failed to reset resource pack settings", e);
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

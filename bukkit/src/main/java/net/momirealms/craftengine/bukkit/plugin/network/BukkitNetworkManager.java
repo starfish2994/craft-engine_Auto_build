@@ -128,7 +128,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         this.plugin.javaPlugin().getServer().getMessenger().registerOutgoingPluginChannel(this.plugin.javaPlugin(), MOD_CHANNEL);
         // Inject server channel
         try {
-            Object server = CoreReflections.method$MinecraftServer$getServer.invoke(null);
+            Object server = FastNMS.INSTANCE.method$MinecraftServer$getServer();
             Object serverConnection = CoreReflections.field$MinecraftServer$connection.get(server);
             @SuppressWarnings("unchecked")
             List<ChannelFuture> channels = (List<ChannelFuture>) CoreReflections.field$ServerConnectionListener$channels.get(serverConnection);

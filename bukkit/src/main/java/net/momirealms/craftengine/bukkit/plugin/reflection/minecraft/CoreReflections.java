@@ -2849,10 +2849,6 @@ public final class CoreReflections {
             ReflectionUtils.getClazz(BukkitReflectionUtils.assembleMCClass("server.MinecraftServer"))
     );
 
-    public static final Method method$MinecraftServer$getServer = requireNonNull(
-            ReflectionUtils.getMethod(clazz$MinecraftServer, new String[] { "getServer" })
-    );
-
     public static final Field field$MinecraftServer$registries = requireNonNull(
             ReflectionUtils.getDeclaredField(clazz$MinecraftServer, clazz$LayeredRegistryAccess, 0)
     );

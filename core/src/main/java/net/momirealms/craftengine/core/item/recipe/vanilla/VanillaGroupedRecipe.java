@@ -1,10 +1,12 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
+import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
+
 public abstract class VanillaGroupedRecipe implements VanillaRecipe {
     protected final String group;
-    protected final RecipeResult result;
+    protected final DatapackRecipeResult result;
 
-    protected VanillaGroupedRecipe(String group, RecipeResult result) {
+    protected VanillaGroupedRecipe(String group, DatapackRecipeResult result) {
         this.group = group;
         this.result = result;
     }
@@ -13,7 +15,7 @@ public abstract class VanillaGroupedRecipe implements VanillaRecipe {
         return group;
     }
 
-    public RecipeResult result() {
+    public DatapackRecipeResult result() {
         return result;
     }
 }

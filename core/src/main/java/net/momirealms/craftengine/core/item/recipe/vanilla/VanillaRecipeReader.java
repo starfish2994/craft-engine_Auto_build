@@ -1,24 +1,47 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.item.recipe.CookingRecipeCategory;
+import net.momirealms.craftengine.core.item.recipe.CraftingRecipeCategory;
+import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Map;
 
 public interface VanillaRecipeReader {
 
-    VanillaShapedRecipe readShaped(JsonObject json);
+    @NotNull DatapackRecipeResult cookingResult(JsonElement object);
 
-    VanillaShapelessRecipe readShapeless(JsonObject json);
+    @NotNull DatapackRecipeResult craftingResult(JsonObject object);
 
-    VanillaBlastingRecipe readBlasting(JsonObject json);
+    @NotNull DatapackRecipeResult smithingResult(JsonObject object);
 
-    VanillaSmeltingRecipe readSmelting(JsonObject json);
+    List<List<String>> shapelessIngredients(JsonArray json);
 
-    VanillaSmokingRecipe readSmoking(JsonObject json);
+    Map<Character, List<String>> shapedIngredientMap(JsonObject json);
 
-    VanillaCampfireRecipe readCampfire(JsonObject json);
+    @NotNull List<String> ingredientList(JsonArray array);
 
-    VanillaStoneCuttingRecipe readStoneCutting(JsonObject json);
+    String[] craftingShapedPattern(JsonObject object);
 
-    VanillaSmithingTransformRecipe readSmithingTransform(JsonObject json);
+    @Nullable
+    String readGroup(JsonObject object);
 
-    VanillaSmithingTrimRecipe readSmithingTrim(JsonObject json);
+    @NotNull
+    CraftingRecipeCategory craftingCategory(JsonObject object);
+
+    @NotNull
+    CookingRecipeCategory cookingCategory(JsonObject object);
+
+    float cookingExperience(JsonObject object);
+
+    int cookingTime(JsonObject object);
+
+    @NotNull DatapackRecipeResult stoneCuttingResult(JsonObject json);
+
+    List<String> singleIngredient(JsonElement json);
 }

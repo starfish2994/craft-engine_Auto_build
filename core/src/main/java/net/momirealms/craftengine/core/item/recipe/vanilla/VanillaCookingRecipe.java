@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
 import net.momirealms.craftengine.core.item.recipe.CookingRecipeCategory;
+import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public abstract class VanillaCookingRecipe extends VanillaGroupedRecipe {
     protected final float experience;
     protected final int cookingTime;
 
-    protected VanillaCookingRecipe(CookingRecipeCategory category, String group, RecipeResult result, List<String> ingredient, float experience, int cookingTime) {
+    protected VanillaCookingRecipe(CookingRecipeCategory category, String group, DatapackRecipeResult result, List<String> ingredient, float experience, int cookingTime) {
         super(group, result);
         this.ingredient = ingredient;
         this.experience = experience;

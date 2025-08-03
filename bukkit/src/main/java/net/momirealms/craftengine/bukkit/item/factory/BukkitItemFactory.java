@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.util.ItemTags;
 import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.core.item.ExternalItemSource;
 import net.momirealms.craftengine.core.item.ItemFactory;
-import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.ItemWrapper;
 import net.momirealms.craftengine.core.item.data.JukeboxPlayable;
 import net.momirealms.craftengine.core.item.setting.EquipmentData;
@@ -66,6 +65,11 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
         }
     }
 
+    @Override
+    protected boolean isEmpty(W item) {
+        return FastNMS.INSTANCE.method$ItemStack$isEmpty(item.getLiteralObject());
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected byte[] toByteArray(W item) {
@@ -80,12 +84,15 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
     @Override
     protected Key vanillaId(W item) {
         Object i = FastNMS.INSTANCE.method$ItemStack$getItem(item.getLiteralObject());
-        if (i == null) return ItemKeys.AIR;
+        if (i == null) return null;
         return KeyUtils.resourceLocationToKey(FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, i));
     }
 
     @Override
     protected Key id(W item) {
+        if (FastNMS.INSTANCE.method$ItemStack$isEmpty(item.getLiteralObject())) {
+            return null;
+        }
         return customId(item).orElse(vanillaId(item));
     }
 
@@ -96,6 +103,9 @@ public abstract class BukkitItemFactory<W extends ItemWrapper<ItemStack>> extend
 
     @Override
     protected UniqueKey recipeIngredientID(W item) {
+        if (FastNMS.INSTANCE.method$ItemStack$isEmpty(item.getLiteralObject())) {
+            return null;
+        }
         if (this.hasExternalRecipeSource) {
            for (ExternalItemSource<ItemStack> source : this.recipeIngredientSources) {
                String id = source.id(item.getItem());

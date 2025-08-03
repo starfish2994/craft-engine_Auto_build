@@ -7,7 +7,7 @@ public abstract class CustomCraftingTableRecipe<T> extends AbstractGroupedRecipe
 
     protected CustomCraftingTableRecipe(Key id, CraftingRecipeCategory category, String group, CustomRecipeResult<T> result) {
         super(id, group, result);
-        this.category = category;
+        this.category = category == null ? CraftingRecipeCategory.MISC : category;
     }
 
     public CraftingRecipeCategory category() {

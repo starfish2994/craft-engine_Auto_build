@@ -9,7 +9,8 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
-import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
+import net.momirealms.craftengine.core.item.recipe.Recipe;
+import net.momirealms.craftengine.core.item.recipe.RecipeSerializer;
 import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipe;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
@@ -63,7 +64,7 @@ public class BuiltInRegistries {
     public static final Registry<ConditionPropertyReader> CONDITION_PROPERTY_READER = createConstantBoundRegistry(Registries.CONDITION_PROPERTY_READER);
     public static final Registry<SelectPropertyFactory> SELECT_PROPERTY_FACTORY = createConstantBoundRegistry(Registries.SELECT_PROPERTY_FACTORY);
     public static final Registry<SelectPropertyReader> SELECT_PROPERTY_READER = createConstantBoundRegistry(Registries.SELECT_PROPERTY_READER);
-    public static final Registry<RecipeFactory<?>> RECIPE_FACTORY = createConstantBoundRegistry(Registries.RECIPE_FACTORY);
+    public static final Registry<RecipeSerializer<?, ? extends Recipe<?>>> RECIPE_SERIALIZER = createConstantBoundRegistry(Registries.RECIPE_FACTORY);
     public static final Registry<ApplyBonusCountFunction.FormulaFactory> FORMULA_FACTORY = createConstantBoundRegistry(Registries.FORMULA_FACTORY);
     public static final Registry<ConditionFactory<PathContext>> PATH_MATCHER_FACTORY = createConstantBoundRegistry(Registries.PATH_MATCHER_FACTORY);
     public static final Registry<ResolutionFactory> RESOLUTION_FACTORY = createConstantBoundRegistry(Registries.RESOLUTION_FACTORY);

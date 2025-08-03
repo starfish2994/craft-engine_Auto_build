@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe;
 
+import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.recipe.input.BrewingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
-    public static final Factory<?> FACTORY = new Factory<>();
+    public static final Serializer<?> SERIALIZER = new Serializer<>();
     private final Key id;
     private final Ingredient<T> container;
     private final Ingredient<T> ingredient;
@@ -81,10 +82,10 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @SuppressWarnings({"DuplicatedCode"})
-    public static class Factory<A> implements RecipeFactory<A> {
+    public static class Serializer<A> extends AbstractRecipeSerializer<A, CustomBrewingRecipe<A>> {
 
         @Override
-        public Recipe<A> create(Key id, Map<String, Object> arguments) {
+        public CustomBrewingRecipe<A> readMap(Key id, Map<String, Object> arguments) {
             List<String> container = MiscUtils.getAsStringList(arguments.get("container"));
             if (container.isEmpty()) {
                 throw new LocalizedResourceConfigException("warning.config.recipe.brewing.missing_container");
@@ -97,6 +98,11 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(container), "warning.config.recipe.brewing.missing_container"),
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(ingredient), "warning.config.recipe.brewing.missing_ingredient"),
                     parseResult(arguments));
+        }
+
+        @Override
+        public CustomBrewingRecipe<A> readJson(Key id, JsonObject json) {
+            throw new UnsupportedOperationException();
         }
     }
 }

@@ -9,7 +9,8 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
-import net.momirealms.craftengine.core.item.recipe.RecipeFactory;
+import net.momirealms.craftengine.core.item.recipe.Recipe;
+import net.momirealms.craftengine.core.item.recipe.RecipeSerializer;
 import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipe;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
@@ -65,7 +66,7 @@ public class Registries {
     public static final ResourceKey<Registry<ConditionPropertyReader>> CONDITION_PROPERTY_READER = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("condition_property_reader"));
     public static final ResourceKey<Registry<SelectPropertyFactory>> SELECT_PROPERTY_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("select_property_factory"));
     public static final ResourceKey<Registry<SelectPropertyReader>> SELECT_PROPERTY_READER = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("select_property_reader"));
-    public static final ResourceKey<Registry<RecipeFactory<?>>> RECIPE_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_factory"));
+    public static final ResourceKey<Registry<RecipeSerializer<?, ? extends Recipe<?>>>> RECIPE_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_factory"));
     public static final ResourceKey<Registry<ApplyBonusCountFunction.FormulaFactory>> FORMULA_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("formula_factory"));
     public static final ResourceKey<Registry<ConditionFactory<PathContext>>> PATH_MATCHER_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("path_matcher_factory"));
     public static final ResourceKey<Registry<ResolutionFactory>> RESOLUTION_FACTORY = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("resolution_factory"));

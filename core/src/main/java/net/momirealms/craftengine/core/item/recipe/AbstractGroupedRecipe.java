@@ -10,7 +10,7 @@ public abstract class AbstractGroupedRecipe<T> implements FixedResultRecipe<T> {
     protected final CustomRecipeResult<T> result;
 
     protected AbstractGroupedRecipe(Key id, String group, CustomRecipeResult<T> result) {
-        this.group = group;
+        this.group = group == null ? "" : group;
         this.id = id;
         this.result = result;
     }

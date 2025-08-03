@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
 import net.momirealms.craftengine.core.item.recipe.CraftingRecipeCategory;
+import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.RecipeSerializers;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -15,7 +16,7 @@ public class VanillaShapedRecipe extends VanillaCraftingRecipe {
                                String group,
                                Map<Character, List<String>> key,
                                String[] pattern,
-                               RecipeResult result) {
+                               DatapackRecipeResult result) {
         super(category, group, result);
         this.key = key;
         this.pattern = pattern;

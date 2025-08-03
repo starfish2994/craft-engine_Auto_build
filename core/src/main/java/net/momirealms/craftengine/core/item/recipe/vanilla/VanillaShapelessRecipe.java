@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.recipe.vanilla;
 
 import net.momirealms.craftengine.core.item.recipe.CraftingRecipeCategory;
+import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.RecipeSerializers;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -9,7 +10,7 @@ import java.util.List;
 public class VanillaShapelessRecipe extends VanillaCraftingRecipe {
     private final List<List<String>> ingredients;
 
-    public VanillaShapelessRecipe(CraftingRecipeCategory category, String group, List<List<String>> ingredients, RecipeResult result) {
+    public VanillaShapelessRecipe(CraftingRecipeCategory category, String group, List<List<String>> ingredients, DatapackRecipeResult result) {
         super(category, group, result);
         this.ingredients = ingredients;
     }

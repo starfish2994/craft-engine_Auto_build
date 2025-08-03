@@ -129,15 +129,11 @@ public class InteractUtils {
         });
         registerInteraction(BlockKeys.SOUL_CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
-                    item.recipeIngredientId(), item
-            ))) != null;
+            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(UniqueIdItem.of(item))) != null;
         });
         registerInteraction(BlockKeys.CAMPFIRE, (player, item, blockState, result) -> {
             if (!Config.enableRecipeSystem()) return false;
-            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(new UniqueIdItem<>(
-                    item.recipeIngredientId(), item
-            ))) != null;
+            return BukkitRecipeManager.instance().recipeByInput(RecipeType.CAMPFIRE_COOKING, new SingleItemInput<>(UniqueIdItem.of(item))) != null;
         });
         registerInteraction(BlockKeys.CHISELED_BOOKSHELF, (player, item, blockState, result) -> {
             if (!(blockState instanceof ChiseledBookshelf chiseledBookshelf)) return false;

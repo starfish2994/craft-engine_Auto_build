@@ -403,13 +403,6 @@ public class BukkitWorldManager implements WorldManager, Listener {
                                 (injected) -> sections[finalI] = injected);
                     }
                 }
-                if (Config.enableRecipeSystem()) {
-                    @SuppressWarnings("unchecked")
-                    Map<Object, Object> blockEntities = (Map<Object, Object>) FastNMS.INSTANCE.field$ChunkAccess$blockEntities(levelChunk);
-                    for (Object blockEntity : blockEntities.values()) {
-                        RecipeInjector.injectCookingBlockEntity(blockEntity);
-                    }
-                }
             } catch (ReflectiveOperationException e) {
                 this.plugin.logger().warn("Failed to restore chunk at " + chunk.getX() + " " + chunk.getZ(), e);
                 return;
