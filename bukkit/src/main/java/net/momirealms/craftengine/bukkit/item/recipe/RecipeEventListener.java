@@ -647,9 +647,14 @@ public class RecipeEventListener implements Listener {
             event.setResult(null);
             return;
         }
-        Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
-        ItemStack result = smithingTrimRecipe.assemble(getSmithingInput(inventory), new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY));
-        event.setResult(result);
+        SmithingInput<ItemStack> input = getSmithingInput(inventory);
+        if (smithingTrimRecipe.matches(input)) {
+            Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
+            ItemStack result = smithingTrimRecipe.assemble(getSmithingInput(inventory), new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY));
+            event.setResult(result);
+        } else {
+            event.setResult(null);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -666,9 +671,14 @@ public class RecipeEventListener implements Listener {
             event.setResult(null);
             return;
         }
-        Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
-        ItemStack processed = smithingTransformRecipe.assemble(getSmithingInput(inventory), new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY));
-        event.setResult(processed);
+        SmithingInput<ItemStack> input = getSmithingInput(inventory);
+        if (smithingTransformRecipe.matches(input)) {
+            Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
+            ItemStack processed = smithingTransformRecipe.assemble(input, new ItemBuildContext(this.plugin.adapt(player), ContextHolder.EMPTY));
+            event.setResult(processed);
+        } else {
+            event.setResult(null);
+        }
     }
 
     private SmithingInput<ItemStack> getSmithingInput(SmithingInventory inventory) {
