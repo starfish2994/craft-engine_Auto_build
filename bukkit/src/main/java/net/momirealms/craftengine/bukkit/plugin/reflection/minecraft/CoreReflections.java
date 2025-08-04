@@ -3755,11 +3755,14 @@ public final class CoreReflections {
                 methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask =
                         ReflectionUtils.unreflectMethod(method$ServerConfigurationPacketListenerImpl$finishCurrentTask)
                                 .asType(MethodType.methodType(void.class, Object.class, Object.class));
+            } else {
+                methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask = null;
+            }
+            if (VersionHelper.isOrAbove1_20_5()) {
                 methodHandle$ServerCommonPacketListenerImpl$closedSetter =
                         ReflectionUtils.unreflectSetter(field$ServerCommonPacketListenerImpl$closed)
                                 .asType(MethodType.methodType(void.class, Object.class, boolean.class));
             } else {
-                methodHandle$ServerConfigurationPacketListenerImpl$finishCurrentTask = null;
                 methodHandle$ServerCommonPacketListenerImpl$closedSetter = null;
             }
         } catch (ReflectiveOperationException e) {
