@@ -35,7 +35,7 @@ public record CustomRecipeResult<T>(BuildableItem<T> item, int count, PostProces
     }
 
     static {
-        registerPostProcessorType(Key.of("apply_data"), args -> {
+        registerPostProcessorType(Key.of("craftengine", "apply_data"), args -> {
             List<ItemDataModifier<?>> modifiers = new ArrayList<>();
             Map<String, Object> data = ResourceConfigUtils.getAsMap(args.get("data"), "data");
             for (Map.Entry<String, Object> entry : data.entrySet()) {
