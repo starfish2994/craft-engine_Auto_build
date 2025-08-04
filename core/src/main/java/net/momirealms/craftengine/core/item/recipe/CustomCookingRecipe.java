@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.item.recipe;
 
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
                                   Ingredient<T> ingredient,
                                   int cookingTime,
                                   float experience,
-                                  SimpleRecipeResult<T> result) {
+                                  CustomRecipeResult<T> result) {
         super(id, group, result);
         this.category = category == null ? CookingRecipeCategory.MISC : category;
         this.ingredient = ingredient;
@@ -40,7 +41,7 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
         return ingredient;
     }
 
-    public SimpleRecipeResult<T> result() {
+    public CustomRecipeResult<T> result() {
         return result;
     }
 

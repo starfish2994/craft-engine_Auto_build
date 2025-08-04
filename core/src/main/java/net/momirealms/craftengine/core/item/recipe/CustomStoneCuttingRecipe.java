@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item.recipe;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.input.SingleItemInput;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +14,7 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
     protected final Ingredient<T> ingredient;
 
-    public CustomStoneCuttingRecipe(Key id, String group, Ingredient<T> ingredient, SimpleRecipeResult<T> result) {
+    public CustomStoneCuttingRecipe(Key id, String group, Ingredient<T> ingredient, CustomRecipeResult<T> result) {
         super(id, group, result);
         this.ingredient = ingredient;
     }

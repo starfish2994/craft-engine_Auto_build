@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
@@ -17,7 +18,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
     private final ParsedPattern<T> parsedPattern;
     private final Pattern<T> pattern;
 
-    public CustomShapedRecipe(Key id, CraftingRecipeCategory category, String group, Pattern<T> pattern, SimpleRecipeResult<T> result) {
+    public CustomShapedRecipe(Key id, CraftingRecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
         super(id, category, group, result);
         this.pattern = pattern;
         this.parsedPattern = pattern.parse();

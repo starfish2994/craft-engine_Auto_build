@@ -10,10 +10,10 @@ import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeSerializer;
-import net.momirealms.craftengine.core.item.recipe.SimpleRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipe;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
+import net.momirealms.craftengine.core.item.recipe.result.PostProcessor;
 import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.entry.LootEntryContainerFactory;
 import net.momirealms.craftengine.core.loot.function.ApplyBonusCountFunction;
@@ -78,7 +78,7 @@ public class BuiltInRegistries {
     public static final Registry<SlotDisplay.Type> SLOT_DISPLAY_TYPE = createConstantBoundRegistry(Registries.SLOT_DISPLAY_TYPE);
     public static final Registry<RecipeDisplay.Type> RECIPE_DISPLAY_TYPE = createConstantBoundRegistry(Registries.RECIPE_DISPLAY_TYPE);
     public static final Registry<LegacyRecipe.Type> LEGACY_RECIPE_TYPE = createConstantBoundRegistry(Registries.LEGACY_RECIPE_TYPE);
-    public static final Registry<SimpleRecipeResult.ApplyItemDataProcessor.Type<?>> RECIPE_POST_PROCESSOR_TYPE = createConstantBoundRegistry(Registries.RECIPE_POST_PROCESSOR_TYPE);
+    public static final Registry<PostProcessor.Type<?>> RECIPE_POST_PROCESSOR_TYPE = createConstantBoundRegistry(Registries.RECIPE_POST_PROCESSOR_TYPE);
 
     private static <T> Registry<T> createConstantBoundRegistry(ResourceKey<? extends Registry<T>> key) {
         return new ConstantBoundRegistry<>(key);

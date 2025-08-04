@@ -3,6 +3,7 @@ package net.momirealms.craftengine.core.item.recipe;
 import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.recipe.input.CraftingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
     private final List<Ingredient<T>> ingredients;
     private final PlacementInfo<T> placementInfo;
 
-    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, SimpleRecipeResult<T> result) {
+    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
         super(id, category, group, result);
         this.ingredients = ingredients;
         this.placementInfo = PlacementInfo.create(ingredients);

@@ -8,6 +8,9 @@ import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_20;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_20_5;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_21_2;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
+import net.momirealms.craftengine.core.item.recipe.result.PostProcessor;
+import net.momirealms.craftengine.core.item.recipe.result.PostProcessors;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
@@ -57,26 +60,26 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
         return recipeCategory;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected SimpleRecipeResult<T> parseResult(Map<String, Object> arguments) {
+    @SuppressWarnings({"unchecked"})
+    protected CustomRecipeResult<T> parseResult(Map<String, Object> arguments) {
         Map<String, Object> resultMap = MiscUtils.castToMap(arguments.get("result"), true);
         if (resultMap == null) {
             throw new LocalizedResourceConfigException("warning.config.recipe.missing_result");
         }
         String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(resultMap.get("id"), "warning.config.recipe.result.missing_id");
         int count = ResourceConfigUtils.getAsInt(resultMap.getOrDefault("count", 1), "count");
-        List<SimpleRecipeResult.PostProcessor<T>> processors = ResourceConfigUtils.parseConfigAsList(resultMap.get("post-processors"), SimpleRecipeResult.PostProcessor::fromMap);
-        return new SimpleRecipeResult(
+        List<PostProcessor<T>> processors = ResourceConfigUtils.parseConfigAsList(resultMap.get("post-processors"), PostProcessors::fromMap);
+        return (CustomRecipeResult<T>) new CustomRecipeResult<>(
                 CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(() -> new LocalizedResourceConfigException("warning.config.recipe.invalid_result", id)),
                 count,
-                processors.isEmpty() ? null : processors.toArray(new SimpleRecipeResult.PostProcessor[0])
+                processors.isEmpty() ? null : processors.toArray(new PostProcessor[0])
         );
     }
 
     @SuppressWarnings("unchecked")
-    protected SimpleRecipeResult<T> parseResult(DatapackRecipeResult recipeResult) {
+    protected CustomRecipeResult<T> parseResult(DatapackRecipeResult recipeResult) {
         Item<T> result = (Item<T>) CraftEngine.instance().itemManager().build(recipeResult);
-        return new SimpleRecipeResult<>(CloneableConstantItem.of(result), recipeResult.count(), null);
+        return new CustomRecipeResult<>(CloneableConstantItem.of(result), recipeResult.count(), null);
     }
 
     @Nullable
