@@ -4,10 +4,13 @@ import net.momirealms.craftengine.core.item.CloneableConstantItem;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemManager;
+import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_20;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_20_5;
 import net.momirealms.craftengine.core.item.recipe.reader.VanillaRecipeReader1_21_2;
-import net.momirealms.craftengine.core.item.recipe.vanilla.VanillaRecipeReader;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
+import net.momirealms.craftengine.core.item.recipe.result.PostProcessor;
+import net.momirealms.craftengine.core.item.recipe.result.PostProcessors;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.*;
@@ -57,7 +60,7 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
         return recipeCategory;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     protected CustomRecipeResult<T> parseResult(Map<String, Object> arguments) {
         Map<String, Object> resultMap = MiscUtils.castToMap(arguments.get("result"), true);
         if (resultMap == null) {
@@ -65,11 +68,11 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
         }
         String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(resultMap.get("id"), "warning.config.recipe.result.missing_id");
         int count = ResourceConfigUtils.getAsInt(resultMap.getOrDefault("count", 1), "count");
-        List<CustomRecipeResult.PostProcessor<T>> processors = ResourceConfigUtils.parseConfigAsList(resultMap.get("post-processors"), CustomRecipeResult.PostProcessor::fromMap);
-        return new CustomRecipeResult(
+        List<PostProcessor<T>> processors = ResourceConfigUtils.parseConfigAsList(resultMap.get("post-processors"), PostProcessors::fromMap);
+        return (CustomRecipeResult<T>) new CustomRecipeResult<>(
                 CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(() -> new LocalizedResourceConfigException("warning.config.recipe.invalid_result", id)),
                 count,
-                processors.isEmpty() ? null : processors.toArray(new CustomRecipeResult.PostProcessor[0])
+                processors.isEmpty() ? null : processors.toArray(new PostProcessor[0])
         );
     }
 

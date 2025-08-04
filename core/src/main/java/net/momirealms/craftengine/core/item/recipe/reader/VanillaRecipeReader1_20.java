@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import net.momirealms.craftengine.core.item.recipe.CookingRecipeCategory;
 import net.momirealms.craftengine.core.item.recipe.CraftingRecipeCategory;
 import net.momirealms.craftengine.core.item.recipe.DatapackRecipeResult;
-import net.momirealms.craftengine.core.item.recipe.vanilla.VanillaRecipeReader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

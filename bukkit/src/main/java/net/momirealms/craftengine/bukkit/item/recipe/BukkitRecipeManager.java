@@ -28,10 +28,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
-import java.sql.Ref;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;

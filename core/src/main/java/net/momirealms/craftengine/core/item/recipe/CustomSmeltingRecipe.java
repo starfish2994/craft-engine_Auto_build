@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.recipe;
 
 import com.google.gson.JsonObject;
+import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
 import org.jetbrains.annotations.NotNull;
