@@ -19,6 +19,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.item.recipe.*;
+import net.momirealms.craftengine.core.item.recipe.postprocessor.PostProcessors;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -28,10 +29,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
-import java.sql.Ref;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -288,6 +287,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
     public BukkitRecipeManager(BukkitCraftEngine plugin) {
         instance = this;
+        PostProcessors.init();
         this.plugin = plugin;
         this.recipeEventListener = new RecipeEventListener(plugin, this, plugin.itemManager());
     }
