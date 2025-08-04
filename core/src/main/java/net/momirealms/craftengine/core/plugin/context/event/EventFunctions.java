@@ -17,6 +17,7 @@ import net.momirealms.craftengine.core.plugin.context.function.Function;
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.function.LevelerExpFunction;
 import net.momirealms.craftengine.core.plugin.context.function.MessageFunction;
+import net.momirealms.craftengine.core.plugin.context.function.MythicMobsSkillFunction;
 import net.momirealms.craftengine.core.plugin.context.function.OpenWindowFunction;
 import net.momirealms.craftengine.core.plugin.context.function.ParticleFunction;
 import net.momirealms.craftengine.core.plugin.context.function.PlaceBlockFunction;
