@@ -10,7 +10,7 @@ import java.util.Map;
 public class CustomCampfireRecipe<T> extends CustomCookingRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
 
-    public CustomCampfireRecipe(Key id, CookingRecipeCategory category, String group, Ingredient<T> ingredient, int cookingTime, float experience, CustomRecipeResult<T> result) {
+    public CustomCampfireRecipe(Key id, CookingRecipeCategory category, String group, Ingredient<T> ingredient, int cookingTime, float experience, SimpleRecipeResult<T> result) {
         super(id, category, group, ingredient, cookingTime, experience, result);
     }
 

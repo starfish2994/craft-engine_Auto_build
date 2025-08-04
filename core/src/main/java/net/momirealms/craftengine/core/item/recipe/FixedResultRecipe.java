@@ -7,7 +7,7 @@ public interface FixedResultRecipe<T> extends Recipe<T> {
 
     T result(ItemBuildContext context);
 
-    CustomRecipeResult<T> result();
+    SimpleRecipeResult<T> result();
 
     @Override
     default T assemble(RecipeInput input, ItemBuildContext context) {

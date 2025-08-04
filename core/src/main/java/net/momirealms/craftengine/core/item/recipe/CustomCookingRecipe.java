@@ -18,7 +18,7 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
                                   Ingredient<T> ingredient,
                                   int cookingTime,
                                   float experience,
-                                  CustomRecipeResult<T> result) {
+                                  SimpleRecipeResult<T> result) {
         super(id, group, result);
         this.category = category == null ? CookingRecipeCategory.MISC : category;
         this.ingredient = ingredient;
@@ -40,7 +40,7 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
         return ingredient;
     }
 
-    public CustomRecipeResult<T> result() {
+    public SimpleRecipeResult<T> result() {
         return result;
     }
 

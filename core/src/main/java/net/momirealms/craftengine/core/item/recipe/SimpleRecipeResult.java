@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("unchecked")
-public record CustomRecipeResult<T>(BuildableItem<T> item, int count, PostProcessor<T>[] postProcessors) {
+public record SimpleRecipeResult<T>(BuildableItem<T> item, int count, PostProcessor<T>[] postProcessors) {
 
     public T buildItemStack(ItemBuildContext context) {
         return buildItem(context).getItem();

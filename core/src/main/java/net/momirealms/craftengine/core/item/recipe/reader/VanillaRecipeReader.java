@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.core.item.recipe.vanilla;
+package net.momirealms.craftengine.core.item.recipe.reader;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

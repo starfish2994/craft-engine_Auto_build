@@ -19,12 +19,12 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
     private final Key id;
     private final Ingredient<T> container;
     private final Ingredient<T> ingredient;
-    private final CustomRecipeResult<T> result;
+    private final SimpleRecipeResult<T> result;
 
     public CustomBrewingRecipe(@NotNull Key id,
                                @NotNull Ingredient<T> container,
                                @NotNull Ingredient<T> ingredient,
-                               @NotNull CustomRecipeResult<T> result) {
+                               @NotNull SimpleRecipeResult<T> result) {
         this.id = id;
         this.container = container;
         this.ingredient = ingredient;
@@ -32,7 +32,7 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @Override
-    public CustomRecipeResult<T> result() {
+    public SimpleRecipeResult<T> result() {
         return this.result;
     }
 

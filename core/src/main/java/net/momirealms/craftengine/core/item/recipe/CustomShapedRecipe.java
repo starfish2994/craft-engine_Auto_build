@@ -17,7 +17,7 @@ public class CustomShapedRecipe<T> extends CustomCraftingTableRecipe<T> {
     private final ParsedPattern<T> parsedPattern;
     private final Pattern<T> pattern;
 
-    public CustomShapedRecipe(Key id, CraftingRecipeCategory category, String group, Pattern<T> pattern, CustomRecipeResult<T> result) {
+    public CustomShapedRecipe(Key id, CraftingRecipeCategory category, String group, Pattern<T> pattern, SimpleRecipeResult<T> result) {
         super(id, category, group, result);
         this.pattern = pattern;
         this.parsedPattern = pattern.parse();

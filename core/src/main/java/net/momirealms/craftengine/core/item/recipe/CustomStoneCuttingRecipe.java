@@ -13,7 +13,7 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
     protected final Ingredient<T> ingredient;
 
-    public CustomStoneCuttingRecipe(Key id, String group, Ingredient<T> ingredient, CustomRecipeResult<T> result) {
+    public CustomStoneCuttingRecipe(Key id, String group, Ingredient<T> ingredient, SimpleRecipeResult<T> result) {
         super(id, group, result);
         this.ingredient = ingredient;
     }

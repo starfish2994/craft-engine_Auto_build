@@ -7,9 +7,9 @@ import org.jetbrains.annotations.Nullable;
 public abstract class AbstractGroupedRecipe<T> implements FixedResultRecipe<T> {
     protected final String group;
     protected final Key id;
-    protected final CustomRecipeResult<T> result;
+    protected final SimpleRecipeResult<T> result;
 
-    protected AbstractGroupedRecipe(Key id, String group, CustomRecipeResult<T> result) {
+    protected AbstractGroupedRecipe(Key id, String group, SimpleRecipeResult<T> result) {
         this.group = group == null ? "" : group;
         this.id = id;
         this.result = result;
@@ -31,7 +31,7 @@ public abstract class AbstractGroupedRecipe<T> implements FixedResultRecipe<T> {
     }
 
     @Override
-    public CustomRecipeResult<T> result() {
+    public SimpleRecipeResult<T> result() {
         return this.result;
     }
 }

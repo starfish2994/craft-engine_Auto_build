@@ -7,10 +7,10 @@ import net.momirealms.craftengine.core.entity.furniture.HitBoxFactory;
 import net.momirealms.craftengine.core.item.ItemDataModifierFactory;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviorFactory;
 import net.momirealms.craftengine.core.item.equipment.EquipmentFactory;
-import net.momirealms.craftengine.core.item.recipe.CustomRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeSerializer;
+import net.momirealms.craftengine.core.item.recipe.SimpleRecipeResult;
 import net.momirealms.craftengine.core.item.recipe.network.legacy.LegacyRecipe;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.RecipeDisplay;
 import net.momirealms.craftengine.core.item.recipe.network.modern.display.slot.SlotDisplay;
@@ -80,5 +80,5 @@ public class Registries {
     public static final ResourceKey<Registry<SlotDisplay.Type>> SLOT_DISPLAY_TYPE = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("slot_display_type"));
     public static final ResourceKey<Registry<RecipeDisplay.Type>> RECIPE_DISPLAY_TYPE = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_display_type"));
     public static final ResourceKey<Registry<LegacyRecipe.Type>> LEGACY_RECIPE_TYPE = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("legacy_recipe_type"));
-    public static final ResourceKey<Registry<CustomRecipeResult.ApplyItemDataProcessor.Type<?>>> RECIPE_POST_PROCESSOR_TYPE = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_post_processor_type"));
+    public static final ResourceKey<Registry<SimpleRecipeResult.ApplyItemDataProcessor.Type<?>>> RECIPE_POST_PROCESSOR_TYPE = ResourceKey.create(ROOT_REGISTRY, Key.withDefaultNamespace("recipe_post_processor_type"));
 }

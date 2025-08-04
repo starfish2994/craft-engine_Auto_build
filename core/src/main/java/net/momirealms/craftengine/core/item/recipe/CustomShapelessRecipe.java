@@ -16,7 +16,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
     private final List<Ingredient<T>> ingredients;
     private final PlacementInfo<T> placementInfo;
 
-    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
+    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, SimpleRecipeResult<T> result) {
         super(id, category, group, result);
         this.ingredients = ingredients;
         this.placementInfo = PlacementInfo.create(ingredients);

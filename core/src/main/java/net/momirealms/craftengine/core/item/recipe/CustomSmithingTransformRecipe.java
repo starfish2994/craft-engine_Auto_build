@@ -22,7 +22,7 @@ import java.util.Objects;
 public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
     private final Key id;
-    private final CustomRecipeResult<T> result;
+    private final SimpleRecipeResult<T> result;
     private final Ingredient<T> base;
     private final Ingredient<T> template;
     private final Ingredient<T> addition;
@@ -33,7 +33,7 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
                                          @NotNull Ingredient<T> base,
                                          @Nullable Ingredient<T> template,
                                          @Nullable Ingredient<T> addition,
-                                         CustomRecipeResult<T> result,
+                                         SimpleRecipeResult<T> result,
                                          boolean mergeComponents,
                                          List<ItemDataProcessor> processors
     ) {
@@ -116,7 +116,7 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
         return finalResult.getItem();
     }
 
-    public CustomRecipeResult<T> result() {
+    public SimpleRecipeResult<T> result() {
         return this.result;
     }
 
