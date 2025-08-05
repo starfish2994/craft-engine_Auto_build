@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
-    protected final Map<RecipeType, List<Recipe<T>>> byType = new HashMap<>();
+    protected final Map<RecipeType, List<Recipe<T>>> byType = new EnumMap<>(RecipeType.class);
     protected final Map<Key, Recipe<T>> byId = new HashMap<>();
     protected final Map<Key, List<Recipe<T>>> byResult = new HashMap<>();
     protected final Map<Key, List<Recipe<T>>> byIngredient = new HashMap<>();
