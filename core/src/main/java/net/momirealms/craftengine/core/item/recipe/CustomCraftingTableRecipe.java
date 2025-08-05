@@ -6,8 +6,8 @@ import net.momirealms.craftengine.core.util.Key;
 public abstract class CustomCraftingTableRecipe<T> extends AbstractGroupedRecipe<T> {
     protected final CraftingRecipeCategory category;
 
-    protected CustomCraftingTableRecipe(Key id, CraftingRecipeCategory category, String group, CustomRecipeResult<T> result) {
-        super(id, group, result);
+    protected CustomCraftingTableRecipe(Key id, boolean showNotification, CustomRecipeResult<T> result, String group, CraftingRecipeCategory category) {
+        super(id, showNotification, result, group);
         this.category = category == null ? CraftingRecipeCategory.MISC : category;
     }
 

@@ -14,8 +14,8 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
     protected final Ingredient<T> ingredient;
 
-    public CustomStoneCuttingRecipe(Key id, String group, Ingredient<T> ingredient, CustomRecipeResult<T> result) {
-        super(id, group, result);
+    public CustomStoneCuttingRecipe(Key id, boolean showNotification, CustomRecipeResult<T> result, String group, Ingredient<T> ingredient) {
+        super(id, showNotification, result, group);
         this.ingredient = ingredient;
     }
 
@@ -50,13 +50,21 @@ public class CustomStoneCuttingRecipe<T> extends AbstractGroupedRecipe<T> {
         @Override
         public CustomStoneCuttingRecipe<A> readMap(Key id, Map<String, Object> arguments) {
             String group = arguments.containsKey("group") ? arguments.get("group").toString() : null;
-            return new CustomStoneCuttingRecipe<>(id, group, singleInputIngredient(arguments), parseResult(arguments));
+            return new CustomStoneCuttingRecipe<>(id,
+                    showNotification(arguments),
+                    parseResult(arguments), group,
+                    singleInputIngredient(arguments)
+            );
         }
 
         @Override
         public CustomStoneCuttingRecipe<A> readJson(Key id, JsonObject json) {
             String group = VANILLA_RECIPE_HELPER.readGroup(json);
-            return new CustomStoneCuttingRecipe<>(id, group, toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("ingredient"))), parseResult(VANILLA_RECIPE_HELPER.stoneCuttingResult(json)));
+            return new CustomStoneCuttingRecipe<>(id,
+                    true,
+                    parseResult(VANILLA_RECIPE_HELPER.stoneCuttingResult(json)), group,
+                    toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("ingredient")))
+            );
         }
     }
 }

@@ -18,9 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
+public class CustomSmithingTrimRecipe<T> extends AbstractRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
-    private final Key id;
     private final Ingredient<T> base;
     private final Ingredient<T> template;
     private final Ingredient<T> addition;
@@ -28,12 +27,13 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
     private final Key pattern;
 
     public CustomSmithingTrimRecipe(@NotNull Key id,
-                                    @NotNull Ingredient<T> base,
+                                    boolean showNotification,
                                     @NotNull Ingredient<T> template,
+                                    @NotNull Ingredient<T> base,
                                     @NotNull Ingredient<T> addition,
                                     @Nullable Key pattern
     ) {
-        this.id = id;
+        super(id, showNotification);
         this.base = base;
         this.template = template;
         this.addition = addition;
@@ -83,11 +83,6 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
         return RecipeType.SMITHING;
     }
 
-    @Override
-    public Key id() {
-        return this.id;
-    }
-
     @NotNull
     public Ingredient<T> base() {
         return this.base;
@@ -118,17 +113,20 @@ public class CustomSmithingTrimRecipe<T> implements Recipe<T> {
             List<String> addition = MiscUtils.getAsStringList(arguments.get("addition"));
             Key pattern = VersionHelper.isOrAbove1_21_5() ? Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.get("pattern"), "warning.config.recipe.smithing_trim.missing_pattern")) : null;
             return new CustomSmithingTrimRecipe<>(id,
-                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(base), "warning.config.recipe.smithing_trim.missing_base"),
+                    showNotification(arguments),
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(template), "warning.config.recipe.smithing_trim.missing_template_type"),
+                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(base), "warning.config.recipe.smithing_trim.missing_base"),
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(addition), "warning.config.recipe.smithing_trim.missing_addition"),
-                    pattern);
+                    pattern
+            );
         }
 
         @Override
         public CustomSmithingTrimRecipe<A> readJson(Key id, JsonObject json) {
             return new CustomSmithingTrimRecipe<>(id,
-                    Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("base")))),
+                    VANILLA_RECIPE_HELPER.showNotification(json),
                     Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("template")))),
+                    Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("base")))),
                     Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("addition")))),
                     VersionHelper.isOrAbove1_21_5() ? Key.of(json.get("pattern").getAsString()) : null
             );

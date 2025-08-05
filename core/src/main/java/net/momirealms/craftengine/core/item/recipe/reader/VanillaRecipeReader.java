@@ -44,4 +44,6 @@ public interface VanillaRecipeReader {
     @NotNull DatapackRecipeResult stoneCuttingResult(JsonObject json);
 
     List<String> singleIngredient(JsonElement json);
+
+    boolean showNotification(JsonObject json);
 }

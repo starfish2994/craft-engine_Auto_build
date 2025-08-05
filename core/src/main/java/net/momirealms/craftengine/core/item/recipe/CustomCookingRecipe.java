@@ -14,13 +14,14 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
     protected final int cookingTime;
 
     protected CustomCookingRecipe(Key id,
-                                  CookingRecipeCategory category,
+                                  boolean showNotification,
+                                  CustomRecipeResult<T> result,
                                   String group,
+                                  CookingRecipeCategory category,
                                   Ingredient<T> ingredient,
                                   int cookingTime,
-                                  float experience,
-                                  CustomRecipeResult<T> result) {
-        super(id, group, result);
+                                  float experience) {
+        super(id, showNotification, result, group);
         this.category = category == null ? CookingRecipeCategory.MISC : category;
         this.ingredient = ingredient;
         this.experience = experience;
@@ -39,10 +40,6 @@ public abstract class CustomCookingRecipe<T> extends AbstractGroupedRecipe<T> {
 
     public Ingredient<T> ingredient() {
         return ingredient;
-    }
-
-    public CustomRecipeResult<T> result() {
-        return result;
     }
 
     public float experience() {

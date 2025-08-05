@@ -26,6 +26,10 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
             new VanillaRecipeReader1_20_5() :
             new VanillaRecipeReader1_20();
 
+    protected boolean showNotification(Map<String, Object> arguments) {
+        return ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("show-notification", true), "show-notification");
+    }
+
     protected Ingredient<T> singleInputIngredient(Map<String, Object> arguments) {
         List<String> ingredients = MiscUtils.getAsStringList(getIngredientOrThrow(arguments));
         return toIngredient(ingredients);

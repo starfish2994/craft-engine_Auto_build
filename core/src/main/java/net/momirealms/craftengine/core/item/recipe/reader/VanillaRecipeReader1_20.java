@@ -144,4 +144,9 @@ public class VanillaRecipeReader1_20 implements VanillaRecipeReader {
         }
         return ingredients;
     }
+
+    @Override
+    public boolean showNotification(JsonObject json) {
+        return !json.has("show_notification") || json.get("show_notification").getAsBoolean();
+    }
 }

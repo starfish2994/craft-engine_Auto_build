@@ -103,7 +103,7 @@ public abstract class AbstractRecipeManager<T> implements RecipeManager<T> {
         if (this.byId.containsKey(id)) return false;
         this.byType.computeIfAbsent(recipe.type(), k -> new ArrayList<>()).add(recipe);
         this.byId.put(id, recipe);
-        if (recipe instanceof FixedResultRecipe<?> fixedResult) {
+        if (recipe instanceof AbstractedFixedResultRecipe<?> fixedResult) {
             this.byResult.computeIfAbsent(fixedResult.result().item().id(), k -> new ArrayList<>()).add(recipe);
         }
         HashSet<Key> usedKeys = new HashSet<>();

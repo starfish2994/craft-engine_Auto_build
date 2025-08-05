@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
+public class CustomSmithingTransformRecipe<T> extends AbstractedFixedResultRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
-    private final Key id;
-    private final CustomRecipeResult<T> result;
     private final Ingredient<T> base;
     private final Ingredient<T> template;
     private final Ingredient<T> addition;
@@ -31,15 +29,15 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     private final List<ItemDataProcessor> processors;
 
     public CustomSmithingTransformRecipe(Key id,
-                                         @NotNull Ingredient<T> base,
+                                         boolean showNotification,
                                          @Nullable Ingredient<T> template,
+                                         @NotNull Ingredient<T> base,
                                          @Nullable Ingredient<T> addition,
                                          CustomRecipeResult<T> result,
-                                         boolean mergeComponents,
-                                         List<ItemDataProcessor> processors
+                                         List<ItemDataProcessor> processors,
+                                         boolean mergeComponents
     ) {
-        this.id = id;
-        this.result = result;
+        super(id, showNotification, result);
         this.base = base;
         this.template = template;
         this.addition = addition;
@@ -90,16 +88,6 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
         return RecipeType.SMITHING;
     }
 
-    @Override
-    public Key id() {
-        return this.id;
-    }
-
-    @Nullable
-    public T result(ItemBuildContext context) {
-        return this.result.buildItemStack(context);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public T assemble(RecipeInput input, ItemBuildContext context) {
@@ -115,10 +103,6 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
             processor.accept(base, wrappedResult, finalResult);
         }
         return finalResult.getItem();
-    }
-
-    public CustomRecipeResult<T> result() {
-        return this.result;
     }
 
     @NotNull
@@ -148,24 +132,20 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> processors = (List<Map<String, Object>>) arguments.getOrDefault("post-processors", List.of());
             return new CustomSmithingTransformRecipe<>(id,
-                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(base), "warning.config.recipe.smithing_transform.missing_base"),
+                    showNotification(arguments),
                     toIngredient(template),
+                    ResourceConfigUtils.requireNonNullOrThrow(toIngredient(base), "warning.config.recipe.smithing_transform.missing_base"),
                     toIngredient(addition),
                     parseResult(arguments),
-                    mergeComponents,
-                    ItemDataProcessors.fromMapList(processors)
+                    ItemDataProcessors.fromMapList(processors),
+                    mergeComponents
             );
         }
 
         @Override
         public CustomSmithingTransformRecipe<A> readJson(Key id, JsonObject json) {
             return new CustomSmithingTransformRecipe<>(id,
-                    Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("base")))),
-                    toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("template"))),
-                    toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("addition"))),
-                    parseResult(VANILLA_RECIPE_HELPER.smithingResult(json.getAsJsonObject("result"))),
-                    true,
-                    null
+                    true, toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("template"))), Objects.requireNonNull(toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("base")))), toIngredient(VANILLA_RECIPE_HELPER.singleIngredient(json.get("addition"))), parseResult(VANILLA_RECIPE_HELPER.smithingResult(json.getAsJsonObject("result"))), null, true
             );
         }
     }
@@ -173,7 +153,6 @@ public class CustomSmithingTransformRecipe<T> implements FixedResultRecipe<T> {
     public static class ItemDataProcessors {
         public static final Key KEEP_COMPONENTS = Key.of("craftengine:keep_components");
         public static final Key KEEP_TAGS = Key.of("craftengine:keep_tags");
-        public static final Key APPLY_DATA = Key.of("craftengine:apply_data");
 
         static {
             if (VersionHelper.isOrAbove1_20_5()) {

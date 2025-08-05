@@ -17,8 +17,13 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
     private final List<Ingredient<T>> ingredients;
     private final PlacementInfo<T> placementInfo;
 
-    public CustomShapelessRecipe(Key id, CraftingRecipeCategory category, String group, List<Ingredient<T>> ingredients, CustomRecipeResult<T> result) {
-        super(id, category, group, result);
+    public CustomShapelessRecipe(Key id,
+                                 boolean showNotification,
+                                 CustomRecipeResult<T> result,
+                                 String group,
+                                 CraftingRecipeCategory category,
+                                 List<Ingredient<T>> ingredients) {
+        super(id, showNotification, result, group, category);
         this.ingredients = ingredients;
         this.placementInfo = PlacementInfo.create(ingredients);
     }
@@ -43,7 +48,7 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
             return false;
         }
         if (input.size() == 1 && this.ingredients.size() == 1) {
-            return this.ingredients.get(0).test(input.getItem(0));
+            return this.ingredients.getFirst().test(input.getItem(0));
         }
         return input.finder().canCraft(this);
     }
@@ -78,19 +83,18 @@ public class CustomShapelessRecipe<T> extends CustomCraftingTableRecipe<T> {
                 ingredients.add(toIngredient(ingredientsObject.toString()));
             }
             return new CustomShapelessRecipe(id,
-                    craftingRecipeCategory(arguments),
-                    arguments.containsKey("group") ? arguments.get("group").toString() : null,
-                    ingredients,
-                    parseResult(arguments));
+                    showNotification(arguments),
+                    parseResult(arguments), arguments.containsKey("group") ? arguments.get("group").toString() : null, craftingRecipeCategory(arguments),
+                    ingredients
+            );
         }
 
         @Override
         public CustomShapelessRecipe<A> readJson(Key id, JsonObject json) {
             return new CustomShapelessRecipe<>(id,
-                    VANILLA_RECIPE_HELPER.craftingCategory(json),
-                    VANILLA_RECIPE_HELPER.readGroup(json),
-                    VANILLA_RECIPE_HELPER.shapelessIngredients(json.getAsJsonArray("ingredients")).stream().map(this::toIngredient).toList(),
-                    parseResult(VANILLA_RECIPE_HELPER.craftingResult(json.getAsJsonObject("result")))
+                    true,
+                    parseResult(VANILLA_RECIPE_HELPER.craftingResult(json.getAsJsonObject("result"))), VANILLA_RECIPE_HELPER.readGroup(json), VANILLA_RECIPE_HELPER.craftingCategory(json),
+                    VANILLA_RECIPE_HELPER.shapelessIngredients(json.getAsJsonArray("ingredients")).stream().map(this::toIngredient).toList()
             );
         }
     }

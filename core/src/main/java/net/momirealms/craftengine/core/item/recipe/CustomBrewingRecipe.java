@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.core.item.recipe;
 
 import com.google.gson.JsonObject;
-import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.recipe.input.BrewingInput;
 import net.momirealms.craftengine.core.item.recipe.input.RecipeInput;
 import net.momirealms.craftengine.core.item.recipe.result.CustomRecipeResult;
@@ -15,31 +14,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
+public class CustomBrewingRecipe<T> extends AbstractedFixedResultRecipe<T> {
     public static final Serializer<?> SERIALIZER = new Serializer<>();
-    private final Key id;
     private final Ingredient<T> container;
     private final Ingredient<T> ingredient;
-    private final CustomRecipeResult<T> result;
 
     public CustomBrewingRecipe(@NotNull Key id,
                                @NotNull Ingredient<T> container,
                                @NotNull Ingredient<T> ingredient,
-                               @NotNull CustomRecipeResult<T> result) {
-        this.id = id;
+                               @NotNull CustomRecipeResult<T> result,
+                               boolean showNotification) {
+        super(id, showNotification, result);
         this.container = container;
         this.ingredient = ingredient;
         this.result = result;
-    }
-
-    @Override
-    public CustomRecipeResult<T> result() {
-        return this.result;
-    }
-
-    @Override
-    public T result(ItemBuildContext context) {
-        return this.result.buildItemStack(context);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,11 +65,6 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
         return this.ingredient;
     }
 
-    @Override
-    public Key id() {
-        return this.id;
-    }
-
     @SuppressWarnings({"DuplicatedCode"})
     public static class Serializer<A> extends AbstractRecipeSerializer<A, CustomBrewingRecipe<A>> {
 
@@ -98,7 +81,9 @@ public class CustomBrewingRecipe<T> implements FixedResultRecipe<T> {
             return new CustomBrewingRecipe<>(id,
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(container), "warning.config.recipe.brewing.missing_container"),
                     ResourceConfigUtils.requireNonNullOrThrow(toIngredient(ingredient), "warning.config.recipe.brewing.missing_ingredient"),
-                    parseResult(arguments));
+                    parseResult(arguments),
+                    showNotification(arguments)
+            );
         }
 
         @Override
