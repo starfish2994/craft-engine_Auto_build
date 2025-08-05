@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
@@ -2248,23 +2249,12 @@ public class PacketConsumers {
             Object clickType = FastNMS.INSTANCE.field$ServerboundContainerClickPacket$clickType(packet);
             @SuppressWarnings("unchecked")
             Int2ObjectMap<Object> changedSlots = FastNMS.INSTANCE.field$ServerboundContainerClickPacket$changedSlots(packet);
-            Int2ObjectMap<Object> newChangedSlots = new Int2ObjectOpenHashMap<>();
+            Int2ObjectMap<Object> newChangedSlots = new Int2ObjectOpenHashMap<>(changedSlots.size());
             for (Int2ObjectMap.Entry<Object> entry : changedSlots.int2ObjectEntrySet()) {
-                Object hashedStack = entry.getValue();
-                if (!NetworkReflections.clazz$HashedStack$ActualItem.isInstance(hashedStack)) continue;
-                Object item = FastNMS.INSTANCE.method$ActualItem$item(hashedStack);
-                int count = FastNMS.INSTANCE.method$ActualItem$count(hashedStack);
-                Object components = FastNMS.INSTANCE.method$ActualItem$components(hashedStack);
-                newChangedSlots.put(entry.getIntKey(), FastNMS.INSTANCE.constructor$InjectedHashedStack(item, count, components, player));
+                newChangedSlots.put(entry.getIntKey(), FastNMS.INSTANCE.constructor$InjectedHashedStack(entry.getValue(), player));
             }
-            Object carriedItem = FastNMS.INSTANCE.field$ServerboundContainerClickPacket$carriedItem(packet);
-            if (NetworkReflections.clazz$HashedStack$ActualItem.isInstance(carriedItem)) {
-                Object item = FastNMS.INSTANCE.method$ActualItem$item(carriedItem);
-                int count = FastNMS.INSTANCE.method$ActualItem$count(carriedItem);
-                Object components = FastNMS.INSTANCE.method$ActualItem$components(carriedItem);
-                carriedItem = FastNMS.INSTANCE.constructor$InjectedHashedStack(item, count, components, player);
-            }
-            event.replacePacket(FastNMS.INSTANCE.constructor$ServerboundContainerClickPacket(containerId, stateId, slotNum, buttonNum, clickType, newChangedSlots, carriedItem));
+            Object carriedItem = FastNMS.INSTANCE.constructor$InjectedHashedStack(FastNMS.INSTANCE.field$ServerboundContainerClickPacket$carriedItem(packet), player);
+            event.replacePacket(FastNMS.INSTANCE.constructor$ServerboundContainerClickPacket(containerId, stateId, slotNum, buttonNum, clickType, Int2ObjectMaps.unmodifiable(newChangedSlots), carriedItem));
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundContainerClickPacket", e);
         }
