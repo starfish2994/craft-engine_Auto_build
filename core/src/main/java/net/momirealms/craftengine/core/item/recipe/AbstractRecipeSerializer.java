@@ -109,17 +109,26 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
         boolean hasCustomItem = false;
         for (UniqueKey holder : itemIds) {
             Optional<CustomItem<T>> optionalCustomItem = itemManager.getCustomItem(holder.key());
+            UniqueKey vanillaItem;
             if (optionalCustomItem.isPresent()) {
                 CustomItem<T> customItem = optionalCustomItem.get();
                 if (customItem.isVanillaItem()) {
-                    minecraftItemIds.add(holder);
+                    vanillaItem = holder;
                 } else {
-                    minecraftItemIds.add(UniqueKey.create(customItem.material()));
+                    vanillaItem = UniqueKey.create(customItem.material());
                     hasCustomItem = true;
                 }
             } else {
-                minecraftItemIds.add(holder);
+                if (itemManager.isVanillaItem(holder.key())) {
+                    vanillaItem = holder;
+                } else {
+                    throw new LocalizedResourceConfigException("warning.config.recipe.invalid_ingredient", holder.key().asString());
+                }
             }
+            if (vanillaItem == UniqueKey.AIR) {
+                throw new LocalizedResourceConfigException("warning.config.recipe.invalid_ingredient", holder.key().asString());
+            }
+            minecraftItemIds.add(vanillaItem);
         }
         return itemIds.isEmpty() ? null : Ingredient.of(itemIds, minecraftItemIds, hasCustomItem);
     }

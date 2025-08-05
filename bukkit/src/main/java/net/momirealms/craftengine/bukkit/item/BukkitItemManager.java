@@ -401,15 +401,13 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
             for (Object item : (Iterable<?>) MBuiltInRegistries.ITEM) {
                 Object resourceLocation = FastNMS.INSTANCE.method$Registry$getKey(MBuiltInRegistries.ITEM, item);
                 Key itemKey = KeyUtils.resourceLocationToKey(resourceLocation);
-                if (itemKey.namespace().equals("minecraft")) {
-                    VANILLA_ITEMS.add(itemKey);
-                    UniqueKey uniqueKey = UniqueKey.create(itemKey);
-                    Object mcHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, resourceLocation)).get();
-                    Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
-                    for (Object tag : tags) {
-                        Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());
-                        VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(uniqueKey);
-                    }
+                VANILLA_ITEMS.add(itemKey);
+                UniqueKey uniqueKey = UniqueKey.create(itemKey);
+                Object mcHolder = FastNMS.INSTANCE.method$Registry$getHolderByResourceKey(MBuiltInRegistries.ITEM, FastNMS.INSTANCE.method$ResourceKey$create(MRegistries.ITEM, resourceLocation)).get();
+                Set<Object> tags = (Set<Object>) CoreReflections.field$Holder$Reference$tags.get(mcHolder);
+                for (Object tag : tags) {
+                    Key tagId = Key.of(CoreReflections.field$TagKey$location.get(tag).toString());
+                    VANILLA_ITEM_TAGS.computeIfAbsent(tagId, (key) -> new ArrayList<>()).add(uniqueKey);
                 }
             }
         } catch (ReflectiveOperationException e) {
