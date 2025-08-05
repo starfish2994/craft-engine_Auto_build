@@ -3965,4 +3965,11 @@ public final class CoreReflections {
                     "world.item.DyeableLeatherItem"
             ), !VersionHelper.isOrAbove1_20_5()
     );
+
+    public static final Class<?> clazz$LootPoolEntryType = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "world.level.storage.loot.entries.LootEntryType",
+                    "world.level.storage.loot.entries.LootPoolEntryType"
+            )
+    );
 }

@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class RecipeInjector {
+public final class RecipeInjector {
     private static Class<?> clazz$InjectedArmorDyeRecipe;
     private static Class<?> clazz$InjectedRepairItemRecipe;
     private static Class<?> clazz$InjectedFireworkStarFadeRecipe;
