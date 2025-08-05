@@ -1,13 +1,13 @@
 package net.momirealms.craftengine.core.plugin.context.parameter;
 
+import net.momirealms.craftengine.core.entity.furniture.Furniture;
+import net.momirealms.craftengine.core.plugin.context.ChainParameterProvider;
+import net.momirealms.craftengine.core.plugin.context.ContextKey;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-
-import net.momirealms.craftengine.core.entity.furniture.Furniture;
-import net.momirealms.craftengine.core.plugin.context.ChainParameterProvider;
-import net.momirealms.craftengine.core.plugin.context.ContextKey;
 
 public class FurnitureParameterProvider implements ChainParameterProvider<Furniture> {
     private static final Map<ContextKey<?>, Function<Furniture, Object>> CONTEXT_FUNCTIONS = new HashMap<>();
