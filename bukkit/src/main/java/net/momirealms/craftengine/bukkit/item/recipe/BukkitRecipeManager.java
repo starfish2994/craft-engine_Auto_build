@@ -471,9 +471,12 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         }
         // 注册新的配方
         for (Recipe<ItemStack> recipe : this.byId.values()) {
-            registerPlatformRecipeMainThread(recipe);
+            try {
+                registerPlatformRecipeMainThread(recipe);
+            } catch (Exception e) {
+                this.plugin.logger().warn("Failed to register recipe " + recipe.id().toString(), e);
+            }
         }
-
         try {
             // give flags back on 1.21.2+
             if (VersionHelper.isOrAbove1_21_2() && this.stolenFeatureFlagSet != null) {
