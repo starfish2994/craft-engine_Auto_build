@@ -353,4 +353,8 @@ public final class CraftBukkitReflections {
     public static final Method method$Level$getCraftWorld = requireNonNull(
             ReflectionUtils.getMethod(CoreReflections.clazz$Level, clazz$CraftWorld)
     );
+
+    public static final Class<?> clazz$MinecraftInventory = requireNonNull(
+            ReflectionUtils.getClazz(BukkitReflectionUtils.assembleCBClass("inventory.CraftInventoryCustom$MinecraftInventory"))
+    );
 }
