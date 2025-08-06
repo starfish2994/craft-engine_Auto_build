@@ -401,6 +401,8 @@ warning.config.function.set_cooldown.missing_time: "<yellow>Issue found in file 
 warning.config.function.set_cooldown.missing_id: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'id' argument for 'set_cooldown' function.</yellow>"
 warning.config.function.remove_cooldown.missing_id: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'id' argument for 'remove_cooldown' function.</yellow>"
 warning.config.function.mythic_mobs_skill.missing_skill: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'skill' argument for 'mythic_mobs_skill' function.</yellow>"
+warning.config.function.spawn_furniture.missing_furniture_id: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'furniture-id' argument for 'spawn_furniture' function.</yellow>"
+warning.config.function.replace_furniture.missing_furniture_id: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'furniture-id' argument for 'replace_furniture' function.</yellow>"
 warning.config.selector.missing_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is missing the required 'type' argument for selector.</yellow>"
 warning.config.selector.invalid_type: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector type '<arg:2>'.</yellow>"
 warning.config.selector.invalid_target: "<yellow>Issue found in file <arg:0> - The config '<arg:1>' is using an invalid selector target '<arg:2>'.</yellow>"
