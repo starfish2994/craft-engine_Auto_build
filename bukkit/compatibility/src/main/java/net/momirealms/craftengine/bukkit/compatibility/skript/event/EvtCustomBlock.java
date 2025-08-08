@@ -1,6 +1,9 @@
 package net.momirealms.craftengine.bukkit.compatibility.skript.event;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser;
@@ -16,12 +19,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 @SuppressWarnings({"unchecked"})
+@Name("On Custom Block Place And Break")
+@Description({"Fires when a Custom block gets place and broken"})
+@Since("1.0")
 public class EvtCustomBlock extends SkriptEvent {
 
     public static void register() {
-        Skript.registerEvent("Break Custom Block", EvtCustomBlock.class, CustomBlockBreakEvent.class, "(break[ing]|1¦min(e|ing)) [[of] %-unsafeblockstatematchers%]")
+        Skript.registerEvent("Break Custom Block", EvtCustomBlock.class, CustomBlockBreakEvent.class, "(break[ing]|1¦min(e|ing)) of (custom|ce|craft-engine) block [[of] %-unsafeblockstatematchers%]")
                 .description("Called when a custom block is broken by a player. If you use 'on mine', only events where the broken block dropped something will call the trigger.");
-        Skript.registerEvent("Place Custom Block", EvtCustomBlock.class, CustomBlockPlaceEvent.class, "(plac(e|ing)|build[ing]) [[of] %-unsafeblockstatematchers%]")
+        Skript.registerEvent("Place Custom Block", EvtCustomBlock.class, CustomBlockPlaceEvent.class, "(plac(e|ing)|build[ing]) of (custom|ce|craft-engine) block [[of] %-unsafeblockstatematchers%]")
                 .description("Called when a player places a custom block.");
     }
 
