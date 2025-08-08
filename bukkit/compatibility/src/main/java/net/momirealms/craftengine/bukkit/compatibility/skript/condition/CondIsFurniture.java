@@ -15,8 +15,8 @@ public class CondIsFurniture extends Condition {
 
     public static void register() {
         Skript.registerCondition(CondIsFurniture.class,
-                "%entities% (is|are) furniture",
-                "%entities% (is|are)(n't| not) furniture");
+                "%entities% (is|are) (custom|ce|craft-engine) furniture",
+                "%entities% (is|are)(n't| not) (custom|ce|craft-engine) furniture");
     }
 
     private Expression<Entity> entities;

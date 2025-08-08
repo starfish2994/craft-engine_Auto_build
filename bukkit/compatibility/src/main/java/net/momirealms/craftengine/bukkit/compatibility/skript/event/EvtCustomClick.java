@@ -3,6 +3,9 @@ package net.momirealms.craftengine.bukkit.compatibility.skript.event;
 import ch.njol.skript.Skript;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.bukkitutil.ClickEventTracker;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser;
@@ -17,6 +20,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
+@Name("On Click with Custom Item")
+@Description({"Fires when click a custom item"})
+@Since("1.0")
 public class EvtCustomClick extends SkriptEvent {
 
     private final static int RIGHT = 1, LEFT = 2, ANY = RIGHT | LEFT;
@@ -25,8 +31,8 @@ public class EvtCustomClick extends SkriptEvent {
     @SuppressWarnings("unchecked")
     public static void register() {
         Skript.registerEvent("Interact Custom Block Furniture", EvtCustomClick.class, new Class[]{CustomBlockInteractEvent.class, FurnitureInteractEvent.class},
-                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] [on %-unsafeblockstatematchers/strings%] [(with|using|holding) %-itemtype%]",
-                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] (with|using|holding) %itemtype% on %unsafeblockstatematchers/strings%");
+                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (ce|craft-engine) [on %-unsafeblockstatematchers/strings%] [(with|using|holding) %-itemtype%]",
+                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (ce|craft-engine) (with|using|holding) %itemtype% on %unsafeblockstatematchers/strings%");
     }
 
     private @Nullable Literal<?> type;

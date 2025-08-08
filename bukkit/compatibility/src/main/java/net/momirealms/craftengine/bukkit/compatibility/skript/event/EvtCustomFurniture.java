@@ -1,6 +1,9 @@
 package net.momirealms.craftengine.bukkit.compatibility.skript.event;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser;
@@ -12,12 +15,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 @SuppressWarnings({"unchecked"})
+@Name("On Custom Furniture Place And Break")
+@Description({"Fires when a Custom furniture gets place and broken"})
+@Since("1.0")
 public class EvtCustomFurniture extends SkriptEvent {
 
     public static void register() {
-        Skript.registerEvent("Break Furniture", EvtCustomFurniture.class, FurnitureBreakEvent.class, "(break[ing]) [[of] %-strings%]")
+        Skript.registerEvent("Break Furniture", EvtCustomFurniture.class, FurnitureBreakEvent.class, "(break[ing]) of (custom|ce|craft-engine) furniture[s] [[of] %-strings%]")
                 .description("Called when a furniture is broken by a player.");
-        Skript.registerEvent("Place Furniture", EvtCustomFurniture.class, FurniturePlaceEvent.class, "(plac(e|ing)|build[ing]) [[of] %-strings%]")
+        Skript.registerEvent("Place Furniture", EvtCustomFurniture.class, FurniturePlaceEvent.class, "(plac(e|ing)|build[ing]) of (custom|ce|craft-engine) furniture[s] [[of] %-strings%]")
                 .description("Called when a player places a furniture.");
     }
 
