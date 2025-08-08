@@ -31,8 +31,8 @@ public class EvtCustomClick extends SkriptEvent {
     @SuppressWarnings("unchecked")
     public static void register() {
         Skript.registerEvent("Interact Custom Block Furniture", EvtCustomClick.class, new Class[]{CustomBlockInteractEvent.class, FurnitureInteractEvent.class},
-                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (custom|ce|craft-engine) item[s] [on %-unsafeblockstatematchers/strings%] [(with|using|holding) %-itemtype%]",
-                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (custom|ce|craft-engine) item[s] (with|using|holding) %itemtype% on %unsafeblockstatematchers/strings%");
+                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (ce|craft-engine) [on %-unsafeblockstatematchers/strings%] [(with|using|holding) %-itemtype%]",
+                        "[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] of (ce|craft-engine) (with|using|holding) %itemtype% on %unsafeblockstatematchers/strings%");
     }
 
     private @Nullable Literal<?> type;
