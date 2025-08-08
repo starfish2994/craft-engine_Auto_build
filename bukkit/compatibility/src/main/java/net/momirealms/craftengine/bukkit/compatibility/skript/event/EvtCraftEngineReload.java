@@ -34,12 +34,15 @@ public class EvtCraftEngineReload extends SkriptEvent {
 
     @Override
     public boolean check(Event event) {
-        if (event instanceof CraftEngineReloadEvent reloadEvent) return false;
+        if (!(event instanceof CraftEngineReloadEvent reloadEvent)) {
+            return false;
+        }
         if (onlyCheckFirstCall) {
             if (hasBeenCalled) return false; // 如果 hasBeenCalled 已经为 true，代表已经调用过了, 故返回 false。
             hasBeenCalled = true;
             return true;
         }
+        hasBeenCalled = true;
         return true;
     }
 
