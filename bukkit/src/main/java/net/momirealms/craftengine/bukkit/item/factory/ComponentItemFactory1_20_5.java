@@ -345,7 +345,12 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
 
     @Override
     protected void unbreakable(ComponentItemWrapper item, boolean unbreakable) {
-        item.setJavaComponent(ComponentTypes.UNBREAKABLE, unbreakable);
+        final Tag emptyTag = new CompoundTag();
+        if (unbreakable) {
+            item.setSparrowNBTComponent(ComponentTypes.UNBREAKABLE, emptyTag);
+        } else {
+            item.removeComponent(ComponentTypes.UNBREAKABLE);
+        }
     }
 
     @Override
