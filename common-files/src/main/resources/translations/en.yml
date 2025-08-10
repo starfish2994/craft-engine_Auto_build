@@ -327,7 +327,7 @@ warning.config.loot_table.entry.item.missing_item: "<yellow>Issue found in file 
 warning.config.loot_table.condition.missing_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the conditions is missing the required 'type' argument.</yellow>"
 warning.config.loot_table.condition.invalid_type: "<yellow>Issue found in file <arg:0> - '<arg:1>' has a misconfigured loot table, one of the conditions is using an invalid condition type '<arg:2>'.</yellow>"
 warning.config.host.missing_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'type' argument for host.</yellow>"
-warning.config.host.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Host type '<arg:0>' is invalid. Please read https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host.</yellow>"
+warning.config.host.invalid_type: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Host type '<arg:0>' is invalid. Please read https://xiao-momi.github.io/craft-engine-wiki/getting_start/set_up_host.</yellow>"
 warning.config.host.external.missing_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'url' argument for external host.</yellow>"
 warning.config.host.alist.missing_api_url: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'api-url' argument for alist host.</yellow>"
 warning.config.host.alist.missing_username: "<yellow>Issue found in config.yml at 'resource-pack.delivery.hosting' - Missing required 'username' argument or environment variable 'CE_ALIST_USERNAME' for alist host.</yellow>"

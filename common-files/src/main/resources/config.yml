@@ -82,7 +82,7 @@ resource-pack:
     prompt: "<yellow>To fully experience our server,<newline>please accept our custom resource pack.</yellow>"
     # If you are hosting the resource pack by yourself, replace `localhost` with your server ip otherwise it would only work on your local pc
     # If using BungeeCord or Velocity, consider using a proxy-side plugin to handle resource pack delivery.
-    # Read this page for more host types: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/resource-pack/host
+    # Read this page for more host types: https://xiao-momi.github.io/craft-engine-wiki/getting_start/set_up_host
     hosting:
       - type: "self"
         ip: "localhost"
@@ -171,7 +171,6 @@ block:
   #   - Sending custom IDs (e.g., craftengine:note_block_0) to vanilla clients WILL CRASH THEM!
   #   ✅ Solution:
   #   - Use `client-bound-item-data` to safely sync custom block data to clients.
-  #   Documentation: https://mo-mi.gitbook.io/xiaomomi-plugins/craftengine/plugin-wiki/craftengine/add-new-contents/items/item-data/client-bound-item-data
   simplify-adventure-break-check: false
   # Similar to the option above, but designed for block placement
   simplify-adventure-place-check: false
