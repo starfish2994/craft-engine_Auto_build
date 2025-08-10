@@ -327,7 +327,7 @@ warning.config.loot_table.entry.item.missing_item: "<yellow>在文件 <arg:0> �
 warning.config.loot_table.condition.missing_type: "<yellow>在文件 <arg:0> 发现问题 - '<arg:1>' 的战利品表配置错误 某个条件缺少必需的 'type' 参数</yellow>"
 warning.config.loot_table.condition.invalid_type: "<yellow>在文件 <arg:0> 发现问题 - '<arg:1>' 的战利品表配置错误 某个条件使用了无效的条件类型 '<arg:2>'</yellow>"
 warning.config.host.missing_type: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 缺少必需的 'type' 参数</yellow>"
-warning.config.host.invalid_type: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 无效的托管类型 '<arg:0>' 请参考 https://xiao-momi.github.io/craft-engine-wiki/getting_start/set_up_host</yellow>"
+warning.config.host.invalid_type: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 无效的托管类型 '<arg:0>' 请参考 https://ce.gtemc.cn/zh-Hans/getting_start/set_up_host</yellow>"
 warning.config.host.external.missing_url: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - 外部托管缺少必需的 'url' 参数</yellow>"
 warning.config.host.alist.missing_api_url: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - Alist 托管缺少必需的 'api-url' 参数</yellow>"
 warning.config.host.alist.missing_username: "<yellow>在 config.yml 的 'resource-pack.delivery.hosting' 处发现问题 - Alist 托管缺少必需的 'username' 参数或环境变量 'CE_ALIST_USERNAME'</yellow>"
