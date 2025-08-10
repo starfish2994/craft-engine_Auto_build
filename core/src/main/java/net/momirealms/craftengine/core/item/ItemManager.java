@@ -76,6 +76,8 @@ public interface ItemManager<T> extends Manageable, ModelGenerator {
         return getVanillaItem(key);
     }
 
+    Optional<CustomItem<T>> getCustomItemByPathOnly(String path);
+
     boolean addCustomItem(CustomItem<T> customItem);
 
     default List<UniqueKey> itemIdsByTag(Key tag) {

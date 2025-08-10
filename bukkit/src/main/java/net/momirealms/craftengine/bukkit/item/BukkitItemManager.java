@@ -335,7 +335,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public ItemStack buildCustomItemStack(Key id, Player player) {
-        return Optional.ofNullable(this.customItems.get(id)).map(it -> it.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), 1)).orElse(null);
+        return Optional.ofNullable(this.customItemsById.get(id)).map(it -> it.buildItemStack(new ItemBuildContext(player, ContextHolder.EMPTY), 1)).orElse(null);
     }
 
     @Override
@@ -349,12 +349,12 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
 
     @Override
     public Item<ItemStack> createCustomWrappedItem(Key id, Player player) {
-        return Optional.ofNullable(customItems.get(id)).map(it -> it.buildItem(player)).orElse(null);
+        return Optional.ofNullable(customItemsById.get(id)).map(it -> it.buildItem(player)).orElse(null);
     }
 
     @Override
     public Item<ItemStack> createWrappedItem(Key id, @Nullable Player player) {
-        CustomItem<ItemStack> customItem = this.customItems.get(id);
+        CustomItem<ItemStack> customItem = this.customItemsById.get(id);
         if (customItem != null) {
             return customItem.buildItem(player);
         }
