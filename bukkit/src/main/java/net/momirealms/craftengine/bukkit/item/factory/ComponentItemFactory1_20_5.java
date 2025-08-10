@@ -345,7 +345,11 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
 
     @Override
     protected void unbreakable(ComponentItemWrapper item, boolean unbreakable) {
-        item.setJavaComponent(ComponentTypes.UNBREAKABLE, unbreakable);
+        if (unbreakable) {
+            item.setJavaComponent(ComponentTypes.UNBREAKABLE, Map.of());
+        } else {
+            item.resetComponent(ComponentTypes.UNBREAKABLE);
+        }
     }
 
     @Override
