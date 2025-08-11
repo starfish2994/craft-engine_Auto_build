@@ -19,14 +19,15 @@ public class CondIsCraftEngineHasBeenLoad extends Condition {
 
     public static void register() {
         Skript.registerCondition(CondIsCraftEngineHasBeenLoad.class,
-                "(ce|craft-engine) has been load[ed]",
-                "(ce|craft-engine) has not been load[ed] [yet]"
+                "(ce|craft[-]engine) (has been|is) load[ed]",
+                "(ce|craft[-]engine) (has not been|is not) load[ed] [yet]",
+                "(ce|craft[-]engine) (hasn't been|isn't) load[ed] [yet]"
         );
     }
 
     @Override
     public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        setNegated(matchedPattern == 1);
+        setNegated(matchedPattern >= 1);
         return true;
     }
 
@@ -38,7 +39,7 @@ public class CondIsCraftEngineHasBeenLoad extends Condition {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "craft-engine has " + (isNegated() ? "not " : "") + "been loaded";
+        return "craft-engine " + (isNegated() ? "is not" : "is") + " loaded";
     }
 
 

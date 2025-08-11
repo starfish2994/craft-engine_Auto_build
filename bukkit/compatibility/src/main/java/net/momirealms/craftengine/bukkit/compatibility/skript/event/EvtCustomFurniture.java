@@ -7,8 +7,15 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.registrations.EventValues;
+import io.papermc.paper.event.player.PlayerTrackEntityEvent;
+import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,10 +28,19 @@ import java.util.Arrays;
 public class EvtCustomFurniture extends SkriptEvent {
 
     public static void register() {
-        Skript.registerEvent("Break Furniture", EvtCustomFurniture.class, FurnitureBreakEvent.class, "(break[ing]) of (custom|ce|craft-engine) furniture[s] [[of] %-strings%]")
+        Skript.registerEvent("Break Furniture", EvtCustomFurniture.class, FurnitureBreakEvent.class, "(break[ing]) of [(custom|ce|craft-engine)] furniture[s] [[of] %-strings%]")
                 .description("Called when a furniture is broken by a player.");
-        Skript.registerEvent("Place Furniture", EvtCustomFurniture.class, FurniturePlaceEvent.class, "(plac(e|ing)|build[ing]) of (custom|ce|craft-engine) furniture[s] [[of] %-strings%]")
+        EventValues.registerEventValue(FurnitureBreakEvent.class, Location.class, FurnitureBreakEvent::location, EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurnitureBreakEvent.class, Player.class, FurnitureBreakEvent::player, EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurnitureBreakEvent.class, Entity.class, event -> event.furniture().baseEntity(), EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurnitureBreakEvent.class, World.class, event -> event.location().getWorld(), EventValues.TIME_NOW);
+
+        Skript.registerEvent("Place Furniture", EvtCustomFurniture.class, FurniturePlaceEvent.class, "(plac(e|ing)|build[ing]) of [(custom|ce|craft-engine)] furniture[s] [[of] %-strings%]")
                 .description("Called when a player places a furniture.");
+        EventValues.registerEventValue(FurniturePlaceEvent.class, Location.class, FurniturePlaceEvent::location, EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurniturePlaceEvent.class, Player.class, FurniturePlaceEvent::player, EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurniturePlaceEvent.class, Entity.class, event -> event.furniture().baseEntity(), EventValues.TIME_NOW);
+        EventValues.registerEventValue(FurniturePlaceEvent.class, World.class, event -> event.location().getWorld(), EventValues.TIME_NOW);
     }
 
     @Nullable
