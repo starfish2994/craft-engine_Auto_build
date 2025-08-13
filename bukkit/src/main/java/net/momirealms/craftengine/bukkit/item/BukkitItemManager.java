@@ -368,7 +368,7 @@ public class BukkitItemManager extends AbstractItemManager<ItemStack> {
     @Nullable
     private ItemStack createVanillaItemStack(Key id) {
         Object item = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.ITEM, KeyUtils.toResourceLocation(id));
-        if (item == null || item == MItems.AIR) {
+        if (item == MItems.AIR) {
             return null;
         }
         return FastNMS.INSTANCE.method$CraftItemStack$asCraftMirror(FastNMS.INSTANCE.constructor$ItemStack(item, 1));
