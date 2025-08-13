@@ -321,11 +321,15 @@ public abstract class AbstractPackManager implements PackManager {
                         Yaml yaml = new Yaml(new StringKeyConstructor(path, new LoaderOptions()));
                         try (InputStream is = Files.newInputStream(metaFile)) {
                             Map<String, Object> data = yaml.load(is);
-                            enable = ResourceConfigUtils.getAsBoolean(data.getOrDefault("enable", true), "enable");
-                            namespace = data.getOrDefault("namespace", namespace).toString();
-                            description = Optional.ofNullable(data.get("description")).map(String::valueOf).orElse(null);
-                            version = Optional.ofNullable(data.get("version")).map(String::valueOf).orElse(null);
-                            author = Optional.ofNullable(data.get("author")).map(String::valueOf).orElse(null);
+                            if (data != null) {
+                                enable = ResourceConfigUtils.getAsBoolean(data.getOrDefault("enable", true), "enable");
+                                namespace = data.getOrDefault("namespace", namespace).toString();
+                                description = Optional.ofNullable(data.get("description")).map(String::valueOf).orElse(null);
+                                version = Optional.ofNullable(data.get("version")).map(String::valueOf).orElse(null);
+                                author = Optional.ofNullable(data.get("author")).map(String::valueOf).orElse(null);
+                            } else {
+                                this.plugin.logger().warn("Failed to load resource meta file: " + metaFile);
+                            }
                         } catch (IOException e) {
                             this.plugin.logger().warn("Failed to load " + metaFile, e);
                         }
