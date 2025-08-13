@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.item.listener;
 
 import io.papermc.paper.event.block.CompostItemEvent;
+import net.momirealms.craftengine.bukkit.api.BukkitAdaptors;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.bukkit.item.BukkitCustomItem;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
@@ -69,7 +70,7 @@ public class ItemEventListener implements Listener {
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
-        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
         if (serverPlayer == null) return;
 
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
@@ -107,7 +108,7 @@ public class ItemEventListener implements Listener {
             return;
         }
 
-        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
         if (serverPlayer == null) return;
         InteractionHand hand = event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         // 如果本tick内主手已被处理，则不处理副手
@@ -349,7 +350,7 @@ public class ItemEventListener implements Listener {
         if (action != Action.RIGHT_CLICK_AIR && action != Action.LEFT_CLICK_AIR)
             return;
         Player player = event.getPlayer();
-        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
         if (serverPlayer.isSpectatorMode())
             return;
         // Gets the item in hand
@@ -411,7 +412,7 @@ public class ItemEventListener implements Listener {
         }
         Cancellable cancellable = Cancellable.of(event::isCancelled, event::setCancelled);
         CustomItem<ItemStack> customItem = optionalCustomItem.get();
-        PlayerOptionalContext context = PlayerOptionalContext.of(this.plugin.adapt(event.getPlayer()), ContextHolder.builder()
+        PlayerOptionalContext context = PlayerOptionalContext.of(BukkitAdaptors.adapt(event.getPlayer()), ContextHolder.builder()
                 .withParameter(DirectContextParameters.ITEM_IN_HAND, wrapped)
                 .withParameter(DirectContextParameters.EVENT, cancellable)
                 .withParameter(DirectContextParameters.HAND, event.getHand() == EquipmentSlot.HAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND)
@@ -425,7 +426,7 @@ public class ItemEventListener implements Listener {
             if (replacement == null) {
                 event.setReplacement(null);
             } else {
-                ItemStack replacementItem = this.plugin.itemManager().buildItemStack(replacement, this.plugin.adapt(event.getPlayer()));
+                ItemStack replacementItem = this.plugin.itemManager().buildItemStack(replacement, BukkitAdaptors.adapt(event.getPlayer()));
                 event.setReplacement(replacementItem);
             }
         }
@@ -516,7 +517,7 @@ public class ItemEventListener implements Listener {
         if (optionalCustomItem.isEmpty()) return;
         BukkitCustomItem customItem = (BukkitCustomItem) optionalCustomItem.get();
         if (customItem.clientItem() == FastNMS.INSTANCE.method$ItemStack$getItem(wrapped.getLiteralObject())) return;
-        BukkitServerPlayer serverPlayer = this.plugin.adapt(player);
+        BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
         if (serverPlayer == null) return;
         this.plugin.scheduler().sync().runDelayed(() -> {
             Object container = FastNMS.INSTANCE.field$Player$containerMenu(serverPlayer.serverPlayer());

@@ -4323,7 +4323,7 @@ minecraft:heavy_weighted_pressure_plate[power=14]: minecraft:heavy_weighted_pres
 minecraft:heavy_weighted_pressure_plate[power=15]: minecraft:heavy_weighted_pressure_plate[power=1]
 
 #### Corals ####
-# # Coral blocks are ideal for creating water blocks or wall-mounted blocks. But you have to sacrifice its dry appearance.
+# Coral blocks are ideal for creating water blocks or wall-mounted blocks. But you have to sacrifice its dry appearance.
 # minecraft:dead_brain_coral[waterlogged=false]: minecraft:brain_coral[waterlogged=false]
 # minecraft:dead_brain_coral[waterlogged=true]: minecraft:brain_coral[waterlogged=true]
 # minecraft:dead_brain_coral_fan[waterlogged=false]: minecraft:brain_coral_fan[waterlogged=false]

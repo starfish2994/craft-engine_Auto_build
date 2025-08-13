@@ -112,14 +112,16 @@ public class BukkitServerPlayer extends Player {
 
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
-    public BukkitServerPlayer(BukkitCraftEngine plugin, Channel channel) {
+    public BukkitServerPlayer(BukkitCraftEngine plugin, @Nullable Channel channel) {
         this.channel = channel;
         this.plugin = plugin;
-        for (String name : channel.pipeline().names()) {
-            ChannelHandler handler = channel.pipeline().get(name);
-            if (NetworkReflections.clazz$Connection.isInstance(handler)) {
-                this.connection = handler;
-                break;
+        if (channel != null) {
+            for (String name : channel.pipeline().names()) {
+                ChannelHandler handler = channel.pipeline().get(name);
+                if (NetworkReflections.clazz$Connection.isInstance(handler)) {
+                    this.connection = handler;
+                    break;
+                }
             }
         }
     }
@@ -328,22 +330,37 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void sendCustomPayload(Key channel, byte[] data) {
+    public void sendPackets(List<Object> packet, boolean immediately) {
+        this.plugin.networkManager().sendPackets(this, packet, immediately);
+    }
+
+    @Override
+    public void sendPackets(List<Object> packet, boolean immediately, Runnable sendListener) {
+        this.plugin.networkManager().sendPackets(this, packet, immediately, sendListener);
+    }
+
+    @Override
+    public void simulatePacket(Object packet) {
+        this.plugin.networkManager().simulatePacket(this, packet);
+    }
+
+    @Override
+    public void sendCustomPayload(Key channelId, byte[] data) {
         try {
-            Object channelKey = KeyUtils.toResourceLocation(channel);
+            Object channelResourceLocation = KeyUtils.toResourceLocation(channelId);
             Object responsePacket;
             if (VersionHelper.isOrAbove1_20_2()) {
                 Object dataPayload;
                 if (NetworkReflections.clazz$UnknownPayload != null) {
-                    dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+                    dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelResourceLocation, Unpooled.wrappedBuffer(data));
                 } else if (DiscardedPayload.useNewMethod) {
-                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, data);
+                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelResourceLocation, data);
                 } else {
-                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelKey, Unpooled.wrappedBuffer(data));
+                    dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelResourceLocation, Unpooled.wrappedBuffer(data));
                 }
                 responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(dataPayload);
             } else {
-                responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(channelKey, FastNMS.INSTANCE.constructor$FriendlyByteBuf(Unpooled.wrappedBuffer(data)));
+                responsePacket = NetworkReflections.constructor$ClientboundCustomPayloadPacket.newInstance(channelResourceLocation, FastNMS.INSTANCE.constructor$FriendlyByteBuf(Unpooled.wrappedBuffer(data)));
             }
             this.sendPacket(responsePacket, true);
         } catch (Exception e) {
@@ -363,21 +380,6 @@ public class BukkitServerPlayer extends Player {
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to kick " + name(), e);
         }
-    }
-
-    @Override
-    public void sendPackets(List<Object> packet, boolean immediately) {
-        this.plugin.networkManager().sendPackets(this, packet, immediately);
-    }
-
-    @Override
-    public void sendPackets(List<Object> packet, boolean immediately, Runnable sendListener) {
-        this.plugin.networkManager().sendPackets(this, packet, immediately, sendListener);
-    }
-
-    @Override
-    public void simulatePacket(Object packet) {
-        this.plugin.networkManager().simulatePacket(this, packet);
     }
 
     @Override
@@ -859,6 +861,11 @@ public class BukkitServerPlayer extends Player {
             }
         }
         return this.connection;
+    }
+
+    @Override
+    public boolean isFakePlayer() {
+        return false;
     }
 
     @Override

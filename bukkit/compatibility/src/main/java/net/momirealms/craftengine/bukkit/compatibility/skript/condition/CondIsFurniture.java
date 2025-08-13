@@ -12,8 +12,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Predicate;
-
 public class CondIsFurniture extends Condition {
 
     public static void register() {

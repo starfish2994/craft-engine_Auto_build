@@ -1,7 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.command.feature;
 
 import net.momirealms.craftengine.bukkit.plugin.command.BukkitCommandFeature;
-import net.momirealms.craftengine.bukkit.plugin.network.BukkitNetworkManager;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.command.CraftEngineCommandManager;
 import org.bukkit.command.CommandSender;
@@ -19,8 +18,6 @@ public class TestCommand extends BukkitCommandFeature<CommandSender> {
         return builder
                 .senderType(Player.class)
                 .handler(context -> {
-                    Player player = context.sender();
-                    player.sendMessage("客户端模组状态: " + BukkitNetworkManager.instance().getUser(player).clientModEnabled());
                 });
     }
 

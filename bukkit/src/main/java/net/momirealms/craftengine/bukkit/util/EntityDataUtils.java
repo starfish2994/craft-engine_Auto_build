@@ -2,7 +2,7 @@ package net.momirealms.craftengine.bukkit.util;
 
 import net.momirealms.craftengine.core.util.VersionHelper;
 
-public class EntityDataUtils {
+public final class EntityDataUtils {
 
     private EntityDataUtils() {}
 
