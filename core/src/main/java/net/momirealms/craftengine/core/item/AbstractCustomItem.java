@@ -101,4 +101,9 @@ public abstract class AbstractCustomItem<I> implements CustomItem<I> {
     public @NotNull List<ItemBehavior> behaviors() {
         return this.behaviors;
     }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
 }
