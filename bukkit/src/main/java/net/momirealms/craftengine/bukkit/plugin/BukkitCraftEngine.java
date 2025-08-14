@@ -123,7 +123,7 @@ public class BukkitCraftEngine extends CraftEngine {
     @Override
     public void onPluginLoad() {
         if (super.blockManager == null) {
-            injectRegistries();
+            this.injectRegistries();
         }
         try {
             WorldStorageInjector.init();

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.item.modifier;
 
 import net.momirealms.craftengine.core.item.ItemDataModifierFactory;
+import net.momirealms.craftengine.core.item.modifier.lore.OverwritableLoreModifier;
 import net.momirealms.craftengine.core.item.modifier.lore.DynamicLoreModifier;
 import net.momirealms.craftengine.core.item.modifier.lore.LoreModifier;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
@@ -40,10 +41,15 @@ public final class ItemDataModifiers {
     public static final Key LORE = Key.of("craftengine:lore");
     public static final Key UNBREAKABLE = Key.of("craftengine:unbreakable");
     public static final Key DYNAMIC_LORE = Key.of("craftengine:dynamic-lore");
+    public static final Key OVERWRITABLE_LORE = Key.of("craftengine:overwritable-lore");
 
     public static <T> void register(Key key, ItemDataModifierFactory<T> factory) {
         ((WritableRegistry<ItemDataModifierFactory<?>>) BuiltInRegistries.ITEM_DATA_MODIFIER_FACTORY)
                 .register(ResourceKey.create(Registries.ITEM_DATA_MODIFIER_FACTORY.location(), key), factory);
+        if (key.value().contains("-")) {
+            ((WritableRegistry<ItemDataModifierFactory<?>>) BuiltInRegistries.ITEM_DATA_MODIFIER_FACTORY)
+                    .register(ResourceKey.create(Registries.ITEM_DATA_MODIFIER_FACTORY.location(), new Key(key.namespace(), key.value().replace("-", "_"))), factory);
+        }
     }
 
     public static void init() {}
@@ -52,6 +58,7 @@ public final class ItemDataModifiers {
         register(EXTERNAL, ExternalModifier.FACTORY);
         register(LORE, LoreModifier.FACTORY);
         register(DYNAMIC_LORE, DynamicLoreModifier.FACTORY);
+        register(OVERWRITABLE_LORE, OverwritableLoreModifier.FACTORY);
         register(DYED_COLOR, DyedColorModifier.FACTORY);
         register(TAGS, TagsModifier.FACTORY);
         register(NBT, TagsModifier.FACTORY);

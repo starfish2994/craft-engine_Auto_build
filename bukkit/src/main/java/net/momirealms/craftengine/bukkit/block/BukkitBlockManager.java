@@ -47,6 +47,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -884,5 +885,22 @@ public final class BukkitBlockManager extends AbstractBlockManager {
                 magicMap.put(newBlock, material);
             }
         }
+    }
+
+    @Override
+    protected int getBlockRegistryId(Key id) {
+        Object block = FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(id));
+        return FastNMS.INSTANCE.method$IdMap$getId(MBuiltInRegistries.BLOCK, block).orElseThrow(() -> new IllegalStateException("Block " + id + " not found"));
+    }
+
+    @Override
+    protected boolean isVanillaBlock(Key id) {
+        if (!id.namespace().equals("minecraft")) {
+            return false;
+        }
+        if (id.value().equals("air")) {
+            return true;
+        }
+        return FastNMS.INSTANCE.method$Registry$getValue(MBuiltInRegistries.BLOCK, KeyUtils.toResourceLocation(id)) != MBlocks.AIR;
     }
 }

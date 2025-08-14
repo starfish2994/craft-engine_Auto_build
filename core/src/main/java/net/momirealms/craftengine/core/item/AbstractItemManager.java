@@ -73,7 +73,12 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             for (Map.Entry<String, Object> dataEntry : dataSection.entrySet()) {
                 Object value = dataEntry.getValue();
                 if (value == null) continue;
-                Optional.ofNullable(BuiltInRegistries.ITEM_DATA_MODIFIER_FACTORY.getValue(Key.withDefaultNamespace(dataEntry.getKey(), Key.DEFAULT_NAMESPACE))).ifPresent(factory -> {
+                String key = dataEntry.getKey();
+                int idIndex = key.indexOf('#');
+                if (idIndex != -1) {
+                    key = key.substring(0, idIndex);
+                }
+                Optional.ofNullable(BuiltInRegistries.ITEM_DATA_MODIFIER_FACTORY.getValue(Key.withDefaultNamespace(key, Key.DEFAULT_NAMESPACE))).ifPresent(factory -> {
                     try {
                         callback.accept((ItemDataModifier<I>) factory.create(value));
                     } catch (LocalizedResourceConfigException e) {

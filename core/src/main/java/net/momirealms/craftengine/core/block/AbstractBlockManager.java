@@ -3,13 +3,20 @@ package net.momirealms.craftengine.core.block;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.momirealms.craftengine.core.pack.LoadingSequence;
+import net.momirealms.craftengine.core.pack.Pack;
+import net.momirealms.craftengine.core.pack.ResourceLocation;
 import net.momirealms.craftengine.core.pack.model.generation.AbstractModelGenerator;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.config.ConfigParser;
+import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.util.MiscUtils;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.*;
 
 public abstract class AbstractBlockManager extends AbstractModelGenerator implements BlockManager {
@@ -127,4 +134,52 @@ public abstract class AbstractBlockManager extends AbstractModelGenerator implem
     }
 
     protected abstract void resendTags();
+
+    protected abstract boolean isVanillaBlock(Key id);
+
+    protected abstract int getBlockRegistryId(Key id);
+
+    public class BlockParser implements ConfigParser {
+        public static final String[] CONFIG_SECTION_NAME = new String[]{"blocks", "block"};
+
+        @Override
+        public String[] sectionId() {
+            return CONFIG_SECTION_NAME;
+        }
+
+        @Override
+        public int loadingSequence() {
+            return LoadingSequence.BLOCK;
+        }
+
+        @Override
+        public void parseSection(Pack pack, Path path, Key id, Map<String, Object> section) {
+            if (isVanillaBlock(id)) {
+                parseVanillaBlock(pack, path, id, section);
+            } else {
+                // check duplicated config
+                if (AbstractBlockManager.this.byId.containsKey(id)) {
+                    throw new LocalizedResourceConfigException("warning.config.block.duplicate");
+                }
+                parseCustomBlock(pack, path, id, section);
+            }
+        }
+
+        private void parseVanillaBlock(Pack pack, Path path, Key id, Map<String, Object> section) {
+            Map<String, Object> settings = MiscUtils.castToMap(section.get("settings"), true);
+            if (settings != null) {
+                Object clientBoundTags = settings.get("client-bound-tags");
+                if (clientBoundTags instanceof List<?> list) {
+                    List<String> clientSideTags = MiscUtils.getAsStringList(list).stream().filter(ResourceLocation::isValid).toList();
+                    AbstractBlockManager.this.clientBoundTags.put(getBlockRegistryId(id), clientSideTags);
+                }
+            }
+        }
+
+        private void parseCustomBlock(Pack pack, Path path, Key id, Map<String, Object> section) {
+            // 获取方块设置
+            BlockSettings settings = BlockSettings.fromMap(id, MiscUtils.castToMap(section.get("settings"), true));
+            //
+        }
+    }
 }

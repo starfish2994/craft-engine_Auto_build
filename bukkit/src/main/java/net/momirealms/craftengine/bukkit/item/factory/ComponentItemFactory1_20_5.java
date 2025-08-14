@@ -268,6 +268,11 @@ public class ComponentItemFactory1_20_5 extends BukkitItemFactory<ComponentItemW
     }
 
     @Override
+    protected boolean hasNonDefaultComponent(ComponentItemWrapper item, Object type) {
+        return item.hasNonDefaultComponent(type);
+    }
+
+    @Override
     protected void removeComponent(ComponentItemWrapper item, Object type) {
         item.removeComponent(type);
     }
