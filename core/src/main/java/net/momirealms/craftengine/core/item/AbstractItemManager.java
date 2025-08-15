@@ -326,7 +326,7 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             Key clientBoundMaterial = section.containsKey("client-bound-material") ? Key.from(section.get("client-bound-material").toString().toLowerCase(Locale.ENGLISH)) : material;
             // 如果是原版物品，那么custom-model-data只能是0，即使用户设置了其他值
             int customModelData = isVanillaItem ? 0 : ResourceConfigUtils.getAsInt(section.getOrDefault("custom-model-data", 0), "custom-model-data");
-            boolean clientBoundModel = section.containsKey("client-bound-model") ? ResourceConfigUtils.getAsBoolean(section.get("client-bound-data"), "client-bound-data") : Config.globalClientboundModel();
+            boolean clientBoundModel = section.containsKey("client-bound-model") ? ResourceConfigUtils.getAsBoolean(section.get("client-bound-model"), "client-bound-model") : Config.globalClientboundModel();
             if (customModelData < 0) {
                 throw new LocalizedResourceConfigException("warning.config.item.invalid_custom_model_data", String.valueOf(customModelData));
             }
@@ -374,8 +374,11 @@ public abstract class AbstractItemManager<I> extends AbstractModelGenerator impl
             } catch (LocalizedResourceConfigException e) {
                 collector.add(e);
             }
+            // 应用客户端侧数据
             try {
-                applyDataModifiers(MiscUtils.castToMap(section.get("client-bound-data"), true), itemBuilder::clientBoundDataModifier);
+                if (VersionHelper.PREMIUM) {
+                    applyDataModifiers(MiscUtils.castToMap(section.get("client-bound-data"), true), itemBuilder::clientBoundDataModifier);
+                }
             } catch (LocalizedResourceConfigException e) {
                 collector.add(e);
             }
