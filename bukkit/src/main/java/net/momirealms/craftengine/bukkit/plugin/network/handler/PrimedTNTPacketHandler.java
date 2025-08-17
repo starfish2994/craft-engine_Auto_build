@@ -3,6 +3,7 @@ package net.momirealms.craftengine.bukkit.plugin.network.handler;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.entity.data.BaseEntityData;
 import net.momirealms.craftengine.bukkit.entity.data.BlockDisplayEntityData;
+import net.momirealms.craftengine.bukkit.entity.data.PrimedTntData;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -19,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class BlockDisplayPacketHandler implements EntityPacketHandler {
-    public static final BlockDisplayPacketHandler INSTANCE = new BlockDisplayPacketHandler();
+public class PrimedTNTPacketHandler implements EntityPacketHandler {
+    public static final PrimedTNTPacketHandler INSTANCE = new PrimedTNTPacketHandler();
 
     @Override
     public void handleSetEntityData(NetWorkUser user, ByteBufPacketEvent event) {
@@ -31,7 +32,7 @@ public class BlockDisplayPacketHandler implements EntityPacketHandler {
         for (int i = 0; i < packedItems.size(); i++) {
             Object packedItem = packedItems.get(i);
             int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-            if (entityDataId == BlockDisplayEntityData.DisplayedBlock.id()) {
+            if (entityDataId == PrimedTntData.BlockState.id()) {
                 Object blockState = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$value(packedItem);
                 int stateId = BlockStateUtils.blockStateToId(blockState);
                 int newStateId;
