@@ -6,7 +6,7 @@ import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.SoundCategory;
 
-public class SoundUtils {
+public final class SoundUtils {
 
     private SoundUtils() {}
 
