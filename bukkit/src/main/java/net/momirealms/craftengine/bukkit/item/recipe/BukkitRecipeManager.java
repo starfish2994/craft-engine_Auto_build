@@ -68,22 +68,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 return recipe;
             };
 
-    static {
-        try {
-            Key dyeRecipeId = Key.from("armor_dye");
-            MINECRAFT_RECIPE_REMOVER.accept(dyeRecipeId);
-            MINECRAFT_RECIPE_ADDER.apply(dyeRecipeId, RecipeInjector.createCustomDyeRecipe(dyeRecipeId));
-            Key repairRecipeId = Key.from("repair_item");
-            MINECRAFT_RECIPE_REMOVER.accept(repairRecipeId);
-            MINECRAFT_RECIPE_ADDER.apply(repairRecipeId, RecipeInjector.createRepairItemRecipe(repairRecipeId));
-            Key fireworkStarFadeRecipeId = Key.from("firework_star_fade");
-            MINECRAFT_RECIPE_REMOVER.accept(fireworkStarFadeRecipeId);
-            MINECRAFT_RECIPE_ADDER.apply(fireworkStarFadeRecipeId, RecipeInjector.createFireworkStarFadeRecipe(fireworkStarFadeRecipeId));
-        } catch (ReflectiveOperationException e) {
-            throw new ReflectionInitException("Failed to inject special recipes", e);
-        }
-    }
-
     private static final Map<Key, Function<Recipe<ItemStack>, Object>> ADD_RECIPE_FOR_MINECRAFT_RECIPE_HOLDER = Map.of(
             RecipeSerializers.SHAPED, recipe -> {
                 CustomShapedRecipe<ItemStack> shapedRecipe = (CustomShapedRecipe<ItemStack>) recipe;
@@ -481,6 +465,22 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 this.plugin.logger().warn("Failed to register recipe " + recipe.id().toString(), e);
             }
         }
+
+        // 重新注入特殊配方
+        try {
+            Key dyeRecipeId = Key.from("armor_dye");
+            MINECRAFT_RECIPE_REMOVER.accept(dyeRecipeId);
+            MINECRAFT_RECIPE_ADDER.apply(dyeRecipeId, RecipeInjector.createCustomDyeRecipe(dyeRecipeId));
+            Key repairRecipeId = Key.from("repair_item");
+            MINECRAFT_RECIPE_REMOVER.accept(repairRecipeId);
+            MINECRAFT_RECIPE_ADDER.apply(repairRecipeId, RecipeInjector.createRepairItemRecipe(repairRecipeId));
+            Key fireworkStarFadeRecipeId = Key.from("firework_star_fade");
+            MINECRAFT_RECIPE_REMOVER.accept(fireworkStarFadeRecipeId);
+            MINECRAFT_RECIPE_ADDER.apply(fireworkStarFadeRecipeId, RecipeInjector.createFireworkStarFadeRecipe(fireworkStarFadeRecipeId));
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectionInitException("Failed to inject special recipes", e);
+        }
+
         try {
             // give flags back on 1.21.2+
             if (VersionHelper.isOrAbove1_21_2() && this.stolenFeatureFlagSet != null) {
