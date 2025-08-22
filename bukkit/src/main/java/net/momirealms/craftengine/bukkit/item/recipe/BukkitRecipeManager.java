@@ -3,7 +3,6 @@ package net.momirealms.craftengine.bukkit.item.recipe;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.papermc.paper.potion.PotionMix;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
@@ -85,7 +84,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         }
     }
 
-    private static final List<Object> MODIFIED_INGREDIENTS = new ArrayList<>();
     private static final Map<Key, Function<Recipe<ItemStack>, Object>> ADD_RECIPE_FOR_MINECRAFT_RECIPE_HOLDER = Map.of(
             RecipeSerializers.SHAPED, recipe -> {
                 CustomShapedRecipe<ItemStack> shapedRecipe = (CustomShapedRecipe<ItemStack>) recipe;
@@ -245,9 +243,9 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             Ingredient<ItemStack> actualIngredient = actualIngredients.get(i);
             List<Object> items = getIngredientLooks(actualIngredient.items());
             if (VersionHelper.isOrAbove1_21_4()) {
-                CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (Set<Object>) new ObjectOpenHashSet<>(items));
+                CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (Set<Object>) new CustomIngredientSet(items, actualIngredient));
             } else if (VersionHelper.isOrAbove1_21_2()) {
-                CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (List<Object>) items);
+                CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (List<Object>) new CustomIngredientList(items, actualIngredient));
             } else {
                 Object itemStackArray = Array.newInstance(CoreReflections.clazz$ItemStack, items.size());
                 for (int j = 0; j < items.size(); j++) {
@@ -255,7 +253,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 }
                 CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (Object) itemStackArray);
             }
-            MODIFIED_INGREDIENTS.add(ingredient);
         }
     }
 
@@ -498,20 +495,6 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
 
             // send to players
             CoreReflections.methodHandle$DedicatedPlayerList$reloadRecipes.invokeExact(CraftBukkitReflections.methodHandle$CraftServer$playerListGetter.invokeExact(Bukkit.getServer()));
-
-            // now we need to remove the fake `exact` choices
-            if (VersionHelper.isOrAbove1_21_4()) {
-                for (Object ingredient : MODIFIED_INGREDIENTS) {
-                    CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (Set<Object>) null);
-                }
-            } else if (VersionHelper.isOrAbove1_21_2()) {
-                for (Object ingredient : MODIFIED_INGREDIENTS) {
-                    CoreReflections.methodHandle$Ingredient$itemStacksSetter.invokeExact(ingredient, (List<Object>) null);
-                }
-            }
-
-            // clear cache
-            MODIFIED_INGREDIENTS.clear();
         } catch (Throwable e) {
             this.plugin.logger().warn("Failed to run delayed recipe tasks", e);
         }
