@@ -32,7 +32,7 @@ public class MatchBlockTypeCondition<CTX extends Context> implements Condition<C
         if (block.isEmpty()) return false;
         Optional<ImmutableBlockState> customBlock = ctx.getOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE);
         Key key = customBlock.isPresent() ? customBlock.get().owner().value().id() : block.get().type();
-        return CommonConditions.matchObject(key, this.regexMatch, this.ids);
+        return MiscUtils.matchObject(key, this.regexMatch, this.ids);
     }
 
     public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {

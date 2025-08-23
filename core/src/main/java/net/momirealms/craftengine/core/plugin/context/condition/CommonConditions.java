@@ -30,18 +30,4 @@ public final class CommonConditions {
     public static final Key EXPRESSION = Key.from("craftengine:expression");
     public static final Key IS_NULL = Key.from("craftengine:is_null");
     public static final Key HAND = Key.from("craftengine:hand");
-
-    public static boolean matchObject(Key key, boolean regexMatch, Set<String> ids) {
-        String id = key.toString();
-        if (regexMatch) {
-            for (String regex : ids) {
-                if (id.matches(regex)) {
-                    return true;
-                }
-            }
-        } else {
-            return ids.contains(id);
-        }
-        return false;
-    }
 }

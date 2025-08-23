@@ -30,7 +30,7 @@
             Optional<Entity> entity = ctx.getOptionalParameter(DirectContextParameters.ENTITY);
             if (entity.isEmpty()) return false;
             Key key = entity.get().type();
-            return CommonConditions.matchObject(key, this.regexMatch, this.ids);
+            return MiscUtils.matchObject(key, this.regexMatch, this.ids);
         }
 
         public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {

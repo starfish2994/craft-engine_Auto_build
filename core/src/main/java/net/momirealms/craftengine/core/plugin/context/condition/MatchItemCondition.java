@@ -30,7 +30,7 @@ public class MatchItemCondition<CTX extends Context> implements Condition<CTX> {
         Optional<Item<?>> item = ctx.getOptionalParameter(DirectContextParameters.ITEM_IN_HAND);
         if (item.isEmpty()) return false;
         Key key = item.get().id();
-        return CommonConditions.matchObject(key, this.regexMatch, this.ids);
+        return MiscUtils.matchObject(key, this.regexMatch, this.ids);
     }
 
     public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
