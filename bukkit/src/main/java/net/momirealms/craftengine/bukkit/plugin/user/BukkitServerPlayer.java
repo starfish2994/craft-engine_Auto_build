@@ -40,6 +40,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -175,6 +176,26 @@ public class BukkitServerPlayer extends Player {
     @Override
     public boolean isSneaking() {
         return platformPlayer().isSneaking();
+    }
+
+    @Override
+    public boolean isSwimming() {
+        return platformPlayer().isSwimming();
+    }
+
+    @Override
+    public boolean isClimbing() {
+        return platformPlayer().isClimbing();
+    }
+
+    @Override
+    public boolean isGliding() {
+        return platformPlayer().isGliding();
+    }
+
+    @Override
+    public boolean isFlying() {
+        return platformPlayer().isFlying();
     }
 
     @Override
@@ -475,7 +496,7 @@ public class BukkitServerPlayer extends Player {
             ImmutableBlockState customState = optionalCustomState.get();
             Item<ItemStack> tool = getItemInHand(InteractionHand.MAIN_HAND);
             boolean isCorrectTool = FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool.getLiteralObject(), blockState);
-            // 如果自定义方块在服务端侧未使用正确地工具，那么需要还原挖掘速度
+            // 如果自定义方块在服务端侧未使用正确的工具，那么需要还原挖掘速度
             if (!isCorrectTool) {
                 progress *= (10f / 3f);
             }
@@ -940,17 +961,20 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
+    @SuppressWarnings("UnstableApiUsage")
+    public void performCommandAsEvent(String command) {
+        String formattedCommand = command.startsWith("/") ? command : "/" + command;
+        PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(platformPlayer(), formattedCommand);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+
+    @Override
     public double luck() {
         if (VersionHelper.isOrAbove1_21_3()) {
             return Optional.ofNullable(platformPlayer().getAttribute(Attribute.LUCK)).map(AttributeInstance::getValue).orElse(1d);
         } else {
             return LegacyAttributeUtils.getLuck(platformPlayer());
         }
-    }
-
-    @Override
-    public boolean isFlying() {
-        return platformPlayer().isFlying();
     }
 
     @Override
