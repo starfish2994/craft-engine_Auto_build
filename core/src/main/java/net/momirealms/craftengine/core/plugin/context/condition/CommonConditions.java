@@ -2,8 +2,6 @@ package net.momirealms.craftengine.core.plugin.context.condition;
 
 import net.momirealms.craftengine.core.util.Key;
 
-import java.util.Set;
-
 public final class CommonConditions {
     private CommonConditions() {}
 
