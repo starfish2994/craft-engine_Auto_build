@@ -28,9 +28,7 @@ public class MatchItemCondition<CTX extends Context> implements Condition<CTX> {
     @Override
     public boolean test(CTX ctx) {
         Optional<Item<?>> item = ctx.getOptionalParameter(DirectContextParameters.ITEM_IN_HAND);
-        if (item.isEmpty()) return false;
-        Key key = item.get().id();
-        return MiscUtils.matchObject(key, this.regexMatch, this.ids);
+        return item.filter(value -> MiscUtils.matchRegex(value.id().asString(), this.ids, this.regexMatch)).isPresent();
     }
 
     public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {

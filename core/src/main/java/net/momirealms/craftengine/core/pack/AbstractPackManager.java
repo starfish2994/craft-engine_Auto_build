@@ -125,6 +125,7 @@ public abstract class AbstractPackManager implements PackManager {
 
         loadInternalList("textures", "", VANILLA_TEXTURES::add);
         VANILLA_MODELS.add(Key.of("minecraft", "builtin/entity"));
+        VANILLA_MODELS.add(Key.of("minecraft", "item/player_head"));
         for (int i = 0; i < 256; i++) {
             VANILLA_TEXTURES.add(Key.of("minecraft", "font/unicode_page_" + String.format("%02x", i)));
         }

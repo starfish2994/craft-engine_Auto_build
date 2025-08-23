@@ -151,8 +151,7 @@ public class MiscUtils {
         }
     }
 
-    public static boolean matchObject(Key key, boolean regexMatch, Set<String> ids) {
-        String id = key.toString();
+    public static boolean matchRegex(String id, Set<String> ids, boolean regexMatch) {
         if (regexMatch) {
             for (String regex : ids) {
                 if (id.matches(regex)) {

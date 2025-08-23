@@ -28,9 +28,7 @@
         @Override
         public boolean test(CTX ctx) {
             Optional<Entity> entity = ctx.getOptionalParameter(DirectContextParameters.ENTITY);
-            if (entity.isEmpty()) return false;
-            Key key = entity.get().type();
-            return MiscUtils.matchObject(key, this.regexMatch, this.ids);
+            return entity.filter(value -> MiscUtils.matchRegex(value.type().asString(), this.ids, this.regexMatch)).isPresent();
         }
 
         public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {

@@ -377,7 +377,7 @@ chunk-system:
   # Settings for injection
   injection:
     # Requires a restart to apply.
-    # SECTION: Inject the LevelChunkSection
+    # SECTION: Inject the LevelChunkSection (Use this if you have installed both FastAsyncWorldEdit and Axiom)
     # PALETTE: Inject the PalettedContainer
     target: PALETTE
     # Enables faster injection method

@@ -420,7 +420,6 @@ public class Config {
         emoji$contexts$sign = config.getBoolean("emoji.contexts.sign", true);
         emoji$max_emojis_per_parse = config.getInt("emoji.max-emojis-per-parse", 32);
 
-
         firstTime = false;
     }
 

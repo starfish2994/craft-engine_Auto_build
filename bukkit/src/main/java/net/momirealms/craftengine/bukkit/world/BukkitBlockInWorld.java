@@ -6,7 +6,6 @@ import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflect
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBlocks;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MFluids;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.KeyUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.CustomBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -63,7 +62,11 @@ public class BukkitBlockInWorld implements BlockInWorld {
 
     @Override
     public Key type() {
-        return KeyUtils.namespacedKey2Key(this.block.getType().getKey());
+        CustomBlock customBlock = customBlock();
+        if (customBlock == null) {
+            return BlockStateUtils.getBlockOwnerIdFromData(this.block.getBlockData());
+        }
+        return customBlock.id();
     }
 
     @Override

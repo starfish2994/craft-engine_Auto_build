@@ -1,6 +1,5 @@
 package net.momirealms.craftengine.core.plugin.context.condition;
 
-import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.plugin.context.Condition;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
@@ -29,10 +28,7 @@ public class MatchBlockTypeCondition<CTX extends Context> implements Condition<C
     @Override
     public boolean test(CTX ctx) {
         Optional<BlockInWorld> block = ctx.getOptionalParameter(DirectContextParameters.BLOCK);
-        if (block.isEmpty()) return false;
-        Optional<ImmutableBlockState> customBlock = ctx.getOptionalParameter(DirectContextParameters.CUSTOM_BLOCK_STATE);
-        Key key = customBlock.isPresent() ? customBlock.get().owner().value().id() : block.get().type();
-        return MiscUtils.matchObject(key, this.regexMatch, this.ids);
+        return block.filter(blockInWorld -> MiscUtils.matchRegex(blockInWorld.type().asString(), this.ids, this.regexMatch)).isPresent();
     }
 
     public static class FactoryImpl<CTX extends Context> implements ConditionFactory<CTX> {
