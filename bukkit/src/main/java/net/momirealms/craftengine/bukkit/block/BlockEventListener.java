@@ -99,7 +99,7 @@ public final class BlockEventListener implements Listener {
                 Object ownerBlock = BlockStateUtils.getBlockOwner(blockState);
                 Object soundType = CoreReflections.field$BlockBehaviour$soundType.get(ownerBlock);
                 Object placeSound = CoreReflections.field$SoundType$placeSound.get(soundType);
-                player.playSound(block.getLocation(), FastNMS.INSTANCE.field$SoundEvent$location(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
+                player.playSound(block.getLocation().add(0.5D, 0.5D, 0.5D), FastNMS.INSTANCE.field$SoundEvent$location(placeSound).toString(), SoundCategory.BLOCKS, 1f, 0.8f);
             } catch (ReflectiveOperationException e) {
                 this.plugin.logger().warn("Failed to get sound type", e);
             }
