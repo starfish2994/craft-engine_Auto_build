@@ -3458,6 +3458,11 @@ public final class CoreReflections {
             ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"randomTick", "b"}, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$RandomSource)
     );
 
+    public static final Method method$BlockBehaviour$onPlace = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"onPlace", VersionHelper.isOrAbove1_21_5() ? "a" : "b"},
+                    clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class)
+    );
+
     public static final Class<?> clazz$InsideBlockEffectApplier = BukkitReflectionUtils.findReobfOrMojmapClass(
             "world.entity.InsideBlockEffectApplier",
             "world.entity.InsideBlockEffectApplier"
@@ -4005,15 +4010,13 @@ public final class CoreReflections {
             ReflectionUtils.getStaticMethod(clazz$ArmorTrim, Optional.class, clazz$RegistryAccess, clazz$ItemStack);
 
     public static final Method method$BlockBehaviour$spawnAfterBreak = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(
-                    clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$ItemStack, boolean.class
-            )
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$ServerLevel, clazz$BlockPos, clazz$ItemStack, boolean.class)
     );
 
     // 1.20~1.21.4
-    public static final Method method$BlockBehaviour$onRemove = VersionHelper.isOrAbove1_21_5() ? null :
-            ReflectionUtils.getDeclaredMethod(
-                    clazz$BlockBehaviour, void.class, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class
+    public static final Method method$BlockBehaviour$onRemove = MiscUtils.requireNonNullIf(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, void.class, new String[]{"a", "onRemove"}, clazz$BlockState, clazz$Level, clazz$BlockPos, clazz$BlockState, boolean.class),
+            !VersionHelper.isOrAbove1_21_5()
     );
 
     public static final Object instance$CollisionContext$empty;

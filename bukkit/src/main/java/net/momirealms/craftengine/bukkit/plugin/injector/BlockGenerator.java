@@ -106,14 +106,7 @@ public final class BlockGenerator {
                 .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$randomTick))
                 .intercept(MethodDelegation.to(RandomTickInterceptor.INSTANCE))
                 // onPlace
-                .method(ElementMatchers.takesArguments(5)
-                        .and(ElementMatchers.takesArgument(0, CoreReflections.clazz$BlockState))
-                        .and(ElementMatchers.takesArgument(1, CoreReflections.clazz$Level))
-                        .and(ElementMatchers.takesArgument(2, CoreReflections.clazz$BlockPos))
-                        .and(ElementMatchers.takesArgument(3, CoreReflections.clazz$BlockState))
-                        .and(ElementMatchers.takesArgument(4, boolean.class))
-                        .and(ElementMatchers.named("onPlace").or(ElementMatchers.named("a")))
-                )
+                .method(ElementMatchers.is(CoreReflections.method$BlockBehaviour$onPlace))
                 .intercept(MethodDelegation.to(OnPlaceInterceptor.INSTANCE))
                 // onBrokenAfterFall
                 .method(ElementMatchers.takesArguments(3)

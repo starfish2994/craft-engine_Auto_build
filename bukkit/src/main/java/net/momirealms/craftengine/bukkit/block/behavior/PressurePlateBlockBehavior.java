@@ -105,7 +105,6 @@ public class PressurePlateBlockBehavior extends BukkitBlockBehavior {
         if (signalForState == 0) {
             this.checkPressed(args[3], args[1], args[2], state, signalForState, thisBlock);
         } else {
-            // todo 为什么
             FastNMS.INSTANCE.method$ScheduledTickAccess$scheduleBlockTick(args[1], args[2], thisBlock, this.pressedTime);
         }
     }
