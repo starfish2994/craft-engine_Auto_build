@@ -72,37 +72,31 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
             RecipeSerializers.SHAPED, recipe -> {
                 CustomShapedRecipe<ItemStack> shapedRecipe = (CustomShapedRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createShapedRecipe(shapedRecipe);
-                modifyShapedRecipeIngredients(shapedRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.SHAPELESS, recipe -> {
                 CustomShapelessRecipe<ItemStack> shapelessRecipe = (CustomShapelessRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createShapelessRecipe(shapelessRecipe);
-                modifyShapelessRecipeIngredients(shapelessRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.SMELTING, recipe -> {
                 CustomSmeltingRecipe<ItemStack> smeltingRecipe = (CustomSmeltingRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createSmeltingRecipe(smeltingRecipe);
-                modifyCookingRecipeIngredient(smeltingRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.BLASTING, recipe -> {
                 CustomBlastingRecipe<ItemStack> blastingRecipe = (CustomBlastingRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createBlastingRecipe(blastingRecipe);
-                modifyCookingRecipeIngredient(blastingRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.SMOKING, recipe -> {
                 CustomSmokingRecipe<ItemStack> smokingRecipe = (CustomSmokingRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createSmokingRecipe(smokingRecipe);
-                modifyCookingRecipeIngredient(smokingRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.CAMPFIRE_COOKING, recipe -> {
                 CustomCampfireRecipe<ItemStack> campfireRecipe = (CustomCampfireRecipe<ItemStack>) recipe;
                 Object mcRecipe = FastNMS.INSTANCE.createCampfireRecipe(campfireRecipe);
-                modifyCookingRecipeIngredient(campfireRecipe, mcRecipe);
                 return MINECRAFT_RECIPE_ADDER.apply(recipe.id(), mcRecipe);
             },
             RecipeSerializers.STONECUTTING, recipe -> {
@@ -201,7 +195,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
         }
     }
 
-    private static List<Object> getIngredientLooks(List<UniqueKey> holders) {
+    public static List<Object> getIngredientLooks(List<UniqueKey> holders) {
         List<Object> itemStacks = new ArrayList<>();
         for (UniqueKey holder : holders) {
             Optional<? extends BuildableItem<ItemStack>> buildableItem = BukkitItemManager.instance().getBuildableItem(holder.key());
@@ -213,6 +207,7 @@ public class BukkitRecipeManager extends AbstractRecipeManager<ItemStack> {
                 Item<ItemStack> barrier = BukkitItemManager.instance().createWrappedItem(ItemKeys.BARRIER, null);
                 assert barrier != null;
                 barrier.customNameJson(AdventureHelper.componentToJson(Component.text(holder.key().asString()).color(NamedTextColor.RED)));
+                itemStacks.add(barrier.getLiteralObject());
             }
         }
         return itemStacks;
