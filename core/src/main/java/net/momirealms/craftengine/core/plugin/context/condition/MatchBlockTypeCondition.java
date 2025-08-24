@@ -22,7 +22,7 @@ public class MatchBlockTypeCondition<CTX extends Context> implements Condition<C
 
     @Override
     public Key type() {
-        return CommonConditions.MATCH_ENTITY_TYPE;
+        return CommonConditions.MATCH_BLOCK_TYPE;
     }
 
     @Override
