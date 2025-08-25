@@ -39,7 +39,7 @@ public class ChangeOverTimeBlockBehavior extends BukkitBlockBehavior {
         @Override
         public BlockBehavior create(CustomBlock block, Map<String, Object> arguments) {
             float changeSpeed = ResourceConfigUtils.getAsFloat(arguments.getOrDefault("change-speed", 0.05688889F), "change-speed");
-            Key nextBlock = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.getOrDefault("next-block", "minecraft:air"), "warning.config.block.behavior.change_over_time_block.missing_next_block"));
+            Key nextBlock = Key.of(ResourceConfigUtils.requireNonEmptyStringOrThrow(arguments.getOrDefault("next-block", "minecraft:air"), "warning.config.block.behavior.change_over_time.missing_next_block"));
             return new ChangeOverTimeBlockBehavior(block, changeSpeed, nextBlock);
         }
     }
