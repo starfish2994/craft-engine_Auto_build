@@ -39,7 +39,7 @@ public interface ExistingBlock {
 
     World world();
 
-    Key type();
+    Key id();
 
     int x();
 

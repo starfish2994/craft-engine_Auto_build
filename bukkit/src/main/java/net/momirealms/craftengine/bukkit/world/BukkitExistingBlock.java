@@ -83,7 +83,7 @@ public class BukkitExistingBlock implements ExistingBlock {
     }
 
     @Override
-    public Key type() {
+    public Key id() {
         Object blockState = BlockStateUtils.getBlockState(this.block);
         Optional<ImmutableBlockState> optionalCustomBlockState = BlockStateUtils.getOptionalCustomBlockState(blockState);
         if (optionalCustomBlockState.isPresent()) {
