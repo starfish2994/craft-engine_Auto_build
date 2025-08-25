@@ -229,7 +229,7 @@ public final class WorldStorageInjector {
                         // 自定义块到原版块，只需要判断旧块是否和客户端一直
                         BlockStateWrapper wrapper = previous.vanillaBlockState();
                         if (wrapper != null) {
-                            updateLight(holder, wrapper.handle(), previousState, x, y, z);
+                            updateLight(holder, wrapper.literalObject(), previousState, x, y, z);
                         }
                     }
                 }
@@ -245,10 +245,10 @@ public final class WorldStorageInjector {
                 if (Config.enableLightSystem()) {
                     if (previousImmutableBlockState.isEmpty()) {
                         // 原版块到自定义块，只需要判断新块是否和客户端视觉一致
-                        updateLight(holder, immutableBlockState.vanillaBlockState().handle(), newState, x, y, z);
+                        updateLight(holder, immutableBlockState.vanillaBlockState().literalObject(), newState, x, y, z);
                     } else {
                         // 自定义块到自定义块
-                        updateLight$complex(holder, immutableBlockState.vanillaBlockState().handle(), newState, previousState, x, y, z);
+                        updateLight$complex(holder, immutableBlockState.vanillaBlockState().literalObject(), newState, previousState, x, y, z);
                     }
                 }
             }

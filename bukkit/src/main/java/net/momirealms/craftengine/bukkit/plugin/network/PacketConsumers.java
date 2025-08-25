@@ -1168,7 +1168,7 @@ public class PacketConsumers {
             if (player.isAdventureMode()) {
                 if (Config.simplifyAdventureBreakCheck()) {
                     ImmutableBlockState state = BukkitBlockManager.instance().getImmutableBlockStateUnsafe(stateId);
-                    if (!player.canBreak(pos, state.vanillaBlockState().handle())) {
+                    if (!player.canBreak(pos, state.vanillaBlockState().literalObject())) {
                         player.preventMiningBlock();
                         return;
                     }
@@ -1336,7 +1336,7 @@ public class PacketConsumers {
         Key itemId = state.settings().itemId();
         // no item available
         if (itemId == null) return;
-        Object vanillaBlock = FastNMS.INSTANCE.method$BlockState$getBlock(state.vanillaBlockState().handle());
+        Object vanillaBlock = FastNMS.INSTANCE.method$BlockState$getBlock(state.vanillaBlockState().literalObject());
         Object vanillaBlockItem = FastNMS.INSTANCE.method$Block$asItem(vanillaBlock);
         if (vanillaBlockItem == null) return;
         Key addItemId = KeyUtils.namespacedKey2Key(item.getType().getKey());

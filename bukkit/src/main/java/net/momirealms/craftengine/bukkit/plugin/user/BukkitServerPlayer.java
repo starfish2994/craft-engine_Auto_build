@@ -541,7 +541,7 @@ public class BukkitServerPlayer extends Player {
         if (custom && getDestroyProgress(state, pos) >= 1f) {
             BlockStateWrapper vanillaBlockState = immutableBlockState.vanillaBlockState();
             // if it's not an instant break on client side, we should resend level event
-            if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.handle(), pos) < 1f) {
+            if (vanillaBlockState != null && getDestroyProgress(vanillaBlockState.literalObject(), pos) < 1f) {
                 Object levelEventPacket = FastNMS.INSTANCE.constructor$ClientboundLevelEventPacket(
                         WorldEvents.BLOCK_BREAK_EFFECT, LocationUtils.toBlockPos(pos), BlockStateUtils.blockStateToId(state), false);
                 sendPacket(levelEventPacket, false);
@@ -703,7 +703,7 @@ public class BukkitServerPlayer extends Player {
                         // for simplified adventure break, switch mayBuild temporarily
                         if (isAdventureMode() && Config.simplifyAdventureBreakCheck()) {
                             // check the appearance state
-                            if (canBreak(hitPos, customState.vanillaBlockState().handle())) {
+                            if (canBreak(hitPos, customState.vanillaBlockState().literalObject())) {
                                 // Error might occur so we use try here
                                 try {
                                     FastNMS.INSTANCE.field$Player$mayBuild(serverPlayer, true);

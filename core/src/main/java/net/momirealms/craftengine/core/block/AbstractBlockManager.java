@@ -397,8 +397,8 @@ public abstract class AbstractBlockManager extends AbstractModelGenerator implem
                 }
             } else {
                 // 其他情况则是完整的方块
-                BlockStateWrapper packedBlockState = createPackedBlockState(blockState);
-                if (packedBlockState == null || !packedBlockState.isVanillaBlock()) {
+                BlockStateWrapper packedBlockState = createBlockState(blockState);
+                if (packedBlockState == null) {
                     throw new LocalizedResourceConfigException("warning.config.block.state.invalid_vanilla", blockState);
                 }
                 registryId = packedBlockState.registryId();

@@ -7,7 +7,7 @@ import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigExce
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.MiscUtils;
 import net.momirealms.craftengine.core.util.ResourceConfigUtils;
-import net.momirealms.craftengine.core.world.BlockInWorld;
+import net.momirealms.craftengine.core.world.ExistingBlock;
 
 import java.util.*;
 
@@ -27,7 +27,7 @@ public class MatchBlockTypeCondition<CTX extends Context> implements Condition<C
 
     @Override
     public boolean test(CTX ctx) {
-        Optional<BlockInWorld> block = ctx.getOptionalParameter(DirectContextParameters.BLOCK);
+        Optional<ExistingBlock> block = ctx.getOptionalParameter(DirectContextParameters.BLOCK);
         return block.filter(blockInWorld -> MiscUtils.matchRegex(blockInWorld.type().asString(), this.ids, this.regexMatch)).isPresent();
     }
 

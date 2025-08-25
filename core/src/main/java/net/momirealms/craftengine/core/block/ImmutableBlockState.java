@@ -19,8 +19,8 @@ import java.util.List;
 
 public final class ImmutableBlockState extends BlockStateHolder {
     private CompoundTag tag;
-    private BlockStateWrapper.CustomBlockState customBlockState;
-    private BlockStateWrapper.VanillaBlockState vanillaBlockState;
+    private BlockStateWrapper customBlockState;
+    private BlockStateWrapper vanillaBlockState;
     private BlockBehavior behavior;
     private Integer hashCode;
     private BlockSettings settings;
@@ -75,11 +75,11 @@ public final class ImmutableBlockState extends BlockStateHolder {
         return this.vanillaBlockState;
     }
 
-    public void setCustomBlockState(@NotNull BlockStateWrapper.CustomBlockState customBlockState) {
+    public void setCustomBlockState(@NotNull BlockStateWrapper customBlockState) {
         this.customBlockState = customBlockState;
     }
 
-    public void setVanillaBlockState(@NotNull BlockStateWrapper.VanillaBlockState vanillaBlockState) {
+    public void setVanillaBlockState(@NotNull BlockStateWrapper vanillaBlockState) {
         this.vanillaBlockState = vanillaBlockState;
     }
 

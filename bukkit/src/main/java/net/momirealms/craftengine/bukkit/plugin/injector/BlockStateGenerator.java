@@ -109,7 +109,7 @@ public final class BlockStateGenerator {
             if (optionalPlayer != null && settings.requireCorrectTool()) {
                 if (item.isEmpty()) return List.of();
                 if (!settings.isCorrectTool(item.id()) &&
-                        (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool, state.customBlockState().handle()))) {
+                        (!settings.respectToolComponent() || !FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool, state.customBlockState().literalObject()))) {
                     return List.of();
                 }
             }
@@ -177,7 +177,7 @@ public final class BlockStateGenerator {
             if (state == null) return thisObj;
             Property<Boolean> waterloggedProperty = (Property<Boolean>) state.owner().value().getProperty("waterlogged");
             if (waterloggedProperty == null) return thisObj;
-            return state.with(waterloggedProperty, (boolean) args[1]).customBlockState().handle();
+            return state.with(waterloggedProperty, (boolean) args[1]).customBlockState().literalObject();
         }
     }
 

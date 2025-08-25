@@ -311,7 +311,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                                 for (int y = 0; y < 16; y++) {
                                     ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
                                     if (!customState.isEmpty() && customState.vanillaBlockState() != null) {
-                                        FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().handle(), false);
+                                        FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.vanillaBlockState().literalObject(), false);
                                         unsaved = true;
                                     }
                                 }
@@ -398,7 +398,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                                         for (int y = 0; y < 16; y++) {
                                             ImmutableBlockState customState = ceSection.getBlockState(x, y, z);
                                             if (!customState.isEmpty() && customState.customBlockState() != null) {
-                                                FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.customBlockState().handle(), false);
+                                                FastNMS.INSTANCE.method$LevelChunkSection$setBlockState(section, x, y, z, customState.customBlockState().literalObject(), false);
                                             }
                                         }
                                     }
