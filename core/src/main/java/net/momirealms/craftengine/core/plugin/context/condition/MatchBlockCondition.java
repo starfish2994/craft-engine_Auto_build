@@ -37,7 +37,7 @@ public class MatchBlockCondition<CTX extends Context> implements Condition<CTX> 
         public Condition<CTX> create(Map<String, Object> arguments) {
             List<String> ids = MiscUtils.getAsStringList(arguments.get("id"));
             if (ids.isEmpty()) {
-                throw new LocalizedResourceConfigException("warning.config.condition.match_block_type.missing_id");
+                throw new LocalizedResourceConfigException("warning.config.condition.match_block.missing_id");
             }
             boolean regex = ResourceConfigUtils.getAsBoolean(arguments.getOrDefault("regex", false), "regex");
             return new MatchBlockCondition<>(ids, regex);
