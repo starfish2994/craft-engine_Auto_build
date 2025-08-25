@@ -112,7 +112,7 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
 
     public abstract void unloadCurrentResourcePack();
 
-    public abstract void performCommand(String command);
+    public abstract void performCommand(String command, boolean asOp);
 
     public abstract void performCommandAsEvent(String command);
 

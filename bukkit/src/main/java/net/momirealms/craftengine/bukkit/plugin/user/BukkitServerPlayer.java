@@ -956,8 +956,20 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public void performCommand(String command) {
-        platformPlayer().performCommand(command);
+    public void performCommand(String command, boolean asOp) {
+        org.bukkit.entity.Player player = platformPlayer();
+        if (asOp) {
+            boolean isOp = player.isOp();
+            player.setOp(true);
+            try {
+                player.performCommand(command);
+            } catch (Throwable t) {
+                this.plugin.logger().warn("Failed to perform command '" + command + "' for " + this.name() + " as operator", t);
+            }
+            player.setOp(isOp);
+        } else {
+            player.performCommand(command);
+        }
     }
 
     @Override
