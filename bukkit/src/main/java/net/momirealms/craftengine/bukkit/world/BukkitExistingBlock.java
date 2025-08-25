@@ -55,7 +55,7 @@ public class BukkitExistingBlock implements ExistingBlock {
 
     @Override
     public @NotNull StatePropertyAccessor createStatePropertyAccessor() {
-        return FastNMS.INSTANCE.createStatePropertyAccessor(this.block);
+        return FastNMS.INSTANCE.createStatePropertyAccessor(BlockStateUtils.getBlockState(this.block));
     }
 
     @Override
