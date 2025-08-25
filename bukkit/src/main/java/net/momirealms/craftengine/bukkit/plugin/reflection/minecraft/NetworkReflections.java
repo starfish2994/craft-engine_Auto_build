@@ -1255,7 +1255,17 @@ public final class NetworkReflections {
 
     // 1.20.2+
     public static final Constructor<?> constructor$DiscardedPayload = Optional.ofNullable(clazz$DiscardedPayload)
-            .map(ReflectionUtils::getTheOnlyConstructor)
+            .map(it -> {
+                if (VersionHelper.isOrAbove1_20_5()) {
+                    Constructor<?> constructor1 = ReflectionUtils.getConstructor(it, CoreReflections.clazz$ResourceLocation, ByteBuf.class);
+                    if (constructor1 != null) {
+                        return constructor1;
+                    }
+                    return ReflectionUtils.getConstructor(it, CoreReflections.clazz$ResourceLocation, byte[].class);
+                } else {
+                    return ReflectionUtils.getConstructor(it, CoreReflections.clazz$ResourceLocation);
+                }
+            })
             .orElse(null);
 
     public static final Class<?> clazz$ClientboundContainerSetContentPacket = requireNonNull(
@@ -1644,7 +1654,7 @@ public final class NetworkReflections {
 
     // 1.20.2~1.20.4
     public static final Constructor<?> constructor$UnknownPayload = Optional.ofNullable(clazz$UnknownPayload)
-            .map(ReflectionUtils::getTheOnlyConstructor)
+            .map(it -> ReflectionUtils.getConstructor(it, CoreReflections.clazz$ResourceLocation, ByteBuf.class))
             .orElse(null);
 
     // 1.21.5+

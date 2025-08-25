@@ -372,7 +372,7 @@ public class BukkitServerPlayer extends Player {
             Object responsePacket;
             if (VersionHelper.isOrAbove1_20_2()) {
                 Object dataPayload;
-                if (NetworkReflections.clazz$UnknownPayload != null) {
+                if (!VersionHelper.isOrAbove1_20_5()) {
                     dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelResourceLocation, Unpooled.wrappedBuffer(data));
                 } else if (DiscardedPayload.useNewMethod) {
                     dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelResourceLocation, data);
