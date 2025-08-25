@@ -29,7 +29,7 @@ public class ChangeOverTimeBlockBehavior extends BukkitBlockBehavior {
         Optional<Object> nextState = BukkitBlockManager.instance().blockById(this.nextBlock)
                 .map(CustomBlock::defaultState)
                 .map(ImmutableBlockState::customBlockState)
-                .map(BlockStateWrapper::handle);
+                .map(BlockStateWrapper::literalObject);
         if (nextState.isEmpty()) return;
         CraftBukkitReflections.method$CraftEventFactory$handleBlockFormEvent.invoke(null, args[1], args[2], nextState.get(), UpdateOption.UPDATE_ALL.flags());
     }

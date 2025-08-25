@@ -53,6 +53,6 @@ public class BukkitBlockBehaviors extends BlockBehaviors {
         register(STAIRS_BLOCK, StairsBlockBehavior.FACTORY);
         register(PRESSURE_PLATE_BLOCK, PressurePlateBlockBehavior.FACTORY);
         register(DOUBLE_HIGH_BLOCK, DoubleHighBlockBehavior.FACTORY);
-        register(CHANGE_OVER_TIME_BLOCK,ChangeOverTimeBlockBehavior.FACTORY);
+        register(CHANGE_OVER_TIME_BLOCK, ChangeOverTimeBlockBehavior.FACTORY);
     }
 }
