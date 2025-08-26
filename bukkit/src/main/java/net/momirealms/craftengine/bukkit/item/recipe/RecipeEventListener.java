@@ -284,6 +284,10 @@ public class RecipeEventListener implements Listener {
         }
         // 如果第二个物品是附魔书，那么忽略
         if (wrappedSecond.vanillaId().equals(ItemKeys.ENCHANTED_BOOK)) {
+            // 禁止不可附魔的物品被附魔书附魔
+            if (firstCustom.isPresent() && !firstCustom.get().settings().canEnchant()) {
+                event.setResult(null);
+            }
             return;
         }
 
