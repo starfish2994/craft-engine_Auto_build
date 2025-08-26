@@ -74,6 +74,18 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
         return previous;
     }
 
+
+    @Override
+    public Object getContainer(Object thisBlock, Object[] args) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            Object container = behavior.getContainer(thisBlock, args);
+            if (container != null) {
+                return container;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void tick(Object thisBlock, Object[] args, Callable<Object> superMethod) throws Exception {
         for (AbstractBlockBehavior behavior : this.behaviors) {
@@ -262,6 +274,30 @@ public class UnsafeCompositeBlockBehavior extends BukkitBlockBehavior {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(Object thisBlock, Object[] args) throws Exception {
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            if (behavior.hasAnalogOutputSignal(thisBlock, args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(Object thisBlock, Object[] args) throws Exception {
+        int signal = 0;
+        int count = 0;
+        for (AbstractBlockBehavior behavior : this.behaviors) {
+            int s = behavior.getAnalogOutputSignal(thisBlock, args);
+            if (s != 0) {
+                signal += s;
+                count++;
+            }
+        }
+        return count == 0 ? 0 : signal / count;
     }
 
     @Override
