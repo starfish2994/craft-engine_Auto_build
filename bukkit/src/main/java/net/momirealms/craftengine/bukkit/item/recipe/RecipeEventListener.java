@@ -261,6 +261,7 @@ public class RecipeEventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onAnvilEvent(PrepareAnvilEvent event) {
+        if (event.getResult() == null) return;
         preProcess(event);
         processRepairable(event);
         processRename(event);
@@ -317,12 +318,24 @@ public class RecipeEventListener implements Listener {
             return;
         }
 
-        // 如果禁止在铁砧使用两个相同物品修复
-        firstCustom.ifPresent(it -> {
-            if (it.settings().canRepair() == Tristate.FALSE) {
+
+        if (firstCustom.isPresent()) {
+            CustomItem<ItemStack> firstCustomItem = firstCustom.get();
+            if (firstCustomItem.settings().canRepair() == Tristate.FALSE) {
                 event.setResult(null);
+                return;
             }
-        });
+
+            Item<ItemStack> wrappedResult = BukkitItemManager.instance().wrap(event.getResult());
+            if (!firstCustomItem.settings().canEnchant()) {
+                Object previousEnchantment = wrappedFirst.getExactComponent(ComponentTypes.ENCHANTMENTS);
+                if (previousEnchantment != null) {
+                    wrappedResult.setExactComponent(ComponentTypes.ENCHANTMENTS, previousEnchantment);
+                } else {
+                    wrappedResult.resetComponent(ComponentTypes.ENCHANTMENTS);
+                }
+            }
+        }
     }
 
     /*
@@ -484,9 +497,6 @@ public class RecipeEventListener implements Listener {
         AnvilInventory inventory = event.getInventory();
         ItemStack first = inventory.getFirstItem();
         if (ItemStackUtils.isEmpty(first)) {
-            return;
-        }
-        if (event.getResult() == null) {
             return;
         }
         Item<ItemStack> wrappedFirst = BukkitItemManager.instance().wrap(first);
