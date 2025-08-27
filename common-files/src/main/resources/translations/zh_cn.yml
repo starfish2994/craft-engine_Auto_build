@@ -83,6 +83,8 @@ warning.config.number.fixed.invalid_value: "<yellow>在文件 <arg:0> 发现问�
 warning.config.number.expression.missing_expression: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'expression' 数字类型所需的 'expression' 参数</yellow>"
 warning.config.number.uniform.missing_min: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'uniform' 数字类型所需的 'min' 参数</yellow>"
 warning.config.number.uniform.missing_max: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'uniform' 数字类型所需的 'max' 参数</yellow>"
+warning.config.number.gaussian.missing_min: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'gaussian' 数字类型所需的 'min' 参数</yellow>"
+warning.config.number.gaussian.missing_max: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'gaussian' 数字类型所需的 'max' 参数</yellow>"
 warning.config.condition.all_of.missing_terms: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'all_of' 条件所需的 'terms' 参数</yellow>"
 warning.config.condition.all_of.invalid_terms_type: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 的 'all_of' 条件配置错误, 'terms' 应为映射列表, 当前类型: '<arg:2>'</yellow>"
 warning.config.condition.any_of.missing_terms: "<yellow>在文件 <arg:0> 发现问题 - 配置项 '<arg:1>' 缺少 'any_of' 条件所需的 'terms' 参数</yellow>"

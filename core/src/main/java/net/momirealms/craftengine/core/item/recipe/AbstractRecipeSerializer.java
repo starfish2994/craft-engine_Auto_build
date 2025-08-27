@@ -90,11 +90,11 @@ public abstract class AbstractRecipeSerializer<T, R extends Recipe<T>> implement
         if (resultMap == null) {
             return null;
         }
-        String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(resultMap.get("id"), "warning.config.recipe.visual_result.missing_id");
+        String id = ResourceConfigUtils.requireNonEmptyStringOrThrow(resultMap.get("id"), "warning.config.recipe.result.missing_id");
         int count = ResourceConfigUtils.getAsInt(resultMap.getOrDefault("count", 1), "count");
-        BuildableItem<T> resultItem = (BuildableItem<T>) CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(() -> new LocalizedResourceConfigException("warning.config.recipe.invalid_visual_result", id));
+        BuildableItem<T> resultItem = (BuildableItem<T>) CraftEngine.instance().itemManager().getBuildableItem(Key.of(id)).orElseThrow(() -> new LocalizedResourceConfigException("warning.config.recipe.invalid_result", id));
         if (resultItem.isEmpty()) {
-            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_visual_result", id);
+            throw new LocalizedResourceConfigException("warning.config.recipe.invalid_result", id);
         }
         List<PostProcessor<T>> processors = ResourceConfigUtils.parseConfigAsList(resultMap.get("post-processors"), PostProcessors::fromMap);
         return new CustomRecipeResult<>(
