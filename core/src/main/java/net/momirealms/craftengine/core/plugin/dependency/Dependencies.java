@@ -420,7 +420,6 @@ public class Dependencies {
             List.of(Relocation.of("jimfs", "com{}google{}common{}jimfs"))
     );
 
-
     public static final Dependency AMAZON_AWSSDK_S3 = new Dependency(
             "amazon-sdk-s3",
             "software{}amazon{}awssdk",

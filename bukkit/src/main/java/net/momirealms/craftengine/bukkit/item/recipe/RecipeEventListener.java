@@ -613,6 +613,35 @@ public class RecipeEventListener implements Listener {
         if (input == null) return;
         Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
         BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
+        if (craftingTableRecipe.hasVisualResult()) {
+            inventory.setResult(craftingTableRecipe.assembleVisual(input, new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
+        } else {
+            inventory.setResult(craftingTableRecipe.assemble(input, new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCraftingFinish(CraftItemEvent event) {
+        if (!Config.enableRecipeSystem()) return;
+        org.bukkit.inventory.Recipe recipe = event.getRecipe();
+        if (!(recipe instanceof CraftingRecipe craftingRecipe)) return;
+        Key recipeId = Key.of(craftingRecipe.getKey().namespace(), craftingRecipe.getKey().value());
+        Optional<Recipe<ItemStack>> optionalRecipe = this.recipeManager.recipeById(recipeId);
+        // 也许是其他插件注册的配方，直接无视
+        if (optionalRecipe.isEmpty()) {
+            return;
+        }
+        CraftingInventory inventory = event.getInventory();
+        if (!(optionalRecipe.get() instanceof CustomCraftingTableRecipe<ItemStack> craftingTableRecipe)) {
+            return;
+        }
+        if (!craftingTableRecipe.hasVisualResult()) {
+            return;
+        }
+        CraftingInput<ItemStack> input = getCraftingInput(inventory);
+        if (input == null) return;
+        Player player = InventoryUtils.getPlayerFromInventoryEvent(event);
+        BukkitServerPlayer serverPlayer = BukkitAdaptors.adapt(player);
         inventory.setResult(craftingTableRecipe.assemble(input, new ItemBuildContext(serverPlayer, ContextHolder.EMPTY)));
     }
 
