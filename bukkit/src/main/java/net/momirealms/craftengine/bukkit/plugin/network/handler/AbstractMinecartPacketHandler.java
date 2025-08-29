@@ -7,11 +7,14 @@ import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.network.PacketConsumers;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.context.NetworkTextReplaceContext;
 import net.momirealms.craftengine.core.plugin.network.ByteBufPacketEvent;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
+import net.momirealms.craftengine.core.plugin.text.component.ComponentProvider;
 import net.momirealms.craftengine.core.util.AdventureHelper;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.VersionHelper;
@@ -25,7 +28,7 @@ public class AbstractMinecartPacketHandler implements EntityPacketHandler {
     private static final BlockStateHandler HANDLER = VersionHelper.isOrAbove1_21_3() ? BlockStateHandler_1_21_3.INSTANCE : BlockStateHandler_1_20.INSTANCE;
 
     @Override
-    public void handleSetEntityData(NetWorkUser user, ByteBufPacketEvent event) {
+    public void handleSetEntityData(Player user, ByteBufPacketEvent event) {
         FriendlyByteBuf buf = event.getBuffer();
         int id = buf.readVarInt();
         boolean isChanged = false;
@@ -43,12 +46,9 @@ public class AbstractMinecartPacketHandler implements EntityPacketHandler {
                 if (optionalTextComponent.isEmpty()) continue;
                 Object textComponent = optionalTextComponent.get();
                 String json = ComponentUtils.minecraftToJson(textComponent);
-                Map<String, Component> tokens = CraftEngine.instance().fontManager().matchTags(json);
+                Map<String, ComponentProvider> tokens = CraftEngine.instance().fontManager().matchTags(json);
                 if (tokens.isEmpty()) continue;
-                Component component = AdventureHelper.jsonToComponent(json);
-                for (Map.Entry<String, Component> token : tokens.entrySet()) {
-                    component = component.replaceText(b -> b.matchLiteral(token.getKey()).replacement(token.getValue()));
-                }
+                Component component = AdventureHelper.replaceText(AdventureHelper.jsonToComponent(json), tokens, NetworkTextReplaceContext.of(user));
                 Object serializer = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$serializer(packedItem);
                 packedItems.set(i, FastNMS.INSTANCE.constructor$SynchedEntityData$DataValue(
                         entityDataId, serializer, Optional.of(ComponentUtils.adventureToMinecraft(component))

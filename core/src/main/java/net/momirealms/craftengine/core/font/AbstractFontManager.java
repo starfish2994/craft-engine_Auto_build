@@ -10,6 +10,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigParser;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
 import net.momirealms.craftengine.core.plugin.locale.LocalizedResourceConfigException;
+import net.momirealms.craftengine.core.plugin.text.component.ComponentProvider;
 import net.momirealms.craftengine.core.util.*;
 import org.ahocorasick.trie.Token;
 import org.ahocorasick.trie.Trie;
@@ -41,7 +42,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     protected Trie imageTagTrie;
     protected Trie emojiKeywordTrie;
-    protected Map<String, Component> tagMapper;
+    protected Map<String, ComponentProvider> tagMapper;
     protected Map<String, Emoji> emojiMapper;
     protected List<Emoji> emojiList;
     protected List<String> allEmojiSuggestions;
@@ -89,11 +90,11 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     @Override
-    public Map<String, Component> matchTags(String json) {
+    public Map<String, ComponentProvider> matchTags(String json) {
         if (this.imageTagTrie == null) {
             return Collections.emptyMap();
         }
-        Map<String, Component> tags = new HashMap<>();
+        Map<String, ComponentProvider> tags = new HashMap<>();
         for (Token token : this.imageTagTrie.tokenize(json)) {
             if (token.isMatch()) {
                 tags.put(token.getFragment(), this.tagMapper.get(token.getFragment()));
@@ -218,9 +219,9 @@ public abstract class AbstractFontManager implements FontManager {
     public IllegalCharacterProcessResult processIllegalCharacters(String raw, char replacement) {
         boolean hasIllegal = false;
         // replace illegal image usage
-        Map<String, Component> tokens = matchTags(raw);
+        Map<String, ComponentProvider> tokens = matchTags(raw);
         if (!tokens.isEmpty()) {
-            for (Map.Entry<String, Component> entry : tokens.entrySet()) {
+            for (Map.Entry<String, ComponentProvider> entry : tokens.entrySet()) {
                 raw = raw.replace(entry.getKey(), String.valueOf(replacement));
                 hasIllegal = true;
             }
@@ -269,21 +270,21 @@ public abstract class AbstractFontManager implements FontManager {
         for (BitmapImage image : this.images.values()) {
             String id = image.id().toString();
             String simpleImageTag = imageTag(id);
-            this.tagMapper.put(simpleImageTag, image.componentAt(0, 0));
-            this.tagMapper.put("\\" + simpleImageTag, Component.text(simpleImageTag));
+            this.tagMapper.put(simpleImageTag, ComponentProvider.constant(image.componentAt(0, 0)));
+            this.tagMapper.put("\\" + simpleImageTag, ComponentProvider.constant(Component.text(simpleImageTag)));
             for (int i = 0; i < image.rows(); i++) {
                 for (int j = 0; j < image.columns(); j++) {
                     String imageArgs = id + ":" + i + ":" + j;
                     String imageTag = imageTag(imageArgs);
-                    this.tagMapper.put(imageTag, image.componentAt(i, j));
-                    this.tagMapper.put("\\" + imageTag, Component.text(imageTag));
+                    this.tagMapper.put(imageTag, ComponentProvider.constant(image.componentAt(i, j)));
+                    this.tagMapper.put("\\" + imageTag, ComponentProvider.constant(Component.text(imageTag)));
                 }
             }
         }
         for (int i = -256; i <= 256; i++) {
             String shiftTag = "<shift:" + i + ">";
-            this.tagMapper.put(shiftTag, this.offsetFont.createOffset(i));
-            this.tagMapper.put("\\" + shiftTag, Component.text(shiftTag));
+            this.tagMapper.put(shiftTag, ComponentProvider.constant(this.offsetFont.createOffset(i)));
+            this.tagMapper.put("\\" + shiftTag, ComponentProvider.constant(Component.text(shiftTag)));
         }
         this.imageTagTrie = Trie.builder()
                 .ignoreOverlaps()
