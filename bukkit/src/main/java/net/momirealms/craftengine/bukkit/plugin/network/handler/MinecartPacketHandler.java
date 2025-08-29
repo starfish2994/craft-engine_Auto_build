@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class AbstractMinecartPacketHandler implements EntityPacketHandler {
-    public static final AbstractMinecartPacketHandler INSTANCE = new AbstractMinecartPacketHandler();
-    private static final BlockStateHandler HANDLER = VersionHelper.isOrAbove1_21_3() ? BlockStateHandler_1_21_3.INSTANCE : BlockStateHandler_1_20.INSTANCE;
+public class MinecartPacketHandler implements EntityPacketHandler {
+    public static final MinecartPacketHandler INSTANCE = new MinecartPacketHandler();
+    private static final BlockStateHandler BLOCK_STATE_HANDLER = VersionHelper.isOrAbove1_21_3() ? BlockStateHandler_1_21_3.INSTANCE : BlockStateHandler_1_20.INSTANCE;
 
     @Override
     public void handleSetEntityData(Player user, ByteBufPacketEvent event) {
@@ -36,7 +36,7 @@ public class AbstractMinecartPacketHandler implements EntityPacketHandler {
         for (int i = 0; i < packedItems.size(); i++) {
             Object packedItem = packedItems.get(i);
             int entityDataId = FastNMS.INSTANCE.field$SynchedEntityData$DataValue$id(packedItem);
-            Object blockState = HANDLER.handle(user, packedItem, entityDataId);
+            Object blockState = BLOCK_STATE_HANDLER.handle(user, packedItem, entityDataId);
             if (blockState != null) {
                 packedItems.set(i, blockState);
                 isChanged = true;

@@ -42,7 +42,7 @@ public abstract class AbstractFontManager implements FontManager {
 
     protected Trie imageTagTrie;
     protected Trie emojiKeywordTrie;
-    protected Map<String, ComponentProvider> tagMapper;
+    protected Map<String, ComponentProvider> networkTagMapper;
     protected Map<String, Emoji> emojiMapper;
     protected List<Emoji> emojiList;
     protected List<String> allEmojiSuggestions;
@@ -58,6 +58,7 @@ public abstract class AbstractFontManager implements FontManager {
         this.offsetFont = Optional.ofNullable(plugin.config().settings().getSection("image.offset-characters"))
                 .map(OffsetFont::new)
                 .orElse(null);
+        this.networkTagMapper = new HashMap<>(1024);
     }
 
     @Override
@@ -66,6 +67,9 @@ public abstract class AbstractFontManager implements FontManager {
         this.images.clear();
         this.illegalChars.clear();
         this.emojis.clear();
+        if (this.networkTagMapper != null) {
+            this.networkTagMapper.clear();
+        }
     }
 
     @Override
@@ -81,12 +85,48 @@ public abstract class AbstractFontManager implements FontManager {
     @Override
     public void delayedLoad() {
         Optional.ofNullable(this.fonts.get(DEFAULT_FONT)).ifPresent(font -> this.illegalChars.addAll(font.codepointsInUse()));
+        this.registerImageTags();
+        this.registerShiftTags();
+        this.registerGlobalTags();
         this.buildImageTagTrie();
         this.buildEmojiKeywordsTrie();
         this.emojiList = new ArrayList<>(this.emojis.values());
         this.allEmojiSuggestions = this.emojis.values().stream()
                 .flatMap(emoji -> emoji.keywords().stream())
                 .collect(Collectors.toList());
+    }
+
+    private void registerGlobalTags() {
+        for (Map.Entry<String, String> entry : this.plugin.globalVariableManager().globalVariables().entrySet()) {
+            String globalTag = globalTag(entry.getKey());
+            this.networkTagMapper.put(globalTag, ComponentProvider.miniMessageOrConstant(entry.getValue()));
+            this.networkTagMapper.put("\\" + globalTag, ComponentProvider.constant(Component.text(entry.getValue())));
+        }
+    }
+
+    private void registerShiftTags() {
+        for (int i = -256; i <= 256; i++) {
+            String shiftTag = "<shift:" + i + ">";
+            this.networkTagMapper.put(shiftTag, ComponentProvider.constant(this.offsetFont.createOffset(i)));
+            this.networkTagMapper.put("\\" + shiftTag, ComponentProvider.constant(Component.text(shiftTag)));
+        }
+    }
+
+    private void registerImageTags() {
+        for (BitmapImage image : this.images.values()) {
+            String id = image.id().toString();
+            String simpleImageTag = imageTag(id);
+            this.networkTagMapper.put(simpleImageTag, ComponentProvider.constant(image.componentAt(0, 0)));
+            this.networkTagMapper.put("\\" + simpleImageTag, ComponentProvider.constant(Component.text(simpleImageTag)));
+            for (int i = 0; i < image.rows(); i++) {
+                for (int j = 0; j < image.columns(); j++) {
+                    String imageArgs = id + ":" + i + ":" + j;
+                    String imageTag = imageTag(imageArgs);
+                    this.networkTagMapper.put(imageTag, ComponentProvider.constant(image.componentAt(i, j)));
+                    this.networkTagMapper.put("\\" + imageTag, ComponentProvider.constant(Component.text(imageTag)));
+                }
+            }
+        }
     }
 
     @Override
@@ -97,7 +137,7 @@ public abstract class AbstractFontManager implements FontManager {
         Map<String, ComponentProvider> tags = new HashMap<>();
         for (Token token : this.imageTagTrie.tokenize(json)) {
             if (token.isMatch()) {
-                tags.put(token.getFragment(), this.tagMapper.get(token.getFragment()));
+                tags.put(token.getFragment(), this.networkTagMapper.get(token.getFragment()));
             }
         }
         return tags;
@@ -266,34 +306,18 @@ public abstract class AbstractFontManager implements FontManager {
     }
 
     private void buildImageTagTrie() {
-        this.tagMapper = new HashMap<>(1024);
-        for (BitmapImage image : this.images.values()) {
-            String id = image.id().toString();
-            String simpleImageTag = imageTag(id);
-            this.tagMapper.put(simpleImageTag, ComponentProvider.constant(image.componentAt(0, 0)));
-            this.tagMapper.put("\\" + simpleImageTag, ComponentProvider.constant(Component.text(simpleImageTag)));
-            for (int i = 0; i < image.rows(); i++) {
-                for (int j = 0; j < image.columns(); j++) {
-                    String imageArgs = id + ":" + i + ":" + j;
-                    String imageTag = imageTag(imageArgs);
-                    this.tagMapper.put(imageTag, ComponentProvider.constant(image.componentAt(i, j)));
-                    this.tagMapper.put("\\" + imageTag, ComponentProvider.constant(Component.text(imageTag)));
-                }
-            }
-        }
-        for (int i = -256; i <= 256; i++) {
-            String shiftTag = "<shift:" + i + ">";
-            this.tagMapper.put(shiftTag, ComponentProvider.constant(this.offsetFont.createOffset(i)));
-            this.tagMapper.put("\\" + shiftTag, ComponentProvider.constant(Component.text(shiftTag)));
-        }
         this.imageTagTrie = Trie.builder()
                 .ignoreOverlaps()
-                .addKeywords(this.tagMapper.keySet())
+                .addKeywords(this.networkTagMapper.keySet())
                 .build();
     }
 
     private static String imageTag(String text) {
         return "<image:" + text + ">";
+    }
+
+    private static String globalTag(String text) {
+        return "<global:" + text + ">";
     }
 
     @Override
