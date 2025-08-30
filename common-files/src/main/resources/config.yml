@@ -29,7 +29,6 @@ resource-pack:
       seed: 0 # 0 = random seed
       fake-directory: false
       escape-unicode: false
-      break-json: false
       resource-location:
         enable: true
         random-namespace:
@@ -41,7 +40,6 @@ resource-pack:
           anti-unzip: false
         random-atlas:
           images-per-canvas: 32 # 0 = disable
-          use-double: true
         # Sometimes, some vanilla files that have been overwritten might be mistakenly obfuscated.
         # Please add the ignored textures/models/sounds here.
         bypass-textures:
