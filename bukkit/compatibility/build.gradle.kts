@@ -14,6 +14,7 @@ repositories {
     maven("https://nexus.neetgames.com/repository/maven-releases/") // mcmmo
     maven("https://repo.dmulloy2.net/repository/public/") // mcmmo required
     maven("https://repo.auxilor.io/repository/maven-public/") // eco
+    maven("https://repo.hiusers.com/releases") // zaphkiel
 }
 
 dependencies {
@@ -67,6 +68,8 @@ dependencies {
     compileOnly("com.willfp:libreforge:4.58.1")
     // AureliumSkills
     compileOnly("com.github.Archy-X:AureliumSkills:Beta1.3.21")
+    // Zaphkiel
+    compileOnly("ink.ptms:ZaphkielAPI:2.1.0")
 }
 
 java {
