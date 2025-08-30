@@ -1,10 +1,7 @@
 package net.momirealms.craftengine.bukkit.compatibility;
 
 import net.momirealms.craftengine.bukkit.block.BukkitBlockManager;
-import net.momirealms.craftengine.bukkit.compatibility.item.CustomFishingSource;
-import net.momirealms.craftengine.bukkit.compatibility.item.MMOItemsSource;
-import net.momirealms.craftengine.bukkit.compatibility.item.MythicMobsSource;
-import net.momirealms.craftengine.bukkit.compatibility.item.NeigeItemsSource;
+import net.momirealms.craftengine.bukkit.compatibility.item.*;
 import net.momirealms.craftengine.bukkit.compatibility.legacy.slimeworld.LegacySlimeFormatStorageAdaptor;
 import net.momirealms.craftengine.bukkit.compatibility.leveler.*;
 import net.momirealms.craftengine.bukkit.compatibility.model.bettermodel.BetterModelModel;
@@ -248,6 +245,10 @@ public class BukkitCompatibilityManager implements CompatibilityManager {
         if (this.isPluginEnabled("CustomFishing")) {
             itemManager.registerExternalItemSource(new CustomFishingSource());
             logHook("CustomFishing");
+        }
+        if (this.isPluginEnabled("Zaphkiel")) {
+            itemManager.registerExternalItemSource(new ZaphkielSource());
+            logHook("Zaphkiel");
         }
     }
 
