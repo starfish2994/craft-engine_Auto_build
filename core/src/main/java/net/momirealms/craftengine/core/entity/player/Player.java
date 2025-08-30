@@ -10,8 +10,6 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public abstract class Player extends AbstractEntity implements NetWorkUser {
     private static final Key TYPE = Key.of("minecraft:player");
 
@@ -25,10 +23,6 @@ public abstract class Player extends AbstractEntity implements NetWorkUser {
 
     @Override
     public abstract Object serverPlayer();
-
-    public abstract void sendPackets(List<Object> packet, boolean immediately);
-
-    public abstract void sendPackets(List<Object> packet, boolean immediately, Runnable sendListener);
 
     public abstract float getDestroyProgress(Object blockState, BlockPos pos);
 

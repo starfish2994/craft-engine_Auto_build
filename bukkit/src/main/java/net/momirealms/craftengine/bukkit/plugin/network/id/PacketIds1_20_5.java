@@ -168,4 +168,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int serverboundInteractPacket() {
         return PacketIdFinder.serverboundByName("minecraft:interact");
     }
+
+    @Override
+    public int clientboundForgetLevelChunkPacket() {
+        return PacketIdFinder.clientboundByName("minecraft:forget_level_chunk");
+    }
 }

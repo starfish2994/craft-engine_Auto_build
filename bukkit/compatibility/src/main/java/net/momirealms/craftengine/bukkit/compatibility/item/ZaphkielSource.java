@@ -30,5 +30,4 @@ public class ZaphkielSource implements ExternalItemSource<ItemStack> {
     public String id(ItemStack item) {
         return Zaphkiel.INSTANCE.api().getItemHandler().getItemId(item);
     }
-
 }

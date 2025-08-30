@@ -1665,4 +1665,11 @@ public final class NetworkReflections {
             ),
             VersionHelper.isOrAbove1_21_5()
     );
+
+    public static final Class<?> clazz$ClientboundForgetLevelChunkPacket = requireNonNull(
+            BukkitReflectionUtils.findReobfOrMojmapClass(
+                    "network.protocol.game.PacketPlayOutUnloadChunk",
+                    "network.protocol.game.ClientboundForgetLevelChunkPacket"
+            )
+    );
 }

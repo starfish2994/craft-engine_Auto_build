@@ -34,6 +34,7 @@ import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import org.bukkit.*;
@@ -109,7 +110,11 @@ public class BukkitServerPlayer extends Player {
     private double cachedInteractionRange;
     // cooldown data
     private CooldownData cooldownData;
-
+    // tracked chunks
+    private final Set<ChunkPos> trackedChunks = Collections.synchronizedSet(new HashSet<>());
+    // relighted chunks
+    private final Set<ChunkPos> relightedChunks = Collections.synchronizedSet(new HashSet<>());
+    // entity view
     private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, @Nullable Channel channel) {
@@ -497,9 +502,6 @@ public class BukkitServerPlayer extends Player {
             Item<ItemStack> tool = getItemInHand(InteractionHand.MAIN_HAND);
             boolean isCorrectTool = FastNMS.INSTANCE.method$ItemStack$isCorrectToolForDrops(tool.getLiteralObject(), blockState);
             // 如果自定义方块在服务端侧未使用正确的工具，那么需要还原挖掘速度
-            if (!isCorrectTool) {
-                progress *= (10f / 3f);
-            }
             if (!BlockStateUtils.isCorrectTool(customState, tool)) {
                 progress *= customState.settings().incorrectToolSpeed();
             }
@@ -1031,5 +1033,24 @@ public class BukkitServerPlayer extends Player {
     @Override
     public CooldownData cooldown() {
         return this.cooldownData;
+    }
+
+    @Override
+    public boolean isChunkTracked(ChunkPos chunkPos) {
+        return this.trackedChunks.contains(chunkPos);
+    }
+
+    @Override
+    public void setChunkTrackStatus(ChunkPos chunkPos, boolean tracked) {
+        if (tracked) {
+            this.trackedChunks.add(chunkPos);
+        } else {
+            this.trackedChunks.remove(chunkPos);
+        }
+    }
+
+    @Override
+    public void clearTrackedChunks() {
+        this.trackedChunks.clear();
     }
 }

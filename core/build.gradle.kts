@@ -65,6 +65,8 @@ dependencies {
     compileOnly("com.mojang:brigadier:${rootProject.properties["mojang_brigadier_version"]}")
     // authlib
     compileOnly("com.mojang:authlib:${rootProject.properties["authlib_version"]}")
+    // concurrentutil
+    compileOnly("ca.spottedleaf:concurrentutil:${rootProject.properties["concurrent_util_version"]}")
 }
 
 java {

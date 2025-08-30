@@ -23,6 +23,9 @@ dependencies {
     implementation(project(":bukkit:compatibility:legacy"))
     implementation(project(":common-files"))
 
+    // concurrentutil
+    implementation(files("${rootProject.rootDir}/libs/concurrentutil-${rootProject.properties["concurrent_util_version"]}.jar"))
+
     implementation("net.momirealms:sparrow-util:${rootProject.properties["sparrow_util_version"]}")
     implementation("net.momirealms:antigrieflib:${rootProject.properties["anti_grief_version"]}")
     implementation("net.momirealms:craft-engine-nms-helper-mojmap:${rootProject.properties["nms_helper_version"]}")
@@ -150,5 +153,6 @@ tasks {
         relocate("com.google.common.jimfs", "net.momirealms.craftengine.libraries.jimfs")
         relocate("org.apache.commons", "net.momirealms.craftengine.libraries.commons")
         relocate("io.leangen.geantyref", "net.momirealms.craftengine.libraries.geantyref")
+        relocate("ca.spottedleaf.concurrentutil", "net.momirealms.craftengine.libraries.concurrentutil")
     }
 }

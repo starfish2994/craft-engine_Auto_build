@@ -4,11 +4,11 @@ plugins {
 }
 
 repositories {
+    mavenCentral()
     maven("https://jitpack.io/")
     maven("https://repo.momirealms.net/releases/")
     maven("https://libraries.minecraft.net/")
     maven("https://repo.papermc.io/repository/maven-public/")
-    mavenCentral()
 }
 
 dependencies {
@@ -60,6 +60,8 @@ dependencies {
     compileOnly("org.ahocorasick:ahocorasick:${rootProject.properties["ahocorasick_version"]}")
     // authlib
     compileOnly("com.mojang:authlib:${rootProject.properties["authlib_version"]}")
+    // concurrentutil
+    compileOnly("ca.spottedleaf:concurrentutil:${rootProject.properties["concurrent_util_version"]}")
 }
 
 java {

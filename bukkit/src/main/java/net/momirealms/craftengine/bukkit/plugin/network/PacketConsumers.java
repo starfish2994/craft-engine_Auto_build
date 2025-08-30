@@ -64,10 +64,7 @@ import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.plugin.text.component.ComponentProvider;
 import net.momirealms.craftengine.core.util.*;
-import net.momirealms.craftengine.core.world.BlockHitResult;
-import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.EntityHitResult;
-import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.*;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
@@ -75,6 +72,7 @@ import net.momirealms.craftengine.core.world.chunk.packet.MCSection;
 import net.momirealms.craftengine.core.world.collision.AABB;
 import net.momirealms.sparrow.nbt.Tag;
 import org.bukkit.*;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -261,12 +259,29 @@ public class PacketConsumers {
         return MOD_BLOCK_STATE_MAPPINGS[stateId];
     }
 
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> FORGET_LEVEL_CHUNK = (user, event) -> {
+        try {
+            FriendlyByteBuf buf = event.getBuffer();
+            if (VersionHelper.isOrAbove1_20_2()) {
+                long chunkPos = buf.readLong();
+                user.setChunkTrackStatus(new ChunkPos(chunkPos), false);
+            } else {
+                int x = buf.readInt();
+                int y = buf.readInt();
+                user.setChunkTrackStatus(ChunkPos.of(x, y), false);
+            }
+        } catch (Exception e) {
+            CraftEngine.instance().logger().warn("Failed to handle ClientboundForgetLevelChunkPacket", e);
+        }
+    };
+
     public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> LEVEL_CHUNK_WITH_LIGHT = (user, event) -> {
         try {
             BukkitServerPlayer player = (BukkitServerPlayer) user;
             FriendlyByteBuf buf = event.getBuffer();
             int chunkX = buf.readInt();
             int chunkZ = buf.readInt();
+            player.setChunkTrackStatus(ChunkPos.of(chunkX, chunkZ), true);
             boolean named = !VersionHelper.isOrAbove1_20_2();
             // ClientboundLevelChunkPacketData
             int heightmapsCount = 0;
@@ -1262,6 +1277,7 @@ public class PacketConsumers {
                 int sectionCount = (world.getMaxHeight() - world.getMinHeight()) / 16;
                 player.setClientSideSectionCount(sectionCount);
                 player.setClientSideDimension(Key.of(location.toString()));
+                player.clearTrackedChunks();
             } else {
                 CraftEngine.instance().logger().warn("Failed to handle ClientboundRespawnPacket: World " + location + " does not exist");
             }

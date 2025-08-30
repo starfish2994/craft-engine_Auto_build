@@ -11,8 +11,8 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIdFinder;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20_5;
+import net.momirealms.craftengine.bukkit.plugin.reflection.leaves.LeavesReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
-import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.LeavesReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.LibraryReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.NetworkReflections;
 import net.momirealms.craftengine.bukkit.plugin.user.BukkitServerPlayer;
@@ -213,6 +213,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         registerNMSPacketConsumer(PacketConsumers.LOGIN_FINISHED, NetworkReflections.clazz$ClientboundLoginFinishedPacket);
         registerNMSPacketConsumer(PacketConsumers.UPDATE_TAGS, NetworkReflections.clazz$ClientboundUpdateTagsPacket);
         registerNMSPacketConsumer(PacketConsumers.CONTAINER_CLICK_1_21_5, VersionHelper.isOrAbove1_21_5() ? NetworkReflections.clazz$ServerboundContainerClickPacket : null);
+        registerS2CByteBufPacketConsumer(PacketConsumers.FORGET_LEVEL_CHUNK, this.packetIds.clientboundForgetLevelChunkPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.LEVEL_CHUNK_WITH_LIGHT, this.packetIds.clientboundLevelChunkWithLightPacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.SECTION_BLOCK_UPDATE, this.packetIds.clientboundSectionBlocksUpdatePacket());
         registerS2CByteBufPacketConsumer(PacketConsumers.BLOCK_UPDATE, this.packetIds.clientboundBlockUpdatePacket());

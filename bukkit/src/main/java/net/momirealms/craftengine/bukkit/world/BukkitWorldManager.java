@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.world;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.WorldStorageInjector;
@@ -29,7 +30,6 @@ import org.bukkit.event.world.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,7 +53,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
     public BukkitWorldManager(BukkitCraftEngine plugin) {
         instance = this;
         this.plugin = plugin;
-        this.worlds = new HashMap<>();
+        this.worlds = new Object2ObjectOpenHashMap<>(32, 0.5f);
         this.storageAdaptor = new DefaultStorageAdaptor();
         for (World world : Bukkit.getWorlds()) {
             this.worlds.put(world.getUID(), new BukkitCEWorld(new BukkitWorld(world), this.storageAdaptor));
