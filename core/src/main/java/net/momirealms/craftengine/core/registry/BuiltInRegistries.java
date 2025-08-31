@@ -40,6 +40,9 @@ import net.momirealms.craftengine.core.plugin.context.condition.ConditionFactory
 import net.momirealms.craftengine.core.plugin.context.function.FunctionFactory;
 import net.momirealms.craftengine.core.plugin.context.number.NumberProviderFactory;
 import net.momirealms.craftengine.core.plugin.context.selector.PlayerSelectorFactory;
+import net.momirealms.craftengine.core.plugin.network.ModPacket;
+import net.momirealms.craftengine.core.plugin.network.codec.NetworkCodec;
+import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.ResourceKey;
 
 public class BuiltInRegistries {
@@ -81,6 +84,7 @@ public class BuiltInRegistries {
     public static final Registry<LegacyRecipe.Type> LEGACY_RECIPE_TYPE = createConstantBoundRegistry(Registries.LEGACY_RECIPE_TYPE);
     public static final Registry<PostProcessor.Type<?>> RECIPE_POST_PROCESSOR_TYPE = createConstantBoundRegistry(Registries.RECIPE_POST_PROCESSOR_TYPE);
     public static final Registry<ItemUpdaterType<?>> ITEM_UPDATER_TYPE = createConstantBoundRegistry(Registries.ITEM_UPDATER_TYPE);
+    public static final Registry<NetworkCodec<FriendlyByteBuf, ? extends ModPacket>> MOD_PACKET = createConstantBoundRegistry(Registries.MOD_PACKET);
 
     private static <T> Registry<T> createConstantBoundRegistry(ResourceKey<? extends Registry<T>> key) {
         return new ConstantBoundRegistry<>(key);

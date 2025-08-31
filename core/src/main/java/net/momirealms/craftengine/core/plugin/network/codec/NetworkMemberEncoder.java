@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network.payload.codec;
+package net.momirealms.craftengine.core.plugin.network.codec;
 
 @FunctionalInterface
 public interface NetworkMemberEncoder<O, T> {

@@ -1,4 +1,4 @@
-package net.momirealms.craftengine.bukkit.plugin.network.payload.codec;
+package net.momirealms.craftengine.core.plugin.network.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
