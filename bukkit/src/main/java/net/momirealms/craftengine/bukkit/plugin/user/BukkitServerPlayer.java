@@ -31,6 +31,7 @@ import net.momirealms.craftengine.core.plugin.network.ConnectionState;
 import net.momirealms.craftengine.core.plugin.network.EntityPacketHandler;
 import net.momirealms.craftengine.core.sound.SoundSource;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.IntIdentityList;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
@@ -97,6 +98,7 @@ public class BukkitServerPlayer extends Player {
     private int resentSwingTick;
     // has fabric client mod or not
     private boolean hasClientMod = false;
+    private IntIdentityList blockList = new IntIdentityList(BlockStateUtils.vanillaStateSize());
     // cache if player can break blocks
     private boolean clientSideCanBreak = true;
     // prevent AFK players from consuming too much CPU resource on predicting
@@ -378,7 +380,7 @@ public class BukkitServerPlayer extends Player {
             if (VersionHelper.isOrAbove1_20_2()) {
                 Object dataPayload;
                 if (!VersionHelper.isOrAbove1_20_5()) {
-                    dataPayload = NetworkReflections.constructor$UnknownPayload.newInstance(channelResourceLocation, Unpooled.wrappedBuffer(data));
+                    dataPayload = NetworkReflections.constructor$ServerboundCustomPayloadPacket$UnknownPayload.newInstance(channelResourceLocation, Unpooled.wrappedBuffer(data));
                 } else if (DiscardedPayload.useNewMethod) {
                     dataPayload = NetworkReflections.constructor$DiscardedPayload.newInstance(channelResourceLocation, data);
                 } else {
@@ -909,12 +911,24 @@ public class BukkitServerPlayer extends Player {
         return resentSwingTick == gameTicks();
     }
 
+    @Override
     public boolean clientModEnabled() {
         return this.hasClientMod;
     }
 
+    @Override
     public void setClientModState(boolean enable) {
         this.hasClientMod = enable;
+    }
+
+    @Override
+    public void setClientBlockList(IntIdentityList blockList) {
+        this.blockList = blockList;
+    }
+
+    @Override
+    public IntIdentityList clientBlockList() {
+        return this.blockList;
     }
 
     @Override

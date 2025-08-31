@@ -1635,7 +1635,7 @@ public final class NetworkReflections {
     }
 
     // 1.20.2~1.20.4
-    public static final Class<?> clazz$UnknownPayload = MiscUtils.requireNonNullIf(
+    public static final Class<?> clazz$ServerboundCustomPayloadPacket$UnknownPayload = MiscUtils.requireNonNullIf(
             ReflectionUtils.getClazz(
                     BukkitReflectionUtils.assembleMCClass("network.protocol.common.ServerboundCustomPayloadPacket$UnknownPayload")
             ),
@@ -1643,17 +1643,17 @@ public final class NetworkReflections {
     );
 
     // 1.20.2~1.20.4
-    public static final Field field$UnknownPayload$id = Optional.ofNullable(clazz$UnknownPayload)
+    public static final Field field$ServerboundCustomPayloadPacket$UnknownPayload$id = Optional.ofNullable(clazz$ServerboundCustomPayloadPacket$UnknownPayload)
             .map(it -> ReflectionUtils.getDeclaredField(it, CoreReflections.clazz$ResourceLocation, 0))
             .orElse(null);
 
     // 1.20.2~1.20.4
-    public static final Field field$UnknownPayload$data = Optional.ofNullable(clazz$UnknownPayload)
+    public static final Field field$ServerboundCustomPayloadPacket$UnknownPayload$data = Optional.ofNullable(clazz$ServerboundCustomPayloadPacket$UnknownPayload)
             .map(it -> ReflectionUtils.getDeclaredField(it, ByteBuf.class, 0))
             .orElse(null);
 
     // 1.20.2~1.20.4
-    public static final Constructor<?> constructor$UnknownPayload = Optional.ofNullable(clazz$UnknownPayload)
+    public static final Constructor<?> constructor$ServerboundCustomPayloadPacket$UnknownPayload = Optional.ofNullable(clazz$ServerboundCustomPayloadPacket$UnknownPayload)
             .map(it -> ReflectionUtils.getConstructor(it, CoreReflections.clazz$ResourceLocation, ByteBuf.class))
             .orElse(null);
 
