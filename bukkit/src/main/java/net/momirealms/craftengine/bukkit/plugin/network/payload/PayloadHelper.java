@@ -10,12 +10,9 @@ import net.momirealms.craftengine.core.plugin.network.NetWorkUser;
 import net.momirealms.craftengine.core.plugin.network.NetworkManager;
 import net.momirealms.craftengine.core.plugin.network.codec.NetworkCodec;
 import net.momirealms.craftengine.core.registry.BuiltInRegistries;
-import net.momirealms.craftengine.core.registry.Holder;
 import net.momirealms.craftengine.core.registry.WritableRegistry;
 import net.momirealms.craftengine.core.util.FriendlyByteBuf;
 import net.momirealms.craftengine.core.util.ResourceKey;
-
-import java.util.Optional;
 
 public class PayloadHelper {
 
@@ -30,13 +27,12 @@ public class PayloadHelper {
     }
 
     public static void sendData(NetWorkUser user, ModPacket data) {
-        Optional<Holder.Reference<NetworkCodec<FriendlyByteBuf, ? extends ModPacket>>> optionalType = BuiltInRegistries.MOD_PACKET.get(data.type());
-        if (optionalType.isEmpty()) {
+        @SuppressWarnings("unchecked")
+        NetworkCodec<FriendlyByteBuf, ModPacket> codec = (NetworkCodec<FriendlyByteBuf, ModPacket>) BuiltInRegistries.MOD_PACKET.getValue(data.type());
+        if (codec == null) {
             CraftEngine.instance().logger().warn("Unknown data type class: " + data.getClass().getName());
             return;
         }
-        @SuppressWarnings("unchecked")
-        NetworkCodec<FriendlyByteBuf, ModPacket> codec = (NetworkCodec<FriendlyByteBuf, ModPacket>) optionalType.get().value();
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeByte(BuiltInRegistries.MOD_PACKET.getId(codec));
         codec.encode(buf, data);
