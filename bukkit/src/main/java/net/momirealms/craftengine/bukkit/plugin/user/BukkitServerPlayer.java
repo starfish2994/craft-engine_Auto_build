@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.bukkit.plugin.user;
 
+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
 import com.google.common.collect.Lists;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -35,9 +36,9 @@ import net.momirealms.craftengine.core.util.IntIdentityList;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
-import net.momirealms.craftengine.core.world.ChunkPos;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
+import net.momirealms.craftengine.core.world.chunk.ChunkStatus;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -113,11 +114,9 @@ public class BukkitServerPlayer extends Player {
     // cooldown data
     private CooldownData cooldownData;
     // tracked chunks
-    private final Set<ChunkPos> trackedChunks = Collections.synchronizedSet(new HashSet<>());
-    // relighted chunks
-    private final Set<ChunkPos> relightedChunks = Collections.synchronizedSet(new HashSet<>());
+    private ConcurrentLong2ReferenceChainedHashTable<ChunkStatus> trackedChunks;
     // entity view
-    private final Map<Integer, EntityPacketHandler> entityTypeView = new ConcurrentHashMap<>();
+    private Map<Integer, EntityPacketHandler> entityTypeView;
 
     public BukkitServerPlayer(BukkitCraftEngine plugin, @Nullable Channel channel) {
         this.channel = channel;
@@ -139,6 +138,8 @@ public class BukkitServerPlayer extends Player {
         this.uuid = player.getUniqueId();
         this.name = player.getName();
         byte[] bytes = player.getPersistentDataContainer().get(KeyUtils.toNamespacedKey(CooldownData.COOLDOWN_KEY), PersistentDataType.BYTE_ARRAY);
+        this.trackedChunks = ConcurrentLong2ReferenceChainedHashTable.createWithCapacity(768, 0.5f);
+        this.entityTypeView = new ConcurrentHashMap<>(256);
         try {
             this.cooldownData = CooldownData.fromBytes(bytes);
         } catch (IOException e) {
@@ -1050,17 +1051,23 @@ public class BukkitServerPlayer extends Player {
     }
 
     @Override
-    public boolean isChunkTracked(ChunkPos chunkPos) {
-        return this.trackedChunks.contains(chunkPos);
+    public boolean isChunkTracked(long chunkPos) {
+        return this.trackedChunks.containsKey(chunkPos);
     }
 
     @Override
-    public void setChunkTrackStatus(ChunkPos chunkPos, boolean tracked) {
-        if (tracked) {
-            this.trackedChunks.add(chunkPos);
-        } else {
-            this.trackedChunks.remove(chunkPos);
-        }
+    public ChunkStatus getTrackedChunk(long chunkPos) {
+        return this.trackedChunks.get(chunkPos);
+    }
+
+    @Override
+    public void addTrackedChunk(long chunkPos, ChunkStatus chunkStatus) {
+        this.trackedChunks.put(chunkPos, chunkStatus);
+    }
+
+    @Override
+    public void removeTrackedChunk(long chunkPos) {
+        this.trackedChunks.remove(chunkPos);
     }
 
     @Override

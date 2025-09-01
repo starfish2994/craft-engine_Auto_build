@@ -1,13 +1,18 @@
 package net.momirealms.craftengine.core.world.chunk;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.momirealms.craftengine.core.block.BlockEntityState;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.entity.BlockEntity;
+import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.chunk.serialization.DefaultBlockEntitySerializer;
+import net.momirealms.sparrow.nbt.ListTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class CEChunk {
@@ -16,7 +21,7 @@ public class CEChunk {
     private final ChunkPos chunkPos;
     private final CESection[] sections;
     private final WorldHeight worldHeightAccessor;
-    private final Map<Integer, BlockEntityState> blockEntities;
+    private final Map<BlockPos, BlockEntity> blockEntities;
     private boolean dirty;
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
@@ -24,14 +29,14 @@ public class CEChunk {
         this.chunkPos = chunkPos;
         this.worldHeightAccessor = world.worldHeight();
         this.sections = new CESection[this.worldHeightAccessor.getSectionsCount()];
-        this.blockEntities = new Int2ObjectOpenHashMap<>(16, 0.5f);
+        this.blockEntities = new Object2ObjectOpenHashMap<>(16, 0.5f);
         this.fillEmptySection();
     }
 
-    public CEChunk(CEWorld world, ChunkPos chunkPos, CESection[] sections, Map<Integer, BlockEntityState> blockEntities) {
+    public CEChunk(CEWorld world, ChunkPos chunkPos, CESection[] sections, ListTag blockEntitiesTag) {
         this.world = world;
         this.chunkPos = chunkPos;
-        this.blockEntities = blockEntities;
+        this.blockEntities = new Object2ObjectOpenHashMap<>(Math.max(blockEntitiesTag.size(), 16), 0.5f);
         this.worldHeightAccessor = world.worldHeight();
         int sectionCount = this.worldHeightAccessor.getSectionsCount();
         this.sections = new CESection[sectionCount];
@@ -44,10 +49,48 @@ public class CEChunk {
             }
         }
         this.fillEmptySection();
+        List<BlockEntity> blockEntities = DefaultBlockEntitySerializer.deserialize(this, blockEntitiesTag);
+        for (BlockEntity blockEntity : blockEntities) {
+            this.setBlockEntity(blockEntity);
+        }
     }
 
-    public Map<Integer, BlockEntityState> blockEntities() {
-        return this.blockEntities;
+    public void addBlockEntity(BlockEntity blockEntity) {
+        this.setBlockEntity(blockEntity);
+    }
+
+    public void removeBlockEntity(BlockPos blockPos) {
+
+    }
+
+    public void setBlockEntity(BlockEntity blockEntity) {
+        BlockPos pos = blockEntity.pos();
+        ImmutableBlockState blockState = this.getBlockState(pos);
+        if (!blockState.hasBlockEntity()) {
+            Debugger.BLOCK_ENTITY.debug(() -> "Failed to add invalid block entity " + blockEntity.saveAsTag() + " at " + pos);
+            return;
+        }
+        // 设置方块实体所在世界
+        blockEntity.setWorld(this.world);
+        blockEntity.setValid(true);
+        BlockEntity previous = this.blockEntities.put(pos, blockEntity);
+        // 标记旧的方块实体无效
+        if (previous != null && previous != blockEntity) {
+            previous.setValid(false);
+        }
+    }
+
+    @Nullable
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        BlockEntity blockEntity = this.blockEntities.get(pos);
+        if (blockEntity == null) {
+
+        }
+        return blockEntity;
+    }
+
+    public Map<BlockPos, BlockEntity> blockEntities() {
+        return Collections.unmodifiableMap(this.blockEntities);
     }
 
     public boolean dirty() {
@@ -93,17 +136,17 @@ public class CEChunk {
         }
     }
 
-    @Nullable
+    @NotNull
     public ImmutableBlockState getBlockState(BlockPos pos) {
         return getBlockState(pos.x(), pos.y(), pos.z());
     }
 
-    @Nullable
+    @NotNull
     public ImmutableBlockState getBlockState(int x, int y, int z) {
         int index = sectionIndex(SectionPos.blockToSectionCoord(y));
         CESection section = this.sections[index];
         if (section == null) {
-            return null;
+            return EmptyBlock.STATE;
         }
         return section.getBlockState((y & 15) << 8 | (z & 15) << 4 | x & 15);
     }

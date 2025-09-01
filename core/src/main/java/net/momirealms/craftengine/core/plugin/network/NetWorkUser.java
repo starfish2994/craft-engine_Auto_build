@@ -6,7 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.core.plugin.Plugin;
 import net.momirealms.craftengine.core.util.IntIdentityList;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.world.ChunkPos;
+import net.momirealms.craftengine.core.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,13 +79,17 @@ public interface NetWorkUser {
 
     boolean shouldProcessFinishConfiguration();
 
-    boolean isChunkTracked(ChunkPos chunkPos);
+    boolean isChunkTracked(long chunkPos);
 
-    void setChunkTrackStatus(ChunkPos chunkPos, boolean tracked);
+    ChunkStatus getTrackedChunk(long chunkPos);
+
+    void addTrackedChunk(long chunkPos, ChunkStatus chunkStatus);
 
     void clearTrackedChunks();
 
-    void setClientBlockList(IntIdentityList blockList);
+    void removeTrackedChunk(long chunkPos);
 
     IntIdentityList clientBlockList();
+
+    void setClientBlockList(IntIdentityList integers);
 }

@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.core.block;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import net.momirealms.craftengine.core.block.entity.BlockEntity;
+import net.momirealms.craftengine.core.block.entity.BlockEntityType;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.Item;
@@ -24,6 +26,7 @@ public final class ImmutableBlockState extends BlockStateHolder {
     private BlockBehavior behavior;
     private Integer hashCode;
     private BlockSettings settings;
+    private BlockEntityType<? extends BlockEntity> blockEntityType;
 
     ImmutableBlockState(
             Holder<CustomBlock> owner,
@@ -48,6 +51,14 @@ public final class ImmutableBlockState extends BlockStateHolder {
         this.settings = settings;
     }
 
+    public BlockEntityType<? extends BlockEntity> blockEntityType() {
+        return blockEntityType;
+    }
+
+    public void setBlockEntityType(BlockEntityType<? extends BlockEntity> blockEntityType) {
+        this.blockEntityType = blockEntityType;
+    }
+
     public boolean isEmpty() {
         return this == EmptyBlock.STATE;
     }
@@ -65,6 +76,10 @@ public final class ImmutableBlockState extends BlockStateHolder {
             this.hashCode = getNbtToSave().hashCode();
         }
         return this.hashCode;
+    }
+
+    public boolean hasBlockEntity() {
+        return this.blockEntityType != null;
     }
 
     public BlockStateWrapper customBlockState() {

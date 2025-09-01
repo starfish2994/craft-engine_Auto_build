@@ -1,7 +1,10 @@
 package net.momirealms.craftengine.core.world;
 
 import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.entity.BlockEntity;
+import net.momirealms.craftengine.core.block.entity.tick.TickingBlockEntity;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
@@ -9,8 +12,7 @@ import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class CEWorld {
@@ -20,6 +22,9 @@ public abstract class CEWorld {
     protected final WorldDataStorage worldDataStorage;
     protected final WorldHeight worldHeightAccessor;
     protected final Set<SectionPos> updatedSectionSet = ConcurrentHashMap.newKeySet(128);
+    protected final List<TickingBlockEntity> tickingBlockEntities = new ArrayList<>();
+    protected final List<TickingBlockEntity> pendingTickingBlockEntities = new ArrayList<>();
+    protected boolean isTickingBlockEntities = false;
 
     private CEChunk lastChunk;
     private long lastChunkPos;
@@ -38,6 +43,14 @@ public abstract class CEWorld {
         this.worldDataStorage = dataStorage;
         this.worldHeightAccessor = world.worldHeight();
         this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
+    }
+
+    public String name() {
+        return this.world.name();
+    }
+
+    public UUID uuid() {
+        return this.world.uuid();
     }
 
     public void save() {
@@ -76,16 +89,6 @@ public abstract class CEWorld {
 
     @Nullable
     public CEChunk getChunkAtIfLoaded(long chunkPos) {
-        return getChunkAtIfLoadedMainThread(chunkPos);
-    }
-
-    @Nullable
-    public CEChunk getChunkAtIfLoaded(int x, int z) {
-        return getChunkAtIfLoaded(ChunkPos.asLong(x, z));
-    }
-
-    @Nullable
-    public CEChunk getChunkAtIfLoadedMainThread(long chunkPos) {
         if (chunkPos == this.lastChunkPos) {
             return this.lastChunk;
         }
@@ -98,14 +101,11 @@ public abstract class CEWorld {
     }
 
     @Nullable
-    public CEChunk getChunkAtIfLoadedMainThread(int x, int z) {
-        return getChunkAtIfLoadedMainThread(ChunkPos.asLong(x, z));
+    public CEChunk getChunkAtIfLoaded(int x, int z) {
+        return getChunkAtIfLoaded(ChunkPos.asLong(x, z));
     }
 
-    public WorldHeight worldHeight() {
-        return worldHeightAccessor;
-    }
-
+    @Nullable
     public ImmutableBlockState getBlockStateAtIfLoaded(int x, int y, int z) {
         CEChunk chunk = getChunkAtIfLoaded(x >> 4, z >> 4);
         if (chunk == null) {
@@ -114,6 +114,7 @@ public abstract class CEWorld {
         return chunk.getBlockState(x, y, z);
     }
 
+    @Nullable
     public ImmutableBlockState getBlockStateAtIfLoaded(BlockPos blockPos) {
         CEChunk chunk = getChunkAtIfLoaded(blockPos.x() >> 4, blockPos.z() >> 4);
         if (chunk == null) {
@@ -123,7 +124,7 @@ public abstract class CEWorld {
     }
 
     public boolean setBlockStateAtIfLoaded(BlockPos blockPos, ImmutableBlockState blockState) {
-        if (worldHeightAccessor.isOutsideBuildHeight(blockPos)) {
+        if (this.worldHeightAccessor.isOutsideBuildHeight(blockPos)) {
             return false;
         }
         CEChunk chunk = getChunkAtIfLoaded(blockPos.x() >> 4, blockPos.z() >> 4);
@@ -132,6 +133,18 @@ public abstract class CEWorld {
         }
         chunk.setBlockState(blockPos, blockState);
         return true;
+    }
+
+    @Nullable
+    public BlockEntity getBlockEntityAtIfLoaded(BlockPos blockPos) {
+        if (this.worldHeightAccessor.isOutsideBuildHeight(blockPos)) {
+            return null;
+        }
+        CEChunk chunk = getChunkAtIfLoaded(blockPos.x() >> 4, blockPos.z() >> 4);
+        if (chunk == null) {
+            return null;
+        }
+        return chunk.getBlockEntity(blockPos);
     }
 
     public WorldDataStorage worldDataStorage() {
@@ -146,5 +159,29 @@ public abstract class CEWorld {
         this.updatedSectionSet.addAll(pos);
     }
 
-    public abstract void tick();
+    public WorldHeight worldHeight() {
+        return this.worldHeightAccessor;
+    }
+
+    public void tick() {
+        this.tickBlockEntities();
+    }
+
+    protected void tickBlockEntities() {
+        this.isTickingBlockEntities = true;
+        if (!this.pendingTickingBlockEntities.isEmpty()) {
+            this.tickingBlockEntities.addAll(this.pendingTickingBlockEntities);
+            this.pendingTickingBlockEntities.clear();
+        }
+        ReferenceOpenHashSet<TickingBlockEntity> toRemove = new ReferenceOpenHashSet<>();
+        for (TickingBlockEntity blockEntity : this.tickingBlockEntities) {
+            if (!blockEntity.isValid()) {
+                blockEntity.tick();
+            } else {
+                toRemove.add(blockEntity);
+            }
+        }
+        this.tickingBlockEntities.removeAll(toRemove);
+        this.isTickingBlockEntities = false;
+    }
 }

@@ -23,6 +23,7 @@ public class BukkitCEWorld extends CEWorld {
 
     @Override
     public void tick() {
+        super.tick();
         HashSet<SectionPos> poses;
         synchronized (super.updatedSectionSet) {
             poses = new HashSet<>(super.updatedSectionSet);

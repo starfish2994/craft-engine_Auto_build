@@ -120,6 +120,7 @@ public class Config {
     protected boolean block$predict_breaking;
     protected int block$predict_breaking_interval;
     protected double block$extended_interaction_range;
+    protected boolean block$chunk_relighter;
 
     protected boolean recipe$enable;
     protected boolean recipe$disable_vanilla_recipes$all;
@@ -224,6 +225,8 @@ public class Config {
                             .builder()
                             .setVersioning(new BasicVersioning("config-version"))
                             .addIgnoredRoute(PluginProperties.getValue("config"), "resource-pack.delivery.hosting", '.')
+                            .addIgnoredRoute(PluginProperties.getValue("config"), "chunk-system.process-invalid-blocks.convert", '.')
+                            .addIgnoredRoute(PluginProperties.getValue("config"), "chunk-system.process-invalid-furniture.convert", '.')
                             .build());
         }
         try {
@@ -384,6 +387,7 @@ public class Config {
         block$predict_breaking = config.getBoolean("block.predict-breaking.enable", true);
         block$predict_breaking_interval = Math.max(config.getInt("block.predict-breaking.interval", 10), 1);
         block$extended_interaction_range = Math.max(config.getDouble("block.predict-breaking.extended-interaction-range", 0.5), 0.0);
+        block$chunk_relighter = config.getBoolean("block.chunk-relighter", true);
 
         // recipe
         recipe$enable = config.getBoolean("recipe.enable", true);
@@ -447,6 +451,10 @@ public class Config {
 
     public static boolean debugItem() {
         return instance.debug$item;
+    }
+
+    public static boolean debugBlockEntity() {
+        return false;
     }
 
     public static boolean debugFurniture() {
@@ -871,6 +879,10 @@ public class Config {
 
     public static boolean triggerUpdateDrop() {
         return instance.item$update_triggers$drop;
+    }
+
+    public static boolean enableChunkRelighter() {
+        return instance.block$chunk_relighter;
     }
 
     public void setObf(boolean enable) {

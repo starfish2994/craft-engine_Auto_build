@@ -73,7 +73,7 @@ public class BlockItemBehavior extends BlockBoundItemBehavior {
             return InteractionResult.FAIL;
         }
         if (!context.canPlace()) {
-            return InteractionResult.FAIL;
+            return InteractionResult.PASS;
         }
 
         Player player = context.getPlayer();

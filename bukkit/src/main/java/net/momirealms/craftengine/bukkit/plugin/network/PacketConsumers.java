@@ -64,6 +64,7 @@ import net.momirealms.craftengine.core.plugin.network.*;
 import net.momirealms.craftengine.core.plugin.text.component.ComponentProvider;
 import net.momirealms.craftengine.core.util.*;
 import net.momirealms.craftengine.core.world.*;
+import net.momirealms.craftengine.core.world.chunk.ChunkStatus;
 import net.momirealms.craftengine.core.world.chunk.Palette;
 import net.momirealms.craftengine.core.world.chunk.PalettedContainer;
 import net.momirealms.craftengine.core.world.chunk.packet.BlockEntityData;
@@ -263,11 +264,11 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             if (VersionHelper.isOrAbove1_20_2()) {
                 long chunkPos = buf.readLong();
-                user.setChunkTrackStatus(new ChunkPos(chunkPos), false);
+                user.removeTrackedChunk(chunkPos);
             } else {
                 int x = buf.readInt();
                 int y = buf.readInt();
-                user.setChunkTrackStatus(ChunkPos.of(x, y), false);
+                user.removeTrackedChunk(ChunkPos.asLong(x, y));
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundForgetLevelChunkPacket", e);
@@ -280,7 +281,6 @@ public class PacketConsumers {
             FriendlyByteBuf buf = event.getBuffer();
             int chunkX = buf.readInt();
             int chunkZ = buf.readInt();
-            player.setChunkTrackStatus(ChunkPos.of(chunkX, chunkZ), true);
             boolean named = !VersionHelper.isOrAbove1_20_2();
             // ClientboundLevelChunkPacketData
             int heightmapsCount = 0;
@@ -366,6 +366,9 @@ public class PacketConsumers {
                 }
                 buffer = newBuf.array();
             }
+
+            // 开始修改
+            event.setChanged(true);
             buf.clear();
             buf.writeVarInt(event.packetID());
             buf.writeInt(chunkX);
@@ -394,7 +397,10 @@ public class PacketConsumers {
             buf.writeBitSet(emptyBlockYMask);
             buf.writeByteArrayList(skyUpdates);
             buf.writeByteArrayList(blockUpdates);
-            event.setChanged(true);
+
+            ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
+            // 记录加载的区块
+            player.addTrackedChunk(chunkPos.longKey, new ChunkStatus());
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundLevelChunkWithLightPacket", e);
         }
