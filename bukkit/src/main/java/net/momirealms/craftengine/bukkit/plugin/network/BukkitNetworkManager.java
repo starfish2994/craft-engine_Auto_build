@@ -11,6 +11,7 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIdFinder;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20;
 import net.momirealms.craftengine.bukkit.plugin.network.id.PacketIds1_20_5;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.PayloadHelper;
 import net.momirealms.craftengine.bukkit.plugin.reflection.leaves.LeavesReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.LibraryReflections;
@@ -105,6 +106,7 @@ public class BukkitNetworkManager implements NetworkManager, Listener, PluginMes
         this.packetIds = VersionHelper.isOrAbove1_20_5() ? new PacketIds1_20_5() : new PacketIds1_20();
         // register packet handlers
         this.registerPacketHandlers();
+        PayloadHelper.registerDataTypes();
         // set up packet senders
         this.packetConsumer = FastNMS.INSTANCE::method$Connection$send;
         this.packetsConsumer = ((connection, packets, sendListener) -> {

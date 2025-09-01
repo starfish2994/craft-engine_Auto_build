@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslationArgument;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptBreakEvent;
@@ -29,8 +28,8 @@ import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.ProtectedFieldVisitor;
 import net.momirealms.craftengine.bukkit.plugin.network.handler.*;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
-import net.momirealms.craftengine.bukkit.plugin.network.payload.NetWorkDataTypes;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.Payload;
+import net.momirealms.craftengine.bukkit.plugin.network.payload.PayloadHelper;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.UnknownPayload;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.MBuiltInRegistries;
@@ -235,7 +234,7 @@ public class PacketConsumers {
         int[] newMappingsMOD = Arrays.copyOf(newMappings, registrySize);
         for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
             newMappings[entry.getKey()] = entry.getValue();
-            if (BlockStateUtils.isVanillaBlock(entry.getKey())) {
+            if (BlockStateUtils.isVanillaBlock((int) entry.getKey())) {
                 newMappingsMOD[entry.getKey()] = entry.getValue();
             }
         }
@@ -325,7 +324,7 @@ public class PacketConsumers {
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
                 FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
                 for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                    MCSection mcSection = new MCSection(SERVER_BLOCK_LIST, SERVER_BLOCK_LIST, BIOME_LIST);
+                    MCSection mcSection = new MCSection(user.clientBlockList(), SERVER_BLOCK_LIST, BIOME_LIST);
                     mcSection.readPacket(friendlyByteBuf);
                     PalettedContainer<Integer> container = mcSection.blockStateContainer();
                     Palette<Integer> palette = container.data().palette();
@@ -348,7 +347,7 @@ public class PacketConsumers {
                 FriendlyByteBuf friendlyByteBuf = new FriendlyByteBuf(byteBuf);
                 FriendlyByteBuf newBuf = new FriendlyByteBuf(Unpooled.buffer());
                 for (int i = 0, count = player.clientSideSectionCount(); i < count; i++) {
-                    MCSection mcSection = new MCSection(CLIENT_BLOCK_LIST, SERVER_BLOCK_LIST, BIOME_LIST);
+                    MCSection mcSection = new MCSection(user.clientBlockList(), SERVER_BLOCK_LIST, BIOME_LIST);
                     mcSection.readPacket(friendlyByteBuf);
                     PalettedContainer<Integer> container = mcSection.blockStateContainer();
                     Palette<Integer> palette = container.data().palette();
@@ -1523,7 +1522,7 @@ public class PacketConsumers {
             int entityId = FastNMS.INSTANCE.method$ClientboundEntityPositionSyncPacket$id(packet);
             EntityPacketHandler handler = user.entityPacketHandlers().get(entityId);
             if (handler != null) {
-                handler.handleSyncEntityPosition((BukkitServerPlayer) user, event, packet);
+                handler.handleSyncEntityPosition(user, event, packet);
             }
         } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ClientboundEntityPositionSyncPacket", e);
@@ -1925,35 +1924,13 @@ public class PacketConsumers {
             Payload clientPayload;
             if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
                 clientPayload = DiscardedPayload.from(payload);
-            } else if (!VersionHelper.isOrAbove1_20_5() && NetworkReflections.clazz$UnknownPayload.isInstance(payload)) {
+            } else if (!VersionHelper.isOrAbove1_20_5() && NetworkReflections.clazz$ServerboundCustomPayloadPacket$UnknownPayload.isInstance(payload)) {
                 clientPayload = UnknownPayload.from(payload);
             } else {
                 return;
             }
-            if (clientPayload == null || !clientPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY))
-                return;
-            FriendlyByteBuf buf = clientPayload.toBuffer();
-            NetWorkDataTypes dataType = buf.readEnumConstant(NetWorkDataTypes.class);
-            if (dataType == NetWorkDataTypes.CLIENT_CUSTOM_BLOCK) {
-                int clientBlockRegistrySize = dataType.decode(buf);
-                int serverBlockRegistrySize = RegistryUtils.currentBlockRegistrySize();
-                if (clientBlockRegistrySize != serverBlockRegistrySize) {
-                    user.kick(Component.translatable(
-                            "disconnect.craftengine.block_registry_mismatch",
-                            TranslationArgument.numeric(clientBlockRegistrySize),
-                            TranslationArgument.numeric(serverBlockRegistrySize)
-                    ));
-                    return;
-                }
-                user.setClientModState(true);
-            } else if (dataType == NetWorkDataTypes.CANCEL_BLOCK_UPDATE) {
-                if (dataType.decode(buf)) {
-                    FriendlyByteBuf bufPayload = new FriendlyByteBuf(Unpooled.buffer());
-                    bufPayload.writeEnumConstant(dataType);
-                    dataType.encode(bufPayload, true);
-                    user.sendCustomPayload(NetworkManager.MOD_CHANNEL_KEY, bufPayload.array());
-                }
-            }
+            if (clientPayload == null || !clientPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY)) return;
+            PayloadHelper.handleReceiver(clientPayload, user);
         } catch (Throwable e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
         }

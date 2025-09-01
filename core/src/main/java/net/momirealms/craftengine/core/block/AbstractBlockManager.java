@@ -324,6 +324,7 @@ public abstract class AbstractBlockManager extends AbstractModelGenerator implem
             // 结合variants
             JsonElement combinedVariant = GsonHelper.combine(variants);
             Map<String, JsonElement> overrideMap = AbstractBlockManager.this.blockStateOverrides.computeIfAbsent(blockId, k -> new HashMap<>());
+            AbstractBlockManager.this.tempVanillaBlockStateModels.put(registryId, combinedVariant);
             JsonElement previous = overrideMap.get(propertyNBT);
             if (previous != null && !previous.equals(combinedVariant)) {
                 throw new LocalizedResourceConfigException("warning.config.block.state.model.conflict", GsonHelper.get().toJson(combinedVariant), blockState, GsonHelper.get().toJson(previous));
