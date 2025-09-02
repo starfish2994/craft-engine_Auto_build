@@ -173,4 +173,9 @@ public class PacketIds1_20_5 implements PacketIds {
     public int clientboundForgetLevelChunkPacket() {
         return PacketIdFinder.clientboundByName("minecraft:forget_level_chunk");
     }
+
+    @Override
+    public int serverboundCustomPayloadPacket() {
+        return PacketIdFinder.serverboundByName("custom_payload");
+    }
 }
