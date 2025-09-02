@@ -15,7 +15,9 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.loot.LootContext;
 import net.momirealms.craftengine.core.loot.LootTable;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.PlayerOptionalContext;
@@ -174,6 +176,9 @@ public final class BlockEventListener implements Listener {
             // override vanilla block loots
             if (player.getGameMode() != GameMode.CREATIVE) {
                 this.plugin.vanillaLootManager().getBlockLoot(stateId).ifPresent(it -> {
+                    if (!event.isDropItems()) {
+                        return;
+                    }
                     if (it.override()) {
                         event.setDropItems(false);
                         event.setExpToDrop(0);
