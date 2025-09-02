@@ -1923,12 +1923,12 @@ public class PacketConsumers {
         return hasIllegal ? Pair.of(true, new String(newCodepoints, 0, newCodepoints.length)) : Pair.of(false, original);
     }
 
-    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD = (user, event, packet) -> {
+    public static final TriConsumer<NetWorkUser, NMSPacketEvent, Object> CUSTOM_PAYLOAD_1_20_2 = (user, event, packet) -> {
         try {
             if (!VersionHelper.isOrAbove1_20_2()) return;
             Object payload = NetworkReflections.methodHandle$ServerboundCustomPayloadPacket$payloadGetter.invokeExact(packet);
             Payload clientPayload;
-            if (NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
+            if (VersionHelper.isOrAbove1_20_5() && NetworkReflections.clazz$DiscardedPayload.isInstance(payload)) {
                 clientPayload = DiscardedPayload.from(payload);
             } else if (!VersionHelper.isOrAbove1_20_5() && NetworkReflections.clazz$ServerboundCustomPayloadPacket$UnknownPayload.isInstance(payload)) {
                 clientPayload = UnknownPayload.from(payload);
@@ -1938,6 +1938,18 @@ public class PacketConsumers {
             if (clientPayload == null || !clientPayload.channel().equals(NetworkManager.MOD_CHANNEL_KEY)) return;
             PayloadHelper.handleReceiver(clientPayload, user);
         } catch (Throwable e) {
+            CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
+        }
+    };
+
+    public static final BiConsumer<NetWorkUser, ByteBufPacketEvent> CUSTOM_PAYLOAD_1_20 = (user, event) -> {
+        try {
+            if (VersionHelper.isOrAbove1_20_2()) return;
+            FriendlyByteBuf byteBuf = event.getBuffer();
+            Key key = byteBuf.readKey();
+            if (!key.equals(NetworkManager.MOD_CHANNEL_KEY)) return;
+            PayloadHelper.handleReceiver(new UnknownPayload(key, byteBuf.readBytes(byteBuf.readableBytes())), user);
+        } catch (Exception e) {
             CraftEngine.instance().logger().warn("Failed to handle ServerboundCustomPayloadPacket", e);
         }
     };
