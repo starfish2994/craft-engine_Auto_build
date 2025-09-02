@@ -60,7 +60,10 @@ public class CEChunk {
     }
 
     public void removeBlockEntity(BlockPos blockPos) {
-
+        BlockEntity removedBlockEntity = this.blockEntities.remove(blockPos);
+        if (removedBlockEntity != null) {
+            removedBlockEntity.setValid(false);
+        }
     }
 
     public void setBlockEntity(BlockEntity blockEntity) {
@@ -84,9 +87,25 @@ public class CEChunk {
     public BlockEntity getBlockEntity(BlockPos pos) {
         BlockEntity blockEntity = this.blockEntities.get(pos);
         if (blockEntity == null) {
-
+            blockEntity = createBlockEntity(pos);
+            if (blockEntity != null) {
+                this.addBlockEntity(blockEntity);
+            }
+        } else {
+            if (!blockEntity.isValid()) {
+                this.blockEntities.remove(pos);
+                return null;
+            }
         }
         return blockEntity;
+    }
+
+    private BlockEntity createBlockEntity(BlockPos pos) {
+        ImmutableBlockState blockState = this.getBlockState(pos);
+        if (!blockState.hasBlockEntity()) {
+            return null;
+        }
+        return blockState.blockEntityType().factory().create(pos, blockState);
     }
 
     public Map<BlockPos, BlockEntity> blockEntities() {

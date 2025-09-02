@@ -16,7 +16,10 @@ public final class DefaultBlockEntitySerializer {
     public static ListTag serialize(Map<BlockPos, BlockEntity> tiles) {
         ListTag result = new ListTag();
         for (Map.Entry<BlockPos, BlockEntity> entry : tiles.entrySet()) {
-            result.add(entry.getValue().saveAsTag());
+            BlockEntity entity = entry.getValue();
+            if (entity.isValid()) {
+                result.add(entity.saveAsTag());
+            }
         }
         return result;
     }
