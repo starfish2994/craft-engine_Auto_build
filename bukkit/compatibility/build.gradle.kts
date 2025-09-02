@@ -70,6 +70,8 @@ dependencies {
     compileOnly("com.github.Archy-X:AureliumSkills:Beta1.3.21")
     // Zaphkiel
     compileOnly("ink.ptms:ZaphkielAPI:2.1.0")
+    // WorldGuard
+    compileOnly(files("${rootProject.rootDir}/libs/worldguard-bukkit-7.0.14-dist.jar"))
 }
 
 java {
