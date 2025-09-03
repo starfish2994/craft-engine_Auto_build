@@ -61,9 +61,6 @@ public abstract class AbstractCustomBlock implements CustomBlock {
         this.placementFunction = composite(placements);
         EntityBlockBehavior entityBlockBehavior = this.behavior.getEntityBehavior();
         boolean isEntityBlock = entityBlockBehavior != null;
-        if (isEntityBlock) {
-            settings.toBlockEntitySettings();
-        }
         for (Map.Entry<String, BlockStateVariant> entry : variantMapper.entrySet()) {
             String nbtString = entry.getKey();
             CompoundTag tag = BlockNbtParser.deserialize(this, nbtString);
@@ -82,7 +79,7 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             }
             // Late init states
             ImmutableBlockState state = possibleStates.getFirst();
-            state.setSettings(isEntityBlock ? blockStateVariant.settings().toBlockEntitySettings() : blockStateVariant.settings());
+            state.setSettings(blockStateVariant.settings());
             state.setVanillaBlockState(BlockRegistryMirror.stateByRegistryId(vanillaStateRegistryId));
             state.setCustomBlockState(BlockRegistryMirror.stateByRegistryId(blockStateVariant.internalRegistryId()));
         }
