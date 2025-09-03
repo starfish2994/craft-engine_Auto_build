@@ -59,6 +59,11 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             placements.add(Property.createStateForPlacement(propertyEntry.getKey(), propertyEntry.getValue()));
         }
         this.placementFunction = composite(placements);
+        EntityBlockBehavior entityBlockBehavior = this.behavior.getEntityBehavior();
+        boolean isEntityBlock = entityBlockBehavior != null;
+        if (isEntityBlock) {
+            settings.toBlockEntitySettings();
+        }
         for (Map.Entry<String, BlockStateVariant> entry : variantMapper.entrySet()) {
             String nbtString = entry.getKey();
             CompoundTag tag = BlockNbtParser.deserialize(this, nbtString);
@@ -77,18 +82,18 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             }
             // Late init states
             ImmutableBlockState state = possibleStates.getFirst();
-            state.setSettings(blockStateVariant.settings());
+            state.setSettings(isEntityBlock ? blockStateVariant.settings().toBlockEntitySettings() : blockStateVariant.settings());
             state.setVanillaBlockState(BlockRegistryMirror.stateByRegistryId(vanillaStateRegistryId));
             state.setCustomBlockState(BlockRegistryMirror.stateByRegistryId(blockStateVariant.internalRegistryId()));
         }
-        EntityBlockBehavior entityBlockBehavior = this.behavior.getEntityBehavior();
+
         // double check if there's any invalid state
         for (ImmutableBlockState state : this.variantProvider().states()) {
             state.setBehavior(this.behavior);
             if (state.settings() == null) {
                 state.setSettings(settings);
             }
-            if (entityBlockBehavior != null) {
+            if (isEntityBlock) {
                 state.setBlockEntityType(entityBlockBehavior.blockEntityType());
             }
         }

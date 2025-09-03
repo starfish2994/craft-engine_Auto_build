@@ -110,6 +110,13 @@ public class BlockSettings {
         return newSettings;
     }
 
+    public BlockSettings toBlockEntitySettings() {
+        if (!this.pushReaction.allowedForBlockEntity()) {
+            this.pushReaction = PushReaction.BLOCK;
+        }
+        return this;
+    }
+
     public Set<Key> tags() {
         return tags;
     }
