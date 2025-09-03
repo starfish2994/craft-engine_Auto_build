@@ -143,25 +143,6 @@ public class Dependencies {
             Collections.emptyList()
     );
 
-    public static final Dependency SLF4J_API = new Dependency(
-            "slf4j-api",
-            "org.slf4j",
-            "slf4j-api",
-            Collections.emptyList()
-    );
-
-    public static final Dependency SLF4J_SIMPLE = new Dependency(
-            "slf4j-simple",
-            "org.slf4j",
-            "slf4j-simple",
-            Collections.emptyList()
-    ) {
-        @Override
-        public String getVersion() {
-            return Dependencies.SLF4J_API.getVersion();
-        }
-    };
-
     public static final Dependency COMMONS_LANG3 = new Dependency(
             "commons-lang3",
             "org{}apache{}commons",
@@ -224,7 +205,8 @@ public class Dependencies {
             "option",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     );
 
     public static final Dependency ADVENTURE_API = new Dependency(
@@ -233,7 +215,8 @@ public class Dependencies {
             "adventure-api",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     );
 
     public static final Dependency ADVENTURE_NBT = new Dependency(
@@ -256,7 +239,8 @@ public class Dependencies {
             "adventure-key",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -270,7 +254,8 @@ public class Dependencies {
             "examination-api",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     );
 
     public static final Dependency EXAMINATION_STRING = new Dependency(
@@ -279,7 +264,8 @@ public class Dependencies {
             "examination-string",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -293,7 +279,8 @@ public class Dependencies {
             "adventure-text-minimessage",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -307,7 +294,8 @@ public class Dependencies {
             "adventure-text-serializer-commons",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -321,7 +309,8 @@ public class Dependencies {
             "adventure-text-serializer-gson",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -335,7 +324,8 @@ public class Dependencies {
             "adventure-text-serializer-json-legacy-impl",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -349,7 +339,8 @@ public class Dependencies {
             "adventure-text-serializer-legacy",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -363,7 +354,8 @@ public class Dependencies {
             "adventure-text-serializer-json",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {
@@ -396,14 +388,16 @@ public class Dependencies {
             "netty-codec-http",
             "io{}netty",
             "netty-codec-http",
-            Collections.emptyList()
+            List.of(Relocation.of("netty{}handler{}codec{}http", "io{}netty{}handler{}codec{}http"),
+                    Relocation.of("netty{}handler{}codec{}rtsp", "io{}netty{}handler{}codec{}rtsp"),
+                    Relocation.of("netty{}handler{}codec{}spdy", "io{}netty{}handler{}codec{}spdy"))
     );
 
     public static final Dependency NETTY_HTTP2 = new Dependency(
             "netty-codec-http2",
             "io{}netty",
             "netty-codec-http2",
-            Collections.emptyList()
+            List.of(Relocation.of("netty{}handler{}codec{}http2", "io{}netty{}handler{}codec{}http2"))
     );
 
     public static final Dependency REACTIVE_STREAMS = new Dependency(
