@@ -39,12 +39,21 @@ public class PaperCraftEngineBootstrap implements PluginBootstrap {
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to getLogger", e);
         }
-        this.plugin = new BukkitCraftEngine(
-                logger,
-                context.getDataDirectory(),
-                new BukkitClassPathAppender(),
-                new PaperPluginClassPathAppender(this.getClass().getClassLoader())
-        );
+        try {
+            this.plugin = new BukkitCraftEngine(
+                    logger,
+                    context.getDataDirectory(),
+                    new BukkitClassPathAppender(),
+                    new PaperPluginClassPathAppender(this.getClass().getClassLoader())
+            );
+        } catch (UnsupportedOperationException e) {
+            this.plugin = new BukkitCraftEngine(
+                    logger,
+                    context.getDataDirectory(),
+                    new PaperPluginClassPathAppender(this.getClass().getClassLoader()),
+                    new PaperPluginClassPathAppender(this.getClass().getClassLoader())
+            );
+        }
         this.plugin.applyDependencies();
         this.plugin.setUpConfig();
         if (isDatapackDiscoveryAvailable()) {

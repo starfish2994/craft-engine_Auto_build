@@ -21,7 +21,7 @@ public class BukkitClassPathAppender implements ClassPathAppender {
             if (bukkitClassLoader.getClass().getName().equals("space.vectrix.ignite.launch.ember.EmberClassLoader") && bukkitClassLoader.getParent() instanceof URLClassLoader urlClassLoader) {
                 this.libraryClassLoaderAccess = URLClassLoaderAccess.create(urlClassLoader);
             } else {
-                this.libraryClassLoaderAccess = null;
+                throw new UnsupportedOperationException("Unsupported classloader " + bukkitClassLoader.getClass());
             }
         }
     }
