@@ -95,6 +95,21 @@ public abstract class BlockBehavior {
         return false;
     }
 
+    //BlockState state
+    public boolean hasAnalogOutputSignal(Object thisBlock, Object[] args) throws Exception {
+        return false;
+    }
+
+    //BlockState state Level level BlockPos pos
+    public int getAnalogOutputSignal(Object thisBlock, Object[] args) throws Exception {
+        return 0;
+    }
+
+    // BlockState state, LevelReader world, BlockPos pos
+    public Object getContainer(Object thisBlock, Object[] args) throws Exception {
+        return null;
+    }
+
     // Level level, RandomSource random, BlockPos pos, BlockState state
     public boolean isBoneMealSuccess(Object thisBlock, Object[] args) throws Exception {
         return false;
