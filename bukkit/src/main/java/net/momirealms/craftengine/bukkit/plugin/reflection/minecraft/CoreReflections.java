@@ -4203,4 +4203,8 @@ public final class CoreReflections {
                     "world.level.storage.loot.entries.LootPoolEntryType"
             )
     );
+
+    public static final Method method$BlockAndTintGetter$getLightEngine = requireNonNull(
+            ReflectionUtils.getDeclaredMethod(clazz$BlockAndTintGetter, clazz$LevelLightEngine)
+    );
 }
