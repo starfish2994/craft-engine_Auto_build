@@ -1057,7 +1057,6 @@ public final class NetworkReflections {
             )
     );
 
-
     public static final Constructor<?> constructor$ClientboundMoveEntityPacket$PosRot = requireNonNull(
             ReflectionUtils.getTheOnlyConstructor(clazz$ClientboundMoveEntityPacket$PosRot)
     );

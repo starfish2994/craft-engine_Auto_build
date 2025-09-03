@@ -225,7 +225,8 @@ public class Dependencies {
             "adventure-nbt",
             List.of(Relocation.of("option", "net{}kyori{}option"),
                     Relocation.of("examination", "net{}kyori{}examination"),
-                    Relocation.of("adventure", "net{}kyori{}adventure"))
+                    Relocation.of("adventure", "net{}kyori{}adventure")),
+            true
     ) {
         @Override
         public String getVersion() {

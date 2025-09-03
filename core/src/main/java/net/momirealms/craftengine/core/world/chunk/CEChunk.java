@@ -12,11 +12,7 @@ import net.momirealms.sparrow.nbt.ListTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 public class CEChunk {
     public final CEWorld world;
@@ -26,7 +22,7 @@ public class CEChunk {
     public final Map<BlockPos, BlockEntity> blockEntities;
     private volatile boolean dirty;
     private volatile boolean loaded;
-    protected final Map<BlockPos, ReplaceableTickingBlockEntity> tickingBlockEntitiesByPos = new ConcurrentHashMap<>();
+    protected final Map<BlockPos, ReplaceableTickingBlockEntity> tickingBlockEntitiesByPos = new HashMap<>();
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
         this.world = world;
@@ -69,6 +65,13 @@ public class CEChunk {
         if (removedBlockEntity != null) {
             removedBlockEntity.setValid(false);
         }
+    }
+
+    public void clearAllBlockEntities() {
+        this.blockEntities.values().forEach(e -> e.setValid(false));
+        this.blockEntities.clear();
+        this.tickingBlockEntitiesByPos.values().forEach((ticker) -> ticker.setTicker(DummyTickingBlockEntity.INSTANCE));
+        this.tickingBlockEntitiesByPos.clear();
     }
 
     public <T extends BlockEntity> void replaceOrCreateTickingBlockEntity(T blockEntity) {
@@ -250,6 +253,7 @@ public class CEChunk {
     public void unload() {
         if (!this.loaded) return;
         this.world.removeLoadedChunk(this);
+        this.clearAllBlockEntities();
         this.loaded = false;
     }
 }

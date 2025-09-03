@@ -1571,7 +1571,8 @@ public final class CoreReflections {
     );
 
     public static final Method method$BlockBehaviour$hasAnalogOutputSignal = requireNonNull(
-            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, boolean.class, new String[]{"hasAnalogOutputSignal", "c"}, clazz$BlockState)
+            ReflectionUtils.getDeclaredMethod(clazz$BlockBehaviour, boolean.class, new String[]{"hasAnalogOutputSignal",
+            VersionHelper.isOrAbove1_20_5() ? "c_" : "d_"}, clazz$BlockState)
     );
 
     public static final Method method$BlockBehaviour$getAnalogOutputSignal = requireNonNull(
