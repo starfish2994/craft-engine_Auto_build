@@ -97,6 +97,7 @@ public class Config {
     protected Component resource_pack$send$prompt;
 
     protected boolean light_system$force_update_light;
+    protected boolean light_system$async_update;
     protected boolean light_system$enable;
 
     protected int chunk_system$compression_method;
@@ -314,6 +315,7 @@ public class Config {
 
         // light
         light_system$force_update_light = config.getBoolean("light-system.force-update-light", false);
+        light_system$async_update = config.getBoolean("light-system.async-update", true);
         light_system$enable = config.getBoolean("light-system.enable", true);
 
         // chunk
@@ -883,6 +885,10 @@ public class Config {
 
     public static boolean enableChunkRelighter() {
         return instance.block$chunk_relighter;
+    }
+
+    public static boolean asyncLightUpdate() {
+        return instance.light_system$async_update;
     }
 
     public void setObf(boolean enable) {

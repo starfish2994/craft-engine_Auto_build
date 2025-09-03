@@ -365,6 +365,8 @@ public class AdventureHelper {
         return text.replaceText(builder ->
                 builder.match(Pattern.compile(patternString))
                         .replacement((result, b) ->
-                                replacements.get(result.group()).apply(context)));
+                                Optional.ofNullable(replacements.get(result.group())).orElseThrow(() -> new IllegalStateException("Could not find tag '" + result.group() + "'")).apply(context)
+                        )
+        );
     }
 }

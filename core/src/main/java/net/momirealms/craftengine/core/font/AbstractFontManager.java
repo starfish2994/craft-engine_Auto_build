@@ -40,7 +40,7 @@ public abstract class AbstractFontManager implements FontManager {
     private final EmojiParser emojiParser;
     private OffsetFont offsetFont;
 
-    protected Trie imageTagTrie;
+    protected Trie networkTagTrie;
     protected Trie emojiKeywordTrie;
     protected Map<String, ComponentProvider> networkTagMapper;
     protected Map<String, Emoji> emojiMapper;
@@ -67,8 +67,13 @@ public abstract class AbstractFontManager implements FontManager {
         this.images.clear();
         this.illegalChars.clear();
         this.emojis.clear();
+        this.networkTagTrie = null;
+        this.emojiKeywordTrie = null;
         if (this.networkTagMapper != null) {
             this.networkTagMapper.clear();
+        }
+        if (this.emojiMapper != null) {
+            this.emojiMapper.clear();
         }
     }
 
@@ -88,7 +93,7 @@ public abstract class AbstractFontManager implements FontManager {
         this.registerImageTags();
         this.registerShiftTags();
         this.registerGlobalTags();
-        this.buildImageTagTrie();
+        this.buildNetworkTagTrie();
         this.buildEmojiKeywordsTrie();
         this.emojiList = new ArrayList<>(this.emojis.values());
         this.allEmojiSuggestions = this.emojis.values().stream()
@@ -131,11 +136,11 @@ public abstract class AbstractFontManager implements FontManager {
 
     @Override
     public Map<String, ComponentProvider> matchTags(String json) {
-        if (this.imageTagTrie == null) {
+        if (this.networkTagTrie == null) {
             return Collections.emptyMap();
         }
         Map<String, ComponentProvider> tags = new HashMap<>();
-        for (Token token : this.imageTagTrie.tokenize(json)) {
+        for (Token token : this.networkTagTrie.tokenize(json)) {
             if (token.isMatch()) {
                 tags.put(token.getFragment(), this.networkTagMapper.get(token.getFragment()));
             }
@@ -305,8 +310,8 @@ public abstract class AbstractFontManager implements FontManager {
                 .build();
     }
 
-    private void buildImageTagTrie() {
-        this.imageTagTrie = Trie.builder()
+    private void buildNetworkTagTrie() {
+        this.networkTagTrie = Trie.builder()
                 .ignoreOverlaps()
                 .addKeywords(this.networkTagMapper.keySet())
                 .build();

@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.bukkit.world;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.injector.WorldStorageInjector;
@@ -33,7 +34,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BukkitWorldManager implements WorldManager, Listener {
@@ -42,12 +42,10 @@ public class BukkitWorldManager implements WorldManager, Listener {
     private final Map<UUID, CEWorld> worlds;
     private CEWorld[] worldArray = new CEWorld[0];
     private final ReentrantReadWriteLock worldMapLock = new ReentrantReadWriteLock();
-    private SchedulerTask tickTask;
     // cache
     private UUID lastVisitedUUID;
     private CEWorld lastVisitedWorld;
     private StorageAdaptor storageAdaptor;
-    private boolean isTicking = false;
     private boolean initialized = false;
 
     public BukkitWorldManager(BukkitCraftEngine plugin) {
@@ -101,20 +99,6 @@ public class BukkitWorldManager implements WorldManager, Listener {
     }
 
     public void delayedInit() {
-        // events and tasks
-        this.tickTask = this.plugin.scheduler().asyncRepeating(() -> {
-            try {
-                if (this.isTicking) {
-                    return;
-                }
-                this.isTicking = true;
-                for (CEWorld world : this.worldArray) {
-                    world.tick();
-                }
-            } finally {
-                this.isTicking = false;
-            }
-        }, 50, 50, TimeUnit.MILLISECONDS);
         // load loaded chunks
         this.worldMapLock.writeLock().lock();
         try {
@@ -124,6 +108,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
                     for (Chunk chunk : world.getLoadedChunks()) {
                         handleChunkLoad(ceWorld, chunk);
                     }
+                    ceWorld.setTicking(true);
                 } catch (Exception e) {
                     CraftEngine.instance().logger().warn("Error loading world: " + world.getName(), e);
                 }
@@ -142,11 +127,9 @@ public class BukkitWorldManager implements WorldManager, Listener {
         if (this.storageAdaptor instanceof Listener listener) {
             HandlerList.unregisterAll(listener);
         }
-        if (this.tickTask != null && !this.tickTask.cancelled()) {
-            this.tickTask.cancel();
-        }
         for (World world : Bukkit.getWorlds()) {
             CEWorld ceWorld = getWorld(world.getUID());
+            ceWorld.setTicking(false);
             for (Chunk chunk : world.getLoadedChunks()) {
                 handleChunkUnload(ceWorld, chunk);
             }
@@ -175,6 +158,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
             for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
                 handleChunkLoad(ceWorld, chunk);
             }
+            ceWorld.setTicking(true);
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
@@ -190,6 +174,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
             for (Chunk chunk : ((World) world.world().platformWorld()).getLoadedChunks()) {
                 handleChunkLoad(world, chunk);
             }
+            world.setTicking(true);
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
@@ -229,6 +214,7 @@ public class BukkitWorldManager implements WorldManager, Listener {
         } finally {
             this.worldMapLock.writeLock().unlock();
         }
+        ceWorld.setTicking(false);
         for (Chunk chunk : ((World) world.platformWorld()).getLoadedChunks()) {
             handleChunkUnload(ceWorld, chunk);
         }

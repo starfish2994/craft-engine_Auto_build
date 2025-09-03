@@ -361,6 +361,8 @@ gui:
 light-system:
   # Required for custom light-emitting blocks
   enable: true
+  # Async light update
+  async-update: true
 
 chunk-system:
   # With cache system, those frequently load/unload chunks would consume fewer resources on serialization

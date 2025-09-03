@@ -6,6 +6,8 @@ import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.entity.BlockEntity;
 import net.momirealms.craftengine.core.block.entity.tick.TickingBlockEntity;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
+import net.momirealms.craftengine.core.plugin.config.Config;
+import net.momirealms.craftengine.core.plugin.scheduler.SchedulerTask;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.chunk.storage.StorageAdaptor;
 import net.momirealms.craftengine.core.world.chunk.storage.WorldDataStorage;
@@ -25,6 +27,8 @@ public abstract class CEWorld {
     protected final List<TickingBlockEntity> tickingBlockEntities = new ArrayList<>();
     protected final List<TickingBlockEntity> pendingTickingBlockEntities = new ArrayList<>();
     protected boolean isTickingBlockEntities = false;
+    protected SchedulerTask syncTickTask;
+    protected SchedulerTask asyncTickTask;
 
     private CEChunk lastChunk;
     private long lastChunkPos;
@@ -43,6 +47,24 @@ public abstract class CEWorld {
         this.worldDataStorage = dataStorage;
         this.worldHeightAccessor = world.worldHeight();
         this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
+    }
+
+    public void setTicking(boolean ticking) {
+        if (ticking) {
+            if (this.syncTickTask == null || this.syncTickTask.cancelled()) {
+                this.syncTickTask = CraftEngine.instance().scheduler().sync().runRepeating(this::syncTick, 1, 1);
+            }
+            if (this.asyncTickTask == null || this.asyncTickTask.cancelled()) {
+                this.asyncTickTask = CraftEngine.instance().scheduler().sync().runAsyncRepeating(this::asyncTick, 1, 1);
+            }
+        } else {
+            if (this.syncTickTask != null && !this.syncTickTask.cancelled()) {
+                this.syncTickTask.cancel();
+            }
+            if (this.asyncTickTask != null && !this.asyncTickTask.cancelled()) {
+                this.asyncTickTask.cancel();
+            }
+        }
     }
 
     public String name() {
@@ -163,9 +185,20 @@ public abstract class CEWorld {
         return this.worldHeightAccessor;
     }
 
-    public void tick() {
+    public void syncTick() {
         this.tickBlockEntities();
+        if (!Config.asyncLightUpdate()) {
+            this.updateLight();
+        }
     }
+
+    public void asyncTick() {
+        if (Config.asyncLightUpdate()) {
+            this.updateLight();
+        }
+    }
+
+    public abstract void updateLight();
 
     protected void tickBlockEntities() {
         this.isTickingBlockEntities = true;
