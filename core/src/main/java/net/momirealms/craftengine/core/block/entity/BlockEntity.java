@@ -9,7 +9,7 @@ import net.momirealms.sparrow.nbt.CompoundTag;
 
 public abstract class BlockEntity {
     protected final BlockPos pos;
-    protected final ImmutableBlockState blockState;
+    protected ImmutableBlockState blockState;
     protected BlockEntityType<? extends BlockEntity> type;
     protected CEWorld world;
     protected boolean valid;
@@ -22,9 +22,22 @@ public abstract class BlockEntity {
 
     public final CompoundTag saveAsTag() {
         CompoundTag tag = new CompoundTag();
+        this.saveId(tag);
         this.savePos(tag);
         this.saveCustomData(tag);
         return tag;
+    }
+
+    private void saveId(CompoundTag tag) {
+        tag.putString("id", this.type.id().asString());
+    }
+
+    public void setBlockState(ImmutableBlockState blockState) {
+        this.blockState = blockState;
+    }
+
+    public ImmutableBlockState blockState() {
+        return blockState;
     }
 
     public CEWorld world() {
@@ -52,7 +65,7 @@ public abstract class BlockEntity {
     protected void saveCustomData(CompoundTag tag) {
     }
 
-    protected void readCustomData(CompoundTag tag) {
+    public void loadCustomData(CompoundTag tag) {
     }
 
     public void preRemove() {
@@ -84,7 +97,7 @@ public abstract class BlockEntity {
     }
 
     public boolean isValidBlockState(ImmutableBlockState blockState) {
-        return blockState.blockEntityType() == this.type;
+        return this.type == blockState.blockEntityType();
     }
 
     public interface Factory<T extends BlockEntity> {

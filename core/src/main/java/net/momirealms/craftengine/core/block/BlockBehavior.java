@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.core.block;
 
+import net.momirealms.craftengine.core.block.behavior.EntityBlockBehavior;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.CustomItem;
 import net.momirealms.craftengine.core.item.Item;
@@ -10,6 +11,7 @@ import net.momirealms.craftengine.core.item.context.UseOnContext;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -22,6 +24,14 @@ public abstract class BlockBehavior {
             return Optional.of((T) this);
         }
         return Optional.empty();
+    }
+
+    @Nullable
+    public EntityBlockBehavior getEntityBehavior() {
+        if (this instanceof EntityBlockBehavior behavior) {
+            return behavior;
+        }
+        return null;
     }
 
     // BlockState state, Rotation rotation

@@ -149,7 +149,7 @@ public abstract class CEWorld {
         if (chunk == null) {
             return null;
         }
-        return chunk.getBlockEntity(blockPos);
+        return chunk.getBlockEntity(blockPos, true);
     }
 
     public WorldDataStorage worldDataStorage() {
@@ -183,6 +183,14 @@ public abstract class CEWorld {
 
     public abstract void updateLight();
 
+    public void addBlockEntityTicker(TickingBlockEntity ticker) {
+        if (this.isTickingBlockEntities) {
+            this.pendingTickingBlockEntities.add(ticker);
+        } else {
+            this.tickingBlockEntities.add(ticker);
+        }
+    }
+
     protected void tickBlockEntities() {
         this.isTickingBlockEntities = true;
         if (!this.pendingTickingBlockEntities.isEmpty()) {
@@ -191,7 +199,7 @@ public abstract class CEWorld {
         }
         ReferenceOpenHashSet<TickingBlockEntity> toRemove = new ReferenceOpenHashSet<>();
         for (TickingBlockEntity blockEntity : this.tickingBlockEntities) {
-            if (!blockEntity.isValid()) {
+            if (blockEntity.isValid()) {
                 blockEntity.tick();
             } else {
                 toRemove.add(blockEntity);

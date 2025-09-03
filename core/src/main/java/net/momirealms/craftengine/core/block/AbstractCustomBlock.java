@@ -2,6 +2,7 @@ package net.momirealms.craftengine.core.block;
 
 import com.google.common.collect.ImmutableMap;
 import net.momirealms.craftengine.core.block.behavior.EmptyBlockBehavior;
+import net.momirealms.craftengine.core.block.behavior.EntityBlockBehavior;
 import net.momirealms.craftengine.core.block.parser.BlockNbtParser;
 import net.momirealms.craftengine.core.block.properties.Property;
 import net.momirealms.craftengine.core.item.context.BlockPlaceContext;
@@ -80,11 +81,15 @@ public abstract class AbstractCustomBlock implements CustomBlock {
             state.setVanillaBlockState(BlockRegistryMirror.stateByRegistryId(vanillaStateRegistryId));
             state.setCustomBlockState(BlockRegistryMirror.stateByRegistryId(blockStateVariant.internalRegistryId()));
         }
+        EntityBlockBehavior entityBlockBehavior = this.behavior.getEntityBehavior();
         // double check if there's any invalid state
         for (ImmutableBlockState state : this.variantProvider().states()) {
             state.setBehavior(this.behavior);
             if (state.settings() == null) {
                 state.setSettings(settings);
+            }
+            if (entityBlockBehavior != null) {
+                state.setBlockEntityType(entityBlockBehavior.blockEntityType());
             }
         }
         this.applyPlatformSettings();

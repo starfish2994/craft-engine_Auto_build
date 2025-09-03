@@ -13,7 +13,7 @@ public class ReplaceableTickingBlockEntity implements TickingBlockEntity {
         return target;
     }
 
-    public void setTarget(TickingBlockEntity target) {
+    public void setTicker(TickingBlockEntity target) {
         this.target = target;
     }
 

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.entity.BlockEntity;
+import net.momirealms.craftengine.core.block.entity.tick.*;
 import net.momirealms.craftengine.core.plugin.logger.Debugger;
 import net.momirealms.craftengine.core.world.*;
 import net.momirealms.craftengine.core.world.chunk.serialization.DefaultBlockEntitySerializer;
@@ -14,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CEChunk {
     public final CEWorld world;
@@ -23,6 +26,7 @@ public class CEChunk {
     public final Map<BlockPos, BlockEntity> blockEntities;
     private volatile boolean dirty;
     private volatile boolean loaded;
+    protected final Map<BlockPos, ReplaceableTickingBlockEntity> tickingBlockEntitiesByPos = new ConcurrentHashMap<>();
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
         this.world = world;
@@ -57,12 +61,40 @@ public class CEChunk {
 
     public void addBlockEntity(BlockEntity blockEntity) {
         this.setBlockEntity(blockEntity);
+        this.replaceOrCreateTickingBlockEntity(blockEntity);
     }
 
     public void removeBlockEntity(BlockPos blockPos) {
         BlockEntity removedBlockEntity = this.blockEntities.remove(blockPos);
         if (removedBlockEntity != null) {
             removedBlockEntity.setValid(false);
+        }
+    }
+
+    public <T extends BlockEntity> void replaceOrCreateTickingBlockEntity(T blockEntity) {
+        ImmutableBlockState blockState = blockEntity.blockState();
+        BlockEntityTicker<T> ticker = blockState.createBlockEntityTicker(this.world, blockEntity.type());
+        if (ticker != null) {
+            this.tickingBlockEntitiesByPos.compute(blockEntity.pos(), ((pos, previousTicker) -> {
+                TickingBlockEntity newTicker = new TickingBlockEntityImpl<>(this, blockEntity, ticker);
+                if (previousTicker != null) {
+                    previousTicker.setTicker(newTicker);
+                    return previousTicker;
+                } else {
+                    ReplaceableTickingBlockEntity replaceableTicker = new ReplaceableTickingBlockEntity(newTicker);
+                    this.world.addBlockEntityTicker(replaceableTicker);
+                    return replaceableTicker;
+                }
+            }));
+        } else {
+            this.removeBlockEntityTicker(blockEntity.pos());
+        }
+    }
+
+    private void removeBlockEntityTicker(BlockPos pos) {
+        ReplaceableTickingBlockEntity blockEntity = this.tickingBlockEntitiesByPos.remove(pos);
+        if (blockEntity != null) {
+            blockEntity.setTicker(DummyTickingBlockEntity.INSTANCE);
         }
     }
 
@@ -84,12 +116,14 @@ public class CEChunk {
     }
 
     @Nullable
-    public BlockEntity getBlockEntity(BlockPos pos) {
+    public BlockEntity getBlockEntity(BlockPos pos, boolean create) {
         BlockEntity blockEntity = this.blockEntities.get(pos);
         if (blockEntity == null) {
-            blockEntity = createBlockEntity(pos);
-            if (blockEntity != null) {
-                this.addBlockEntity(blockEntity);
+            if (create) {
+                blockEntity = createBlockEntity(pos);
+                if (blockEntity != null) {
+                    this.addBlockEntity(blockEntity);
+                }
             }
         } else {
             if (!blockEntity.isValid()) {
@@ -105,7 +139,7 @@ public class CEChunk {
         if (!blockState.hasBlockEntity()) {
             return null;
         }
-        return blockState.blockEntityType().factory().create(pos, blockState);
+        return Objects.requireNonNull(blockState.behavior().getEntityBehavior()).createBlockEntity(pos, blockState);
     }
 
     public Map<BlockPos, BlockEntity> blockEntities() {
