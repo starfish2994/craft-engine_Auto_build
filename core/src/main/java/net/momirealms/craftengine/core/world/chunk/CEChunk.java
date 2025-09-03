@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 public class CEChunk {
-    private boolean loaded;
-    private final CEWorld world;
-    private final ChunkPos chunkPos;
-    private final CESection[] sections;
-    private final WorldHeight worldHeightAccessor;
-    private final Map<BlockPos, BlockEntity> blockEntities;
-    private boolean dirty;
+    public final CEWorld world;
+    public final ChunkPos chunkPos;
+    public final CESection[] sections;
+    public final WorldHeight worldHeightAccessor;
+    public final Map<BlockPos, BlockEntity> blockEntities;
+    private volatile boolean dirty;
+    private volatile boolean loaded;
 
     public CEChunk(CEWorld world, ChunkPos chunkPos) {
         this.world = world;
@@ -131,9 +131,9 @@ public class CEChunk {
     }
 
     private void fillEmptySection() {
-        for (int i = 0; i < sections.length; ++i) {
-            if (sections[i] == null) {
-                sections[i] = new CESection(world.worldHeight().getSectionYFromSectionIndex(i),
+        for (int i = 0; i < this.sections.length; ++i) {
+            if (this.sections[i] == null) {
+                this.sections[i] = new CESection(this.world.worldHeight().getSectionYFromSectionIndex(i),
                         new PalettedContainer<>(null, EmptyBlock.STATE, PalettedContainer.PaletteProvider.CUSTOM_BLOCK_STATE));
             }
         }
@@ -190,21 +190,21 @@ public class CEChunk {
 
     @NotNull
     public CEWorld world() {
-        return world;
+        return this.world;
     }
 
     @NotNull
     public ChunkPos chunkPos() {
-        return chunkPos;
+        return this.chunkPos;
     }
 
     @NotNull
     public CESection[] sections() {
-        return sections;
+        return this.sections;
     }
 
     public boolean isLoaded() {
-        return loaded;
+        return this.loaded;
     }
 
     public void load() {

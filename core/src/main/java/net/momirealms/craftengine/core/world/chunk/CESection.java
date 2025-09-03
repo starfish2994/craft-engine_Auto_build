@@ -53,6 +53,6 @@ public class CESection {
     }
 
     public int sectionY() {
-        return sectionY;
+        return this.sectionY;
     }
 }

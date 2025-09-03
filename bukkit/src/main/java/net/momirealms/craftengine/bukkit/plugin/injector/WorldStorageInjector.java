@@ -19,10 +19,13 @@ import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.EmptyBlock;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.UpdateOption;
+import net.momirealms.craftengine.core.block.entity.BlockEntity;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.util.ReflectionUtils;
 import net.momirealms.craftengine.core.util.SectionPosUtils;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.SectionPos;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
@@ -224,7 +227,20 @@ public final class WorldStorageInjector {
                 ImmutableBlockState previous = section.setBlockState(x, y, z, EmptyBlock.STATE);
                 // 处理  自定义块 -> 原版块
                 if (!previous.isEmpty()) {
-                    holder.ceChunk().setDirty(true);
+                    CEChunk chunk = holder.ceChunk();
+                    chunk.setDirty(true);
+                    if (previous.hasBlockEntity()) {
+                        BlockPos pos = new BlockPos(
+                                chunk.chunkPos().x * 16 + x,
+                                section.sectionY() * 16 + y,
+                                chunk.chunkPos().z * 16 + z
+                        );
+                        BlockEntity blockEntity = chunk.getBlockEntity(pos);
+                        if (blockEntity != null) {
+                            blockEntity.preRemove();
+                            chunk.removeBlockEntity(pos);
+                        }
+                    }
                     if (Config.enableLightSystem()) {
                         // 自定义块到原版块，只需要判断旧块是否和客户端一直
                         BlockStateWrapper wrapper = previous.vanillaBlockState();
@@ -258,8 +274,8 @@ public final class WorldStorageInjector {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    protected static void updateLight(@This InjectedHolder thisObj, Object clientState, Object serverState, int x, int y, int z) {
-        CEWorld world = thisObj.ceChunk().world();
+    private static void updateLight(@This InjectedHolder thisObj, Object clientState, Object serverState, int x, int y, int z) {
+        CEWorld world = thisObj.ceChunk().world;
         Object blockPos = LocationUtils.toBlockPos(x, y, z);
         Object serverWorld = world.world().serverWorld();
         if (FastNMS.INSTANCE.method$LightEngine$hasDifferentLightProperties(serverState, clientState, serverWorld, blockPos)) {
@@ -270,8 +286,8 @@ public final class WorldStorageInjector {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    protected static void updateLight$complex(@This InjectedHolder thisObj, Object newClientState, Object newServerState, Object oldServerState, int x, int y, int z) {
-        CEWorld world = thisObj.ceChunk().world();
+    private static void updateLight$complex(@This InjectedHolder thisObj, Object newClientState, Object newServerState, Object oldServerState, int x, int y, int z) {
+        CEWorld world = thisObj.ceChunk().world;
         Object blockPos = LocationUtils.toBlockPos(x, y, z);
         Object serverWorld = world.world().serverWorld();
         // 如果客户端新状态和服务端新状态光照属性不同

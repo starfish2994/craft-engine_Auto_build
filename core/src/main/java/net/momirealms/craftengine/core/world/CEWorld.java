@@ -30,15 +30,11 @@ public abstract class CEWorld {
     protected SchedulerTask syncTickTask;
     protected SchedulerTask asyncTickTask;
 
-    private CEChunk lastChunk;
-    private long lastChunkPos;
-
     public CEWorld(World world, StorageAdaptor adaptor) {
         this.world = world;
         this.loadedChunkMap = ConcurrentLong2ReferenceChainedHashTable.createWithCapacity(1024, 0.5f);
         this.worldDataStorage = adaptor.adapt(world);
         this.worldHeightAccessor = world.worldHeight();
-        this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
     }
 
     public CEWorld(World world, WorldDataStorage dataStorage) {
@@ -46,7 +42,6 @@ public abstract class CEWorld {
         this.loadedChunkMap = ConcurrentLong2ReferenceChainedHashTable.createWithCapacity(1024, 0.5f);
         this.worldDataStorage = dataStorage;
         this.worldHeightAccessor = world.worldHeight();
-        this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
     }
 
     public void setTicking(boolean ticking) {
@@ -103,23 +98,11 @@ public abstract class CEWorld {
 
     public void removeLoadedChunk(CEChunk chunk) {
         this.loadedChunkMap.remove(chunk.chunkPos().longKey());
-        if (this.lastChunk == chunk) {
-            this.lastChunk = null;
-            this.lastChunkPos = ChunkPos.INVALID_CHUNK_POS;
-        }
     }
 
     @Nullable
     public CEChunk getChunkAtIfLoaded(long chunkPos) {
-        if (chunkPos == this.lastChunkPos) {
-            return this.lastChunk;
-        }
-        CEChunk chunk = this.loadedChunkMap.get(chunkPos);
-        if (chunk != null) {
-            this.lastChunk = chunk;
-            this.lastChunkPos = chunkPos;
-        }
-        return chunk;
+        return this.loadedChunkMap.get(chunkPos);
     }
 
     @Nullable

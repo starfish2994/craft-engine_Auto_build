@@ -55,6 +55,9 @@ public abstract class BlockEntity {
     protected void readCustomData(CompoundTag tag) {
     }
 
+    public void preRemove() {
+    }
+
     public static BlockPos readPos(CompoundTag tag) {
         return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
     }

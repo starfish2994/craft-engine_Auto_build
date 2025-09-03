@@ -23,7 +23,7 @@ public final class LightUtils {
                 if (chunkHolder == null) continue;
                 List<Object> players = FastNMS.INSTANCE.method$ChunkHolder$getPlayers(chunkHolder);
                 if (players.isEmpty()) continue;
-                Object lightEngine = CoreReflections.field$ChunkHolder$lightEngine.get(chunkHolder);
+                Object lightEngine = FastNMS.INSTANCE.method$ChunkSource$getLightEngine(chunkSource);
                 Object chunkPos = FastNMS.INSTANCE.constructor$ChunkPos((int) chunkKey, (int) (chunkKey >> 32));
                 Object lightPacket = FastNMS.INSTANCE.constructor$ClientboundLightUpdatePacket(chunkPos, lightEngine, entry.getValue(), entry.getValue());
                 for (Object player : players) {
