@@ -65,11 +65,18 @@ public class CEChunk {
         if (removedBlockEntity != null) {
             removedBlockEntity.setValid(false);
         }
+        this.removeBlockEntityTicker(blockPos);
     }
 
-    public void clearAllBlockEntities() {
+    public void activateAllBlockEntities() {
+        for (BlockEntity blockEntity : this.blockEntities.values()) {
+            blockEntity.setValid(true);
+            replaceOrCreateTickingBlockEntity(blockEntity);
+        }
+    }
+
+    public void deactivateAllBlockEntities() {
         this.blockEntities.values().forEach(e -> e.setValid(false));
-        this.blockEntities.clear();
         this.tickingBlockEntitiesByPos.values().forEach((ticker) -> ticker.setTicker(DummyTickingBlockEntity.INSTANCE));
         this.tickingBlockEntitiesByPos.clear();
     }
@@ -247,13 +254,14 @@ public class CEChunk {
     public void load() {
         if (this.loaded) return;
         this.world.addLoadedChunk(this);
+        this.activateAllBlockEntities();
         this.loaded = true;
     }
 
     public void unload() {
         if (!this.loaded) return;
         this.world.removeLoadedChunk(this);
-        this.clearAllBlockEntities();
+        this.deactivateAllBlockEntities();
         this.loaded = false;
     }
 }

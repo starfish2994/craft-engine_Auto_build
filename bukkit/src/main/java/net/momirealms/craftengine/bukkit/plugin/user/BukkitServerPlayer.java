@@ -7,10 +7,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
+import net.momirealms.craftengine.bukkit.block.entity.BlockEntityHolder;
+import net.momirealms.craftengine.bukkit.block.entity.SimpleStorageBlockEntity;
 import net.momirealms.craftengine.bukkit.item.BukkitItemManager;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
-import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineInventoryHolder;
+import net.momirealms.craftengine.bukkit.plugin.gui.CraftEngineGUIHolder;
 import net.momirealms.craftengine.bukkit.plugin.network.payload.DiscardedPayload;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
 import net.momirealms.craftengine.bukkit.plugin.reflection.minecraft.CoreReflections;
@@ -21,6 +23,7 @@ import net.momirealms.craftengine.bukkit.util.*;
 import net.momirealms.craftengine.bukkit.world.BukkitWorld;
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.entity.BlockEntity;
 import net.momirealms.craftengine.core.entity.player.GameMode;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.Player;
@@ -36,13 +39,16 @@ import net.momirealms.craftengine.core.util.IntIdentityList;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.WorldEvents;
 import net.momirealms.craftengine.core.world.chunk.ChunkStatus;
+import net.momirealms.craftengine.core.world.collision.AABB;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -467,7 +473,7 @@ public class BukkitServerPlayer extends Player {
         } else {
             this.gameTicks = FastNMS.INSTANCE.field$MinecraftServer$currentTick();
         }
-        if (this.gameTicks % 30 == 0) {
+        if (this.gameTicks % 20 == 0) {
             this.updateGUI();
         }
         if (this.isDestroyingBlock)  {
@@ -491,9 +497,25 @@ public class BukkitServerPlayer extends Player {
         if (!CraftBukkitReflections.clazz$MinecraftInventory.isInstance(FastNMS.INSTANCE.method$CraftInventory$getInventory(top))) {
             return;
         }
-        if (top.getHolder() instanceof CraftEngineInventoryHolder holder) {
+        if (top.getHolder() instanceof CraftEngineGUIHolder holder) {
             holder.gui().onTimer();
+        } else if (top.getHolder() instanceof BlockEntityHolder holder) {
+            BlockEntity blockEntity = holder.blockEntity();
+            BlockPos blockPos = blockEntity.pos();
+            if (!canInteractWithBlock(blockPos, 4d)) {
+                platformPlayer().closeInventory();
+            }
         }
+    }
+
+    public boolean canInteractWithBlock(BlockPos pos, double distance) {
+        double d = this.getCachedInteractionRange() + distance;
+        return (new AABB(pos)).distanceToSqr(this.getEyePosition()) < d * d;
+    }
+
+    public final Vec3d getEyePosition() {
+        Location eyeLocation = this.platformPlayer().getEyeLocation();
+        return new Vec3d(eyeLocation.getX(), eyeLocation.getY(), eyeLocation.getZ());
     }
 
     @Override

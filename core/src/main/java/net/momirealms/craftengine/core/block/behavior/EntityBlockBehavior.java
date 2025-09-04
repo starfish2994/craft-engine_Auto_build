@@ -6,7 +6,9 @@ import net.momirealms.craftengine.core.block.entity.BlockEntityType;
 import net.momirealms.craftengine.core.block.entity.tick.BlockEntityTicker;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Experimental
 public interface EntityBlockBehavior {
 
     <T extends BlockEntity> BlockEntityType<T> blockEntityType();

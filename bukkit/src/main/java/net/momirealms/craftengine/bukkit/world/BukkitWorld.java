@@ -123,4 +123,9 @@ public class BukkitWorld implements World {
     public void levelEvent(int id, BlockPos pos, int data) {
         FastNMS.INSTANCE.method$LevelAccessor$levelEvent(serverWorld(), id, LocationUtils.toBlockPos(pos), data);
     }
+
+    @Override
+    public CEWorld storageWorld() {
+        return BukkitWorldManager.instance().getWorld(uuid());
+    }
 }

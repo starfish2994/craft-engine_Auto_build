@@ -1,6 +1,8 @@
 package net.momirealms.craftengine.bukkit.plugin.gui;
 
 import net.kyori.adventure.text.Component;
+import net.momirealms.craftengine.bukkit.block.entity.BlockEntityHolder;
+import net.momirealms.craftengine.bukkit.block.entity.SimpleStorageBlockEntity;
 import net.momirealms.craftengine.bukkit.nms.FastNMS;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.plugin.reflection.bukkit.CraftBukkitReflections;
@@ -18,16 +20,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.MenuType;
 
 public class BukkitGuiManager implements GuiManager, Listener {
     private static final boolean useNewOpenInventory = ReflectionUtils.getDeclaredMethod(InventoryView.class, void.class, new String[]{"open"}) != null;
+    private static BukkitGuiManager instance;
     private final BukkitCraftEngine plugin;
 
     public BukkitGuiManager(BukkitCraftEngine plugin) {
         this.plugin = plugin;
+        instance = this;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
 
     @Override
     public Inventory createInventory(Gui gui, int size) {
-        CraftEngineInventoryHolder holder = new CraftEngineInventoryHolder(gui);
+        CraftEngineGUIHolder holder = new CraftEngineGUIHolder(gui);
         org.bukkit.inventory.Inventory inventory = Bukkit.createInventory(holder, size);
         holder.holder().bindValue(inventory);
         return new BukkitInventory(inventory);
@@ -95,10 +100,10 @@ public class BukkitGuiManager implements GuiManager, Listener {
         if (!CraftBukkitReflections.clazz$MinecraftInventory.isInstance(FastNMS.INSTANCE.method$CraftInventory$getInventory(inventory))) {
             return;
         }
-        if (!(inventory.getHolder() instanceof CraftEngineInventoryHolder craftEngineInventoryHolder)) {
+        if (!(inventory.getHolder() instanceof CraftEngineGUIHolder craftEngineGUIHolder)) {
             return;
         }
-        AbstractGui gui = (AbstractGui) craftEngineInventoryHolder.gui();
+        AbstractGui gui = (AbstractGui) craftEngineGUIHolder.gui();
         Player player = (Player) event.getWhoClicked();
         if (event.getClickedInventory() == player.getInventory()) {
             gui.handleInventoryClick(new BukkitClick(event, gui, new BukkitInventory(player.getInventory())));
@@ -113,7 +118,7 @@ public class BukkitGuiManager implements GuiManager, Listener {
         if (!CraftBukkitReflections.clazz$MinecraftInventory.isInstance(FastNMS.INSTANCE.method$CraftInventory$getInventory(inventory))) {
             return;
         }
-        if (!(inventory.getHolder() instanceof CraftEngineInventoryHolder)) {
+        if (!(inventory.getHolder() instanceof CraftEngineGUIHolder)) {
             return;
         }
         for (int raw : event.getRawSlots()) {
@@ -122,5 +127,24 @@ public class BukkitGuiManager implements GuiManager, Listener {
                 return;
             }
         }
+    }
+
+    // 处理自定义容器的关闭音效
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        org.bukkit.inventory.Inventory inventory = event.getInventory();
+        if (!CraftBukkitReflections.clazz$MinecraftInventory.isInstance(FastNMS.INSTANCE.method$CraftInventory$getInventory(inventory))) {
+            return;
+        }
+        if (!(inventory.getHolder() instanceof BlockEntityHolder holder)) {
+            return;
+        }
+        if (event.getPlayer() instanceof Player player && holder.blockEntity() instanceof SimpleStorageBlockEntity simpleStorageBlockEntity) {
+            simpleStorageBlockEntity.onPlayerClose(this.plugin.adapt(player));
+        }
+    }
+
+    public static BukkitGuiManager instance() {
+        return instance;
     }
 }

@@ -1,13 +1,9 @@
 package net.momirealms.craftengine.core.plugin.dependency;
 
-import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.plugin.dependency.relocation.Relocation;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 public class Dependencies {
 

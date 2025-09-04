@@ -1,6 +1,7 @@
 package net.momirealms.craftengine.core.world;
 
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.Context;
 import net.momirealms.craftengine.core.sound.SoundData;
@@ -15,6 +16,8 @@ import java.util.UUID;
 
 public interface World {
 
+    CEWorld storageWorld();
+
     Object platformWorld();
 
     Object serverWorld();
@@ -28,6 +31,10 @@ public interface World {
     }
 
     void setBlockAt(int x, int y, int z, BlockStateWrapper blockState, int flags);
+
+    default void setBlockAt(int x, int y, int z, ImmutableBlockState blockState, int flags) {
+        this.setBlockAt(x, y, z, blockState.customBlockState(), flags);
+    }
 
     String name();
 
