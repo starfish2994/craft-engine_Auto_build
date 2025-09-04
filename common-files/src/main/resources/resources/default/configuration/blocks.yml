@@ -435,6 +435,79 @@ items#misc:
             facing=west:
               appearance: west
               id: 21
+  default:safe_block:
+    material: nether_brick
+    custom-model-data: 3007
+    data:
+      item-name: <!i><i18n:item.safe_block>
+    model:
+      type: minecraft:model
+      path: minecraft:item/custom/safe_block
+      generation:
+        parent: minecraft:block/custom/safe_block
+    behavior:
+      type: block_item
+      block:
+        loot:
+          template: default:loot_table/self
+        settings:
+          hardness: 5
+          resistance: 5
+          is-suffocating: true
+          is-redstone-conductor: true
+          push-reaction: BLOCK
+          instrument: BASEDRUM
+          map-color: 6
+          sounds:
+            break: minecraft:block.stone.break
+            fall: minecraft:block.stone.fall
+            hit: minecraft:block.stone.hit
+            place: minecraft:block.stone.place
+            step: minecraft:block.stone.step
+        states:
+          properties:
+            facing:
+              type: 4-direction
+              default: north
+          appearances:
+            east:
+              state: note_block:22
+              model:
+                path: minecraft:block/custom/safe_block
+                y: 90
+                generation:
+                  parent: minecraft:block/orientable
+                  textures:
+                    front: minecraft:block/custom/safe_block_front
+                    side: minecraft:block/custom/safe_block_side
+                    top: minecraft:block/custom/safe_block_top
+            north:
+              state: note_block:23
+              model:
+                path: minecraft:block/custom/safe_block
+            south:
+              state: note_block:24
+              model:
+                path: minecraft:block/custom/safe_block
+                y: 180
+            west:
+              state: note_block:25
+              model:
+                path: minecraft:block/custom/safe_block
+                y: 270
+          variants:
+            facing=east:
+              appearance: east
+              id: 22
+            facing=north:
+              appearance: north
+              id: 23
+            facing=south:
+              appearance: south
+              id: 24
+            facing=west:
+              appearance: west
+              id: 25
 recipes#misc:
   default:chinese_lantern:
     type: shaped

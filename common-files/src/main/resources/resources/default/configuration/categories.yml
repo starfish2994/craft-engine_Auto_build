@@ -79,3 +79,4 @@ categories:
       - default:cap
       - default:pebble
       - default:chessboard_block
+      - default:safe_block
