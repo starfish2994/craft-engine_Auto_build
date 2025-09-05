@@ -6,7 +6,7 @@ on:
     branches: [ main, dev ]  # 根据实际分支名调整
   pull_request:
     branches: [ main, dev ]
-
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest  # 使用 Ubuntu 环境
