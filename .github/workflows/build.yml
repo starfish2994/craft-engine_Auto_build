@@ -2,10 +2,6 @@ name: Build CraftEngine Plugin
 
 # 触发条件：推送代码或创建 Pull Request 时
 on:
-  push:
-    branches: [ main, dev ]  # 根据实际分支名调整
-  pull_request:
-    branches: [ main, dev ]
   workflow_dispatch:
 jobs:
   build:
@@ -29,8 +25,8 @@ jobs:
         run: chmod +x ./gradlew
 
       # 步骤附加：git参数设置
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
+      - name: Git Config Set
+        run: git config --global user.name "starfish2994"
 
       # 步骤4：执行 Gradle 构建任务（使用 shadowJar 打包）
       - name: Build with Gradle
