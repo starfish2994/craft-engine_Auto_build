@@ -30,7 +30,7 @@ jobs:
 
       # 步骤4：执行 Gradle 构建任务（使用 shadowJar 打包）
       - name: Build with Gradle
-        run: ./gradlew build  # 对应代码中 loader 模块的 shadowJar 任务
+        run: ./gradlew clean build  # 对应代码中 loader 模块的 shadowJar 任务
 
       # 步骤5：上传构建产物（插件 JAR）
       - name: Upload plugin JAR
