@@ -57,6 +57,7 @@ dependencies {
     // 排除原依赖（避免重复或冲突）
     compileOnly("com.gmail.nossr50.mcMMO:mcMMO:2.2.038") {
         exclude(group = "com.comphenix.protocol", module = "ProtocolLib")
+    }
     // MMOCore
     compileOnly("net.Indyuce:MMOCore-API:1.12.1-SNAPSHOT")
     // JobsReborn
