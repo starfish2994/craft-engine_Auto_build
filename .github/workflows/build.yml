@@ -28,6 +28,10 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      # 步骤附加：git参数设置
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       # 步骤4：执行 Gradle 构建任务（使用 shadowJar 打包）
       - name: Build with Gradle
         run: ./gradlew clean build  # 对应代码中 loader 模块的 shadowJar 任务
